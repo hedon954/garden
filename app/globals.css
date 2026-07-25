@@ -441,38 +441,44 @@ button {
 }
 
 .archive-row {
-  min-height: 142px;
-  padding: 24px 0;
+  min-height: 112px;
+  padding: 14px 0;
   display: grid;
-  grid-template-columns: 128px 1fr 24px;
-  gap: 22px;
-  align-items: start;
+  grid-template-columns: minmax(0, 1fr) 20px;
+  gap: 16px;
+  align-items: center;
   border-bottom: 1px solid var(--line);
 }
 
 .archive-row.with-cover {
-  grid-template-columns: 128px 150px 1fr 24px;
+  grid-template-columns: 128px minmax(0, 1fr) 20px;
 }
 
 .archive-row:hover {
-  padding-left: 12px;
-  padding-right: 12px;
+  padding-left: 8px;
+  padding-right: 8px;
   background: var(--card);
 }
 
-.archive-row > time {
-  padding-top: 25px;
+.archive-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 14px;
+}
+
+.archive-meta time {
   color: var(--muted);
-  font-size: 11px;
+  font-size: 10px;
 }
 
 .archive-row > svg {
-  margin-top: 36px;
+  align-self: center;
 }
 
 .archive-cover {
-  width: 150px;
-  height: 94px;
+  width: 128px;
+  height: 84px;
   display: block;
   object-fit: cover;
   border: 1px solid var(--line);
@@ -494,15 +500,20 @@ button {
 }
 
 .archive-row h2 {
-  margin: 6px 0 7px;
-  font-size: 19px;
+  margin: 7px 0 6px;
+  font-size: 18px;
   letter-spacing: -0.035em;
 }
 
 .archive-row p {
   margin: 0;
   color: var(--muted);
-  font-size: 12px;
+  display: -webkit-box;
+  overflow: hidden;
+  font-size: 11px;
+  line-height: 1.6;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
 }
 
 .thoughts-page {
@@ -1671,17 +1682,42 @@ button {
   }
 
   .archive-row {
-    grid-template-columns: 1fr 20px;
-    gap: 8px;
+    min-height: 92px;
+    padding: 11px 0;
+    grid-template-columns: minmax(0, 1fr) 16px;
+    gap: 10px;
   }
 
-  .archive-row > time {
-    grid-column: 1 / -1;
-    padding: 0;
+  .archive-row.with-cover {
+    grid-template-columns: 96px minmax(0, 1fr) 16px;
+  }
+
+  .archive-cover {
+    width: 96px;
+    height: 68px;
+  }
+
+  .archive-meta {
+    gap: 4px 9px;
+  }
+
+  .archive-meta time,
+  .archive-topic {
+    font-size: 9px;
+  }
+
+  .archive-row h2 {
+    margin: 5px 0 4px;
+    font-size: 15px;
+    line-height: 1.35;
+  }
+
+  .archive-row p {
+    font-size: 10px;
   }
 
   .archive-row > svg {
-    margin-top: 32px;
+    margin: 0;
   }
 
   .thought-card {
@@ -1794,30 +1830,3 @@ button {
     animation-iteration-count: 1 !important;
   }
 }
-  .archive-row,
-  .archive-row.with-cover {
-    grid-template-columns: 1fr 20px;
-    gap: 12px;
-  }
-
-  .archive-row > time {
-    grid-column: 1;
-    padding-top: 0;
-  }
-
-  .archive-cover {
-    grid-column: 1 / -1;
-    width: 100%;
-    height: auto;
-    aspect-ratio: 16 / 8;
-  }
-
-  .archive-row > div {
-    grid-column: 1;
-  }
-
-  .archive-row > svg {
-    grid-column: 2;
-    grid-row: 3;
-    margin-top: 8px;
-  }

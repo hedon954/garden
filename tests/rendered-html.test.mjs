@@ -91,5 +91,8 @@ test("renders complex Markdown, article covers, and mixed thought media", async 
   assert.match(thoughts, /class="link-embed"/);
 
   assert.equal(archiveResponse.status, 200);
-  assert.match(await archiveResponse.text(), /class="archive-cover"/);
+  const archive = await archiveResponse.text();
+  assert.match(archive, /class="archive-cover"/);
+  assert.match(archive, /class="archive-copy"/);
+  assert.match(archive, /class="archive-meta"/);
 });

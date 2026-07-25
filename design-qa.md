@@ -73,4 +73,15 @@ No actionable P0, P1, or P2 mismatch remains for the requested "similar style" t
 - No browser console errors were recorded in the revised routes.
 - No remaining P0, P1, or P2 issue was found.
 
+## 2026-07-25 compact blog archive revision
+
+- Revision source: `/var/folders/44/6xx0crn15lxg4fp3zhv2lf740000gn/T/codex-clipboard-608a54c0-f6ae-4c90-a6c9-b866bcd48389.png`
+- Revised browser capture: `/Users/hedon/Documents/blog/implementation-blog-compact-state.png`
+- Combined comparison: `/Users/hedon/Documents/blog/design-comparison-blog-compact.png`
+- The comparison normalizes the source's 1288 × 862 screenshot to its 644 × 431 CSS viewport and captures the same filtered-list state.
+- The old stacked card exposed roughly one article per viewport. The revised 92 px mobile rows expose four article entries in the same viewport while retaining a readable thumbnail, date, topic, title, summary, pin state, and navigation arrow.
+- All five sample posts now have covers. At the narrow breakpoint thumbnails render at 96 × 68 px; at desktop they render at 128 × 84 px.
+- Browser checks confirm that titles remain to the right of covers, all five rows have equal height, no horizontal overflow occurs at 644 px or 1200 px, and no console errors are present.
+- No remaining P0, P1, or P2 issue was found.
+
 final result: passed

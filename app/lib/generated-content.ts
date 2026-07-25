@@ -122,6 +122,8 @@ export const posts = [
     ],
     "pinned": false,
     "readingTime": "9 分钟",
+    "cover": "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1600&q=84",
+    "coverAlt": "近距离拍摄的电子电路板",
     "kind": "post",
     "sourcePath": "posts/understand-kv-cache.md",
     "content": "理解 KV Cache 最直观的方式，是先看自回归生成里那些被重复计算的部分。\n\n## Prefill 与 Decode\n\nPrefill 一次处理完整提示词，Decode 则每次只生成一个新 token。\n\n```mermaid\nflowchart LR\n  A[Prompt] --> B[Prefill]\n  B --> C[KV Cache]\n  C --> D[Decode one token]\n  D --> C\n```\n\n## 缓存的是什么\n\n过去 token 对应的 Key 和 Value 不会因为新 token 到来而变化，所以可以保存下来，只计算新位置的投影。\n\n## 空间换时间\n\n缓存减少计算，却增加显存占用。批量、序列长度与层数共同决定了这笔开销。\n\n$$\n\\text{KV memory} \\propto 2 \\times L \\times H \\times T\n$$"

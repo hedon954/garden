@@ -32,7 +32,6 @@ export default function BlogIndex() {
             href={`/blog/${post.slug}`}
             className={`archive-row${post.cover ? " with-cover" : ""}`}
           >
-            <time>{formatDate(post.date)}</time>
             {post.cover && (
               // eslint-disable-next-line @next/next/no-img-element
               <img
@@ -42,16 +41,19 @@ export default function BlogIndex() {
                 loading="lazy"
               />
             )}
-            <div>
-              <span className="archive-topic">
-                {post.topic}
-                {post.pinned && (
-                  <span className="pinned-badge">
-                    <PushPin size={12} weight="fill" />
-                    置顶
-                  </span>
-                )}
-              </span>
+            <div className="archive-copy">
+              <div className="archive-meta">
+                <time>{formatDate(post.date)}</time>
+                <span className="archive-topic">
+                  {post.topic}
+                  {post.pinned && (
+                    <span className="pinned-badge">
+                      <PushPin size={12} weight="fill" />
+                      置顶
+                    </span>
+                  )}
+                </span>
+              </div>
               <h2>{post.title}</h2>
               <p>{post.description}</p>
             </div>

@@ -9,6 +9,8 @@ tags:
   - 推理
 pinned: false
 readingTime: 9 分钟
+cover: https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1600&q=84
+coverAlt: 近距离拍摄的电子电路板
 ---
 
 理解 KV Cache 最直观的方式，是先看自回归生成里那些被重复计算的部分。
