@@ -4,6 +4,7 @@ export type MediaItem = {
   src: string;
   alt?: string;
   poster?: string;
+  mime?: string;
   title?: string;
   description?: string;
 };
@@ -14,6 +15,8 @@ export type ContentEntry = {
   description?: string;
   date: string;
   updated?: string;
+  publishAt?: string;
+  draft?: boolean;
   topic?: string;
   tags?: string[];
   pinned?: boolean;
@@ -23,6 +26,9 @@ export type ContentEntry = {
   content: string;
   column?: string;
   columnTitle?: string;
+  columnDescription?: string;
+  columnStatus?: string;
+  columnCover?: string;
   order?: number;
   cover?: string;
   coverAlt?: string;
@@ -34,6 +40,7 @@ export type ContentEntry = {
   linkDescription?: string;
 };
 
+export const contentHash = "ee91b2000072";
 export const posts = [
   {
     "title": "Markdown 复杂语法实验场",
@@ -52,6 +59,7 @@ export const posts = [
     "cover": "https://images.unsplash.com/photo-1761414500824-e280de5a1b37?auto=format&fit=crop&w=1600&q=84",
     "coverAlt": "彩色阳台构成的现代建筑立面",
     "kind": "post",
+    "draft": false,
     "sourcePath": "posts/markdown-lab.md",
     "content": "这篇文章不是功能清单，而是一份可以长期保留的**渲染验收样本**。我会在 Typora 中常用的语法和网页输出之间建立一条可重复验证的路径。\n\n> 写作格式的价值，不在于语法多，而在于文件离开编辑器之后仍能完整表达。\n\n## 基础排版与 GFM\n\n一段文字可以同时包含**粗体**、*斜体*、~~删除线~~、`inline code` 和 [外部链接](https://typora.io/)。\n\n- 第一层列表\n  - 第二层列表\n    - 第三层列表\n- 列表之后仍然保持稳定的段落节奏\n\n1. 写作\n2. 本地预览\n3. 发布与验证\n\n- [x] 标题、引用、列表和代码\n- [x] 表格、删除线与任务列表\n- [x] 数学公式与 Mermaid\n- [ ] 用新的真实文章继续回归测试\n\n| 能力 | 写法 | 网页表现 |\n| --- | :---: | ---: |\n| GFM | `remark-gfm` | 已验证 |\n| 数学公式 | `$...$` / `$$...$$` | KaTeX |\n| 图表 | Mermaid fenced code | SVG |\n\n## 数学公式\n\n行内公式会和文字一起流动，例如注意力的缩放项 $\\frac{QK^\\top}{\\sqrt{d_k}}$。\n\n块级公式支持多行对齐：\n\n$$\n\\begin{aligned}\n\\operatorname{Attention}(Q,K,V)\n  &= \\operatorname{softmax}\\left(\\frac{QK^\\top}{\\sqrt{d_k}}\\right)V \\\\\nK_{\\text{cache}}^{(t)}\n  &= [K_{\\text{cache}}^{(t-1)}; K_t] \\\\\nV_{\\text{cache}}^{(t)}\n  &= [V_{\\text{cache}}^{(t-1)}; V_t]\n\\end{aligned}\n$$\n\n矩阵也能正常显示：\n\n$$\nX =\n\\begin{bmatrix}\n1 & 0 & 1 \\\\\n0 & 1 & 0 \\\\\n1 & 1 & 1\n\\end{bmatrix}\n$$\n\n## Mermaid 流程与时序\n\n所有 Mermaid 图表固定使用「中性」主题。每张图都可以在「图表」与「Code」之间切换：前者用于阅读，后者用于检查或复制原始 Mermaid 语法。\n\n下面的流程图描述本地写作到发布的闭环：\n\n```mermaid\nflowchart LR\n  A[Typora 写作] --> B{本地验证}\n  B -->|通过| C[生成内容索引]\n  B -->|失败| A\n  C --> D[构建网站]\n  D --> E[浏览器验收]\n  E --> F[发布]\n```\n\n同一篇文章里可以继续放更复杂的时序图：\n\n```mermaid\nsequenceDiagram\n  autonumber\n  participant W as Writer\n  participant M as Markdown\n  participant S as Site\n  participant R as Reader\n  W->>M: 保存 .md 与媒体\n  M->>S: 构建内容与目录\n  S-->>W: 返回预览\n  W->>S: 发布已验证版本\n  R->>S: 阅读文章\n  S-->>R: HTML + KaTeX + Mermaid\n```\n\n## 多语言代码高亮\n\n同一种内容结构，在不同语言里应该保留各自可辨识的关键字、类型、字符串、注释与数字层级。\n\n### TypeScript\n\n```typescript\ntype Post<TMeta extends Record<string, unknown>> = {\n  slug: string;\n  meta: TMeta;\n};\n\nasync function publish<TMeta extends Record<string, unknown>>(\n  post: Post<TMeta>,\n): Promise<string> {\n  const response = await fetch(`/api/posts/${post.slug}`, {\n    method: \"POST\",\n    body: JSON.stringify(post.meta),\n  });\n  return response.ok ? \"published\" : \"failed\";\n}\n```\n\n### Python\n\n```python\nfrom dataclasses import dataclass\nfrom pathlib import Path\n\n@dataclass(frozen=True)\nclass Article:\n    title: str\n    source: Path\n\ndef published_titles(articles: list[Article]) -> list[str]:\n    return [article.title for article in articles if article.source.exists()]\n```\n\n### Rust\n\n```rust\n#[derive(Debug)]\nstruct Entry<'a> {\n    title: &'a str,\n    pinned: bool,\n}\n\nfn pinned_titles(entries: &[Entry<'_>]) -> Vec<&str> {\n    entries.iter()\n        .filter(|entry| entry.pinned)\n        .map(|entry| entry.title)\n        .collect()\n}\n```\n\n### Go\n\n```go\nfunc renderAll(ctx context.Context, slugs []string) <-chan Result {\n\tresults := make(chan Result)\n\tgo func() {\n\t\tdefer close(results)\n\t\tfor _, slug := range slugs {\n\t\t\tresults <- render(ctx, slug)\n\t\t}\n\t}()\n\treturn results\n}\n```\n\n### SQL\n\n```sql\nWITH ranked_posts AS (\n  SELECT\n    title,\n    topic,\n    ROW_NUMBER() OVER (PARTITION BY topic ORDER BY published_at DESC) AS rank\n  FROM posts\n  WHERE status = 'published'\n)\nSELECT title, topic\nFROM ranked_posts\nWHERE rank <= 3;\n```\n\n### Swift\n\n```swift\nactor ReadingProgress {\n    private var offsets: [URL: Double] = [:]\n\n    func save(_ offset: Double, for article: URL) {\n        offsets[article] = max(0, offset)\n    }\n\n    func restore(for article: URL) -> Double {\n        offsets[article, default: 0]\n    }\n}\n```\n\n## Diff、图片与原生 HTML\n\n```diff\n- const publishing = \"copy and paste\";\n+ const publishing = \"content as source\";\n```\n\n![木桌上的笔记本与钢笔](https://images.unsplash.com/photo-1501525771695-688643efeea4?auto=format&fit=crop&w=1400&q=82)\n\n<details>\n  <summary>展开原生 HTML 内容</summary>\n  <p>Typora 文件中的 details / summary 会保留为可交互的折叠区域。</p>\n</details>\n\n---\n\n最后用一个脚注说明这篇文章的角色：它既是示例，也是未来升级 Markdown 依赖时的回归测试。[^regression]\n\n[^regression]: 页面构建测试会检查公式与示例内容，浏览器验收会检查 Mermaid 是否被转换为 SVG。"
   },
@@ -71,6 +79,7 @@ export const posts = [
     "cover": "https://images.unsplash.com/photo-1630234674857-527eb5534837?auto=format&fit=crop&w=1600&q=84",
     "coverAlt": "彩色几何建筑立面",
     "kind": "post",
+    "draft": false,
     "sourcePath": "posts/attention-is-an-interface.md",
     "content": "工具总是在争取更短的路径：少一次点击、少一个页面、少等一秒。但如果只把效率当作终点，我们很容易做出一种**没有摩擦，也没有方向**的界面。\n\n> 好的界面不只是让事情更快发生，也应该帮助人知道什么值得发生。\n\n## 界面在分配什么\n\n每一个高亮、通知和默认选项，都在替用户分配注意力。它们看上去只是视觉决策，实际上却在参与判断。\n\n| 界面动作 | 隐含的决定 |\n| --- | --- |\n| 默认展开 | 这件事更值得先看 |\n| 红色角标 | 这件事不能等 |\n| 无限滚动 | 这里没有自然的终点 |\n\n## 摩擦不是敌人\n\n有些摩擦应该被删掉，例如重复输入和无意义的确认；另一些摩擦则应该被保留，例如发布前的停顿、删除前的复核，以及阅读长文时清晰的段落边界。\n\n```ts\ntype Friction = {\n  cost: number;\n  protectsIntent: boolean;\n};\n\nconst shouldRemove = (friction: Friction) =>\n  friction.cost > 0 && !friction.protectsIntent;\n```\n\n## 把节奏设计进去\n\n我现在更愿意先问三个问题：\n\n1. 用户来到这里时，最需要看见什么？\n2. 哪些信息可以晚一点出现？\n3. 这个流程应该在哪里自然结束？\n\n这些问题没有让界面变得更复杂，反而让许多元素失去了存在的理由。\n\n## 最后的判断\n\n注意力不是取之不尽的资源。产品真正的克制，不是少用一种颜色，而是少向用户索取一次不必要的注意。\n\n脚注也应该像在 Typora 中一样自然工作。[^attention]\n\n[^attention]: 这也是本站选择安静排版、有限强调色和明确阅读边界的原因。"
   },
@@ -89,6 +98,7 @@ export const posts = [
     "cover": "https://images.unsplash.com/photo-1501525771695-688643efeea4?auto=format&fit=crop&w=1600&q=84",
     "coverAlt": "木桌上的笔记本与钢笔",
     "kind": "post",
+    "draft": false,
     "sourcePath": "posts/local-first-writing.md",
     "content": "我仍然在 Typora 里写下第一版。不是因为它有最多的功能，而是因为一个普通的 Markdown 文件让我知道：十年后，我仍然能打开这些文字。\n\n## 文件就是作品\n\n文章不应该只存在于某个编辑器的数据库里。标题、发布日期和主题放进 YAML front matter，正文保持标准 Markdown，图片则和文章一起归档。\n\n## 发布只是一次编译\n\n写作和发布可以分离。写作阶段只关心内容；网站读取文件，生成目录、搜索索引和 RSS。\n\n- [x] 在 Typora 中完成正文\n- [x] 提交 Markdown 与媒体资源\n- [ ] 发布后继续修正\n\n## 可迁移才有长期主义\n\n真正的长期主义不是选中一个“永远不会倒闭”的平台，而是让迁移成本始终足够低。"
   },
@@ -107,6 +117,7 @@ export const posts = [
     "cover": "https://images.unsplash.com/photo-1623276527153-fa38c1616b05?auto=format&fit=crop&w=1600&q=84",
     "coverAlt": "桌上的平板电脑、笔记本电脑与咖啡",
     "kind": "post",
+    "draft": false,
     "sourcePath": "posts/building-a-pdf-reader.md",
     "content": "“打开侧栏不能让正文跳一下”看起来是一条微小的要求，真正实现时却牵动了布局、缩放、滚动和状态恢复。\n\n## 页码不等于位置\n\n同一页里也有阅读进度。只记录页码，恢复后仍然可能让人失去上下文。\n\n## 变化前先保存锚点\n\n布局变化之前，保存视口中心所对应的文档坐标；布局完成以后，再把这个坐标映射回新的视口。\n\n## 两条交互路径\n\n侧栏开关是离散变化，分隔线拖拽是连续变化。它们应该共享“保持锚点”的原则，但不应该共享完全相同的更新频率。"
   },
@@ -125,6 +136,7 @@ export const posts = [
     "cover": "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1600&q=84",
     "coverAlt": "近距离拍摄的电子电路板",
     "kind": "post",
+    "draft": false,
     "sourcePath": "posts/understand-kv-cache.md",
     "content": "理解 KV Cache 最直观的方式，是先看自回归生成里那些被重复计算的部分。\n\n## Prefill 与 Decode\n\nPrefill 一次处理完整提示词，Decode 则每次只生成一个新 token。\n\n```mermaid\nflowchart LR\n  A[Prompt] --> B[Prefill]\n  B --> C[KV Cache]\n  C --> D[Decode one token]\n  D --> C\n```\n\n## 缓存的是什么\n\n过去 token 对应的 Key 和 Value 不会因为新 token 到来而变化，所以可以保存下来，只计算新位置的投影。\n\n## 空间换时间\n\n缓存减少计算，却增加显存占用。批量、序列长度与层数共同决定了这笔开销。\n\n$$\n\\text{KV memory} \\propto 2 \\times L \\times H \\times T\n$$"
   }
@@ -142,9 +154,12 @@ export const columns = [
     ],
     "column": "building-in-public",
     "columnTitle": "一个人造产品",
+    "columnDescription": "从最小闭环、可靠状态到带着证据发布：记录一个人把产品从想法变成日常工具的过程。",
+    "columnStatus": "连载中",
     "order": 1,
     "readingTime": "7 分钟",
     "kind": "column",
+    "draft": false,
     "sourcePath": "columns/building-in-public/01-smallest-loop.md",
     "content": "一个人的时间有限，所以“完整”必须被重新定义。对我来说，完整不是一次做完所有功能，而是先让最重要的一条路径首尾相接。\n\n## 什么是最小闭环\n\n它必须包含触发、完成和反馈。只有按钮不算闭环，只有数据结构也不算。\n\n## 把想法切成动作\n\n以一个文件浏览器为例，第一步不是标签、搜索或批量操作，而是：\n\n1. 创建文件夹；\n2. 创建 Markdown 文件；\n3. 刷新列表；\n4. 自动选中新项目。\n\n## 可观察的完成\n\n闭环需要能被人看见，也能被测试验证。每次完成之后，都应该留下足够明确的证据。\n\n## 下一步\n\n当闭环成立，再进入命名、删除和上下文菜单。功能扩展不再是猜测，而是沿着已经成立的路径自然生长。"
   },
@@ -162,6 +177,7 @@ export const columns = [
     "order": 2,
     "readingTime": "6 分钟",
     "kind": "column",
+    "draft": false,
     "sourcePath": "columns/building-in-public/02-stable-state.md",
     "content": "状态问题很少只是“少刷新了一次”。更常见的原因是多个地方都以为自己拥有最终事实。\n\n## 唯一事实来源\n\n先确定数据由谁拥有，再决定界面如何派生。临时交互状态可以留在视图，持久事实必须有明确边界。\n\n## 乐观更新\n\n乐观更新让操作显得即时，但失败时必须能够回滚，并且不能让选择状态丢失。\n\n## 可恢复\n\n真正可靠的状态不是永不失败，而是在失败以后仍然知道应该回到哪里。"
   },
@@ -180,6 +196,7 @@ export const columns = [
     "order": 3,
     "readingTime": "5 分钟",
     "kind": "column",
+    "draft": false,
     "sourcePath": "columns/building-in-public/03-ship-with-evidence.md",
     "content": "发布前最重要的工作不是再写一段漂亮总结，而是找到足以支持结论的证据。\n\n## 验证真实路径\n\n测试最小单元很重要，但用户真正经历的是一条完整路径。至少有一次验证应该从入口走到结果。\n\n## 不隐藏边界\n\n没有验证的部分要明确说出来。诚实的边界比虚假的完整更有价值。\n\n## 留下下一步\n\n一次发布应该让下一次开发更容易开始，而不是重新理解所有上下文。"
   }
@@ -227,6 +244,7 @@ export const thoughts = [
       }
     ],
     "kind": "thought",
+    "draft": false,
     "sourcePath": "thoughts/rainy-night.md",
     "content": "下过雨的路面会把城市复制一遍。上面那个版本负责赶路，下面那个版本只负责发光。\n\n这一条随想故意把三张照片、一段声音、一段视频和一个链接放在一起，用来确认日常记录不需要被单一媒体类型限制。"
   },
@@ -246,6 +264,7 @@ export const thoughts = [
       }
     ],
     "kind": "thought",
+    "draft": false,
     "sourcePath": "thoughts/field-recording.md",
     "content": "写代码时循环播放的一段声音。相比歌单，我最近更喜欢没有明确歌词的背景，它不会替思考决定方向。"
   },
@@ -265,6 +284,7 @@ export const thoughts = [
       }
     ],
     "kind": "thought",
+    "draft": false,
     "sourcePath": "thoughts/slow-motion.md",
     "content": "很多细节不是不存在，只是平常的速度太快了。"
   },
@@ -285,6 +305,7 @@ export const thoughts = [
       }
     ],
     "kind": "thought",
+    "draft": false,
     "sourcePath": "thoughts/links-are-paths.md",
     "content": "想把最近读到的好东西放回来。收藏夹很容易变成仓库，链接出现在上下文里，才重新变成一条路。"
   }

@@ -9,6 +9,8 @@ tags:
   - 工程
 column: building-in-public
 columnTitle: 一个人造产品
+columnDescription: 从最小闭环、可靠状态到带着证据发布：记录一个人把产品从想法变成日常工具的过程。
+columnStatus: 连载中
 order: 1
 readingTime: 7 分钟
 ---

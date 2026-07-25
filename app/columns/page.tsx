@@ -8,7 +8,19 @@ export const metadata = {
 };
 
 export default function ColumnsPage() {
-  const first = columns[0];
+  const grouped = Array.from(
+    columns.reduce((result, entry) => {
+      const existing = result.get(entry.column ?? "");
+      if (existing) existing.push(entry);
+      else result.set(entry.column ?? "", [entry]);
+      return result;
+    }, new Map<string, typeof columns>()),
+  ).map(([slug, entries]) => ({
+    slug,
+    entries,
+    first: entries[0],
+  }));
+
   return (
     <main className="page-shell index-page">
       <header className="page-intro">
@@ -19,27 +31,37 @@ export default function ColumnsPage() {
         </p>
       </header>
 
-      <Link
-        href={`/columns/${first.column}/${first.slug}`}
-        className="column-feature"
-      >
-        <div className="column-feature-copy">
-          <span>连载中 · {columns.length} 篇 · 独立开发</span>
-          <h2>{first.columnTitle}</h2>
-          <p>
-            从最小闭环、可靠状态到带着证据发布：记录一个人把产品从想法变成日常工具的过程。
-          </p>
-          <strong>
-            从第一篇开始
-            <ArrowRight size={17} />
-          </strong>
-        </div>
-        <div className="column-feature-index">
-          <span>主题专栏</span>
-          <strong>01</strong>
-          <small>BUILDING IN PUBLIC</small>
-        </div>
-      </Link>
+      <div className="column-feature-list">
+        {grouped.map(({ slug, entries, first }, index) => (
+          <Link
+            href={`/columns/${slug}/${first.slug}`}
+            className="column-feature"
+            key={slug}
+          >
+            <div className="column-feature-copy">
+              <span>
+                {first.columnStatus ?? "持续更新"} · {entries.length} 篇 ·{" "}
+                {first.topic ?? "主题写作"}
+              </span>
+              <h2>{first.columnTitle}</h2>
+              <p>
+                {first.columnDescription ??
+                  first.description ??
+                  "沿着一条清晰的阅读路径，把一个主题持续写深。"}
+              </p>
+              <strong>
+                从第一篇开始
+                <ArrowRight size={17} />
+              </strong>
+            </div>
+            <div className="column-feature-index">
+              <span>主题专栏</span>
+              <strong>{String(index + 1).padStart(2, "0")}</strong>
+              <small>{slug.replaceAll("-", " ").toUpperCase()}</small>
+            </div>
+          </Link>
+        ))}
+      </div>
     </main>
   );
 }

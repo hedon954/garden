@@ -42,14 +42,41 @@ function groupMedia(items: MediaItem[]) {
   }, []);
 }
 
-export function ThoughtCard({ thought }: { thought: ContentEntry }) {
+function videoMime(src: string, explicit?: string) {
+  if (explicit) return explicit;
+  const extension = new URL(src, "https://local.invalid").pathname
+    .split(".")
+    .at(-1)
+    ?.toLowerCase();
+  if (extension === "webm") return "video/webm";
+  if (extension === "ogg" || extension === "ogv") return "video/ogg";
+  return "video/mp4";
+}
+
+export function ThoughtCard({
+  thought,
+  showPermalink = true,
+}: {
+  thought: ContentEntry;
+  showPermalink?: boolean;
+}) {
   const media = Array.isArray(thought.media) ? thought.media : [];
   const isMixed = media.length > 1;
   const Icon = isMixed ? SquaresFour : icons[thought.mediaType ?? "text"];
   const mediaGroups = groupMedia(media);
 
   return (
-    <article id={thought.slug} className="thought-card">
+    <article id={thought.slug} className="thought-card h-entry">
+      <Link className="u-url sr-only" href={`/thoughts/${thought.slug}`}>
+        {thought.title} 永久链接
+      </Link>
+      <a
+        className="p-author h-card sr-only"
+        href="https://github.com/hedon954"
+        rel="author"
+      >
+        Hedon
+      </a>
       <header>
         <span className="thought-kind">
           <Icon size={16} />
@@ -65,11 +92,15 @@ export function ThoughtCard({ thought }: { thought: ContentEntry }) {
                   ? "一个链接"
                   : "随想"}
         </span>
-        <time>{formatDate(thought.date, true)}</time>
+        <time className="dt-published" dateTime={thought.date}>
+          {formatDate(thought.date, true)}
+        </time>
       </header>
 
-      <h2>{thought.title}</h2>
-      <MarkdownArticle content={thought.content} />
+      <h2 className="p-name">{thought.title}</h2>
+      <div className="e-content">
+        <MarkdownArticle content={thought.content} />
+      </div>
 
       {mediaGroups.length > 0 && (
         <div className="thought-media-stack">
@@ -85,7 +116,7 @@ export function ThoughtCard({ thought }: { thought: ContentEntry }) {
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
                       key={`${item.src}-${index}`}
-                      className="thought-image"
+                      className="thought-image u-photo"
                       src={item.src}
                       alt={item.alt ?? `${thought.title} · 照片 ${index + 1}`}
                       loading="lazy"
@@ -100,7 +131,12 @@ export function ThoughtCard({ thought }: { thought: ContentEntry }) {
                   <MusicNotes size={28} />
                   <div>
                     <strong>{group.item.title ?? `当前播放 · ${thought.title}`}</strong>
-                    <audio controls preload="none" src={group.item.src}>
+                    <audio
+                      className="u-audio"
+                      controls
+                      preload="none"
+                      src={group.item.src}
+                    >
                       你的浏览器不支持音频播放。
                     </audio>
                   </div>
@@ -110,19 +146,22 @@ export function ThoughtCard({ thought }: { thought: ContentEntry }) {
             if (group.type === "video") {
               return (
                 <video
-                  className="thought-video"
+                  className="thought-video u-video"
                   controls
                   preload="metadata"
                   poster={group.item.poster}
                   key={`${group.item.src}-${groupIndex}`}
                 >
-                  <source src={group.item.src} type="video/mp4" />
+                  <source
+                    src={group.item.src}
+                    type={videoMime(group.item.src, group.item.mime)}
+                  />
                 </video>
               );
             }
             return (
               <Link
-                className="link-embed"
+                className="link-embed u-bookmark-of"
                 href={group.item.src}
                 target="_blank"
                 rel="noopener noreferrer"
@@ -143,7 +182,7 @@ export function ThoughtCard({ thought }: { thought: ContentEntry }) {
       {!Array.isArray(thought.media) && thought.mediaType === "image" && thought.media && (
         // eslint-disable-next-line @next/next/no-img-element
         <img
-          className="thought-image"
+          className="thought-image u-photo"
           src={thought.media}
           alt={thought.mediaAlt ?? thought.title}
           loading="lazy"
@@ -154,7 +193,12 @@ export function ThoughtCard({ thought }: { thought: ContentEntry }) {
           <MusicNotes size={28} />
           <div>
             <strong>当前播放 · {thought.title}</strong>
-            <audio controls preload="none" src={thought.media}>
+            <audio
+              className="u-audio"
+              controls
+              preload="none"
+              src={thought.media}
+            >
               你的浏览器不支持音频播放。
             </audio>
           </div>
@@ -162,17 +206,17 @@ export function ThoughtCard({ thought }: { thought: ContentEntry }) {
       )}
       {!Array.isArray(thought.media) && thought.mediaType === "video" && thought.media && (
         <video
-          className="thought-video"
+          className="thought-video u-video"
           controls
           preload="metadata"
           poster={thought.poster}
         >
-          <source src={thought.media} type="video/mp4" />
+          <source src={thought.media} type={videoMime(thought.media)} />
         </video>
       )}
       {!Array.isArray(thought.media) && thought.mediaType === "link" && thought.media && (
         <Link
-          className="link-embed"
+          className="link-embed u-bookmark-of"
           href={thought.media}
           target="_blank"
           rel="noopener noreferrer"
@@ -183,6 +227,13 @@ export function ThoughtCard({ thought }: { thought: ContentEntry }) {
             <p>{thought.linkDescription}</p>
           </span>
           <ArrowUpRight size={22} />
+        </Link>
+      )}
+
+      {showPermalink && (
+        <Link className="thought-permalink" href={`/thoughts/${thought.slug}`}>
+          永久链接
+          <ArrowUpRight size={15} />
         </Link>
       )}
     </article>

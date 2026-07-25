@@ -1,7 +1,5 @@
-"use client";
-
-import { useEffect, useState } from "react";
-import { ArrowUpRight, GithubLogo } from "@phosphor-icons/react";
+import { ArrowUpRight, GithubLogo } from "@phosphor-icons/react/ssr";
+import { githubUsername } from "../lib/site";
 
 type GithubUser = {
   avatar_url: string;
@@ -15,34 +13,42 @@ type GithubUser = {
 };
 
 const fallback: GithubUser = {
-  avatar_url: "https://github.com/hedon954.png",
+  avatar_url: `https://github.com/${githubUsername}.png`,
   name: "Hedon",
-  login: "hedon954",
+  login: githubUsername,
   bio: "Building thoughtful software and writing down what I learn.",
   public_repos: 0,
   followers: 0,
-  html_url: "https://github.com/hedon954",
+  html_url: `https://github.com/${githubUsername}`,
   location: null,
 };
 
-export function GithubProfile() {
-  const [profile, setProfile] = useState<GithubUser>(fallback);
-  const [live, setLive] = useState(false);
+async function loadGithubProfile() {
+  try {
+    const token = process.env.GITHUB_TOKEN;
+    const response = await fetch(
+      `https://api.github.com/users/${githubUsername}`,
+      {
+        headers: {
+          Accept: "application/vnd.github+json",
+          "User-Agent": "Hedon-Log",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        next: { revalidate: 3600 },
+      },
+    );
+    if (!response.ok) return { profile: fallback, live: false };
+    return {
+      profile: (await response.json()) as GithubUser,
+      live: true,
+    };
+  } catch {
+    return { profile: fallback, live: false };
+  }
+}
 
-  useEffect(() => {
-    fetch("https://api.github.com/users/hedon954", {
-      headers: { Accept: "application/vnd.github+json" },
-    })
-      .then((response) => {
-        if (!response.ok) throw new Error("GitHub profile unavailable");
-        return response.json() as Promise<GithubUser>;
-      })
-      .then((data) => {
-        setProfile(data);
-        setLive(true);
-      })
-      .catch(() => setLive(false));
-  }, []);
+export async function GithubProfile() {
+  const { profile, live } = await loadGithubProfile();
 
   return (
     <section className="github-card" aria-label="GitHub 资料">
@@ -51,7 +57,7 @@ export function GithubProfile() {
       <div className="github-copy">
         <span className="eyebrow">
           <GithubLogo size={17} />
-          GitHub {live ? "实时资料" : "资料"}
+          GitHub {live ? "缓存资料" : "资料"}
         </span>
         <h2>{profile.name ?? profile.login}</h2>
         <p>{profile.bio ?? fallback.bio}</p>

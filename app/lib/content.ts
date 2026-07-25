@@ -70,7 +70,7 @@ export const searchRecords = [
     title: item.title,
     description: toSearchableText(item.content),
     topic: "随想",
-    path: `/thoughts#${item.slug}`,
+    path: `/thoughts/${item.slug}`,
     content: toSearchableText(item.content),
   })),
 ];
@@ -81,6 +81,9 @@ export const topics = Array.from(
 
 export const findPost = (slug: string): ContentEntry | undefined =>
   posts.find((post) => post.slug === slug);
+
+export const findThought = (slug: string): ContentEntry | undefined =>
+  thoughts.find((thought) => thought.slug === slug);
 
 export const findColumnEntry = (
   column: string,

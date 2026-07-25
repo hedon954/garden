@@ -44,6 +44,12 @@ export default defineConfig(async () => {
   const { cloudflare } = await import("@cloudflare/vite-plugin");
 
   return {
+    build: {
+      // Mermaid remains a route-level dynamic import. Its intentionally lazy
+      // diagram engine is larger than the default warning threshold, but it is
+      // never part of the site's initial navigation bundle.
+      chunkSizeWarningLimit: 700,
+    },
     server: isCodexSeatbeltSandbox
       ? { watch: { useFsEvents: false, usePolling: true } }
       : undefined,

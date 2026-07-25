@@ -1,3 +1,5 @@
+import Link from "next/link";
+import { ArrowLeft, ArrowRight } from "@phosphor-icons/react/ssr";
 import { thoughts } from "../lib/content";
 import { ThoughtCard } from "../components/ThoughtCard";
 
@@ -6,7 +8,25 @@ export const metadata = {
   description: "短文字、照片、声音、影像和偶然读到的链接。",
 };
 
-export default function ThoughtsPage() {
+const pageSize = 10;
+
+export default async function ThoughtsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string }>;
+}) {
+  const requested = await searchParams;
+  const pageCount = Math.max(1, Math.ceil(thoughts.length / pageSize));
+  const parsedPage = Number.parseInt(requested.page ?? "1", 10);
+  const currentPage = Math.min(
+    pageCount,
+    Math.max(1, Number.isFinite(parsedPage) ? parsedPage : 1),
+  );
+  const visibleThoughts = thoughts.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize,
+  );
+
   return (
     <main className="page-shell thoughts-page">
       <header className="page-intro">
@@ -17,10 +37,33 @@ export default function ThoughtsPage() {
         </p>
       </header>
       <div className="thought-stream">
-        {thoughts.map((thought) => (
+        {visibleThoughts.map((thought) => (
           <ThoughtCard key={thought.slug} thought={thought} />
         ))}
       </div>
+      {pageCount > 1 && (
+        <nav className="archive-pagination" aria-label="随想分页">
+          {currentPage > 1 ? (
+            <Link href={currentPage === 2 ? "/thoughts" : `/thoughts?page=${currentPage - 1}`}>
+              <ArrowLeft size={16} />
+              上一页
+            </Link>
+          ) : (
+            <span />
+          )}
+          <span>
+            {currentPage} / {pageCount}
+          </span>
+          {currentPage < pageCount ? (
+            <Link href={`/thoughts?page=${currentPage + 1}`}>
+              下一页
+              <ArrowRight size={16} />
+            </Link>
+          ) : (
+            <span />
+          )}
+        </nav>
+      )}
     </main>
   );
 }

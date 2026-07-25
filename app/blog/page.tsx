@@ -1,5 +1,9 @@
 import Link from "next/link";
-import { ArrowRight, PushPin } from "@phosphor-icons/react/ssr";
+import {
+  ArrowLeft,
+  ArrowRight,
+  PushPin,
+} from "@phosphor-icons/react/ssr";
 import { formatDate, posts, topics } from "../lib/content";
 
 export const metadata = {
@@ -7,7 +11,39 @@ export const metadata = {
   description: "按时间与主题浏览全部长文。",
 };
 
-export default function BlogIndex() {
+const pageSize = 8;
+
+const archiveHref = (topic?: string, page?: number) => {
+  const params = new URLSearchParams();
+  if (topic) params.set("topic", topic);
+  if (page && page > 1) params.set("page", String(page));
+  const query = params.toString();
+  return query ? `/blog?${query}` : "/blog";
+};
+
+export default async function BlogIndex({
+  searchParams,
+}: {
+  searchParams: Promise<{ topic?: string; page?: string }>;
+}) {
+  const requested = await searchParams;
+  const selectedTopic = topics.includes(requested.topic ?? "")
+    ? requested.topic
+    : undefined;
+  const filteredPosts = selectedTopic
+    ? posts.filter((post) => post.topic === selectedTopic)
+    : posts;
+  const pageCount = Math.max(1, Math.ceil(filteredPosts.length / pageSize));
+  const parsedPage = Number.parseInt(requested.page ?? "1", 10);
+  const currentPage = Math.min(
+    pageCount,
+    Math.max(1, Number.isFinite(parsedPage) ? parsedPage : 1),
+  );
+  const visiblePosts = filteredPosts.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize,
+  );
+
   return (
     <main className="page-shell index-page">
       <header className="page-intro">
@@ -19,14 +55,27 @@ export default function BlogIndex() {
       </header>
 
       <div className="topic-strip" aria-label="文章主题">
-        <span>全部 · {posts.length}</span>
+        <Link
+          href="/blog"
+          className={!selectedTopic ? "active" : ""}
+          aria-current={!selectedTopic ? "page" : undefined}
+        >
+          全部 · {posts.length}
+        </Link>
         {topics.map((topic) => (
-          <span key={topic}>{topic}</span>
+          <Link
+            href={archiveHref(topic)}
+            className={selectedTopic === topic ? "active" : ""}
+            aria-current={selectedTopic === topic ? "page" : undefined}
+            key={topic}
+          >
+            {topic} · {posts.filter((post) => post.topic === topic).length}
+          </Link>
         ))}
       </div>
 
       <section className="archive-list" aria-label="全部博文">
-        {posts.map((post) => (
+        {visiblePosts.map((post) => (
           <Link
             key={post.slug}
             href={`/blog/${post.slug}`}
@@ -61,6 +110,30 @@ export default function BlogIndex() {
           </Link>
         ))}
       </section>
+
+      {pageCount > 1 && (
+        <nav className="archive-pagination" aria-label="博文分页">
+          {currentPage > 1 ? (
+            <Link href={archiveHref(selectedTopic, currentPage - 1)}>
+              <ArrowLeft size={16} />
+              上一页
+            </Link>
+          ) : (
+            <span />
+          )}
+          <span>
+            {currentPage} / {pageCount}
+          </span>
+          {currentPage < pageCount ? (
+            <Link href={archiveHref(selectedTopic, currentPage + 1)}>
+              下一页
+              <ArrowRight size={16} />
+            </Link>
+          ) : (
+            <span />
+          )}
+        </nav>
+      )}
     </main>
   );
 }

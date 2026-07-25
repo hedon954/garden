@@ -1,4 +1,5 @@
-import { columns, posts } from "../lib/content";
+import { marked } from "marked";
+import { columns, posts, thoughts } from "../lib/content";
 
 const escapeXml = (value: string) =>
   value
@@ -8,6 +9,8 @@ const escapeXml = (value: string) =>
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&apos;");
 
+const cdata = (value: string) => value.replaceAll("]]>", "]]]]><![CDATA[>");
+
 export async function GET(request: Request) {
   const origin = new URL(request.url).origin;
   const entries = [
@@ -16,26 +19,48 @@ export async function GET(request: Request) {
       ...entry,
       path: `/columns/${entry.column}/${entry.slug}`,
     })),
+    ...thoughts.map((thought) => ({
+      ...thought,
+      description: thought.content.replace(/\s+/gu, " ").slice(0, 180),
+      path: `/thoughts/${thought.slug}`,
+    })),
   ].sort((a, b) => Date.parse(b.date) - Date.parse(a.date));
 
   const items = entries
-    .map(
-      (entry) => `
+    .map((entry) => {
+      const body = marked.parse(entry.content, {
+        async: false,
+        gfm: true,
+        breaks: true,
+      });
+      const cover = entry.cover
+        ? `<p><img src="${escapeXml(entry.cover)}" alt="${escapeXml(
+            entry.coverAlt ?? entry.title,
+          )}" /></p>`
+        : "";
+      return `
     <item>
       <title>${escapeXml(entry.title)}</title>
       <link>${origin}${entry.path}</link>
       <guid isPermaLink="true">${origin}${entry.path}</guid>
       <pubDate>${new Date(entry.date).toUTCString()}</pubDate>
       <description>${escapeXml(entry.description ?? "")}</description>
-    </item>`,
-    )
+      ${(entry.tags ?? [])
+        .map((tag) => `<category>${escapeXml(tag)}</category>`)
+        .join("")}
+      <content:encoded><![CDATA[${cdata(`${cover}${body}`)}]]></content:encoded>
+    </item>`;
+    })
     .join("");
 
   const xml = `<?xml version="1.0" encoding="UTF-8" ?>
-<rss version="2.0">
+<rss version="2.0"
+  xmlns:atom="http://www.w3.org/2005/Atom"
+  xmlns:content="http://purl.org/rss/1.0/modules/content/">
   <channel>
     <title>Hedon Log</title>
     <link>${origin}</link>
+    <atom:link href="${origin}/rss.xml" rel="self" type="application/rss+xml" />
     <description>写作、构建与保持好奇。</description>
     <language>zh-CN</language>
     <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>

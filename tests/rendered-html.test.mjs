@@ -70,6 +70,9 @@ test("publishes a valid RSS feed", async () => {
   assert.match(xml, /^<\?xml version="1\.0"/);
   assert.match(xml, /<title>Hedon Log<\/title>/);
   assert.match(xml, /<title>注意力也是一种界面<\/title>/);
+  assert.match(xml, /<title>雨后的城市<\/title>/);
+  assert.match(xml, /<content:encoded><!\[CDATA\[/);
+  assert.match(xml, /xmlns:content="http:\/\/purl\.org\/rss\/1\.0\/modules\/content\/"/);
 });
 
 test("renders complex Markdown, article covers, and mixed thought media", async () => {
@@ -109,11 +112,49 @@ test("renders complex Markdown, article covers, and mixed thought media", async 
   assert.match(thoughts, /thought-gallery-3/);
   assert.match(thoughts, /<audio/);
   assert.match(thoughts, /<video/);
-  assert.match(thoughts, /class="link-embed"/);
+  assert.match(thoughts, /class="link-embed u-bookmark-of"/);
+  assert.match(thoughts, /href="\/thoughts\/rainy-night"/);
 
   assert.equal(archiveResponse.status, 200);
   const archive = await archiveResponse.text();
   assert.match(archive, /class="archive-cover"/);
   assert.match(archive, /class="archive-copy"/);
   assert.match(archive, /class="archive-meta"/);
+  assert.match(archive, /href="\/blog\?topic=/);
+});
+
+test("publishes discovery routes, permanent thought pages, and real integration adapters", async () => {
+  const [sitemapResponse, robotsResponse, thoughtResponse] = await Promise.all([
+    render("/sitemap.xml"),
+    render("/robots.txt"),
+    render("/thoughts/rainy-night"),
+  ]);
+
+  assert.equal(sitemapResponse.status, 200);
+  const sitemap = await sitemapResponse.text();
+  assert.match(sitemap, /\/blog\/markdown-lab/);
+  assert.match(sitemap, /\/thoughts\/rainy-night/);
+  assert.match(sitemap, /\/columns\/building-in-public\/smallest-closed-loop/);
+
+  assert.equal(robotsResponse.status, 200);
+  const robots = await robotsResponse.text();
+  assert.match(robots, /Sitemap: .*\/sitemap\.xml/);
+
+  assert.equal(thoughtResponse.status, 200);
+  const thought = await thoughtResponse.text();
+  assert.match(thought, /class="thought-card h-entry"/);
+  assert.match(thought, /rel="canonical"/);
+
+  const [comments, webmentions, search, columns] = await Promise.all([
+    readFile(new URL("../app/components/Comments.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/components/Webmentions.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/components/SiteHeader.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/columns/page.tsx", import.meta.url), "utf8"),
+  ]);
+  assert.match(comments, /https:\/\/giscus\.app\/client\.js/);
+  assert.doesNotMatch(comments, /localStorage/);
+  assert.match(webmentions, /mentions\.jf2|endpoint/);
+  assert.match(search, /ArrowDown/);
+  assert.match(search, /previousFocusRef/);
+  assert.doesNotMatch(columns, /columns\[0\]/);
 });

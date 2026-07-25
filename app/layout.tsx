@@ -1,10 +1,14 @@
 import type { Metadata } from "next";
 import { Geist_Mono } from "next/font/google";
-import { headers } from "next/headers";
 import "katex/dist/katex.min.css";
 import "./globals.css";
 import { SiteHeader } from "./components/SiteHeader";
 import { SiteFooter } from "./components/SiteFooter";
+import {
+  getSiteUrl,
+  siteDescription,
+  webmentionEndpoint,
+} from "./lib/site";
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
@@ -12,22 +16,15 @@ const geistMono = Geist_Mono({
 });
 
 export async function generateMetadata(): Promise<Metadata> {
-  const requestHeaders = await headers();
-  const host =
-    requestHeaders.get("x-forwarded-host") ??
-    requestHeaders.get("host") ??
-    "localhost:3000";
-  const protocol =
-    requestHeaders.get("x-forwarded-proto") ??
-    (host.startsWith("localhost") ? "http" : "https");
+  const siteUrl = await getSiteUrl();
 
   return {
-    metadataBase: new URL(`${protocol}://${host}`),
+    metadataBase: new URL(siteUrl),
     title: {
       default: "Hedon Log",
       template: "%s · Hedon Log",
     },
-    description: "关于产品、工程、AI 学习与独立写作的长期个人博客。",
+    description: siteDescription,
     authors: [{ name: "Hedon", url: "https://github.com/hedon954" }],
     alternates: {
       types: {
@@ -36,6 +33,17 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     icons: {
       icon: "/favicon.svg",
+    },
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        "max-image-preview": "large",
+        "max-snippet": -1,
+        "max-video-preview": -1,
+      },
     },
     openGraph: {
       title: "Hedon Log",
@@ -65,8 +73,24 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const mentionEndpoint = webmentionEndpoint();
+  const analyticsDomain = process.env.NEXT_PUBLIC_ANALYTICS_DOMAIN;
+  const analyticsScript =
+    process.env.NEXT_PUBLIC_ANALYTICS_SCRIPT ??
+    "https://plausible.io/js/script.js";
+
   return (
     <html lang="zh-CN" suppressHydrationWarning>
+      <head>
+        {mentionEndpoint && <link rel="webmention" href={mentionEndpoint} />}
+        {analyticsDomain && (
+          <script
+            defer
+            data-domain={analyticsDomain}
+            src={analyticsScript}
+          />
+        )}
+      </head>
       <body className={geistMono.variable}>
         <a className="skip-link" href="#main-content">
           跳到正文

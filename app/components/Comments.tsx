@@ -1,90 +1,94 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
-import { ChatCircle, PaperPlane } from "@phosphor-icons/react";
+import { useEffect, useRef } from "react";
+import { ChatCircle, GithubLogo } from "@phosphor-icons/react";
 
-type Comment = {
-  id: string;
-  name: string;
-  body: string;
-  createdAt: string;
+const config = {
+  repo: process.env.NEXT_PUBLIC_GISCUS_REPO,
+  repoId: process.env.NEXT_PUBLIC_GISCUS_REPO_ID,
+  category: process.env.NEXT_PUBLIC_GISCUS_CATEGORY,
+  categoryId: process.env.NEXT_PUBLIC_GISCUS_CATEGORY_ID,
 };
 
+const configured = Object.values(config).every(Boolean);
+
+function currentGiscusTheme() {
+  return document.documentElement.dataset.theme === "dark" ? "dark" : "light";
+}
+
 export function Comments({ slug }: { slug: string }) {
-  const storageKey = `hedon-comments:${slug}`;
-  const [comments, setComments] = useState<Comment[]>([]);
-  const [name, setName] = useState("");
-  const [body, setBody] = useState("");
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const saved = window.localStorage.getItem(storageKey);
-    if (saved) setComments(JSON.parse(saved) as Comment[]);
-  }, [storageKey]);
+    if (!configured || !containerRef.current) return;
+    const container = containerRef.current;
+    container.replaceChildren();
 
-  const submit = (event: FormEvent) => {
-    event.preventDefault();
-    if (!name.trim() || !body.trim()) return;
-    const next = [
-      ...comments,
-      {
-        id: crypto.randomUUID(),
-        name: name.trim(),
-        body: body.trim(),
-        createdAt: new Date().toISOString(),
-      },
-    ];
-    setComments(next);
-    window.localStorage.setItem(storageKey, JSON.stringify(next));
-    setBody("");
-  };
+    const script = document.createElement("script");
+    script.src = "https://giscus.app/client.js";
+    script.async = true;
+    script.crossOrigin = "anonymous";
+    script.dataset.repo = config.repo!;
+    script.dataset.repoId = config.repoId!;
+    script.dataset.category = config.category!;
+    script.dataset.categoryId = config.categoryId!;
+    script.dataset.mapping = "pathname";
+    script.dataset.strict = "1";
+    script.dataset.reactionsEnabled = "1";
+    script.dataset.emitMetadata = "0";
+    script.dataset.inputPosition = "bottom";
+    script.dataset.theme = currentGiscusTheme();
+    script.dataset.lang = "zh-CN";
+    script.dataset.loading = "lazy";
+    container.append(script);
+
+    const observer = new MutationObserver(() => {
+      const frame = container.querySelector<HTMLIFrameElement>(".giscus-frame");
+      frame?.contentWindow?.postMessage(
+        {
+          giscus: {
+            setConfig: { theme: currentGiscusTheme() },
+          },
+        },
+        "https://giscus.app",
+      );
+    });
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["data-theme"],
+    });
+
+    return () => {
+      observer.disconnect();
+      container.replaceChildren();
+    };
+  }, [slug]);
 
   return (
-    <section className="comments" aria-labelledby="comments-heading">
+    <section className="comments" aria-labelledby={`comments-heading-${slug}`}>
       <div className="comments-heading">
         <ChatCircle size={23} />
         <div>
-          <h2 id="comments-heading">评论</h2>
-          <p>当前预览的留言保存在本机；接入 Giscus 后可同步到 GitHub Discussions。</p>
+          <h2 id={`comments-heading-${slug}`}>评论</h2>
+          <p>
+            {configured
+              ? "评论由 GitHub Discussions 保存和管理。"
+              : "评论接入已准备好，补充 GitHub Discussions 配置后即可开放。"}
+          </p>
         </div>
       </div>
-      {comments.length > 0 && (
-        <div className="comment-list">
-          {comments.map((comment) => (
-            <article key={comment.id}>
-              <div>
-                <strong>{comment.name}</strong>
-                <time>{new Date(comment.createdAt).toLocaleDateString("zh-CN")}</time>
-              </div>
-              <p>{comment.body}</p>
-            </article>
-          ))}
+
+      {configured ? (
+        <div className="giscus-container" ref={containerRef} />
+      ) : (
+        <div className="integration-notice">
+          <GithubLogo size={20} weight="fill" />
+          <p>
+            需要一个公开 GitHub 仓库，并为它启用 Discussions、安装 Giscus
+            App、选择评论分类。
+          </p>
         </div>
       )}
-      <form onSubmit={submit} className="comment-form">
-        <label>
-          称呼
-          <input
-            value={name}
-            onChange={(event) => setName(event.target.value)}
-            placeholder="怎么称呼你"
-            maxLength={40}
-          />
-        </label>
-        <label>
-          留言
-          <textarea
-            value={body}
-            onChange={(event) => setBody(event.target.value)}
-            placeholder="写下你的想法…"
-            rows={4}
-            maxLength={800}
-          />
-        </label>
-        <button type="submit" disabled={!name.trim() || !body.trim()}>
-          <PaperPlane size={17} />
-          发布评论
-        </button>
-      </form>
     </section>
   );
 }
