@@ -83,7 +83,7 @@ function MermaidDiagram({ source }: { source: string }) {
             aria-controls={panelId}
             onClick={() => setView("render")}
           >
-            渲染
+            图表
           </button>
           <button
             type="button"

@@ -124,7 +124,7 @@ No actionable P0, P1, or P2 mismatch remains for the requested "similar style" t
 - Component captures use a 1200 × 900 CSS viewport at device scale factor 1 in the light theme. The focused state places the Mermaid section at the top of the viewport with the article TOC visible.
 - The page-structure reference confirms that cover, title/body column, and right TOC remain separate hierarchy regions. This revision changes only the Mermaid component and introduces no page-level layout drift.
 - The old four-theme picker is absent. Both diagrams are fixed to Mermaid's neutral theme and default to the rendered SVG view.
-- Each diagram now exposes only two compact tabs, “渲染” and “Code”. Switching the first diagram to Code reveals its exact fenced-source text while the second diagram remains rendered, confirming independent state.
+- Each diagram now exposes only two compact tabs, “图表” and “Code”. Switching the first diagram to Code reveals its exact fenced-source text while the second diagram remains rendered, confirming independent state.
 - Typography, spacing, borders, and active states reuse the existing code-block and editorial tokens. The Code panel preserves the same component footprint and scrolls internally when its source is wider than the viewport.
 - At 390 × 844, the component is 362 px wide, the two-tab switcher is 77 px wide, the page has no horizontal overflow, and Code remains independently scrollable.
 - Browser checks confirmed two neutral-theme diagrams, two independent switchers, zero theme pickers, successful render-to-code-to-render transitions, and no console errors.
