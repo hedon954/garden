@@ -17,6 +17,8 @@ concurrency:
 
 jobs:
   deploy:
+    # 项目子路径会破坏静态文章路由。只有根路径仓库或已配置自定义域名时才部署。
+    if: github.event.repository.name == format('{0}.github.io', github.repository_owner) || vars.SITE_URL != ''
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
