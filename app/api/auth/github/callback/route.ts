@@ -48,10 +48,20 @@ export async function GET(request: Request) {
   const url = new URL(request.url);
   const code = url.searchParams.get("code");
   const state = url.searchParams.get("state");
-  if (!isGitHubOAuthConfigured() || !code || !state || state !== cookieValue(request, STATE_COOKIE)) {
+  if (!isGitHubOAuthConfigured()) {
+    console.error("GitHub OAuth callback failed", { stage: "configuration" });
+    return redirectToAdmin(request, "failed");
+  }
+  if (!code || !state) {
+    console.error("GitHub OAuth callback failed", { stage: "parameters" });
+    return redirectToAdmin(request, "failed");
+  }
+  if (state !== cookieValue(request, STATE_COOKIE)) {
+    console.error("GitHub OAuth callback failed", { stage: "state" });
     return redirectToAdmin(request, "failed");
   }
 
+  let stage = "token";
   try {
     // GitHub's OAuth endpoint formally accepts an URL-encoded POST body.
     // Keep provider failures inside this boundary so a rejected/expired code
@@ -71,8 +81,12 @@ export async function GET(request: Request) {
     const token = (await tokenResponse.json().catch(() => null)) as {
       access_token?: string;
     } | null;
-    if (!tokenResponse.ok || !token?.access_token) return redirectToAdmin(request, "failed");
+    if (!tokenResponse.ok || !token?.access_token) {
+      console.error("GitHub OAuth callback failed", { stage });
+      return redirectToAdmin(request, "failed");
+    }
 
+    stage = "profile";
     const profileResponse = await fetch("https://api.github.com/user", {
       headers: {
         Accept: "application/vnd.github+json",
@@ -84,16 +98,23 @@ export async function GET(request: Request) {
       login?: string;
       avatar_url?: string;
     } | null;
-    if (!profileResponse.ok || !profile?.login) return redirectToAdmin(request, "failed");
+    if (!profileResponse.ok || !profile?.login) {
+      console.error("GitHub OAuth callback failed", { stage });
+      return redirectToAdmin(request, "failed");
+    }
 
     const login = profile.login.trim();
     if (!isGitHubLoginAllowed(login)) return deniedRedirect(request, login);
 
+    stage = "session";
     const session = await createAdminSession({
       login,
       avatarUrl: profile.avatar_url ?? `https://github.com/${encodeURIComponent(login)}.png?size=96`,
     });
-    if (!session) return redirectToAdmin(request, "failed");
+    if (!session) {
+      console.error("GitHub OAuth callback failed", { stage });
+      return redirectToAdmin(request, "failed");
+    }
     const headers = new Headers({ Location: new URL("/admin", request.url).toString() });
     headers.append("Set-Cookie", sessionCookie(session));
     headers.append(
@@ -104,7 +125,11 @@ export async function GET(request: Request) {
       status: 302,
       headers,
     });
-  } catch {
+  } catch (error) {
+    console.error("GitHub OAuth callback failed", {
+      stage,
+      message: error instanceof Error ? error.message : "unknown error",
+    });
     return redirectToAdmin(request, "failed");
   }
 }

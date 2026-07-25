@@ -1,4 +1,5 @@
 import { cookies } from "next/headers";
+import { createHmac, timingSafeEqual } from "node:crypto";
 
 const SESSION_COOKIE = "hedon_admin_session";
 const SESSION_LIFETIME_SECONDS = 60 * 60 * 24 * 7;
@@ -51,18 +52,19 @@ function fromBase64Url(value: string) {
   return Uint8Array.from(binary, (character) => character.charCodeAt(0));
 }
 
-async function sign(value: string) {
+function sign(value: string) {
   const secret = process.env.GITHUB_SESSION_SECRET;
   if (!secret) return null;
-  const key = await crypto.subtle.importKey(
-    "raw",
-    encoder.encode(secret),
-    { name: "HMAC", hash: "SHA-256" },
-    false,
-    ["sign"],
+  return toBase64Url(createHmac("sha256", secret).update(value).digest());
+}
+
+function signaturesMatch(actual: string, expected: string) {
+  const actualBytes = encoder.encode(actual);
+  const expectedBytes = encoder.encode(expected);
+  return (
+    actualBytes.byteLength === expectedBytes.byteLength &&
+    timingSafeEqual(actualBytes, expectedBytes)
   );
-  const signature = await crypto.subtle.sign("HMAC", key, encoder.encode(value));
-  return toBase64Url(new Uint8Array(signature));
 }
 
 export async function createAdminSession(user: GitHubAdminUser) {
@@ -71,7 +73,7 @@ export async function createAdminSession(user: GitHubAdminUser) {
     expiresAt: Date.now() + SESSION_LIFETIME_SECONDS * 1000,
   };
   const body = toBase64Url(JSON.stringify(payload));
-  const signature = await sign(body);
+  const signature = sign(body);
   return signature ? `${body}.${signature}` : null;
 }
 
@@ -79,8 +81,8 @@ async function readSession(value: string | undefined): Promise<GitHubAdminUser |
   if (!value) return null;
   const [body, signature, ...rest] = value.split(".");
   if (!body || !signature || rest.length) return null;
-  const expected = await sign(body);
-  if (!expected || expected !== signature) return null;
+  const expected = sign(body);
+  if (!expected || !signaturesMatch(signature, expected)) return null;
   try {
     const payload = JSON.parse(
       new TextDecoder().decode(fromBase64Url(body)),
