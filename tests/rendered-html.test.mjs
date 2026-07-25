@@ -145,14 +145,16 @@ test("publishes discovery routes, permanent thought pages, and real integration 
   assert.match(thought, /class="thought-card h-entry"/);
   assert.match(thought, /rel="canonical"/);
 
-  const [comments, webmentions, search, columns] = await Promise.all([
+  const [comments, giscus, webmentions, search, columns] = await Promise.all([
     readFile(new URL("../app/components/Comments.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/components/GiscusComments.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/components/Webmentions.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/components/SiteHeader.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/columns/page.tsx", import.meta.url), "utf8"),
   ]);
-  assert.match(comments, /https:\/\/giscus\.app\/client\.js/);
+  assert.match(giscus, /https:\/\/giscus\.app\/client\.js/);
   assert.doesNotMatch(comments, /localStorage/);
+  assert.doesNotMatch(giscus, /localStorage/);
   assert.match(webmentions, /mentions\.jf2|endpoint/);
   assert.match(search, /ArrowDown/);
   assert.match(search, /previousFocusRef/);

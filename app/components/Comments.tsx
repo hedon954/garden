@@ -1,68 +1,29 @@
-"use client";
+import { ChatCircle, GithubLogo } from "@phosphor-icons/react/ssr";
+import {
+  GiscusComments,
+  type GiscusConfig,
+} from "./GiscusComments";
 
-import { useEffect, useRef } from "react";
-import { ChatCircle, GithubLogo } from "@phosphor-icons/react";
-
-const config = {
-  repo: process.env.NEXT_PUBLIC_GISCUS_REPO,
-  repoId: process.env.NEXT_PUBLIC_GISCUS_REPO_ID,
-  category: process.env.NEXT_PUBLIC_GISCUS_CATEGORY,
-  categoryId: process.env.NEXT_PUBLIC_GISCUS_CATEGORY_ID,
-};
-
-const configured = Object.values(config).every(Boolean);
-
-function currentGiscusTheme() {
-  return document.documentElement.dataset.theme === "dark" ? "dark" : "light";
+function giscusConfig(): GiscusConfig | undefined {
+  const config = {
+    repo:
+      process.env.GISCUS_REPO ?? process.env.NEXT_PUBLIC_GISCUS_REPO,
+    repoId:
+      process.env.GISCUS_REPO_ID ?? process.env.NEXT_PUBLIC_GISCUS_REPO_ID,
+    category:
+      process.env.GISCUS_CATEGORY ??
+      process.env.NEXT_PUBLIC_GISCUS_CATEGORY,
+    categoryId:
+      process.env.GISCUS_CATEGORY_ID ??
+      process.env.NEXT_PUBLIC_GISCUS_CATEGORY_ID,
+  };
+  return Object.values(config).every(Boolean)
+    ? (config as GiscusConfig)
+    : undefined;
 }
 
 export function Comments({ slug }: { slug: string }) {
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!configured || !containerRef.current) return;
-    const container = containerRef.current;
-    container.replaceChildren();
-
-    const script = document.createElement("script");
-    script.src = "https://giscus.app/client.js";
-    script.async = true;
-    script.crossOrigin = "anonymous";
-    script.dataset.repo = config.repo!;
-    script.dataset.repoId = config.repoId!;
-    script.dataset.category = config.category!;
-    script.dataset.categoryId = config.categoryId!;
-    script.dataset.mapping = "pathname";
-    script.dataset.strict = "1";
-    script.dataset.reactionsEnabled = "1";
-    script.dataset.emitMetadata = "0";
-    script.dataset.inputPosition = "bottom";
-    script.dataset.theme = currentGiscusTheme();
-    script.dataset.lang = "zh-CN";
-    script.dataset.loading = "lazy";
-    container.append(script);
-
-    const observer = new MutationObserver(() => {
-      const frame = container.querySelector<HTMLIFrameElement>(".giscus-frame");
-      frame?.contentWindow?.postMessage(
-        {
-          giscus: {
-            setConfig: { theme: currentGiscusTheme() },
-          },
-        },
-        "https://giscus.app",
-      );
-    });
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ["data-theme"],
-    });
-
-    return () => {
-      observer.disconnect();
-      container.replaceChildren();
-    };
-  }, [slug]);
+  const config = giscusConfig();
 
   return (
     <section className="comments" aria-labelledby={`comments-heading-${slug}`}>
@@ -71,15 +32,15 @@ export function Comments({ slug }: { slug: string }) {
         <div>
           <h2 id={`comments-heading-${slug}`}>评论</h2>
           <p>
-            {configured
+            {config
               ? "评论由 GitHub Discussions 保存和管理。"
               : "评论接入已准备好，补充 GitHub Discussions 配置后即可开放。"}
           </p>
         </div>
       </div>
 
-      {configured ? (
-        <div className="giscus-container" ref={containerRef} />
+      {config ? (
+        <GiscusComments slug={slug} config={config} />
       ) : (
         <div className="integration-notice">
           <GithubLogo size={20} weight="fill" />
