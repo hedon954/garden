@@ -10,4 +10,5 @@
 | [独立管理后台](admin-service.md) | GitHub 登录、随想发布与仓库写入 |
 | [外部集成](integrations.md) | Giscus、Webmentions、跨平台分发 |
 | [技术架构](architecture.md) | 模块边界、构建流程与安全模型 |
+| [系统实现](system-implementation.md) | 内容编译、渲染、静态导出、OAuth 与 Git 写入的底层链路 |
 | [运维与排障](operations.md) | 验证、常见错误、升级与密钥管理 |

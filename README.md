@@ -54,6 +54,7 @@ npm test
 - [独立管理后台](docs/admin-service.md)
 - [外部集成：评论、Webmention、分发](docs/integrations.md)
 - [技术架构](docs/architecture.md)
+- [系统实现：从 Markdown 到已发布页面](docs/system-implementation.md)
 - [维护、故障排查与安全](docs/operations.md)
 
 ## 许可证
