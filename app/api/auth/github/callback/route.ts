@@ -91,6 +91,7 @@ export async function GET(request: Request) {
       headers: {
         Accept: "application/vnd.github+json",
         Authorization: `Bearer ${token.access_token}`,
+        "User-Agent": "Hedon-Log-Admin",
         "X-GitHub-Api-Version": "2022-11-28",
       },
     });
