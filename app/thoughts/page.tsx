@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ArrowLeft, ArrowRight } from "@phosphor-icons/react/ssr";
-import { thoughts } from "../lib/content";
+import { getPublishedThoughts } from "../lib/public-thoughts";
 import { ThoughtCard } from "../components/ThoughtCard";
 
 export const metadata = {
@@ -10,11 +10,14 @@ export const metadata = {
 
 const pageSize = 10;
 
+export const dynamic = "force-dynamic";
+
 export default async function ThoughtsPage({
   searchParams,
 }: {
   searchParams: Promise<{ page?: string }>;
 }) {
+  const thoughts = await getPublishedThoughts();
   const requested = await searchParams;
   const pageCount = Math.max(1, Math.ceil(thoughts.length / pageSize));
   const parsedPage = Number.parseInt(requested.page ?? "1", 10);

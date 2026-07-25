@@ -18,6 +18,8 @@ npm run dev
 - 主题专栏：`content/columns/{column}/*.md`
 - 随想：`content/thoughts/*.md`
 
+也可以通过独立的 `/admin` 发布后台随想；普通博文和专栏仍只从本地 Markdown 同步。后台的访问控制、随想持久化和跨平台分发配置见 [内容管理后台](docs/admin-studio.md)。
+
 内容文件使用 YAML front matter 与 Typora 兼容 Markdown。开发和构建前会自动运行 `npm run content:sync`，校验内容并生成站点索引。
 
 ### Typora 本地附件

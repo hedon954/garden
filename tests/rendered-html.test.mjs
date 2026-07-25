@@ -173,3 +173,25 @@ test("publishes discovery routes, permanent thought pages, and real integration 
   assert.match(search, /previousFocusRef/);
   assert.doesNotMatch(columns, /columns\[0\]/);
 });
+
+test("keeps the admin studio protected and wires durable publishing", async () => {
+  const response = await render("/api/admin/thoughts");
+  assert.equal(response.status, 401);
+
+  const [adminPage, thoughtApi, distributionApi, migration, hosting] = await Promise.all([
+    readFile(new URL("../app/admin/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/api/admin/thoughts/route.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/api/admin/distribution/route.ts", import.meta.url), "utf8"),
+    readFile(new URL("../drizzle/0000_lazy_albert_cleary.sql", import.meta.url), "utf8"),
+    readFile(new URL("../.openai/hosting.json", import.meta.url), "utf8"),
+  ]);
+
+  assert.match(adminPage, /requireChatGPTUser/);
+  assert.match(adminPage, /AdminDashboard/);
+  assert.match(thoughtApi, /managedThoughts/);
+  assert.match(distributionApi, /X_USER_ACCESS_TOKEN/);
+  assert.match(distributionApi, /CSDN_SYNC_WEBHOOK/);
+  assert.match(migration, /CREATE TABLE `managed_thoughts`/);
+  assert.match(migration, /CREATE TABLE `distribution_jobs`/);
+  assert.match(hosting, /"d1": "DB"/);
+});

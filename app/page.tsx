@@ -5,8 +5,9 @@ import {
   GithubLogo,
   PushPin,
 } from "@phosphor-icons/react/ssr";
-import { columns, formatDate, posts, thoughts } from "./lib/content";
+import { columns, formatDate, posts } from "./lib/content";
 import { ThoughtCard } from "./components/ThoughtCard";
+import { getPublishedThoughts } from "./lib/public-thoughts";
 
 export const metadata = {
   title: "Hedon Log · 写作、构建与保持好奇",
@@ -14,8 +15,11 @@ export const metadata = {
     "Hedon 的个人博客：关于产品、工程、AI 学习与独立写作的长期笔记。",
 };
 
-export default function Home() {
+export const dynamic = "force-dynamic";
+
+export default async function Home() {
   const pinned = posts.filter((post) => post.pinned);
+  const thoughts = await getPublishedThoughts();
 
   return (
     <main className="page-shell home-page">
@@ -91,7 +95,7 @@ export default function Home() {
           </div>
           <Link href="/thoughts">进入随想 →</Link>
         </div>
-        <ThoughtCard thought={thoughts[0]} />
+        {thoughts[0] && <ThoughtCard thought={thoughts[0]} />}
       </section>
 
       <section className="home-section column-preview">

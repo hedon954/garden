@@ -2,8 +2,7 @@ import type { Metadata } from "next";
 import { Geist_Mono } from "next/font/google";
 import "katex/dist/katex.min.css";
 import "./globals.css";
-import { SiteHeader } from "./components/SiteHeader";
-import { SiteFooter } from "./components/SiteFooter";
+import { SiteChrome } from "./components/SiteChrome";
 import {
   getSiteUrl,
   siteDescription,
@@ -95,9 +94,7 @@ export default function RootLayout({
         <a className="skip-link" href="#main-content">
           跳到正文
         </a>
-        <SiteHeader />
-        <div id="main-content">{children}</div>
-        <SiteFooter />
+        <SiteChrome>{children}</SiteChrome>
       </body>
     </html>
   );

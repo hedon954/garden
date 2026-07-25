@@ -1,5 +1,6 @@
 import { marked } from "marked";
-import { columns, posts, thoughts } from "../lib/content";
+import { columns, posts } from "../lib/content";
+import { getPublishedThoughts } from "../lib/public-thoughts";
 
 const escapeXml = (value: string) =>
   value
@@ -13,6 +14,7 @@ const cdata = (value: string) => value.replaceAll("]]>", "]]]]><![CDATA[>");
 
 export async function GET(request: Request) {
   const origin = new URL(request.url).origin;
+  const thoughts = await getPublishedThoughts();
   const entries = [
     ...posts.map((post) => ({ ...post, path: `/blog/${post.slug}` })),
     ...columns.map((entry) => ({

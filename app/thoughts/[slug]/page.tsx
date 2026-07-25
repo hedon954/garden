@@ -5,7 +5,8 @@ import { ArrowLeft } from "@phosphor-icons/react/ssr";
 import { Comments } from "../../components/Comments";
 import { ThoughtCard } from "../../components/ThoughtCard";
 import { Webmentions } from "../../components/Webmentions";
-import { findThought, thoughts } from "../../lib/content";
+import { thoughts } from "../../lib/content";
+import { findPublishedThought } from "../../lib/public-thoughts";
 import {
   absoluteUrl,
   getSiteUrl,
@@ -16,13 +17,15 @@ export function generateStaticParams() {
   return thoughts.map((thought) => ({ slug: thought.slug }));
 }
 
+export const dynamic = "force-dynamic";
+
 export async function generateMetadata({
   params,
 }: {
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const thought = findThought(slug);
+  const thought = await findPublishedThought(slug);
   if (!thought) return {};
   const baseUrl = await getSiteUrl();
   const pathname = `/thoughts/${slug}`;
@@ -56,7 +59,7 @@ export default async function ThoughtPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const thought = findThought(slug);
+  const thought = await findPublishedThought(slug);
   if (!thought) notFound();
   const baseUrl = await getSiteUrl();
   const pathname = `/thoughts/${slug}`;

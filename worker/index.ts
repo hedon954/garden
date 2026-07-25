@@ -14,6 +14,12 @@ interface Env {
   };
 }
 
+declare global {
+  // Vinext route modules read the current worker bindings through this bridge.
+  // The binding is fixed for the worker instance and is never exposed to clients.
+  var __hedonBindings: Env | undefined;
+}
+
 interface ExecutionContext {
   waitUntil(promise: Promise<unknown>): void;
   passThroughOnException(): void;
@@ -27,6 +33,7 @@ interface ExecutionContext {
 
 const worker = {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
+    globalThis.__hedonBindings = env;
     const url = new URL(request.url);
 
     if (url.pathname === "/_vinext/image") {
