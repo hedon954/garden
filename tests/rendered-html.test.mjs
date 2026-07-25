@@ -81,6 +81,11 @@ test("renders complex Markdown, article covers, and mixed thought media", async 
   assert.match(article, /language-mermaid/);
   assert.match(article, /<details>/);
   assert.match(article, /class="article-cover"/);
+  assert.ok(
+    article.indexOf('class="article-cover"') <
+      article.indexOf('class="article-header"'),
+    "article cover should render before the title header",
+  );
 
   assert.equal(thoughtsResponse.status, 200);
   const thoughts = await thoughtsResponse.text();

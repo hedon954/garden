@@ -84,4 +84,15 @@ No actionable P0, P1, or P2 mismatch remains for the requested "similar style" t
 - Browser checks confirm that titles remain to the right of covers, all five rows have equal height, no horizontal overflow occurs at 644 px or 1200 px, and no console errors are present.
 - No remaining P0, P1, or P2 issue was found.
 
+## 2026-07-25 article cover hierarchy revision
+
+- Revision source: `/var/folders/44/6xx0crn15lxg4fp3zhv2lf740000gn/T/codex-clipboard-3e7880b0-c18a-44b4-acd9-9263dab538f1.png`
+- Revised browser capture: `/Users/hedon/Documents/blog/implementation-article-cover-top-matched.png`
+- Combined comparison: `/Users/hedon/Documents/blog/design-comparison-article-cover-top.png`
+- The comparison uses the same 1500 × 1069 viewport for both the source and implementation.
+- The article sequence is now “返回博文 → 封面 → 主题、标题与元信息 → 正文”, so the cover establishes the article's visual entry before its text hierarchy.
+- The right-side article table of contents begins alongside the title block rather than the cover, preserving a clear relationship between the title and its navigation.
+- Browser measurements confirm the cover precedes the article header, the title and table of contents are vertically aligned, and no horizontal overflow is present.
+- No remaining P0, P1, or P2 issue was found.
+
 final result: passed

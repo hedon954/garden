@@ -42,11 +42,17 @@ export default async function PostPage({
 
   return (
     <main className="reading-page">
-      <article className="article-column">
+      <article className="article-column post-article">
         <Link href="/blog" className="back-link">
           <ArrowLeft size={16} />
           返回博文
         </Link>
+        {post.cover && (
+          <figure className="article-cover">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={post.cover} alt={post.coverAlt ?? `${post.title} 封面`} />
+          </figure>
+        )}
         <header className="article-header">
           <p className="eyebrow">{post.topic}</p>
           <h1>{post.title}</h1>
@@ -57,12 +63,6 @@ export default async function PostPage({
             <span>{post.readingTime}</span>
           </div>
         </header>
-        {post.cover && (
-          <figure className="article-cover">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={post.cover} alt={post.coverAlt ?? `${post.title} 封面`} />
-          </figure>
-        )}
         <MarkdownArticle content={post.content} />
         <div className="article-tags">
           {post.tags?.map((tag) => <span key={tag}>#{tag}</span>)}

@@ -754,7 +754,7 @@ button {
 }
 
 .article-cover {
-  margin: -14px 0 48px;
+  margin: 28px 0 34px;
 }
 
 .article-cover img {
@@ -763,6 +763,14 @@ button {
   display: block;
   object-fit: cover;
   border: 1px solid var(--line);
+}
+
+.post-article .article-header {
+  padding-top: 0;
+}
+
+.reading-page:has(.article-cover) > .toc {
+  margin-top: 426px;
 }
 
 .article-header h1 {
