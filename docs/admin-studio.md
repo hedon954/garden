@@ -10,7 +10,15 @@
 
 ## 访问控制
 
-后台通过 ChatGPT 登录识别访问者，并只允许 `ADMIN_EMAILS` 中列出的邮箱进入。在线上环境设置该变量后，再访问 `/admin`；不要把账号或令牌写进仓库。
+后台通过 GitHub OAuth 登录识别访问者，并只允许 `ADMIN_GITHUB_LOGINS` 中列出的 GitHub 用户名进入。在线上设置 `GITHUB_OAUTH_CLIENT_ID`、`GITHUB_OAUTH_CLIENT_SECRET`、`GITHUB_SESSION_SECRET` 与允许名单后，再访问 `/admin`；不要把密钥或令牌写进仓库。
+
+在 GitHub 的 OAuth App 设置中，将回调地址填写为：
+
+```text
+https://你的正式域名/api/auth/github/callback
+```
+
+后台只请求 `read:user` 身份范围，不读取仓库内容。OAuth App 的 Client Secret 只在服务端交换 GitHub 回调 code 时使用，不会发送给浏览器。
 
 ## 内容分发
 

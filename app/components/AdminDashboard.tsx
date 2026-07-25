@@ -231,6 +231,9 @@ export function AdminDashboard({
         <Link className="admin-brand" href="/admin">HEDON <span>STUDIO</span></Link>
         <div>
           <span>{userName}</span>
+          <form action="/api/auth/logout" method="post">
+            <button type="submit" className="admin-signout">退出</button>
+          </form>
           <Link href="/" target="_blank">
             查看公开博客 <ArrowSquareOut size={15} />
           </Link>

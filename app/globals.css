@@ -1951,6 +1951,8 @@ button {
 
 .admin-topbar > div { gap: 18px; color: var(--muted); font-size: 13px; }
 
+.admin-signout { background: transparent; border: 0; color: var(--muted); cursor: pointer; font: inherit; padding: 0; text-decoration: underline; text-underline-offset: 4px; }
+
 .admin-topbar a:not(.admin-brand),
 .admin-access-card a {
   align-items: center;
@@ -2046,6 +2048,8 @@ button {
 .admin-access-card h1 { font-size: 35px; line-height: 1.12; margin: 18px 0; }
 .admin-access-card p { color: var(--muted); line-height: 1.75; }
 .admin-access-card code { color: var(--accent); }
+.admin-access-actions { align-items: center; display: flex; flex-wrap: wrap; gap: 16px; margin-top: 25px; }
+.admin-github-login { align-items: center; background: var(--ink); color: var(--paper) !important; display: inline-flex; gap: 8px; padding: 11px 15px; text-decoration: none; }
 
 @media (max-width: 900px) {
   .admin-shell, .admin-access-page { width: min(100% - 36px, 720px); padding-top: 18px; }

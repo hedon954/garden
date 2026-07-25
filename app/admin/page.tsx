@@ -1,10 +1,9 @@
 import Link from "next/link";
-import { ArrowSquareOut, LockKey } from "@phosphor-icons/react/ssr";
+import { ArrowSquareOut, GithubLogo, LockKey } from "@phosphor-icons/react/ssr";
 import { AdminDashboard } from "../components/AdminDashboard";
-import { isAdmin } from "../lib/admin-auth";
+import { getAdminUser, isGitHubOAuthConfigured } from "../lib/admin-auth";
 import { columns, posts, thoughts } from "../lib/content";
 import { toPublicThought, listManagedThoughts } from "../lib/managed-thoughts";
-import { requireChatGPTUser } from "../chatgpt-auth";
 
 export const dynamic = "force-dynamic";
 
@@ -13,22 +12,37 @@ export const metadata = {
   robots: { index: false, follow: false },
 };
 
-export default async function AdminPage() {
-  const user = await requireChatGPTUser("/admin");
-  if (!isAdmin(user)) {
+export default async function AdminPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ auth?: string }>;
+}) {
+  const [user, query] = await Promise.all([getAdminUser(), searchParams]);
+  if (!user) {
+    const oauthReady = isGitHubOAuthConfigured();
     return (
       <main className="admin-access-page">
         <div className="admin-access-card">
           <LockKey size={28} weight="duotone" />
           <p className="eyebrow">HEDON LOG / ADMIN</p>
-          <h1>这个管理平台只向站点所有者开放。</h1>
+          <h1>用 GitHub 身份进入内容管理后台。</h1>
           <p>
-            当前账号没有发布权限。请将需要使用后台的 ChatGPT 邮箱写入
-            <code>ADMIN_EMAILS</code> 后重新进入。
+            {query.auth === "denied"
+              ? "这个 GitHub 账号没有后台权限。"
+              : oauthReady
+                ? "登录后会检查你的 GitHub 用户名是否在允许名单中。"
+                : "GitHub OAuth 尚未配置；请先设置后台所需的环境变量。"}
           </p>
-          <Link href="/">
-            返回公开博客 <ArrowSquareOut size={15} />
-          </Link>
+          <div className="admin-access-actions">
+            {oauthReady && (
+              <Link className="admin-github-login" href="/api/auth/github">
+                <GithubLogo size={18} weight="fill" /> 使用 GitHub 登录
+              </Link>
+            )}
+            <Link href="/">
+              返回公开博客 <ArrowSquareOut size={15} />
+            </Link>
+          </div>
         </div>
       </main>
     );
@@ -58,7 +72,7 @@ export default async function AdminPage() {
 
   return (
     <AdminDashboard
-      userName={user.displayName}
+      userName={`@${user.login}`}
       initialThoughts={initialThoughts}
       staticThoughtCount={thoughts.length}
       catalog={catalog}

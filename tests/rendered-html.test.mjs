@@ -186,7 +186,7 @@ test("keeps the admin studio protected and wires durable publishing", async () =
     readFile(new URL("../.openai/hosting.json", import.meta.url), "utf8"),
   ]);
 
-  assert.match(adminPage, /requireChatGPTUser/);
+  assert.match(adminPage, /api\/auth\/github/);
   assert.match(adminPage, /AdminDashboard/);
   assert.match(thoughtApi, /managedThoughts/);
   assert.match(distributionApi, /X_USER_ACCESS_TOKEN/);
