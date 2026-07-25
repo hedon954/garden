@@ -1,0 +1,64 @@
+# Design QA
+
+## Comparison target
+
+- Source visual truth: `/var/folders/44/6xx0crn15lxg4fp3zhv2lf740000gn/T/codex-clipboard-046e18fa-2fd6-4dba-962f-46b5535f594a.png`
+- Browser-rendered implementation: `/Users/hedon/Documents/blog/implementation-home-final.png`
+- Combined comparison evidence: `/Users/hedon/Documents/blog/design-comparison-home.png`
+- Supporting captures:
+  - `/Users/hedon/Documents/blog/implementation-article-final.png`
+  - `/Users/hedon/Documents/blog/implementation-column-final.png`
+  - `/Users/hedon/Documents/blog/implementation-mobile.png`
+- State: light theme, home route; article and column routes in their default reading state.
+
+## Viewport and normalization
+
+- Source pixels: 1007 × 1202.
+- Implementation desktop screenshot pixels and CSS viewport: 1280 × 720.
+- Browser-reported device pixel ratio: 2; the in-app screenshot was normalized to CSS pixel dimensions.
+- Mobile screenshot pixels and CSS viewport: 390 × 844.
+- The source is an inspiration target rather than the same content/state. For the combined comparison, its top region was scaled to 1280 px wide and top-cropped to 720 px so the two visible above-the-fold regions could be judged at equal output dimensions. No pixel-level fidelity claim is made across the different copy and information architecture.
+
+## Full-view comparison evidence
+
+The combined comparison confirms the intended visual language is retained: warm near-white background, near-black ink, restrained crimson accents, monospaced editorial typography, large empty fields, compact navigation, underlined text links, simple dated lists, and almost no decorative elevation. The implementation intentionally adapts the header into a wider desktop navigation row and gives the opening statement more hierarchy because it must route to five product areas rather than reproduce the starter page.
+
+## Focused-region evidence
+
+- Header and opening block: spacing, restrained iconography, compact red navigation, and left alignment match the source's quiet editorial character.
+- Ordinary article: the focused capture confirms a single reading column with a visible right-side article table of contents, Typora-style table, blockquote, code, footnote, heading anchors, and comfortable line length.
+- Column article: the focused capture confirms the required left series navigation, center reading column, and independent right article table of contents.
+- Mobile: the focused capture confirms the header becomes two rows without hiding navigation, list rows remain readable, and the opening hierarchy does not overflow.
+
+## Required fidelity surfaces
+
+- Fonts and typography: consistent monospaced Latin/UI treatment with readable CJK fallback; bold hierarchy is used sparingly; title, metadata, list, and body sizes remain distinct without introducing a second display language.
+- Spacing and layout rhythm: the source's large top and section gaps are preserved. Reading pages use stable column widths; mobile gutters are 14 px per side and no persistent control is clipped.
+- Colors and visual tokens: paper, ink, muted gray, divider, crimson accent, and selection colors are centralized as tokens and remain coherent in light and dark themes.
+- Image quality and asset fidelity: the cactus mark comes from the selected Phosphor icon family; thought imagery uses full-resolution source photography with correct cropping; the generated social card matches the finished palette and contains the requested text without visible misspelling.
+- Copy and content: all product-specific copy is coherent in Chinese. The home, post, thought, column, and about surfaces communicate distinct purposes without leaking implementation instructions, except for the deliberately explicit preview note in the local comment adapter.
+
+## Interaction and runtime checks
+
+- Tested fuzzy search from opening the dialog through a Chinese body-text query and verified one correct result.
+- Tested article navigation, visible right-side table of contents, comment form submission, and persisted comment display.
+- Tested column left series navigation and visible right-side table of contents.
+- Tested GitHub profile fallback when the public API is rate-limited.
+- Tested the RSS route and confirmed `application/rss+xml` output with article and column entries.
+- Checked the clean validation tabs for browser console warnings and errors: none.
+
+## Comparison history
+
+1. First reading-page pass found a P2 layout risk: at the reference-width desktop breakpoint, the article and right TOC competed for horizontal space. The article track, TOC track, and gap were reduced; the revised capture shows a complete, readable TOC.
+2. First column pass found a P2 responsive mismatch: the right TOC was hidden at 1008 px. The intermediate grid now uses three narrower tracks through 901 px; the revised capture shows both side navigations together.
+3. Mobile pass found no remaining P0/P1/P2 issue. Header navigation, list rows, and content hierarchy remain readable at 390 × 844.
+
+## Findings
+
+No actionable P0, P1, or P2 mismatch remains for the requested "similar style" target and expanded product scope.
+
+## Follow-up polish
+
+- P3: once a final public domain is chosen, replace the placeholder metadata base and connect the production comment/Webmention providers.
+
+final result: passed
