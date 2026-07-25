@@ -57,6 +57,8 @@ npm test
 - [系统实现：从 Markdown 到已发布页面](docs/system-implementation.md)
 - [维护、故障排查与安全](docs/operations.md)
 
+管理后台可在本地运行、使用 Docker 部署到阿里云，或通过 GitHub Actions 一键部署到 Cloudflare Workers；具体步骤见[独立管理后台](docs/admin-service.md)。
+
 ## 许可证
 
 [MIT](LICENSE)。Fork 后请将站点名称、作者资料、内容、域名与第三方凭据替换为自己的信息。

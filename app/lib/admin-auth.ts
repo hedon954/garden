@@ -121,3 +121,14 @@ export async function requireAdminApi() {
   }
   return user;
 }
+
+/** Reject browser cross-site state changes even if a cookie policy is weakened. */
+export async function requireAdminMutation(request: Request) {
+  const origin = request.headers.get("origin");
+  const fetchSite = request.headers.get("sec-fetch-site");
+  const ownOrigin = new URL(request.url).origin;
+  if ((origin && origin !== ownOrigin) || fetchSite === "cross-site") {
+    return Response.json({ error: "不接受跨站后台请求。" }, { status: 403 });
+  }
+  return requireAdminApi();
+}

@@ -8,6 +8,7 @@ import {
   siteDescription,
   webmentionEndpoint,
 } from "./lib/site";
+import { githubUrl, siteConfig } from "./site.config";
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
@@ -20,11 +21,11 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     metadataBase: new URL(siteUrl),
     title: {
-      default: "Hedon Log",
-      template: "%s · Hedon Log",
+      default: siteConfig.name,
+      template: `%s · ${siteConfig.name}`,
     },
     description: siteDescription,
-    authors: [{ name: "Hedon", url: "https://github.com/hedon954" }],
+    authors: [{ name: siteConfig.author.name, url: githubUrl }],
     alternates: {
       types: {
         "application/rss+xml": "/rss.xml",
@@ -45,23 +46,23 @@ export async function generateMetadata(): Promise<Metadata> {
       },
     },
     openGraph: {
-      title: "Hedon Log",
-      description: "写作、构建与保持好奇。",
+      title: siteConfig.name,
+      description: siteConfig.tagline,
       type: "website",
-      locale: "zh_CN",
+      locale: siteConfig.locale,
       images: [
         {
           url: "/og.png",
           width: 1731,
           height: 909,
-          alt: "Hedon Log · 把复杂的事，慢慢想明白。",
+          alt: `${siteConfig.name} · ${siteConfig.home.title.replace("\n", "")}`,
         },
       ],
     },
     twitter: {
       card: "summary_large_image",
-      title: "Hedon Log",
-      description: "写作、构建与保持好奇。",
+      title: siteConfig.name,
+      description: siteConfig.tagline,
       images: ["/og.png"],
     },
   };

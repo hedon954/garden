@@ -1,4 +1,4 @@
-import { requireAdminApi } from "../../../lib/admin-auth";
+import { requireAdminApi, requireAdminMutation } from "../../../lib/admin-auth";
 import { findColumnEntry, findPost } from "../../../lib/content";
 import { absoluteUrl, getSiteUrl } from "../../../lib/site";
 
@@ -21,7 +21,7 @@ function platformWebhook(platform: Exclude<Platform, "x">) {
 }
 
 export async function POST(request: Request) {
-  const user = await requireAdminApi();
+  const user = await requireAdminMutation(request);
   if (user instanceof Response) return user;
   const payload = (await request.json()) as {
     kind?: unknown;

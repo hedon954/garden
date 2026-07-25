@@ -1,10 +1,11 @@
 import { headers } from "next/headers";
+import { siteConfig } from "../site.config";
 
 const fallbackUrl = "http://localhost:3000";
 
-export const siteName = "Hedon Log";
-export const siteDescription = "关于产品、工程、AI 学习与独立写作的长期个人博客。";
-export const githubUsername = "hedon954";
+export const siteName = siteConfig.name;
+export const siteDescription = siteConfig.description;
+export const githubUsername = siteConfig.author.github;
 
 const normalizeBaseUrl = (value: string) => value.replace(/\/+$/u, "");
 
@@ -44,5 +45,7 @@ export function webmentionEndpoint() {
 
 export function webmentionApiEndpoint() {
   const domain = process.env.WEBMENTION_IO_DOMAIN;
-  return domain ? "https://webmention.io/api/mentions.jf2" : undefined;
+  return domain
+    ? `https://webmention.io/api/mentions.jf2?domain=${encodeURIComponent(domain)}`
+    : undefined;
 }

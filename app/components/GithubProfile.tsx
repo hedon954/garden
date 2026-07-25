@@ -1,5 +1,6 @@
 import { ArrowUpRight, GithubLogo } from "@phosphor-icons/react/ssr";
 import { githubUsername } from "../lib/site";
+import { siteConfig } from "../site.config";
 
 type GithubUser = {
   avatar_url: string;
@@ -14,9 +15,9 @@ type GithubUser = {
 
 const fallback: GithubUser = {
   avatar_url: `https://github.com/${githubUsername}.png`,
-  name: "Hedon",
+  name: siteConfig.author.name,
   login: githubUsername,
-  bio: "Building thoughtful software and writing down what I learn.",
+  bio: siteConfig.author.githubBio,
   public_repos: 0,
   followers: 0,
   html_url: `https://github.com/${githubUsername}`,
@@ -31,7 +32,7 @@ async function loadGithubProfile() {
       {
         headers: {
           Accept: "application/vnd.github+json",
-          "User-Agent": "Hedon-Log",
+          "User-Agent": "Markdown-Blog",
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         next: { revalidate: 3600 },

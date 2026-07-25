@@ -26,6 +26,8 @@ npm test
 
 检查后台服务日志和 `CONTENT_GITHUB_TOKEN`：它必须是限定到内容仓库、拥有 **Contents: Read and write** 的 fine-grained PAT。`CONTENT_REPOSITORY` 必须是 `owner/repository`，且 `CONTENT_BRANCH` 存在。OAuth 登录成功并不代表该服务具有写入仓库的权限。
 
+若 `main` 启用了分支保护，PAT 还必须被规则允许直接推送；否则将后台 `CONTENT_BRANCH` 指向一个允许写入的分支，并通过你自己的合并流程发布。后台会把 GitHub API 的拒绝返回给操作人，不会静默丢失内容。
+
 ## 密钥轮换
 
 立即在对应平台撤销已泄露的 PAT、OAuth Client Secret 或分发令牌，生成新值并更新后台部署平台的 Secret。不要把旧密钥写进 issue、文档、提交记录或客户端环境变量。`.env.local` 已被 Git 忽略。

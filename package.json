@@ -1,5 +1,5 @@
 {
-  "name": "hedon-personal-blog",
+  "name": "markdown-blog-kit",
   "version": "0.1.0",
   "private": true,
   "engines": {
@@ -13,6 +13,8 @@
     "prebuild": "npm run content:sync",
     "build": "WRANGLER_LOG_PATH=.wrangler/wrangler.log vinext build",
     "start": "WRANGLER_LOG_PATH=.wrangler/wrangler.log vinext start",
+    "admin:local": "npm run start -- --host 0.0.0.0 --port 3000",
+    "admin:cloudflare": "npm run build && wrangler deploy --config dist/server/wrangler.json",
     "test": "npm run build && node --test tests/*.test.mjs",
     "lint": "eslint . --ignore-pattern dist --ignore-pattern .next"
   },

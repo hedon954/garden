@@ -39,9 +39,13 @@ const emptyAttachment = (): AttachmentDraft => ({ type: "image", src: "" });
 function MediaFields({
   attachments,
   onChange,
+  onUpload,
+  uploading,
 }: {
   attachments: AttachmentDraft[];
   onChange: (next: AttachmentDraft[]) => void;
+  onUpload: (index: number, file: File) => void;
+  uploading: boolean;
 }) {
   return (
     <section className="admin-attachments">
@@ -77,9 +81,22 @@ function MediaFields({
               next[index] = { ...next[index], src: event.target.value };
               onChange(next);
             }}
-            placeholder="https://…"
+            placeholder={item.type === "link" ? "https://…" : "https://… 或上传本地文件"}
             aria-label={`附件 ${index + 1} 地址`}
           />
+          {item.type !== "link" && (
+            <input
+              type="file"
+              accept={item.type === "image" ? "image/*" : item.type === "audio" ? "audio/*" : "video/*"}
+              aria-label={`上传附件 ${index + 1}`}
+              disabled={uploading}
+              onChange={(event) => {
+                const file = event.target.files?.[0];
+                if (file) onUpload(index, file);
+                event.currentTarget.value = "";
+              }}
+            />
+          )}
           <input
             value={item.title ?? ""}
             onChange={(event) => {
@@ -110,12 +127,14 @@ export function AdminDashboard({
   staticThoughtCount,
   catalog,
   publicSiteUrl,
+  contentWarning,
 }: {
   userName: string;
   initialThoughts: ManagedThought[];
   staticThoughtCount: number;
   catalog: CatalogEntry[];
   publicSiteUrl: string;
+  contentWarning: string;
 }) {
   const [thoughts, setThoughts] = useState(initialThoughts);
   const [title, setTitle] = useState("");
@@ -124,11 +143,32 @@ export function AdminDashboard({
   const [attachments, setAttachments] = useState<AttachmentDraft[]>([]);
   const [notice, setNotice] = useState("");
   const [isSaving, setIsSaving] = useState(false);
+  const [uploadingCount, setUploadingCount] = useState(0);
   const [distributionStatus, setDistributionStatus] = useState<Record<string, string>>({});
   const publishedCount = useMemo(
     () => thoughts.filter((thought) => thought.status === "published").length,
     [thoughts],
   );
+
+  async function uploadMedia(index: number, file: File) {
+    setNotice("");
+    setUploadingCount((count) => count + 1);
+    try {
+      const form = new FormData();
+      form.set("file", file);
+      const response = await fetch("/api/admin/uploads", { method: "POST", body: form });
+      const result = (await response.json()) as { src?: string; mime?: string; error?: string };
+      if (!response.ok || !result.src) throw new Error(result.error ?? "上传失败。");
+      setAttachments((current) => current.map((item, itemIndex) =>
+        itemIndex === index ? { ...item, src: result.src!, mime: result.mime } : item,
+      ));
+      setNotice("附件已提交到 GitHub，发布随想后会随 Pages 构建出现在公开站点。");
+    } catch (error) {
+      setNotice(error instanceof Error ? error.message : "上传失败，请稍后重试。");
+    } finally {
+      setUploadingCount((count) => Math.max(0, count - 1));
+    }
+  }
 
   async function publishThought(status: "draft" | "published") {
     setNotice("");
@@ -256,6 +296,7 @@ export function AdminDashboard({
       </section>
 
       {notice && <p className="admin-notice"><CheckCircle size={16} /> {notice}</p>}
+      {contentWarning && <p className="admin-notice"><CheckCircle size={16} /> {contentWarning}</p>}
 
       <section className="admin-grid">
         <div className="admin-panel admin-compose-panel">
@@ -266,10 +307,10 @@ export function AdminDashboard({
           <label>标题<input value={title} onChange={(event) => setTitle(event.target.value)} placeholder="给这条记录一个标题" /></label>
           <label>正文（Markdown）<textarea value={content} onChange={(event) => setContent(event.target.value)} placeholder="写下此刻想留下的文字…" rows={8} /></label>
           <label>标签（用逗号分隔）<input value={tags} onChange={(event) => setTags(event.target.value)} placeholder="例如：产品, 夜晚, 摄影" /></label>
-          <MediaFields attachments={attachments} onChange={setAttachments} />
+          <MediaFields attachments={attachments} onChange={setAttachments} onUpload={uploadMedia} uploading={uploadingCount > 0} />
           <div className="admin-actions">
-            <button type="button" className="admin-secondary-button" disabled={isSaving} onClick={() => publishThought("draft")}>保存草稿</button>
-            <button type="button" className="admin-primary-button" disabled={isSaving} onClick={() => publishThought("published")}><PaperPlaneTilt size={16} /> {isSaving ? "正在保存" : "发布到博客"}</button>
+            <button type="button" className="admin-secondary-button" disabled={isSaving || uploadingCount > 0} onClick={() => publishThought("draft")}>保存草稿</button>
+            <button type="button" className="admin-primary-button" disabled={isSaving || uploadingCount > 0} onClick={() => publishThought("published")}><PaperPlaneTilt size={16} /> {uploadingCount > 0 ? "正在上传附件" : isSaving ? "正在保存" : "发布到博客"}</button>
           </div>
         </div>
 

@@ -1,4 +1,4 @@
-import { requireAdminApi } from "../../../../lib/admin-auth";
+import { requireAdminMutation } from "../../../../lib/admin-auth";
 import {
   deleteRepositoryThought,
   updateRepositoryThought,
@@ -8,7 +8,7 @@ export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const user = await requireAdminApi();
+  const user = await requireAdminMutation(request);
   if (user instanceof Response) return user;
   const { id } = await params;
   const payload = (await request.json()) as { status?: unknown };
@@ -26,10 +26,10 @@ export async function PATCH(
 }
 
 export async function DELETE(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const user = await requireAdminApi();
+  const user = await requireAdminMutation(request);
   if (user instanceof Response) return user;
   const { id } = await params;
   try {

@@ -17,6 +17,7 @@ import {
   getSiteUrl,
   webmentionApiEndpoint,
 } from "../../../lib/site";
+import { githubUrl, siteConfig } from "../../../site.config";
 
 export function generateStaticParams() {
   return columns.map((entry) => ({
@@ -101,10 +102,10 @@ export default async function ColumnEntryPage({
         </Link>
         <a
           className="p-author h-card sr-only"
-          href="https://github.com/hedon954"
+          href={githubUrl}
           rel="author"
         >
-          Hedon
+          {siteConfig.author.name}
         </a>
         <header className="article-header">
           <p className="eyebrow">

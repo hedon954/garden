@@ -12,6 +12,7 @@ import {
   type MediaItem,
   formatDate,
 } from "../lib/content";
+import { githubUrl, siteConfig } from "../site.config";
 import { MarkdownArticle } from "./MarkdownArticle";
 
 const icons = {
@@ -72,10 +73,10 @@ export function ThoughtCard({
       </Link>
       <a
         className="p-author h-card sr-only"
-        href="https://github.com/hedon954"
+        href={githubUrl}
         rel="author"
       >
-        Hedon
+        {siteConfig.author.name}
       </a>
       <header>
         <span className="thought-kind">

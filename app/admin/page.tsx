@@ -3,7 +3,7 @@ import { ArrowSquareOut, GithubLogo, LockKey } from "@phosphor-icons/react/ssr";
 import { AdminDashboard } from "../components/AdminDashboard";
 import { getAdminUser, isGitHubOAuthConfigured } from "../lib/admin-auth";
 import { columns, posts, thoughts } from "../lib/content";
-import { listRepositoryThoughts } from "../lib/github-content";
+import { isContentRepositoryConfigured, listRepositoryThoughts } from "../lib/github-content";
 import { getSiteUrl } from "../lib/site";
 
 export const dynamic = process.env.STATIC_EXPORT === "1" ? "force-static" : "force-dynamic";
@@ -73,9 +73,17 @@ export default async function AdminPage({
     );
   }
 
-  const initialThoughts = await listRepositoryThoughts().catch(() =>
-    thoughts.map((thought) => ({ ...thought, id: thought.slug, status: "published" as const })),
-  );
+  let initialThoughts: Awaited<ReturnType<typeof listRepositoryThoughts>> = [];
+  let contentWarning = "";
+  if (!isContentRepositoryConfigured()) {
+    contentWarning = "尚未配置内容仓库写入权限；请设置 CONTENT_REPOSITORY 和 CONTENT_GITHUB_TOKEN。";
+  } else {
+    try {
+      initialThoughts = await listRepositoryThoughts();
+    } catch (error) {
+      contentWarning = error instanceof Error ? error.message : "无法读取 GitHub 内容仓库。";
+    }
+  }
   const catalog = [
     ...posts.map((post) => ({
       kind: "post" as const,
@@ -99,6 +107,7 @@ export default async function AdminPage({
       staticThoughtCount={thoughts.length}
       catalog={catalog}
       publicSiteUrl={publicSiteUrl}
+      contentWarning={contentWarning}
     />
   );
 }

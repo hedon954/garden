@@ -1,0 +1,21 @@
+{
+  "name": "Hedon Log",
+  "tagline": "写作 · 构建 · 保持好奇",
+  "description": "关于产品、工程、AI 学习与独立写作的长期个人博客。",
+  "locale": "zh_CN",
+  "author": {
+    "name": "Hedon",
+    "github": "hedon954",
+    "githubBio": "Building thoughtful software and writing down what I learn."
+  },
+  "home": {
+    "title": "把复杂的事，\n慢慢想明白。",
+    "intro": "我是 Hedon，写代码，也写下构建过程中的判断与犹豫。这里收集产品、工程、AI 学习和日常生活里那些值得多想一会儿的东西。"
+  },
+  "about": {
+    "title": "你好，我是 Hedon。",
+    "intro": "我喜欢把复杂系统拆开来看，也喜欢为阅读、写作和思考设计更安静的工具。",
+    "focus": ["AI 与人如何一起工作", "macOS 上的原生阅读体验", "独立软件的最小闭环", "长期可迁移的个人知识库"]
+  },
+  "footer": "保持独立，持续写作。"
+}

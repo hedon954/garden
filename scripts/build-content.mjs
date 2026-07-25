@@ -3,6 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import matter from "gray-matter";
 import { marked } from "marked";
+import siteConfig from "../site.config.json" with { type: "json" };
 
 const root = process.cwd();
 const contentRoot = path.join(root, "content");
@@ -16,8 +17,8 @@ const siteUrl = (process.env.SITE_URL ?? process.env.NEXT_PUBLIC_SITE_URL ?? "ht
 const publicBaseUrl = basePath && !siteUrl.endsWith(basePath)
   ? `${siteUrl}${basePath}`
   : siteUrl;
-const siteName = process.env.SITE_NAME ?? "Hedon Log";
-const siteDescription = process.env.SITE_DESCRIPTION ?? "一个以 Markdown 为内容源的个人博客。";
+const siteName = process.env.SITE_NAME ?? siteConfig.name;
+const siteDescription = process.env.SITE_DESCRIPTION ?? siteConfig.description;
 
 const fail = (sourcePath, message) => {
   throw new Error(`${sourcePath}: ${message}`);

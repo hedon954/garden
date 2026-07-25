@@ -1,14 +1,15 @@
 import Link from "next/link";
 import { GithubLogo, Rss } from "@phosphor-icons/react/ssr";
+import { githubUrl, siteConfig } from "../site.config";
 
 export function SiteFooter() {
   return (
     <footer className="site-footer">
       <div className="footer-inner">
-        <p>© 2026 Hedon · 保持独立，持续写作。</p>
+        <p>© {new Date().getFullYear()} {siteConfig.author.name} · {siteConfig.footer}</p>
         <div>
           <Link
-            href="https://github.com/hedon954"
+            href={githubUrl}
             aria-label="GitHub"
             rel="me"
           >

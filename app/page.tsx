@@ -8,11 +8,11 @@ import {
 import { columns, formatDate, posts } from "./lib/content";
 import { ThoughtCard } from "./components/ThoughtCard";
 import { getPublishedThoughts } from "./lib/public-thoughts";
+import { githubUrl, siteConfig } from "./site.config";
 
 export const metadata = {
-  title: "Hedon Log · 写作、构建与保持好奇",
-  description:
-    "Hedon 的个人博客：关于产品、工程、AI 学习与独立写作的长期笔记。",
+  title: `${siteConfig.name} · ${siteConfig.tagline}`,
+  description: siteConfig.description,
 };
 
 export default function Home() {
@@ -24,17 +24,16 @@ export default function Home() {
       <section className="intro">
         <p className="eyebrow">HELLO, WORLD · 你好，世界</p>
         <h1>
-          把复杂的事，
+          {siteConfig.home.title.split("\n")[0]}
           <br />
-          <span>慢慢想明白。</span>
+          <span>{siteConfig.home.title.split("\n")[1]}</span>
         </h1>
         <p className="intro-copy">
-          我是 Hedon，写代码，也写下构建过程中的判断与犹豫。
-          这里收集产品、工程、AI 学习和日常生活里那些值得多想一会儿的东西。
+          {siteConfig.home.intro}
         </p>
         <a
           className="inline-cta"
-          href="https://github.com/hedon954"
+          href={githubUrl}
           target="_blank"
           rel="me noopener noreferrer"
         >

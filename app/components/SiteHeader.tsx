@@ -18,6 +18,7 @@ import {
   X,
 } from "@phosphor-icons/react";
 import { searchRecords } from "../lib/content";
+import { siteConfig } from "../site.config";
 
 const nav = [
   { href: "/", label: "首页" },
@@ -275,13 +276,13 @@ export function SiteHeader() {
     <>
       <header className="site-header">
         <div className="header-inner">
-          <Link href="/" className="brand" aria-label="Hedon Log 首页">
+          <Link href="/" className="brand" aria-label={`${siteConfig.name} 首页`}>
             <span className="brand-mark">
               <Cactus size={34} weight="thin" aria-hidden="true" />
             </span>
             <span>
-              <strong>Hedon Log</strong>
-              <small>写作 · 构建 · 保持好奇</small>
+              <strong>{siteConfig.name}</strong>
+              <small>{siteConfig.tagline}</small>
             </span>
           </Link>
 

@@ -17,6 +17,7 @@ import {
   getSiteUrl,
   webmentionApiEndpoint,
 } from "../../lib/site";
+import { githubUrl, siteConfig } from "../../site.config";
 
 export function generateStaticParams() {
   return posts.map((post) => ({ slug: post.slug }));
@@ -79,10 +80,10 @@ export default async function PostPage({
         </Link>
         <a
           className="p-author h-card sr-only"
-          href="https://github.com/hedon954"
+          href={githubUrl}
           rel="author"
         >
-          Hedon
+          {siteConfig.author.name}
         </a>
         {post.cover && (
           <figure className="article-hero article-cover">

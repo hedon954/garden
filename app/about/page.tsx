@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { ArrowRight } from "@phosphor-icons/react/ssr";
 import { GithubProfile } from "../components/GithubProfile";
+import { siteConfig } from "../site.config";
 
 export const metadata = {
   title: "关于",
-  description: "关于 Hedon，以及这个网站为什么存在。",
+  description: `关于 ${siteConfig.author.name}，以及这个网站为什么存在。`,
 };
 
 export default function AboutPage() {
@@ -12,10 +13,8 @@ export default function AboutPage() {
     <main className="page-shell about-page">
       <header className="page-intro">
         <p className="eyebrow">ABOUT / 关于</p>
-        <h1>你好，我是 Hedon。</h1>
-        <p>
-          我喜欢把复杂系统拆开来看，也喜欢为阅读、写作和思考设计更安静的工具。
-        </p>
+        <h1>{siteConfig.about.title}</h1>
+        <p>{siteConfig.about.intro}</p>
       </header>
 
       <div className="about-grid">
@@ -36,10 +35,7 @@ export default function AboutPage() {
         <aside className="about-facts">
           <span>现在关注</span>
           <ul>
-            <li>AI 与人如何一起工作</li>
-            <li>macOS 上的原生阅读体验</li>
-            <li>独立软件的最小闭环</li>
-            <li>长期可迁移的个人知识库</li>
+            {siteConfig.about.focus.map((item) => <li key={item}>{item}</li>)}
           </ul>
           <Link href="/blog">
             从博文开始
