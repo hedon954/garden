@@ -61,4 +61,16 @@ No actionable P0, P1, or P2 mismatch remains for the requested "similar style" t
 
 - P3: once a final public domain is chosen, replace the placeholder metadata base and connect the production comment/Webmention providers.
 
+## 2026-07-25 content and home-list revision
+
+- Revision source: `/var/folders/44/6xx0crn15lxg4fp3zhv2lf740000gn/T/codex-clipboard-675d2c6b-0e5d-4035-ac63-64ff551b6c00.png`
+- Revised browser capture: `/Users/hedon/Documents/blog/implementation-home-reference-state.png`
+- Combined comparison: `/Users/hedon/Documents/blog/design-comparison-home-v2.png`
+- The comparison uses the same 1065 × 837 viewport and the same scrolled home-list state.
+- The `01`–`04` labels are absent. “置顶博文”“最近博文”“最近随想”“主题专栏” now share the same crimson heading treatment.
+- Pinned and recent article rows now share the same 67 px row height, date/title/topic hierarchy, divider treatment, and arrow alignment.
+- Supporting browser checks passed for: full-color GitHub avatar (`filter: none`), 12 px article TOC, four covered posts, two KaTeX display blocks, two rendered Mermaid SVGs, one mixed thought containing three images plus audio/video/link, and a 390 px layout without horizontal overflow.
+- No browser console errors were recorded in the revised routes.
+- No remaining P0, P1, or P2 issue was found.
+
 final result: passed

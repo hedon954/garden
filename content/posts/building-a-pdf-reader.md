@@ -9,6 +9,8 @@ tags:
   - 阅读体验
 pinned: false
 readingTime: 8 分钟
+cover: https://images.unsplash.com/photo-1623276527153-fa38c1616b05?auto=format&fit=crop&w=1600&q=84
+coverAlt: 桌上的平板电脑、笔记本电脑与咖啡
 ---
 
 “打开侧栏不能让正文跳一下”看起来是一条微小的要求，真正实现时却牵动了布局、缩放、滚动和状态恢复。

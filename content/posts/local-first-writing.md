@@ -9,6 +9,8 @@ tags:
   - Local-first
 pinned: true
 readingTime: 5 分钟
+cover: https://images.unsplash.com/photo-1501525771695-688643efeea4?auto=format&fit=crop&w=1600&q=84
+coverAlt: 木桌上的笔记本与钢笔
 ---
 
 我仍然在 Typora 里写下第一版。不是因为它有最多的功能，而是因为一个普通的 Markdown 文件让我知道：十年后，我仍然能打开这些文字。

@@ -27,8 +27,21 @@ export default function BlogIndex() {
 
       <section className="archive-list" aria-label="全部博文">
         {posts.map((post) => (
-          <Link key={post.slug} href={`/blog/${post.slug}`} className="archive-row">
+          <Link
+            key={post.slug}
+            href={`/blog/${post.slug}`}
+            className={`archive-row${post.cover ? " with-cover" : ""}`}
+          >
             <time>{formatDate(post.date)}</time>
+            {post.cover && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                className="archive-cover"
+                src={post.cover}
+                alt={post.coverAlt ?? `${post.title} 封面`}
+                loading="lazy"
+              />
+            )}
             <div>
               <span className="archive-topic">
                 {post.topic}

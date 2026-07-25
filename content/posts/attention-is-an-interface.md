@@ -10,6 +10,8 @@ tags:
   - 注意力
 pinned: true
 readingTime: 6 分钟
+cover: https://images.unsplash.com/photo-1630234674857-527eb5534837?auto=format&fit=crop&w=1600&q=84
+coverAlt: 彩色几何建筑立面
 ---
 
 工具总是在争取更短的路径：少一次点击、少一个页面、少等一秒。但如果只把效率当作终点，我们很容易做出一种**没有摩擦，也没有方向**的界面。

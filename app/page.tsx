@@ -43,20 +43,19 @@ export default function Home() {
       </section>
 
       <section className="home-section">
-        <div className="section-heading">
+        <div className="section-heading accent-heading">
           <div>
-            <span className="section-index">01</span>
             <h2>置顶博文</h2>
           </div>
           <PushPin size={20} weight="light" aria-hidden="true" />
         </div>
-        <div className="post-list pinned-list">
+        <div className="post-list">
           {pinned.map((post) => (
             <Link href={`/blog/${post.slug}`} key={post.slug} className="post-row">
               <time>{formatDate(post.date)}</time>
               <span>
                 <strong>{post.title}</strong>
-                <small>{post.description}</small>
+                <small>{post.topic}</small>
               </span>
               <ArrowRight size={18} />
             </Link>
@@ -67,7 +66,6 @@ export default function Home() {
       <section className="home-section">
         <div className="section-heading accent-heading">
           <div>
-            <span className="section-index">02</span>
             <h2>最近博文</h2>
           </div>
           <Link href="/blog">全部文章 →</Link>
@@ -89,7 +87,6 @@ export default function Home() {
       <section className="home-section">
         <div className="section-heading accent-heading">
           <div>
-            <span className="section-index">03</span>
             <h2>最近随想</h2>
           </div>
           <Link href="/thoughts">进入随想 →</Link>
@@ -100,7 +97,6 @@ export default function Home() {
       <section className="home-section column-preview">
         <div className="section-heading accent-heading">
           <div>
-            <span className="section-index">04</span>
             <h2>主题专栏</h2>
           </div>
           <Link href="/columns">全部专栏 →</Link>

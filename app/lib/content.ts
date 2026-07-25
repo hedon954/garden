@@ -1,7 +1,13 @@
-import { columns, posts, thoughts, type ContentEntry } from "./generated-content";
+import {
+  columns,
+  posts,
+  thoughts,
+  type ContentEntry,
+  type MediaItem,
+} from "./generated-content";
 
 export { columns, posts, thoughts };
-export type { ContentEntry };
+export type { ContentEntry, MediaItem };
 
 export const formatDate = (value: string, withTime = false) =>
   new Intl.DateTimeFormat("zh-CN", {

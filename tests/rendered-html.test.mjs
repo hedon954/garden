@@ -36,6 +36,8 @@ test("server-renders the finished blog home", async () => {
   assert.match(html, /置顶博文/);
   assert.match(html, /最近随想/);
   assert.match(html, /主题专栏/);
+  assert.doesNotMatch(html, /section-index|pinned-list/);
+  assert.match(html, /section-heading accent-heading/);
   assert.doesNotMatch(html, /codex-preview|Your site is taking shape/);
 });
 
@@ -63,4 +65,31 @@ test("publishes a valid RSS feed", async () => {
   assert.match(xml, /^<\?xml version="1\.0"/);
   assert.match(xml, /<title>Hedon Log<\/title>/);
   assert.match(xml, /<title>注意力也是一种界面<\/title>/);
+});
+
+test("renders complex Markdown, article covers, and mixed thought media", async () => {
+  const [articleResponse, thoughtsResponse, archiveResponse] = await Promise.all([
+    render("/blog/markdown-lab"),
+    render("/thoughts"),
+    render("/blog"),
+  ]);
+
+  assert.equal(articleResponse.status, 200);
+  const article = await articleResponse.text();
+  assert.match(article, /Markdown 复杂语法实验场/);
+  assert.match(article, /class="katex-display"/);
+  assert.match(article, /language-mermaid/);
+  assert.match(article, /<details>/);
+  assert.match(article, /class="article-cover"/);
+
+  assert.equal(thoughtsResponse.status, 200);
+  const thoughts = await thoughtsResponse.text();
+  assert.match(thoughts, /混合记录 · 6 个附件/);
+  assert.match(thoughts, /thought-gallery-3/);
+  assert.match(thoughts, /<audio/);
+  assert.match(thoughts, /<video/);
+  assert.match(thoughts, /class="link-embed"/);
+
+  assert.equal(archiveResponse.status, 200);
+  assert.match(await archiveResponse.text(), /class="archive-cover"/);
 });

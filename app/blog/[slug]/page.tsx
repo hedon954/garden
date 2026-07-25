@@ -57,6 +57,12 @@ export default async function PostPage({
             <span>{post.readingTime}</span>
           </div>
         </header>
+        {post.cover && (
+          <figure className="article-cover">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={post.cover} alt={post.coverAlt ?? `${post.title} 封面`} />
+          </figure>
+        )}
         <MarkdownArticle content={post.content} />
         <div className="article-tags">
           {post.tags?.map((tag) => <span key={tag}>#{tag}</span>)}
