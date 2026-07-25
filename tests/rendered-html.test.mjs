@@ -36,6 +36,10 @@ test("server-renders the finished blog home", async () => {
   assert.match(html, /置顶博文/);
   assert.match(html, /最近随想/);
   assert.match(html, /主题专栏/);
+  assert.match(
+    html,
+    /href="https:\/\/github\.com\/hedon954"[^>]*rel="me(?: [^"]*)?"/,
+  );
   assert.doesNotMatch(html, /section-index|pinned-list/);
   assert.match(html, /section-heading accent-heading/);
   assert.doesNotMatch(html, /codex-preview|Your site is taking shape/);

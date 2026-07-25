@@ -7,7 +7,11 @@ export function SiteFooter() {
       <div className="footer-inner">
         <p>© 2026 Hedon · 保持独立，持续写作。</p>
         <div>
-          <Link href="https://github.com/hedon954" aria-label="GitHub">
+          <Link
+            href="https://github.com/hedon954"
+            aria-label="GitHub"
+            rel="me"
+          >
             <GithubLogo size={19} />
             GitHub
           </Link>
