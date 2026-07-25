@@ -131,3 +131,17 @@ No actionable P0, P1, or P2 mismatch remains for the requested "similar style" t
 - No remaining P0, P1, or P2 issue was found.
 
 final result: passed
+
+## 2026-07-25 宽幅博文详情页修订
+
+- 来源视觉：`/var/folders/44/6xx0crn15lxg4fp3zhv2lf740000gn/T/codex-clipboard-edc26c8e-259d-44bc-b448-9dc986b67945.png`
+- 实现截图：`/tmp/hedon-article-layout-1485.png`
+- 对比图：`/tmp/hedon-article-layout-comparison.png`
+- 视口：1485 × 1177 CSS px，桌面浅色主题，文章 `/blog/markdown-lab`。
+- 像素与密度：参考图 1485 × 1178 px；实现图 1485 × 1177 px；按 1× 密度逐像素宽度对齐。
+- 运行检查：文章标题正常显示，主栏 1051 px、目录 270 px；浏览器控制台无错误。
+- [P1 已修复] 详情页两侧留白过大，封面和正文被压缩在窄栏内。文章首屏与正文主栏改为流式宽栏，仅保留固定宽度的右侧目录；封面、标题和正文沿同一主栏对齐。
+- 字体与层级、颜色令牌、封面比例和文章内容均沿用现有设计；标题在加宽后不再过早换行。
+- 没有遗留可操作的 P0/P1/P2 视觉问题。
+
+final result: passed

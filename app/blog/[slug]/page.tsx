@@ -71,8 +71,8 @@ export default async function PostPage({
   const canonicalUrl = absoluteUrl(pathname, baseUrl);
 
   return (
-    <main className="reading-page">
-      <article className="article-column post-article h-entry">
+    <main className="reading-page post-reading-page">
+      <article className="post-article h-entry">
         <Link className="u-url sr-only" href={pathname}>
           {post.title} 永久链接
         </Link>
@@ -83,49 +83,53 @@ export default async function PostPage({
         >
           Hedon
         </a>
-        <Link href="/blog" className="back-link">
-          <ArrowLeft size={16} />
-          返回博文
-        </Link>
-        {post.cover && (
-          <figure className="article-cover">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              className="u-photo"
-              src={post.cover}
-              alt={post.coverAlt ?? `${post.title} 封面`}
-            />
-          </figure>
-        )}
-        <header className="article-header">
-          <p className="eyebrow">{post.topic}</p>
-          <h1 className="p-name">{post.title}</h1>
-          <p className="article-deck p-summary">{post.description}</p>
-          <div className="article-meta">
-            <time className="dt-published" dateTime={post.date}>
-              发布于 {formatDate(post.date)}
-            </time>
-            {post.updated && <span>更新于 {formatDate(post.updated)}</span>}
-            <span>{post.readingTime}</span>
+        <div className="article-hero">
+          <Link href="/blog" className="back-link">
+            <ArrowLeft size={16} />
+            返回博文
+          </Link>
+          {post.cover && (
+            <figure className="article-cover">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                className="u-photo"
+                src={post.cover}
+                alt={post.coverAlt ?? `${post.title} 封面`}
+              />
+            </figure>
+          )}
+        </div>
+        <div className="article-reading-column">
+          <header className="article-header">
+            <p className="eyebrow">{post.topic}</p>
+            <h1 className="p-name">{post.title}</h1>
+            <p className="article-deck p-summary">{post.description}</p>
+            <div className="article-meta">
+              <time className="dt-published" dateTime={post.date}>
+                发布于 {formatDate(post.date)}
+              </time>
+              {post.updated && <span>更新于 {formatDate(post.updated)}</span>}
+              <span>{post.readingTime}</span>
+            </div>
+          </header>
+          <div className="e-content">
+            <MarkdownArticle content={post.content} />
           </div>
-        </header>
-        <div className="e-content">
-          <MarkdownArticle content={post.content} />
+          <div className="article-tags">
+            {post.tags?.map((tag) => (
+              <span className="p-category" key={tag}>
+                #{tag}
+              </span>
+            ))}
+          </div>
+          <Webmentions
+            target={canonicalUrl}
+            endpoint={webmentionApiEndpoint()}
+          />
+          <Comments slug={post.slug} />
         </div>
-        <div className="article-tags">
-          {post.tags?.map((tag) => (
-            <span className="p-category" key={tag}>
-              #{tag}
-            </span>
-          ))}
-        </div>
-        <Webmentions
-          target={canonicalUrl}
-          endpoint={webmentionApiEndpoint()}
-        />
-        <Comments slug={post.slug} />
+        <TableOfContents headings={headings} />
       </article>
-      <TableOfContents headings={headings} />
     </main>
   );
 }

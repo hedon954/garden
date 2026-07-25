@@ -104,10 +104,17 @@ test("renders complex Markdown, article covers, and mixed thought media", async 
   assert.match(article, /language-swift/);
   assert.match(article, /<details>/);
   assert.match(article, /class="article-cover"/);
+  assert.match(article, /class="article-hero"/);
+  assert.match(article, /class="article-reading-column"/);
   assert.ok(
     article.indexOf('class="article-cover"') <
       article.indexOf('class="article-header"'),
     "article cover should render before the title header",
+  );
+  assert.ok(
+    article.indexOf('class="article-hero"') <
+      article.indexOf('class="article-reading-column"'),
+    "article hero should be a distinct section above the reading layout",
   );
 
   assert.equal(thoughtsResponse.status, 200);
