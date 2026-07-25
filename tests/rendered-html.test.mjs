@@ -64,13 +64,7 @@ test("starter preview is removed from source and dependencies", async () => {
 });
 
 test("publishes a valid RSS feed", async () => {
-  const response = await render("/rss.xml");
-  assert.equal(response.status, 200);
-  assert.match(
-    response.headers.get("content-type") ?? "",
-    /^application\/rss\+xml\b/i,
-  );
-  const xml = await response.text();
+  const xml = await readFile(new URL("../public/rss.xml", import.meta.url), "utf8");
   assert.match(xml, /^<\?xml version="1\.0"/);
   assert.match(xml, /<title>Hedon Log<\/title>/);
   assert.match(xml, /<title>注意力也是一种界面<\/title>/);
@@ -174,24 +168,25 @@ test("publishes discovery routes, permanent thought pages, and real integration 
   assert.doesNotMatch(columns, /columns\[0\]/);
 });
 
-test("keeps the admin studio protected and wires durable publishing", async () => {
+test("keeps the admin studio protected and writes content through GitHub", async () => {
   const response = await render("/api/admin/thoughts");
   assert.equal(response.status, 401);
 
-  const [adminPage, thoughtApi, distributionApi, migration, hosting] = await Promise.all([
+  const [adminPage, thoughtApi, distributionApi, githubContent, workflow] = await Promise.all([
     readFile(new URL("../app/admin/page.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/api/admin/thoughts/route.ts", import.meta.url), "utf8"),
     readFile(new URL("../app/api/admin/distribution/route.ts", import.meta.url), "utf8"),
-    readFile(new URL("../drizzle/0000_lazy_albert_cleary.sql", import.meta.url), "utf8"),
-    readFile(new URL("../.openai/hosting.json", import.meta.url), "utf8"),
+    readFile(new URL("../app/lib/github-content.ts", import.meta.url), "utf8"),
+    readFile(new URL("../.github/workflows/pages.yml", import.meta.url), "utf8"),
   ]);
 
   assert.match(adminPage, /api\/auth\/github/);
   assert.match(adminPage, /AdminDashboard/);
-  assert.match(thoughtApi, /managedThoughts/);
+  assert.match(thoughtApi, /createRepositoryThought/);
+  assert.match(githubContent, /CONTENT_GITHUB_TOKEN/);
+  assert.match(githubContent, /content\/thoughts/);
   assert.match(distributionApi, /X_USER_ACCESS_TOKEN/);
   assert.match(distributionApi, /CSDN_SYNC_WEBHOOK/);
-  assert.match(migration, /CREATE TABLE `managed_thoughts`/);
-  assert.match(migration, /CREATE TABLE `distribution_jobs`/);
-  assert.match(hosting, /"d1": "DB"/);
+  assert.match(workflow, /actions\/deploy-pages/);
+  assert.match(workflow, /STATIC_EXPORT=1/);
 });

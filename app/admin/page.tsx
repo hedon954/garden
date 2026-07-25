@@ -3,9 +3,10 @@ import { ArrowSquareOut, GithubLogo, LockKey } from "@phosphor-icons/react/ssr";
 import { AdminDashboard } from "../components/AdminDashboard";
 import { getAdminUser, isGitHubOAuthConfigured } from "../lib/admin-auth";
 import { columns, posts, thoughts } from "../lib/content";
-import { toPublicThought, listManagedThoughts } from "../lib/managed-thoughts";
+import { listRepositoryThoughts } from "../lib/github-content";
+import { getSiteUrl } from "../lib/site";
 
-export const dynamic = "force-dynamic";
+export const dynamic = process.env.STATIC_EXPORT === "1" ? "force-static" : "force-dynamic";
 
 export const metadata = {
   title: "内容管理",
@@ -17,7 +18,31 @@ export default async function AdminPage({
 }: {
   searchParams: Promise<{ auth?: string; account?: string }>;
 }) {
-  const [user, query] = await Promise.all([getAdminUser(), searchParams]);
+  if (process.env.STATIC_EXPORT === "1") {
+    const adminUrl = process.env.ADMIN_URL;
+    return (
+      <main className="admin-access-page">
+        <div className="admin-access-card">
+          <LockKey size={28} weight="duotone" />
+          <p className="eyebrow">CONTENT MANAGEMENT</p>
+          <h1>内容后台独立运行。</h1>
+          <p>公开博客由 GitHub Pages 静态托管；发布和分发请前往独立后台。</p>
+          <div className="admin-access-actions">
+            {adminUrl ? (
+              <a className="admin-github-login" href={adminUrl}>
+                打开内容后台 <ArrowSquareOut size={15} />
+              </a>
+            ) : (
+              <p>尚未配置 ADMIN_URL。</p>
+            )}
+            <Link href="/">返回公开博客</Link>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
+  const [user, query, publicSiteUrl] = await Promise.all([getAdminUser(), searchParams, getSiteUrl()]);
   if (!user) {
     const oauthReady = isGitHubOAuthConfigured();
     return (
@@ -48,12 +73,9 @@ export default async function AdminPage({
     );
   }
 
-  const managed = await listManagedThoughts(true);
-  const initialThoughts = managed.map((row) => ({
-    ...toPublicThought(row),
-    id: row.id,
-    status: row.status,
-  }));
+  const initialThoughts = await listRepositoryThoughts().catch(() =>
+    thoughts.map((thought) => ({ ...thought, id: thought.slug, status: "published" as const })),
+  );
   const catalog = [
     ...posts.map((post) => ({
       kind: "post" as const,
@@ -76,6 +98,7 @@ export default async function AdminPage({
       initialThoughts={initialThoughts}
       staticThoughtCount={thoughts.length}
       catalog={catalog}
+      publicSiteUrl={publicSiteUrl}
     />
   );
 }

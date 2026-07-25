@@ -2,6 +2,7 @@ import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import matter from "gray-matter";
+import { marked } from "marked";
 
 const root = process.cwd();
 const contentRoot = path.join(root, "content");
@@ -9,6 +10,14 @@ const generatedMediaRoot = path.join(root, "public", "media");
 const output = path.join(root, "app", "lib", "generated-content.ts");
 const includeDrafts = process.env.CONTENT_INCLUDE_DRAFTS === "1";
 const now = Date.now();
+const basePath = (process.env.NEXT_PUBLIC_BASE_PATH ?? "").replace(/\/+$/u, "");
+const siteUrl = (process.env.SITE_URL ?? process.env.NEXT_PUBLIC_SITE_URL ?? "https://example.com")
+  .replace(/\/+$/u, "");
+const publicBaseUrl = basePath && !siteUrl.endsWith(basePath)
+  ? `${siteUrl}${basePath}`
+  : siteUrl;
+const siteName = process.env.SITE_NAME ?? "Hedon Log";
+const siteDescription = process.env.SITE_DESCRIPTION ?? "一个以 Markdown 为内容源的个人博客。";
 
 const fail = (sourcePath, message) => {
   throw new Error(`${sourcePath}: ${message}`);
@@ -78,7 +87,7 @@ function copyLocalAsset(value, markdownPath, sourcePath) {
     fs.copyFileSync(absoluteSource, destination);
     assetCache.set(
       absoluteSource,
-      `/media/${safeRelative.split(path.sep).map(encodeURIComponent).join("/")}`,
+      `${basePath}/media/${safeRelative.split(path.sep).map(encodeURIComponent).join("/")}`,
     );
   }
 
@@ -314,6 +323,55 @@ export const thoughts = ${JSON.stringify(thoughts, null, 2)} as ContentEntry[];
 
 fs.mkdirSync(path.dirname(output), { recursive: true });
 fs.writeFileSync(output, source);
+
+const escapeXml = (value) =>
+  value
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&apos;");
+const cdata = (value) => value.replaceAll("]]>", "]]]]><![CDATA[>");
+const publicRoot = path.join(root, "public");
+const feedEntries = [
+  ...posts.map((entry) => ({ ...entry, path: `/blog/${entry.slug}/` })),
+  ...columns.map((entry) => ({ ...entry, path: `/columns/${entry.column}/${entry.slug}/` })),
+  ...thoughts.map((entry) => ({ ...entry, path: `/thoughts/${entry.slug}/` })),
+].sort((left, right) => Date.parse(right.date) - Date.parse(left.date));
+const rssItems = feedEntries.map((entry) => `
+    <item>
+      <title>${escapeXml(entry.title)}</title>
+      <link>${escapeXml(`${publicBaseUrl}${entry.path}`)}</link>
+      <guid isPermaLink="true">${escapeXml(`${publicBaseUrl}${entry.path}`)}</guid>
+      <pubDate>${new Date(entry.date).toUTCString()}</pubDate>
+      <description>${escapeXml(entry.description ?? entry.content.replace(/\s+/gu, " ").slice(0, 180))}</description>
+      ${(entry.tags ?? []).map((tag) => `<category>${escapeXml(tag)}</category>`).join("")}
+      <content:encoded><![CDATA[${cdata(marked.parse(entry.content))}]]></content:encoded>
+    </item>`).join("");
+fs.writeFileSync(path.join(publicRoot, "rss.xml"), `<?xml version="1.0" encoding="UTF-8" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>${escapeXml(siteName)}</title>
+    <link>${escapeXml(publicBaseUrl)}</link>
+    <atom:link href="${escapeXml(`${publicBaseUrl}/rss.xml`)}" rel="self" type="application/rss+xml" />
+    <description>${escapeXml(siteDescription)}</description>
+    <language>zh-CN</language>
+    <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>${rssItems}
+  </channel>
+</rss>
+`);
+const sitemapEntries = [
+  "/", "/blog/", "/thoughts/", "/columns/", "/about/",
+  ...posts.map((entry) => `/blog/${entry.slug}/`),
+  ...columns.map((entry) => `/columns/${entry.column}/${entry.slug}/`),
+  ...thoughts.map((entry) => `/thoughts/${entry.slug}/`),
+];
+fs.writeFileSync(path.join(publicRoot, "sitemap.xml"), `<?xml version="1.0" encoding="UTF-8" ?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${sitemapEntries.map((entry) => `
+  <url><loc>${escapeXml(`${publicBaseUrl}${entry}`)}</loc></url>`).join("")}
+</urlset>
+`);
+fs.writeFileSync(path.join(publicRoot, "robots.txt"), `User-agent: *\nAllow: /\nSitemap: ${publicBaseUrl}/sitemap.xml\n`);
 console.log(
   `Synced ${posts.length} posts, ${columns.length} column entries, and ${thoughts.length} thoughts (${contentHash}).`,
 );

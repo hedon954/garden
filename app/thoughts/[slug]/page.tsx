@@ -17,15 +17,13 @@ export function generateStaticParams() {
   return thoughts.map((thought) => ({ slug: thought.slug }));
 }
 
-export const dynamic = "force-dynamic";
-
 export async function generateMetadata({
   params,
 }: {
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const thought = await findPublishedThought(slug);
+  const thought = findPublishedThought(slug);
   if (!thought) return {};
   const baseUrl = await getSiteUrl();
   const pathname = `/thoughts/${slug}`;
@@ -59,7 +57,7 @@ export default async function ThoughtPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const thought = await findPublishedThought(slug);
+  const thought = findPublishedThought(slug);
   if (!thought) notFound();
   const baseUrl = await getSiteUrl();
   const pathname = `/thoughts/${slug}`;

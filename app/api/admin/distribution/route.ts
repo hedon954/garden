@@ -1,6 +1,3 @@
-import { desc } from "drizzle-orm";
-import { getDb } from "../../../../db";
-import { distributionJobs } from "../../../../db/schema";
 import { requireAdminApi } from "../../../lib/admin-auth";
 import { findColumnEntry, findPost } from "../../../lib/content";
 import { absoluteUrl, getSiteUrl } from "../../../lib/site";
@@ -49,8 +46,6 @@ export async function POST(request: Request) {
 
   const path = kind === "post" ? `/blog/${source.slug}` : `/columns/${source.column}/${source.slug}`;
   const canonicalUrl = absoluteUrl(path, await getSiteUrl());
-  const now = new Date().toISOString();
-  const jobId = crypto.randomUUID();
   let status: "queued" | "published" | "needs_credentials" | "failed" = "queued";
   let externalUrl: string | null = null;
   let error: string | null = null;
@@ -109,20 +104,8 @@ export async function POST(request: Request) {
       }
     }
 
-    await getDb().insert(distributionJobs).values({
-      id: jobId,
-      sourceKind: kind,
-      sourceSlug: slug,
-      platform,
-      status,
-      canonicalUrl,
-      externalUrl,
-      error,
-      createdAt: now,
-      updatedAt: now,
-    });
     return Response.json({
-      job: { id: jobId, platform, status, canonicalUrl, externalUrl, error },
+      job: { platform, status, canonicalUrl, externalUrl, error },
     });
   } catch (exception) {
     const message = exception instanceof Error ? exception.message : "分发服务暂不可用。";
@@ -133,13 +116,5 @@ export async function POST(request: Request) {
 export async function GET() {
   const user = await requireAdminApi();
   if (user instanceof Response) return user;
-  try {
-    const jobs = await getDb()
-      .select()
-      .from(distributionJobs)
-      .orderBy(desc(distributionJobs.createdAt));
-    return Response.json({ jobs });
-  } catch {
-    return Response.json({ jobs: [] });
-  }
+  return Response.json({ jobs: [] });
 }

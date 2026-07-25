@@ -1,8 +1,8 @@
-import { desc } from "drizzle-orm";
-import { getDb } from "../../../../db";
-import { managedThoughts } from "../../../../db/schema";
 import { requireAdminApi } from "../../../lib/admin-auth";
-import { createThoughtSlug, toPublicThought } from "../../../lib/managed-thoughts";
+import {
+  createRepositoryThought,
+  listRepositoryThoughts,
+} from "../../../lib/github-content";
 import type { MediaItem } from "../../../lib/content";
 
 type ThoughtPayload = {
@@ -12,6 +12,10 @@ type ThoughtPayload = {
   media?: unknown;
   status?: unknown;
 };
+
+function createThoughtSlug() {
+  return `thought-${Date.now().toString(36)}-${crypto.randomUUID().slice(0, 6)}`;
+}
 
 function isHttpUrl(value: unknown) {
   if (typeof value !== "string") return false;
@@ -77,31 +81,16 @@ function parsePayload(payload: ThoughtPayload) {
   return { value: { title, content, tags, media, status } };
 }
 
-function databaseError(error: unknown) {
-  const message = error instanceof Error ? error.message : "数据库暂不可用。";
-  if (message.includes("no such table")) {
-    return "管理数据库尚未初始化；请完成本次部署后再试。";
-  }
-  return "保存失败，请稍后重试。";
-}
-
 export async function GET() {
   const user = await requireAdminApi();
   if (user instanceof Response) return user;
   try {
-    const rows = await getDb()
-      .select()
-      .from(managedThoughts)
-      .orderBy(desc(managedThoughts.createdAt));
-    return Response.json({
-      thoughts: rows.map((row) => ({
-        ...toPublicThought(row),
-        id: row.id,
-        status: row.status,
-      })),
-    });
+    return Response.json({ thoughts: await listRepositoryThoughts() });
   } catch (error) {
-    return Response.json({ error: databaseError(error) }, { status: 503 });
+    return Response.json(
+      { error: error instanceof Error ? error.message : "读取 GitHub 内容失败。" },
+      { status: 503 },
+    );
   }
 }
 
@@ -111,26 +100,21 @@ export async function POST(request: Request) {
   const parsed = parsePayload((await request.json()) as ThoughtPayload);
   if ("error" in parsed) return Response.json(parsed, { status: 400 });
 
-  const now = new Date().toISOString();
-  const row = {
-    id: crypto.randomUUID(),
-    slug: createThoughtSlug(),
-    title: parsed.value.title,
-    content: parsed.value.content,
-    tags: JSON.stringify(parsed.value.tags),
-    media: JSON.stringify(parsed.value.media),
-    status: parsed.value.status,
-    publishedAt: parsed.value.status === "published" ? now : null,
-    createdAt: now,
-    updatedAt: now,
-  };
   try {
-    await getDb().insert(managedThoughts).values(row);
-    return Response.json(
-      { thought: { ...toPublicThought(row), id: row.id, status: row.status } },
-      { status: 201 },
-    );
+    const thought = await createRepositoryThought({
+      slug: createThoughtSlug(),
+      title: parsed.value.title,
+      content: parsed.value.content,
+      tags: parsed.value.tags,
+      media: parsed.value.media,
+      status: parsed.value.status,
+      date: new Date().toISOString(),
+    });
+    return Response.json({ thought }, { status: 201 });
   } catch (error) {
-    return Response.json({ error: databaseError(error) }, { status: 503 });
+    return Response.json(
+      { error: error instanceof Error ? error.message : "保存到 GitHub 失败。" },
+      { status: 503 },
+    );
   }
 }

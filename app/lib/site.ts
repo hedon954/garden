@@ -10,7 +10,9 @@ const normalizeBaseUrl = (value: string) => value.replace(/\/+$/u, "");
 
 export async function getSiteUrl() {
   const configured = process.env.SITE_URL ?? process.env.NEXT_PUBLIC_SITE_URL;
-  if (configured) return normalizeBaseUrl(configured);
+  if (configured || process.env.STATIC_EXPORT === "1") {
+    return normalizeBaseUrl(configured ?? fallbackUrl);
+  }
 
   const requestHeaders = await headers();
   const host =

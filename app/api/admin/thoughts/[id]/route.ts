@@ -1,7 +1,8 @@
-import { eq } from "drizzle-orm";
-import { getDb } from "../../../../../db";
-import { managedThoughts } from "../../../../../db/schema";
 import { requireAdminApi } from "../../../../lib/admin-auth";
+import {
+  deleteRepositoryThought,
+  updateRepositoryThought,
+} from "../../../../lib/github-content";
 
 export async function PATCH(
   request: Request,
@@ -14,19 +15,13 @@ export async function PATCH(
   if (payload.status !== "draft" && payload.status !== "published") {
     return Response.json({ error: "无效的状态。" }, { status: 400 });
   }
-  const now = new Date().toISOString();
   try {
-    await getDb()
-      .update(managedThoughts)
-      .set({
-        status: payload.status,
-        publishedAt: payload.status === "published" ? now : null,
-        updatedAt: now,
-      })
-      .where(eq(managedThoughts.id, id));
-    return Response.json({ ok: true });
-  } catch {
-    return Response.json({ error: "更新失败，请稍后重试。" }, { status: 503 });
+    return Response.json({ thought: await updateRepositoryThought(id, payload.status) });
+  } catch (error) {
+    return Response.json(
+      { error: error instanceof Error ? error.message : "更新失败，请稍后重试。" },
+      { status: 503 },
+    );
   }
 }
 
@@ -38,9 +33,12 @@ export async function DELETE(
   if (user instanceof Response) return user;
   const { id } = await params;
   try {
-    await getDb().delete(managedThoughts).where(eq(managedThoughts.id, id));
+    await deleteRepositoryThought(id);
     return Response.json({ ok: true });
-  } catch {
-    return Response.json({ error: "删除失败，请稍后重试。" }, { status: 503 });
+  } catch (error) {
+    return Response.json(
+      { error: error instanceof Error ? error.message : "删除失败，请稍后重试。" },
+      { status: 503 },
+    );
   }
 }

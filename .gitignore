@@ -45,3 +45,8 @@ next-env.d.ts
 # local visual QA evidence
 /implementation-*.png
 /design-comparison-*.png
+
+# Generated from Markdown during build; GitHub Actions regenerates these for Pages.
+/public/rss.xml
+/public/sitemap.xml
+/public/robots.txt

@@ -15,11 +15,9 @@ export const metadata = {
     "Hedon 的个人博客：关于产品、工程、AI 学习与独立写作的长期笔记。",
 };
 
-export const dynamic = "force-dynamic";
-
-export default async function Home() {
+export default function Home() {
   const pinned = posts.filter((post) => post.pinned);
-  const thoughts = await getPublishedThoughts();
+  const thoughts = getPublishedThoughts();
 
   return (
     <main className="page-shell home-page">

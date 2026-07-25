@@ -1,6 +1,7 @@
 import { marked } from "marked";
 import { columns, posts } from "../lib/content";
 import { getPublishedThoughts } from "../lib/public-thoughts";
+import { configuredSiteUrl, siteDescription, siteName } from "../lib/site";
 
 const escapeXml = (value: string) =>
   value
@@ -12,9 +13,9 @@ const escapeXml = (value: string) =>
 
 const cdata = (value: string) => value.replaceAll("]]>", "]]]]><![CDATA[>");
 
-export async function GET(request: Request) {
-  const origin = new URL(request.url).origin;
-  const thoughts = await getPublishedThoughts();
+export async function GET() {
+  const origin = configuredSiteUrl();
+  const thoughts = getPublishedThoughts();
   const entries = [
     ...posts.map((post) => ({ ...post, path: `/blog/${post.slug}` })),
     ...columns.map((entry) => ({
@@ -60,10 +61,10 @@ export async function GET(request: Request) {
   xmlns:atom="http://www.w3.org/2005/Atom"
   xmlns:content="http://purl.org/rss/1.0/modules/content/">
   <channel>
-    <title>Hedon Log</title>
+    <title>${escapeXml(siteName)}</title>
     <link>${origin}</link>
     <atom:link href="${origin}/rss.xml" rel="self" type="application/rss+xml" />
-    <description>写作、构建与保持好奇。</description>
+    <description>${escapeXml(siteDescription)}</description>
     <language>zh-CN</language>
     <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>
     ${items}

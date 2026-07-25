@@ -109,11 +109,13 @@ export function AdminDashboard({
   initialThoughts,
   staticThoughtCount,
   catalog,
+  publicSiteUrl,
 }: {
   userName: string;
   initialThoughts: ManagedThought[];
   staticThoughtCount: number;
   catalog: CatalogEntry[];
+  publicSiteUrl: string;
 }) {
   const [thoughts, setThoughts] = useState(initialThoughts);
   const [title, setTitle] = useState("");
@@ -155,7 +157,7 @@ export function AdminDashboard({
       setContent("");
       setTags("");
       setAttachments([]);
-      setNotice(status === "published" ? "随想已发布到公开博客。" : "草稿已保存，仅在后台可见。"
+      setNotice(status === "published" ? "随想已提交到 GitHub，Pages 将自动重新发布。" : "草稿已提交到 GitHub，仅后台可见。"
       );
     } catch (error) {
       setNotice(error instanceof Error ? error.message : "保存失败，请稍后重试。");
@@ -220,7 +222,7 @@ export function AdminDashboard({
 
   async function copyPackage(entry: CatalogEntry) {
     const path = entry.kind === "post" ? `/blog/${entry.slug}` : `/columns/${entry.column}/${entry.slug}`;
-    await navigator.clipboard.writeText(`${entry.title}\n${entry.topic}\n${window.location.origin}${path}`);
+    await navigator.clipboard.writeText(`${entry.title}\n${entry.topic}\n${publicSiteUrl}${path}`);
     setNotice("标题、栏目与公开链接已复制，可直接粘贴到任意发布平台。"
     );
   }
@@ -234,9 +236,9 @@ export function AdminDashboard({
           <form action="/api/auth/logout" method="post">
             <button type="submit" className="admin-signout">退出</button>
           </form>
-          <Link href="/" target="_blank">
+          <a href={publicSiteUrl} target="_blank" rel="noreferrer">
             查看公开博客 <ArrowSquareOut size={15} />
-          </Link>
+          </a>
         </div>
       </header>
 
@@ -281,7 +283,7 @@ export function AdminDashboard({
               <article key={thought.id}>
                 <div><span className={`admin-status ${thought.status}`}>{thought.status === "published" ? "已发布" : "草稿"}</span><h3>{thought.title}</h3><p>{thought.content.slice(0, 76)}{thought.content.length > 76 ? "…" : ""}</p></div>
                 <div className="admin-item-actions">
-                  {thought.status === "published" && <Link href={`/thoughts/${thought.slug}`} target="_blank" aria-label={`查看 ${thought.title}`}><ArrowUpRight size={17} /></Link>}
+                  {thought.status === "published" && <a href={`${publicSiteUrl}/thoughts/${thought.slug}`} target="_blank" rel="noreferrer" aria-label={`查看 ${thought.title}`}><ArrowUpRight size={17} /></a>}
                   <button type="button" onClick={() => updateThought(thought.id, thought.status === "published" ? "draft" : "published")}>{thought.status === "published" ? "撤回" : "发布"}</button>
                   <button type="button" aria-label={`删除 ${thought.title}`} onClick={() => deleteThought(thought.id)}><Trash size={16} /></button>
                 </div>

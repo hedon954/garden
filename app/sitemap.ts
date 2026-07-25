@@ -5,7 +5,7 @@ import { getPublishedThoughts } from "./lib/public-thoughts";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = await getSiteUrl();
-  const thoughts = await getPublishedThoughts();
+  const thoughts = getPublishedThoughts();
   const staticRoutes = [
     { path: "/", priority: 1, changeFrequency: "weekly" as const },
     { path: "/blog", priority: 0.9, changeFrequency: "weekly" as const },
