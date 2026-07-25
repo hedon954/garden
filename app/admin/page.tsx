@@ -15,7 +15,7 @@ export const metadata = {
 export default async function AdminPage({
   searchParams,
 }: {
-  searchParams: Promise<{ auth?: string }>;
+  searchParams: Promise<{ auth?: string; account?: string }>;
 }) {
   const [user, query] = await Promise.all([getAdminUser(), searchParams]);
   if (!user) {
@@ -28,7 +28,7 @@ export default async function AdminPage({
           <h1>用 GitHub 身份进入内容管理后台。</h1>
           <p>
             {query.auth === "denied"
-              ? "这个 GitHub 账号没有后台权限。"
+              ? `登录账号 @${query.account ?? "未知"} 没有后台权限。`
               : oauthReady
                 ? "登录后会检查你的 GitHub 用户名是否在允许名单中。"
                 : "GitHub OAuth 尚未配置；请先设置后台所需的环境变量。"}

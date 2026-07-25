@@ -29,6 +29,21 @@ function redirectToAdmin(request: Request, reason: string) {
   });
 }
 
+function deniedRedirect(request: Request, login: string) {
+  const target = new URL("/admin", request.url);
+  target.searchParams.set("auth", "denied");
+  // This is only reflected to the person who just completed GitHub OAuth. It
+  // makes an allow-list mismatch actionable without exposing tokens or secrets.
+  target.searchParams.set("account", login);
+  return new Response(null, {
+    status: 302,
+    headers: {
+      Location: target.toString(),
+      "Set-Cookie": `${STATE_COOKIE}=; Path=/api/auth/github; HttpOnly; Secure; SameSite=Lax; Max-Age=0`,
+    },
+  });
+}
+
 export async function GET(request: Request) {
   const url = new URL(request.url);
   const code = url.searchParams.get("code");
@@ -69,16 +84,15 @@ export async function GET(request: Request) {
       login?: string;
       avatar_url?: string;
     } | null;
-    if (
-      !profileResponse.ok ||
-      !profile?.login ||
-      !profile.avatar_url ||
-      !isGitHubLoginAllowed(profile.login)
-    ) {
-      return redirectToAdmin(request, "denied");
-    }
+    if (!profileResponse.ok || !profile?.login) return redirectToAdmin(request, "failed");
 
-    const session = await createAdminSession({ login: profile.login, avatarUrl: profile.avatar_url });
+    const login = profile.login.trim();
+    if (!isGitHubLoginAllowed(login)) return deniedRedirect(request, login);
+
+    const session = await createAdminSession({
+      login,
+      avatarUrl: profile.avatar_url ?? `https://github.com/${encodeURIComponent(login)}.png?size=96`,
+    });
     if (!session) return redirectToAdmin(request, "failed");
     const headers = new Headers({ Location: new URL("/admin", request.url).toString() });
     headers.append("Set-Cookie", sessionCookie(session));
