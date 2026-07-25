@@ -816,40 +816,48 @@ button {
 }
 
 .post-reading-page {
-  width: min(1500px, calc(100% - 96px));
+  --toc-width: 250px;
+  --reading-gap: 64px;
+  width: min(1380px, calc(100% - 128px));
   display: block;
-  padding-top: 56px;
+  padding-top: 38px;
 }
 
 .post-reading-page .post-article {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 270px;
-  column-gap: 68px;
-  row-gap: 0;
-}
-
-.article-hero,
-.article-reading-column {
-  grid-column: 1;
   min-width: 0;
 }
 
-.article-hero .article-cover {
-  margin: 54px 0 0;
+.post-reading-page .article-hero {
+  margin: 0;
+}
+
+.article-hero img {
+  width: 100%;
+  aspect-ratio: 16 / 8.5;
+  display: block;
+  object-fit: cover;
+  border: 1px solid var(--line);
+}
+
+.post-reading-page .article-summary-row {
+  width: calc(100% - var(--toc-width) - var(--reading-gap));
+  padding: 64px 0 42px;
+  margin: 0 0 42px;
+}
+
+.article-reading-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) var(--toc-width);
+  gap: var(--reading-gap);
+  align-items: start;
 }
 
 .article-reading-column {
-  margin-top: 64px;
+  min-width: 0;
 }
 
-.post-reading-page .article-header {
-  padding-top: 0;
-}
-
-.post-reading-page .toc {
-  grid-column: 2;
-  grid-row: 2;
-  margin-top: 64px;
+.post-reading-page .article-reading-layout .toc {
+  margin-top: 0;
 }
 
 .back-link {
@@ -1806,12 +1814,9 @@ button {
 
 @media (max-width: 1080px) {
   .post-reading-page {
-    width: min(1180px, calc(100% - 64px));
-  }
-
-  .post-reading-page .post-article {
-    grid-template-columns: minmax(0, 1fr) 210px;
-    column-gap: 42px;
+    --toc-width: 210px;
+    --reading-gap: 42px;
+    width: min(1180px, calc(100% - 80px));
   }
 
   .column-reading-page {
@@ -1853,22 +1858,19 @@ button {
 
   .post-reading-page {
     width: min(var(--content), calc(100% - 48px));
-    padding-top: 52px;
+    padding-top: 32px;
   }
 
-  .post-reading-page .post-article {
+  .post-reading-page .article-summary-row {
+    width: 100%;
+    padding-top: 46px;
+  }
+
+  .article-reading-layout {
     display: block;
   }
 
-  .article-hero .article-cover {
-    margin-top: 34px;
-  }
-
-  .article-reading-column {
-    margin-top: 46px;
-  }
-
-  .post-reading-page .toc {
+  .post-reading-page .article-reading-layout .toc {
     display: none;
   }
 

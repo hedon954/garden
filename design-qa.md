@@ -145,3 +145,16 @@ final result: passed
 - 没有遗留可操作的 P0/P1/P2 视觉问题。
 
 final result: passed
+
+## 2026-07-25 博文详情三段式布局修订
+
+- 来源视觉：`/var/folders/44/6xx0crn15lxg4fp3zhv2lf740000gn/T/codex-clipboard-c11a5a64-920e-4335-acc9-c8cf5e942547.png`
+- 实现首屏：`/tmp/hedon-article-three-row-top.png`
+- 正文与目录检查：`/tmp/hedon-article-three-row-body-toc.png`
+- 合并对比：`/tmp/hedon-article-three-row-comparison.png`
+- 视口：1485 × 1177 CSS px，桌面浅色主题，文章 `/blog/markdown-lab`。
+- [P1 已修复] 封面不再嵌入正文主栏：它现在独占文章容器的第一整行；下方是独立的主题、标题、副标题与「发布于 / 阅读时长 / 字数」信息行；再下方正文与右侧目录以同一顶部基线开始。
+- 外层桌面留白为两侧各 64 px，较上一版略增但不会重新压缩正文；目录固定为 250 px，正文保持可读的宽栏。
+- 视觉对比与首屏检查确认：封面、标题信息、正文三层层级清晰；正文和目录均从同一阅读区开始；没有水平溢出或可操作的 P0/P1/P2 问题。
+
+final result: passed

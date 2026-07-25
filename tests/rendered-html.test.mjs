@@ -103,18 +103,20 @@ test("renders complex Markdown, article covers, and mixed thought media", async 
   assert.match(article, /language-sql/);
   assert.match(article, /language-swift/);
   assert.match(article, /<details>/);
-  assert.match(article, /class="article-cover"/);
-  assert.match(article, /class="article-hero"/);
+  assert.match(article, /class="article-hero article-cover"/);
+  assert.match(article, /class="article-header article-summary-row"/);
+  assert.match(article, /class="article-reading-layout"/);
   assert.match(article, /class="article-reading-column"/);
+  assert.match(article, /约 <!-- -->[\d,]+<!-- --> 字/);
   assert.ok(
-    article.indexOf('class="article-cover"') <
-      article.indexOf('class="article-header"'),
+    article.indexOf('class="article-hero article-cover"') <
+      article.indexOf('class="article-header article-summary-row"'),
     "article cover should render before the title header",
   );
   assert.ok(
-    article.indexOf('class="article-hero"') <
-      article.indexOf('class="article-reading-column"'),
-    "article hero should be a distinct section above the reading layout",
+    article.indexOf('class="article-header article-summary-row"') <
+      article.indexOf('class="article-reading-layout"'),
+    "article summary should be a distinct row above the body and table of contents",
   );
 
   assert.equal(thoughtsResponse.status, 200);

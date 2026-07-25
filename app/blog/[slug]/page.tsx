@@ -1,9 +1,9 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { ArrowLeft } from "@phosphor-icons/react/ssr";
 import {
   extractHeadings,
+  estimateWordCount,
   findPost,
   formatDate,
   posts,
@@ -69,6 +69,7 @@ export default async function PostPage({
   const baseUrl = await getSiteUrl();
   const pathname = `/blog/${post.slug}`;
   const canonicalUrl = absoluteUrl(pathname, baseUrl);
+  const wordCount = estimateWordCount(post.content);
 
   return (
     <main className="reading-page post-reading-page">
@@ -83,52 +84,49 @@ export default async function PostPage({
         >
           Hedon
         </a>
-        <div className="article-hero">
-          <Link href="/blog" className="back-link">
-            <ArrowLeft size={16} />
-            返回博文
-          </Link>
-          {post.cover && (
-            <figure className="article-cover">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                className="u-photo"
-                src={post.cover}
-                alt={post.coverAlt ?? `${post.title} 封面`}
-              />
-            </figure>
-          )}
-        </div>
-        <div className="article-reading-column">
-          <header className="article-header">
-            <p className="eyebrow">{post.topic}</p>
-            <h1 className="p-name">{post.title}</h1>
-            <p className="article-deck p-summary">{post.description}</p>
-            <div className="article-meta">
-              <time className="dt-published" dateTime={post.date}>
-                发布于 {formatDate(post.date)}
-              </time>
-              {post.updated && <span>更新于 {formatDate(post.updated)}</span>}
-              <span>{post.readingTime}</span>
+        {post.cover && (
+          <figure className="article-hero article-cover">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              className="u-photo"
+              src={post.cover}
+              alt={post.coverAlt ?? `${post.title} 封面`}
+            />
+          </figure>
+        )}
+        <header className="article-header article-summary-row">
+          <p className="eyebrow">{post.topic}</p>
+          <h1 className="p-name">{post.title}</h1>
+          <p className="article-deck p-summary">{post.description}</p>
+          <div className="article-meta">
+            <time className="dt-published" dateTime={post.date}>
+              发布于 {formatDate(post.date)}
+            </time>
+            {post.updated && <span>更新于 {formatDate(post.updated)}</span>}
+            <span>{post.readingTime}</span>
+            <span>约 {wordCount.toLocaleString("zh-CN")} 字</span>
+          </div>
+        </header>
+        <div className="article-reading-layout">
+          <div className="article-reading-column">
+            <div className="e-content">
+              <MarkdownArticle content={post.content} />
             </div>
-          </header>
-          <div className="e-content">
-            <MarkdownArticle content={post.content} />
+            <div className="article-tags">
+              {post.tags?.map((tag) => (
+                <span className="p-category" key={tag}>
+                  #{tag}
+                </span>
+              ))}
+            </div>
+            <Webmentions
+              target={canonicalUrl}
+              endpoint={webmentionApiEndpoint()}
+            />
+            <Comments slug={post.slug} />
           </div>
-          <div className="article-tags">
-            {post.tags?.map((tag) => (
-              <span className="p-category" key={tag}>
-                #{tag}
-              </span>
-            ))}
-          </div>
-          <Webmentions
-            target={canonicalUrl}
-            endpoint={webmentionApiEndpoint()}
-          />
-          <Comments slug={post.slug} />
+          <TableOfContents headings={headings} />
         </div>
-        <TableOfContents headings={headings} />
       </article>
     </main>
   );

@@ -51,6 +51,15 @@ const toSearchableText = (markdown: string) =>
     .replace(/\s+/g, " ")
     .trim();
 
+export const estimateWordCount = (markdown: string) => {
+  const text = toSearchableText(markdown);
+  const hanCharacters = text.match(/[\u3400-\u9fff]/gu)?.length ?? 0;
+  const otherWords = text
+    .replace(/[\u3400-\u9fff]/gu, " ")
+    .match(/[\p{L}\p{N}]+/gu)?.length ?? 0;
+  return hanCharacters + otherWords;
+};
+
 export const searchRecords = [
   ...posts.map((item) => ({
     title: item.title,
