@@ -41,27 +41,37 @@ export const extractHeadings = (markdown: string) =>
     })
     .filter(Boolean) as Array<{ depth: number; text: string; id: string }>;
 
+const toSearchableText = (markdown: string) =>
+  markdown
+    .replace(/```[^\n]*\n([\s\S]*?)```/g, " $1 ")
+    .replace(/!\[([^\]]*)\]\([^)]+\)/g, " $1 ")
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, " $1 ")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/[#>*_~`|[\]{}()]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
 export const searchRecords = [
   ...posts.map((item) => ({
     title: item.title,
     description: item.description ?? "",
     topic: item.topic ?? "博文",
     path: `/blog/${item.slug}`,
-    content: item.content,
+    content: toSearchableText(item.content),
   })),
   ...columns.map((item) => ({
     title: item.title,
     description: item.description ?? "",
     topic: item.columnTitle ?? "专栏",
     path: `/columns/${item.column}/${item.slug}`,
-    content: item.content,
+    content: toSearchableText(item.content),
   })),
   ...thoughts.map((item) => ({
     title: item.title,
-    description: item.content,
+    description: toSearchableText(item.content),
     topic: "随想",
     path: `/thoughts#${item.slug}`,
-    content: item.content,
+    content: toSearchableText(item.content),
   })),
 ];
 

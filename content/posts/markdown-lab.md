@@ -10,7 +10,7 @@ tags:
   - Mermaid
   - KaTeX
 pinned: false
-readingTime: 7 分钟
+readingTime: 10 分钟
 cover: https://images.unsplash.com/photo-1761414500824-e280de5a1b37?auto=format&fit=crop&w=1600&q=84
 coverAlt: 彩色阳台构成的现代建筑立面
 ---
@@ -73,6 +73,8 @@ $$
 
 ## Mermaid 流程与时序
 
+Mermaid 内置了多套主题。下面每张图都可以独立切换「经典」「中性」「森林」和「深色」，方便对比同一份图表语法在不同视觉环境中的表现。
+
 下面的流程图描述本地写作到发布的闭环：
 
 ```mermaid
@@ -102,7 +104,109 @@ sequenceDiagram
   S-->>R: HTML + KaTeX + Mermaid
 ```
 
-## 代码、图片与原生 HTML
+## 多语言代码高亮
+
+同一种内容结构，在不同语言里应该保留各自可辨识的关键字、类型、字符串、注释与数字层级。
+
+### TypeScript
+
+```typescript
+type Post<TMeta extends Record<string, unknown>> = {
+  slug: string;
+  meta: TMeta;
+};
+
+async function publish<TMeta extends Record<string, unknown>>(
+  post: Post<TMeta>,
+): Promise<string> {
+  const response = await fetch(`/api/posts/${post.slug}`, {
+    method: "POST",
+    body: JSON.stringify(post.meta),
+  });
+  return response.ok ? "published" : "failed";
+}
+```
+
+### Python
+
+```python
+from dataclasses import dataclass
+from pathlib import Path
+
+@dataclass(frozen=True)
+class Article:
+    title: str
+    source: Path
+
+def published_titles(articles: list[Article]) -> list[str]:
+    return [article.title for article in articles if article.source.exists()]
+```
+
+### Rust
+
+```rust
+#[derive(Debug)]
+struct Entry<'a> {
+    title: &'a str,
+    pinned: bool,
+}
+
+fn pinned_titles(entries: &[Entry<'_>]) -> Vec<&str> {
+    entries.iter()
+        .filter(|entry| entry.pinned)
+        .map(|entry| entry.title)
+        .collect()
+}
+```
+
+### Go
+
+```go
+func renderAll(ctx context.Context, slugs []string) <-chan Result {
+	results := make(chan Result)
+	go func() {
+		defer close(results)
+		for _, slug := range slugs {
+			results <- render(ctx, slug)
+		}
+	}()
+	return results
+}
+```
+
+### SQL
+
+```sql
+WITH ranked_posts AS (
+  SELECT
+    title,
+    topic,
+    ROW_NUMBER() OVER (PARTITION BY topic ORDER BY published_at DESC) AS rank
+  FROM posts
+  WHERE status = 'published'
+)
+SELECT title, topic
+FROM ranked_posts
+WHERE rank <= 3;
+```
+
+### Swift
+
+```swift
+actor ReadingProgress {
+    private var offsets: [URL: Double] = [:]
+
+    func save(_ offset: Double, for article: URL) {
+        offsets[article] = max(0, offset)
+    }
+
+    func restore(for article: URL) -> Double {
+        offsets[article, default: 0]
+    }
+}
+```
+
+## Diff、图片与原生 HTML
 
 ```diff
 - const publishing = "copy and paste";

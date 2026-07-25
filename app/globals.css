@@ -928,14 +928,26 @@ button {
 }
 
 .markdown-body pre {
+  position: relative;
   margin: 32px 0;
-  padding: 20px;
+  padding: 34px 20px 20px;
   overflow-x: auto;
   background: #202225;
   color: #e6e6e2;
   border: 1px solid #303337;
   font-size: 12px;
   line-height: 1.7;
+}
+
+.markdown-body pre[data-language]::before {
+  content: attr(data-language);
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  color: #8b929c;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
 }
 
 .markdown-body :not(pre) > code {
@@ -965,18 +977,77 @@ button {
   font-weight: 700;
 }
 
-.markdown-body .mermaid {
+.markdown-body .mermaid-block {
   margin: 34px 0;
-  padding: 22px;
-  overflow-x: auto;
   background: var(--card);
   border: 1px solid var(--line);
+}
+
+.mermaid-toolbar {
+  min-height: 46px;
+  padding: 8px 12px 8px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  border-bottom: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.mermaid-theme-picker {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.mermaid-theme-picker button {
+  padding: 4px 7px;
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid transparent;
+  font-size: 9px;
+}
+
+.mermaid-theme-picker button:hover {
+  color: var(--ink);
+  border-color: var(--line-strong);
+}
+
+.mermaid-theme-picker button[aria-pressed="true"] {
+  background: var(--ink);
+  color: var(--paper);
+  border-color: var(--ink);
+}
+
+.mermaid-canvas {
+  min-height: 210px;
+  padding: 22px;
+  display: grid;
+  place-items: center;
+  overflow-x: auto;
   text-align: center;
 }
 
-.markdown-body .mermaid svg {
+.markdown-body .mermaid-canvas svg {
+  width: 100% !important;
   max-width: 100%;
+  max-height: 360px;
   height: auto;
+}
+
+.mermaid-svg {
+  width: 100%;
+}
+
+.mermaid-loading,
+.mermaid-error {
+  color: var(--faint);
+  font-size: 10px;
+}
+
+.mermaid-error {
+  color: var(--accent);
 }
 
 .markdown-body hr {
@@ -1018,6 +1089,42 @@ button {
 .hljs-number,
 .hljs-type {
   color: #e9b96e;
+}
+
+.hljs-comment,
+.hljs-quote {
+  color: #8b929c;
+  font-style: italic;
+}
+
+.hljs-built_in,
+.hljs-builtin-name,
+.hljs-attribute,
+.hljs-selector-attr {
+  color: #7cc7d9;
+}
+
+.hljs-function,
+.hljs-title.function_,
+.hljs-property {
+  color: #a9c7ff;
+}
+
+.hljs-variable,
+.hljs-template-variable,
+.hljs-params {
+  color: #e6e6e2;
+}
+
+.hljs-meta,
+.hljs-symbol,
+.hljs-bullet {
+  color: #c7a0e8;
+}
+
+.hljs-operator,
+.hljs-punctuation {
+  color: #b7bdc5;
 }
 
 .hljs-comment {
@@ -1493,6 +1600,14 @@ button {
   font-size: 10px;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.search-match {
+  padding: 0 1px;
+  background: var(--selection);
+  color: var(--ink);
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
 }
 
 .empty-state {

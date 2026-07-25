@@ -42,16 +42,21 @@ test("server-renders the finished blog home", async () => {
 });
 
 test("starter preview is removed from source and dependencies", async () => {
-  const [page, layout, packageJson] = await Promise.all([
+  const [page, layout, packageJson, siteHeader, contentModule] = await Promise.all([
     readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/layout.tsx", import.meta.url), "utf8"),
     readFile(new URL("../package.json", import.meta.url), "utf8"),
+    readFile(new URL("../app/components/SiteHeader.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/lib/content.ts", import.meta.url), "utf8"),
   ]);
 
   await assert.rejects(access(new URL("../app/_sites-preview", templateRoot)));
   assert.doesNotMatch(page, /SkeletonPreview|codex-preview/);
   assert.doesNotMatch(layout, /Starter Project|codex-preview/);
   assert.doesNotMatch(packageJson, /react-loading-skeleton/);
+  assert.match(siteHeader, /includeMatches:\s*true/);
+  assert.match(siteHeader, /className="search-match"/);
+  assert.match(contentModule, /toSearchableText/);
 });
 
 test("publishes a valid RSS feed", async () => {
@@ -79,6 +84,13 @@ test("renders complex Markdown, article covers, and mixed thought media", async 
   assert.match(article, /Markdown 复杂语法实验场/);
   assert.match(article, /class="katex-display"/);
   assert.match(article, /language-mermaid/);
+  assert.match(article, /mermaid-theme-picker/);
+  assert.match(article, /language-typescript/);
+  assert.match(article, /language-python/);
+  assert.match(article, /language-rust/);
+  assert.match(article, /language-go/);
+  assert.match(article, /language-sql/);
+  assert.match(article, /language-swift/);
   assert.match(article, /<details>/);
   assert.match(article, /class="article-cover"/);
   assert.ok(

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import Fuse from "fuse.js";
+import Fuse, { type FuseResultMatch } from "fuse.js";
 import {
   Cactus,
   MagnifyingGlass,
@@ -20,6 +20,118 @@ const nav = [
   { href: "/about", label: "关于" },
 ];
 
+type MatchRange = readonly [number, number];
+
+function rangesFor(
+  matches: readonly FuseResultMatch[] | undefined,
+  key: string,
+): readonly MatchRange[] {
+  return matches?.find((match) => match.key === key)?.indices ?? [];
+}
+
+function HighlightedText({
+  text,
+  ranges,
+}: {
+  text: string;
+  ranges: readonly MatchRange[];
+}) {
+  if (!ranges.length) return text;
+
+  const merged = [...ranges]
+    .sort((left, right) => left[0] - right[0])
+    .reduce<MatchRange[]>((result, range) => {
+      const previous = result.at(-1);
+      if (previous && range[0] <= previous[1] + 1) {
+        result[result.length - 1] = [
+          previous[0],
+          Math.max(previous[1], range[1]),
+        ];
+      } else {
+        result.push(range);
+      }
+      return result;
+    }, []);
+
+  const parts: Array<{ text: string; matched: boolean }> = [];
+  let cursor = 0;
+  merged.forEach(([start, end]) => {
+    if (start > cursor) {
+      parts.push({ text: text.slice(cursor, start), matched: false });
+    }
+    parts.push({ text: text.slice(start, end + 1), matched: true });
+    cursor = end + 1;
+  });
+  if (cursor < text.length) {
+    parts.push({ text: text.slice(cursor), matched: false });
+  }
+
+  return (
+    <>
+      {parts.map((part, index) =>
+        part.matched ? (
+          <mark className="search-match" key={`${part.text}-${index}`}>
+            {part.text}
+          </mark>
+        ) : (
+          <span key={`${part.text}-${index}`}>{part.text}</span>
+        ),
+      )}
+    </>
+  );
+}
+
+function cropMatchedText(text: string, ranges: readonly MatchRange[]) {
+  if (!ranges.length) return { text, ranges };
+
+  const [focusStart, focusEnd] = ranges[0];
+  let start = Math.max(0, focusStart - 42);
+  let end = Math.min(text.length, Math.max(focusEnd + 52, start + 112));
+
+  if (start > 0) {
+    const nextSpace = text.indexOf(" ", start);
+    if (nextSpace !== -1 && nextSpace < focusStart) start = nextSpace + 1;
+  }
+  if (end < text.length) {
+    const previousSpace = text.lastIndexOf(" ", end);
+    if (previousSpace > focusEnd) end = previousSpace;
+  }
+
+  const prefix = start > 0 ? "…" : "";
+  const suffix = end < text.length ? "…" : "";
+  const visibleRanges = ranges
+    .filter(([rangeStart, rangeEnd]) => rangeEnd >= start && rangeStart < end)
+    .map(
+      ([rangeStart, rangeEnd]) =>
+        [
+          Math.max(rangeStart, start) - start + prefix.length,
+          Math.min(rangeEnd, end - 1) - start + prefix.length,
+        ] as MatchRange,
+    );
+
+  return {
+    text: `${prefix}${text.slice(start, end)}${suffix}`,
+    ranges: visibleRanges,
+  };
+}
+
+function searchPreview(
+  item: (typeof searchRecords)[number],
+  matches: readonly FuseResultMatch[] | undefined,
+): { text: string; ranges: readonly MatchRange[] } {
+  const descriptionRanges = rangesFor(matches, "description");
+  if (descriptionRanges.length) {
+    return cropMatchedText(item.description, descriptionRanges);
+  }
+
+  const contentRanges = rangesFor(matches, "content");
+  if (contentRanges.length) {
+    return cropMatchedText(item.content, contentRanges);
+  }
+
+  return { text: item.description, ranges: [] };
+}
+
 export function SiteHeader() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -30,8 +142,9 @@ export function SiteHeader() {
     const useDark =
       stored === "dark" ||
       (!stored && window.matchMedia("(prefers-color-scheme: dark)").matches);
-    setDark(useDark);
     document.documentElement.dataset.theme = useDark ? "dark" : "light";
+    const frame = window.requestAnimationFrame(() => setDark(useDark));
+    return () => window.cancelAnimationFrame(frame);
   }, []);
 
   useEffect(() => {
@@ -57,13 +170,14 @@ export function SiteHeader() {
         ],
         threshold: 0.36,
         ignoreLocation: true,
+        includeMatches: true,
       }),
     [],
   );
 
   const results = query.trim()
-    ? fuse.search(query).slice(0, 6).map((result) => result.item)
-    : searchRecords.slice(0, 5);
+    ? fuse.search(query).slice(0, 6)
+    : searchRecords.slice(0, 5).map((item) => ({ item, matches: [] }));
 
   const toggleTheme = () => {
     const next = !dark;
@@ -140,18 +254,33 @@ export function SiteHeader() {
               <p className="search-label">
                 {query ? `${results.length} 个相关结果` : "最近内容"}
               </p>
-              {results.map((item) => (
-                <Link
-                  key={`${item.path}-${item.title}`}
-                  href={item.path}
-                  onClick={() => setSearchOpen(false)}
-                  className="search-result"
-                >
-                  <span>{item.topic}</span>
-                  <strong>{item.title}</strong>
-                  <small>{item.description}</small>
-                </Link>
-              ))}
+              {results.map((result) => {
+                const preview = searchPreview(result.item, result.matches);
+                return (
+                  <Link
+                    key={`${result.item.path}-${result.item.title}`}
+                    href={result.item.path}
+                    onClick={() => setSearchOpen(false)}
+                    className="search-result"
+                  >
+                    <span>
+                      <HighlightedText
+                        text={result.item.topic}
+                        ranges={rangesFor(result.matches, "topic")}
+                      />
+                    </span>
+                    <strong>
+                      <HighlightedText
+                        text={result.item.title}
+                        ranges={rangesFor(result.matches, "title")}
+                      />
+                    </strong>
+                    <small>
+                      <HighlightedText text={preview.text} ranges={preview.ranges} />
+                    </small>
+                  </Link>
+                );
+              })}
               {results.length === 0 && (
                 <p className="empty-state">没有找到，换个更宽松的关键词试试。</p>
               )}
