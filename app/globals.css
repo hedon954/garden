@@ -995,13 +995,13 @@ button {
   font-size: 10px;
 }
 
-.mermaid-theme-picker {
+.mermaid-view-switcher {
   display: flex;
   align-items: center;
   gap: 4px;
 }
 
-.mermaid-theme-picker button {
+.mermaid-view-switcher button {
   padding: 4px 7px;
   background: transparent;
   color: var(--muted);
@@ -1009,12 +1009,12 @@ button {
   font-size: 9px;
 }
 
-.mermaid-theme-picker button:hover {
+.mermaid-view-switcher button:hover {
   color: var(--ink);
   border-color: var(--line-strong);
 }
 
-.mermaid-theme-picker button[aria-pressed="true"] {
+.mermaid-view-switcher button[aria-selected="true"] {
   background: var(--ink);
   color: var(--paper);
   border-color: var(--ink);
@@ -1038,6 +1038,14 @@ button {
 
 .mermaid-svg {
   width: 100%;
+}
+
+.markdown-body .mermaid-code {
+  min-height: 210px;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  white-space: pre;
 }
 
 .mermaid-loading,

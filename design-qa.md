@@ -113,4 +113,21 @@ No actionable P0, P1, or P2 mismatch remains for the requested "similar style" t
 - A fresh browser tab confirmed two Mermaid SVGs, seven highlighted code blocks, and no console errors after rendering completed.
 - No remaining P0, P1, or P2 issue was found.
 
+## 2026-07-25 Mermaid render and code revision
+
+- Page-structure reference: `/var/folders/44/6xx0crn15lxg4fp3zhv2lf740000gn/T/codex-clipboard-6a177901-9e7e-4b78-b74a-ea3c07225c59.png`
+- Previous component state: `/Users/hedon/Documents/blog/implementation-mermaid-themes.png`
+- Revised render state: `/Users/hedon/Documents/blog/implementation-mermaid-render-mode.png`
+- Revised code state: `/Users/hedon/Documents/blog/implementation-mermaid-code-mode.png`
+- Previous-to-revised comparison: `/Users/hedon/Documents/blog/design-comparison-mermaid-view-switcher.png`
+- Two-mode implementation evidence: `/Users/hedon/Documents/blog/implementation-mermaid-two-modes.png`
+- Component captures use a 1200 × 900 CSS viewport at device scale factor 1 in the light theme. The focused state places the Mermaid section at the top of the viewport with the article TOC visible.
+- The page-structure reference confirms that cover, title/body column, and right TOC remain separate hierarchy regions. This revision changes only the Mermaid component and introduces no page-level layout drift.
+- The old four-theme picker is absent. Both diagrams are fixed to Mermaid's neutral theme and default to the rendered SVG view.
+- Each diagram now exposes only two compact tabs, “渲染” and “Code”. Switching the first diagram to Code reveals its exact fenced-source text while the second diagram remains rendered, confirming independent state.
+- Typography, spacing, borders, and active states reuse the existing code-block and editorial tokens. The Code panel preserves the same component footprint and scrolls internally when its source is wider than the viewport.
+- At 390 × 844, the component is 362 px wide, the two-tab switcher is 77 px wide, the page has no horizontal overflow, and Code remains independently scrollable.
+- Browser checks confirmed two neutral-theme diagrams, two independent switchers, zero theme pickers, successful render-to-code-to-render transitions, and no console errors.
+- No remaining P0, P1, or P2 issue was found.
+
 final result: passed

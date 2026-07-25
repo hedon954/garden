@@ -18,23 +18,14 @@ import rehypeSlug from "rehype-slug";
 import rehypeAutolinkHeadings from "rehype-autolink-headings";
 import rehypeHighlight from "rehype-highlight";
 
-const mermaidThemes = [
-  { value: "default", label: "经典" },
-  { value: "neutral", label: "中性" },
-  { value: "forest", label: "森林" },
-  { value: "dark", label: "深色" },
-] as const;
-
-type MermaidTheme = (typeof mermaidThemes)[number]["value"];
-
 let mermaidRenderQueue: Promise<unknown> = Promise.resolve();
 
-function renderMermaid(source: string, id: string, theme: MermaidTheme) {
+function renderMermaid(source: string, id: string) {
   const task = mermaidRenderQueue.then(async () => {
     const mermaid = (await import("mermaid")).default;
     mermaid.initialize({
       startOnLoad: false,
-      theme,
+      theme: "neutral",
       fontFamily: "var(--font-mono)",
       securityLevel: "strict",
       suppressErrorRendering: true,
@@ -50,17 +41,18 @@ function renderMermaid(source: string, id: string, theme: MermaidTheme) {
 
 function MermaidDiagram({ source }: { source: string }) {
   const reactId = useId();
-  const [theme, setTheme] = useState<MermaidTheme>("neutral");
+  const [view, setView] = useState<"render" | "code">("render");
   const [svg, setSvg] = useState("");
   const [error, setError] = useState(false);
+  const panelId = `mermaid-panel-${reactId.replaceAll(":", "")}`;
 
   useEffect(() => {
     let active = true;
     const draw = async () => {
       setError(false);
       try {
-        const id = `mermaid-${reactId.replaceAll(":", "")}-${theme}`;
-        const result = await renderMermaid(source, id, theme);
+        const id = `mermaid-${reactId.replaceAll(":", "")}`;
+        const result = await renderMermaid(source, id);
         if (active) setSvg(result.svg);
       } catch {
         if (active) setError(true);
@@ -70,42 +62,70 @@ function MermaidDiagram({ source }: { source: string }) {
     return () => {
       active = false;
     };
-  }, [reactId, source, theme]);
+  }, [reactId, source]);
 
   return (
     <figure
       className="mermaid-block language-mermaid"
-      data-mermaid-theme={theme}
+      data-mermaid-theme="neutral"
     >
       <figcaption className="mermaid-toolbar">
-        <span>Mermaid 主题</span>
-        <span className="mermaid-theme-picker" role="group" aria-label="选择 Mermaid 主题">
-          {mermaidThemes.map((item) => (
-            <button
-              key={item.value}
-              type="button"
-              aria-pressed={theme === item.value}
-              onClick={() => setTheme(item.value)}
-            >
-              {item.label}
-            </button>
-          ))}
+        <span>Mermaid</span>
+        <span
+          className="mermaid-view-switcher"
+          role="tablist"
+          aria-label="切换 Mermaid 显示方式"
+        >
+          <button
+            type="button"
+            role="tab"
+            aria-selected={view === "render"}
+            aria-controls={panelId}
+            onClick={() => setView("render")}
+          >
+            渲染
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={view === "code"}
+            aria-controls={panelId}
+            onClick={() => setView("code")}
+          >
+            Code
+          </button>
         </span>
       </figcaption>
-      <div className="mermaid-canvas" aria-live="polite">
-        {svg ? (
-          <div
-            className="mermaid-svg"
-            dangerouslySetInnerHTML={{ __html: svg }}
-          />
-        ) : null}
-        {!svg && !error ? (
-          <span className="mermaid-loading">正在绘制图表…</span>
-        ) : null}
-        {error ? (
-          <span className="mermaid-error">图表渲染失败，请检查语法。</span>
-        ) : null}
-      </div>
+      {view === "render" ? (
+        <div
+          className="mermaid-canvas"
+          id={panelId}
+          role="tabpanel"
+          aria-live="polite"
+        >
+          {svg ? (
+            <div
+              className="mermaid-svg"
+              dangerouslySetInnerHTML={{ __html: svg }}
+            />
+          ) : null}
+          {!svg && !error ? (
+            <span className="mermaid-loading">正在绘制图表…</span>
+          ) : null}
+          {error ? (
+            <span className="mermaid-error">图表渲染失败，请检查语法。</span>
+          ) : null}
+        </div>
+      ) : (
+        <pre
+          className="mermaid-code"
+          id={panelId}
+          role="tabpanel"
+          data-language="MERMAID"
+        >
+          <code>{source}</code>
+        </pre>
+      )}
     </figure>
   );
 }

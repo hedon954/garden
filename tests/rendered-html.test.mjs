@@ -84,7 +84,11 @@ test("renders complex Markdown, article covers, and mixed thought media", async 
   assert.match(article, /Markdown 复杂语法实验场/);
   assert.match(article, /class="katex-display"/);
   assert.match(article, /language-mermaid/);
-  assert.match(article, /mermaid-theme-picker/);
+  assert.match(article, /data-mermaid-theme="neutral"/);
+  assert.match(article, /mermaid-view-switcher/);
+  assert.match(article, />渲染<\/button>/);
+  assert.match(article, />Code<\/button>/);
+  assert.doesNotMatch(article, /mermaid-theme-picker|森林/);
   assert.match(article, /language-typescript/);
   assert.match(article, /language-python/);
   assert.match(article, /language-rust/);
