@@ -29,6 +29,10 @@ test("content pipeline validates metadata, excludes drafts, and publishes Typora
       path.join(projectRoot, "scripts", "build-content.mjs"),
       path.join(fixture, "scripts", "build-content.mjs"),
     );
+    await cp(
+      path.join(projectRoot, "site.config.json"),
+      path.join(fixture, "site.config.json"),
+    );
     await symlink(
       path.join(projectRoot, "node_modules"),
       path.join(fixture, "node_modules"),
