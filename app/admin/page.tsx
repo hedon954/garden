@@ -5,6 +5,7 @@ import { getAdminUser, isGitHubOAuthConfigured } from "../lib/admin-auth";
 import { columns, posts, thoughts } from "../lib/content";
 import { isContentRepositoryConfigured, listRepositoryThoughts } from "../lib/github-content";
 import { getSiteUrl } from "../lib/site";
+import { siteConfig } from "../site.config";
 
 export const dynamic = process.env.STATIC_EXPORT === "1" ? "force-static" : "force-dynamic";
 
@@ -49,7 +50,7 @@ export default async function AdminPage({
       <main className="admin-access-page">
         <div className="admin-access-card">
           <LockKey size={28} weight="duotone" />
-          <p className="eyebrow">GARDEN / ADMIN</p>
+          <p className="eyebrow">{siteConfig.name.toUpperCase()} / ADMIN</p>
           <h1>用 GitHub 身份进入内容管理后台。</h1>
           <p>
             {query.auth === "denied"
