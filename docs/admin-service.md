@@ -15,6 +15,12 @@
 | `GITHUB_SESSION_SECRET` | 至少 32 个随机字符的后台会话密钥 |
 | `ADMIN_GITHUB_LOGINS` | 允许登录的 GitHub 用户名，用逗号分隔 |
 | `GITHUB_OAUTH_REDIRECT_URI` | 可选；反向代理或多域名时显式指定 OAuth 回调地址 |
+| `OSS_ENDPOINT` | OSS 区域 Endpoint，例如 `https://oss-cn-hangzhou.aliyuncs.com` |
+| `OSS_BUCKET` | 存放公开媒体的 Bucket 名称 |
+| `OSS_ACCESS_KEY_ID` / `OSS_ACCESS_KEY_SECRET` | 仅授予该 Bucket 指定前缀写入权限的 RAM 凭据 |
+| `OSS_PREFIX` | 可选；对象前缀，默认 `blog-media` |
+| `OSS_PUBLIC_BASE_URL` | 可选；绑定 CDN/自定义域名后的公开媒体根地址 |
+| `OSS_MAX_UPLOAD_MB` | 可选；单文件上限，默认 200 |
 
 后台地址假设为 `https://admin.example.com` 时，OAuth App 的 Callback URL 是：
 
@@ -23,6 +29,17 @@ https://admin.example.com/api/auth/github/callback
 ```
 
 后台写入仓库时使用 `CONTENT_GITHUB_TOKEN`，而不是 OAuth 登录令牌。这样访问者的登录授权只负责身份识别，内容写入权限始终留在服务端。
+
+## 阿里云 OSS 媒体上传
+
+图片、音频和视频不会进入 Git 仓库。后台校验登录者与文件元数据后，使用后台保存的 OSS AccessKey 为单个对象签发十分钟有效、固定对象路径和限定大小的 Post Policy；浏览器随后直接上传到 OSS，Markdown 只保存公开 URL。
+
+因此需要在 OSS Bucket 设置中完成两件事：
+
+1. 配置 CORS，允许后台域名 `POST` 到 Bucket；允许的请求头至少包含 `*`，暴露头包含 `ETag`。
+2. 让媒体对象可公开读取，或为 `OSS_PUBLIC_BASE_URL` 配置可公开访问的 CDN/自定义域名。RAM 用户只应拥有 `${OSS_PREFIX:-blog-media}/*` 的写入权限，不要使用主账号 AccessKey。
+
+后台不会把 `OSS_ACCESS_KEY_SECRET`、Policy 签名以外的凭据发到浏览器；Policy 到期或文件大小超限后上传会被 OSS 拒绝。大文件不经过后台服务，因此不会受 Git 历史或后台运行时磁盘限制。
 
 ## 三种部署方式
 
@@ -78,7 +95,7 @@ Cloudflare 的构建产物由 `vinext build` 生成在 `dist/server/`；工作�
 ## 发布模型
 
 - 发布随想：创建或更新 `content/thoughts/<slug>.md`；草稿使用 `draft: true`。
-- 本地媒体：后台可将不超过 10 MB 的图片、音频、视频上传到 `content/uploads/`，随后随想用相对路径引用它；大文件使用对象存储或 CDN URL。
+- 本地媒体：后台直接上传图片、音频、视频到阿里云 OSS；随想只保存 OSS/CDN URL，不保存二进制文件到 Git。
 - 撤回或删除：更新或删除同一个 Markdown 文件。
 - 置顶博文：编辑对应博文 front matter 的 `pinned: true`。
 - 分发：后台向 X 或你配置的 CSDN、知乎、掘金 webhook 发出请求；不保存正文副本。

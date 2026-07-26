@@ -1,17 +1,16 @@
 import { requireAdminMutation } from "../../../lib/admin-auth";
-import { uploadRepositoryAsset } from "../../../lib/github-content";
+import { createOssUploadPolicy } from "../../../lib/oss";
 
 export async function POST(request: Request) {
   const user = await requireAdminMutation(request);
   if (user instanceof Response) return user;
 
   try {
-    const form = await request.formData();
-    const file = form.get("file");
-    if (!(file instanceof File)) {
-      return Response.json({ error: "请选择一个媒体文件。" }, { status: 400 });
+    const payload = (await request.json()) as { name?: unknown; type?: unknown; size?: unknown };
+    if (typeof payload.name !== "string" || typeof payload.type !== "string" || typeof payload.size !== "number") {
+      return Response.json({ error: "附件元数据不完整。" }, { status: 400 });
     }
-    return Response.json(await uploadRepositoryAsset(file), { status: 201 });
+    return Response.json(await createOssUploadPolicy({ name: payload.name, type: payload.type, size: payload.size }));
   } catch (error) {
     return Response.json(
       { error: error instanceof Error ? error.message : "附件上传失败。" },

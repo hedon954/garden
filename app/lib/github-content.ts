@@ -51,14 +51,6 @@ function utf8ToBase64(value: string) {
   return btoa(binary);
 }
 
-function bytesToBase64(bytes: Uint8Array) {
-  let binary = "";
-  bytes.forEach((byte) => {
-    binary += String.fromCharCode(byte);
-  });
-  return btoa(binary);
-}
-
 function base64ToUtf8(value: string) {
   const binary = atob(value.replace(/\s/gu, ""));
   return new TextDecoder().decode(
@@ -186,39 +178,6 @@ export async function createRepositoryThought(input: Omit<RepositoryThought, "id
   if (!response.ok) throw new Error("GitHub 未接受这次随想提交。");
   const result = (await response.json()) as { content?: { sha?: string } };
   return normalizeThought(source, path, result.content?.sha) as RepositoryThought;
-}
-
-const uploadKinds = new Map([
-  ["image/", "image"],
-  ["audio/", "audio"],
-  ["video/", "video"],
-] as const);
-
-function extensionForUpload(name: string, mime: string) {
-  const extension = name.split(".").at(-1)?.toLowerCase();
-  if (extension && /^[a-z0-9]{1,10}$/u.test(extension)) return extension;
-  return mime.split("/")[1]?.replace(/[^a-z0-9]/giu, "").toLowerCase() || "bin";
-}
-
-export async function uploadRepositoryAsset(file: File) {
-  if (!file.size || file.size > 10 * 1024 * 1024) {
-    throw new Error("单个附件需小于 10 MB。较大的视频请使用外部存储链接。");
-  }
-  const kind = [...uploadKinds.entries()].find(([prefix]) => file.type.startsWith(prefix))?.[1];
-  if (!kind) throw new Error("仅支持图片、音频和视频文件。");
-  const extension = extensionForUpload(file.name, file.type);
-  const fileName = `${Date.now().toString(36)}-${crypto.randomUUID().slice(0, 8)}.${extension}`;
-  const path = `content/uploads/${fileName}`;
-  const { config, response } = await requestRepository(path, {
-    method: "PUT",
-    body: JSON.stringify({
-      message: `content: 上传${kind}附件 ${fileName}`,
-      content: bytesToBase64(new Uint8Array(await file.arrayBuffer())),
-      branch: config.branch,
-    }),
-  });
-  if (!response.ok) throw new Error("GitHub 未接受附件上传。请检查 Contents 写入权限。");
-  return { src: `../uploads/${fileName}`, mime: file.type, kind };
 }
 
 export async function updateRepositoryThought(slug: string, status: "draft" | "published") {

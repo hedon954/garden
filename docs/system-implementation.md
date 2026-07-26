@@ -123,7 +123,7 @@ sequenceDiagram
 - 新建：生成 slug，将 front matter + Markdown UTF-8 Base64 编码，`PUT /repos/{owner}/{repo}/contents/...`。
 - 撤回：用原文件 SHA 更新 `draft: true`；重新发布则清除草稿并更新时间。
 - 删除：带 SHA 调用 Contents API 的 DELETE。
-- 媒体：`/api/admin/uploads` 将小于 10 MB 的图片、音频或视频写入 `content/uploads/`；随想以 `../uploads/<file>` 引用，Pages 构建时自动复制到公开 `media/`。
+- 媒体：`/api/admin/uploads` 以服务端 OSS 凭据生成短期 Post Policy；浏览器直传阿里云 OSS，随想只保存公开 URL，二进制不进入 Git。
 
 写入使用后台的 `CONTENT_GITHUB_TOKEN`（Fine-grained PAT，限定目标仓库且仅 Contents Read/Write）。因此登录用户只证明“谁在操作”，服务端 PAT 才是“能写入哪里”的最小权限凭据。GitHub API 创建的提交进入 `main` 后，自然触发公开端的 Pages 工作流。
 
@@ -143,7 +143,7 @@ sequenceDiagram
 | 文章布局与目录 | 对应的 `app/blog`、`app/columns`、`TableOfContents.tsx` |
 | 搜索权重或高亮 | `app/lib/content.ts`、搜索组件 |
 | 后台随想 Git 写入 | `app/lib/github-content.ts` 与 `app/api/admin/thoughts/*` |
-| 后台媒体上传 | `app/api/admin/uploads` 与 `app/lib/github-content.ts` |
+| 后台媒体上传 | `app/api/admin/uploads` 与 `app/lib/oss.ts` |
 | 登录、会话、后台权限 | `app/lib/admin-auth.ts` 与 `app/api/auth/github/*` |
 | 公开部署 | `.github/workflows/pages.yml` |
 

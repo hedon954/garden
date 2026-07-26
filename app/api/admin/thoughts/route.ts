@@ -27,10 +27,6 @@ function isHttpUrl(value: unknown) {
   }
 }
 
-function isUploadedAsset(value: unknown) {
-  return typeof value === "string" && /^\.\.\/uploads\/[a-z0-9-]+\.[a-z0-9]{1,10}$/u.test(value);
-}
-
 function parseMedia(value: unknown): MediaItem[] | null {
   if (!Array.isArray(value) || value.length > 12) return null;
   const media: MediaItem[] = [];
@@ -39,7 +35,7 @@ function parseMedia(value: unknown): MediaItem[] | null {
     const candidate = item as Record<string, unknown>;
     if (
       !["image", "audio", "video", "link"].includes(String(candidate.type)) ||
-      !(isHttpUrl(candidate.src) || isUploadedAsset(candidate.src))
+      !isHttpUrl(candidate.src)
     ) {
       return null;
     }
@@ -49,7 +45,7 @@ function parseMedia(value: unknown): MediaItem[] | null {
       ...(typeof candidate.alt === "string" && candidate.alt.trim()
         ? { alt: candidate.alt.trim().slice(0, 200) }
         : {}),
-      ...(typeof candidate.poster === "string" && (isHttpUrl(candidate.poster) || isUploadedAsset(candidate.poster))
+      ...(typeof candidate.poster === "string" && isHttpUrl(candidate.poster)
         ? { poster: candidate.poster }
         : {}),
       ...(typeof candidate.mime === "string" && candidate.mime.trim()
@@ -81,7 +77,7 @@ function parsePayload(payload: ThoughtPayload) {
 
   if (!title || title.length > 120) return { error: "标题不能为空，且不得超过 120 个字符。" };
   if (!content || content.length > 20_000) return { error: "正文不能为空，且不得超过 20,000 个字符。" };
-  if (!media) return { error: "附件最多 12 个，且必须是 http(s) 地址或后台上传的媒体。" };
+  if (!media) return { error: "附件最多 12 个，且必须是 http(s) 地址。" };
   return { value: { title, content, tags, media, status } };
 }
 

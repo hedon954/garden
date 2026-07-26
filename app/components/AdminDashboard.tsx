@@ -81,7 +81,7 @@ function MediaFields({
               next[index] = { ...next[index], src: event.target.value };
               onChange(next);
             }}
-            placeholder={item.type === "link" ? "https://…" : "https://… 或上传本地文件"}
+            placeholder={item.type === "link" ? "https://…" : "https://… 或上传到 OSS"}
             aria-label={`附件 ${index + 1} 地址`}
           />
           {item.type !== "link" && (
@@ -154,15 +154,31 @@ export function AdminDashboard({
     setNotice("");
     setUploadingCount((count) => count + 1);
     try {
+      const policyResponse = await fetch("/api/admin/uploads", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: file.name, type: file.type, size: file.size }),
+      });
+      const policy = (await policyResponse.json()) as {
+        endpoint?: string; key?: string; policy?: string; signature?: string; accessKeyId?: string; publicUrl?: string; error?: string;
+      };
+      if (!policyResponse.ok || !policy.endpoint || !policy.key || !policy.policy || !policy.signature || !policy.accessKeyId || !policy.publicUrl) {
+        throw new Error(policy.error ?? "无法获取 OSS 上传许可。");
+      }
       const form = new FormData();
+      form.set("key", policy.key);
+      form.set("OSSAccessKeyId", policy.accessKeyId);
+      form.set("policy", policy.policy);
+      form.set("Signature", policy.signature);
+      form.set("success_action_status", "201");
+      form.set("Content-Type", file.type);
       form.set("file", file);
-      const response = await fetch("/api/admin/uploads", { method: "POST", body: form });
-      const result = (await response.json()) as { src?: string; mime?: string; error?: string };
-      if (!response.ok || !result.src) throw new Error(result.error ?? "上传失败。");
+      const uploadResponse = await fetch(policy.endpoint, { method: "POST", body: form });
+      if (!uploadResponse.ok) throw new Error("OSS 未接受附件上传，请检查 Bucket CORS 和写入策略。");
       setAttachments((current) => current.map((item, itemIndex) =>
-        itemIndex === index ? { ...item, src: result.src!, mime: result.mime } : item,
+        itemIndex === index ? { ...item, src: policy.publicUrl!, mime: file.type } : item,
       ));
-      setNotice("附件已提交到 GitHub，发布随想后会随 Pages 构建出现在公开站点。");
+      setNotice("附件已上传到阿里云 OSS；发布随想后会使用该公开媒体地址。");
     } catch (error) {
       setNotice(error instanceof Error ? error.message : "上传失败，请稍后重试。");
     } finally {
