@@ -49,7 +49,7 @@ export default async function AdminPage({
       <main className="admin-access-page">
         <div className="admin-access-card">
           <LockKey size={28} weight="duotone" />
-          <p className="eyebrow">HEDON LOG / ADMIN</p>
+          <p className="eyebrow">GARDEN / ADMIN</p>
           <h1>用 GitHub 身份进入内容管理后台。</h1>
           <p>
             {query.auth === "denied"

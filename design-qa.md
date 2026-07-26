@@ -106,7 +106,7 @@ No actionable P0, P1, or P2 mismatch remains for the requested "similar style" t
 - The 724 × 331 source was normalized to the implementation's 723 × 330 CSS viewport at device scale factor 1. Both sides show the light-theme search dialog with the query “文章” and two results.
 - Full-view comparison confirms the 640 px panel width, 33 px top inset, restrained border and shadow, compact result density, topic/title/summary hierarchy, and dimmed backdrop remain consistent with the source.
 - Focused search evidence confirms exactly two visible `mark` elements for the two actual “文章” matches. A body-only match now replaces the generic description with a contextual excerpt so the reason for the result is visible.
-- Typography, spacing, colors, iconography, and copy retain the existing Hedon Log design tokens. The match treatment uses the existing selection token rather than introducing a competing accent.
+- Typography, spacing, colors, iconography, and copy retain the Garden design tokens. The match treatment uses the existing selection token rather than introducing a competing accent.
 - Mermaid now renders two live SVG diagrams. Each diagram independently switches among classic, neutral, forest, and dark themes; the verified forest-theme selection re-rendered without losing the second diagram.
 - The Markdown article contains seven labeled highlighted code blocks covering TypeScript, Python, Rust, Go, SQL, Swift, and Diff. Keyword, type, string, comment, number, function, and metadata colors remain legible against the shared dark code surface.
 - Desktop and 390 px mobile checks found no horizontal page overflow. Mobile search returned one contextual “Rust” result with one visible match mark.
