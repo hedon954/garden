@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowRight } from "@phosphor-icons/react/ssr";
 import { GithubProfile } from "../components/GithubProfile";
+import { PageIntro } from "../components/PageIntro";
 import { siteConfig } from "../site.config";
 
 export const metadata = {
@@ -11,11 +12,11 @@ export const metadata = {
 export default function AboutPage() {
   return (
     <main className="page-shell about-page">
-      <header className="page-intro">
-        <p className="eyebrow">ABOUT / 关于</p>
-        <h1>{siteConfig.pages.about.title}</h1>
-        <p>{siteConfig.pages.about.subtitle}</p>
-      </header>
+      <PageIntro
+        eyebrow="ABOUT / 关于"
+        title={siteConfig.pages.about.title}
+        subtitle={siteConfig.pages.about.subtitle}
+      />
 
       <div className="about-grid">
         <section className="about-copy">

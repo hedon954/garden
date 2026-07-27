@@ -7,6 +7,7 @@ import {
 } from "@phosphor-icons/react/ssr";
 import { columns, formatDate, posts } from "./lib/content";
 import { ThoughtCard } from "./components/ThoughtCard";
+import { PageIntro } from "./components/PageIntro";
 import { getPublishedThoughts } from "./lib/public-thoughts";
 import { githubUrl, siteConfig } from "./site.config";
 
@@ -21,16 +22,11 @@ export default function Home() {
 
   return (
     <main className="page-shell home-page">
-      <section className="intro">
-        <p className="eyebrow">HELLO, WORLD · 你好，世界</p>
-        <h1>
-          {siteConfig.pages.home.title.split("\n")[0]}
-          <br />
-          <span>{siteConfig.pages.home.title.split("\n")[1]}</span>
-        </h1>
-        <p className="intro-copy">
-          {siteConfig.pages.home.subtitle}
-        </p>
+      <PageIntro
+        eyebrow="HELLO, WORLD · 你好，世界"
+        title={siteConfig.pages.home.title}
+        subtitle={siteConfig.pages.home.subtitle}
+      >
         <a
           className="inline-cta"
           href={githubUrl}
@@ -41,7 +37,7 @@ export default function Home() {
           在 GitHub 找到我
           <ArrowUpRight size={16} />
         </a>
-      </section>
+      </PageIntro>
 
       <section className="home-section">
         <div className="section-heading accent-heading">

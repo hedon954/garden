@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowRight } from "@phosphor-icons/react/ssr";
 import { columns } from "../lib/content";
+import { PageIntro } from "../components/PageIntro";
 import { siteConfig } from "../site.config";
 
 export const metadata = {
@@ -24,11 +25,11 @@ export default function ColumnsPage() {
 
   return (
     <main className="page-shell index-page">
-      <header className="page-intro">
-        <p className="eyebrow">COLUMNS / 专栏</p>
-        <h1>{siteConfig.pages.columns.title}</h1>
-        <p>{siteConfig.pages.columns.subtitle}</p>
-      </header>
+      <PageIntro
+        eyebrow="COLUMNS / 专栏"
+        title={siteConfig.pages.columns.title}
+        subtitle={siteConfig.pages.columns.subtitle}
+      />
 
       <div className="column-feature-list">
         {grouped.map(({ slug, entries, first }, index) => (
