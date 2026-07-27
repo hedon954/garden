@@ -1,65 +1,62 @@
-# Markdown Blog Kit
+# Garden
 
-一个可 fork 的个人博客系统：公开阅读端由 GitHub Pages 静态托管，内容以 Typora 兼容 Markdown 为唯一真源；独立管理后台可通过 GitHub 登录发布随想、管理草稿与触发分发。
+用 Markdown 写作、用 GitHub Pages 发布的个人博客模板。
 
-> 这是完整系统而不是 CMS 黑盒：文章、专栏、随想和配置都在 Git 仓库中，任何时候都可以脱离后台继续维护与部署。
+Garden 的目标很简单：先让你拥有一个能长期写下去的站点。文章留在仓库里，公开站点由 GitHub 自动发布；评论、随想后台和对象存储等能力，都可以等真正需要时再接入。
 
-## 30 秒开始
+## 先完成这三件事
 
-1. 用 **Use this template** 或 Fork 创建仓库，建议命名为 `<你的 GitHub 用户名>.github.io`。
-2. 在 GitHub 的 **Settings → Pages** 将 Source 设为 **GitHub Actions**。
-3. 修改 `site.config.yaml` 中的站点身份和页面主、副标题，再替换 `content/` 中的示例 Markdown，提交到 `main`。
-4. 等待 `Deploy public blog to GitHub Pages` 工作流完成，访问 `https://<你的用户名>.github.io`。
+1. 点击 **Use this template**，创建自己的仓库。推荐命名为 `<你的 GitHub 用户名>.github.io`，这样会得到根地址 `https://<你的 GitHub 用户名>.github.io`。
+2. 打开仓库的 **Settings → Pages**，将 Source 设为 **GitHub Actions**。
+3. 修改 `site.config.yaml`，然后在 `content/posts/` 新建第一篇 Markdown。
 
-详细操作见[快速开始](docs/quick-start.md)与[GitHub Pages 部署](docs/github-pages.md)。
-
-## 系统组成
-
-| 部分 | 负责什么 | 是否必需 |
-| --- | --- | --- |
-| GitHub Pages | 博文、专栏、随想、搜索、RSS、站点地图 | 必需 |
-| `content/` | 所有公开内容与本地附件 | 必需 |
-| 独立后台服务 | GitHub 登录、发布随想、跨平台分发 | 可选 |
-| Giscus / Webmention.io | 评论与 Webmentions | 可选 |
-
-## 内容位置
-
-- `content/posts/*.md`：普通博文
-- `content/columns/<column>/*.md`：主题专栏
-- `content/thoughts/*.md`：随想；支持一篇中多个不同或相同类型的附件
-
-执行 `npm run content:sync` 会校验 front matter、复制本地附件并生成内容索引、RSS、sitemap 与 robots 文件。
-
-## 本地开发
-
-需要 Node.js `>=22.13.0`。
+完成后运行：
 
 ```bash
-npm ci
-cp .env.example .env.local
-npm run dev
+make update
 ```
+
+它会把本次改动提交并推送到 GitHub；Pages 工作流完成后，站点自动更新。初次使用请跟着 [从零开始](docs/quick-start.md) 做一遍。
+
+## 日常写作只需要知道这些
+
+| 你想做什么 | 从哪里开始 |
+| --- | --- |
+| 写一篇博文 | [新建文章](docs/content-authoring.md#新建一篇博文) |
+| 添加封面、图片、代码或公式 | [丰富文章内容](docs/content-authoring.md#丰富文章内容) |
+| 保存为草稿或置顶文章 | [草稿与置顶](docs/content-authoring.md#草稿与置顶) |
+| 建一个主题专栏 | [创建专栏](docs/content-authoring.md#创建专栏) |
+| 发布一条带多媒体的随想 | [发布随想](docs/content-authoring.md#发布随想) |
+| 改网站名称、作者和一级页标题 | [站点配置](docs/site-configuration.md) |
+| 发布本次改动 | `make update` |
+
+## 常用命令
 
 ```bash
-npm run lint
-npm test
+make dev       # 本地预览
+make check     # 检查内容与运行测试
+make build     # 构建公开站点
+make update    # 提交并发布本次改动
 ```
 
-## 文档
+需要自定义提交说明时：
 
-- [功能特性](docs/features.md)
-- [快速开始](docs/quick-start.md)
-- [站点界面配置](docs/site-configuration.md)
-- [GitHub Pages 部署](docs/github-pages.md)
-- [内容编写与 Typora](docs/content-authoring.md)
-- [独立管理后台](docs/admin-service.md)
-- [外部集成：评论、Webmention、分发](docs/integrations.md)
-- [技术架构](docs/architecture.md)
-- [系统实现：从 Markdown 到已发布页面](docs/system-implementation.md)
-- [维护、故障排查与安全](docs/operations.md)
+```bash
+make update MESSAGE="新增一篇文章"
+```
 
-管理后台可在本地运行、使用 Docker 部署到阿里云，或通过 GitHub Actions 一键部署到 Cloudflare Workers；具体步骤见[独立管理后台](docs/admin-service.md)。
+`make update` 会提交工作区中所有改动；不想发布的文件请先移出仓库或加入 `.gitignore`。
+
+## 进一步配置
+
+首次跑通以后，再按需查看：
+
+- [评论、Webmentions 与内容分发](docs/integrations.md)
+- [随想管理后台](docs/admin-service.md)
+- [GitHub Pages 与自定义域名](docs/github-pages.md)
+- [系统怎么工作](docs/architecture.md)
+- [全部文档](docs/README.md)
 
 ## 许可证
 
-[MIT](LICENSE)。Fork 后请将站点名称、作者资料、内容、域名与第三方凭据替换为自己的信息。
+[MIT](LICENSE)。使用或 Fork Garden 构建的站点请保留页脚中的 Garden 署名链接。

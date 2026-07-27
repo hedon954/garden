@@ -1,43 +1,90 @@
-# 快速开始
+# 从零开始
 
-## 1. Fork 并改名
+这篇指南的终点是：你有一个自己的博客地址，并成功发布一篇文章。第一次不需要配置评论、后台或自定义域名。
 
-点击 GitHub 的 **Use this template** 或 Fork。为了使用最可靠的根路径 GitHub Pages 部署，请将仓库命名为 `<owner>.github.io`，例如 `alice.github.io`；站点地址将是 `https://alice.github.io`。
+## 准备什么
 
-若使用自定义域名，仓库名称可自由选择，并在 Actions Variable 中配置 `SITE_URL`。
+- 一个 GitHub 账号。
+- 想在电脑上预览时，再安装 Node.js 22.13 或更高版本。
 
-## 2. 替换身份与样例内容
+## 1. 创建自己的仓库
 
-先编辑以下位置：
+在 Garden 仓库页面点击 **Use this template**，选择自己的 GitHub 账号作为所有者。
 
-- `site.config.yaml`：站点名、作者、GitHub 用户名、SEO 默认值，以及首页、博文、随想、专栏、关于页的主标题和副标题。
-- `content/`：删除或替换所有示例 Markdown 与附件。
+如果想直接使用 `https://你的用户名.github.io` 作为博客地址，请把仓库命名为 `你的用户名.github.io`。例如用户名是 `alice`，仓库名就是 `alice.github.io`。
 
-内容格式见[内容编写](content-authoring.md)，界面配置见[站点界面配置](site-configuration.md)。不要直接编辑 `app/lib/generated-content.ts` 或 `public/media/`，它们由构建生成。
+也可以使用任意仓库名；之后再绑定自定义域名即可。
 
-## 3. 在本地验证
+## 2. 打开 GitHub Pages
 
-```bash
-npm ci
-cp .env.example .env.local
-npm run lint
-npm test
+进入新仓库：
+
+1. 点击 **Settings**。
+2. 在左侧选择 **Pages**。
+3. 在 **Build and deployment** 的 **Source** 中选择 **GitHub Actions**。
+
+先不用等待页面出现，下一步推送内容后 GitHub 才会开始构建。
+
+## 3. 写上自己的名字
+
+打开根目录的 `site.config.yaml`，至少修改这几项：
+
+```yaml
+name: Alice 的花园
+description: 写下我正在学习和思考的事。
+
+author:
+  name: Alice
+  github: alice
 ```
 
-本地预览使用 `npm run dev`。默认排除草稿和未来定时文章；需要预览时执行：
+页面标题可以之后再慢慢改。`site.config.yaml` 只管理站点身份和一级页的标题；文章内容不在这里写。
 
-```bash
-CONTENT_INCLUDE_DRAFTS=1 npm run dev
+## 4. 发布第一篇文章
+
+在 `content/posts/` 新建 `hello.md`：
+
+```md
+---
+title: 你好，世界
+slug: hello
+date: 2026-07-28T09:00:00+08:00
+description: 我的第一篇文章。
+topic: 随笔
+tags: [开始]
+---
+
+这是我的第一篇文章。
 ```
 
-## 4. 发布公开博客
+提交并推送这份文件。如果你已在本地克隆仓库，最简单的方式是运行：
 
-按[GitHub Pages 部署](github-pages.md)设置 Pages；将修改推送到 `main`。工作流完成后即可公开访问。
+```bash
+make update
+```
 
-## 5. 按需接入服务
+它会把本次所有改动提交为“更新博客”并推送。想写提交说明时可以使用：
 
-- 评论：配置 Giscus。
-- Webmentions：注册 webmention.io。
-- 后台：部署一份支持 Node/Worker 运行时的服务，并按[独立管理后台](admin-service.md)设置 OAuth 与仓库写入令牌。
+```bash
+make update MESSAGE="发布第一篇文章"
+```
 
-所有敏感值都只放在部署平台的 Secret 中，不提交 `.env.local`。
+如果你直接在 GitHub 网页编辑文件，点击 **Commit changes** 即可，不需要运行命令。
+
+## 5. 等待首次发布
+
+打开仓库的 **Actions** 页面，等待 **Deploy public blog to GitHub Pages** 变为绿色。之后可访问：
+
+- 根地址仓库：`https://你的用户名.github.io`
+- 普通仓库：`https://你的用户名.github.io/仓库名`
+
+到这里，你已经完成了第一次发布。
+
+## 6. 之后怎么用
+
+- 每次写文章：参考[内容编写](content-authoring.md)。
+- 每次需要上线：运行 `make update` 或在 GitHub 网页提交文件。
+- 想先在本地看效果：运行 `make dev`，浏览器打开终端显示的地址。
+- 想绑定自己的域名：参考 [GitHub Pages 与自定义域名](github-pages.md)。
+
+评论、Webmentions、随想后台均为可选功能，等基础写作流程跑顺后再配置即可。
