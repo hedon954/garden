@@ -19,7 +19,7 @@ content/**/assets/*                与 Markdown 同目录的本地媒体
 
 ## 2. 内容编译器
 
-构建前，npm 的 `prebuild` 会执行 `scripts/build-content.mjs`。这个 Node 脚本完成下列工作：
+构建前，npm 的 `prebuild` 会执行 `tools/build-content.mjs`。这个 Node 脚本完成下列工作：
 
 1. 递归读取三种内容目录，并用 `gray-matter` 分离 front matter 与正文。
 2. 校验 slug、日期、专栏顺序、媒体类型、重复路径与必填字段。
@@ -129,7 +129,7 @@ sequenceDiagram
 
 ## 6. 评论、Webmention 与分发
 
-评论是纯前端嵌入的 Giscus iframe；配置在构建期注入，评论正文保存于 GitHub Discussions。Webmention 接收端读取 webmention.io 的公开 API，发送端 `scripts/send-webmentions.mjs` 扫描 RSS 外链；`webmentions.yml` 允许在页面上线后手动触发。
+评论是纯前端嵌入的 Giscus iframe；配置在构建期注入，评论正文保存于 GitHub Discussions。Webmention 接收端读取 webmention.io 的公开 API，发送端 `tools/send-webmentions.mjs` 扫描 RSS 外链；`webmentions.yml` 允许在页面上线后手动触发。
 
 后台分发路由不复制或保存正文：X 使用 `X_USER_ACCESS_TOKEN` 调用其发帖 API；CSDN、知乎、掘金只把 `{ title, markdown, summary, canonicalUrl, tags }` POST 给自建 webhook。没有对应凭据时返回 `needs_credentials`，前端保留复制分发包的人工降级路径。
 
@@ -138,7 +138,7 @@ sequenceDiagram
 | 想改什么 | 修改位置 |
 | --- | --- |
 | 站点名称、作者、GitHub、一级页面主标题与副标题 | `site.config.yaml` |
-| 内容格式、媒体校验、生成 RSS | `scripts/build-content.mjs` |
+| 内容格式、媒体校验、生成 RSS | `tools/build-content.mjs` |
 | Markdown 语法或 Mermaid 行为 | `app/components/MarkdownArticle.tsx`、`MermaidDiagram.tsx` |
 | 文章布局与目录 | 对应的 `app/blog`、`app/columns`、`TableOfContents.tsx` |
 | 搜索权重或高亮 | `app/lib/content.ts`、搜索组件 |

@@ -21,7 +21,7 @@ flowchart LR
 | 位置 | 职责 |
 | --- | --- |
 | `content/` | 唯一内容源 |
-| `scripts/build-content.mjs` | 校验、媒体复制、内容索引、静态订阅文件 |
+| `tools/build-content.mjs` | 校验、媒体复制、内容索引、静态订阅文件 |
 | `app/` | Next/Vinext 阅读页、Markdown 渲染、搜索与后台接口 |
 | `.github/workflows/pages.yml` | GitHub Pages 静态构建与发布 |
 | `.github/workflows/verify.yml` | lint、测试与静态导出验收 |

@@ -21,13 +21,13 @@ const projectRoot = path.resolve(new URL("../", import.meta.url).pathname);
 test("content pipeline validates metadata, excludes drafts, and publishes Typora assets", async () => {
   const fixture = await mkdtemp(path.join(tmpdir(), "hedon-content-"));
   try {
-    await mkdir(path.join(fixture, "scripts"), { recursive: true });
+    await mkdir(path.join(fixture, "tools"), { recursive: true });
     await mkdir(path.join(fixture, "content", "posts", "assets"), {
       recursive: true,
     });
     await cp(
-      path.join(projectRoot, "scripts", "build-content.mjs"),
-      path.join(fixture, "scripts", "build-content.mjs"),
+      path.join(projectRoot, "tools", "build-content.mjs"),
+      path.join(fixture, "tools", "build-content.mjs"),
     );
     await cp(
       path.join(projectRoot, "site.config.yaml"),
@@ -73,7 +73,7 @@ draft: true
 
     await execFileAsync(
       process.execPath,
-      [path.join(fixture, "scripts", "build-content.mjs")],
+      [path.join(fixture, "tools", "build-content.mjs")],
       {
         cwd: fixture,
         env: { ...process.env, CONTENT_INCLUDE_DRAFTS: "0" },
