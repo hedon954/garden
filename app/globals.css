@@ -1791,6 +1791,12 @@ button {
   color: var(--accent);
 }
 
+.footer-framework a {
+  text-decoration: underline;
+  text-decoration-color: var(--line-strong);
+  text-underline-offset: 3px;
+}
+
 @media (max-width: 1080px) {
   .post-reading-page {
     --toc-width: 210px;
