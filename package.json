@@ -6,8 +6,8 @@
     "node": ">=22.13.0"
   },
   "scripts": {
-    "content:sync": "node tools/build-content.mjs",
-    "webmentions:send": "node tools/send-webmentions.mjs",
+    "content:sync": "node scripts/build-content.mjs",
+    "webmentions:send": "node scripts/send-webmentions.mjs",
     "predev": "npm run content:sync",
     "dev": "WRANGLER_LOG_PATH=.wrangler/wrangler.log vinext dev",
     "prebuild": "npm run content:sync",
