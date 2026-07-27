@@ -6,7 +6,7 @@
     <atom:link href="https://example.com/posts.xml" rel="self" type="application/rss+xml" />
     <description>一个可 fork、可长期维护的 Markdown 个人博客系统。</description>
     <language>zh-CN</language>
-    <lastBuildDate>Mon, 27 Jul 2026 17:08:35 GMT</lastBuildDate>
+    <lastBuildDate>Mon, 27 Jul 2026 17:19:03 GMT</lastBuildDate>
     <item>
       <title>Markdown 复杂语法实验场</title>
       <link>https://example.com/blog/markdown-lab/</link>

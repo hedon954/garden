@@ -4,6 +4,6 @@ columns:
     description: 从最小闭环、可靠状态到带着证据发布：记录一个人把产品从想法变成日常工具的过程。
     status: 连载中
     posts:
-      - smallest-closed-loop
-      - stable-state
-      - ship-with-evidence
+      - building-in-public/smallest-closed-loop
+      - building-in-public/stable-state
+      - building-in-public/ship-with-evidence

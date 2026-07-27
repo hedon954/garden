@@ -242,6 +242,23 @@ function assertUnique(items, keyFor, label) {
   }
 }
 
+function normalizePostReference(value, sourcePath) {
+  if (typeof value !== "string" || !value.trim()) {
+    fail(sourcePath, "posts 中的引用必须是非空字符串。");
+  }
+  const raw = value.trim().replaceAll("\\", "/");
+  const relativePath = raw
+    .replace(/^(?:content\/)?posts\//u, "")
+    .replace(/\.md$/u, "");
+  if (
+    relativePath.startsWith("/") ||
+    relativePath.split("/").some((segment) => segment === ".." || segment === ".")
+  ) {
+    fail(sourcePath, `博文引用 ${value} 不能越出 content/posts。`);
+  }
+  return { raw, relativePath };
+}
+
 function readColumnReferences(posts) {
   if (!fs.existsSync(columnsConfigPath)) return [];
   let config;
@@ -252,6 +269,12 @@ function readColumnReferences(posts) {
   }
   if (!Array.isArray(config.columns)) fail("content/columns.yaml", "columns 必须是数组。");
   const postsBySlug = new Map(posts.map((post) => [post.slug, post]));
+  const postsByPath = new Map(
+    posts.map((post) => [
+      post.sourcePath.replace(/^posts\//u, "").replace(/\.md$/u, ""),
+      post,
+    ]),
+  );
   const seenColumns = new Set();
   return config.columns.flatMap((column, index) => {
     const sourcePath = `columns.yaml#columns[${index}]`;
@@ -266,14 +289,17 @@ function readColumnReferences(posts) {
     if (seenColumns.has(slug)) fail(sourcePath, `专栏 slug ${slug} 重复。`);
     seenColumns.add(slug);
     if (!Array.isArray(value.posts) || !value.posts.every((entry) => typeof entry === "string")) {
-      fail(sourcePath, "posts 必须是博文 slug 数组。");
+      fail(sourcePath, "posts 必须是博文 slug 或相对路径数组。");
     }
     const referenced = new Set();
-    return value.posts.map((postSlug, order) => {
-      if (referenced.has(postSlug)) fail(sourcePath, `博文 ${postSlug} 在同一专栏中重复。`);
-      referenced.add(postSlug);
-      const post = postsBySlug.get(postSlug);
-      if (!post) fail(sourcePath, `引用的博文 ${postSlug} 不存在。`);
+    return value.posts.map((postReference, order) => {
+      const { raw, relativePath } = normalizePostReference(postReference, sourcePath);
+      const post = postsByPath.get(relativePath) ?? postsBySlug.get(raw);
+      if (!post) fail(sourcePath, `引用的博文 ${postReference} 不存在。`);
+      if (referenced.has(post.slug)) {
+        fail(sourcePath, `博文 ${postReference} 在同一专栏中重复。`);
+      }
+      referenced.add(post.slug);
       return {
         ...post,
         kind: "column",

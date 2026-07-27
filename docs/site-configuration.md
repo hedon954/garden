@@ -16,4 +16,4 @@ pages:
 
 每个页面只提供 `title` 与 `subtitle` 两个文案入口。导航、按钮、分区标题和页面结构由模板统一维护，不需要逐项配置。
 
-专栏与界面配置分开：专栏标题、描述、封面和文章顺序都在 `content/columns.yaml`；博文正文始终只在 `content/posts/` 维护一份。详见[内容编写](content-authoring.md)。
+专栏与界面配置分开：专栏标题、描述、封面和文章顺序都在 `content/columns.yaml`；博文正文始终只在 `content/posts/` 维护一份。`posts` 可使用相对 `content/posts/` 的多级路径，也兼容 slug。详见[内容编写](content-authoring.md)。

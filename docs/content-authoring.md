@@ -4,7 +4,7 @@
 
 ## 新建一篇博文
 
-在 `content/posts/` 新建一个 `.md` 文件。文件名只影响仓库内的整理，网页地址由 `slug` 决定。
+在 `content/posts/` 或它的任意子目录新建一个 `.md` 文件，例如 `content/posts/go/runtime/gc.md`。目录只服务于仓库整理，网页地址仍由 `slug` 决定。
 
 ```md
 ---
@@ -84,7 +84,7 @@ pinned: true
 
 ## 创建专栏
 
-专栏不复制文章。先把文章写进 `content/posts/`，再在 `content/columns.yaml` 用文章的 `slug` 排出一条阅读路径：
+专栏不复制文章。先把文章写进 `content/posts/`，再在 `content/columns.yaml` 用文章的相对路径排出一条阅读路径：
 
 ```yaml
 columns:
@@ -94,11 +94,11 @@ columns:
     status: 连载中
     cover: /images/columns/reading-notes.webp
     posts:
-      - why-read
-      - notes-from-reading
+      - reading/why-read
+      - reading/notes-from-reading
 ```
 
-`posts` 的顺序就是专栏阅读顺序。同一篇博文可以被多个专栏引用，正文仍然只维护一份。专栏页会显示文章列表和当前文章目录。
+`posts` 的顺序就是专栏阅读顺序。路径相对 `content/posts/`，可省略 `.md`，也兼容直接填写 `slug`。同一篇博文可以被多个专栏引用，正文仍然只维护一份。专栏页会显示文章列表和当前文章目录。
 
 ## 发布随想
 

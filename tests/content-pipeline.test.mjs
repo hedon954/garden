@@ -25,6 +25,9 @@ test("content pipeline validates metadata, excludes drafts, and publishes Typora
     await mkdir(path.join(fixture, "content", "posts", "assets"), {
       recursive: true,
     });
+    await mkdir(path.join(fixture, "content", "posts", "writing"), {
+      recursive: true,
+    });
     await cp(
       path.join(projectRoot, "scripts", "build-content.mjs"),
       path.join(fixture, "scripts", "build-content.mjs"),
@@ -71,13 +74,26 @@ draft: true
 `,
     );
     await writeFile(
+      path.join(fixture, "content", "posts", "writing", "nested.md"),
+      `---
+title: 子目录文章
+slug: nested
+description: 验证多级目录中的博文。
+date: 2026-07-25
+topic: 测试
+---
+
+这篇文章放在多级目录中。
+`,
+    );
+    await writeFile(
       path.join(fixture, "content", "columns.yaml"),
       `columns:
   - slug: writing
     title: 写作练习
     description: 从一篇文章开始。
     posts:
-      - published
+      - writing/nested
 `,
     );
 
@@ -95,6 +111,7 @@ draft: true
       "utf8",
     );
     assert.match(generated, /"slug": "published"/);
+    assert.match(generated, /"sourcePath": "posts\/writing\/nested\.md"/);
     assert.doesNotMatch(generated, /"slug": "draft"/);
     assert.match(generated, /"column": "writing"/);
     assert.match(generated, /\/media\/posts\/assets\/cover\.jpg/);

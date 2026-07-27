@@ -41,7 +41,7 @@ export type ContentEntry = {
   linkDescription?: string;
 };
 
-export const contentHash = "d794c1b520c9";
+export const contentHash = "ef990f31b5e1";
 export const posts = [
   {
     "title": "Markdown 复杂语法实验场",
@@ -97,7 +97,7 @@ export const posts = [
     "readingTime": "5 分钟",
     "kind": "post",
     "draft": false,
-    "sourcePath": "posts/ship-with-evidence.md",
+    "sourcePath": "posts/building-in-public/ship-with-evidence.md",
     "content": "发布前最重要的工作不是再写一段漂亮总结，而是找到足以支持结论的证据。\n\n## 验证真实路径\n\n测试最小单元很重要，但用户真正经历的是一条完整路径。至少有一次验证应该从入口走到结果。\n\n## 不隐藏边界\n\n没有验证的部分要明确说出来。诚实的边界比虚假的完整更有价值。\n\n## 留下下一步\n\n一次发布应该让下一次开发更容易开始，而不是重新理解所有上下文。"
   },
   {
@@ -131,7 +131,7 @@ export const posts = [
     "readingTime": "6 分钟",
     "kind": "post",
     "draft": false,
-    "sourcePath": "posts/stable-state.md",
+    "sourcePath": "posts/building-in-public/stable-state.md",
     "content": "状态问题很少只是“少刷新了一次”。更常见的原因是多个地方都以为自己拥有最终事实。\n\n## 唯一事实来源\n\n先确定数据由谁拥有，再决定界面如何派生。临时交互状态可以留在视图，持久事实必须有明确边界。\n\n## 乐观更新\n\n乐观更新让操作显得即时，但失败时必须能够回滚，并且不能让选择状态丢失。\n\n## 可恢复\n\n真正可靠的状态不是永不失败，而是在失败以后仍然知道应该回到哪里。"
   },
   {
@@ -147,7 +147,7 @@ export const posts = [
     "readingTime": "7 分钟",
     "kind": "post",
     "draft": false,
-    "sourcePath": "posts/smallest-closed-loop.md",
+    "sourcePath": "posts/building-in-public/smallest-closed-loop.md",
     "content": "一个人的时间有限，所以“完整”必须被重新定义。对我来说，完整不是一次做完所有功能，而是先让最重要的一条路径首尾相接。\n\n## 什么是最小闭环\n\n它必须包含触发、完成和反馈。只有按钮不算闭环，只有数据结构也不算。\n\n## 把想法切成动作\n\n以一个文件浏览器为例，第一步不是标签、搜索或批量操作，而是：\n\n1. 创建文件夹；\n2. 创建 Markdown 文件；\n3. 刷新列表；\n4. 自动选中新项目。\n\n## 可观察的完成\n\n闭环需要能被人看见，也能被测试验证。每次完成之后，都应该留下足够明确的证据。\n\n## 下一步\n\n当闭环成立，再进入命名、删除和上下文菜单。功能扩展不再是猜测，而是沿着已经成立的路径自然生长。"
   },
   {
@@ -203,7 +203,7 @@ export const columns = [
     "readingTime": "7 分钟",
     "kind": "column",
     "draft": false,
-    "sourcePath": "posts/smallest-closed-loop.md",
+    "sourcePath": "posts/building-in-public/smallest-closed-loop.md",
     "content": "一个人的时间有限，所以“完整”必须被重新定义。对我来说，完整不是一次做完所有功能，而是先让最重要的一条路径首尾相接。\n\n## 什么是最小闭环\n\n它必须包含触发、完成和反馈。只有按钮不算闭环，只有数据结构也不算。\n\n## 把想法切成动作\n\n以一个文件浏览器为例，第一步不是标签、搜索或批量操作，而是：\n\n1. 创建文件夹；\n2. 创建 Markdown 文件；\n3. 刷新列表；\n4. 自动选中新项目。\n\n## 可观察的完成\n\n闭环需要能被人看见，也能被测试验证。每次完成之后，都应该留下足够明确的证据。\n\n## 下一步\n\n当闭环成立，再进入命名、删除和上下文菜单。功能扩展不再是猜测，而是沿着已经成立的路径自然生长。",
     "column": "building-in-public",
     "columnTitle": "一个人造产品",
@@ -223,7 +223,7 @@ export const columns = [
     "readingTime": "6 分钟",
     "kind": "column",
     "draft": false,
-    "sourcePath": "posts/stable-state.md",
+    "sourcePath": "posts/building-in-public/stable-state.md",
     "content": "状态问题很少只是“少刷新了一次”。更常见的原因是多个地方都以为自己拥有最终事实。\n\n## 唯一事实来源\n\n先确定数据由谁拥有，再决定界面如何派生。临时交互状态可以留在视图，持久事实必须有明确边界。\n\n## 乐观更新\n\n乐观更新让操作显得即时，但失败时必须能够回滚，并且不能让选择状态丢失。\n\n## 可恢复\n\n真正可靠的状态不是永不失败，而是在失败以后仍然知道应该回到哪里。",
     "column": "building-in-public",
     "columnTitle": "一个人造产品",
@@ -244,7 +244,7 @@ export const columns = [
     "readingTime": "5 分钟",
     "kind": "column",
     "draft": false,
-    "sourcePath": "posts/ship-with-evidence.md",
+    "sourcePath": "posts/building-in-public/ship-with-evidence.md",
     "content": "发布前最重要的工作不是再写一段漂亮总结，而是找到足以支持结论的证据。\n\n## 验证真实路径\n\n测试最小单元很重要，但用户真正经历的是一条完整路径。至少有一次验证应该从入口走到结果。\n\n## 不隐藏边界\n\n没有验证的部分要明确说出来。诚实的边界比虚假的完整更有价值。\n\n## 留下下一步\n\n一次发布应该让下一次开发更容易开始，而不是重新理解所有上下文。",
     "column": "building-in-public",
     "columnTitle": "一个人造产品",
