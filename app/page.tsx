@@ -24,12 +24,12 @@ export default function Home() {
       <section className="intro">
         <p className="eyebrow">HELLO, WORLD · 你好，世界</p>
         <h1>
-          {siteConfig.home.title.split("\n")[0]}
+          {siteConfig.pages.home.title.split("\n")[0]}
           <br />
-          <span>{siteConfig.home.title.split("\n")[1]}</span>
+          <span>{siteConfig.pages.home.title.split("\n")[1]}</span>
         </h1>
         <p className="intro-copy">
-          {siteConfig.home.intro}
+          {siteConfig.pages.home.subtitle}
         </p>
         <a
           className="inline-cta"

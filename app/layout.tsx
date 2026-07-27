@@ -55,7 +55,7 @@ export async function generateMetadata(): Promise<Metadata> {
           url: "/og.png",
           width: 1731,
           height: 909,
-          alt: `${siteConfig.name} · ${siteConfig.home.title.replace("\n", "")}`,
+          alt: `${siteConfig.name} · ${siteConfig.pages.home.title.replace("\n", "")}`,
         },
       ],
     },

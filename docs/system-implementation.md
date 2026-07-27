@@ -137,7 +137,7 @@ sequenceDiagram
 
 | 想改什么 | 修改位置 |
 | --- | --- |
-| 站点名称、作者、GitHub、默认文案 | `site.config.json` |
+| 站点名称、作者、GitHub、一级页面主标题与副标题 | `site.config.yaml` |
 | 内容格式、媒体校验、生成 RSS | `scripts/build-content.mjs` |
 | Markdown 语法或 Mermaid 行为 | `app/components/MarkdownArticle.tsx`、`MermaidDiagram.tsx` |
 | 文章布局与目录 | 对应的 `app/blog`、`app/columns`、`TableOfContents.tsx` |

@@ -1,0 +1,31 @@
+name: Garden
+tagline: 写作 · 构建 · 保持好奇
+description: 一个可 fork、可长期维护的 Markdown 个人博客系统。
+locale: zh_CN
+
+author:
+  name: Your Name
+  github: your-github-id
+  githubBio: Write a short introduction for your GitHub profile card.
+
+# 一级页面只配置主标题和副标题；模板界面本身不需要逐项配置。
+pages:
+  home:
+    title: |-
+      把复杂的事，
+      慢慢想明白。
+    subtitle: 在这里记录产品、工程、学习与日常生活中值得慢慢想明白的事。
+  blog:
+    title: 长期写下去，偶尔回头整理。
+    subtitle: 这里是完整文章：有明确主题、有持续论证，也允许自己在更新里修正旧判断。
+  thoughts:
+    title: 不够写成文章的，也值得留下。
+    subtitle: 私人朋友圈式的轻量记录：短文字、照片、声音、影像，以及偶然遇见的链接。
+  columns:
+    title: 把一个主题，写到足够深入。
+    subtitle: 专栏不是标签集合，而是一条有顺序的阅读路径。左侧章节导航会在阅读时始终陪着你。
+  about:
+    title: 你好，我是 Your Name。
+    subtitle: 在这里写下你关心的问题、长期的方向，以及你希望如何与世界保持联系。
+
+footer: 保持独立，持续写作。

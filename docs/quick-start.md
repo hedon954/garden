@@ -10,10 +10,10 @@
 
 先编辑以下位置：
 
-- `site.config.json`：站点名、作者、GitHub 用户名、SEO 默认值、首页与关于页文案。
+- `site.config.yaml`：站点名、作者、GitHub 用户名、SEO 默认值，以及首页、博文、随想、专栏、关于页的主标题和副标题。
 - `content/`：删除或替换所有示例 Markdown 与附件。
 
-内容格式见[内容编写](content-authoring.md)。不要直接编辑 `app/lib/generated-content.ts` 或 `public/media/`，它们由构建生成。
+内容格式见[内容编写](content-authoring.md)，界面配置见[站点界面配置](site-configuration.md)。不要直接编辑 `app/lib/generated-content.ts` 或 `public/media/`，它们由构建生成。
 
 ## 3. 在本地验证
 

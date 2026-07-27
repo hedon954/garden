@@ -5,10 +5,11 @@ import {
   PushPin,
 } from "@phosphor-icons/react/ssr";
 import { formatDate, posts, topics } from "../lib/content";
+import { siteConfig } from "../site.config";
 
 export const metadata = {
-  title: "博文",
-  description: "按时间与主题浏览全部长文。",
+  title: siteConfig.pages.blog.title,
+  description: siteConfig.pages.blog.subtitle,
 };
 
 const pageSize = 8;
@@ -48,10 +49,8 @@ export default async function BlogIndex({
     <main className="page-shell index-page">
       <header className="page-intro">
         <p className="eyebrow">POSTS / 博文</p>
-        <h1>长期写下去，偶尔回头整理。</h1>
-        <p>
-          这里是完整文章：有明确主题、有持续论证，也允许自己在更新里修正旧判断。
-        </p>
+        <h1>{siteConfig.pages.blog.title}</h1>
+        <p>{siteConfig.pages.blog.subtitle}</p>
       </header>
 
       <div className="topic-strip" aria-label="文章主题">

@@ -4,8 +4,8 @@ import { GithubProfile } from "../components/GithubProfile";
 import { siteConfig } from "../site.config";
 
 export const metadata = {
-  title: "关于",
-  description: `关于 ${siteConfig.author.name}，以及这个网站为什么存在。`,
+  title: siteConfig.pages.about.title,
+  description: siteConfig.pages.about.subtitle,
 };
 
 export default function AboutPage() {
@@ -13,8 +13,8 @@ export default function AboutPage() {
     <main className="page-shell about-page">
       <header className="page-intro">
         <p className="eyebrow">ABOUT / 关于</p>
-        <h1>{siteConfig.about.title}</h1>
-        <p>{siteConfig.about.intro}</p>
+        <h1>{siteConfig.pages.about.title}</h1>
+        <p>{siteConfig.pages.about.subtitle}</p>
       </header>
 
       <div className="about-grid">
@@ -35,7 +35,9 @@ export default function AboutPage() {
         <aside className="about-facts">
           <span>现在关注</span>
           <ul>
-            {siteConfig.about.focus.map((item) => <li key={item}>{item}</li>)}
+            <li>将自己的关注方向写在这里</li>
+            <li>用文章积累可迁移的知识</li>
+            <li>为长期写作留出稳定的空间</li>
           </ul>
           <Link href="/blog">
             从博文开始

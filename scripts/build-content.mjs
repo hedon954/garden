@@ -3,9 +3,10 @@ import fs from "node:fs";
 import path from "node:path";
 import matter from "gray-matter";
 import { marked } from "marked";
-import siteConfig from "../site.config.json" with { type: "json" };
+import { parse as parseYaml } from "yaml";
 
 const root = process.cwd();
+const siteConfig = parseYaml(fs.readFileSync(path.join(root, "site.config.yaml"), "utf8"));
 const contentRoot = path.join(root, "content");
 const generatedMediaRoot = path.join(root, "public", "media");
 const output = path.join(root, "app", "lib", "generated-content.ts");

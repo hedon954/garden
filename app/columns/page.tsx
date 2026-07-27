@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { ArrowRight } from "@phosphor-icons/react/ssr";
 import { columns } from "../lib/content";
+import { siteConfig } from "../site.config";
 
 export const metadata = {
-  title: "主题专栏",
-  description: "按主题组织的系列文章与持续更新的阅读路径。",
+  title: siteConfig.pages.columns.title,
+  description: siteConfig.pages.columns.subtitle,
 };
 
 export default function ColumnsPage() {
@@ -25,10 +26,8 @@ export default function ColumnsPage() {
     <main className="page-shell index-page">
       <header className="page-intro">
         <p className="eyebrow">COLUMNS / 专栏</p>
-        <h1>把一个主题，写到足够深入。</h1>
-        <p>
-          专栏不是标签集合，而是一条有顺序的阅读路径。左侧章节导航会在阅读时始终陪着你。
-        </p>
+        <h1>{siteConfig.pages.columns.title}</h1>
+        <p>{siteConfig.pages.columns.subtitle}</p>
       </header>
 
       <div className="column-feature-list">

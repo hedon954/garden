@@ -8,7 +8,7 @@
 
 1. 用 **Use this template** 或 Fork 创建仓库，建议命名为 `<你的 GitHub 用户名>.github.io`。
 2. 在 GitHub 的 **Settings → Pages** 将 Source 设为 **GitHub Actions**。
-3. 修改 `content/` 中的示例 Markdown，提交到 `main`。
+3. 修改 `site.config.yaml` 中的站点身份和页面主、副标题，再替换 `content/` 中的示例 Markdown，提交到 `main`。
 4. 等待 `Deploy public blog to GitHub Pages` 工作流完成，访问 `https://<你的用户名>.github.io`。
 
 详细操作见[快速开始](docs/quick-start.md)与[GitHub Pages 部署](docs/github-pages.md)。
@@ -49,6 +49,7 @@ npm test
 
 - [功能特性](docs/features.md)
 - [快速开始](docs/quick-start.md)
+- [站点界面配置](docs/site-configuration.md)
 - [GitHub Pages 部署](docs/github-pages.md)
 - [内容编写与 Typora](docs/content-authoring.md)
 - [独立管理后台](docs/admin-service.md)

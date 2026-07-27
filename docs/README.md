@@ -7,6 +7,7 @@
 | [功能特性](features.md) | 能力边界与支持的 Markdown |
 | [GitHub Pages 部署](github-pages.md) | 公开博客静态部署与域名 |
 | [内容编写](content-authoring.md) | Typora、front matter、附件与草稿 |
+| [站点界面配置](site-configuration.md) | 站点身份与一级页面的主标题、副标题 |
 | [独立管理后台](admin-service.md) | GitHub 登录、随想发布、仓库写入及本地/阿里云/Cloudflare 部署 |
 | [外部集成](integrations.md) | Giscus、Webmentions、跨平台分发 |
 | [技术架构](architecture.md) | 模块边界、构建流程与安全模型 |
