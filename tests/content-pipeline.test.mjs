@@ -70,6 +70,16 @@ draft: true
 草稿正文
 `,
     );
+    await writeFile(
+      path.join(fixture, "content", "columns.yaml"),
+      `columns:
+  - slug: writing
+    title: 写作练习
+    description: 从一篇文章开始。
+    posts:
+      - published
+`,
+    );
 
     await execFileAsync(
       process.execPath,
@@ -86,6 +96,7 @@ draft: true
     );
     assert.match(generated, /"slug": "published"/);
     assert.doesNotMatch(generated, /"slug": "draft"/);
+    assert.match(generated, /"column": "writing"/);
     assert.match(generated, /\/media\/posts\/assets\/cover\.jpg/);
     await access(
       path.join(fixture, "public", "media", "posts", "assets", "cover.jpg"),

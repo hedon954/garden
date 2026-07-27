@@ -8,7 +8,7 @@
 
 ```text
 content/posts/*.md                 普通博文
-content/columns/<column>/*.md      专栏文章
+content/columns.yaml               专栏元数据与博文 slug 引用顺序
 content/thoughts/*.md              随想
 content/**/assets/*                与 Markdown 同目录的本地媒体
 ```
@@ -21,12 +21,12 @@ content/**/assets/*                与 Markdown 同目录的本地媒体
 
 构建前，npm 的 `prebuild` 会执行 `scripts/build-content.mjs`。这个 Node 脚本完成下列工作：
 
-1. 递归读取三种内容目录，并用 `gray-matter` 分离 front matter 与正文。
-2. 校验 slug、日期、专栏顺序、媒体类型、重复路径与必填字段。
+1. 递归读取博文和随想目录，并用 `gray-matter` 分离 front matter 与正文；再读取 `columns.yaml`，按其中的 slug 引用生成专栏阅读路径。
+2. 校验 slug、日期、专栏引用顺序、媒体类型、重复路径与必填字段。
 3. 排除 `draft: true` 和未到 `publishAt` 的内容；`CONTENT_INCLUDE_DRAFTS=1` 仅用于本地预览。
 4. 扫描 Markdown 图片和原生 `img/audio/video/source` 标签，以及 `cover`、`poster`、`media[].src`。相对路径媒体会被复制到 `public/media/`，正文中的 URL 同步改写为公开路径。
 5. 将归一化结果写入 `app/lib/generated-content.ts`。该文件含类型、博文、专栏、随想数组与内容哈希，运行时不再读取文件系统。
-6. 由同一份数组生成 `public/rss.xml`、`public/sitemap.xml`、`public/robots.txt`。
+6. 由同一份数组生成 `public/rss.xml`、只含长文博文的 `public/posts.xml`、`public/sitemap.xml`、`public/robots.txt`。
 
 ```mermaid
 flowchart LR

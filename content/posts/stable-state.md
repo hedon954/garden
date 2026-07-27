@@ -6,9 +6,6 @@ date: 2026-07-10
 topic: 独立开发
 tags:
   - 状态管理
-column: building-in-public
-columnTitle: 一个人造产品
-order: 2
 readingTime: 6 分钟
 ---
 

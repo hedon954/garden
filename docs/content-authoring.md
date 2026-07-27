@@ -84,18 +84,21 @@ pinned: true
 
 ## 创建专栏
 
-专栏文章放在 `content/columns/<专栏标识>/` 中。每篇文章除了普通博文信息外，补充以下字段：
+专栏不复制文章。先把文章写进 `content/posts/`，再在 `content/columns.yaml` 用文章的 `slug` 排出一条阅读路径：
 
 ```yaml
-column: reading-notes
-columnTitle: 读书笔记
-columnDescription: 记录阅读过程中的问题与判断。
-columnStatus: 连载中
-columnCover: ./assets/column-cover.jpg
-order: 1
+columns:
+  - slug: reading-notes
+    title: 读书笔记
+    description: 记录阅读过程中的问题与判断。
+    status: 连载中
+    cover: /images/columns/reading-notes.webp
+    posts:
+      - why-read
+      - notes-from-reading
 ```
 
-同一专栏内用 `order` 决定阅读顺序。专栏页会显示文章列表和当前文章目录。
+`posts` 的顺序就是专栏阅读顺序。同一篇博文可以被多个专栏引用，正文仍然只维护一份。专栏页会显示文章列表和当前文章目录。
 
 ## 发布随想
 

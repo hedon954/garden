@@ -6,8 +6,10 @@ import { marked } from "marked";
 import { parse as parseYaml } from "yaml";
 
 const root = process.cwd();
-const siteConfig = parseYaml(fs.readFileSync(path.join(root, "site.config.yaml"), "utf8"));
 const contentRoot = path.join(root, "content");
+const siteConfigPath = path.join(root, "site.config.yaml");
+const columnsConfigPath = path.join(contentRoot, "columns.yaml");
+const siteConfig = parseYaml(fs.readFileSync(siteConfigPath, "utf8"));
 const generatedMediaRoot = path.join(root, "public", "media");
 const output = path.join(root, "app", "lib", "generated-content.ts");
 const includeDrafts = process.env.CONTENT_INCLUDE_DRAFTS === "1";
@@ -173,14 +175,6 @@ function validateAndNormalize(data, content, markdownPath, kind, sourcePath) {
     requireString(data, "description", sourcePath);
     requireString(data, "topic", sourcePath);
   }
-  if (kind === "column") {
-    requireString(data, "description", sourcePath);
-    requireString(data, "column", sourcePath);
-    requireString(data, "columnTitle", sourcePath);
-    if (!Number.isInteger(data.order) || data.order < 1) {
-      fail(sourcePath, "专栏文章 order 必须是大于 0 的整数");
-    }
-  }
   if (kind === "thought" && data.mediaType) {
     if (!["image", "audio", "video", "link", "text"].includes(data.mediaType)) {
       fail(sourcePath, "mediaType 不受支持");
@@ -248,12 +242,59 @@ function assertUnique(items, keyFor, label) {
   }
 }
 
+function readColumnReferences(posts) {
+  if (!fs.existsSync(columnsConfigPath)) return [];
+  let config;
+  try {
+    config = parseYaml(fs.readFileSync(columnsConfigPath, "utf8"));
+  } catch {
+    fail("content/columns.yaml", "不是有效的 YAML。");
+  }
+  if (!Array.isArray(config.columns)) fail("content/columns.yaml", "columns 必须是数组。");
+  const postsBySlug = new Map(posts.map((post) => [post.slug, post]));
+  const seenColumns = new Set();
+  return config.columns.flatMap((column, index) => {
+    const sourcePath = `columns.yaml#columns[${index}]`;
+    if (!column || typeof column !== "object") fail(sourcePath, "专栏配置必须是对象。");
+    const value = column;
+    const slug = requireString(value, "slug", sourcePath);
+    const title = requireString(value, "title", sourcePath);
+    const description = requireString(value, "description", sourcePath);
+    if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/u.test(slug)) {
+      fail(sourcePath, "slug 只能包含小写字母、数字和连字符。");
+    }
+    if (seenColumns.has(slug)) fail(sourcePath, `专栏 slug ${slug} 重复。`);
+    seenColumns.add(slug);
+    if (!Array.isArray(value.posts) || !value.posts.every((entry) => typeof entry === "string")) {
+      fail(sourcePath, "posts 必须是博文 slug 数组。");
+    }
+    const referenced = new Set();
+    return value.posts.map((postSlug, order) => {
+      if (referenced.has(postSlug)) fail(sourcePath, `博文 ${postSlug} 在同一专栏中重复。`);
+      referenced.add(postSlug);
+      const post = postsBySlug.get(postSlug);
+      if (!post) fail(sourcePath, `引用的博文 ${postSlug} 不存在。`);
+      return {
+        ...post,
+        kind: "column",
+        column: slug,
+        columnTitle: title,
+        columnDescription: description,
+        columnStatus: optionalString(value, "status", sourcePath) ?? "持续更新",
+        columnCover: optionalString(value, "cover", sourcePath),
+        columnCoverAlt: optionalString(value, "coverAlt", sourcePath),
+        order: order + 1,
+      };
+    });
+  });
+}
+
 fs.rmSync(generatedMediaRoot, { recursive: true, force: true });
 
 const posts = readMarkdownTree(path.join(contentRoot, "posts"), "post").sort(
   (a, b) => Date.parse(b.date) - Date.parse(a.date),
 );
-const columns = readMarkdownTree(path.join(contentRoot, "columns"), "column").sort(
+const columns = readColumnReferences(posts).sort(
   (a, b) => (a.column === b.column ? a.order - b.order : a.column.localeCompare(b.column)),
 );
 const thoughts = readMarkdownTree(path.join(contentRoot, "thoughts"), "thought").sort(
@@ -306,6 +347,7 @@ export type ContentEntry = {
   columnDescription?: string;
   columnStatus?: string;
   columnCover?: string;
+  columnCoverAlt?: string;
   order?: number;
   cover?: string;
   coverAlt?: string;
@@ -337,10 +379,11 @@ const cdata = (value) => value.replaceAll("]]>", "]]]]><![CDATA[>");
 const publicRoot = path.join(root, "public");
 const feedEntries = [
   ...posts.map((entry) => ({ ...entry, path: `/blog/${entry.slug}/` })),
-  ...columns.map((entry) => ({ ...entry, path: `/columns/${entry.column}/${entry.slug}/` })),
   ...thoughts.map((entry) => ({ ...entry, path: `/thoughts/${entry.slug}/` })),
 ].sort((left, right) => Date.parse(right.date) - Date.parse(left.date));
-const rssItems = feedEntries.map((entry) => `
+
+function writeRssFeed(fileName, entries) {
+  const rssItems = entries.map((entry) => `
     <item>
       <title>${escapeXml(entry.title)}</title>
       <link>${escapeXml(`${publicBaseUrl}${entry.path}`)}</link>
@@ -350,18 +393,26 @@ const rssItems = feedEntries.map((entry) => `
       ${(entry.tags ?? []).map((tag) => `<category>${escapeXml(tag)}</category>`).join("")}
       <content:encoded><![CDATA[${cdata(marked.parse(entry.content))}]]></content:encoded>
     </item>`).join("");
-fs.writeFileSync(path.join(publicRoot, "rss.xml"), `<?xml version="1.0" encoding="UTF-8" ?>
+
+  fs.writeFileSync(path.join(publicRoot, fileName), `<?xml version="1.0" encoding="UTF-8" ?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
   <channel>
     <title>${escapeXml(siteName)}</title>
     <link>${escapeXml(publicBaseUrl)}</link>
-    <atom:link href="${escapeXml(`${publicBaseUrl}/rss.xml`)}" rel="self" type="application/rss+xml" />
+    <atom:link href="${escapeXml(`${publicBaseUrl}/${fileName}`)}" rel="self" type="application/rss+xml" />
     <description>${escapeXml(siteDescription)}</description>
     <language>zh-CN</language>
     <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>${rssItems}
   </channel>
 </rss>
 `);
+}
+
+writeRssFeed("rss.xml", feedEntries);
+writeRssFeed(
+  "posts.xml",
+  posts.map((entry) => ({ ...entry, path: `/blog/${entry.slug}/` })),
+);
 const sitemapEntries = [
   "/", "/blog/", "/thoughts/", "/columns/", "/about/",
   ...posts.map((entry) => `/blog/${entry.slug}/`),

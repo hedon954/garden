@@ -29,6 +29,7 @@ export type ContentEntry = {
   columnDescription?: string;
   columnStatus?: string;
   columnCover?: string;
+  columnCoverAlt?: string;
   order?: number;
   cover?: string;
   coverAlt?: string;
@@ -40,7 +41,7 @@ export type ContentEntry = {
   linkDescription?: string;
 };
 
-export const contentHash = "ee91b2000072";
+export const contentHash = "d794c1b520c9";
 export const posts = [
   {
     "title": "Markdown 复杂语法实验场",
@@ -84,6 +85,22 @@ export const posts = [
     "content": "工具总是在争取更短的路径：少一次点击、少一个页面、少等一秒。但如果只把效率当作终点，我们很容易做出一种**没有摩擦，也没有方向**的界面。\n\n> 好的界面不只是让事情更快发生，也应该帮助人知道什么值得发生。\n\n## 界面在分配什么\n\n每一个高亮、通知和默认选项，都在替用户分配注意力。它们看上去只是视觉决策，实际上却在参与判断。\n\n| 界面动作 | 隐含的决定 |\n| --- | --- |\n| 默认展开 | 这件事更值得先看 |\n| 红色角标 | 这件事不能等 |\n| 无限滚动 | 这里没有自然的终点 |\n\n## 摩擦不是敌人\n\n有些摩擦应该被删掉，例如重复输入和无意义的确认；另一些摩擦则应该被保留，例如发布前的停顿、删除前的复核，以及阅读长文时清晰的段落边界。\n\n```ts\ntype Friction = {\n  cost: number;\n  protectsIntent: boolean;\n};\n\nconst shouldRemove = (friction: Friction) =>\n  friction.cost > 0 && !friction.protectsIntent;\n```\n\n## 把节奏设计进去\n\n我现在更愿意先问三个问题：\n\n1. 用户来到这里时，最需要看见什么？\n2. 哪些信息可以晚一点出现？\n3. 这个流程应该在哪里自然结束？\n\n这些问题没有让界面变得更复杂，反而让许多元素失去了存在的理由。\n\n## 最后的判断\n\n注意力不是取之不尽的资源。产品真正的克制，不是少用一种颜色，而是少向用户索取一次不必要的注意。\n\n脚注也应该像在 Typora 中一样自然工作。[^attention]\n\n[^attention]: 这也是本站选择安静排版、有限强调色和明确阅读边界的原因。"
   },
   {
+    "title": "03 · 带着证据发布",
+    "slug": "ship-with-evidence",
+    "description": "“我改完了”不是完成，“用户可以确认它好了”才是。",
+    "date": "2026-07-18T00:00:00.000Z",
+    "topic": "独立开发",
+    "tags": [
+      "验证",
+      "发布"
+    ],
+    "readingTime": "5 分钟",
+    "kind": "post",
+    "draft": false,
+    "sourcePath": "posts/ship-with-evidence.md",
+    "content": "发布前最重要的工作不是再写一段漂亮总结，而是找到足以支持结论的证据。\n\n## 验证真实路径\n\n测试最小单元很重要，但用户真正经历的是一条完整路径。至少有一次验证应该从入口走到结果。\n\n## 不隐藏边界\n\n没有验证的部分要明确说出来。诚实的边界比虚假的完整更有价值。\n\n## 留下下一步\n\n一次发布应该让下一次开发更容易开始，而不是重新理解所有上下文。"
+  },
+  {
     "title": "我为什么重新选择本地写作",
     "slug": "local-first-writing",
     "description": "Markdown 文件、可迁移的媒体资源，以及不被平台锁住的长期写作。",
@@ -101,6 +118,37 @@ export const posts = [
     "draft": false,
     "sourcePath": "posts/local-first-writing.md",
     "content": "我仍然在 Typora 里写下第一版。不是因为它有最多的功能，而是因为一个普通的 Markdown 文件让我知道：十年后，我仍然能打开这些文字。\n\n## 文件就是作品\n\n文章不应该只存在于某个编辑器的数据库里。标题、发布日期和主题放进 YAML front matter，正文保持标准 Markdown，图片则和文章一起归档。\n\n## 发布只是一次编译\n\n写作和发布可以分离。写作阶段只关心内容；网站读取文件，生成目录、搜索索引和 RSS。\n\n- [x] 在 Typora 中完成正文\n- [x] 提交 Markdown 与媒体资源\n- [ ] 发布后继续修正\n\n## 可迁移才有长期主义\n\n真正的长期主义不是选中一个“永远不会倒闭”的平台，而是让迁移成本始终足够低。"
+  },
+  {
+    "title": "02 · 让状态变得可靠",
+    "slug": "stable-state",
+    "description": "状态设计的关键，是明确谁拥有事实。",
+    "date": "2026-07-10T00:00:00.000Z",
+    "topic": "独立开发",
+    "tags": [
+      "状态管理"
+    ],
+    "readingTime": "6 分钟",
+    "kind": "post",
+    "draft": false,
+    "sourcePath": "posts/stable-state.md",
+    "content": "状态问题很少只是“少刷新了一次”。更常见的原因是多个地方都以为自己拥有最终事实。\n\n## 唯一事实来源\n\n先确定数据由谁拥有，再决定界面如何派生。临时交互状态可以留在视图，持久事实必须有明确边界。\n\n## 乐观更新\n\n乐观更新让操作显得即时，但失败时必须能够回滚，并且不能让选择状态丢失。\n\n## 可恢复\n\n真正可靠的状态不是永不失败，而是在失败以后仍然知道应该回到哪里。"
+  },
+  {
+    "title": "01 · 从最小闭环开始",
+    "slug": "smallest-closed-loop",
+    "description": "先让最重要的一条路径真正跑通。",
+    "date": "2026-07-04T00:00:00.000Z",
+    "topic": "独立开发",
+    "tags": [
+      "产品",
+      "工程"
+    ],
+    "readingTime": "7 分钟",
+    "kind": "post",
+    "draft": false,
+    "sourcePath": "posts/smallest-closed-loop.md",
+    "content": "一个人的时间有限，所以“完整”必须被重新定义。对我来说，完整不是一次做完所有功能，而是先让最重要的一条路径首尾相接。\n\n## 什么是最小闭环\n\n它必须包含触发、完成和反馈。只有按钮不算闭环，只有数据结构也不算。\n\n## 把想法切成动作\n\n以一个文件浏览器为例，第一步不是标签、搜索或批量操作，而是：\n\n1. 创建文件夹；\n2. 创建 Markdown 文件；\n3. 刷新列表；\n4. 自动选中新项目。\n\n## 可观察的完成\n\n闭环需要能被人看见，也能被测试验证。每次完成之后，都应该留下足够明确的证据。\n\n## 下一步\n\n当闭环成立，再进入命名、删除和上下文菜单。功能扩展不再是猜测，而是沿着已经成立的路径自然生长。"
   },
   {
     "title": "做一个 PDF 阅读器之后，我重新理解了「位置」",
@@ -152,16 +200,16 @@ export const columns = [
       "产品",
       "工程"
     ],
+    "readingTime": "7 分钟",
+    "kind": "column",
+    "draft": false,
+    "sourcePath": "posts/smallest-closed-loop.md",
+    "content": "一个人的时间有限，所以“完整”必须被重新定义。对我来说，完整不是一次做完所有功能，而是先让最重要的一条路径首尾相接。\n\n## 什么是最小闭环\n\n它必须包含触发、完成和反馈。只有按钮不算闭环，只有数据结构也不算。\n\n## 把想法切成动作\n\n以一个文件浏览器为例，第一步不是标签、搜索或批量操作，而是：\n\n1. 创建文件夹；\n2. 创建 Markdown 文件；\n3. 刷新列表；\n4. 自动选中新项目。\n\n## 可观察的完成\n\n闭环需要能被人看见，也能被测试验证。每次完成之后，都应该留下足够明确的证据。\n\n## 下一步\n\n当闭环成立，再进入命名、删除和上下文菜单。功能扩展不再是猜测，而是沿着已经成立的路径自然生长。",
     "column": "building-in-public",
     "columnTitle": "一个人造产品",
     "columnDescription": "从最小闭环、可靠状态到带着证据发布：记录一个人把产品从想法变成日常工具的过程。",
     "columnStatus": "连载中",
-    "order": 1,
-    "readingTime": "7 分钟",
-    "kind": "column",
-    "draft": false,
-    "sourcePath": "columns/building-in-public/01-smallest-loop.md",
-    "content": "一个人的时间有限，所以“完整”必须被重新定义。对我来说，完整不是一次做完所有功能，而是先让最重要的一条路径首尾相接。\n\n## 什么是最小闭环\n\n它必须包含触发、完成和反馈。只有按钮不算闭环，只有数据结构也不算。\n\n## 把想法切成动作\n\n以一个文件浏览器为例，第一步不是标签、搜索或批量操作，而是：\n\n1. 创建文件夹；\n2. 创建 Markdown 文件；\n3. 刷新列表；\n4. 自动选中新项目。\n\n## 可观察的完成\n\n闭环需要能被人看见，也能被测试验证。每次完成之后，都应该留下足够明确的证据。\n\n## 下一步\n\n当闭环成立，再进入命名、删除和上下文菜单。功能扩展不再是猜测，而是沿着已经成立的路径自然生长。"
+    "order": 1
   },
   {
     "title": "02 · 让状态变得可靠",
@@ -172,14 +220,16 @@ export const columns = [
     "tags": [
       "状态管理"
     ],
-    "column": "building-in-public",
-    "columnTitle": "一个人造产品",
-    "order": 2,
     "readingTime": "6 分钟",
     "kind": "column",
     "draft": false,
-    "sourcePath": "columns/building-in-public/02-stable-state.md",
-    "content": "状态问题很少只是“少刷新了一次”。更常见的原因是多个地方都以为自己拥有最终事实。\n\n## 唯一事实来源\n\n先确定数据由谁拥有，再决定界面如何派生。临时交互状态可以留在视图，持久事实必须有明确边界。\n\n## 乐观更新\n\n乐观更新让操作显得即时，但失败时必须能够回滚，并且不能让选择状态丢失。\n\n## 可恢复\n\n真正可靠的状态不是永不失败，而是在失败以后仍然知道应该回到哪里。"
+    "sourcePath": "posts/stable-state.md",
+    "content": "状态问题很少只是“少刷新了一次”。更常见的原因是多个地方都以为自己拥有最终事实。\n\n## 唯一事实来源\n\n先确定数据由谁拥有，再决定界面如何派生。临时交互状态可以留在视图，持久事实必须有明确边界。\n\n## 乐观更新\n\n乐观更新让操作显得即时，但失败时必须能够回滚，并且不能让选择状态丢失。\n\n## 可恢复\n\n真正可靠的状态不是永不失败，而是在失败以后仍然知道应该回到哪里。",
+    "column": "building-in-public",
+    "columnTitle": "一个人造产品",
+    "columnDescription": "从最小闭环、可靠状态到带着证据发布：记录一个人把产品从想法变成日常工具的过程。",
+    "columnStatus": "连载中",
+    "order": 2
   },
   {
     "title": "03 · 带着证据发布",
@@ -191,14 +241,16 @@ export const columns = [
       "验证",
       "发布"
     ],
-    "column": "building-in-public",
-    "columnTitle": "一个人造产品",
-    "order": 3,
     "readingTime": "5 分钟",
     "kind": "column",
     "draft": false,
-    "sourcePath": "columns/building-in-public/03-ship-with-evidence.md",
-    "content": "发布前最重要的工作不是再写一段漂亮总结，而是找到足以支持结论的证据。\n\n## 验证真实路径\n\n测试最小单元很重要，但用户真正经历的是一条完整路径。至少有一次验证应该从入口走到结果。\n\n## 不隐藏边界\n\n没有验证的部分要明确说出来。诚实的边界比虚假的完整更有价值。\n\n## 留下下一步\n\n一次发布应该让下一次开发更容易开始，而不是重新理解所有上下文。"
+    "sourcePath": "posts/ship-with-evidence.md",
+    "content": "发布前最重要的工作不是再写一段漂亮总结，而是找到足以支持结论的证据。\n\n## 验证真实路径\n\n测试最小单元很重要，但用户真正经历的是一条完整路径。至少有一次验证应该从入口走到结果。\n\n## 不隐藏边界\n\n没有验证的部分要明确说出来。诚实的边界比虚假的完整更有价值。\n\n## 留下下一步\n\n一次发布应该让下一次开发更容易开始，而不是重新理解所有上下文。",
+    "column": "building-in-public",
+    "columnTitle": "一个人造产品",
+    "columnDescription": "从最小闭环、可靠状态到带着证据发布：记录一个人把产品从想法变成日常工具的过程。",
+    "columnStatus": "连载中",
+    "order": 3
   }
 ] as ContentEntry[];
 export const thoughts = [

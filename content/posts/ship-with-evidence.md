@@ -7,9 +7,6 @@ topic: 独立开发
 tags:
   - 验证
   - 发布
-column: building-in-public
-columnTitle: 一个人造产品
-order: 3
 readingTime: 5 分钟
 ---
 

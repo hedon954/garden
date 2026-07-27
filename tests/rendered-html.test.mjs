@@ -68,6 +68,10 @@ test("publishes a valid RSS feed", async () => {
   assert.match(xml, /<title>雨后的城市<\/title>/);
   assert.match(xml, /<content:encoded><!\[CDATA\[/);
   assert.match(xml, /xmlns:content="http:\/\/purl\.org\/rss\/1\.0\/modules\/content\/"/);
+
+  const postsXml = await readFile(new URL("../public/posts.xml", import.meta.url), "utf8");
+  assert.match(postsXml, /<title>注意力也是一种界面<\/title>/);
+  assert.doesNotMatch(postsXml, /<title>雨后的城市<\/title>/);
 });
 
 test("renders complex Markdown, article covers, and mixed thought media", async () => {
