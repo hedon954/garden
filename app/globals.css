@@ -992,6 +992,27 @@ button {
   margin: 8px 0;
 }
 
+.markdown-body .garden-callout-marker { display: none; }
+
+.markdown-body blockquote:has(.garden-callout-marker) {
+  --callout-tone: #2878c8;
+  --callout-surface: #edf6ff;
+  margin: 30px 0;
+  padding: 16px 19px;
+  border: 1px solid color-mix(in srgb, var(--callout-tone) 28%, var(--line));
+  border-left: 4px solid var(--callout-tone);
+  background: var(--callout-surface);
+  color: var(--ink-soft);
+}
+
+.markdown-body blockquote:has(.garden-callout-marker--success) { --callout-tone: #23835b; --callout-surface: #edf8f1; }
+.markdown-body blockquote:has(.garden-callout-marker--warning) { --callout-tone: #b96e00; --callout-surface: #fff6e7; }
+.markdown-body blockquote:has(.garden-callout-marker--danger) { --callout-tone: #c8394d; --callout-surface: #fff0f2; }
+.markdown-body blockquote:has(.garden-callout-marker) > p:has(.garden-callout-marker) { display: none; }
+.markdown-body blockquote:has(.garden-callout-marker) > p:has(.garden-callout-marker) + p { margin-top: 0; }
+.markdown-body blockquote:has(.garden-callout-marker) > p:last-child { margin-bottom: 0; }
+.markdown-body blockquote:has(.garden-callout-marker) > p:has(.garden-callout-marker) + p strong:first-child { color: var(--callout-tone); }
+
 .markdown-body ul,
 .markdown-body ol {
   padding-left: 25px;

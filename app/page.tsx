@@ -5,7 +5,7 @@ import {
   GithubLogo,
   PushPin,
 } from "@phosphor-icons/react/ssr";
-import { columns, formatDate, posts } from "./lib/content";
+import { columns, formatDate, postHref, posts } from "./lib/content";
 import { ThoughtCard } from "./components/ThoughtCard";
 import { PageIntro } from "./components/PageIntro";
 import { getPublishedThoughts } from "./lib/public-thoughts";
@@ -48,7 +48,7 @@ export default function Home() {
         </div>
         <div className="post-list">
           {pinned.map((post) => (
-            <Link href={`/blog/${post.slug}`} key={post.slug} className="post-row">
+            <Link href={postHref(post)} key={post.path} className="post-row">
               <time>{formatDate(post.date)}</time>
               <span>
                 <strong>{post.title}</strong>
@@ -69,7 +69,7 @@ export default function Home() {
         </div>
         <div className="post-list">
           {posts.map((post) => (
-            <Link href={`/blog/${post.slug}`} key={post.slug} className="post-row">
+            <Link href={postHref(post)} key={post.path} className="post-row">
               <time>{formatDate(post.date)}</time>
               <span>
                 <strong>{post.title}</strong>

@@ -12,6 +12,7 @@ export type MediaItem = {
 export type ContentEntry = {
   title: string;
   slug: string;
+  path: string;
   description?: string;
   date: string;
   updated?: string;
@@ -41,7 +42,7 @@ export type ContentEntry = {
   linkDescription?: string;
 };
 
-export const contentHash = "ef990f31b5e1";
+export const contentHash = "14aa42a93318";
 export const posts = [
   {
     "title": "Markdown 复杂语法实验场",
@@ -59,6 +60,7 @@ export const posts = [
     "readingTime": "10 分钟",
     "cover": "https://images.unsplash.com/photo-1761414500824-e280de5a1b37?auto=format&fit=crop&w=1600&q=84",
     "coverAlt": "彩色阳台构成的现代建筑立面",
+    "path": "markdown-lab",
     "kind": "post",
     "draft": false,
     "sourcePath": "posts/markdown-lab.md",
@@ -79,6 +81,7 @@ export const posts = [
     "readingTime": "6 分钟",
     "cover": "https://images.unsplash.com/photo-1630234674857-527eb5534837?auto=format&fit=crop&w=1600&q=84",
     "coverAlt": "彩色几何建筑立面",
+    "path": "attention-is-an-interface",
     "kind": "post",
     "draft": false,
     "sourcePath": "posts/attention-is-an-interface.md",
@@ -95,6 +98,7 @@ export const posts = [
       "发布"
     ],
     "readingTime": "5 分钟",
+    "path": "building-in-public/ship-with-evidence",
     "kind": "post",
     "draft": false,
     "sourcePath": "posts/building-in-public/ship-with-evidence.md",
@@ -114,6 +118,7 @@ export const posts = [
     "readingTime": "5 分钟",
     "cover": "https://images.unsplash.com/photo-1501525771695-688643efeea4?auto=format&fit=crop&w=1600&q=84",
     "coverAlt": "木桌上的笔记本与钢笔",
+    "path": "local-first-writing",
     "kind": "post",
     "draft": false,
     "sourcePath": "posts/local-first-writing.md",
@@ -129,6 +134,7 @@ export const posts = [
       "状态管理"
     ],
     "readingTime": "6 分钟",
+    "path": "building-in-public/stable-state",
     "kind": "post",
     "draft": false,
     "sourcePath": "posts/building-in-public/stable-state.md",
@@ -145,6 +151,7 @@ export const posts = [
       "工程"
     ],
     "readingTime": "7 分钟",
+    "path": "building-in-public/smallest-closed-loop",
     "kind": "post",
     "draft": false,
     "sourcePath": "posts/building-in-public/smallest-closed-loop.md",
@@ -164,6 +171,7 @@ export const posts = [
     "readingTime": "8 分钟",
     "cover": "https://images.unsplash.com/photo-1623276527153-fa38c1616b05?auto=format&fit=crop&w=1600&q=84",
     "coverAlt": "桌上的平板电脑、笔记本电脑与咖啡",
+    "path": "building-a-pdf-reader",
     "kind": "post",
     "draft": false,
     "sourcePath": "posts/building-a-pdf-reader.md",
@@ -183,6 +191,7 @@ export const posts = [
     "readingTime": "9 分钟",
     "cover": "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1600&q=84",
     "coverAlt": "近距离拍摄的电子电路板",
+    "path": "understand-kv-cache",
     "kind": "post",
     "draft": false,
     "sourcePath": "posts/understand-kv-cache.md",
@@ -201,6 +210,7 @@ export const columns = [
       "工程"
     ],
     "readingTime": "7 分钟",
+    "path": "building-in-public/smallest-closed-loop",
     "kind": "column",
     "draft": false,
     "sourcePath": "posts/building-in-public/smallest-closed-loop.md",
@@ -221,6 +231,7 @@ export const columns = [
       "状态管理"
     ],
     "readingTime": "6 分钟",
+    "path": "building-in-public/stable-state",
     "kind": "column",
     "draft": false,
     "sourcePath": "posts/building-in-public/stable-state.md",
@@ -242,6 +253,7 @@ export const columns = [
       "发布"
     ],
     "readingTime": "5 分钟",
+    "path": "building-in-public/ship-with-evidence",
     "kind": "column",
     "draft": false,
     "sourcePath": "posts/building-in-public/ship-with-evidence.md",
@@ -295,6 +307,7 @@ export const thoughts = [
         "description": "一条和这晚阅读有关、值得保留上下文的链接。"
       }
     ],
+    "path": "rainy-night",
     "kind": "thought",
     "draft": false,
     "sourcePath": "thoughts/rainy-night.md",
@@ -315,6 +328,7 @@ export const thoughts = [
         "title": "今天的声音 · 循环片段"
       }
     ],
+    "path": "field-recording",
     "kind": "thought",
     "draft": false,
     "sourcePath": "thoughts/field-recording.md",
@@ -335,6 +349,7 @@ export const thoughts = [
         "poster": "https://images.unsplash.com/photo-1544655205-dcbeb868c648?auto=format&fit=crop&w=1400&q=82"
       }
     ],
+    "path": "slow-motion",
     "kind": "thought",
     "draft": false,
     "sourcePath": "thoughts/slow-motion.md",
@@ -356,6 +371,7 @@ export const thoughts = [
         "description": "让不同网站之间的回复、喜欢与引用重新连接起来。"
       }
     ],
+    "path": "links-are-paths",
     "kind": "thought",
     "draft": false,
     "sourcePath": "thoughts/links-are-paths.md",

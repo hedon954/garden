@@ -188,6 +188,9 @@ function validateAndNormalize(data, content, markdownPath, kind, sourcePath) {
     ...data,
     title,
     slug,
+    path: kind === "post"
+      ? sourcePath.replace(/^posts\//u, "").replace(/\.md$/u, "")
+      : slug,
     date,
     updated,
     publishAt,
@@ -296,10 +299,10 @@ function readColumnReferences(posts) {
       const { raw, relativePath } = normalizePostReference(postReference, sourcePath);
       const post = postsByPath.get(relativePath) ?? postsBySlug.get(raw);
       if (!post) fail(sourcePath, `引用的博文 ${postReference} 不存在。`);
-      if (referenced.has(post.slug)) {
+      if (referenced.has(post.path)) {
         fail(sourcePath, `博文 ${postReference} 在同一专栏中重复。`);
       }
-      referenced.add(post.slug);
+      referenced.add(post.path);
       return {
         ...post,
         kind: "column",
@@ -327,8 +330,8 @@ const thoughts = readMarkdownTree(path.join(contentRoot, "thoughts"), "thought")
   (a, b) => Date.parse(b.date) - Date.parse(a.date),
 );
 
-assertUnique(posts, (item) => item.slug, "博文 slug");
-assertUnique(columns, (item) => `${item.column}/${item.slug}`, "专栏路径");
+assertUnique(posts, (item) => item.path, "博文路径");
+assertUnique(columns, (item) => `${item.column}/${item.path}`, "专栏路径");
 assertUnique(
   columns,
   (item) => `${item.column}/${item.order}`,
@@ -356,6 +359,7 @@ export type MediaItem = {
 export type ContentEntry = {
   title: string;
   slug: string;
+  path: string;
   description?: string;
   date: string;
   updated?: string;
@@ -403,8 +407,11 @@ const escapeXml = (value) =>
     .replaceAll("'", "&apos;");
 const cdata = (value) => value.replaceAll("]]>", "]]]]><![CDATA[>");
 const publicRoot = path.join(root, "public");
+const columnEntryPath = (entry) => entry.path.startsWith(`${entry.column}/`)
+  ? entry.path.slice(entry.column.length + 1)
+  : entry.path;
 const feedEntries = [
-  ...posts.map((entry) => ({ ...entry, path: `/blog/${entry.slug}/` })),
+  ...posts.map((entry) => ({ ...entry, path: `/blog/${entry.path}/` })),
   ...thoughts.map((entry) => ({ ...entry, path: `/thoughts/${entry.slug}/` })),
 ].sort((left, right) => Date.parse(right.date) - Date.parse(left.date));
 
@@ -437,12 +444,12 @@ function writeRssFeed(fileName, entries) {
 writeRssFeed("rss.xml", feedEntries);
 writeRssFeed(
   "posts.xml",
-  posts.map((entry) => ({ ...entry, path: `/blog/${entry.slug}/` })),
+  posts.map((entry) => ({ ...entry, path: `/blog/${entry.path}/` })),
 );
 const sitemapEntries = [
   "/", "/blog/", "/thoughts/", "/columns/", "/about/",
-  ...posts.map((entry) => `/blog/${entry.slug}/`),
-  ...columns.map((entry) => `/columns/${entry.column}/${entry.slug}/`),
+  ...posts.map((entry) => `/blog/${entry.path}/`),
+  ...columns.map((entry) => `/columns/${entry.column}/${columnEntryPath(entry)}/`),
   ...thoughts.map((entry) => `/thoughts/${entry.slug}/`),
 ];
 fs.writeFileSync(path.join(publicRoot, "sitemap.xml"), `<?xml version="1.0" encoding="UTF-8" ?>

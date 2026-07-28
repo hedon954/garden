@@ -9,6 +9,14 @@ import {
 export { columns, posts, thoughts };
 export type { ContentEntry, MediaItem };
 
+export const postHref = (post: Pick<ContentEntry, "path">) => `/blog/${post.path}`;
+export const columnEntryPath = (entry: Pick<ContentEntry, "column" | "path">) => {
+  const prefix = entry.column ? `${entry.column}/` : "";
+  return prefix && entry.path.startsWith(prefix) ? entry.path.slice(prefix.length) : entry.path;
+};
+export const columnHref = (entry: Pick<ContentEntry, "column" | "path">) =>
+  `/columns/${entry.column}/${columnEntryPath(entry)}`;
+
 export const formatDate = (value: string, withTime = false) =>
   new Intl.DateTimeFormat("zh-CN", {
     year: "numeric",
@@ -65,14 +73,14 @@ export const searchRecords = [
     title: item.title,
     description: item.description ?? "",
     topic: item.topic ?? "博文",
-    path: `/blog/${item.slug}`,
+    path: postHref(item),
     content: toSearchableText(item.content),
   })),
   ...columns.map((item) => ({
     title: item.title,
     description: item.description ?? "",
     topic: item.columnTitle ?? "专栏",
-    path: `/columns/${item.column}/${item.slug}`,
+    path: columnHref(item),
     content: toSearchableText(item.content),
   })),
   ...thoughts.map((item) => ({
@@ -88,14 +96,14 @@ export const topics = Array.from(
   new Set(posts.map((post) => post.topic).filter(Boolean)),
 ) as string[];
 
-export const findPost = (slug: string): ContentEntry | undefined =>
-  posts.find((post) => post.slug === slug);
+export const findPost = (path: string): ContentEntry | undefined =>
+  posts.find((post) => post.path === path);
 
 export const findThought = (slug: string): ContentEntry | undefined =>
   thoughts.find((thought) => thought.slug === slug);
 
 export const findColumnEntry = (
   column: string,
-  slug: string,
+  path: string,
 ): ContentEntry | undefined =>
-  columns.find((entry) => entry.column === column && entry.slug === slug);
+  columns.find((entry) => entry.column === column && columnEntryPath(entry) === path);

@@ -33,6 +33,27 @@ function CodeBlock({
   );
 }
 
+const calloutKinds: Record<string, { tone: "info" | "success" | "warning" | "danger"; title: string }> = {
+  NOTE: { tone: "info", title: "提示" }, INFO: { tone: "info", title: "说明" },
+  TIP: { tone: "success", title: "建议" }, SUCCESS: { tone: "success", title: "成功" },
+  IMPORTANT: { tone: "warning", title: "重要" }, WARNING: { tone: "warning", title: "警告" },
+  CAUTION: { tone: "danger", title: "注意" }, DANGER: { tone: "danger", title: "危险" }, FAILURE: { tone: "danger", title: "失败" },
+};
+
+export function normalizeCallouts(markdown: string) {
+  let fence: string | null = null;
+  return markdown.split("\n").flatMap((line) => {
+    const marker = line.match(/^\s*(`{3,}|~{3,})/)?.[1];
+    if (marker) { if (!fence) fence = marker[0]; else if (marker[0] === fence) fence = null; return [line]; }
+    if (fence) return [line];
+    const match = line.match(/^>\s*\[!([a-z]+)\]\s*(.*)$/iu);
+    const callout = match ? calloutKinds[match[1].toUpperCase()] : undefined;
+    if (!callout) return [line];
+    const title = match?.[2].trim() || callout.title;
+    return [`> <span class="garden-callout-marker garden-callout-marker--${callout.tone}" aria-hidden="true"></span>`, ">", `> **${title}**`];
+  }).join("\n");
+}
+
 export function MarkdownArticle({ content }: { content: string }) {
   return (
     <div className="markdown-body">
@@ -87,7 +108,7 @@ export function MarkdownArticle({ content }: { content: string }) {
           },
         }}
       >
-        {content}
+        {normalizeCallouts(content)}
       </ReactMarkdown>
     </div>
   );

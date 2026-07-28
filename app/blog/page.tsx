@@ -4,7 +4,7 @@ import {
   ArrowRight,
   PushPin,
 } from "@phosphor-icons/react/ssr";
-import { formatDate, posts, topics } from "../lib/content";
+import { formatDate, postHref, posts, topics } from "../lib/content";
 import { siteConfig } from "../site.config";
 
 export const metadata = {
@@ -76,8 +76,8 @@ export default async function BlogIndex({
       <section className="archive-list" aria-label="全部博文">
         {visiblePosts.map((post) => (
           <Link
-            key={post.slug}
-            href={`/blog/${post.slug}`}
+            key={post.path}
+            href={postHref(post)}
             className={`archive-row${post.cover ? " with-cover" : ""}`}
           >
             {post.cover && (

@@ -4,7 +4,7 @@
 
 ## 新建一篇博文
 
-在 `content/posts/` 或它的任意子目录新建一个 `.md` 文件，例如 `content/posts/go/runtime/gc.md`。目录只服务于仓库整理，网页地址仍由 `slug` 决定。
+在 `content/posts/` 或它的任意子目录新建一个 `.md` 文件，例如 `content/posts/go/runtime/gc.md`。目录同时决定网页地址：它会发布为 `/blog/go/runtime/gc`；`slug` 只作为内容标识。
 
 ```md
 ---
@@ -98,7 +98,7 @@ columns:
       - reading/notes-from-reading
 ```
 
-`posts` 的顺序就是专栏阅读顺序。路径相对 `content/posts/`，可省略 `.md`，也兼容直接填写 `slug`。同一篇博文可以被多个专栏引用，正文仍然只维护一份。专栏页会显示文章列表和当前文章目录。
+`posts` 的顺序就是专栏阅读顺序。路径相对 `content/posts/`，可省略 `.md`。同一篇博文可以被多个专栏引用，正文仍然只维护一份；为避免同名文件歧义，请始终填写路径，不要填写 `slug`。专栏页会显示文章列表和当前文章目录。
 
 ## 发布随想
 

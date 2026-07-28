@@ -89,6 +89,7 @@ export default async function AdminPage({
     ...posts.map((post) => ({
       kind: "post" as const,
       slug: post.slug,
+      path: post.path,
       title: post.title,
       topic: post.topic ?? "博文",
     })),
@@ -96,6 +97,7 @@ export default async function AdminPage({
       kind: "column" as const,
       column: entry.column,
       slug: entry.slug,
+      path: entry.path,
       title: entry.title,
       topic: entry.columnTitle ?? "专栏",
     })),

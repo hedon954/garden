@@ -25,6 +25,7 @@ type CatalogEntry = {
   kind: "post" | "column";
   column?: string;
   slug: string;
+  path: string;
   title: string;
   topic: string;
 };
@@ -252,13 +253,13 @@ export function AdminDashboard({
   }
 
   async function distribute(entry: CatalogEntry, platform: "x" | "csdn" | "zhihu" | "juejin") {
-    const key = `${entry.kind}:${entry.slug}:${platform}`;
+    const key = `${entry.kind}:${entry.column ?? ""}:${entry.path}:${platform}`;
     setDistributionStatus((current) => ({ ...current, [key]: "正在发送…" }));
     try {
       const response = await fetch("/api/admin/distribution", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ kind: entry.kind, column: entry.column, slug: entry.slug, platform }),
+        body: JSON.stringify({ kind: entry.kind, column: entry.column, path: entry.path, platform }),
       });
       const result = (await response.json()) as { job?: { status: string; externalUrl?: string | null; error?: string | null }; error?: string };
       if (!response.ok || !result.job) throw new Error(result.error ?? "分发失败。");
@@ -277,7 +278,7 @@ export function AdminDashboard({
   }
 
   async function copyPackage(entry: CatalogEntry) {
-    const path = entry.kind === "post" ? `/blog/${entry.slug}` : `/columns/${entry.column}/${entry.slug}`;
+    const path = entry.kind === "post" ? `/blog/${entry.path}` : `/columns/${entry.column}/${entry.path}`;
     await navigator.clipboard.writeText(`${entry.title}\n${entry.topic}\n${publicSiteUrl}${path}`);
     setNotice("标题、栏目与公开链接已复制，可直接粘贴到任意发布平台。"
     );
@@ -357,12 +358,12 @@ export function AdminDashboard({
         <p className="admin-distribution-note"><LinkSimple size={16} /> CSDN、知乎、掘金采用你配置的同步服务；X 在填写用户访问令牌后可直接发布。没有配置时仍可一键复制分发包。</p>
         <div className="admin-catalog">
           {catalog.map((entry) => (
-            <article key={`${entry.kind}-${entry.slug}`}>
+            <article key={`${entry.kind}-${entry.column ?? ""}-${entry.path}`}>
               <div><span>{entry.kind === "post" ? "博文" : "专栏"} · {entry.topic}</span><h3>{entry.title}</h3></div>
               <div className="admin-distribution-actions">
                 <button type="button" onClick={() => copyPackage(entry)}><Copy size={14} /> 复制</button>
                 {(["x", "csdn", "zhihu", "juejin"] as const).map((platform) => {
-                  const key = `${entry.kind}:${entry.slug}:${platform}`;
+                  const key = `${entry.kind}:${entry.column ?? ""}:${entry.path}:${platform}`;
                   return <button type="button" key={platform} onClick={() => distribute(entry, platform)}>{platform === "x" ? "X" : platform === "csdn" ? "CSDN" : platform === "zhihu" ? "知乎" : "掘金"}{distributionStatus[key] && <small>{distributionStatus[key]}</small>}</button>;
                 })}
               </div>

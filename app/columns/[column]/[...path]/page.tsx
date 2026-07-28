@@ -7,6 +7,8 @@ import {
   extractHeadings,
   findColumnEntry,
   formatDate,
+  columnHref,
+  columnEntryPath,
 } from "../../../lib/content";
 import { MarkdownArticle } from "../../../components/MarkdownArticle";
 import { TableOfContents } from "../../../components/TableOfContents";
@@ -22,20 +24,20 @@ import { githubUrl, siteConfig } from "../../../site.config";
 export function generateStaticParams() {
   return columns.map((entry) => ({
     column: entry.column,
-    slug: entry.slug,
+    path: columnEntryPath(entry).split("/"),
   }));
 }
 
 export async function generateMetadata({
   params,
 }: {
-  params: Promise<{ column: string; slug: string }>;
+  params: Promise<{ column: string; path: string[] }>;
 }) {
-  const { column, slug } = await params;
-  const entry = findColumnEntry(column, slug);
+  const { column, path } = await params;
+  const entry = findColumnEntry(column, path.join("/"));
   if (!entry) return {};
   const baseUrl = await getSiteUrl();
-  const pathname = `/columns/${column}/${slug}`;
+  const pathname = columnHref(entry);
   return {
     title: entry.title.replace(/^\d+\s*·\s*/u, ""),
     description: entry.description,
@@ -64,17 +66,17 @@ export async function generateMetadata({
 export default async function ColumnEntryPage({
   params,
 }: {
-  params: Promise<{ column: string; slug: string }>;
+  params: Promise<{ column: string; path: string[] }>;
 }) {
-  const { column, slug } = await params;
-  const entry = findColumnEntry(column, slug);
+  const { column, path } = await params;
+  const entry = findColumnEntry(column, path.join("/"));
   if (!entry) notFound();
   const series = columns.filter((item) => item.column === column);
-  const currentIndex = series.findIndex((item) => item.slug === slug);
+  const currentIndex = series.findIndex((item) => item.path === entry.path);
   const next = series[currentIndex + 1];
   const headings = extractHeadings(entry.content);
   const baseUrl = await getSiteUrl();
-  const pathname = `/columns/${column}/${slug}`;
+  const pathname = columnHref(entry);
   const canonicalUrl = absoluteUrl(pathname, baseUrl);
 
   return (
@@ -88,8 +90,8 @@ export default async function ColumnEntryPage({
         <h2>{entry.columnTitle}</h2>
         <ol>
           {series.map((item) => (
-            <li key={item.slug} className={item.slug === slug ? "active" : ""}>
-              <Link href={`/columns/${column}/${item.slug}`}>{item.title}</Link>
+            <li key={item.path} className={item.path === entry.path ? "active" : ""}>
+              <Link href={columnHref(item)}>{item.title}</Link>
             </li>
           ))}
         </ol>
@@ -127,7 +129,7 @@ export default async function ColumnEntryPage({
         </div>
         {next && (
           <Link
-            href={`/columns/${column}/${next.slug}`}
+            href={columnHref(next)}
             className="next-entry"
           >
             <span>下一篇</span>
@@ -139,7 +141,7 @@ export default async function ColumnEntryPage({
           target={canonicalUrl}
           endpoint={webmentionApiEndpoint()}
         />
-        <Comments slug={`${column}:${slug}`} />
+        <Comments slug={`${column}:${entry.path}`} />
       </article>
 
       <TableOfContents headings={headings} />

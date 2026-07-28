@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ArrowRight } from "@phosphor-icons/react/ssr";
-import { columns } from "../lib/content";
+import { columnHref, columns } from "../lib/content";
 import { PageIntro } from "../components/PageIntro";
 import { siteConfig } from "../site.config";
 
@@ -34,7 +34,7 @@ export default function ColumnsPage() {
       <div className="column-feature-list">
         {grouped.map(({ slug, entries, first }, index) => (
           <Link
-            href={`/columns/${slug}/${first.slug}`}
+            href={columnHref(first)}
             className="column-feature"
             key={slug}
           >

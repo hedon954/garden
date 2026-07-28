@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { columns, posts } from "./lib/content";
+import { columnHref, columns, postHref, posts } from "./lib/content";
 import { absoluteUrl, getSiteUrl } from "./lib/site";
 import { getPublishedThoughts } from "./lib/public-thoughts";
 
@@ -21,14 +21,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   return [
     ...staticRoutes,
     ...posts.map((post) => ({
-      url: absoluteUrl(`/blog/${post.slug}`, baseUrl),
+      url: absoluteUrl(postHref(post), baseUrl),
       lastModified: new Date(post.updated ?? post.date),
       changeFrequency: "monthly" as const,
       priority: 0.8,
     })),
     ...columns.map((entry) => ({
       url: absoluteUrl(
-        `/columns/${entry.column}/${entry.slug}`,
+        columnHref(entry),
         baseUrl,
       ),
       lastModified: new Date(entry.updated ?? entry.date),

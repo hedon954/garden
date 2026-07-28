@@ -25,27 +25,27 @@ export async function POST(request: Request) {
   if (user instanceof Response) return user;
   const payload = (await request.json()) as {
     kind?: unknown;
-    slug?: unknown;
+    path?: unknown;
     column?: unknown;
     platform?: unknown;
   };
   const kind = payload.kind === "column" ? "column" : payload.kind === "post" ? "post" : null;
-  const slug = typeof payload.slug === "string" ? payload.slug : "";
+  const path = typeof payload.path === "string" ? payload.path : "";
   const platform = ["x", "csdn", "zhihu", "juejin"].includes(String(payload.platform))
     ? (payload.platform as Platform)
     : null;
-  if (!kind || !slug || !platform) {
+  if (!kind || !path || !platform) {
     return Response.json({ error: "分发参数不完整。" }, { status: 400 });
   }
 
-  const entry = kind === "post" ? findPost(slug) : undefined;
+  const entry = kind === "post" ? findPost(path) : undefined;
   const column = typeof payload.column === "string" ? payload.column : "";
-  const columnEntry = kind === "column" ? findColumnEntry(column, slug) : undefined;
+  const columnEntry = kind === "column" ? findColumnEntry(column, path) : undefined;
   const source = entry ?? columnEntry;
   if (!source) return Response.json({ error: "未找到对应内容。" }, { status: 404 });
 
-  const path = kind === "post" ? `/blog/${source.slug}` : `/columns/${source.column}/${source.slug}`;
-  const canonicalUrl = absoluteUrl(path, await getSiteUrl());
+  const publicPath = kind === "post" ? `/blog/${source.path}` : `/columns/${source.column}/${source.path}`;
+  const canonicalUrl = absoluteUrl(publicPath, await getSiteUrl());
   let status: "queued" | "published" | "needs_credentials" | "failed" = "queued";
   let externalUrl: string | null = null;
   let error: string | null = null;

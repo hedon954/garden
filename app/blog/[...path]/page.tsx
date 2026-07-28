@@ -6,6 +6,7 @@ import {
   estimateWordCount,
   findPost,
   formatDate,
+  postHref,
   posts,
 } from "../../lib/content";
 import { MarkdownArticle } from "../../components/MarkdownArticle";
@@ -20,19 +21,19 @@ import {
 import { githubUrl, siteConfig } from "../../site.config";
 
 export function generateStaticParams() {
-  return posts.map((post) => ({ slug: post.slug }));
+  return posts.map((post) => ({ path: post.path.split("/") }));
 }
 
 export async function generateMetadata({
   params,
 }: {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ path: string[] }>;
 }) {
-  const { slug } = await params;
-  const post = findPost(slug);
+  const { path } = await params;
+  const post = findPost(path.join("/"));
   if (!post) return {};
   const baseUrl = await getSiteUrl();
-  const pathname = `/blog/${post.slug}`;
+  const pathname = postHref(post);
   return {
     title: post.title,
     description: post.description,
@@ -61,14 +62,14 @@ export async function generateMetadata({
 export default async function PostPage({
   params,
 }: {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ path: string[] }>;
 }) {
-  const { slug } = await params;
-  const post = findPost(slug);
+  const { path } = await params;
+  const post = findPost(path.join("/"));
   if (!post) notFound();
   const headings = extractHeadings(post.content);
   const baseUrl = await getSiteUrl();
-  const pathname = `/blog/${post.slug}`;
+  const pathname = postHref(post);
   const canonicalUrl = absoluteUrl(pathname, baseUrl);
   const wordCount = estimateWordCount(post.content);
 
@@ -124,7 +125,7 @@ export default async function PostPage({
               target={canonicalUrl}
               endpoint={webmentionApiEndpoint()}
             />
-            <Comments slug={post.slug} />
+            <Comments slug={post.path} />
           </div>
           <TableOfContents headings={headings} />
         </div>

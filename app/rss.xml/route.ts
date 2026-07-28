@@ -1,5 +1,5 @@
 import { marked } from "marked";
-import { columns, posts } from "../lib/content";
+import { columnHref, columns, postHref, posts } from "../lib/content";
 import { getPublishedThoughts } from "../lib/public-thoughts";
 import { configuredSiteUrl, siteDescription, siteName } from "../lib/site";
 
@@ -17,10 +17,10 @@ export async function GET() {
   const origin = configuredSiteUrl();
   const thoughts = getPublishedThoughts();
   const entries = [
-    ...posts.map((post) => ({ ...post, path: `/blog/${post.slug}` })),
+    ...posts.map((post) => ({ ...post, path: postHref(post) })),
     ...columns.map((entry) => ({
       ...entry,
-      path: `/columns/${entry.column}/${entry.slug}`,
+      path: columnHref(entry),
     })),
     ...thoughts.map((thought) => ({
       ...thought,

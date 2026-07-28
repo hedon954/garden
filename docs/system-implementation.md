@@ -8,7 +8,7 @@
 
 ```text
 content/posts/**/*.md              普通博文（支持多级目录）
-content/columns.yaml               专栏元数据与博文路径或 slug 引用顺序
+content/columns.yaml               专栏元数据与博文相对路径引用顺序
 content/thoughts/*.md              随想
 content/**/assets/*                与 Markdown 同目录的本地媒体
 ```
@@ -21,7 +21,7 @@ content/**/assets/*                与 Markdown 同目录的本地媒体
 
 构建前，npm 的 `prebuild` 会执行 `scripts/build-content.mjs`。这个 Node 脚本完成下列工作：
 
-1. 递归读取博文和随想目录，并用 `gray-matter` 分离 front matter 与正文；再读取 `columns.yaml`，按其中的 slug 或多级相对路径引用生成专栏阅读路径。
+1. 递归读取博文和随想目录，并用 `gray-matter` 分离 front matter 与正文；博文以相对 `content/posts/` 的路径生成公开 URL，`columns.yaml` 使用同一相对路径引用文章。
 2. 校验 slug、日期、专栏引用顺序、媒体类型、重复路径与必填字段。
 3. 排除 `draft: true` 和未到 `publishAt` 的内容；`CONTENT_INCLUDE_DRAFTS=1` 仅用于本地预览。
 4. 扫描 Markdown 图片和原生 `img/audio/video/source` 标签，以及 `cover`、`poster`、`media[].src`。相对路径媒体会被复制到 `public/media/`，正文中的 URL 同步改写为公开路径。
@@ -45,8 +45,8 @@ flowchart LR
 路由在 `app/` 中按内容类型拆分：
 
 ```text
-app/blog/[slug]/page.tsx              博文详情
-app/columns/[column]/[slug]/page.tsx  专栏详情
+app/blog/[...path]/page.tsx           博文详情
+app/columns/[column]/[...path]/page.tsx 专栏详情
 app/thoughts/[slug]/page.tsx          随想详情
 ```
 
