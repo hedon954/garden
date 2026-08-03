@@ -131,6 +131,19 @@ async function requestRepository(path: string, init?: RequestInit) {
   };
 }
 
+async function mutateRepository(
+  path: string,
+  method: "PUT" | "DELETE",
+  payload: Record<string, unknown>,
+) {
+  const config = repositoryConfig();
+  if (!config) throw new Error("未配置 CONTENT_REPOSITORY 或 CONTENT_GITHUB_TOKEN。");
+  return requestRepository(path, {
+    method,
+    body: JSON.stringify({ ...payload, branch: config.branch }),
+  });
+}
+
 async function readRepositoryFile(path: string) {
   const { response } = await requestRepository(path);
   if (response.status === 404) return null;
@@ -167,13 +180,9 @@ export async function createRepositoryThought(input: Omit<RepositoryThought, "id
   const existing = await readRepositoryFile(path);
   if (existing) throw new Error("这个随想 slug 已存在，请稍后重试。");
   const source = serializeThought(input);
-  const { config, response } = await requestRepository(path, {
-    method: "PUT",
-    body: JSON.stringify({
-      message: `content: 发布随想 ${input.title}`,
-      content: utf8ToBase64(source),
-      branch: config.branch,
-    }),
+  const { response } = await mutateRepository(path, "PUT", {
+    message: `content: 发布随想 ${input.title}`,
+    content: utf8ToBase64(source),
   });
   if (!response.ok) throw new Error("GitHub 未接受这次随想提交。");
   const result = (await response.json()) as { content?: { sha?: string } };
@@ -187,14 +196,10 @@ export async function updateRepositoryThought(slug: string, status: "draft" | "p
   const thought = normalizeThought(existing.source, path, existing.sha);
   if (!thought) throw new Error("随想内容格式不正确。");
   const source = serializeThought({ ...thought, status, date: status === "published" ? new Date().toISOString() : thought.date });
-  const { config, response } = await requestRepository(path, {
-    method: "PUT",
-    body: JSON.stringify({
-      message: `content: ${status === "published" ? "发布" : "撤回"}随想 ${thought.title}`,
-      content: utf8ToBase64(source),
-      sha: existing.sha,
-      branch: config.branch,
-    }),
+  const { response } = await mutateRepository(path, "PUT", {
+    message: `content: ${status === "published" ? "发布" : "撤回"}随想 ${thought.title}`,
+    content: utf8ToBase64(source),
+    sha: existing.sha,
   });
   if (!response.ok) throw new Error("GitHub 未接受这次状态更新。");
   return normalizeThought(source, path) as RepositoryThought;
@@ -204,13 +209,9 @@ export async function deleteRepositoryThought(slug: string) {
   const path = `content/thoughts/${slug}.md`;
   const existing = await readRepositoryFile(path);
   if (!existing) throw new Error("未找到对应随想。");
-  const { config, response } = await requestRepository(path, {
-    method: "DELETE",
-    body: JSON.stringify({
-      message: `content: 删除随想 ${slug}`,
-      sha: existing.sha,
-      branch: config.branch,
-    }),
+  const { response } = await mutateRepository(path, "DELETE", {
+    message: `content: 删除随想 ${slug}`,
+    sha: existing.sha,
   });
   if (!response.ok) throw new Error("GitHub 未接受这次删除请求。");
 }

@@ -201,6 +201,9 @@ test("keeps the admin studio protected and writes content through GitHub", async
   assert.match(thoughtApi, /createRepositoryThought/);
   assert.match(githubContent, /CONTENT_GITHUB_TOKEN/);
   assert.match(githubContent, /content\/thoughts/);
+  assert.match(githubContent, /async function mutateRepository/);
+  assert.match(githubContent, /JSON\.stringify\(\{ \.\.\.payload, branch: config\.branch \}\)/);
+  assert.doesNotMatch(githubContent, /const \{ config, response \} = await requestRepository/);
   assert.match(distributionApi, /X_USER_ACCESS_TOKEN/);
   assert.match(distributionApi, /CSDN_SYNC_WEBHOOK/);
   assert.match(workflow, /actions\/deploy-pages/);
