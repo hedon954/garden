@@ -1,14 +1,14 @@
 import { parse } from "yaml";
 import source from "../site.config.yaml?raw";
 
-/** Fork 后编辑根目录 site.config.yaml。 */
+/** Fork 后编辑根目录 site.config.yaml；页面仅使用标题和副标题。 */
 export const siteConfig = parse(source) as {
   name: string;
   tagline: string;
   description: string;
   locale: string;
   author: { name: string; github: string; githubBio: string };
-  pages: Record<"home" | "blog" | "thoughts" | "columns" | "about", {
+  pages: Record<"home" | "blog" | "thoughts" | "columns" | "about" | "garden", {
     title: string;
     subtitle: string;
   }>;

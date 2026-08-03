@@ -27,5 +27,8 @@ pages:
   about:
     title: 你好，我是 Your Name。
     subtitle: 在这里写下你关心的问题、长期的方向，以及你希望如何与世界保持联系。
+  garden:
+    title: 一个基于 Markdown 的个人博客框架。
+    subtitle: ""
 
 footer: 保持独立，持续写作。

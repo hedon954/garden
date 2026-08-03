@@ -132,10 +132,11 @@ test("renders complex Markdown, article covers, and mixed thought media", async 
 });
 
 test("publishes discovery routes, permanent thought pages, and real integration adapters", async () => {
-  const [sitemapResponse, robotsResponse, thoughtResponse] = await Promise.all([
+  const [sitemapResponse, robotsResponse, thoughtResponse, gardenResponse] = await Promise.all([
     render("/sitemap.xml"),
     render("/robots.txt"),
     render("/thoughts/rainy-night"),
+    render("/garden"),
   ]);
 
   assert.equal(sitemapResponse.status, 200);
@@ -143,6 +144,12 @@ test("publishes discovery routes, permanent thought pages, and real integration 
   assert.match(sitemap, /\/blog\/markdown-lab/);
   assert.match(sitemap, /\/thoughts\/rainy-night/);
   assert.match(sitemap, /\/columns\/building-in-public\/smallest-closed-loop/);
+  assert.match(sitemap, /\/garden/);
+
+  assert.equal(gardenResponse.status, 200);
+  const garden = await gardenResponse.text();
+  assert.match(garden, /管理后台能做什么/);
+  assert.match(garden, /make dev/);
 
   assert.equal(robotsResponse.status, 200);
   const robots = await robotsResponse.text();

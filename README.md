@@ -33,10 +33,10 @@ make update
 ## 常用命令
 
 ```bash
-make dev       # 本地预览
+make dev       # 首次准备并本地预览
 make check     # 检查内容与运行测试
 make build     # 构建公开站点
-make update    # 提交并发布本次改动
+make update    # 检查、提交并发布本次改动
 ```
 
 需要自定义提交说明时：
@@ -45,7 +45,7 @@ make update    # 提交并发布本次改动
 make update MESSAGE="新增一篇文章"
 ```
 
-`make update` 会提交工作区中所有改动；不想发布的文件请先移出仓库或加入 `.gitignore`。
+`make dev` 会在首次运行时自动安装依赖并创建 `.env.local`。`make update` 会先检查，再提交并推送工作区中的所有改动；不想发布的文件请先移出仓库或加入 `.gitignore`。
 
 ## 进一步配置
 

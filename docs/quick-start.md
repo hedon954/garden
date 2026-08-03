@@ -40,6 +40,14 @@ author:
 
 页面标题可以之后再慢慢改。`site.config.yaml` 只管理站点身份和一级页的标题；文章内容不在这里写。
 
+想先在本地预览时，只需运行：
+
+```bash
+make dev
+```
+
+第一次运行会自动安装依赖并创建 `.env.local`。默认不会展示草稿和未来定时文章；需要预览时使用 `CONTENT_INCLUDE_DRAFTS=1 make dev`。
+
 ## 4. 发布第一篇文章
 
 在 `content/posts/` 新建 `hello.md`：
@@ -63,7 +71,7 @@ tags: [开始]
 make update
 ```
 
-它会把本次所有改动提交为“更新博客”并推送。想写提交说明时可以使用：
+它会先检查，再把本次所有改动提交为“更新博客”并推送。想写提交说明时可以使用：
 
 ```bash
 make update MESSAGE="发布第一篇文章"
