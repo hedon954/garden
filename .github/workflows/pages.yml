@@ -76,7 +76,7 @@ jobs:
 
       - name: Upload the public-repository artifact
         if: ${{ vars.PAGES_REPOSITORY != '' }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: static-site
           path: dist/client
@@ -117,7 +117,7 @@ jobs:
             exit 1
           }
 
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: static-site
           path: static-site
