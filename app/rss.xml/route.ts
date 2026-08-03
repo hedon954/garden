@@ -55,6 +55,10 @@ export async function GET() {
     </item>`;
     })
     .join("");
+  const lastBuildDate = new Date(entries.reduce(
+    (latest, entry) => Math.max(latest, Date.parse(entry.updated ?? entry.date)),
+    0,
+  )).toUTCString();
 
   const xml = `<?xml version="1.0" encoding="UTF-8" ?>
 <rss version="2.0"
@@ -66,7 +70,7 @@ export async function GET() {
     <atom:link href="${origin}/rss.xml" rel="self" type="application/rss+xml" />
     <description>${escapeXml(siteDescription)}</description>
     <language>zh-CN</language>
-    <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>
+    <lastBuildDate>${lastBuildDate}</lastBuildDate>
     ${items}
   </channel>
 </rss>`;

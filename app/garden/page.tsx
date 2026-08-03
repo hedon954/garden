@@ -121,7 +121,7 @@ export default function GardenPage() {
             <h3>创建自己的仓库</h3>
             <p>
               使用 GitHub 的 <strong>Use this template</strong>，推荐将仓库命名为
-              <code> &lt;owner&gt;.github.io</code>，再把 Pages Source 设为 GitHub Actions。
+              <code> &lt;owner&gt;.github.io</code>。源码可以直接公开，也可以在 GitHub Free 下放进私有仓库，再把生成文件发布到公开 Pages 仓库。
             </p>
           </article>
           <article>
@@ -168,9 +168,9 @@ export default function GardenPage() {
 
         <div className="garden-setup-notes">
           <div>
-            <strong>自定义域名</strong>
+            <strong>两种部署方式</strong>
             <p>
-              在 Actions Variables 中设置 <code>SITE_URL</code>，值为最终博客地址且末尾不带斜杠。
+              公开源码使用单仓即可；需要隐藏草稿时，配置 <code>PAGES_REPOSITORY</code> 后由 Actions 自动发布公开产物，日常命令不变。
             </p>
           </div>
           <div>

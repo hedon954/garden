@@ -7,6 +7,7 @@
   },
   "scripts": {
     "content:sync": "node scripts/build-content.mjs",
+    "pages:validate": "node scripts/prepare-pages-output.mjs dist/client",
     "webmentions:send": "node scripts/send-webmentions.mjs",
     "predev": "npm run content:sync",
     "dev": "WRANGLER_LOG_PATH=.wrangler/wrangler.log vinext dev",

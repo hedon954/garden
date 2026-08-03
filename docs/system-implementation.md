@@ -78,15 +78,19 @@ rehype-highlight 代码高亮
 ```text
 checkout
   -> Node 22 + npm ci
+  -> lint + 普通构建测试
   -> 写入 SITE_URL / 静态导出环境变量
   -> npm run build
-  -> 上传 dist/client
-  -> actions/deploy-pages
+  -> 校验 dist/client
+  -> 单仓: actions/deploy-pages
+  -> 双仓: Deploy Key 更新公开产物仓库 main
 ```
 
-GitHub Pages 只托管静态文件，故公开页面不包含 OAuth Client Secret、PAT 或分发令牌。工作流只允许根路径仓库 `<owner>.github.io`，或已配置 `SITE_URL` 的自定义域名运行；这避免项目子路径与静态动态路由混用造成链接错误。
+未设置 `PAGES_REPOSITORY` 时，工作流上传 GitHub Pages Artifact。设置后，工作流下载静态产物、校验目标仓库 SSH 地址，把生成文件准备为新的 orphan 提交，再强制更新公开仓库 `main`。树内容没有变化时不会创建部署提交；产物仓库因此始终只有一个可重建版本，不会随构建次数持续膨胀。
 
-`verify.yml` 在 PR 与 `main` 上先跑 lint、普通构建测试，再额外运行一次静态导出。也就是说内容和后台代码即使本地服务能启动，也必须通过 Pages 产物验证。
+`prepare-pages-output.mjs` 要求产物存在 `index.html`，拒绝软链接、环境文件、源码目录与 Source Map，只保留公开文件并补充 `.nojekyll`。GitHub Pages 只托管这些静态文件，故公开页面不包含 OAuth Client Secret、PAT 或分发令牌。
+
+`verify.yml` 验证 Pull Request；对于没有配置发布目标的框架仓库，它也检查 `main`。真正的博客仓库在 `main` 上只由发布工作流执行同样的 lint、普通构建测试和静态导出，避免 GitHub Free 私有仓库为同一次提交重复构建。
 
 ## 5. 独立后台的请求链路
 
@@ -97,7 +101,8 @@ sequenceDiagram
   participant U as 作者浏览器
   participant A as 后台服务
   participant O as GitHub OAuth
-  participant R as GitHub 内容仓库
+  participant R as GitHub 源码仓库
+  participant O2 as 公开产物仓库
   participant P as GitHub Pages
   U->>A: 打开 /admin
   A->>O: OAuth authorization code
@@ -105,7 +110,8 @@ sequenceDiagram
   A->>A: 白名单与签名会话校验
   U->>A: 发布随想
   A->>R: Contents API 创建 content/thoughts/*.md
-  R-->>P: main push 触发 Pages workflow
+  R-->>O2: main push 触发构建并发布静态产物
+  O2-->>P: main 分支部署
   P-->>U: 新静态页面
 ```
 
@@ -125,7 +131,7 @@ sequenceDiagram
 - 删除：带 SHA 调用 Contents API 的 DELETE。
 - 媒体：`/api/admin/uploads` 以服务端 OSS 凭据生成短期 Post Policy；浏览器直传阿里云 OSS，随想只保存公开 URL，二进制不进入 Git。
 
-写入使用后台的 `CONTENT_GITHUB_TOKEN`（Fine-grained PAT，限定目标仓库且仅 Contents Read/Write）。因此登录用户只证明“谁在操作”，服务端 PAT 才是“能写入哪里”的最小权限凭据。GitHub API 创建的提交进入 `main` 后，自然触发公开端的 Pages 工作流。
+写入使用后台的 `CONTENT_GITHUB_TOKEN`（Fine-grained PAT，限定源码仓库且仅 Contents Read/Write）。因此登录用户只证明“谁在操作”，服务端 PAT 才是“能写入哪里”的最小权限凭据。双仓模式的公开产物仓库不接受这个 PAT，只接受发布工作流专用的 Deploy Key。
 
 ## 6. 评论、Webmention 与分发
 

@@ -115,6 +115,9 @@ topic: 测试
     assert.doesNotMatch(generated, /"slug": "draft"/);
     assert.match(generated, /"column": "writing"/);
     assert.match(generated, /\/media\/posts\/assets\/cover\.jpg/);
+    const postsFeed = await readFile(path.join(fixture, "public", "posts.xml"), "utf8");
+    assert.match(postsFeed, /<lastBuildDate>Sat, 25 Jul 2026 00:00:00 GMT<\/lastBuildDate>/);
+    assert.doesNotMatch(postsFeed, /草稿文章/);
     await access(
       path.join(fixture, "public", "media", "posts", "assets", "cover.jpg"),
     );

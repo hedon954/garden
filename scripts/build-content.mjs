@@ -415,6 +415,11 @@ const feedEntries = [
   ...thoughts.map((entry) => ({ ...entry, path: `/thoughts/${entry.slug}/` })),
 ].sort((left, right) => Date.parse(right.date) - Date.parse(left.date));
 
+const feedLastBuildDate = (entries) => new Date(entries.reduce(
+  (latest, entry) => Math.max(latest, Date.parse(entry.updated ?? entry.date)),
+  0,
+)).toUTCString();
+
 function writeRssFeed(fileName, entries) {
   const rssItems = entries.map((entry) => `
     <item>
@@ -435,7 +440,7 @@ function writeRssFeed(fileName, entries) {
     <atom:link href="${escapeXml(`${publicBaseUrl}/${fileName}`)}" rel="self" type="application/rss+xml" />
     <description>${escapeXml(siteDescription)}</description>
     <language>zh-CN</language>
-    <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>${rssItems}
+    <lastBuildDate>${feedLastBuildDate(entries)}</lastBuildDate>${rssItems}
   </channel>
 </rss>
 `);

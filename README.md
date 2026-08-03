@@ -10,13 +10,15 @@ Garden 的目标很简单：先让你拥有一个能长期写下去的站点。�
 2. 打开仓库的 **Settings → Pages**，将 Source 设为 **GitHub Actions**。
 3. 修改 `site.config.yaml`，然后在 `content/posts/` 新建第一篇 Markdown。
 
+想在 GitHub Free 下隐藏草稿和源码历史时，使用[私有源码双仓模式](docs/github-pages.md#方式二github-free-私有源码双仓)。日常写作仍然只运行同一个 `make update`。
+
 完成后运行：
 
 ```bash
 make update
 ```
 
-它会把本次改动提交并推送到 GitHub；Pages 工作流完成后，站点自动更新。初次使用请跟着 [从零开始](docs/quick-start.md) 做一遍。
+它会把本次改动提交并推送到源码仓库；发布工作流完成后，站点自动更新。初次使用请跟着[从零开始](docs/quick-start.md)做一遍。
 
 ## 日常写作只需要知道这些
 
@@ -36,7 +38,7 @@ make update
 make dev       # 首次准备并本地预览
 make check     # 检查内容与运行测试
 make build     # 构建公开站点
-make update    # 检查、提交并发布本次改动
+make update    # 检查、提交并触发自动发布
 ```
 
 需要自定义提交说明时：
@@ -45,7 +47,7 @@ make update    # 检查、提交并发布本次改动
 make update MESSAGE="新增一篇文章"
 ```
 
-`make dev` 会在首次运行时自动安装依赖并创建 `.env.local`。`make update` 会先检查，再提交并推送工作区中的所有改动；不想发布的文件请先移出仓库或加入 `.gitignore`。
+`make dev` 会在首次运行时自动安装依赖并创建 `.env.local`。`make update` 会先检查，再提交并推送工作区中的所有改动；单仓和双仓模式都不需要第二条发布命令。不想发布的文件请先移出仓库或加入 `.gitignore`。
 
 ## 进一步配置
 

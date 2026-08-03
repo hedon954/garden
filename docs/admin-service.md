@@ -1,13 +1,13 @@
 # 独立管理后台
 
-`/admin` 是需要服务器能力的独立服务，不能部署到 GitHub Pages。它通过 GitHub OAuth 识别作者，并直接向内容仓库提交 Markdown；提交进入 `main` 后，GitHub Pages 会自动更新公开博客。
+`/admin` 是需要服务器能力的独立服务，不能部署到 GitHub Pages。它通过 GitHub OAuth 识别作者，并直接向源码仓库提交 Markdown；提交进入 `main` 后，发布工作流会自动更新公开博客。
 
 ## 后台所需环境变量
 
 | Variable | 作用 |
 | --- | --- |
 | `SITE_URL` | GitHub Pages 的公开博客地址 |
-| `CONTENT_REPOSITORY` | 内容仓库，形如 `owner/repository` |
+| `CONTENT_REPOSITORY` | 源码仓库，形如 `owner/repository`；双仓模式不得填写公开产物仓库 |
 | `CONTENT_BRANCH` | 内容分支，通常为 `main` |
 | `CONTENT_GITHUB_TOKEN` | Fine-grained PAT，授予该仓库 Contents: Read and write |
 | `GITHUB_OAUTH_CLIENT_ID` | GitHub OAuth App Client ID |
@@ -28,7 +28,7 @@
 https://admin.example.com/api/auth/github/callback
 ```
 
-后台写入仓库时使用 `CONTENT_GITHUB_TOKEN`，而不是 OAuth 登录令牌。这样访问者的登录授权只负责身份识别，内容写入权限始终留在服务端。
+后台写入源码仓库时使用 `CONTENT_GITHUB_TOKEN`，而不是 OAuth 登录令牌。这样访问者的登录授权只负责身份识别，内容写入权限始终留在服务端。双仓模式下，应为私有源码仓库单独创建 Fine-grained PAT；公开产物仓库只接受 Actions Deploy Key。
 
 ## 阿里云 OSS 媒体上传
 
@@ -100,4 +100,4 @@ Cloudflare 的构建产物由 `vinext build` 生成在 `dist/server/`；工作�
 - 置顶博文：编辑对应博文 front matter 的 `pinned: true`。
 - 分发：后台向 X 或你配置的 CSDN、知乎、掘金 webhook 发出请求；不保存正文副本。
 
-因此 Git 仓库始终是唯一内容真源；即使后台服务更换，公开博客仍可完整构建。
+因此源码仓库始终是唯一内容真源；公开产物仓库只是可重建缓存。即使后台服务或公开仓库更换，博客仍可从源码完整构建。

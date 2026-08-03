@@ -7,6 +7,7 @@ on:
 
 jobs:
   verify:
+    if: github.event_name == 'pull_request' || (github.event.repository.name != format('{0}.github.io', github.repository_owner) && vars.SITE_URL == '' && vars.PAGES_REPOSITORY == '')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -23,4 +24,4 @@ jobs:
           SITE_URL: https://example.github.io
           NEXT_PUBLIC_SITE_URL: https://example.github.io
           ADMIN_URL: https://admin.example.com
-        run: npm run build
+        run: npm run build && npm run pages:validate

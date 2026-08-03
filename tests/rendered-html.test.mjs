@@ -180,12 +180,20 @@ test("keeps the admin studio protected and writes content through GitHub", async
   const response = await render("/api/admin/thoughts");
   assert.equal(response.status, 401);
 
-  const [adminPage, thoughtApi, distributionApi, githubContent, workflow] = await Promise.all([
+  const [
+    adminPage,
+    thoughtApi,
+    distributionApi,
+    githubContent,
+    workflow,
+    verifyWorkflow,
+  ] = await Promise.all([
     readFile(new URL("../app/admin/page.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/api/admin/thoughts/route.ts", import.meta.url), "utf8"),
     readFile(new URL("../app/api/admin/distribution/route.ts", import.meta.url), "utf8"),
     readFile(new URL("../app/lib/github-content.ts", import.meta.url), "utf8"),
     readFile(new URL("../.github/workflows/pages.yml", import.meta.url), "utf8"),
+    readFile(new URL("../.github/workflows/verify.yml", import.meta.url), "utf8"),
   ]);
 
   assert.match(adminPage, /api\/auth\/github/);
@@ -196,5 +204,9 @@ test("keeps the admin studio protected and writes content through GitHub", async
   assert.match(distributionApi, /X_USER_ACCESS_TOKEN/);
   assert.match(distributionApi, /CSDN_SYNC_WEBHOOK/);
   assert.match(workflow, /actions\/deploy-pages/);
+  assert.match(workflow, /PAGES_REPOSITORY/);
+  assert.match(workflow, /PAGES_DEPLOY_KEY/);
+  assert.match(workflow, /prepare-pages-output\.mjs/);
   assert.match(workflow, /STATIC_EXPORT=1/);
+  assert.match(verifyWorkflow, /pages:validate/);
 });
