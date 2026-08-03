@@ -76,7 +76,7 @@ make update
 它会先检查，再把本次所有改动提交为“更新博客”并推送。想写提交说明时可以使用：
 
 ```bash
-make update MESSAGE="发布第一篇文章"
+make update
 ```
 
 如果你直接在 GitHub 网页编辑文件，点击 **Commit changes** 即可，不需要运行命令。

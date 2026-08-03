@@ -58,7 +58,7 @@ PAGES_REPOSITORY=owner/owner.github.io
 之后继续在私有源码仓库运行：
 
 ```bash
-make update MESSAGE="发布第一篇文章"
+make update
 ```
 
 命令只提交并推送源码。Actions 检查内容、执行静态构建，再通过 Deploy Key 更新公开仓库；不需要第二条本地命令。
