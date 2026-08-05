@@ -97,7 +97,7 @@ Cloudflare 的构建产物由 `vinext build` 生成在 `dist/server/`；工作�
 - 发布随想：创建或更新 `content/thoughts/<slug>.md`；草稿使用 `draft: true`。
 - 本地媒体：后台直接上传图片、音频、视频到阿里云 OSS；随想只保存 OSS/CDN URL，不保存二进制文件到 Git。
 - 撤回或删除：更新或删除同一个 Markdown 文件。
-- 置顶博文：编辑对应博文 front matter 的 `pinned: true`。
+- 置顶博文：根据内容索引中的 `posts/...md` 源路径定位仓库里的 `content/posts/...md`，再编辑对应博文 front matter 的 `pinned: true`；路径转换只允许留在博文目录内。
 - 分发：后台向 X 或你配置的 CSDN、知乎、掘金 webhook 发出请求；不保存正文副本。
 
 因此源码仓库始终是唯一内容真源；公开产物仓库只是可重建缓存。即使后台服务或公开仓库更换，博客仍可从源码完整构建。

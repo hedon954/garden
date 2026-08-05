@@ -1,5 +1,6 @@
 import matter from "gray-matter";
 import type { ContentEntry, MediaItem } from "./content";
+import { repositoryPostPath } from "./repository-path.mjs";
 
 const apiBase = "https://api.github.com";
 
@@ -214,4 +215,30 @@ export async function deleteRepositoryThought(slug: string) {
     sha: existing.sha,
   });
   if (!response.ok) throw new Error("GitHub 未接受这次删除请求。");
+}
+
+export async function updateRepositoryPostPinned(input: {
+  sourcePath: string;
+  slug: string;
+  title: string;
+  pinned: boolean;
+}) {
+  const repositoryPath = repositoryPostPath(input.sourcePath);
+  const existing = await readRepositoryFile(repositoryPath);
+  if (!existing) throw new Error("未找到对应博文。");
+  const parsed = matter(existing.source);
+  if (parsed.data.slug !== input.slug) {
+    throw new Error("博文标识不匹配，已拒绝修改。");
+  }
+  const data = { ...parsed.data } as Record<string, unknown>;
+  if (input.pinned) data.pinned = true;
+  else delete data.pinned;
+  const source = matter.stringify(`${parsed.content.trim()}\n`, data);
+  const { response } = await mutateRepository(repositoryPath, "PUT", {
+    message: `content: ${input.pinned ? "置顶" : "取消置顶"}博文 ${input.title}`,
+    content: utf8ToBase64(source),
+    sha: existing.sha,
+  });
+  if (!response.ok) throw new Error("GitHub 未接受这次置顶状态更新。");
+  return { slug: input.slug, pinned: input.pinned };
 }

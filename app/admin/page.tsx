@@ -92,6 +92,7 @@ export default async function AdminPage({
       path: post.path,
       title: post.title,
       topic: post.topic ?? "博文",
+      pinned: Boolean(post.pinned),
     })),
     ...columns.map((entry) => ({
       kind: "column" as const,

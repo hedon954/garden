@@ -28,6 +28,7 @@ type CatalogEntry = {
   path: string;
   title: string;
   topic: string;
+  pinned?: boolean;
 };
 
 type AttachmentDraft = Partial<MediaItem> & {
@@ -146,6 +147,8 @@ export function AdminDashboard({
   const [isSaving, setIsSaving] = useState(false);
   const [uploadingCount, setUploadingCount] = useState(0);
   const [distributionStatus, setDistributionStatus] = useState<Record<string, string>>({});
+  const [catalogEntries, setCatalogEntries] = useState(catalog);
+  const [pinningPath, setPinningPath] = useState<string | null>(null);
   const publishedCount = useMemo(
     () => thoughts.filter((thought) => thought.status === "published").length,
     [thoughts],
@@ -284,6 +287,32 @@ export function AdminDashboard({
     );
   }
 
+  async function updatePinned(entry: CatalogEntry) {
+    if (entry.kind !== "post") return;
+    setNotice("");
+    setPinningPath(entry.path);
+    try {
+      const response = await fetch("/api/admin/posts/pin", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ path: entry.path, pinned: !entry.pinned }),
+      });
+      const result = (await response.json()) as { post?: { pinned: boolean }; error?: string };
+      if (!response.ok || !result.post) throw new Error(result.error ?? "置顶状态更新失败。");
+      setCatalogEntries((current) => current.map((item) =>
+        item.kind === "post" && item.path === entry.path ? { ...item, pinned: result.post!.pinned } : item,
+      ));
+      setNotice(result.post.pinned
+        ? "博文已置顶，GitHub Pages 将自动重新发布首页。"
+        : "已取消博文置顶，GitHub Pages 将自动重新发布首页。",
+      );
+    } catch (error) {
+      setNotice(error instanceof Error ? error.message : "置顶状态更新失败。");
+    } finally {
+      setPinningPath(null);
+    }
+  }
+
   return (
     <main className="admin-shell">
       <header className="admin-topbar">
@@ -307,8 +336,8 @@ export function AdminDashboard({
         </div>
         <dl className="admin-metrics">
           <div><dt>公开随想</dt><dd>{publishedCount + staticThoughtCount}</dd></div>
-          <div><dt>本地博文</dt><dd>{catalog.filter((entry) => entry.kind === "post").length}</dd></div>
-          <div><dt>专栏篇目</dt><dd>{catalog.filter((entry) => entry.kind === "column").length}</dd></div>
+          <div><dt>本地博文</dt><dd>{catalogEntries.filter((entry) => entry.kind === "post").length}</dd></div>
+          <div><dt>专栏篇目</dt><dd>{catalogEntries.filter((entry) => entry.kind === "column").length}</dd></div>
         </dl>
       </section>
 
@@ -357,10 +386,15 @@ export function AdminDashboard({
         </div>
         <p className="admin-distribution-note"><LinkSimple size={16} /> CSDN、知乎、掘金采用你配置的同步服务；X 在填写用户访问令牌后可直接发布。没有配置时仍可一键复制分发包。</p>
         <div className="admin-catalog">
-          {catalog.map((entry) => (
+          {catalogEntries.map((entry) => (
             <article key={`${entry.kind}-${entry.column ?? ""}-${entry.path}`}>
-              <div><span>{entry.kind === "post" ? "博文" : "专栏"} · {entry.topic}</span><h3>{entry.title}</h3></div>
+              <div><span>{entry.kind === "post" ? `博文${entry.pinned ? " · 已置顶" : ""}` : "专栏"} · {entry.topic}</span><h3>{entry.title}</h3></div>
               <div className="admin-distribution-actions">
+                {entry.kind === "post" && (
+                  <button type="button" disabled={pinningPath === entry.path} onClick={() => updatePinned(entry)}>
+                    {pinningPath === entry.path ? "正在更新" : entry.pinned ? "取消置顶" : "置顶首页"}
+                  </button>
+                )}
                 <button type="button" onClick={() => copyPackage(entry)}><Copy size={14} /> 复制</button>
                 {(["x", "csdn", "zhihu", "juejin"] as const).map((platform) => {
                   const key = `${entry.kind}:${entry.column ?? ""}:${entry.path}:${platform}`;
