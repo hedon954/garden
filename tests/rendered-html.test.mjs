@@ -102,6 +102,10 @@ test("renders complex Markdown, article covers, and mixed thought media", async 
   assert.match(article, /class="article-header article-summary-row"/);
   assert.match(article, /class="article-reading-layout"/);
   assert.match(article, /class="article-reading-column"/);
+  assert.match(article, /<strong>提示<\/strong>/);
+  assert.match(article, /<strong>建议<\/strong>/);
+  assert.match(article, /<strong>告警<\/strong>/);
+  assert.match(article, /<strong>警示<\/strong>/);
   assert.match(article, /约 <!-- -->[\d,]+<!-- --> 字/);
   assert.ok(
     article.indexOf('class="article-hero article-cover"') <
@@ -129,6 +133,21 @@ test("renders complex Markdown, article covers, and mixed thought media", async 
   assert.match(archive, /class="archive-copy"/);
   assert.match(archive, /class="archive-meta"/);
   assert.match(archive, /href="\/blog\?topic=/);
+});
+
+test("keeps the reading table of contents collapsible and its active item visible", async () => {
+  const [toc, styles] = await Promise.all([
+    readFile(new URL("../app/components/TableOfContents.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/globals.css", import.meta.url), "utf8"),
+  ]);
+
+  assert.match(toc, /aria-expanded=\{!collapsed\}/);
+  assert.match(toc, /listRef/);
+  assert.match(toc, /querySelector<HTMLElement>\("li\.active"\)/);
+  assert.match(toc, /list\.scrollTo/);
+  assert.match(styles, /\.toc ol[\s\S]*overflow-y: auto/);
+  assert.match(styles, /\.markdown-body h3[\s\S]*font-size: clamp\(20px/);
+  assert.match(styles, /\.markdown-body h4[\s\S]*font-size: clamp\(17px/);
 });
 
 test("publishes discovery routes, permanent thought pages, and real integration adapters", async () => {

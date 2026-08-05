@@ -50,7 +50,7 @@ app/columns/[column]/[...path]/page.tsx 专栏详情
 app/thoughts/[slug]/page.tsx          随想详情
 ```
 
-详情页的 `generateStaticParams()` 从生成数组返回所有路径，因此静态导出时会为每篇内容生成 HTML。页面通过 `extractHeadings()` 从二、三级标题建立右侧目录，通过 `estimateWordCount()` 计算字数；专栏页额外从同一 `column` 的条目建立左侧篇目。
+详情页的 `generateStaticParams()` 从生成数组返回所有路径，因此静态导出时会为每篇内容生成 HTML。页面通过 `extractHeadings()` 从二、三级标题建立右侧目录，通过 `estimateWordCount()` 计算字数；专栏页额外从同一 `column` 的条目建立左侧篇目。目录可展开收起，滚动正文时会更新当前标题，并在高亮项离开目录可视区时自动滚动目录列表。
 
 `MarkdownArticle` 使用 `react-markdown` 管理 AST 渲染，插件链如下：
 
@@ -66,6 +66,8 @@ rehype-highlight 代码高亮
 ```
 
 当代码块语言为 `mermaid` 时，组件会交给 `MermaidDiagram`：客户端动态加载 Mermaid，固定中性主题，并在“图表”和“Code”两个视图之间切换。普通代码块则保留语言标记供样式层显示。
+
+`normalizeCallouts()` 在 Markdown 解析前把 `[!TYPE]` 转换为带语义色和中文标签的警告框，同时兼容旧迁移内容中的 `garden-callout-marker`。旧内容若把标题统一写成「提示」，渲染时会按色调恢复为提示、建议、告警或警示，不要求批量改写文章源文件。
 
 搜索索引不依赖第三方服务。`content.ts` 将 Markdown 去掉标记形成标题、摘要、正文文本，客户端用 Fuse.js 模糊匹配，再根据 Fuse 的匹配范围包装高亮片段。
 

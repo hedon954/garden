@@ -65,6 +65,23 @@
 <td align="right">SVG</td>
 </tr>
 </tbody></table>
+<h2>语义警告框</h2>
+<blockquote>
+<p>[!NOTE]
+普通补充信息会显示为「提示」。</p>
+</blockquote>
+<blockquote>
+<p>[!TIP]
+推荐做法会显示为「建议」。</p>
+</blockquote>
+<blockquote>
+<p>[!WARNING]
+需要关注的风险会显示为「告警」。</p>
+</blockquote>
+<blockquote>
+<p>[!CAUTION]
+可能造成严重后果的操作会显示为「警示」。</p>
+</blockquote>
 <h2>数学公式</h2>
 <p>行内公式会和文字一起流动，例如注意力的缩放项 $\frac{QK^\top}{\sqrt{d_k}}$。</p>
 <p>块级公式支持多行对齐：</p>

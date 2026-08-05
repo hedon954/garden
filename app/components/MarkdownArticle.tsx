@@ -36,16 +36,35 @@ function CodeBlock({
 const calloutKinds: Record<string, { tone: "info" | "success" | "warning" | "danger"; title: string }> = {
   NOTE: { tone: "info", title: "提示" }, INFO: { tone: "info", title: "说明" },
   TIP: { tone: "success", title: "建议" }, SUCCESS: { tone: "success", title: "成功" },
-  IMPORTANT: { tone: "warning", title: "重要" }, WARNING: { tone: "warning", title: "警告" },
-  CAUTION: { tone: "danger", title: "注意" }, DANGER: { tone: "danger", title: "危险" }, FAILURE: { tone: "danger", title: "失败" },
+  IMPORTANT: { tone: "warning", title: "重要" }, WARNING: { tone: "warning", title: "告警" },
+  CAUTION: { tone: "danger", title: "警示" }, DANGER: { tone: "danger", title: "危险" }, FAILURE: { tone: "danger", title: "失败" },
+};
+
+const legacyCalloutLabels: Record<string, string> = {
+  info: "提示",
+  success: "建议",
+  warning: "告警",
+  danger: "警示",
 };
 
 export function normalizeCallouts(markdown: string) {
   let fence: string | null = null;
+  let pendingLegacyLabel: string | null = null;
   return markdown.split("\n").flatMap((line) => {
     const marker = line.match(/^\s*(`{3,}|~{3,})/)?.[1];
     if (marker) { if (!fence) fence = marker[0]; else if (marker[0] === fence) fence = null; return [line]; }
     if (fence) return [line];
+    const legacyMarker = line.match(/garden-callout-marker--(info|success|warning|danger)/u)?.[1];
+    if (legacyMarker) {
+      pendingLegacyLabel = legacyCalloutLabels[legacyMarker];
+      return [line];
+    }
+    if (pendingLegacyLabel && /^>\s*$/u.test(line)) return [line];
+    if (pendingLegacyLabel) {
+      const label = pendingLegacyLabel;
+      pendingLegacyLabel = null;
+      if (/^>\s*\*\*提示\*\*\s*$/u.test(line)) return [`> **${label}**`];
+    }
     const match = line.match(/^>\s*\[!([a-z]+)\]\s*(.*)$/iu);
     const callout = match ? calloutKinds[match[1].toUpperCase()] : undefined;
     if (!callout) return [line];

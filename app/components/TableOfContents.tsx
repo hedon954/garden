@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 
 export function TableOfContents({
   headings,
@@ -10,6 +10,9 @@ export function TableOfContents({
   label?: string;
 }) {
   const [activeId, setActiveId] = useState(headings[0]?.id);
+  const [collapsed, setCollapsed] = useState(false);
+  const listId = useId();
+  const listRef = useRef<HTMLOListElement>(null);
 
   useEffect(() => {
     let frame = 0;
@@ -42,12 +45,47 @@ export function TableOfContents({
     };
   }, [headings]);
 
+  useEffect(() => {
+    if (collapsed || !activeId) return;
+    const list = listRef.current;
+    const activeItem = list?.querySelector<HTMLElement>("li.active");
+    if (!list || !activeItem) return;
+
+    const edge = 10;
+    const listBounds = list.getBoundingClientRect();
+    const itemBounds = activeItem.getBoundingClientRect();
+    let nextTop: number | undefined;
+
+    if (itemBounds.top < listBounds.top + edge) {
+      nextTop = Math.max(0, list.scrollTop + itemBounds.top - listBounds.top - edge);
+    } else if (itemBounds.bottom > listBounds.bottom - edge) {
+      nextTop = list.scrollTop + itemBounds.bottom - listBounds.bottom + edge;
+    }
+
+    if (nextTop !== undefined) {
+      const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      list.scrollTo({ top: nextTop, behavior: reduceMotion ? "auto" : "smooth" });
+    }
+  }, [activeId, collapsed]);
+
   if (!headings.length) return null;
 
   return (
-    <aside className="toc" aria-label={label}>
-      <p>{label}</p>
-      <ol>
+    <aside className={`toc${collapsed ? " is-collapsed" : ""}`} aria-label={label}>
+      <div className="toc-header">
+        <p>{label}</p>
+        <button
+          className="toc-toggle"
+          type="button"
+          aria-controls={listId}
+          aria-expanded={!collapsed}
+          aria-label={`${collapsed ? "展开" : "收起"}${label}`}
+          onClick={() => setCollapsed((value) => !value)}
+        >
+          <span aria-hidden="true">{collapsed ? "+" : "−"}</span>
+        </button>
+      </div>
+      <ol id={listId} ref={listRef} hidden={collapsed}>
         {headings.map((heading) => (
           <li
             key={heading.id}
