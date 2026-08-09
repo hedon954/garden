@@ -102,10 +102,7 @@ test("renders complex Markdown, article covers, and mixed thought media", async 
   assert.match(article, /class="article-header article-summary-row"/);
   assert.match(article, /class="article-reading-layout"/);
   assert.match(article, /class="article-reading-column"/);
-  assert.match(article, /<strong>提示<\/strong>/);
-  assert.match(article, /<strong>建议<\/strong>/);
-  assert.match(article, /<strong>告警<\/strong>/);
-  assert.match(article, /<strong>警示<\/strong>/);
+  assert.doesNotMatch(article, /<strong>(?:提示|建议|告警|警示)<\/strong>/);
   assert.match(article, /约 <!-- -->[\d,]+<!-- --> 字/);
   assert.ok(
     article.indexOf('class="article-hero article-cover"') <
@@ -135,19 +132,40 @@ test("renders complex Markdown, article covers, and mixed thought media", async 
   assert.match(archive, /href="\/blog\?topic=/);
 });
 
-test("keeps the reading table of contents collapsible and its active item visible", async () => {
-  const [toc, styles] = await Promise.all([
+test("collapses the reading table of contents per heading and keeps its active item visible", async () => {
+  const [toc, styles, content] = await Promise.all([
     readFile(new URL("../app/components/TableOfContents.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/globals.css", import.meta.url), "utf8"),
+    readFile(new URL("../app/lib/content.ts", import.meta.url), "utf8"),
   ]);
 
-  assert.match(toc, /aria-expanded=\{!collapsed\}/);
+  assert.match(toc, /collapsedSections/);
+  assert.match(toc, /className="toc-sublist" hidden=\{collapsed\}/);
+  assert.match(toc, /aria-label=\{`\$\{collapsed \? "展开" : "收起"\}「\$\{heading\.text\}」的子目录`\}/);
   assert.match(toc, /listRef/);
-  assert.match(toc, /querySelector<HTMLElement>\("li\.active"\)/);
+  assert.match(toc, /\[aria-current="location"\]/);
   assert.match(toc, /list\.scrollTo/);
-  assert.match(styles, /\.toc ol[\s\S]*overflow-y: auto/);
+  assert.match(toc, /getComputedStyle\(document\.documentElement\)\.scrollPaddingTop/);
+  assert.match(styles, /\.toc-list[\s\S]*overflow-y: auto/);
+  assert.match(styles, /> li\.active > a/);
+  assert.match(styles, /\.markdown-body h2,[\s\S]*scroll-margin-top: 0/);
   assert.match(styles, /\.markdown-body h3[\s\S]*font-size: clamp\(20px/);
   assert.match(styles, /\.markdown-body h4[\s\S]*font-size: clamp\(17px/);
+  assert.match(content, /unified\(\)\.use\(remarkParse\)\.use\(remarkGfm\)/);
+  assert.match(content, /visit\(tree, "heading"/);
+});
+
+test("renders every reading TOC link with a matching Markdown heading ID", async () => {
+  const response = await render("/blog/markdown-lab");
+  assert.equal(response.status, 200);
+  const html = await response.text();
+  const toc = html.match(/<aside class="toc"[\s\S]*?<\/aside>/u)?.[0];
+  assert.ok(toc, "the Markdown lab should render a table of contents");
+  const targets = [...toc.matchAll(/href="#([^"]+)"/gu)].map((match) => match[1]);
+  assert.ok(targets.length > 0, "the Markdown lab should expose TOC links");
+  for (const target of targets) {
+    assert.match(html, new RegExp(`id="${target.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}"`, "u"));
+  }
 });
 
 test("publishes discovery routes, permanent thought pages, and real integration adapters", async () => {

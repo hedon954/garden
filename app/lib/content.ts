@@ -5,6 +5,12 @@ import {
   type ContentEntry,
   type MediaItem,
 } from "./generated-content";
+import GithubSlugger from "github-slugger";
+import { toString } from "mdast-util-to-string";
+import remarkGfm from "remark-gfm";
+import remarkParse from "remark-parse";
+import { unified } from "unified";
+import { visit } from "unist-util-visit";
 
 export { columns, posts, thoughts };
 export type { ContentEntry, MediaItem };
@@ -25,29 +31,26 @@ export const formatDate = (value: string, withTime = false) =>
     ...(withTime ? { hour: "2-digit", minute: "2-digit" } : {}),
   }).format(new Date(value));
 
-export const slugifyHeading = (value: string) =>
-  value
-    .toLowerCase()
-    .trim()
-    .replace(/[“”‘’「」『』，。！？：；、（）【】《》]/g, "")
-    .replace(/[^\w\u3400-\u9fff\s-]/g, "")
-    .replace(/\s+/g, "-")
-    .replace(/-+/g, "-");
+/**
+ * Parses the same Markdown heading text that ReactMarkdown sends to
+ * rehype-slug. Every heading depth advances the slugger so repeated h1/h4/h5
+ * headings cannot shift the IDs of the h2/h3 entries shown in the TOC.
+ */
+export const extractHeadings = (markdown: string) => {
+  const slugger = new GithubSlugger();
+  const headings: Array<{ depth: number; text: string; id: string }> = [];
+  const tree = unified().use(remarkParse).use(remarkGfm).parse(markdown);
 
-export const extractHeadings = (markdown: string) =>
-  markdown
-    .split("\n")
-    .map((line) => {
-      const match = line.match(/^(#{2,3})\s+(.+)$/);
-      if (!match) return null;
-      const text = match[2].replace(/[*_`[\]]/g, "").trim();
-      return {
-        depth: match[1].length,
-        text,
-        id: slugifyHeading(text),
-      };
-    })
-    .filter(Boolean) as Array<{ depth: number; text: string; id: string }>;
+  visit(tree, "heading", (node) => {
+    const text = toString(node).trim();
+    const id = slugger.slug(text);
+    if (text && (node.depth === 2 || node.depth === 3)) {
+      headings.push({ depth: node.depth, text, id });
+    }
+  });
+
+  return headings;
+};
 
 const toSearchableText = (markdown: string) =>
   markdown

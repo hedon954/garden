@@ -33,43 +33,43 @@ function CodeBlock({
   );
 }
 
-const calloutKinds: Record<string, { tone: "info" | "success" | "warning" | "danger"; title: string }> = {
-  NOTE: { tone: "info", title: "提示" }, INFO: { tone: "info", title: "说明" },
-  TIP: { tone: "success", title: "建议" }, SUCCESS: { tone: "success", title: "成功" },
-  IMPORTANT: { tone: "warning", title: "重要" }, WARNING: { tone: "warning", title: "告警" },
-  CAUTION: { tone: "danger", title: "警示" }, DANGER: { tone: "danger", title: "危险" }, FAILURE: { tone: "danger", title: "失败" },
+const calloutKinds: Record<string, { tone: "info" | "success" | "warning" | "danger" }> = {
+  NOTE: { tone: "info" }, INFO: { tone: "info" },
+  TIP: { tone: "success" }, SUCCESS: { tone: "success" },
+  IMPORTANT: { tone: "warning" }, WARNING: { tone: "warning" },
+  CAUTION: { tone: "danger" }, DANGER: { tone: "danger" }, FAILURE: { tone: "danger" },
 };
 
-const legacyCalloutLabels: Record<string, string> = {
-  info: "提示",
-  success: "建议",
-  warning: "告警",
-  danger: "警示",
-};
+const automaticCalloutLabels = new Set([
+  "提示", "说明", "建议", "成功", "重要",
+  "告警", "警告", "警示", "危险", "失败",
+]);
 
 export function normalizeCallouts(markdown: string) {
   let fence: string | null = null;
-  let pendingLegacyLabel: string | null = null;
+  let pendingLegacyLabel = false;
   return markdown.split("\n").flatMap((line) => {
     const marker = line.match(/^\s*(`{3,}|~{3,})/)?.[1];
     if (marker) { if (!fence) fence = marker[0]; else if (marker[0] === fence) fence = null; return [line]; }
     if (fence) return [line];
     const legacyMarker = line.match(/garden-callout-marker--(info|success|warning|danger)/u)?.[1];
     if (legacyMarker) {
-      pendingLegacyLabel = legacyCalloutLabels[legacyMarker];
+      pendingLegacyLabel = true;
       return [line];
     }
     if (pendingLegacyLabel && /^>\s*$/u.test(line)) return [line];
     if (pendingLegacyLabel) {
-      const label = pendingLegacyLabel;
-      pendingLegacyLabel = null;
-      if (/^>\s*\*\*提示\*\*\s*$/u.test(line)) return [`> **${label}**`];
+      pendingLegacyLabel = false;
+      const label = line.match(/^>\s*\*\*(.+?)\*\*\s*$/u)?.[1].trim();
+      if (label && automaticCalloutLabels.has(label)) return [];
     }
     const match = line.match(/^>\s*\[!([a-z]+)\]\s*(.*)$/iu);
     const callout = match ? calloutKinds[match[1].toUpperCase()] : undefined;
     if (!callout) return [line];
-    const title = match?.[2].trim() || callout.title;
-    return [`> <span class="garden-callout-marker garden-callout-marker--${callout.tone}" aria-hidden="true"></span>`, ">", `> **${title}**`];
+    const title = match?.[2].trim();
+    const lines = [`> <span class="garden-callout-marker garden-callout-marker--${callout.tone}" aria-hidden="true"></span>`, ">"];
+    if (title && !automaticCalloutLabels.has(title)) lines.push(`> **${title}**`, ">");
+    return lines;
   }).join("\n");
 }
 

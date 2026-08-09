@@ -1681,36 +1681,7 @@ button {
   font-weight: 700;
 }
 
-.toc-toggle {
-  width: 24px;
-  height: 24px;
-  padding: 0;
-  display: grid;
-  flex: 0 0 auto;
-  place-items: center;
-  border: 1px solid var(--line);
-  border-radius: 50%;
-  background: transparent;
-  color: var(--muted);
-  cursor: pointer;
-}
-
-.toc-toggle:hover,
-.toc-toggle:focus-visible {
-  border-color: var(--accent);
-  color: var(--accent);
-}
-
-.toc-toggle:focus-visible {
-  outline: 2px solid color-mix(in srgb, var(--accent) 28%, transparent);
-  outline-offset: 2px;
-}
-
-.toc.is-collapsed {
-  padding-left: 10px;
-}
-
-.toc ol {
+.toc-list {
   min-height: 0;
   margin: 0;
   padding: 0 5px 0 0;
@@ -1720,6 +1691,50 @@ button {
   overscroll-behavior: contain;
   scrollbar-width: thin;
   scrollbar-color: var(--line-strong) transparent;
+}
+
+.toc .toc-sublist {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.toc-item-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+}
+
+.toc-item-row > a {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.toc-section-toggle {
+  width: 20px;
+  height: 20px;
+  margin-top: 0;
+  padding: 0;
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--faint);
+  font-size: 12px;
+  line-height: 1;
+}
+
+.toc-section-toggle:hover,
+.toc-section-toggle:focus-visible {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.toc-section-toggle:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--accent) 28%, transparent);
+  outline-offset: 1px;
 }
 
 .toc li {
@@ -1737,6 +1752,12 @@ button {
   color: var(--ink);
 }
 
+.toc li.active > .toc-item-row > a,
+.toc .toc-sublist > li.active > a {
+  color: var(--accent);
+  font-weight: 700;
+}
+
 .markdown-body {
   color: var(--ink-soft);
   font-size: 15px;
@@ -1750,7 +1771,7 @@ button {
   color: var(--ink);
   letter-spacing: -0.035em;
   line-height: 1.45;
-  scroll-margin-top: 100px;
+  scroll-margin-top: 0;
 }
 
 .markdown-body h2 {
@@ -1825,9 +1846,8 @@ button {
 .markdown-body blockquote:has(.garden-callout-marker--warning) { --callout-tone: #ad6900; --callout-surface: #fffdf9; }
 .markdown-body blockquote:has(.garden-callout-marker--danger) { --callout-tone: #ba4051; --callout-surface: #fffafb; }
 .markdown-body blockquote:has(.garden-callout-marker) > p:has(.garden-callout-marker) { display: none; }
-.markdown-body blockquote:has(.garden-callout-marker) > p:has(.garden-callout-marker) + p { margin-top: 0; margin-bottom: 7px; }
+.markdown-body blockquote:has(.garden-callout-marker) > p:has(.garden-callout-marker) + p { margin-top: 0; }
 .markdown-body blockquote:has(.garden-callout-marker) > p:last-child { margin-bottom: 0; }
-.markdown-body blockquote:has(.garden-callout-marker) > p:has(.garden-callout-marker) + p strong:first-child { color: var(--callout-tone); font-weight: 650; }
 
 .markdown-body ul,
 .markdown-body ol {
