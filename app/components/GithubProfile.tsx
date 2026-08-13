@@ -1,25 +1,11 @@
 import {
   ArrowUpRight,
-  GitCommit,
-  GithubLogo,
-  MapPin,
   PushPin,
   Star,
-  Users,
 } from "@phosphor-icons/react/ssr";
 import { githubUsername } from "../lib/site";
 import { siteConfig } from "../site.config";
-
-type GithubUser = {
-  avatar_url: string;
-  name: string | null;
-  login: string;
-  bio: string | null;
-  public_repos: number;
-  followers: number;
-  html_url: string;
-  location: string | null;
-};
+import { GithubLiveOverview, type GithubPublicProfile } from "./GithubLiveOverview";
 
 type GithubRepository = {
   nameWithOwner: string;
@@ -62,6 +48,7 @@ type GithubGraphqlResponse = {
   data?: {
     user?: {
       pinnedItems: { nodes: Array<GithubRepository | null> };
+      status: { message: string; emoji: string } | null;
       year: {
         contributionCalendar: {
           totalContributions: number;
@@ -74,7 +61,7 @@ type GithubGraphqlResponse = {
   errors?: Array<{ message: string }>;
 };
 
-const fallback: GithubUser = {
+const fallback: GithubPublicProfile = {
   avatar_url: `https://github.com/${githubUsername}.png`,
   name: siteConfig.author.name,
   login: githubUsername,
@@ -99,7 +86,7 @@ async function loadGithubUser(token?: string) {
       next: { revalidate: 3600 },
     });
     if (!response.ok) return { profile: fallback, live: false };
-    return { profile: (await response.json()) as GithubUser, live: true };
+    return { profile: (await response.json()) as GithubPublicProfile, live: true };
   } catch {
     return { profile: fallback, live: false };
   }
@@ -184,6 +171,7 @@ async function loadGithubGraph(token?: string) {
   const yearFrom = new Date(now.getTime() - 364 * 24 * 60 * 60 * 1000);
   const query = `query GardenGithubProfile($login: String!, $recentFrom: DateTime!, $yearFrom: DateTime!, $to: DateTime!) {
     user(login: $login) {
+      status { message emoji }
       pinnedItems(first: 6, types: [REPOSITORY]) {
         nodes {
           ... on Repository {
@@ -239,13 +227,6 @@ function contributionLevelClass(level: string) {
   return level.toLowerCase().replaceAll("_", "-");
 }
 
-function visibleGithubText(value: string) {
-  return Array.from(value)
-    .filter((character) => (character.codePointAt(0) ?? 0) >= 32)
-    .join("")
-    .trim();
-}
-
 export async function GithubProfile() {
   const token = process.env.GITHUB_TOKEN;
   const [{ profile, live }, graph, activity] = await Promise.all([
@@ -257,42 +238,16 @@ export async function GithubProfile() {
     ? graph.pinnedItems.nodes.filter((repository): repository is GithubRepository => Boolean(repository))
     : await loadConfiguredRepositories(token);
   const calendarDays = graph?.year.contributionCalendar.weeks.flatMap((week) => week.contributionDays) ?? [];
-  const displayName = visibleGithubText(profile.name ?? profile.login) || profile.login;
 
   return (
     <section className="github-profile" aria-label="GitHub 资料">
-      <header className="github-overview">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={profile.avatar_url} alt={`${profile.login} 的 GitHub 头像`} />
-        <div className="github-identity">
-          <span className="eyebrow"><GithubLogo size={17} /> GitHub 公开资料 · 构建时更新</span>
-          <h2>{displayName}</h2>
-          <p>{profile.bio ?? fallback.bio}</p>
-          {profile.location && <span className="github-location"><MapPin size={14} />{profile.location}</span>}
-        </div>
-        <a href={profile.html_url} target="_blank" rel="noopener noreferrer">
-          查看 GitHub
-          <ArrowUpRight size={16} />
-        </a>
-      </header>
-
-      <dl className="github-metrics">
-        <div>
-          <GithubLogo size={21} aria-hidden="true" />
-          <dt>公开仓库</dt>
-          <dd>{live ? profile.public_repos : "—"}</dd>
-        </div>
-        <div>
-          <Users size={21} aria-hidden="true" />
-          <dt>Followers</dt>
-          <dd>{live ? profile.followers : "—"}</dd>
-        </div>
-        <div>
-          <GitCommit size={21} aria-hidden="true" />
-          <dt>近 30 天 commits</dt>
-          <dd>{graph ? graph.recent.totalCommitContributions : "—"}</dd>
-        </div>
-      </dl>
+      <GithubLiveOverview
+        username={githubUsername}
+        initialProfile={profile}
+        initialLive={live}
+        statusMessage={graph?.status?.message}
+        recentCommits={graph?.recent.totalCommitContributions}
+      />
 
       <section className="github-pinned" aria-labelledby="github-pinned-title">
         <header>

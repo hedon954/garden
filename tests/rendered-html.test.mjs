@@ -175,11 +175,12 @@ test("hides empty home sections and gives every content index an intentional emp
 });
 
 test("renders safe external embeds and the complete GitHub profile experience", async () => {
-  const [markdown, embed, garden, github, workflow, docs] = await Promise.all([
+  const [markdown, embed, garden, github, liveGithub, workflow, docs] = await Promise.all([
     readFile(new URL("../app/components/MarkdownArticle.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/components/ExternalEmbed.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/garden/page.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/components/GithubProfile.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/components/GithubLiveOverview.tsx", import.meta.url), "utf8"),
     readFile(new URL("../.github/workflows/pages.yml", import.meta.url), "utf8"),
     readFile(new URL("../docs/content-authoring.md", import.meta.url), "utf8"),
   ]);
@@ -193,7 +194,11 @@ test("renders safe external embeds and the complete GitHub profile experience", 
   assert.match(github, /pinnedItems\(first: 6/);
   assert.match(github, /totalCommitContributions/);
   assert.match(github, /contributionCalendar/);
+  assert.match(github, /status \{ message emoji \}/);
   assert.match(github, /events\/public\?per_page=100/);
+  assert.match(liveGithub, /cache: "no-store"/);
+  assert.match(liveGithub, /本次访问已同步/);
+  assert.match(liveGithub, /statusMessage\?\.trim\(\) \|\| profileBio/);
   assert.match(workflow, /GITHUB_TOKEN: \$\{\{ github\.token \}\}/);
 });
 
