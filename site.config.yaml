@@ -7,6 +7,8 @@ author:
   name: Your Name
   github: your-github-id
   githubBio: Write a short introduction for your GitHub profile card.
+  # 可选：本地没有 GITHUB_TOKEN 时用作置顶仓库降级数据。
+  githubPinned: []
 
 # 一级页面只配置主标题和副标题；模板界面本身不需要逐项配置。
 pages:

@@ -47,6 +47,29 @@ cover: ./assets/cover.jpg
 
 网页中的图片可以点击放大。构建时，本地附件会复制到公开目录；不要把大型音视频放进 Git，后台上传的多媒体应使用阿里云 OSS。
 
+### 嵌入外部平台和网页摘要
+
+在正文中使用 `embed` 代码块。`url` 必填；`title`、`description` 和远程 `image` 可选：
+
+````md
+```embed
+url: https://www.bilibili.com/video/BVxxxxxxxxxx
+title: 这段视频讲了什么
+description: 给读者一个值得点开的理由。
+image: https://example.com/cover.jpg
+```
+````
+
+| 来源 | 页面表现 |
+| --- | --- |
+| YouTube、Bilibili | 响应式播放器，同时保留原站链接 |
+| X（Twitter）、微信公众号 | 带平台标识的摘要卡片与原文入口 |
+| 其他 HTTP(S) 网站 | 使用手写标题、摘要和远程封面生成网页卡片 |
+
+X 与微信公众号没有稳定、无脚本、可长期依赖的通用 iframe，因此不会伪装成站内全文。Garden 也不会在构建时自动抓取任意网页的 Open Graph：这会引入 SSRF、超时和摘要随远站漂移的问题。显式填写摘要能让发布结果可预测，原站暂时不可用时文章仍然可读。
+
+URL 只接受 `http` 或 `https`。YouTube 使用隐私增强播放器；Bilibili 普通视频分享链接会转换为播放器地址。大型音视频仍建议放在对象存储，不要直接提交进 Git 历史。
+
 ### 代码、公式和图表
 
 ````md

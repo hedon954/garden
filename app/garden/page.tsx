@@ -1,6 +1,7 @@
 import { ArrowRight, ArrowUpRight, GithubLogo } from "@phosphor-icons/react/ssr";
 import { GardenAdminGuide } from "../components/GardenAdminGuide";
 import { GardenContentGuide } from "../components/GardenContentGuide";
+import { GardenMediaGuide } from "../components/GardenMediaGuide";
 import { PageIntro } from "../components/PageIntro";
 import { TableOfContents } from "../components/TableOfContents";
 import { siteConfig } from "../site.config";
@@ -15,7 +16,7 @@ const systemCapabilities = [
   {
     title: "Markdown 与多媒体",
     description:
-      "兼容 Typora 常用写法，支持 GFM、代码高亮、数学公式、Mermaid、原生 HTML，以及图片、音频和视频。",
+      "兼容 Typora 常用写法，支持 GFM、代码高亮、数学公式、Mermaid，以及图片、音视频、平台嵌入和网页摘要。",
   },
   {
     title: "阅读与内容发现",
@@ -67,6 +68,7 @@ const gardenHeadings = [
   { depth: 3, text: "写一篇文章", id: "write-post" },
   { depth: 3, text: "发布一条随想", id: "write-thought" },
   { depth: 3, text: "创建一个专栏", id: "make-column" },
+  { depth: 2, text: "高级嵌入", id: "garden-media-title" },
   { depth: 2, text: "系统能力", id: "garden-system-title" },
   { depth: 2, text: "管理后台", id: "garden-admin-title" },
   { depth: 2, text: "安装与配置", id: "garden-setup-title" },
@@ -107,6 +109,11 @@ export default function GardenPage() {
             <ArrowRight size={16} />
           </a>
         </div>
+        <ul className="garden-proof-list" aria-label="Garden 核心特点">
+          <li><strong>01</strong><span>Markdown 唯一真源</span></li>
+          <li><strong>02</strong><span>GitHub 自动发布</span></li>
+          <li><strong>03</strong><span>长文、随想与专栏</span></li>
+        </ul>
       </PageIntro>
 
       <section
@@ -147,6 +154,8 @@ export default function GardenPage() {
       </section>
 
       <GardenContentGuide />
+
+      <GardenMediaGuide />
 
       <section className="garden-system" aria-labelledby="garden-system-title">
         <header>

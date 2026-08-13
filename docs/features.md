@@ -11,6 +11,8 @@
 
 内容以本地 Markdown 保存，渲染覆盖 Typora 常用能力：GFM 表格、任务列表、删除线、脚注、自动链接、软换行、数学公式、原生 HTML、图片/音频/视频、代码高亮与 Mermaid。
 
+外部内容使用统一的 `embed` 代码块：YouTube、Bilibili 显示响应式播放器；X、微信公众号与其他网站显示可靠的摘要卡片和原文入口。
+
 兼容 Typora / Obsidian 的 `[!TYPE]` 警告框语法，并按语义显示提示、说明、建议、成功、重要、告警、警示、危险或失败，避免不同类型统一显示为「提示」。
 
 Mermaid 固定使用中性主题，并提供“图表 / Code”两种查看方式。代码块按语言高亮，示例覆盖 TypeScript、Python、Rust、Go、SQL、Swift 与 Diff。
@@ -24,7 +26,7 @@ Mermaid 固定使用中性主题，并提供“图表 / Code”两种查看方�
 - Giscus（GitHub Discussions）评论。
 - Webmentions 接收与发出。
 - RSS、sitemap、robots、canonical 与 Open Graph 元数据。
-- 关于页可读取 GitHub 公开资料渲染。
+- 关于页展示 GitHub 仓库数、followers、近 30 天 commits、置顶仓库、贡献热点图与最近公开活动。
 
 ## 管理后台（可选）
 

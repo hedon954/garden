@@ -13,6 +13,7 @@ import rehypeSlug from "rehype-slug";
 import rehypeAutolinkHeadings from "rehype-autolink-headings";
 import rehypeHighlight from "rehype-highlight";
 import { MermaidDiagram } from "./MermaidDiagram";
+import { ExternalEmbed } from "./ExternalEmbed";
 
 function CodeBlock({
   className,
@@ -21,6 +22,9 @@ function CodeBlock({
 }: HTMLAttributes<HTMLElement> & { node?: unknown }) {
   if (className?.includes("language-mermaid")) {
     return <MermaidDiagram source={String(children).trim()} />;
+  }
+  if (className?.includes("language-embed")) {
+    return <ExternalEmbed source={String(children).trim()} />;
   }
 
   const codeProps = { ...props };
@@ -115,7 +119,7 @@ export function MarkdownArticle({ content }: { content: string }) {
             const preProps = { ...props };
             delete preProps.node;
 
-            if (className?.includes("language-mermaid")) {
+            if (className?.includes("language-mermaid") || className?.includes("language-embed")) {
               return <>{children}</>;
             }
 

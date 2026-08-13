@@ -155,6 +155,48 @@ test("collapses the reading table of contents per heading and keeps its active i
   assert.match(content, /visit\(tree, "heading"/);
 });
 
+test("hides empty home sections and gives every content index an intentional empty state", async () => {
+  const [home, archive, thoughts, columns, emptyState] = await Promise.all([
+    readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/blog/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/thoughts/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/columns/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/components/ContentEmptyState.tsx", import.meta.url), "utf8"),
+  ]);
+
+  assert.match(home, /pinned\.length > 0/);
+  assert.match(home, /posts\.length > 0/);
+  assert.match(home, /thoughts\.length > 0/);
+  assert.match(home, /columns\[0\]/);
+  assert.match(archive, /ContentEmptyState kind="posts"/);
+  assert.match(thoughts, /ContentEmptyState kind="thoughts"/);
+  assert.match(columns, /ContentEmptyState kind="columns"/);
+  assert.match(emptyState, /content-empty-state/);
+});
+
+test("renders safe external embeds and the complete GitHub profile experience", async () => {
+  const [markdown, embed, garden, github, workflow, docs] = await Promise.all([
+    readFile(new URL("../app/components/MarkdownArticle.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/components/ExternalEmbed.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/garden/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/components/GithubProfile.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../.github/workflows/pages.yml", import.meta.url), "utf8"),
+    readFile(new URL("../docs/content-authoring.md", import.meta.url), "utf8"),
+  ]);
+
+  assert.match(markdown, /language-embed/);
+  assert.match(embed, /youtube-nocookie\.com\/embed/);
+  assert.match(embed, /player\.bilibili\.com\/player\.html/);
+  assert.match(embed, /\['http:', 'https:'\]/);
+  assert.match(garden, /GardenMediaGuide/);
+  assert.match(docs, /X（Twitter）、微信公众号/);
+  assert.match(github, /pinnedItems\(first: 6/);
+  assert.match(github, /totalCommitContributions/);
+  assert.match(github, /contributionCalendar/);
+  assert.match(github, /events\/public\?per_page=100/);
+  assert.match(workflow, /GITHUB_TOKEN: \$\{\{ github\.token \}\}/);
+});
+
 test("renders every reading TOC link with a matching Markdown heading ID", async () => {
   const response = await render("/blog/markdown-lab");
   assert.equal(response.status, 200);

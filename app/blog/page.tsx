@@ -6,6 +6,7 @@ import {
 } from "@phosphor-icons/react/ssr";
 import { formatDate, postHref, posts, topics } from "../lib/content";
 import { siteConfig } from "../site.config";
+import { ContentEmptyState } from "../components/ContentEmptyState";
 
 export const metadata = {
   title: siteConfig.pages.blog.title,
@@ -73,7 +74,7 @@ export default async function BlogIndex({
         ))}
       </div>
 
-      <section className="archive-list" aria-label="全部博文">
+      {visiblePosts.length > 0 ? <section className="archive-list" aria-label="全部博文">
         {visiblePosts.map((post) => (
           <Link
             key={post.path}
@@ -108,7 +109,7 @@ export default async function BlogIndex({
             <ArrowRight size={19} />
           </Link>
         ))}
-      </section>
+      </section> : <ContentEmptyState kind="posts" />}
 
       {pageCount > 1 && (
         <nav className="archive-pagination" aria-label="博文分页">

@@ -7,7 +7,7 @@ export const siteConfig = parse(source) as {
   tagline: string;
   description: string;
   locale: string;
-  author: { name: string; github: string; githubBio: string };
+  author: { name: string; github: string; githubBio: string; githubPinned?: string[] };
   pages: Record<"home" | "blog" | "thoughts" | "columns" | "about" | "garden", {
     title: string;
     subtitle: string;
