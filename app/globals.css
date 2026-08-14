@@ -1926,7 +1926,7 @@ button {
 
 .toc .toc-sublist {
   margin: 0;
-  padding: 0;
+  padding: 0 0 0 12px;
   list-style: none;
 }
 
@@ -1975,16 +1975,16 @@ button {
   line-height: 1.6;
 }
 
-.toc li.toc-depth-3 {
-  padding-left: 12px;
+.toc li.toc-depth-4,
+.toc li.toc-depth-5 {
+  font-size: 11px;
 }
 
 .toc a:hover {
   color: var(--ink);
 }
 
-.toc li.active > .toc-item-row > a,
-.toc .toc-sublist > li.active > a {
+.toc li.active > .toc-item-row > a {
   color: var(--accent);
   font-weight: 700;
 }
@@ -1998,7 +1998,8 @@ button {
 
 .markdown-body h2,
 .markdown-body h3,
-.markdown-body h4 {
+.markdown-body h4,
+.markdown-body h5 {
   color: var(--ink);
   letter-spacing: -0.035em;
   line-height: 1.45;
@@ -2025,6 +2026,11 @@ button {
 
 .markdown-body h4 {
   margin: 34px 0 14px;
+  font-size: clamp(19px, 1.9vw, 21px);
+}
+
+.markdown-body h5 {
+  margin: 28px 0 12px;
   font-size: clamp(17px, 1.7vw, 19px);
 }
 
@@ -3657,6 +3663,10 @@ button {
   }
 
   .markdown-body h4 {
+    font-size: 18px;
+  }
+
+  .markdown-body h5 {
     font-size: 17px;
   }
 

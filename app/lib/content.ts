@@ -33,8 +33,8 @@ export const formatDate = (value: string, withTime = false) =>
 
 /**
  * Parses the same Markdown heading text that ReactMarkdown sends to
- * rehype-slug. Every heading depth advances the slugger so repeated h1/h4/h5
- * headings cannot shift the IDs of the h2/h3 entries shown in the TOC.
+ * rehype-slug. Every heading depth advances the slugger so headings outside
+ * the H2-H5 TOC range cannot shift the IDs shown in the directory.
  */
 export const extractHeadings = (markdown: string) => {
   const slugger = new GithubSlugger();
@@ -44,7 +44,7 @@ export const extractHeadings = (markdown: string) => {
   visit(tree, "heading", (node) => {
     const text = toString(node).trim();
     const id = slugger.slug(text);
-    if (text && (node.depth === 2 || node.depth === 3)) {
+    if (text && node.depth >= 2 && node.depth <= 5) {
       headings.push({ depth: node.depth, text, id });
     }
   });

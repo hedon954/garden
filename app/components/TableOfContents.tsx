@@ -1,25 +1,35 @@
 "use client";
 
-import { useEffect, useId, useRef, useState } from "react";
+import {
+  useEffect,
+  useId,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 
 type Heading = { depth: number; text: string; id: string };
 
-type TocSection = {
-  heading: Heading;
-  children: Heading[];
-};
+type TocNode = Heading & { children: TocNode[] };
 
-const groupHeadings = (headings: Heading[]) =>
-  headings.reduce<TocSection[]>((sections, heading) => {
-    const parent = sections.at(-1);
-    if (heading.depth === 3 && parent?.heading.depth === 2) {
-      parent.children.push(heading);
-      return sections;
+const nestHeadings = (headings: Heading[]) => {
+  const roots: TocNode[] = [];
+  const stack: TocNode[] = [];
+
+  for (const heading of headings) {
+    const node: TocNode = { ...heading, children: [] };
+    while (stack.at(-1) && stack.at(-1)!.depth >= heading.depth) {
+      stack.pop();
     }
 
-    sections.push({ heading, children: [] });
-    return sections;
-  }, []);
+    const parent = stack.at(-1);
+    if (parent) parent.children.push(node);
+    else roots.push(node);
+    stack.push(node);
+  }
+
+  return roots;
+};
 
 const getReadingOffset = () => {
   const value = window.getComputedStyle(document.documentElement).scrollPaddingTop;
@@ -40,7 +50,7 @@ export function TableOfContents({
   );
   const listId = useId();
   const listRef = useRef<HTMLOListElement>(null);
-  const sections = groupHeadings(headings);
+  const tree = nestHeadings(headings);
 
   useEffect(() => {
     let frame = 0;
@@ -107,6 +117,45 @@ export function TableOfContents({
     });
   };
 
+  const renderNode = (node: TocNode, path: number[]): ReactNode => {
+    const collapsed = collapsedSections.has(node.id);
+    const childListId = `${listId}-${path.join("-")}`;
+
+    return (
+      <li
+        key={node.id}
+        className={`toc-section toc-depth-${node.depth}${activeId === node.id ? " active" : ""}`}
+      >
+        <div className="toc-item-row">
+          <a
+            href={`#${node.id}`}
+            onClick={() => setActiveId(node.id)}
+            aria-current={activeId === node.id ? "location" : undefined}
+          >
+            {node.text}
+          </a>
+          {node.children.length > 0 ? (
+            <button
+              className="toc-section-toggle"
+              type="button"
+              aria-controls={childListId}
+              aria-expanded={!collapsed}
+              aria-label={`${collapsed ? "展开" : "收起"}「${node.text}」的子目录`}
+              onClick={() => toggleSection(node.id)}
+            >
+              <span aria-hidden="true">{collapsed ? "+" : "−"}</span>
+            </button>
+          ) : null}
+        </div>
+        {node.children.length > 0 ? (
+          <ol id={childListId} className="toc-sublist" hidden={collapsed}>
+            {node.children.map((child, index) => renderNode(child, [...path, index]))}
+          </ol>
+        ) : null}
+      </li>
+    );
+  };
+
   if (!headings.length) return null;
 
   return (
@@ -115,57 +164,7 @@ export function TableOfContents({
         <p>{label}</p>
       </div>
       <ol id={listId} ref={listRef} className="toc-list">
-        {sections.map(({ heading, children }, index) => {
-          const collapsed = collapsedSections.has(heading.id);
-          const childListId = `${listId}-${index}`;
-
-          return (
-            <li
-              key={heading.id}
-              className={`toc-section toc-depth-${heading.depth}${activeId === heading.id ? " active" : ""}`}
-            >
-              <div className="toc-item-row">
-                <a
-                  href={`#${heading.id}`}
-                  onClick={() => setActiveId(heading.id)}
-                  aria-current={activeId === heading.id ? "location" : undefined}
-                >
-                  {heading.text}
-                </a>
-                {children.length > 0 ? (
-                  <button
-                    className="toc-section-toggle"
-                    type="button"
-                    aria-controls={childListId}
-                    aria-expanded={!collapsed}
-                    aria-label={`${collapsed ? "展开" : "收起"}「${heading.text}」的子目录`}
-                    onClick={() => toggleSection(heading.id)}
-                  >
-                    <span aria-hidden="true">{collapsed ? "+" : "−"}</span>
-                  </button>
-                ) : null}
-              </div>
-              {children.length > 0 ? (
-                <ol id={childListId} className="toc-sublist" hidden={collapsed}>
-                  {children.map((child) => (
-                    <li
-                      key={child.id}
-                      className={`toc-depth-${child.depth}${activeId === child.id ? " active" : ""}`}
-                    >
-                      <a
-                        href={`#${child.id}`}
-                        onClick={() => setActiveId(child.id)}
-                        aria-current={activeId === child.id ? "location" : undefined}
-                      >
-                        {child.text}
-                      </a>
-                    </li>
-                  ))}
-                </ol>
-              ) : null}
-            </li>
-          );
-        })}
+        {tree.map((node, index) => renderNode(node, [index]))}
       </ol>
     </aside>
   );

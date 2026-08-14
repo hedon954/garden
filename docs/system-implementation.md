@@ -50,7 +50,7 @@ app/columns/[column]/[...path]/page.tsx 专栏详情
 app/thoughts/[slug]/page.tsx          随想详情
 ```
 
-详情页的 `generateStaticParams()` 从生成数组返回所有路径，因此静态导出时会为每篇内容生成 HTML。页面通过 `extractHeadings()` 从二、三级标题建立右侧目录，通过 `estimateWordCount()` 计算字数；专栏页额外从同一 `column` 的条目建立左侧篇目。目录可展开收起，滚动正文时会更新当前标题，并在高亮项离开目录可视区时自动滚动目录列表。
+详情页的 `generateStaticParams()` 从生成数组返回所有路径，因此静态导出时会为每篇内容生成 HTML。页面通过 `extractHeadings()` 从 H2-H5 标题建立递归右侧目录，通过 `estimateWordCount()` 计算字数；专栏页额外从同一 `column` 的条目建立左侧篇目，并在每篇详情页复用文章自身的封面。目录的每一级父标题都可独立展开收起，滚动正文时会更新当前标题，并在高亮项离开目录可视区时自动滚动目录列表。
 
 `MarkdownArticle` 使用 `react-markdown` 管理 AST 渲染，插件链如下：
 

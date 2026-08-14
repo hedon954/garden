@@ -109,6 +109,16 @@ export default async function ColumnEntryPage({
         >
           {siteConfig.author.name}
         </a>
+        {entry.cover && (
+          <figure className="article-hero article-cover">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              className="u-photo"
+              src={entry.cover}
+              alt={entry.coverAlt ?? `${entry.title} 封面`}
+            />
+          </figure>
+        )}
         <header className="article-header">
           <p className="eyebrow">
             {entry.columnTitle} · 第 {currentIndex + 1} 篇

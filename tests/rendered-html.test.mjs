@@ -140,19 +140,35 @@ test("collapses the reading table of contents per heading and keeps its active i
   ]);
 
   assert.match(toc, /collapsedSections/);
+  assert.match(toc, /nestHeadings/);
+  assert.match(toc, /renderNode/);
   assert.match(toc, /className="toc-sublist" hidden=\{collapsed\}/);
-  assert.match(toc, /aria-label=\{`\$\{collapsed \? "展开" : "收起"\}「\$\{heading\.text\}」的子目录`\}/);
+  assert.match(toc, /aria-label=\{`\$\{collapsed \? "展开" : "收起"\}「\$\{node\.text\}」的子目录`\}/);
   assert.match(toc, /listRef/);
   assert.match(toc, /\[aria-current="location"\]/);
   assert.match(toc, /list\.scrollTo/);
   assert.match(toc, /getComputedStyle\(document\.documentElement\)\.scrollPaddingTop/);
   assert.match(styles, /\.toc-list[\s\S]*overflow-y: auto/);
-  assert.match(styles, /> li\.active > a/);
+  assert.match(styles, /\.toc li\.active > \.toc-item-row > a/);
   assert.match(styles, /\.markdown-body h2,[\s\S]*scroll-margin-top: 0/);
   assert.match(styles, /\.markdown-body h3[\s\S]*font-size: clamp\(20px/);
-  assert.match(styles, /\.markdown-body h4[\s\S]*font-size: clamp\(17px/);
+  assert.match(styles, /\.markdown-body h4[\s\S]*font-size: clamp\(19px/);
+  assert.match(styles, /\.markdown-body h5[\s\S]*font-size: clamp\(17px/);
   assert.match(content, /unified\(\)\.use\(remarkParse\)\.use\(remarkGfm\)/);
   assert.match(content, /visit\(tree, "heading"/);
+  assert.match(content, /node\.depth >= 2 && node\.depth <= 5/);
+});
+
+test("renders a column entry cover when its source article defines one", async () => {
+  const columnEntry = await readFile(
+    new URL("../app/columns/[column]/[...path]/page.tsx", import.meta.url),
+    "utf8",
+  );
+
+  assert.match(columnEntry, /entry\.cover &&/);
+  assert.match(columnEntry, /className="article-hero article-cover"/);
+  assert.match(columnEntry, /src=\{entry\.cover\}/);
+  assert.match(columnEntry, /entry\.coverAlt \?\?/);
 });
 
 test("hides empty home sections and gives every content index an intentional empty state", async () => {
