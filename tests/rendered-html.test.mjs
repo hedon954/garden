@@ -148,6 +148,12 @@ test("collapses the reading table of contents per heading and keeps its active i
   assert.match(toc, /\[aria-current="location"\]/);
   assert.match(toc, /list\.scrollTo/);
   assert.match(toc, /getComputedStyle\(document\.documentElement\)\.scrollPaddingTop/);
+  assert.match(toc, /window\.innerHeight \* 0\.45/);
+  assert.match(toc, /anchorStop \+ 240/);
+  assert.match(toc, /trackAnchorLayout/);
+  assert.match(toc, /image\.compareDocumentPosition\(target\)/);
+  assert.match(toc, /image\.addEventListener\("load", realign/);
+  assert.match(toc, /history\.pushState/);
   assert.match(styles, /\.toc-list[\s\S]*overflow-y: auto/);
   assert.match(styles, /\.toc li\.active > \.toc-item-row > a/);
   assert.match(styles, /\.markdown-body h2,[\s\S]*scroll-margin-top: 0/);

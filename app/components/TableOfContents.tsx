@@ -1,10 +1,12 @@
 "use client";
 
 import {
+  useCallback,
   useEffect,
   useId,
   useRef,
   useState,
+  type MouseEvent,
   type ReactNode,
 } from "react";
 
@@ -31,10 +33,27 @@ const nestHeadings = (headings: Heading[]) => {
   return roots;
 };
 
-const getReadingOffset = () => {
+const getScrollPaddingTop = () => {
   const value = window.getComputedStyle(document.documentElement).scrollPaddingTop;
   const offset = Number.parseFloat(value);
-  return Number.isFinite(offset) ? offset + 1 : 1;
+  return Number.isFinite(offset) ? offset : 0;
+};
+
+const getReadingProbe = () => {
+  const anchorStop = getScrollPaddingTop() + 1;
+  return Math.max(
+    anchorStop,
+    Math.min(window.innerHeight * 0.45, anchorStop + 240),
+  );
+};
+
+const getHashHeadingId = () => {
+  const hash = window.location.hash.slice(1);
+  try {
+    return decodeURIComponent(hash);
+  } catch {
+    return hash;
+  }
 };
 
 export function TableOfContents({
@@ -50,22 +69,101 @@ export function TableOfContents({
   );
   const listId = useId();
   const listRef = useRef<HTMLOListElement>(null);
+  const anchorCleanupRef = useRef<(() => void) | undefined>(undefined);
   const tree = nestHeadings(headings);
+
+  const alignHeadingToAnchor = useCallback(
+    (id: string, behavior: ScrollBehavior) => {
+      const target = document.getElementById(id);
+      if (!target) return;
+
+      const delta = target.getBoundingClientRect().top - getScrollPaddingTop();
+      if (Math.abs(delta) > 1) window.scrollBy({ top: delta, behavior });
+    },
+    [],
+  );
+
+  const trackAnchorLayout = useCallback(
+    (id: string, behavior: ScrollBehavior) => {
+      anchorCleanupRef.current?.();
+      const target = document.getElementById(id);
+      if (!target) return;
+
+      let frame = 0;
+      let timeout = 0;
+      const article = target.closest("article");
+      const pendingImages = article
+        ? Array.from(article.querySelectorAll("img")).filter(
+            (image) =>
+              !image.complete &&
+              Boolean(
+                image.compareDocumentPosition(target) &
+                  Node.DOCUMENT_POSITION_FOLLOWING,
+              ),
+          )
+        : [];
+
+      const cleanup = () => {
+        if (frame) window.cancelAnimationFrame(frame);
+        if (timeout) window.clearTimeout(timeout);
+        for (const image of pendingImages) {
+          image.removeEventListener("load", realign);
+          image.removeEventListener("error", realign);
+        }
+        window.removeEventListener("wheel", cleanup);
+        window.removeEventListener("touchstart", cleanup);
+        window.removeEventListener("pointerdown", cleanup);
+        window.removeEventListener("keydown", cleanup);
+        if (anchorCleanupRef.current === cleanup) {
+          anchorCleanupRef.current = undefined;
+        }
+      };
+      const scheduleAlignment = (nextBehavior: ScrollBehavior) => {
+        if (frame) window.cancelAnimationFrame(frame);
+        frame = window.requestAnimationFrame(() => {
+          frame = 0;
+          if (getHashHeadingId() === id) {
+            alignHeadingToAnchor(id, nextBehavior);
+          }
+        });
+      };
+      function realign() {
+        scheduleAlignment("auto");
+      }
+
+      for (const image of pendingImages) {
+        image.addEventListener("load", realign, { once: true });
+        image.addEventListener("error", realign, { once: true });
+      }
+      window.addEventListener("wheel", cleanup, { passive: true });
+      window.addEventListener("touchstart", cleanup, { passive: true });
+      window.addEventListener("pointerdown", cleanup, { passive: true });
+      window.addEventListener("keydown", cleanup);
+      timeout = window.setTimeout(cleanup, 15_000);
+      anchorCleanupRef.current = cleanup;
+      scheduleAlignment(behavior);
+    },
+    [alignHeadingToAnchor],
+  );
 
   useEffect(() => {
     let frame = 0;
     const updateActiveHeading = () => {
       frame = 0;
-      const readingOffset = getReadingOffset();
+      const readingProbe = getReadingProbe();
       const visibleHeadings = headings
         .map((heading) => ({
           id: heading.id,
           top: document.getElementById(heading.id)?.getBoundingClientRect().top,
         }))
         .filter((heading): heading is { id: string; top: number } => heading.top !== undefined);
-      const current = visibleHeadings
-        .filter((heading) => heading.top <= readingOffset)
-        .at(-1)?.id ?? visibleHeadings[0]?.id;
+      const reachedPageEnd =
+        window.scrollY + window.innerHeight >=
+        document.documentElement.scrollHeight - 2;
+      const current = reachedPageEnd
+        ? visibleHeadings.at(-1)?.id
+        : visibleHeadings.filter((heading) => heading.top <= readingProbe).at(-1)
+            ?.id ?? visibleHeadings[0]?.id;
 
       if (current) setActiveId((previous) => (previous === current ? previous : current));
     };
@@ -82,6 +180,22 @@ export function TableOfContents({
       if (frame) window.cancelAnimationFrame(frame);
     };
   }, [headings]);
+
+  useEffect(() => {
+    const syncHashAnchor = () => {
+      const id = getHashHeadingId();
+      if (!headings.some((heading) => heading.id === id)) return;
+      setActiveId(id);
+      trackAnchorLayout(id, "auto");
+    };
+
+    syncHashAnchor();
+    window.addEventListener("hashchange", syncHashAnchor);
+    return () => {
+      window.removeEventListener("hashchange", syncHashAnchor);
+      anchorCleanupRef.current?.();
+    };
+  }, [headings, trackAnchorLayout]);
 
   useEffect(() => {
     if (!activeId) return;
@@ -117,6 +231,19 @@ export function TableOfContents({
     });
   };
 
+  const navigateToHeading = (event: MouseEvent<HTMLAnchorElement>, id: string) => {
+    event.preventDefault();
+    const hash = encodeURIComponent(id);
+    window.history.pushState(
+      null,
+      "",
+      `${window.location.pathname}${window.location.search}#${hash}`,
+    );
+    setActiveId(id);
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    trackAnchorLayout(id, reduceMotion ? "auto" : "smooth");
+  };
+
   const renderNode = (node: TocNode, path: number[]): ReactNode => {
     const collapsed = collapsedSections.has(node.id);
     const childListId = `${listId}-${path.join("-")}`;
@@ -129,7 +256,7 @@ export function TableOfContents({
         <div className="toc-item-row">
           <a
             href={`#${node.id}`}
-            onClick={() => setActiveId(node.id)}
+            onClick={(event) => navigateToHeading(event, node.id)}
             aria-current={activeId === node.id ? "location" : undefined}
           >
             {node.text}
