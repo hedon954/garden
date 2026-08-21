@@ -9,6 +9,7 @@ import {
   type MouseEvent,
   type ReactNode,
 } from "react";
+import { List, X } from "@phosphor-icons/react";
 
 type Heading = { depth: number; text: string; id: string };
 
@@ -67,10 +68,20 @@ export function TableOfContents({
   const [collapsedSections, setCollapsedSections] = useState<Set<string>>(
     () => new Set(),
   );
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const panelId = useId();
   const listId = useId();
   const listRef = useRef<HTMLOListElement>(null);
+  const mobileTriggerRef = useRef<HTMLButtonElement>(null);
+  const mobileCloseRef = useRef<HTMLButtonElement>(null);
+  const restoreMobileTriggerFocusRef = useRef(false);
   const anchorCleanupRef = useRef<(() => void) | undefined>(undefined);
   const tree = nestHeadings(headings);
+
+  const closeMobileToc = useCallback((restoreFocus = false) => {
+    restoreMobileTriggerFocusRef.current = restoreFocus;
+    setMobileOpen(false);
+  }, []);
 
   const alignHeadingToAnchor = useCallback(
     (id: string, behavior: ScrollBehavior) => {
@@ -198,7 +209,42 @@ export function TableOfContents({
   }, [headings, trackAnchorLayout]);
 
   useEffect(() => {
+    if (mobileOpen || !restoreMobileTriggerFocusRef.current) return;
+    restoreMobileTriggerFocusRef.current = false;
+    mobileTriggerRef.current?.focus({ preventScroll: true });
+  }, [mobileOpen]);
+
+  useEffect(() => {
+    if (!mobileOpen) return;
+    const mobileQuery = window.matchMedia("(max-width: 900px)");
+    if (!mobileQuery.matches) return;
+
+    const previousOverflow = document.body.style.overflow;
+    mobileCloseRef.current?.focus({ preventScroll: true });
+    const focusFrame = window.requestAnimationFrame(() => {
+      mobileCloseRef.current?.focus({ preventScroll: true });
+    });
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") closeMobileToc(true);
+    };
+    const handleViewportChange = () => {
+      if (!mobileQuery.matches) setMobileOpen(false);
+    };
+
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", handleKeyDown);
+    mobileQuery.addEventListener("change", handleViewportChange);
+    return () => {
+      window.cancelAnimationFrame(focusFrame);
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", handleKeyDown);
+      mobileQuery.removeEventListener("change", handleViewportChange);
+    };
+  }, [closeMobileToc, mobileOpen]);
+
+  useEffect(() => {
     if (!activeId) return;
+    if (!mobileOpen && window.matchMedia("(max-width: 900px)").matches) return;
     const list = listRef.current;
     const activeItem = list?.querySelector<HTMLElement>(
       '[aria-current="location"]',
@@ -220,7 +266,7 @@ export function TableOfContents({
       const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
       list.scrollTo({ top: nextTop, behavior: reduceMotion ? "auto" : "smooth" });
     }
-  }, [activeId, collapsedSections]);
+  }, [activeId, collapsedSections, mobileOpen]);
 
   const toggleSection = (id: string) => {
     setCollapsedSections((current) => {
@@ -240,6 +286,7 @@ export function TableOfContents({
       `${window.location.pathname}${window.location.search}#${hash}`,
     );
     setActiveId(id);
+    closeMobileToc();
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     trackAnchorLayout(id, reduceMotion ? "auto" : "smooth");
   };
@@ -285,14 +332,54 @@ export function TableOfContents({
 
   if (!headings.length) return null;
 
+  const activeHeading = headings.find((heading) => heading.id === activeId);
+
   return (
-    <aside className="toc" aria-label={label}>
-      <div className="toc-header">
-        <p>{label}</p>
-      </div>
-      <ol id={listId} ref={listRef} className="toc-list">
-        {tree.map((node, index) => renderNode(node, [index]))}
-      </ol>
-    </aside>
+    <>
+      <button
+        ref={mobileTriggerRef}
+        className="toc-mobile-trigger"
+        type="button"
+        aria-controls={panelId}
+        aria-expanded={mobileOpen}
+        aria-label={`打开${label}${activeHeading ? `，当前章节：${activeHeading.text}` : ""}`}
+        tabIndex={mobileOpen ? -1 : 0}
+        data-mobile-open={mobileOpen}
+        onClick={() => setMobileOpen(true)}
+      >
+        <List size={17} weight="bold" aria-hidden="true" />
+        <span>目录</span>
+      </button>
+      <button
+        className="toc-mobile-backdrop"
+        type="button"
+        aria-label={`关闭${label}`}
+        tabIndex={mobileOpen ? 0 : -1}
+        data-mobile-open={mobileOpen}
+        onClick={() => closeMobileToc(true)}
+      />
+      <aside
+        className="toc"
+        id={panelId}
+        aria-label={label}
+        data-mobile-open={mobileOpen}
+      >
+        <div className="toc-header">
+          <p>{label}</p>
+          <button
+            ref={mobileCloseRef}
+            className="toc-mobile-close"
+            type="button"
+            aria-label={`关闭${label}`}
+            onClick={() => closeMobileToc(true)}
+          >
+            <X size={18} aria-hidden="true" />
+          </button>
+        </div>
+        <ol id={listId} ref={listRef} className="toc-list">
+          {tree.map((node, index) => renderNode(node, [index]))}
+        </ol>
+      </aside>
+    </>
   );
 }

@@ -154,8 +154,17 @@ test("collapses the reading table of contents per heading and keeps its active i
   assert.match(toc, /image\.compareDocumentPosition\(target\)/);
   assert.match(toc, /image\.addEventListener\("load", realign/);
   assert.match(toc, /history\.pushState/);
+  assert.match(toc, /mobileOpen/);
+  assert.match(toc, /className="toc-mobile-trigger"/);
+  assert.match(toc, /aria-controls=\{panelId\}/);
+  assert.match(toc, /document\.body\.style\.overflow = "hidden"/);
+  assert.match(toc, /event\.key === "Escape"/);
+  assert.match(toc, /closeMobileToc\(\)/);
   assert.match(styles, /\.toc-list[\s\S]*overflow-y: auto/);
   assert.match(styles, /\.toc li\.active > \.toc-item-row > a/);
+  assert.match(styles, /\.toc-mobile-trigger[\s\S]*position: fixed/);
+  assert.match(styles, /\.toc-mobile-backdrop\[data-mobile-open="true"\]/);
+  assert.match(styles, /\.toc\[data-mobile-open="true"\][\s\S]*transform: translateY\(0\)/);
   assert.match(styles, /\.markdown-body h2,[\s\S]*scroll-margin-top: 0/);
   assert.match(styles, /\.markdown-body h3[\s\S]*font-size: clamp\(20px/);
   assert.match(styles, /\.markdown-body h4[\s\S]*font-size: clamp\(19px/);
