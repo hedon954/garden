@@ -4,6 +4,35 @@
 
 ## 新建一篇博文
 
+在仓库根目录运行：
+
+```bash
+make new
+make new TITLE="我的第一篇文章" SLUG=my-first-post
+make new TITLE="Go 垃圾回收笔记" SLUG=gc DIR=go/runtime TOPIC="Go"
+```
+
+命令直接创建 `content/posts/<DIR>/<SLUG>.md`，默认 `draft: true`，填好当前日期、标题、摘要占位、分类和空标签列表。只需要 `make` 和 Node.js `>=22.13.0`；从框架 Fork 或 Use this template 后克隆到本地即可使用，无需先运行 `npm ci`，也不依赖 `.env.local`、站点身份或 GitHub 凭据。
+
+| 参数 | 作用 | 省略时 |
+| --- | --- | --- |
+| `TITLE` | 文章标题 | 新文章 |
+| `SLUG` | 文件名，不含 `.md`；小写字母、数字和连字符 | 从标题中的英文字母和数字生成；纯中文标题使用 `post-日期-随机标识` |
+| `DIR` | 相对 `content/posts/` 的分类目录，支持多级 | 直接放在 `content/posts/` |
+| `TOPIC` | 文章主题分类 | 未分类 |
+
+目录各级可使用文字、数字、下划线和连字符，例如 `go/runtime`。不存在的目录会自动创建；同名文件会报错并保留原文。文章 URL 跟随文件路径，例如第三条命令对应 `/blog/go/runtime/gc/`。
+
+打开生成的 Markdown，完善摘要、分类、标签和正文。预览草稿：
+
+```bash
+CONTENT_INCLUDE_DRAFTS=1 make dev
+```
+
+准备发布时，将 `draft` 改为 `false`，再运行 `make update MESSAGE="发布新文章"`。`make update` 会检查、提交并推送工作区中的所有改动。
+
+### 手动创建 Markdown
+
 在 `content/posts/` 或它的任意子目录新建一个 `.md` 文件，例如 `content/posts/go/runtime/gc.md`。目录同时决定网页地址：它会发布为 `/blog/go/runtime/gc`；`slug` 只作为内容标识。
 
 ```md

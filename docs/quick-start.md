@@ -5,11 +5,11 @@
 ## 准备什么
 
 - 一个 GitHub 账号。
-- 想在电脑上预览时，再安装 Node.js 22.13 或更高版本。
+- 想在电脑上创建文章或预览时，安装 Node.js 22.13 或更高版本和 `make`。
 
 ## 1. 创建自己的仓库
 
-在 Garden 仓库页面点击 **Use this template**，选择自己的 GitHub 账号作为所有者。
+在 Garden 仓库页面点击 **Use this template** 或 **Fork**，选择自己的 GitHub 账号作为所有者。
 
 如果想直接使用 `https://你的用户名.github.io` 作为博客地址，请把仓库命名为 `你的用户名.github.io`。例如用户名是 `alice`，仓库名就是 `alice.github.io`。
 
@@ -52,7 +52,17 @@ make dev
 
 ## 4. 发布第一篇文章
 
-在 `content/posts/` 新建 `hello.md`：
+把自己的仓库克隆到本地，在根目录运行：
+
+```bash
+make new TITLE="你好，世界" SLUG=hello TOPIC="随笔"
+```
+
+这会生成 `content/posts/hello.md` 草稿，不需要先安装 npm 依赖或配置站点身份。直接运行 `make new` 也能自动命名；更多参数见[新建文章](content-authoring.md#新建一篇博文)。
+
+打开生成的文件，完善摘要和正文；用 `CONTENT_INCLUDE_DRAFTS=1 make dev` 预览，准备发布时将 `draft` 改为 `false`。
+
+也可以直接在 GitHub 网页中手动新建 `content/posts/hello.md`：
 
 ```md
 ---
