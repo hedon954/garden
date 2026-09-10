@@ -46,6 +46,7 @@ make update
 ## 常用命令
 
 ```bash
+make new       # 创建文章草稿（无需安装 npm 依赖）
 make dev       # 首次准备并本地预览
 make check     # 检查内容与运行测试
 make build     # 构建公开站点
