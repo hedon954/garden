@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { createRequire } from "node:module";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import ReactMarkdown from "react-markdown";
@@ -37,4 +38,15 @@ test("keeps nested code, links, and math inside emphasis and underline", () => {
   assert.ok(html.includes('class="katex-display"'));
   assert.ok(html.includes("<munderover>"));
   assert.ok(!html.includes('class="katex-error"'));
+});
+
+
+test("loads the same KaTeX version for formula markup and its stylesheet", () => {
+  const require = createRequire(import.meta.url);
+  const rendererRequire = createRequire(require.resolve("rehype-katex"));
+  assert.equal(
+    require("katex/package.json").version,
+    rendererRequire("katex/package.json").version,
+    "KaTeX markup and CSS versions must match so subscript sizing classes apply",
+  );
 });
