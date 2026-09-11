@@ -1939,6 +1939,7 @@ button {
 .toc-item-row > a {
   min-width: 0;
   flex: 1 1 auto;
+  overflow-wrap: anywhere;
 }
 
 .toc-section-toggle {
@@ -2645,11 +2646,12 @@ button {
 }
 
 .column-reading-page {
+  --column-sidebar-width: 220px;
   width: min(1280px, calc(100% - 48px));
   margin: 0 auto;
   padding: 58px 0 120px;
   display: grid;
-  grid-template-columns: 220px minmax(0, 700px) 180px;
+  grid-template-columns: var(--column-sidebar-width) minmax(0, 700px) var(--column-sidebar-width);
   gap: 54px;
   justify-content: center;
 }
@@ -3282,7 +3284,8 @@ button {
   }
 
   .column-reading-page {
-    grid-template-columns: 165px minmax(0, 1fr) 145px;
+    --column-sidebar-width: 165px;
+    grid-template-columns: var(--column-sidebar-width) minmax(0, 1fr) var(--column-sidebar-width);
     gap: 26px;
   }
 }
