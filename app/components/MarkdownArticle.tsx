@@ -1,12 +1,10 @@
+import { markdownPlugins } from "../lib/markdown-plugins";
 import {
   Children,
   isValidElement,
   type HTMLAttributes,
 } from "react";
 import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
-import remarkBreaks from "remark-breaks";
-import remarkMath from "remark-math";
 import rehypeRaw from "rehype-raw";
 import rehypeKatex from "rehype-katex";
 import rehypeSlug from "rehype-slug";
@@ -81,7 +79,7 @@ export function MarkdownArticle({ content }: { content: string }) {
   return (
     <div className="markdown-body">
       <ReactMarkdown
-        remarkPlugins={[remarkGfm, remarkBreaks, remarkMath]}
+        remarkPlugins={markdownPlugins}
         rehypePlugins={[
           rehypeRaw,
           rehypeKatex,

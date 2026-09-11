@@ -2054,6 +2054,15 @@ button {
   color: var(--accent);
 }
 
+/* A per-line border stays continuous across inline code and descenders. */
+.markdown-body u {
+  text-decoration: none;
+  border-bottom: 1px solid currentColor;
+  padding-bottom: 0.1em;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+
 .markdown-body strong {
   color: var(--ink);
 }
@@ -2134,6 +2143,13 @@ button {
   border: 1px solid #303337;
   font-size: 12px;
   line-height: 1.7;
+}
+
+/* Code blocks stay dark in both site themes; select with a matching palette. */
+.markdown-body pre::selection,
+.markdown-body pre *::selection {
+  background: #46556b;
+  color: #ffffff;
 }
 
 .markdown-body pre[data-language]::before {
@@ -2258,6 +2274,11 @@ button {
   font-size: 0.9em;
 }
 
+/* Keep inline-code backgrounds above the continuous underline. */
+.markdown-body u code {
+  padding-block: 0;
+}
+
 .markdown-body img {
   max-width: 100%;
   height: auto;
@@ -2369,10 +2390,16 @@ button {
   accent-color: var(--accent);
 }
 
+/* KaTeX glyphs can extend beyond their line boxes (sum limits, accents). */
 .markdown-body .katex-display {
   margin: 34px 0;
+  padding: 0.75em 0.25em;
   overflow-x: auto;
   overflow-y: hidden;
+}
+
+.markdown-body .katex {
+  overflow-wrap: normal;
 }
 
 .markdown-body .footnotes {

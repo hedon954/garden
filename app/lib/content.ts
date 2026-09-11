@@ -1,3 +1,4 @@
+import { markdownPlugins } from "./markdown-plugins";
 import {
   columns,
   posts,
@@ -7,7 +8,6 @@ import {
 } from "./generated-content";
 import GithubSlugger from "github-slugger";
 import { toString } from "mdast-util-to-string";
-import remarkGfm from "remark-gfm";
 import remarkParse from "remark-parse";
 import { unified } from "unified";
 import { visit } from "unist-util-visit";
@@ -39,7 +39,7 @@ export const formatDate = (value: string, withTime = false) =>
 export const extractHeadings = (markdown: string) => {
   const slugger = new GithubSlugger();
   const headings: Array<{ depth: number; text: string; id: string }> = [];
-  const tree = unified().use(remarkParse).use(remarkGfm).parse(markdown);
+  const tree = unified().use(remarkParse).use(markdownPlugins).parse(markdown);
 
   visit(tree, "heading", (node) => {
     const text = toString(node).trim();

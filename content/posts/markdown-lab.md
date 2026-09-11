@@ -21,6 +21,10 @@ coverAlt: 彩色阳台构成的现代建筑立面
 
 ## 基础排版与 GFM
 
+实现**掩码（Masking）**操作，引入**多头注意力（Multi-Head Attention）**机制；前**（中文括号）**后也能正常加粗。
+
+<u>新的向量知道前面有 `Your journey`，后面有 `with one step`，下划线应连续。</u>
+
 一段文字可以同时包含**粗体**、*斜体*、~~删除线~~、`inline code` 和 [外部链接](https://typora.io/)。
 
 - 第一层列表
@@ -58,6 +62,12 @@ coverAlt: 彩色阳台构成的现代建筑立面
 > 可能造成严重后果的操作会显示为「警示」。
 
 ## 数学公式
+
+**求和部分：$\sum_{j=1}^{N}$（上下限）**。
+
+$$
+C_i = \sum_{j=1}^N w_{ij} \cdot V_j
+$$
 
 行内公式会和文字一起流动，例如注意力的缩放项 $\frac{QK^\top}{\sqrt{d_k}}$。
 
@@ -149,6 +159,7 @@ from pathlib import Path
 
 @dataclass(frozen=True)
 class Article:
+    """选中这行文字时，深浅主题都应保持清晰。"""
     title: str
     source: Path
 

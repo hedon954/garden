@@ -169,7 +169,7 @@ test("collapses the reading table of contents per heading and keeps its active i
   assert.match(styles, /\.markdown-body h3[\s\S]*font-size: clamp\(20px/);
   assert.match(styles, /\.markdown-body h4[\s\S]*font-size: clamp\(19px/);
   assert.match(styles, /\.markdown-body h5[\s\S]*font-size: clamp\(17px/);
-  assert.match(content, /unified\(\)\.use\(remarkParse\)\.use\(remarkGfm\)/);
+  assert.match(content, /unified\(\)\.use\(remarkParse\)\.use\(markdownPlugins\)/);
   assert.match(content, /visit\(tree, "heading"/);
   assert.match(content, /node\.depth >= 2 && node\.depth <= 5/);
 });
