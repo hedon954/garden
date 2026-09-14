@@ -34,10 +34,17 @@ const nestHeadings = (headings: Heading[]) => {
   return roots;
 };
 
-const getScrollPaddingTop = () => {
+const getCssScrollPaddingTop = () => {
   const value = window.getComputedStyle(document.documentElement).scrollPaddingTop;
   const offset = Number.parseFloat(value);
   return Number.isFinite(offset) ? offset : 0;
+};
+
+const getScrollPaddingTop = () => {
+  const header = document.querySelector(".site-header");
+  const headerBottom = header?.getBoundingClientRect().bottom ?? 0;
+  if (headerBottom > 8) return headerBottom + 8;
+  return Math.min(24, getCssScrollPaddingTop());
 };
 
 const getReadingProbe = () => {
@@ -73,11 +80,6 @@ const precedingImages = (target: Element) =>
 const wakeLazyImage = (image: HTMLImageElement) => {
   if (isLaidOutImage(image)) return;
   image.loading = "eager";
-  const src = image.getAttribute("src");
-  if (src && image.complete && image.naturalHeight === 0) {
-    image.removeAttribute("src");
-    image.setAttribute("src", src);
-  }
 };
 
 const prefetchHeadingLayout = (id: string) => {
@@ -90,12 +92,20 @@ const scrollToHeading = (id: string) => {
   const target = document.getElementById(id);
   if (!target) return;
 
-  const delta = target.getBoundingClientRect().top - getScrollPaddingTop();
-  if (Math.abs(delta) <= 1) return;
+  const top = Math.max(
+    0,
+    window.scrollY + target.getBoundingClientRect().top - getScrollPaddingTop(),
+  );
+  if (Math.abs(top - window.scrollY) <= 1) return;
 
-  // `behavior: "auto"` follows `html { scroll-behavior: smooth }`, so a far
-  // heading would still animate across the whole article.
-  window.scrollBy({ top: delta, behavior: "instant" });
+  // `scrollBy({ behavior })` can still animate or stack with later
+  // corrections and send the heading off-screen. Write scrollTop after
+  // forcing `scroll-behavior: auto`.
+  const html = document.documentElement;
+  const previousBehavior = html.style.scrollBehavior;
+  html.style.scrollBehavior = "auto";
+  html.scrollTop = top;
+  html.style.scrollBehavior = previousBehavior;
 };
 
 export function TableOfContents({
@@ -184,7 +194,11 @@ export function TableOfContents({
       timeout = window.setTimeout(cleanup, 8_000);
       anchorCleanupRef.current = cleanup;
       scheduleAlignment();
-      resizeObserver.observe(layoutRoot);
+      window.requestAnimationFrame(() => {
+        if (anchorCleanupRef.current === cleanup) {
+          resizeObserver.observe(layoutRoot);
+        }
+      });
     },
     [alignHeadingToAnchor],
   );
@@ -225,6 +239,7 @@ export function TableOfContents({
   }, [headings]);
 
   useEffect(() => {
+    history.scrollRestoration = "manual";
     const syncHashAnchor = () => {
       const id = getHashHeadingId();
       if (!headings.some((heading) => heading.id === id)) return;
