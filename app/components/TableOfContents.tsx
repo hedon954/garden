@@ -57,6 +57,47 @@ const getHashHeadingId = () => {
   }
 };
 
+const isLaidOutImage = (image: HTMLImageElement) =>
+  image.complete && image.naturalHeight > 0;
+
+const layoutRootFor = (target: Element) =>
+  target.closest("article.post-article, article.series-article, main") ?? document.body;
+
+const precedingImages = (target: Element) =>
+  Array.from(layoutRootFor(target).querySelectorAll("img")).filter((image) =>
+    Boolean(
+      image.compareDocumentPosition(target) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ),
+  );
+
+const wakeLazyImage = (image: HTMLImageElement) => {
+  if (isLaidOutImage(image)) return;
+  image.loading = "eager";
+  const src = image.getAttribute("src");
+  if (src && image.complete && image.naturalHeight === 0) {
+    image.removeAttribute("src");
+    image.setAttribute("src", src);
+  }
+};
+
+const prefetchHeadingLayout = (id: string) => {
+  const target = document.getElementById(id);
+  if (!target) return;
+  for (const image of precedingImages(target)) wakeLazyImage(image);
+};
+
+const scrollToHeading = (id: string) => {
+  const target = document.getElementById(id);
+  if (!target) return;
+
+  const delta = target.getBoundingClientRect().top - getScrollPaddingTop();
+  if (Math.abs(delta) <= 1) return;
+
+  // `behavior: "auto"` follows `html { scroll-behavior: smooth }`, so a far
+  // heading would still animate across the whole article.
+  window.scrollBy({ top: delta, behavior: "instant" });
+};
+
 export function TableOfContents({
   headings,
   label = "本篇目录",
@@ -83,40 +124,42 @@ export function TableOfContents({
     setMobileOpen(false);
   }, []);
 
-  const alignHeadingToAnchor = useCallback(
-    (id: string, behavior: ScrollBehavior) => {
-      const target = document.getElementById(id);
-      if (!target) return;
-
-      const delta = target.getBoundingClientRect().top - getScrollPaddingTop();
-      if (Math.abs(delta) > 1) window.scrollBy({ top: delta, behavior });
-    },
-    [],
-  );
+  const alignHeadingToAnchor = useCallback((id: string) => {
+    scrollToHeading(id);
+  }, []);
 
   const trackAnchorLayout = useCallback(
-    (id: string, behavior: ScrollBehavior) => {
+    (id: string) => {
       anchorCleanupRef.current?.();
       const target = document.getElementById(id);
       if (!target) return;
 
       let frame = 0;
       let timeout = 0;
-      const article = target.closest("article");
-      const pendingImages = article
-        ? Array.from(article.querySelectorAll("img")).filter(
-            (image) =>
-              !image.complete &&
-              Boolean(
-                image.compareDocumentPosition(target) &
-                  Node.DOCUMENT_POSITION_FOLLOWING,
-              ),
-          )
-        : [];
+      const layoutRoot = layoutRootFor(target);
+      const pendingImages = precedingImages(target).filter(
+        (image) => !isLaidOutImage(image),
+      );
+      for (const image of pendingImages) wakeLazyImage(image);
+
+      const scheduleAlignment = () => {
+        if (frame) window.cancelAnimationFrame(frame);
+        frame = window.requestAnimationFrame(() => {
+          frame = 0;
+          if (getHashHeadingId() === id) {
+            alignHeadingToAnchor(id);
+          }
+        });
+      };
+      function realign() {
+        scheduleAlignment();
+      }
+      const resizeObserver = new ResizeObserver(realign);
 
       const cleanup = () => {
         if (frame) window.cancelAnimationFrame(frame);
         if (timeout) window.clearTimeout(timeout);
+        resizeObserver.disconnect();
         for (const image of pendingImages) {
           image.removeEventListener("load", realign);
           image.removeEventListener("error", realign);
@@ -129,30 +172,19 @@ export function TableOfContents({
           anchorCleanupRef.current = undefined;
         }
       };
-      const scheduleAlignment = (nextBehavior: ScrollBehavior) => {
-        if (frame) window.cancelAnimationFrame(frame);
-        frame = window.requestAnimationFrame(() => {
-          frame = 0;
-          if (getHashHeadingId() === id) {
-            alignHeadingToAnchor(id, nextBehavior);
-          }
-        });
-      };
-      function realign() {
-        scheduleAlignment("auto");
-      }
 
       for (const image of pendingImages) {
-        image.addEventListener("load", realign, { once: true });
-        image.addEventListener("error", realign, { once: true });
+        image.addEventListener("load", realign);
+        image.addEventListener("error", realign);
       }
       window.addEventListener("wheel", cleanup, { passive: true });
       window.addEventListener("touchstart", cleanup, { passive: true });
       window.addEventListener("pointerdown", cleanup, { passive: true });
       window.addEventListener("keydown", cleanup);
-      timeout = window.setTimeout(cleanup, 15_000);
+      timeout = window.setTimeout(cleanup, 8_000);
       anchorCleanupRef.current = cleanup;
-      scheduleAlignment(behavior);
+      scheduleAlignment();
+      resizeObserver.observe(layoutRoot);
     },
     [alignHeadingToAnchor],
   );
@@ -197,7 +229,7 @@ export function TableOfContents({
       const id = getHashHeadingId();
       if (!headings.some((heading) => heading.id === id)) return;
       setActiveId(id);
-      trackAnchorLayout(id, "auto");
+      trackAnchorLayout(id);
     };
 
     syncHashAnchor();
@@ -287,8 +319,7 @@ export function TableOfContents({
     );
     setActiveId(id);
     closeMobileToc();
-    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    trackAnchorLayout(id, reduceMotion ? "auto" : "smooth");
+    trackAnchorLayout(id);
   };
 
   const renderNode = (node: TocNode, path: number[]): ReactNode => {
@@ -304,6 +335,8 @@ export function TableOfContents({
           <a
             href={`#${node.id}`}
             onClick={(event) => navigateToHeading(event, node.id)}
+            onPointerEnter={() => prefetchHeadingLayout(node.id)}
+            onFocus={() => prefetchHeadingLayout(node.id)}
             aria-current={activeId === node.id ? "location" : undefined}
           >
             {node.text}
