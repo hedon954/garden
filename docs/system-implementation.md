@@ -50,7 +50,7 @@ app/columns/[column]/[...path]/page.tsx 专栏详情
 app/thoughts/[slug]/page.tsx          随想详情
 ```
 
-详情页的 `generateStaticParams()` 从生成数组返回所有路径，因此静态导出时会为每篇内容生成 HTML。页面通过 `extractHeadings()` 从 H2-H5 标题建立递归右侧目录，通过 `estimateWordCount()` 计算字数；专栏页额外从同一 `column` 的条目建立左侧篇目，并在每篇详情页复用文章自身的封面。目录的每一级父标题都可独立展开收起；正文滚动以视口上方约 45%（最多低于锚点停靠线 240px）作为阅读探针更新当前标题，而点击目录仍按页面 `scroll-padding-top` 停靠。若目标标题之前的图片稍后加载并撑开版面，目录会再次校正锚点；用户主动滚动后停止校正，避免抢夺浏览位置。高亮项离开目录可视区时，目录列表也会自动跟随滚动。
+详情页的 `generateStaticParams()` 从生成数组返回所有路径，因此静态导出时会为每篇内容生成 HTML。页面通过 `extractHeadings()` 从 H2-H5 标题建立递归右侧目录，通过 `estimateWordCount()` 计算字数；专栏页额外从同一 `column` 的条目建立左侧篇目，并在每篇详情页复用文章自身的封面。目录的每一级父标题都可独立展开收起；正文滚动以视口上方约 45%（最多低于锚点停靠线 240px）作为阅读探针更新当前标题，而点击目录仍按页面 `scroll-padding-top` 停靠。跳转写入 `documentElement.scrollTop`，并暂时关闭页面的 `scroll-behavior`，避免长文目录跟着平滑滚动滑完整篇文章或叠两次滚动把标题送出视口。目标标题之前尚未撑开的懒加载图片会在悬停或跳转时被提前唤醒，因此不必先把正文滑过去才能量出位置；图片或 Mermaid 随后撑开版面时再瞬间校正锚点。用户主动滚动后停止校正，避免抢夺浏览位置。高亮项离开目录可视区时，目录列表也会自动跟随滚动。
 
 `MarkdownArticle` 使用 `react-markdown` 管理 AST 渲染，插件链如下：
 
