@@ -4,6 +4,35 @@
 
 ## 新建一篇博文
 
+在仓库根目录运行：
+
+```bash
+make new
+make new TITLE="我的第一篇文章" SLUG=my-first-post
+make new TITLE="Go 垃圾回收笔记" SLUG=gc DIR=go/runtime TOPIC="Go"
+```
+
+命令直接创建 `content/posts/<DIR>/<SLUG>.md`，默认 `draft: true`，填好当前日期、标题、摘要占位、分类和空标签列表。只需要 `make` 和 Node.js `>=22.13.0`；从框架 Fork 或 Use this template 后克隆到本地即可使用，无需先运行 `npm ci`，也不依赖 `.env.local`、站点身份或 GitHub 凭据。
+
+| 参数 | 作用 | 省略时 |
+| --- | --- | --- |
+| `TITLE` | 文章标题 | 新文章 |
+| `SLUG` | 文件名，不含 `.md`；小写字母、数字和连字符 | 从标题中的英文字母和数字生成；纯中文标题使用 `post-日期-随机标识` |
+| `DIR` | 相对 `content/posts/` 的分类目录，支持多级 | 直接放在 `content/posts/` |
+| `TOPIC` | 文章主题分类 | 未分类 |
+
+目录各级可使用文字、数字、下划线和连字符，例如 `go/runtime`。不存在的目录会自动创建；同名文件会报错并保留原文。文章 URL 跟随文件路径，例如第三条命令对应 `/blog/go/runtime/gc/`。
+
+打开生成的 Markdown，完善摘要、分类、标签和正文。预览草稿：
+
+```bash
+CONTENT_INCLUDE_DRAFTS=1 make dev
+```
+
+准备发布时，将 `draft` 改为 `false`，再运行 `make update MESSAGE="发布新文章"`。`make update` 会检查、提交并推送工作区中的所有改动。
+
+### 手动创建 Markdown
+
 在 `content/posts/` 或它的任意子目录新建一个 `.md` 文件，例如 `content/posts/go/runtime/gc.md`。目录同时决定网页地址：它会发布为 `/blog/go/runtime/gc`；`slug` 只作为内容标识。
 
 ```md
@@ -46,6 +75,29 @@ cover: ./assets/cover.jpg
 ```
 
 网页中的图片可以点击放大。构建时，本地附件会复制到公开目录；不要把大型音视频放进 Git，后台上传的多媒体应使用阿里云 OSS。
+
+### 嵌入外部平台和网页摘要
+
+在正文中使用 `embed` 代码块。`url` 必填；`title`、`description` 和远程 `image` 可选：
+
+````md
+```embed
+url: https://www.bilibili.com/video/BVxxxxxxxxxx
+title: 这段视频讲了什么
+description: 给读者一个值得点开的理由。
+image: https://example.com/cover.jpg
+```
+````
+
+| 来源 | 页面表现 |
+| --- | --- |
+| YouTube、Bilibili | 响应式播放器，同时保留原站链接 |
+| X（Twitter）、微信公众号 | 带平台标识的摘要卡片与原文入口 |
+| 其他 HTTP(S) 网站 | 使用手写标题、摘要和远程封面生成网页卡片 |
+
+X 与微信公众号没有稳定、无脚本、可长期依赖的通用 iframe，因此不会伪装成站内全文。Garden 也不会在构建时自动抓取任意网页的 Open Graph：这会引入 SSRF、超时和摘要随远站漂移的问题。显式填写摘要能让发布结果可预测，原站暂时不可用时文章仍然可读。
+
+URL 只接受 `http` 或 `https`。YouTube 使用隐私增强播放器；Bilibili 普通视频分享链接会转换为播放器地址。大型音视频仍建议放在对象存储，不要直接提交进 Git 历史。
 
 ### 代码、公式和图表
 
@@ -128,3 +180,11 @@ columns:
 - 想改首页、博客、随想和关于页的标题：看[站点界面配置](site-configuration.md)。
 - 想接评论或 Webmentions：看[外部集成](integrations.md)。
 - 想在发布前检查：运行 `make check`。
+
+## 中文加粗与公式排版
+
+正文和目录均支持中文标点紧邻加粗边界，例如 `实现**掩码（Masking）**操作`、`引入**多头注意力（Multi-Head Attention）**机制`，无需在中文之间额外插入空格。标准 CommonMark 会将结束括号后紧邻中文的 `**` 当作普通文字；站点通过 `remark-cjk-friendly` 在解析阶段兼容这种写法。反引号包裹的代码与反斜杠转义的星号仍按字面显示。加粗标记内侧仍不要留首尾空格，例如应写 `**（说明）**`，不要写 `**（说明） **`。
+
+数学表达式使用行内 `$\sum_{j=1}^{N}$` 或单独成行的 `$$` 公式块。公式块保留上下留白以完整显示求和上下限，过长公式在块内横向滚动。`<u>` 下划线连续显示，包括其中的行内代码；代码选区在深浅主题下都使用深蓝底白字。
+
+公式样式的 `katex` 依赖必须与 `rehype-katex` 实际使用的版本一致。版本不匹配会导致上下标字号规则失效，产生重叠；依赖回归测试会检查两者是否一致。

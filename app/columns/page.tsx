@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowRight } from "@phosphor-icons/react/ssr";
 import { columnHref, columns } from "../lib/content";
 import { PageIntro } from "../components/PageIntro";
+import { ContentEmptyState } from "../components/ContentEmptyState";
 import { siteConfig } from "../site.config";
 
 export const metadata = {
@@ -31,7 +32,7 @@ export default function ColumnsPage() {
         subtitle={siteConfig.pages.columns.subtitle}
       />
 
-      <div className="column-feature-list">
+      {grouped.length > 0 ? <div className="column-feature-list">
         {grouped.map(({ slug, entries, first }, index) => (
           <Link
             href={columnHref(first)}
@@ -61,7 +62,7 @@ export default function ColumnsPage() {
             </div>
           </Link>
         ))}
-      </div>
+      </div> : <ContentEmptyState kind="columns" />}
     </main>
   );
 }

@@ -1,18 +1,17 @@
+import { markdownPlugins } from "../lib/markdown-plugins";
 import {
   Children,
   isValidElement,
   type HTMLAttributes,
 } from "react";
 import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
-import remarkBreaks from "remark-breaks";
-import remarkMath from "remark-math";
 import rehypeRaw from "rehype-raw";
 import rehypeKatex from "rehype-katex";
 import rehypeSlug from "rehype-slug";
 import rehypeAutolinkHeadings from "rehype-autolink-headings";
 import rehypeHighlight from "rehype-highlight";
 import { MermaidDiagram } from "./MermaidDiagram";
+import { ExternalEmbed } from "./ExternalEmbed";
 
 function CodeBlock({
   className,
@@ -21,6 +20,9 @@ function CodeBlock({
 }: HTMLAttributes<HTMLElement> & { node?: unknown }) {
   if (className?.includes("language-mermaid")) {
     return <MermaidDiagram source={String(children).trim()} />;
+  }
+  if (className?.includes("language-embed")) {
+    return <ExternalEmbed source={String(children).trim()} />;
   }
 
   const codeProps = { ...props };
@@ -77,7 +79,7 @@ export function MarkdownArticle({ content }: { content: string }) {
   return (
     <div className="markdown-body">
       <ReactMarkdown
-        remarkPlugins={[remarkGfm, remarkBreaks, remarkMath]}
+        remarkPlugins={markdownPlugins}
         rehypePlugins={[
           rehypeRaw,
           rehypeKatex,
@@ -115,7 +117,7 @@ export function MarkdownArticle({ content }: { content: string }) {
             const preProps = { ...props };
             delete preProps.node;
 
-            if (className?.includes("language-mermaid")) {
+            if (className?.includes("language-mermaid") || className?.includes("language-embed")) {
               return <>{children}</>;
             }
 

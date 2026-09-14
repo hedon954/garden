@@ -140,19 +140,97 @@ test("collapses the reading table of contents per heading and keeps its active i
   ]);
 
   assert.match(toc, /collapsedSections/);
+  assert.match(toc, /nestHeadings/);
+  assert.match(toc, /renderNode/);
   assert.match(toc, /className="toc-sublist" hidden=\{collapsed\}/);
-  assert.match(toc, /aria-label=\{`\$\{collapsed \? "展开" : "收起"\}「\$\{heading\.text\}」的子目录`\}/);
+  assert.match(toc, /aria-label=\{`\$\{collapsed \? "展开" : "收起"\}「\$\{node\.text\}」的子目录`\}/);
   assert.match(toc, /listRef/);
   assert.match(toc, /\[aria-current="location"\]/);
   assert.match(toc, /list\.scrollTo/);
   assert.match(toc, /getComputedStyle\(document\.documentElement\)\.scrollPaddingTop/);
+  assert.match(toc, /window\.innerHeight \* 0\.45/);
+  assert.match(toc, /anchorStop \+ 240/);
+  assert.match(toc, /trackAnchorLayout/);
+  assert.match(toc, /image\.compareDocumentPosition\(target\)/);
+  assert.match(toc, /image\.addEventListener\("load", realign/);
+  assert.match(toc, /history\.pushState/);
+  assert.match(toc, /mobileOpen/);
+  assert.match(toc, /className="toc-mobile-trigger"/);
+  assert.match(toc, /aria-controls=\{panelId\}/);
+  assert.match(toc, /document\.body\.style\.overflow = "hidden"/);
+  assert.match(toc, /event\.key === "Escape"/);
+  assert.match(toc, /closeMobileToc\(\)/);
   assert.match(styles, /\.toc-list[\s\S]*overflow-y: auto/);
-  assert.match(styles, /> li\.active > a/);
+  assert.match(styles, /\.toc li\.active > \.toc-item-row > a/);
+  assert.match(styles, /\.toc-mobile-trigger[\s\S]*position: fixed/);
+  assert.match(styles, /\.toc-mobile-backdrop\[data-mobile-open="true"\]/);
+  assert.match(styles, /\.toc\[data-mobile-open="true"\][\s\S]*transform: translateY\(0\)/);
   assert.match(styles, /\.markdown-body h2,[\s\S]*scroll-margin-top: 0/);
   assert.match(styles, /\.markdown-body h3[\s\S]*font-size: clamp\(20px/);
-  assert.match(styles, /\.markdown-body h4[\s\S]*font-size: clamp\(17px/);
-  assert.match(content, /unified\(\)\.use\(remarkParse\)\.use\(remarkGfm\)/);
+  assert.match(styles, /\.markdown-body h4[\s\S]*font-size: clamp\(19px/);
+  assert.match(styles, /\.markdown-body h5[\s\S]*font-size: clamp\(17px/);
+  assert.match(content, /unified\(\)\.use\(remarkParse\)\.use\(markdownPlugins\)/);
   assert.match(content, /visit\(tree, "heading"/);
+  assert.match(content, /node\.depth >= 2 && node\.depth <= 5/);
+});
+
+test("renders a column entry cover when its source article defines one", async () => {
+  const columnEntry = await readFile(
+    new URL("../app/columns/[column]/[...path]/page.tsx", import.meta.url),
+    "utf8",
+  );
+
+  assert.match(columnEntry, /entry\.cover &&/);
+  assert.match(columnEntry, /className="article-hero article-cover"/);
+  assert.match(columnEntry, /src=\{entry\.cover\}/);
+  assert.match(columnEntry, /entry\.coverAlt \?\?/);
+});
+
+test("hides empty home sections and gives every content index an intentional empty state", async () => {
+  const [home, archive, thoughts, columns, emptyState] = await Promise.all([
+    readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/blog/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/thoughts/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/columns/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/components/ContentEmptyState.tsx", import.meta.url), "utf8"),
+  ]);
+
+  assert.match(home, /pinned\.length > 0/);
+  assert.match(home, /posts\.length > 0/);
+  assert.match(home, /thoughts\.length > 0/);
+  assert.match(home, /columns\[0\]/);
+  assert.match(archive, /ContentEmptyState kind="posts"/);
+  assert.match(thoughts, /ContentEmptyState kind="thoughts"/);
+  assert.match(columns, /ContentEmptyState kind="columns"/);
+  assert.match(emptyState, /content-empty-state/);
+});
+
+test("renders safe external embeds and the complete GitHub profile experience", async () => {
+  const [markdown, embed, garden, github, liveGithub, workflow, docs] = await Promise.all([
+    readFile(new URL("../app/components/MarkdownArticle.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/components/ExternalEmbed.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/garden/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/components/GithubProfile.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/components/GithubLiveOverview.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../.github/workflows/pages.yml", import.meta.url), "utf8"),
+    readFile(new URL("../docs/content-authoring.md", import.meta.url), "utf8"),
+  ]);
+
+  assert.match(markdown, /language-embed/);
+  assert.match(embed, /youtube-nocookie\.com\/embed/);
+  assert.match(embed, /player\.bilibili\.com\/player\.html/);
+  assert.match(embed, /\['http:', 'https:'\]/);
+  assert.match(garden, /GardenMediaGuide/);
+  assert.match(docs, /X（Twitter）、微信公众号/);
+  assert.match(github, /pinnedItems\(first: 6/);
+  assert.match(github, /totalCommitContributions/);
+  assert.match(github, /contributionCalendar/);
+  assert.match(github, /status \{ message emoji \}/);
+  assert.match(github, /events\/public\?per_page=100/);
+  assert.match(liveGithub, /cache: "no-store"/);
+  assert.match(liveGithub, /本次访问已同步/);
+  assert.match(liveGithub, /statusMessage\?\.trim\(\) \|\| profileBio/);
+  assert.match(workflow, /GITHUB_TOKEN: \$\{\{ github\.token \}\}/);
 });
 
 test("renders every reading TOC link with a matching Markdown heading ID", async () => {

@@ -1,5 +1,6 @@
 import { getPublishedThoughts } from "../lib/public-thoughts";
 import { ThoughtCard } from "../components/ThoughtCard";
+import { ContentEmptyState } from "../components/ContentEmptyState";
 import { PageIntro } from "../components/PageIntro";
 import { siteConfig } from "../site.config";
 
@@ -18,11 +19,15 @@ export default function ThoughtsPage() {
         title={siteConfig.pages.thoughts.title}
         subtitle={siteConfig.pages.thoughts.subtitle}
       />
-      <div className="thought-stream">
-        {thoughts.map((thought) => (
-          <ThoughtCard key={thought.slug} thought={thought} />
-        ))}
-      </div>
+      {thoughts.length > 0 ? (
+        <div className="thought-stream">
+          {thoughts.map((thought) => (
+            <ThoughtCard key={thought.slug} thought={thought} />
+          ))}
+        </div>
+      ) : (
+        <ContentEmptyState kind="thoughts" />
+      )}
     </main>
   );
 }

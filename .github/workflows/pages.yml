@@ -59,6 +59,8 @@ jobs:
           } >> "$GITHUB_ENV"
 
       - name: Build the public site
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         run: npm run build
 
       - name: Validate the static output

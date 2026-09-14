@@ -1,3 +1,4 @@
+import { markdownPlugins } from "./markdown-plugins";
 import {
   columns,
   posts,
@@ -7,7 +8,6 @@ import {
 } from "./generated-content";
 import GithubSlugger from "github-slugger";
 import { toString } from "mdast-util-to-string";
-import remarkGfm from "remark-gfm";
 import remarkParse from "remark-parse";
 import { unified } from "unified";
 import { visit } from "unist-util-visit";
@@ -33,18 +33,18 @@ export const formatDate = (value: string, withTime = false) =>
 
 /**
  * Parses the same Markdown heading text that ReactMarkdown sends to
- * rehype-slug. Every heading depth advances the slugger so repeated h1/h4/h5
- * headings cannot shift the IDs of the h2/h3 entries shown in the TOC.
+ * rehype-slug. Every heading depth advances the slugger so headings outside
+ * the H2-H5 TOC range cannot shift the IDs shown in the directory.
  */
 export const extractHeadings = (markdown: string) => {
   const slugger = new GithubSlugger();
   const headings: Array<{ depth: number; text: string; id: string }> = [];
-  const tree = unified().use(remarkParse).use(remarkGfm).parse(markdown);
+  const tree = unified().use(remarkParse).use(markdownPlugins).parse(markdown);
 
   visit(tree, "heading", (node) => {
     const text = toString(node).trim();
     const id = slugger.slug(text);
-    if (text && (node.depth === 2 || node.depth === 3)) {
+    if (text && node.depth >= 2 && node.depth <= 5) {
       headings.push({ depth: node.depth, text, id });
     }
   });

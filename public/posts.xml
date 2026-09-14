@@ -19,6 +19,8 @@
 <p>写作格式的价值，不在于语法多，而在于文件离开编辑器之后仍能完整表达。</p>
 </blockquote>
 <h2>基础排版与 GFM</h2>
+<p>实现**掩码（Masking）<strong>操作，引入</strong>多头注意力（Multi-Head Attention）<strong>机制；前</strong>（中文括号）**后也能正常加粗。</p>
+<p><u>新的向量知道前面有 <code>Your journey</code>，后面有 <code>with one step</code>，下划线应连续。</u></p>
 <p>一段文字可以同时包含<strong>粗体</strong>、<em>斜体</em>、<del>删除线</del>、<code>inline code</code> 和 <a href="https://typora.io/">外部链接</a>。</p>
 <ul>
 <li>第一层列表<ul>
@@ -83,6 +85,10 @@
 可能造成严重后果的操作会显示为「警示」。</p>
 </blockquote>
 <h2>数学公式</h2>
+<p><strong>求和部分：$\sum_{j=1}^{N}$（上下限）</strong>。</p>
+<p>$$
+C_i = \sum_{j=1}^N w_{ij} \cdot V_j
+$$</p>
 <p>行内公式会和文字一起流动，例如注意力的缩放项 $\frac{QK^\top}{\sqrt{d_k}}$。</p>
 <p>块级公式支持多行对齐：</p>
 <p>$$
@@ -153,6 +159,7 @@ from pathlib import Path
 
 @dataclass(frozen=True)
 class Article:
+    &quot;&quot;&quot;选中这行文字时，深浅主题都应保持清晰。&quot;&quot;&quot;
     title: str
     source: Path
 

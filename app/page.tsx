@@ -5,7 +5,7 @@ import {
   GithubLogo,
   PushPin,
 } from "@phosphor-icons/react/ssr";
-import { columns, formatDate, postHref, posts } from "./lib/content";
+import { columnHref, columns, formatDate, postHref, posts } from "./lib/content";
 import { ThoughtCard } from "./components/ThoughtCard";
 import { PageIntro } from "./components/PageIntro";
 import { getPublishedThoughts } from "./lib/public-thoughts";
@@ -39,7 +39,7 @@ export default function Home() {
         </a>
       </PageIntro>
 
-      <section className="home-section">
+      {pinned.length > 0 && <section className="home-section">
         <div className="section-heading accent-heading">
           <div>
             <h2>置顶博文</h2>
@@ -58,9 +58,9 @@ export default function Home() {
             </Link>
           ))}
         </div>
-      </section>
+      </section>}
 
-      <section className="home-section">
+      {posts.length > 0 && <section className="home-section">
         <div className="section-heading accent-heading">
           <div>
             <h2>最近博文</h2>
@@ -68,7 +68,7 @@ export default function Home() {
           <Link href="/blog">全部文章 →</Link>
         </div>
         <div className="post-list">
-          {posts.map((post) => (
+          {posts.slice(0, 5).map((post) => (
             <Link href={postHref(post)} key={post.path} className="post-row">
               <time>{formatDate(post.date)}</time>
               <span>
@@ -79,19 +79,23 @@ export default function Home() {
             </Link>
           ))}
         </div>
-      </section>
+      </section>}
 
-      <section className="home-section">
+      {thoughts.length > 0 && <section className="home-section">
         <div className="section-heading accent-heading">
           <div>
             <h2>最近随想</h2>
           </div>
           <Link href="/thoughts">进入随想 →</Link>
         </div>
-        {thoughts[0] && <ThoughtCard thought={thoughts[0]} />}
-      </section>
+        <div className="home-thought-list">
+          {thoughts.slice(0, 5).map((thought) => (
+            <ThoughtCard key={thought.slug} thought={thought} />
+          ))}
+        </div>
+      </section>}
 
-      <section className="home-section column-preview">
+      {columns[0] && <section className="home-section column-preview">
         <div className="section-heading accent-heading">
           <div>
             <h2>主题专栏</h2>
@@ -99,7 +103,7 @@ export default function Home() {
           <Link href="/columns">全部专栏 →</Link>
         </div>
         <Link
-          href={`/columns/${columns[0].column}/${columns[0].slug}`}
+          href={columnHref(columns[0])}
           className="column-card"
         >
           <div>
@@ -109,7 +113,7 @@ export default function Home() {
           </div>
           <span className="column-number">#01</span>
         </Link>
-      </section>
+      </section>}
     </main>
   );
 }
