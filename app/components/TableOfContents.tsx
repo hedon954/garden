@@ -44,7 +44,7 @@ const getScrollPaddingTop = () => {
   const header = document.querySelector(".site-header");
   const headerBottom = header?.getBoundingClientRect().bottom ?? 0;
   if (headerBottom > 8) return headerBottom + 8;
-  return Math.min(24, getCssScrollPaddingTop());
+  return Math.min(48, getCssScrollPaddingTop());
 };
 
 const getReadingProbe = () => {
@@ -315,6 +315,36 @@ export function TableOfContents({
     }
   }, [activeId, collapsedSections, mobileOpen]);
 
+  useEffect(() => {
+    const list = listRef.current;
+    if (!list) return;
+
+    const onClick = (event: Event) => {
+      const link = (event.target as Element | null)?.closest("a");
+      if (!(link instanceof HTMLAnchorElement) || !list.contains(link)) return;
+      let id = "";
+      try {
+        id = decodeURIComponent(link.hash.slice(1));
+      } catch {
+        id = link.hash.slice(1);
+      }
+      if (!headings.some((heading) => heading.id === id)) return;
+      event.preventDefault();
+      event.stopPropagation();
+      window.history.pushState(
+        null,
+        "",
+        `${window.location.pathname}${window.location.search}#${encodeURIComponent(id)}`,
+      );
+      setActiveId(id);
+      closeMobileToc();
+      trackAnchorLayout(id);
+    };
+
+    list.addEventListener("click", onClick, true);
+    return () => list.removeEventListener("click", onClick, true);
+  }, [closeMobileToc, headings, trackAnchorLayout]);
+
   const toggleSection = (id: string) => {
     setCollapsedSections((current) => {
       const next = new Set(current);
@@ -326,6 +356,7 @@ export function TableOfContents({
 
   const navigateToHeading = (event: MouseEvent<HTMLAnchorElement>, id: string) => {
     event.preventDefault();
+    event.stopPropagation();
     const hash = encodeURIComponent(id);
     window.history.pushState(
       null,
