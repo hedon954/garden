@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Prefill / Decode 步进</title>
+  <style>
+    :root {
+      --paper: #f8f8f6; --paper-deep: #eeeeeb; --ink: #202124; --muted: #65707d;
+      --faint: #a1a6ad; --line: #deded9; --accent: #d82d48; --accent-soft: #f9e8eb;
+      --new: #1f7a4d; --new-soft: #e5f4ec; --cached: #8a93a0;
+    }
+    :root[data-theme="dark"] {
+      --paper: #171819; --paper-deep: #202224; --ink: #ededeb; --muted: #a6adb6;
+      --faint: #747b84; --line: #35383b; --accent: #ff5d76; --accent-soft: #3b242a;
+      --new: #5ee0a0; --new-soft: #1a3a2c; --cached: #8b939c;
+    }
+    html, body { margin: 0; background: var(--paper); color: var(--ink); }
+    body {
+      font: 13px/1.5 ui-monospace, "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      padding: 16px;
+    }
+    .note { min-height: 2.4em; color: var(--ink); margin-bottom: 12px; }
+    .tokens { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+    .token { padding: 4px 8px; border: 1px solid var(--line); color: var(--faint); }
+    .token.is-on { color: var(--ink); }
+    .token.is-now { color: var(--accent); border-color: var(--accent); background: var(--accent-soft); }
+    .cols { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+    .col h2 { margin: 0 0 8px; font-size: 11px; font-weight: 500; color: var(--muted); }
+    .cell {
+      height: 28px; margin: 4px 0; border: 1px solid var(--line); background: transparent;
+    }
+    .cell.new { background: var(--new-soft); border-color: var(--new); }
+    .cell.append { background: var(--new-soft); border-color: var(--new); }
+    .cell.cached { background: var(--paper-deep); border-color: var(--cached); }
+    .cell.waste { background: var(--accent-soft); border-color: var(--accent); opacity: 0.55; }
+    .cell.idle { opacity: 0; }
+    .compare { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .footer { margin-top: 12px; color: var(--accent); }
+    .controls { display: flex; align-items: center; gap: 8px; margin-top: 16px; }
+    button, .pill {
+      border: 1px solid var(--line); background: var(--paper); color: var(--ink);
+      font: inherit; padding: 6px 10px;
+    }
+    button:disabled { color: var(--faint); }
+    .pill { min-width: 28px; text-align: center; color: var(--faint); }
+    .pill.is-on { color: var(--accent); border-color: var(--accent); }
+  </style>
+</head>
+<body>
+  <p class="note" id="note"></p>
+  <div id="stage"></div>
+  <div class="controls">
+    <button type="button" id="prev">Prev</button>
+    <div id="pills"></div>
+    <button type="button" id="next">Next</button>
+  </div>
+  <script>
+    const prompt = ["I", "love", "ML", "!"];
+    const decode = ["It", "is", "great"];
+    const all = [...prompt, ...decode];
+    const steps = [
+      {
+        note: "Prefill: process entire prompt in parallel",
+        tokens: prompt,
+        highlight: null,
+        cols: [
+          { title: "Q(4×d)", marks: ["new", "new", "new", "new"] },
+          { title: "K(4×d)", marks: ["new", "new", "new", "new"] },
+          { title: "V(4×d)", marks: ["new", "new", "new", "new"] },
+        ],
+      },
+      {
+        note: "Decode: Q is just 1 token. K,V retrieved from cache + new entry appended.",
+        tokens: all.slice(0, 5),
+        highlight: "It",
+        cols: [
+          { title: "Q(1×d)", marks: ["idle", "idle", "idle", "idle", "new"] },
+          { title: "K cache (5×d)", marks: ["cached", "cached", "cached", "cached", "append"] },
+          { title: "V cache (5×d)", marks: ["cached", "cached", "cached", "cached", "append"] },
+        ],
+      },
+      {
+        note: "Decode: cache grows by one row each step",
+        tokens: all.slice(0, 6),
+        highlight: "is",
+        cols: [
+          { title: "Q(1×d)", marks: ["idle", "idle", "idle", "idle", "idle", "new"] },
+          { title: "K cache (6×d)", marks: ["cached", "cached", "cached", "cached", "cached", "append"] },
+          { title: "V cache (6×d)", marks: ["cached", "cached", "cached", "cached", "cached", "append"] },
+        ],
+      },
+      {
+        note: "Decode: cache continues growing, Q stays at 1 row",
+        tokens: all,
+        highlight: "great",
+        cols: [
+          { title: "Q(1×d)", marks: ["idle", "idle", "idle", "idle", "idle", "idle", "new"] },
+          { title: "K cache (7×d)", marks: ["cached", "cached", "cached", "cached", "cached", "cached", "append"] },
+          { title: "V cache (7×d)", marks: ["cached", "cached", "cached", "cached", "cached", "cached", "append"] },
+        ],
+      },
+    ];
+
+    let index = 0;
+    const stage = document.getElementById("stage");
+    const note = document.getElementById("note");
+    const pills = document.getElementById("pills");
+    for (let i = 0; i < 5; i += 1) {
+      const pill = document.createElement("span");
+      pill.className = "pill";
+      pill.textContent = String(i + 1);
+      pills.appendChild(pill);
+    }
+
+    function cells(marks) {
+      return marks.map((mark) => `<div class="cell ${mark}"></div>`).join("");
+    }
+
+    function render(stepIndex) {
+      const last = stepIndex === 4;
+      document.querySelectorAll(".pill").forEach((pill, pillIndex) => {
+        pill.classList.toggle("is-on", pillIndex === stepIndex);
+      });
+      document.getElementById("prev").disabled = stepIndex === 0;
+      document.getElementById("next").disabled = stepIndex === 4;
+      if (last) {
+        note.textContent = "Cache eliminates O(N) re-projections per step";
+        stage.innerHTML = `
+          <div class="compare">
+            <div>
+              <h2 style="margin:0 0 8px;font-size:12px">Without cache</h2>
+              <div class="cols">
+                ${["Q", "K", "V"].map((title) => `
+                  <div class="col">
+                    <h2>${title} · 7×d</h2>
+                    ${cells(["waste", "waste", "waste", "waste", "waste", "waste", "new"])}
+                  </div>
+                `).join("")}
+              </div>
+              <p class="footer">7×d each — recomputed every step</p>
+            </div>
+            <div>
+              <h2 style="margin:0 0 8px;font-size:12px">With cache</h2>
+              <div class="cols">
+                <div class="col"><h2>Q(1×d)</h2>${cells(["idle", "idle", "idle", "idle", "idle", "idle", "new"])}</div>
+                <div class="col"><h2>K cache</h2>${cells(["cached", "cached", "cached", "cached", "cached", "cached", "append"])}</div>
+                <div class="col"><h2>V cache</h2>${cells(["cached", "cached", "cached", "cached", "cached", "cached", "append"])}</div>
+              </div>
+              <p class="footer">21 projections → 7 projections</p>
+            </div>
+          </div>`;
+        return;
+      }
+      const step = steps[stepIndex];
+      note.textContent = step.note;
+      stage.innerHTML = `
+        <div class="tokens">${step.tokens.map((token) => {
+          const now = token === step.highlight;
+          const on = step.tokens.includes(token);
+          return `<span class="token${on ? " is-on" : ""}${now ? " is-now" : ""}">${token}</span>`;
+        }).join("")}</div>
+        <div class="cols">${step.cols.map((col) => `
+          <div class="col"><h2>${col.title}</h2>${cells(col.marks)}</div>
+        `).join("")}</div>`;
+    }
+
+    document.getElementById("prev").addEventListener("click", () => {
+      index = Math.max(0, index - 1);
+      render(index);
+    });
+    document.getElementById("next").addEventListener("click", () => {
+      index = Math.min(4, index + 1);
+      render(index);
+    });
+    render(0);
+
+    const theme = new URLSearchParams(location.search).get("theme");
+    if (theme === "dark" || theme === "light") document.documentElement.setAttribute("data-theme", theme);
+    const report = () => {
+      if (window.parent === window) return;
+      const height = Math.ceil(Math.max(
+        document.body.scrollHeight,
+        document.body.offsetHeight,
+        document.documentElement.scrollHeight,
+      ));
+      window.parent.postMessage({ source: "garden-chart", height }, "*");
+    };
+    new ResizeObserver(report).observe(document.body);
+    window.addEventListener("load", report);
+    requestAnimationFrame(() => requestAnimationFrame(report));
+  </script>
+</body>
+</html>

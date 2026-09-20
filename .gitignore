@@ -40,11 +40,13 @@ next-env.d.ts
 /dist/
 /.wrangler/
 /outputs/
+/output/
 /work/
 
 # local visual QA evidence
 /implementation-*.png
 /design-comparison-*.png
+.playwright-cli/
 
 # Generated from Markdown during build; GitHub Actions regenerates these for Pages.
 /public/rss.xml

@@ -2268,6 +2268,224 @@ button {
   font-size: 12px;
 }
 
+.markdown-body .garden-chart {
+  margin: 36px 0;
+  border: 1px solid var(--line-strong);
+  background: var(--card);
+}
+
+.garden-chart-frame {
+  width: 100%;
+  min-height: 160px;
+  background: var(--paper);
+}
+
+.garden-chart-frame iframe {
+  width: 100%;
+  height: 100%;
+  display: block;
+  border: 0;
+  background: transparent;
+}
+
+.markdown-body .garden-doc {
+  overflow: hidden;
+}
+
+.garden-doc-launch {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: stretch;
+}
+
+.garden-doc-toggle {
+  appearance: none;
+  min-width: 0;
+  margin: 0;
+  padding: 14px 4px 14px 16px;
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: center;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+}
+
+.garden-doc-toggle:hover {
+  background: var(--paper-deep);
+}
+
+.garden-doc-toggle:active {
+  transform: scale(0.995);
+}
+
+.garden-doc-toggle:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+.garden-doc-thumb {
+  position: relative;
+  width: 44px;
+  height: 58px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 4px;
+  padding: 12px 7px 8px;
+  border: 1px solid var(--line-strong);
+  background: var(--paper);
+  box-shadow: 2px 2px 0 var(--line);
+}
+
+.garden-doc-thumb-bar {
+  position: absolute;
+  top: 7px;
+  left: 7px;
+  width: 46%;
+  height: 3px;
+  background: var(--accent);
+}
+
+.garden-doc-thumb-html .garden-doc-thumb-bar {
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 8px;
+  background: var(--paper-deep);
+  border-bottom: 1px solid var(--line);
+}
+
+.garden-doc-thumb-pdf::after {
+  content: "";
+  position: absolute;
+  top: -1px;
+  right: -1px;
+  border-style: solid;
+  border-width: 0 11px 11px 0;
+  border-color: transparent var(--card) var(--line-strong) transparent;
+}
+
+.garden-doc-thumb-line {
+  display: block;
+  height: 2px;
+  background: var(--line-strong);
+}
+
+.garden-doc-thumb-line-short {
+  width: 64%;
+}
+
+.garden-doc-copy {
+  min-width: 0;
+}
+
+.garden-doc-copy small {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--accent);
+  font-size: 10px;
+}
+
+.garden-doc-copy strong {
+  display: block;
+  margin-top: 6px;
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.45;
+}
+
+.garden-doc-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--ink);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.garden-doc-caret {
+  transition: transform 180ms ease-out;
+}
+
+.garden-doc[data-expanded="true"] .garden-doc-caret {
+  transform: rotate(180deg);
+}
+
+.garden-doc-open {
+  display: inline-flex;
+  align-items: center;
+  align-self: center;
+  gap: 4px;
+  padding: 0 16px 0 8px;
+  color: var(--ink);
+  font-size: 12px;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.garden-doc-pane {
+  display: grid;
+  grid-template-rows: 0fr;
+}
+
+.garden-doc[data-expanded="true"] .garden-doc-pane {
+  grid-template-rows: auto;
+}
+
+.garden-doc-pane-inner {
+  overflow: hidden;
+  border-top: 0 solid var(--line);
+}
+
+.garden-doc[data-expanded="false"] .garden-doc-pane-inner {
+  min-height: 0;
+}
+
+.garden-doc[data-expanded="true"] .garden-doc-pane-inner {
+  min-height: min-content;
+  border-top-width: 1px;
+}
+
+.garden-doc .garden-chart-frame {
+  min-height: 0;
+  height: 64vh;
+}
+
+.garden-doc-pdf .garden-chart-frame {
+  height: 72vh;
+}
+
+.markdown-body .garden-chart figcaption {
+  min-height: 45px;
+  padding: 9px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.garden-chart figcaption span,
+.garden-chart figcaption a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.markdown-body .garden-chart figcaption a {
+  color: var(--ink);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
 .markdown-body :not(pre) > code {
   padding: 2px 5px;
   background: var(--accent-soft);
@@ -3856,6 +4074,20 @@ button {
     width: 100%;
     height: auto;
     max-height: 220px;
+  }
+
+  .garden-doc-launch {
+    grid-template-columns: 1fr;
+  }
+
+  .garden-doc-toggle {
+    grid-template-columns: 40px minmax(0, 1fr) auto;
+    padding-right: 16px;
+  }
+
+  .garden-doc-open {
+    justify-content: flex-end;
+    padding: 0 16px 14px;
   }
 
   .thought-gallery-2,

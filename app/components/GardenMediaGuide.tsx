@@ -73,7 +73,7 @@ export function GardenMediaGuide() {
       <aside className="garden-media-boundary">
         <strong>为什么不自动抓网页摘要？</strong>
         <p>
-          构建阶段主动抓取任意 URL 会带来 SSRF、超时和内容漂移风险。Garden 选择显式填写摘要：发布结果可预测，原站失效时文章也仍然可读。
+          构建阶段主动抓取任意 URL 会带来 SSRF、超时和内容漂移风险。Garden 选择把摘要写进 Markdown：发布结果可预测，原站失效时文章也仍然可读。写稿时可用 <code>make embed URL=...</code> 拉一次 Open Graph，检查后再贴进围栏。
         </p>
       </aside>
     </section>

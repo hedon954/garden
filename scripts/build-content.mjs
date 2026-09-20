@@ -3,7 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import matter from "gray-matter";
 import { marked } from "marked";
-import { parse as parseYaml } from "yaml";
+import { parse as parseYaml, stringify as stringifyYaml } from "yaml";
 
 const root = process.cwd();
 const contentRoot = path.join(root, "content");
@@ -112,6 +112,100 @@ function rewriteMarkdownAssets(content, markdownPath, sourcePath) {
   );
 }
 
+function markdownStem(markdownPath) {
+  return path.basename(markdownPath, path.extname(markdownPath));
+}
+
+const widgetExtensions = new Set([".html", ".pdf"]);
+
+function assertWidgetSidecar(src, markdownPath, sourcePath) {
+  const [assetPath] = src.split(/(?=[?#])/u, 2);
+  const decodedPath = decodeURIComponent(assetPath.replace(/^<|>$/g, ""));
+  if (isExternalAsset(decodedPath)) {
+    fail(sourcePath, "widget src 必须是同名目录里的本地 .html 或 .pdf，不能使用远程地址");
+  }
+
+  const absoluteSource = path.resolve(path.dirname(markdownPath), decodedPath);
+  const stem = markdownStem(markdownPath);
+  const sidecarRoot = path.join(path.dirname(markdownPath), stem);
+  const relativeToSidecar = path.relative(sidecarRoot, absoluteSource);
+  const extension = path.extname(absoluteSource).toLowerCase();
+  if (
+    relativeToSidecar.startsWith("..") ||
+    path.isAbsolute(relativeToSidecar) ||
+    !widgetExtensions.has(extension)
+  ) {
+    fail(
+      sourcePath,
+      `widget src 必须位于同名目录 ${stem}/ 内的 .html 或 .pdf，例如 ./${stem}/notes.pdf`,
+    );
+  }
+  return absoluteSource;
+}
+
+function inferWidgetKind(absoluteSource) {
+  const extension = path.extname(absoluteSource).toLowerCase();
+  if (extension === ".pdf") return "pdf";
+  const html = fs.readFileSync(absoluteSource, "utf8");
+  return /source:\s*["']garden-chart["']/u.test(html) ? "chart" : "html";
+}
+
+function resolveWidgetKind(requested, absoluteSource, sourcePath) {
+  const inferred = inferWidgetKind(absoluteSource);
+  if (requested == null || requested === "") return inferred;
+  if (typeof requested !== "string") fail(sourcePath, "widget kind 必须是 chart、html 或 pdf");
+  const kind = requested.trim();
+  if (!["chart", "html", "pdf"].includes(kind)) {
+    fail(sourcePath, "widget kind 必须是 chart、html 或 pdf");
+  }
+  const extension = path.extname(absoluteSource).toLowerCase();
+  if (kind === "pdf" && extension !== ".pdf") fail(sourcePath, "kind: pdf 只能用于 .pdf");
+  if ((kind === "chart" || kind === "html") && extension !== ".html") {
+    fail(sourcePath, `kind: ${kind} 只能用于 .html`);
+  }
+  return kind;
+}
+
+function rewriteWidgetFences(content, markdownPath, sourcePath) {
+  return content.replace(
+    /(^|\n)(`{3,}|~{3,})widget[ \t]*\r?\n([\s\S]*?)\r?\n\2[ \t]*(?=\r?\n|$)/gu,
+    (match, lead, fence, body) => {
+      let data;
+      try {
+        data = parseYaml(body);
+      } catch {
+        fail(sourcePath, "widget 围栏不是有效的 YAML");
+      }
+      if (data == null || typeof data !== "object" || Array.isArray(data)) {
+        fail(sourcePath, "widget 围栏必须是包含 src 与 caption 的 YAML 对象");
+      }
+
+      const caption = typeof data.caption === "string" ? data.caption.trim() : "";
+      const src = typeof data.src === "string" ? data.src.trim() : "";
+      if (!caption) {
+        fail(sourcePath, "widget 缺少 caption；它必须是一句判断，供搜索、RSS 和无脚本读者阅读");
+      }
+      if (!src) {
+        fail(
+          sourcePath,
+          `widget 缺少 src；把文件放进同名目录，再写 src: ./${markdownStem(markdownPath)}/name.html 或 ./${markdownStem(markdownPath)}/name.pdf`,
+        );
+      }
+
+      const absoluteSource = assertWidgetSidecar(src, markdownPath, sourcePath);
+      const next = {
+        src: copyLocalAsset(src, markdownPath, sourcePath),
+        caption,
+        kind: resolveWidgetKind(data.kind, absoluteSource, sourcePath),
+      };
+      if (typeof data.height === "number" && Number.isFinite(data.height) && data.height > 0) {
+        next.height = Math.round(data.height);
+      }
+      return `${lead}${fence}widget\n${stringifyYaml(next).trimEnd()}\n${fence}`;
+    },
+  );
+}
+
 function normalizeMedia(media, markdownPath, sourcePath) {
   if (media === undefined || media === null) return undefined;
   if (typeof media === "string") {
@@ -207,7 +301,11 @@ function validateAndNormalize(data, content, markdownPath, kind, sourcePath) {
       ? copyLocalAsset(data.poster, markdownPath, sourcePath)
       : undefined,
     media: normalizeMedia(data.media, markdownPath, sourcePath),
-    content: rewriteMarkdownAssets(content.trim(), markdownPath, sourcePath),
+    content: rewriteWidgetFences(
+      rewriteMarkdownAssets(content.trim(), markdownPath, sourcePath),
+      markdownPath,
+      sourcePath,
+    ),
   };
 }
 

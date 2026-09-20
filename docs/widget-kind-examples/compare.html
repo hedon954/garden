@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>无缓存 vs 有缓存</title>
+  <style>
+    :root {
+      --paper: #f8f8f6; --paper-deep: #eeeeeb; --ink: #202124; --muted: #65707d;
+      --line: #deded9; --accent: #d82d48; --accent-soft: #f9e8eb;
+      --new: #1f7a4d; --new-soft: #e5f4ec; --cached: #8a93a0;
+    }
+    :root[data-theme="dark"] {
+      --paper: #171819; --paper-deep: #202224; --ink: #ededeb; --muted: #a6adb6;
+      --line: #35383b; --accent: #ff5d76; --accent-soft: #3b242a;
+      --new: #5ee0a0; --new-soft: #1a3a2c; --cached: #8b939c;
+    }
+    html, body { margin: 0; background: var(--paper); color: var(--ink); }
+    body {
+      font: 13px/1.5 ui-monospace, "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      padding: 16px;
+    }
+    .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    h1 { margin: 0 0 10px; font-size: 13px; font-weight: 600; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { border: 1px solid var(--line); padding: 7px 6px; text-align: center; font-size: 12px; }
+    th { color: var(--muted); font-weight: 500; }
+    .waste { background: var(--accent-soft); color: var(--accent); }
+    .new { background: var(--new-soft); color: var(--new); }
+    .cached { background: var(--paper-deep); color: var(--cached); }
+    .idle { color: var(--muted); }
+    .caption { margin-top: 14px; color: var(--muted); }
+  </style>
+</head>
+<body>
+  <div class="pair">
+    <section>
+      <h1>无缓存 · 21 次投影</h1>
+      <table>
+        <tr><th>token</th><th>Q</th><th>K</th><th>V</th></tr>
+        <tr><td>I</td><td class="waste">重算</td><td class="waste">重算</td><td class="waste">重算</td></tr>
+        <tr><td>love</td><td class="waste">重算</td><td class="waste">重算</td><td class="waste">重算</td></tr>
+        <tr><td>ML</td><td class="waste">重算</td><td class="waste">重算</td><td class="waste">重算</td></tr>
+        <tr><td>!</td><td class="waste">重算</td><td class="waste">重算</td><td class="waste">重算</td></tr>
+        <tr><td>It</td><td class="new">new</td><td class="new">new</td><td class="new">new</td></tr>
+      </table>
+    </section>
+    <section>
+      <h1>有缓存 · 7 次投影</h1>
+      <table>
+        <tr><th>token</th><th>Q</th><th>K</th><th>V</th></tr>
+        <tr><td>I</td><td class="idle">·</td><td class="cached">cached</td><td class="cached">cached</td></tr>
+        <tr><td>love</td><td class="idle">·</td><td class="cached">cached</td><td class="cached">cached</td></tr>
+        <tr><td>ML</td><td class="idle">·</td><td class="cached">cached</td><td class="cached">cached</td></tr>
+        <tr><td>!</td><td class="idle">·</td><td class="cached">cached</td><td class="cached">cached</td></tr>
+        <tr><td>It</td><td class="new">new</td><td class="new">append</td><td class="new">append</td></tr>
+      </table>
+    </section>
+  </div>
+  <p class="caption">同一时刻并排看：左边每步重投影全部过去 token，右边只投影新 token。</p>
+  <script>
+    const theme = new URLSearchParams(location.search).get("theme");
+    if (theme === "dark" || theme === "light") document.documentElement.setAttribute("data-theme", theme);
+    const report = () => {
+      if (window.parent === window) return;
+      const height = Math.ceil(Math.max(
+        document.body.scrollHeight,
+        document.body.offsetHeight,
+        document.documentElement.scrollHeight,
+      ));
+      window.parent.postMessage({ source: "garden-chart", height }, "*");
+    };
+    new ResizeObserver(report).observe(document.body);
+    window.addEventListener("load", report);
+    requestAnimationFrame(() => requestAnimationFrame(report));
+  </script>
+</body>
+</html>

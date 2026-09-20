@@ -93,9 +93,17 @@ image: https://example.com/cover.jpg
 | --- | --- |
 | YouTube、Bilibili | 响应式播放器，同时保留原站链接 |
 | X（Twitter）、微信公众号 | 带平台标识的摘要卡片与原文入口 |
-| 其他 HTTP(S) 网站 | 使用手写标题、摘要和远程封面生成网页卡片 |
+| 其他 HTTP(S) 网站 | 使用标题、摘要和远程封面生成网页卡片 |
 
-X 与微信公众号没有稳定、无脚本、可长期依赖的通用 iframe，因此不会伪装成站内全文。Garden 也不会在构建时自动抓取任意网页的 Open Graph：这会引入 SSRF、超时和摘要随远站漂移的问题。显式填写摘要能让发布结果可预测，原站暂时不可用时文章仍然可读。
+X 与微信公众号没有稳定、无脚本、可长期依赖的通用 iframe，因此不会伪装成站内全文。构建和发布也**不会**自动抓取任意网页的 Open Graph：这会引入 SSRF、超时和摘要随远站漂移的问题。卡片上的文字以你写进围栏的为准，原站暂时不可用时文章仍然可读。
+
+写稿时可以先拉一次摘要，再贴进 Markdown：
+
+```bash
+make embed URL="https://example.com"
+```
+
+命令只在你的机器上请求该网址，打印一段填好 `title` / `description` / `image` 的 `embed` 围栏。请检查后再粘贴；构建阶段不会再访问外网。
 
 URL 只接受 `http` 或 `https`。YouTube 使用隐私增强播放器；Bilibili 普通视频分享链接会转换为播放器地址。大型音视频仍建议放在对象存储，不要直接提交进 Git 历史。
 
@@ -119,6 +127,24 @@ flowchart LR
 ````
 
 Mermaid 图表同时提供“图表”和“代码”查看方式。
+
+本地 HTML 页面或 PDF 不要摊进 Markdown。一篇稿对应一个同名目录，目录里每一份 `.html` / `.pdf` 是一份可单独打开的文件；正文只用 `widget` 围栏嵌入。外部网页不要放进 `widget`，继续用上面的 `embed` 卡片。
+
+```text
+content/posts/understand-kv-cache.md
+content/posts/understand-kv-cache/waste.html
+```
+
+````md
+```widget
+src: ./understand-kv-cache/waste.html
+caption: 朴素 decode 每步重算全部过去 token；6 个 token 共 21 次计算，其中 15 次是浪费。
+```
+````
+
+`src` 必须指向该同名目录里的本地 `.html` 或 `.pdf`，`caption` 必须是一句判断（搜索、RSS、关脚本的读者都靠它）。构建会复制文件、改写路径，并区分两种打开方式：带 `garden-chart` 高度回报的 HTML 是可交互图表，直接铺在正文里；普通 HTML 页面和 PDF 默认收成示意入口，读者点「展开」后再加载。Typora 只显示这段短 YAML；要看效果，直接打开文件，或运行 `CONTENT_INCLUDE_DRAFTS=1 make dev`。
+
+五种原语、视觉规范和 AI 写法见 [可交互组件](interactive-blog-components.md) 与 [.agents/skills/garden-interactive-chart](../.agents/skills/garden-interactive-chart/SKILL.md)。拓扑仍用 Mermaid；只有读者需要自己走一步或拧旋钮时才加图表。
 
 ### 使用语义警告框
 
