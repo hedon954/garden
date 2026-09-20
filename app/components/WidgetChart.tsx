@@ -87,10 +87,15 @@ export function WidgetChart({ source }: { source: string }) {
   const frameRef = useRef<HTMLIFrameElement>(null);
   const [theme, setTheme] = useState<"light" | "dark">("light");
   const [height, setHeight] = useState(data?.height ?? (data?.kind === "pdf" ? 720 : 360));
-  const [frameSrc, setFrameSrc] = useState<string>();
   const [expanded, setExpanded] = useState(false);
   const [armed, setArmed] = useState(!isDocument);
   const active = Boolean(src && kind && armed);
+  const frameSrc =
+    !active || !src
+      ? undefined
+      : kind === "pdf"
+        ? src
+        : withTheme(src, theme);
 
   useEffect(() => {
     const root = document.documentElement;
@@ -102,12 +107,7 @@ export function WidgetChart({ source }: { source: string }) {
   }, []);
 
   useEffect(() => {
-    if (!src || !kind || !active) return;
-
-    if (kind === "pdf") {
-      setFrameSrc(src);
-      return;
-    }
+    if (!src || !kind || !active || kind === "pdf") return;
 
     const onMessage = (event: MessageEvent) => {
       const frame = frameRef.current;
@@ -126,9 +126,8 @@ export function WidgetChart({ source }: { source: string }) {
     };
 
     window.addEventListener("message", onMessage);
-    setFrameSrc(withTheme(src, theme));
     return () => window.removeEventListener("message", onMessage);
-  }, [src, kind, theme, active]);
+  }, [src, kind, active]);
 
   if (!data) {
     return (
