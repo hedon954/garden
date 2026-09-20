@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ECB 重复密文块</title>
+  <style>
+    :root {
+      --paper: #f8f8f6; --ink: #202124; --ink-soft: #34383d; --muted: #65707d;
+      --faint: #a1a6ad; --line: #deded9; --accent: #d82d48; --accent-soft: #f9e8eb;
+      --unique: #1f7a4d; --unique-soft: #e5f4ec;
+    }
+    :root[data-theme="dark"] {
+      --paper: #171819; --ink: #ededeb; --ink-soft: #d8d8d4; --muted: #a6adb6;
+      --faint: #747b84; --line: #35383b; --accent: #ff5d76; --accent-soft: #3b242a;
+      --unique: #5ee0a0; --unique-soft: #1a3a2c;
+    }
+    html, body { margin: 0; background: var(--paper); color: var(--ink); }
+    body {
+      font: 13px/1.5 ui-monospace, "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      padding: 16px;
+    }
+    h1 { margin: 0 0 12px; font-size: 14px; font-weight: 600; }
+    table { border-collapse: collapse; width: 100%; }
+    th, td { border: 1px solid var(--line); padding: 10px 8px; text-align: center; }
+    th { color: var(--muted); font-weight: 500; font-size: 11px; }
+    td { cursor: default; }
+    td.repeat { background: var(--accent-soft); color: var(--accent); }
+    td.unique { background: var(--unique-soft); color: var(--unique); }
+    .hover {
+      margin-top: 12px; min-height: 2.4em; color: var(--ink-soft); font-size: 12px;
+    }
+    .legend { display: flex; gap: 16px; margin-top: 12px; color: var(--muted); font-size: 11px; }
+    .swatch { display: inline-block; width: 10px; height: 10px; margin-right: 6px; vertical-align: -1px; border: 1px solid currentColor; }
+  </style>
+</head>
+<body>
+  <h1>ECB 密文块</h1>
+  <table>
+    <thead>
+      <tr><th></th><th>块 0</th><th>块 1</th><th>块 2</th><th>块 3</th></tr>
+    </thead>
+    <tbody id="body"></tbody>
+  </table>
+  <div class="hover" id="hover">把鼠标移到格子上，看明文如何变成密文。</div>
+  <div class="legend">
+    <span><i class="swatch" style="background: var(--accent-soft); color: var(--accent)"></i>与 (0,0) 相同的密文，轮廓还在</span>
+    <span><i class="swatch" style="background: var(--unique-soft); color: var(--unique)"></i>该图案内只出现一次的块</span>
+  </div>
+  <script>
+    const rows = ["第 0 行", "第 1 行", "第 2 行", "第 3 行"];
+    const cells = [
+      ["天空", "天空", "天空", "天空"],
+      ["天空", "眼睛", "眼睛", "天空"],
+      ["身体", "身体", "身体", "身体"],
+      ["脚", "脚", "脚", "脚"],
+    ];
+    const hover = document.getElementById("hover");
+    const body = document.getElementById("body");
+    cells.forEach((row, rowIndex) => {
+      const tr = document.createElement("tr");
+      const head = document.createElement("th");
+      head.textContent = rows[rowIndex];
+      tr.appendChild(head);
+      row.forEach((plain, colIndex) => {
+        const td = document.createElement("td");
+        const mark = plain === "天空" ? "repeat" : "unique";
+        td.className = mark;
+        td.textContent = `C${plain}`;
+        td.addEventListener("mouseenter", () => {
+          hover.textContent = mark === "repeat"
+            ? `与 (0,0) 相同 · 明文「${plain}」→ 密文 C${plain}`
+            : `该图案内只出现一次 · 明文「${plain}」→ 密文 C${plain}`;
+        });
+        td.addEventListener("mouseleave", () => {
+          hover.textContent = "把鼠标移到格子上，看明文如何变成密文。";
+        });
+        tr.appendChild(td);
+      });
+      body.appendChild(tr);
+    });
+    const theme = new URLSearchParams(location.search).get("theme");
+    if (theme === "dark" || theme === "light") document.documentElement.setAttribute("data-theme", theme);
+    const report = () => {
+      if (window.parent === window) return;
+      const height = Math.ceil(Math.max(
+        document.body.scrollHeight,
+        document.body.offsetHeight,
+        document.documentElement.scrollHeight,
+      ));
+      window.parent.postMessage({ source: "garden-chart", height }, "*");
+    };
+    new ResizeObserver(report).observe(document.body);
+    window.addEventListener("load", report);
+    requestAnimationFrame(() => requestAnimationFrame(report));
+  </script>
+</body>
+</html>

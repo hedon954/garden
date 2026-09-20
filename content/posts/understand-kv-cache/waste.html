@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>朴素 decode 的重复计算</title>
+  <style>
+    :root {
+      --paper: #f8f8f6; --paper-deep: #eeeeeb; --ink: #202124; --ink-soft: #34383d;
+      --muted: #65707d; --faint: #a1a6ad; --line: #deded9; --accent: #d82d48;
+      --accent-soft: #f9e8eb; --new: #1f7a4d; --new-soft: #e5f4ec;
+    }
+    :root[data-theme="dark"] {
+      --paper: #171819; --paper-deep: #202224; --ink: #ededeb; --ink-soft: #d8d8d4;
+      --muted: #a6adb6; --faint: #747b84; --line: #35383b; --accent: #ff5d76;
+      --accent-soft: #3b242a; --new: #5ee0a0; --new-soft: #1a3a2c;
+    }
+    html, body { margin: 0; background: var(--paper); color: var(--ink); }
+    body {
+      font: 13px/1.5 ui-monospace, "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      padding: 16px 16px 20px;
+    }
+    .tokens { display: flex; gap: 8px; margin-bottom: 16px; }
+    .token {
+      min-width: 52px; padding: 6px 8px; text-align: center;
+      border: 1px solid var(--line); color: var(--faint);
+    }
+    .token.is-past { color: var(--ink-soft); }
+    .token.is-now { color: var(--accent); border-color: var(--accent); background: var(--accent-soft); }
+    .row { display: flex; align-items: center; gap: 8px; min-height: 36px; margin: 4px 0; }
+    .row-label { width: 56px; color: var(--muted); font-size: 11px; }
+    .cell {
+      width: 30px; height: 30px; border-radius: 4px; opacity: 0;
+      border: 1px solid transparent;
+    }
+    .cell.is-on { opacity: 1; }
+    .cell.new { background: var(--new-soft); border-color: var(--new); }
+    .cell.waste { background: var(--accent-soft); border-color: var(--accent); }
+    .counter { margin-top: 16px; color: var(--ink-soft); min-height: 3.6em; }
+    .counter strong { color: var(--accent); }
+  </style>
+</head>
+<body>
+  <div class="tokens" id="tokens"></div>
+  <div id="grid"></div>
+  <div class="counter" id="counter"></div>
+  <script>
+    const tokens = ["The", "cat", "sat", "on", "the", "mat"];
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const timing = { start: 800, step: 800, afterLast: 300, hold: 2000, reset: 400 };
+    const tokensEl = document.getElementById("tokens");
+    const gridEl = document.getElementById("grid");
+    const counterEl = document.getElementById("counter");
+
+    tokens.forEach((word, index) => {
+      const token = document.createElement("div");
+      token.className = "token";
+      token.textContent = word;
+      token.dataset.index = String(index);
+      tokensEl.appendChild(token);
+    });
+
+    tokens.forEach((_, index) => {
+      const row = document.createElement("div");
+      row.className = "row";
+      row.innerHTML = `<span class="row-label">step ${index + 1}</span>`;
+      for (let cellIndex = 0; cellIndex <= index; cellIndex += 1) {
+        const cell = document.createElement("div");
+        cell.className = `cell ${cellIndex === index ? "new" : "waste"}`;
+        row.appendChild(cell);
+      }
+      gridEl.appendChild(row);
+    });
+
+    function totalAt(step) { return step * (step + 1) / 2; }
+    function paint(step) {
+      document.querySelectorAll(".token").forEach((token, index) => {
+        token.classList.toggle("is-now", index === step - 1);
+        token.classList.toggle("is-past", index < step - 1);
+      });
+      document.querySelectorAll(".row").forEach((row, index) => {
+        row.querySelectorAll(".cell").forEach((cell) => {
+          cell.classList.toggle("is-on", index < step);
+        });
+      });
+      if (step === 0) {
+        counterEl.textContent = "";
+        return;
+      }
+      const total = totalAt(step);
+      const redundant = total - step;
+      counterEl.innerHTML = `Compute: <strong>${total}</strong> / ${redundant} redundant`;
+    }
+
+    function showSummary() {
+      document.querySelectorAll(".token").forEach((token) => {
+        token.classList.add("is-past");
+        token.classList.remove("is-now");
+      });
+      document.querySelectorAll(".cell").forEach((cell) => cell.classList.add("is-on"));
+      counterEl.innerHTML = "Total: <strong>21</strong> computations<br>New work: 6<br>Redundant: 15";
+    }
+
+    function gardenChartBoot() {
+      const theme = new URLSearchParams(location.search).get("theme");
+      if (theme === "dark" || theme === "light") document.documentElement.setAttribute("data-theme", theme);
+      const report = () => {
+        if (window.parent === window) return;
+        const height = Math.ceil(Math.max(
+          document.body.scrollHeight,
+          document.body.offsetHeight,
+          document.documentElement.scrollHeight,
+        ));
+        window.parent.postMessage({ source: "garden-chart", height }, "*");
+      };
+      new ResizeObserver(report).observe(document.body);
+      window.addEventListener("load", report);
+      requestAnimationFrame(() => requestAnimationFrame(report));
+    }
+    gardenChartBoot();
+
+    if (reduced) {
+      showSummary();
+    } else {
+      let step = 0;
+      let phase = "run";
+      const tick = () => {
+        if (phase === "run") {
+          step += 1;
+          paint(step);
+          if (step === tokens.length) {
+            phase = "after";
+            window.setTimeout(tick, timing.afterLast);
+            return;
+          }
+          window.setTimeout(tick, timing.step);
+          return;
+        }
+        if (phase === "after") {
+          showSummary();
+          phase = "hold";
+          window.setTimeout(tick, timing.hold);
+          return;
+        }
+        paint(0);
+        step = 0;
+        phase = "run";
+        window.setTimeout(tick, timing.reset);
+      };
+      window.setTimeout(tick, timing.start);
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>图表标题</title>
+  <style>
+    :root {
+      --paper: #f8f8f6; --paper-deep: #eeeeeb; --ink: #202124; --ink-soft: #34383d;
+      --muted: #65707d; --faint: #a1a6ad; --line: #deded9; --accent: #d82d48;
+      --accent-soft: #f9e8eb; --new: #1f7a4d; --new-soft: #e5f4ec;
+    }
+    :root[data-theme="dark"] {
+      --paper: #171819; --paper-deep: #202224; --ink: #ededeb; --ink-soft: #d8d8d4;
+      --muted: #a6adb6; --faint: #747b84; --line: #35383b; --accent: #ff5d76;
+      --accent-soft: #3b242a; --new: #5ee0a0; --new-soft: #1a3a2c;
+    }
+    html, body { margin: 0; background: var(--paper); color: var(--ink); }
+    body {
+      font: 13px/1.5 ui-monospace, "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      padding: 16px;
+    }
+  </style>
+</head>
+<body>
+  <!-- 图表主体 -->
+  <script>
+    function gardenChartBoot() {
+      const theme = new URLSearchParams(location.search).get("theme");
+      if (theme === "dark" || theme === "light") {
+        document.documentElement.setAttribute("data-theme", theme);
+      }
+      const report = () => {
+        if (window.parent === window) return;
+        const height = Math.ceil(Math.max(
+          document.body.scrollHeight,
+          document.body.offsetHeight,
+          document.documentElement.scrollHeight,
+        ));
+        window.parent.postMessage({ source: "garden-chart", height }, "*");
+      };
+      new ResizeObserver(report).observe(document.body);
+      window.addEventListener("load", report);
+      requestAnimationFrame(() => requestAnimationFrame(report));
+    }
+    gardenChartBoot();
+  </script>
+</body>
+</html>

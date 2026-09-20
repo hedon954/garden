@@ -6,7 +6,7 @@
 | --- | --- |
 | 从零创建并发布博客 | [从零开始](quick-start.md) |
 | 写博文、加封面、草稿、置顶、专栏或随想 | [内容编写](content-authoring.md) |
-| 设计可交互 widget 围栏 | [可交互组件](interactive-blog-components.md) · [kind 示例](widget-kind-examples.md) · [KV 呈现调研](kv-caching-presentation.md) |
+| 设计可交互图表（同名目录 + HTML） | [可交互组件](interactive-blog-components.md) · [原语示例](widget-kind-examples.md) · [KV 呈现调研](kv-caching-presentation.md) · [图表 skill](../.agents/skills/garden-interactive-chart/SKILL.md) |
 | 改站点名称和页面标题 | [站点配置](site-configuration.md) |
 | 用 GitHub Pages 或自定义域名发布 | [部署公开博客](github-pages.md) |
 | 开启评论、Webmentions 或内容分发 | [外部集成](integrations.md) |

@@ -85,7 +85,7 @@ garden-blog is a Typora-first, `content/*.md` pipeline: `react-markdown` + remar
 | Callouts | Yes. Typora/Obsidian `> [!TYPE]`. This article does not use them; Garden posts do. |
 | GFM tables, task lists, footnotes, strikethrough | Yes (`remark-gfm`). Unused on this page; footnotes would cover the paper citations better than parentheticals. |
 | Native HTML (`<details>`, `<video>`, `<u>`) | Yes via `rehype-raw`. Styled `<details>` / `<summary>` already ship. |
-| Custom fenced blocks that become components | Yes, two languages: `mermaid` → `MermaidDiagram`, `embed` → `ExternalEmbed`. |
+| Custom fenced blocks that become components | Yes, three languages: `mermaid` → `MermaidDiagram`, `embed` → `ExternalEmbed`, `widget` → sidecar HTML iframe. |
 | Sticky TOC + scroll spy | Yes (H2–H5). Christy’s page has none. |
 | Image lightbox | Yes. |
 | YouTube / Bilibili / link cards | Yes (`embed`). Unused here. |
@@ -109,24 +109,27 @@ Constraints that matter later:
 
 Christy’s three widgets are **bespoke React**, not generic Markdown. Garden should not port those components one-for-one. It should add a **small widget host** and a few primitives.
 
-**Recommended authoring (stays Typora-valid):**
+**Recommended authoring (stays Typora-valid):** put each interactive chart in a sidecar directory named after the Markdown file, then embed a short fence.
+
+```text
+content/posts/understand-kv-cache.md
+content/posts/understand-kv-cache/waste.html
+```
 
 ````md
 ```widget
-kind: autoregressive-waste
-tokens: [The, cat, sat, on, the, mat]
-autoplay: true
+src: ./understand-kv-cache/waste.html
 caption: Naive decode recomputes every past token at every step.
 ```
 ````
 
-`kind` selects a registered client component. YAML in the fence matches `embed`. Unknown `kind` renders the caption plus a non-interactive fallback (table or Mermaid), never a blank `not-prose` hole.
+The fence only names the file and states the conclusion. The HTML is self-contained and runs in a sandboxed iframe. A missing file or caption fails the build; a broken chart still shows the caption, never a blank hole.
 
 | Widget | Support path | Why not MDX first |
 | --- | --- | --- |
-| Autoplay waste animation | New `kind` on a `Stepper` / `MatrixRows` primitive. Tokens and colors as YAML. Honor `prefers-reduced-motion` (jump to summary). | Needs timers and SVG cells; cannot be honest HTML. |
-| Prefill/decode stepper | Same primitive with `mode: manual`, `steps: [...]`, optional side-by-side last step. | Prev/Next + step state. |
-| Memory chart | New `kind: line-chart` with series formula or explicit points, log axis, reference lines, tooltip, `input[type=range]` binding. | Hover + slider. A static Mermaid/SVG is a fallback, not a replacement. |
+| Autoplay waste animation | Sidecar HTML following the stepper primitive. Honor `prefers-reduced-motion` (jump to summary). | Needs timers and SVG cells; the complexity does not belong in Markdown. |
+| Prefill/decode stepper | Same sidecar convention, manual Prev/Next. | Prev/Next + step state. |
+| Memory chart | Sidecar HTML with a bound range input, log axis, and tooltip. | Hover + slider. A static Mermaid/SVG is a fallback, not a replacement. |
 
 **Do not** start with full MDX. It breaks Typora, splits the content compiler (`build-content.mjs` + `extractHeadings` + search), and invites arbitrary JSX in a Git-backed corpus.
 
@@ -172,9 +175,9 @@ Christy’s widgets are empty in the raw HTML until hydration. Garden should do 
 
 ## 4. Prioritized recommendations
 
-1. **Extend the fenced-language registry** (`mermaid` / `embed` → add `widget`). Same `CodeBlock` switch, YAML body, caption required. This is the only path that fits Typora, static export, and the existing compiler.
-2. **Ship three primitives, not three one-off KV toys:** manual/auto stepper with matrix cells; hoverable line chart with a bound range input; optional side-by-side compare step. Those three cover this article and most later LLM explainers (attention, GQA, quantization).
-3. **Require a static fallback** (caption + Mermaid or table) so search, RSS, and no-JS stay honest.
+1. **Extend the fenced-language registry** (`mermaid` / `embed` → add `widget`). The fence stays short (`src` + `caption`); the chart lives in a same-name directory as self-contained HTML. This is the only path that fits Typora, static export, and the existing compiler.
+2. **Ship five primitives as HTML templates, not three one-off KV toys:** manual/auto stepper, inspect grid, param bench, compare, and trace. Those cover this article and most later LLM explainers (attention, GQA, quantization).
+3. **Require a static fallback** (caption + optional table) so search, RSS, and no-JS stay honest.
 4. **Optional essay chrome via front matter**, not a redesign. Measure + hero radius + optional TOC hide. Leave Garden’s light reading UI as default.
 5. **Code-block polish second.** Line numbers and copy help every post; traffic lights are costume. Do not block widgets on this.
 6. **Defer MDX** until a post needs an unregistered, one-off component. If it happens, isolate `.mdx` so `.md` + Typora stay the default.
@@ -182,7 +185,7 @@ Christy’s widgets are empty in the raw HTML until hydration. Garden should do 
 
 ### Suggested first article to prove it
 
-The garden template post `understand-kv-cache.md` is the natural demo: keep the Mermaid overview, then add Widget A + B + C as `widget` fences. garden-blog’s longer LLM posts (`weight-typing`, `back-propagation`, …) can adopt the same fences later without leaving Typora.
+The garden template post `understand-kv-cache.md` is the natural demo: keep the Mermaid overview, then add Widget A + B + C as sidecar HTML files next to the post. garden-blog’s longer LLM posts (`weight-typing`, `back-propagation`, …) can adopt the same convention later without leaving Typora.
 
 ### What not to do
 

@@ -11,6 +11,7 @@ content/posts/**/*.md              普通博文（支持多级目录）
 content/columns.yaml               专栏元数据与博文相对路径引用顺序
 content/thoughts/*.md              随想
 content/**/assets/*                与 Markdown 同目录的本地媒体
+content/posts/**/<slug>/*.html     与 <slug>.md 同名的图表目录
 ```
 
 每个文件由 YAML front matter 和 Markdown 正文组成。以博文为例，`title`、`slug`、`date`、`description`、`topic` 是构建时校验字段；`pinned`、`cover`、`tags`、`draft`、`publishAt` 等字段决定列表、封面和可见性。
@@ -24,7 +25,7 @@ content/**/assets/*                与 Markdown 同目录的本地媒体
 1. 递归读取博文和随想目录，并用 `gray-matter` 分离 front matter 与正文；博文以相对 `content/posts/` 的路径生成公开 URL，`columns.yaml` 使用同一相对路径引用文章。
 2. 校验 slug、日期、专栏引用顺序、媒体类型、重复路径与必填字段。
 3. 排除 `draft: true` 和未到 `publishAt` 的内容；`CONTENT_INCLUDE_DRAFTS=1` 仅用于本地预览。
-4. 扫描 Markdown 图片和原生 `img/audio/video/source` 标签，以及 `cover`、`poster`、`media[].src`。相对路径媒体会被复制到 `public/media/`，正文中的 URL 同步改写为公开路径。
+4. 扫描 Markdown 图片和原生 `img/audio/video/source` 标签，以及 `cover`、`poster`、`media[].src`。相对路径媒体会被复制到 `public/media/`，正文中的 URL 同步改写为公开路径。`widget` 围栏的 `src` 必须指向与稿件同名目录里的 `.html` 或 `.pdf`；构建同样复制并改写路径，缺 `caption` 或文件越界会直接失败。
 5. 将归一化结果写入 `app/lib/generated-content.ts`。该文件含类型、博文、专栏、随想数组与内容哈希，运行时不再读取文件系统。
 6. 由同一份数组生成 `public/rss.xml`、只含长文博文的 `public/posts.xml`、`public/sitemap.xml`、`public/robots.txt`。
 
@@ -65,7 +66,7 @@ rehype-autolink-headings  标题锚点
 rehype-highlight 代码高亮
 ```
 
-当代码块语言为 `mermaid` 时，组件会交给 `MermaidDiagram`：客户端动态加载 Mermaid，固定中性主题，并在“图表”和“Code”两个视图之间切换。普通代码块则保留语言标记供样式层显示。
+当代码块语言为 `mermaid` 时，组件会交给 `MermaidDiagram`：客户端动态加载 Mermaid，固定中性主题，并在“图表”和“Code”两个视图之间切换。`embed` 交给 `ExternalEmbed`；`widget` 交给 `WidgetChart`。构建会给围栏标上 `kind`：带 `garden-chart` 高度回报的 HTML 是图表，立即用沙箱 iframe 打开并加上 `?theme=`；普通 HTML 与 PDF 先渲染示意入口，展开后再加载。普通代码块则保留语言标记供样式层显示。
 
 `normalizeCallouts()` 在 Markdown 解析前把 `[!TYPE]` 转换为带语义色和中文标签的警告框，同时兼容旧迁移内容中的 `garden-callout-marker`。旧内容若把标题统一写成「提示」，渲染时会按色调恢复为提示、建议、告警或警示，不要求批量改写文章源文件。
 
@@ -147,7 +148,7 @@ sequenceDiagram
 | --- | --- |
 | 站点名称、作者、GitHub、一级页面主标题与副标题 | `site.config.yaml` |
 | 内容格式、媒体校验、生成 RSS | `scripts/build-content.mjs` |
-| Markdown 语法或 Mermaid 行为 | `app/components/MarkdownArticle.tsx`、`MermaidDiagram.tsx` |
+| Markdown 语法、Mermaid 或 widget 图表 | `app/components/MarkdownArticle.tsx`、`MermaidDiagram.tsx`、`WidgetChart.tsx` |
 | 文章布局与目录 | 对应的 `app/blog`、`app/columns`、`TableOfContents.tsx` |
 | 搜索权重或高亮 | `app/lib/content.ts`、搜索组件 |
 | 后台随想 Git 写入 | `app/lib/github-content.ts` 与 `app/api/admin/thoughts/*` |

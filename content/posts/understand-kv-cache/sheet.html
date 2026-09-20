@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>KV Cache 公式纸</title>
+  <style>
+    :root {
+      --paper: #f8f8f6; --paper-deep: #eeeeeb; --ink: #202124;
+      --muted: #65707d; --line: #deded9; --line-strong: #c9c9c2;
+      --accent: #d82d48; --accent-soft: #f9e8eb;
+    }
+    :root[data-theme="dark"] {
+      --paper: #171819; --paper-deep: #202224; --ink: #ededeb;
+      --muted: #a6adb6; --line: #35383b; --line-strong: #4b4f54;
+      --accent: #ff5d76; --accent-soft: #3b242a;
+    }
+    html, body { margin: 0; background: var(--paper); color: var(--ink); }
+    body {
+      font: 15px/1.6 ui-sans-serif, system-ui, "PingFang SC", "Hiragino Sans GB", sans-serif;
+      padding: 28px 24px 32px;
+    }
+    h1 { font-size: 22px; font-weight: 600; margin: 0 0 6px; }
+    .sub { color: var(--muted); font-size: 12px; margin: 0 0 24px; }
+    h2 { font-size: 13px; margin: 22px 0 8px; }
+    p, li { margin: 0 0 8px; }
+    code {
+      font-family: ui-monospace, "SFMono-Regular", Menlo, monospace;
+      font-size: 13px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      padding: 1px 5px;
+    }
+    .formula {
+      margin: 12px 0 4px;
+      padding: 14px 16px;
+      border: 1px solid var(--line-strong);
+      background: var(--paper-deep);
+      font-family: ui-monospace, "SFMono-Regular", Menlo, monospace;
+      font-size: 15px;
+    }
+    table { border-collapse: collapse; width: 100%; font-size: 13px; }
+    th, td { border: 1px solid var(--line-strong); padding: 8px 10px; text-align: left; }
+    th { background: var(--paper-deep); }
+    ul { padding-left: 1.15em; margin: 0; }
+  </style>
+</head>
+<body>
+  <h1>KV Cache 公式纸</h1>
+  <p class="sub">对应文章《从逐词生成理解 KV Cache》· 一页，方便对照数量级</p>
+  <h2>显存</h2>
+  <p>KV 显存与层数 L、头维 H、序列长度 T、批量 batch 成正比。</p>
+  <p class="formula">KV memory ∝ 2 × L × H × T × batch</p>
+  <h2>数量级</h2>
+  <table>
+    <tr><th>模型</th><th>batch × 序列</th><th>现象</th></tr>
+    <tr><td>70B</td><td>长上下文</td><td>KV 会先于权重量满一张卡</td></tr>
+    <tr><td>7B</td><td>batch 8 × 32K</td><td>消费卡也会先被 KV 撑满</td></tr>
+  </table>
+  <h2>和计算的关系</h2>
+  <ul>
+    <li>朴素 decode：6 个 token 共 21 次投影，15 次是浪费</li>
+    <li>Prefill 一次写满 K/V；Decode 每步只追加一行</li>
+    <li>缓存换的是时间，付的是显存</li>
+  </ul>
+  <script>
+    const theme = new URLSearchParams(location.search).get("theme");
+    if (theme === "dark" || theme === "light") {
+      document.documentElement.setAttribute("data-theme", theme);
+    }
+  </script>
+</body>
+</html>
