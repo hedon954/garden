@@ -1,27 +1,20 @@
 # Garden
 
-用 Markdown 写作、用 GitHub Pages 发布的个人博客模板。
+用 Markdown 写作、用 GitHub Pages 发布的个人博客引擎。
 
-Garden 的目标很简单：先让你拥有一个能长期写下去的站点。文章留在仓库里，公开站点由 GitHub 自动发布；评论、随想后台和对象存储等能力，都可以等真正需要时再接入。
+站点仓库只保存稿件和身份：`content/` 与 `site.config.yaml`。页面、构建和发布工作流来自这个 Garden 包。
 
-## 仓库与服务如何分工
+## 新建站点
 
-| 部分 | 负责什么 |
-| --- | --- |
-| Garden 框架仓库 | 提供公开模板、内容模型、页面生成和发布工作流；不保存使用者的个人文章 |
-| 你的源码仓库 | 保存文章、随想、专栏、配置和草稿，是唯一内容真源；你和管理后台都只修改这里 |
-| GitHub Pages | 展示 Actions 生成的公开博客；双仓模式下，公开产物仓库只保存生成文件，不手工修改 |
-| 管理后台与评论仓库 | 可选能力；后台向源码仓库提交内容，Giscus 评论可以保存在独立公开仓库 |
+```bash
+npx github:hedon954/garden init my-blog
+cd my-blog
+npm install
+```
 
-日常写作只需要维护源码仓库并运行 `make update`。框架、公开产物和评论数据各自保持独立，不会产生第二套正文。
+推荐把 GitHub 仓库命名为 `<你的 GitHub 用户名>.github.io`，并在 **Settings → Pages** 把 Source 设为 **GitHub Actions**。然后修改 `site.config.yaml`，再写第一篇 Markdown。
 
-## 先完成这三件事
-
-1. 点击 **Use this template**，创建自己的仓库。推荐命名为 `<你的 GitHub 用户名>.github.io`，这样会得到根地址 `https://<你的 GitHub 用户名>.github.io`。
-2. 打开仓库的 **Settings → Pages**，将 Source 设为 **GitHub Actions**。
-3. 修改 `site.config.yaml`，然后在 `content/posts/` 新建第一篇 Markdown。
-
-想在 GitHub Free 下隐藏草稿和源码历史时，使用[私有源码双仓模式](docs/github-pages.md#方式二github-free-私有源码双仓)。日常写作仍然只运行同一个 `make update`。
+也可以继续用 **Use this template**；该仓库同时是可运行的演示站。
 
 完成后运行：
 
@@ -41,6 +34,7 @@ make update
 | 建一个主题专栏 | [创建专栏](docs/content-authoring.md#创建专栏) |
 | 发布一条带多媒体的随想 | [发布随想](docs/content-authoring.md#发布随想) |
 | 改网站名称、作者和一级页标题 | [站点配置](docs/site-configuration.md) |
+| 升级 Garden 引擎 | 把 `package.json` 里的 `garden` tag 改到新版本，再 `npm install` |
 | 发布本次改动 | `make update` |
 
 ## 常用命令
@@ -59,7 +53,7 @@ make update    # 检查、提交并触发自动发布
 make update MESSAGE="新增一篇文章"
 ```
 
-`make dev` 会在首次运行时自动安装依赖并创建 `.env.local`。`make update` 会先检查，再提交并推送工作区中的所有改动；单仓和双仓模式都不需要第二条发布命令。不想发布的文件请先移出仓库或加入 `.gitignore`。
+`make dev` 会在首次运行时自动安装依赖并创建 `.env.local`。`make update` 会先检查，再提交并推送工作区中的所有改动。不想发布的文件请先移出仓库或加入 `.gitignore`。
 
 ## 进一步配置
 
@@ -73,4 +67,4 @@ make update MESSAGE="新增一篇文章"
 
 ## 许可证
 
-[MIT](LICENSE)。使用或 Fork Garden 构建的站点请保留页脚中的 Garden 署名链接。
+[MIT](LICENSE)。使用 Garden 构建的站点请保留页脚中的 Garden 署名链接。

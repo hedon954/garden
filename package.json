@@ -1,26 +1,60 @@
 {
   "name": "garden",
-  "version": "0.1.0",
-  "private": true,
+  "version": "0.2.0",
+  "private": false,
+  "description": "用 Markdown 写作、用 GitHub Pages 发布的个人博客引擎。",
+  "license": "MIT",
+  "bin": {
+    "garden": "bin/garden.mjs"
+  },
+  "files": [
+    "app",
+    "bin",
+    "build",
+    "public/favicon.svg",
+    "public/og.png",
+    "public/images",
+    "scripts",
+    "templates",
+    "worker",
+    ".agents",
+    ".env.example",
+    ".openai",
+    "Makefile",
+    "eslint.config.mjs",
+    "next.config.ts",
+    "postcss.config.mjs",
+    "site.config.yaml",
+    "tsconfig.json",
+    "vite.config.ts"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hedon954/garden.git"
+  },
   "engines": {
     "node": ">=22.13.0"
   },
   "scripts": {
-    "content:sync": "node scripts/build-content.mjs",
-    "pages:validate": "node scripts/prepare-pages-output.mjs dist/client",
-    "webmentions:send": "node scripts/send-webmentions.mjs",
+    "content:sync": "node bin/garden.mjs sync",
+    "pages:validate": "node bin/garden.mjs pages:validate",
+    "webmentions:send": "node bin/garden.mjs webmentions",
     "predev": "npm run content:sync",
-    "dev": "WRANGLER_LOG_PATH=.wrangler/wrangler.log vinext dev",
+    "dev": "node bin/garden.mjs dev",
     "prebuild": "npm run content:sync",
-    "build": "WRANGLER_LOG_PATH=.wrangler/wrangler.log vinext build",
-    "start": "WRANGLER_LOG_PATH=.wrangler/wrangler.log vinext start",
+    "build": "node bin/garden.mjs build",
+    "start": "node bin/garden.mjs start",
     "admin:local": "npm run start -- --host 0.0.0.0 --port 3000",
     "admin:cloudflare": "npm run build && wrangler deploy --config dist/server/wrangler.json",
     "test": "npm run build && node --test tests/*.test.mjs",
-    "lint": "eslint . --ignore-pattern dist --ignore-pattern .next"
+    "lint": "node bin/garden.mjs sync && eslint . --ignore-pattern dist --ignore-pattern .next --ignore-pattern .garden --ignore-pattern templates"
   },
   "dependencies": {
+    "@cloudflare/vite-plugin": "1.37.1",
     "@phosphor-icons/react": "^2.1.10",
+    "@tailwindcss/postcss": "4.2.1",
+    "@vitejs/plugin-react": "6.0.4",
+    "@vitejs/plugin-rsc": "0.5.30",
     "fuse.js": "^7.5.0",
     "github-slugger": "^2.0.0",
     "gray-matter": "^4.0.3",
@@ -32,6 +66,7 @@
     "react": "19.2.8",
     "react-dom": "19.2.8",
     "react-markdown": "^10.1.0",
+    "react-server-dom-webpack": "19.2.8",
     "rehype-autolink-headings": "^7.1.0",
     "rehype-highlight": "^7.0.2",
     "rehype-katex": "^7.0.1",
@@ -42,26 +77,21 @@
     "remark-gfm": "^4.0.1",
     "remark-math": "^6.0.0",
     "remark-parse": "^11.0.0",
+    "tailwindcss": "4.2.1",
+    "typescript": "5.9.3",
     "unified": "^11.0.5",
     "unist-util-visit": "^5.1.0",
+    "vinext": "0.0.50",
+    "vite": "8.0.13",
+    "wrangler": "4.116.0",
     "yaml": "^2.9.0"
   },
   "devDependencies": {
-    "@cloudflare/vite-plugin": "1.37.1",
-    "@tailwindcss/postcss": "4.2.1",
     "@types/node": "22.19.19",
     "@types/react": "19.2.17",
     "@types/react-dom": "19.2.3",
-    "@vitejs/plugin-react": "6.0.4",
-    "@vitejs/plugin-rsc": "0.5.30",
     "eslint": "9.39.4",
-    "eslint-config-next": "16.2.12",
-    "react-server-dom-webpack": "19.2.8",
-    "tailwindcss": "4.2.1",
-    "typescript": "5.9.3",
-    "vinext": "0.0.50",
-    "vite": "8.0.13",
-    "wrangler": "4.116.0"
+    "eslint-config-next": "16.2.12"
   },
   "type": "module"
 }

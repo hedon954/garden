@@ -7,9 +7,17 @@
 - 一个 GitHub 账号。
 - 想在电脑上创建文章或预览时，安装 Node.js 22.13 或更高版本和 `make`。
 
-## 1. 创建自己的仓库
+## 1. 创建自己的站点
 
-在 Garden 仓库页面点击 **Use this template** 或 **Fork**，选择自己的 GitHub 账号作为所有者。
+推荐只保留稿件和配置：
+
+```bash
+npx github:hedon954/garden init my-blog
+cd my-blog
+npm install
+```
+
+把这个目录推到 GitHub。也可以继续在 Garden 仓库页面点击 **Use this template** 或 **Fork**。
 
 如果想直接使用 `https://你的用户名.github.io` 作为博客地址，请把仓库命名为 `你的用户名.github.io`。例如用户名是 `alice`，仓库名就是 `alice.github.io`。
 

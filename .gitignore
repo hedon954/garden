@@ -16,6 +16,7 @@
 # next.js
 /.next/
 /.vinext/
+/.garden/
 /out/
 
 # misc
@@ -47,6 +48,8 @@ next-env.d.ts
 /implementation-*.png
 /design-comparison-*.png
 .playwright-cli/
+
+/public/media/
 
 # Generated from Markdown during build; GitHub Actions regenerates these for Pages.
 /public/rss.xml

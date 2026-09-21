@@ -14,7 +14,26 @@ pages:
     subtitle: 在这里写博文页介绍。
 ```
 
-每个页面只提供 `title` 与 `subtitle` 两个文案入口。导航、按钮、分区标题和页面结构由模板统一维护，不需要逐项配置。
+每个一级页面提供 `title` 与 `subtitle`。关于页还可以写正文，这样换站点时不必改引擎里的页面文件：
+
+```yaml
+pages:
+  about:
+    title: 你好，我是 Alice。
+    subtitle: 在这里写下你关心的问题。
+    heading: 这个网站为什么存在
+    paragraphs:
+      - 第一段介绍。
+      - 第二段介绍。
+    quote: 一句放在引用里的话。
+    focus:
+      - 现在关注的方向
+    cta:
+      href: /blog
+      label: 从博文开始
+```
+
+导航、按钮结构和页面骨架由引擎统一维护。
 
 作者资料还可以配置 GitHub 降级数据：
 

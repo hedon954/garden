@@ -35,4 +35,4 @@ npm test
 
 ## 升级
 
-定期运行 `npm outdated` 与 `npm audit`，通过 Pull Request 升级依赖，并让 `Verify blog` 工作流通过后再合并。公开站回滚应在源码仓库还原提交并重新发布，不要直接修改生成文件；后台服务仍独立回滚版本。
+独立站点升级引擎时，把 `package.json` 里的 `garden` 依赖改到新的 tag，例如 `github:hedon954/garden#v0.3.0`，再运行 `npm install`。Garden 仓库本身定期运行 `npm outdated` 与 `npm audit`，通过 Pull Request 升级依赖，并让 `Verify blog` 工作流通过后再合并。公开站回滚应在源码仓库还原提交并重新发布，不要直接修改生成文件；后台服务仍独立回滚版本。

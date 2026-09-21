@@ -107,9 +107,14 @@ topic: 测试
     );
 
     const generated = await readFile(
-      path.join(fixture, "app", "lib", "generated-content.ts"),
+      path.join(fixture, ".garden", "generated-content.ts"),
       "utf8",
     );
+    const generatedConfig = await readFile(
+      path.join(fixture, ".garden", "site-config.ts"),
+      "utf8",
+    );
+    assert.match(generatedConfig, /export const siteConfig/);
     assert.match(generated, /"slug": "published"/);
     assert.match(generated, /"sourcePath": "posts\/writing\/nested\.md"/);
     assert.doesNotMatch(generated, /"slug": "draft"/);
@@ -121,6 +126,47 @@ topic: 测试
     await access(
       path.join(fixture, "public", "media", "posts", "assets", "cover.jpg"),
     );
+  } finally {
+    await rm(fixture, { recursive: true, force: true });
+  }
+});
+
+test("GARDEN_SITE writes generated files into the site, not the process cwd", async () => {
+  const fixture = await mkdtemp(path.join(tmpdir(), "garden-site-"));
+  try {
+    await mkdir(path.join(fixture, "content", "posts"), { recursive: true });
+    await mkdir(path.join(fixture, "public"), { recursive: true });
+    await cp(
+      path.join(projectRoot, "site.config.yaml"),
+      path.join(fixture, "site.config.yaml"),
+    );
+    await writeFile(
+      path.join(fixture, "content", "posts", "isolated.md"),
+      `---
+title: Isolated
+slug: isolated
+date: 2026-07-25
+description: 站点隔离
+topic: 测试
+draft: false
+---
+
+正文。
+`,
+    );
+    await execFileAsync(
+      process.execPath,
+      [path.join(projectRoot, "scripts", "build-content.mjs")],
+      {
+        cwd: projectRoot,
+        env: { ...process.env, GARDEN_SITE: fixture, CONTENT_INCLUDE_DRAFTS: "0" },
+      },
+    );
+    const generated = await readFile(
+      path.join(fixture, ".garden", "generated-content.ts"),
+      "utf8",
+    );
+    assert.match(generated, /"slug": "isolated"/);
   } finally {
     await rm(fixture, { recursive: true, force: true });
   }

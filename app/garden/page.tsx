@@ -192,10 +192,12 @@ export default function GardenPage() {
         <div className="garden-setup-grid">
           <article>
             <span>01</span>
-            <h3>创建自己的仓库</h3>
+            <h3>创建自己的站点</h3>
             <p>
-              使用 GitHub 的 <strong>Use this template</strong>，推荐将仓库命名为
-              <code> &lt;owner&gt;.github.io</code>。源码可以直接公开，也可以在 GitHub Free 下放进私有仓库，再把生成文件发布到公开 Pages 仓库。
+              运行 <code>npx github:hedon954/garden init my-blog</code>，站点里只保留
+              <code>content/</code> 和 <code>site.config.yaml</code>。也可以继续用 GitHub 的
+              <strong>Use this template</strong>。推荐将仓库命名为
+              <code> &lt;owner&gt;.github.io</code>。
             </p>
           </article>
           <article>

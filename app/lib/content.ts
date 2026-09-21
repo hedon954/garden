@@ -5,7 +5,7 @@ import {
   thoughts,
   type ContentEntry,
   type MediaItem,
-} from "./generated-content";
+} from "@garden/generated-content";
 import GithubSlugger from "github-slugger";
 import { toString } from "mdast-util-to-string";
 import remarkParse from "remark-parse";
