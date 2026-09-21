@@ -37,4 +37,21 @@ npm test
 
 独立站点升级引擎时，把 `package.json` 里的 `hd-garden` 改到新版本，例如 `^0.4.0`，再运行 `npm install`。缺 Makefile、写稿脚本或图表 skill 时，下一次 `npx garden sync` 会补上；要覆盖成引擎自带的新版 skill，再运行 `npx garden skill`。Garden 仓库本身定期运行 `npm outdated` 与 `npm audit`，通过 Pull Request 升级依赖，并让 `Verify blog` 工作流通过后再合并。公开站回滚应在源码仓库还原提交并重新发布，不要直接修改生成文件；后台服务仍独立回滚版本。
 
-引擎发到 npm 用 GitHub Actions 的 **Publish npm**（推送 `v*` tag 或手动触发）。包设置里把 Trusted Publisher 配成仓库 `hedon954/garden`、工作流 `publish.yml`，并允许 `npm publish`。不要把长期 `NPM_TOKEN` 写进仓库。
+引擎发到 npm 用 GitHub Actions 的 **Publish npm**（推送 `v*` tag 或手动触发）。不要把长期 `NPM_TOKEN` 写进仓库。
+
+Trusted Publisher 在 npm 包设置里配一次即可：打开 [hd-garden → Access](https://www.npmjs.com/package/hd-garden/access)，在 **Trusted Publisher** 选 GitHub Actions，填：
+
+- Organization or user：`hedon954`
+- Repository：`garden`
+- Workflow filename：`publish.yml`（只要文件名，不要路径）
+- Environment：留空
+- Allowed actions：勾选 `npm publish`
+
+保存后，之后只需：
+
+```bash
+git tag v0.3.1
+git push upstream v0.3.1
+```
+
+Actions 会用 OIDC 短时凭证发布，不再需要 token。npm 账号需要开启 2FA 才能保存这项设置。
