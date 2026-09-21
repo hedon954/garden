@@ -15,7 +15,10 @@
 npx github:hedon954/garden init my-blog
 cd my-blog
 npm install
+npx garden skill
 ```
+
+`garden init` 会带上图表 skill；已有站点补装或升级 skill 时，在站点根目录再跑一次 `npx garden skill` 即可。
 
 把这个目录推到 GitHub。也可以继续在 Garden 仓库页面点击 **Use this template** 或 **Fork**。
 
