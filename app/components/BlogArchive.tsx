@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
 import { ArrowLeft, ArrowRight, PushPin } from "@phosphor-icons/react";
 import { formatDate, postHref, posts, topics } from "../lib/content";
 import { ContentEmptyState } from "./ContentEmptyState";
@@ -19,19 +18,13 @@ export const archiveHref = (topic?: string, page?: number) => {
 
 export function BlogArchive() {
   const searchParams = useSearchParams();
-  const [ready, setReady] = useState(false);
-
-  useEffect(() => {
-    setReady(true);
-  }, []);
-
-  const requestedTopic = ready ? (searchParams.get("topic") ?? "") : "";
+  const requestedTopic = searchParams.get("topic") ?? "";
   const selectedTopic = topics.includes(requestedTopic) ? requestedTopic : undefined;
   const filteredPosts = selectedTopic
     ? posts.filter((post) => post.topic === selectedTopic)
     : posts;
   const pageCount = Math.max(1, Math.ceil(filteredPosts.length / pageSize));
-  const parsedPage = Number.parseInt((ready ? searchParams.get("page") : null) ?? "1", 10);
+  const parsedPage = Number.parseInt(searchParams.get("page") ?? "1", 10);
   const currentPage = Math.min(
     pageCount,
     Math.max(1, Number.isFinite(parsedPage) ? parsedPage : 1),
