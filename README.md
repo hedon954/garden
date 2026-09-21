@@ -34,7 +34,7 @@ make update
 | 建一个主题专栏 | [创建专栏](docs/content-authoring.md#创建专栏) |
 | 发布一条带多媒体的随想 | [发布随想](docs/content-authoring.md#发布随想) |
 | 改网站名称、作者和一级页标题 | [站点配置](docs/site-configuration.md) |
-| 给 AI 装可交互图表 skill | `npx garden skill` |
+| 给 AI 装可交互图表 skill | 第一次 `npx garden dev` 会自动装；更新用 `npx garden skill` |
 | 升级 Garden 引擎 | 把 `package.json` 里的 `garden` tag 改到新版本，再 `npm install` |
 | 发布本次改动 | `make update` |
 

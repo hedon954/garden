@@ -151,11 +151,53 @@ function publishDist(fromRoot) {
   fs.cpSync(from, to, { recursive: true });
 }
 
+function copyIfMissing(from, to) {
+  if (fs.existsSync(to) || !fs.existsSync(from)) return false;
+  fs.mkdirSync(path.dirname(to), { recursive: true });
+  fs.cpSync(from, to, { recursive: true });
+  return true;
+}
+
+function ensureSiteKit(destinationRoot = siteRoot) {
+  if (samePath(destinationRoot, gardenPackageRoot)) return;
+
+  const added = [];
+  if (
+    copyIfMissing(
+      path.join(gardenPackageRoot, "templates", "site", "Makefile"),
+      path.join(destinationRoot, "Makefile"),
+    )
+  ) {
+    added.push("Makefile");
+  }
+  if (
+    copyIfMissing(
+      path.join(gardenPackageRoot, "scripts", "new-post.mjs"),
+      path.join(destinationRoot, "scripts", "new-post.mjs"),
+    )
+  ) {
+    added.push("scripts/new-post.mjs");
+  }
+  if (added.length) {
+    process.stdout.write(`已补齐站点文件：${added.join("、")}\n`);
+  }
+
+  const skillFile = path.join(
+    destinationRoot,
+    ".agents",
+    "skills",
+    "garden-interactive-chart",
+    "SKILL.md",
+  );
+  if (!fs.existsSync(skillFile)) installSkill(destinationRoot);
+}
+
 function prepare() {
   ensureEnv();
   ensurePublic();
   fs.mkdirSync(path.join(siteRoot, "content", "posts"), { recursive: true });
   fs.mkdirSync(path.join(siteRoot, "content", "thoughts"), { recursive: true });
+  ensureSiteKit();
 }
 
 function sync() {

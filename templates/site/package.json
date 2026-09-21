@@ -13,6 +13,6 @@
     "pages:validate": "garden pages:validate"
   },
   "dependencies": {
-    "garden": "github:hedon954/garden#v0.2.1"
+    "garden": "github:hedon954/garden#v0.2.2"
   }
 }
