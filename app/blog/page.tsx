@@ -1,10 +1,10 @@
 import { Suspense } from "react";
-import { siteConfig } from "../site.config";
+import { siteConfig, siteDocumentTitle } from "../site.config";
 import { BlogArchive } from "../components/BlogArchive";
 
 export const metadata = {
-  title: siteConfig.pages.blog.title,
-  description: siteConfig.pages.blog.subtitle,
+  title: siteDocumentTitle,
+  description: siteConfig.pages.blog.subtitle || siteConfig.description,
 };
 
 export default function BlogIndex() {

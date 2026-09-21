@@ -33,3 +33,6 @@ export type SiteConfig = {
 /** 站点身份来自根目录 site.config.yaml，由 garden sync 生成。 */
 export const siteConfig = raw as SiteConfig;
 export { githubUrl };
+
+/** 列表页浏览器标题用站点名；页面大标题仍用 pages.*.title。 */
+export const siteDocumentTitle = { absolute: siteConfig.name };

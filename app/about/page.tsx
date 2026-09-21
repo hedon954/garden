@@ -19,8 +19,8 @@ const focus = about.focus ?? [
 const cta = about.cta ?? { href: "/blog", label: "从博文开始" };
 
 export const metadata = {
-  title: about.title,
-  description: about.subtitle,
+  title: { absolute: siteConfig.name },
+  description: about.subtitle || siteConfig.description,
 };
 
 export default function AboutPage() {

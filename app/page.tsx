@@ -9,10 +9,10 @@ import { columnHref, columns, formatDate, postHref, posts } from "./lib/content"
 import { ThoughtCard } from "./components/ThoughtCard";
 import { PageIntro } from "./components/PageIntro";
 import { getPublishedThoughts } from "./lib/public-thoughts";
-import { githubUrl, siteConfig } from "./site.config";
+import { githubUrl, siteConfig, siteDocumentTitle } from "./site.config";
 
 export const metadata = {
-  title: `${siteConfig.name} · ${siteConfig.tagline}`,
+  title: siteDocumentTitle,
   description: siteConfig.description,
 };
 

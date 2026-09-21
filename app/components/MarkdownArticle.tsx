@@ -11,6 +11,7 @@ import rehypeSlug from "rehype-slug";
 import rehypeAutolinkHeadings from "rehype-autolink-headings";
 import rehypeHighlight from "rehype-highlight";
 import { MermaidDiagram } from "./MermaidDiagram";
+import { MarkdownImage } from "./MarkdownImage";
 import { ExternalEmbed } from "./ExternalEmbed";
 import { WidgetChart } from "./WidgetChart";
 
@@ -106,11 +107,7 @@ export function MarkdownArticle({ content }: { content: string }) {
               </a>
             );
           },
-          img: ({ alt, ...props }) => (
-            // Native images keep Typora-authored relative paths intact.
-            // eslint-disable-next-line @next/next/no-img-element
-            <img loading="lazy" alt={alt ?? ""} {...props} />
-          ),
+          img: MarkdownImage,
           code: CodeBlock,
           pre: ({ children, ...props }) => {
             const child = Children.only(children);

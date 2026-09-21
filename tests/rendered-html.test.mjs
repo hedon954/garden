@@ -169,6 +169,9 @@ test("collapses the reading table of contents per heading and keeps its active i
   assert.match(styles, /\.markdown-body h3[\s\S]*font-size: clamp\(20px/);
   assert.match(styles, /\.markdown-body h4[\s\S]*font-size: clamp\(19px/);
   assert.match(styles, /\.markdown-body h5[\s\S]*font-size: clamp\(17px/);
+  assert.match(styles, /\.markdown-body ul \{\s*list-style: disc outside;/);
+  assert.match(styles, /\.archive-cover \{\s*width: 160px;\s*height: auto;/);
+  assert.match(styles, /\.article-hero img \{\s*width: 100%;\s*height: auto;/);
   assert.match(content, /unified\(\)\.use\(remarkParse\)\.use\(markdownPlugins\)/);
   assert.match(content, /visit\(tree, "heading"/);
   assert.match(content, /node\.depth >= 2 && node\.depth <= 5/);
@@ -202,6 +205,7 @@ test("hides empty home sections and gives every content index an intentional emp
   assert.match(archive, /ContentEmptyState kind="posts"/);
   assert.match(thoughts, /ContentEmptyState kind="thoughts"/);
   assert.match(columns, /ContentEmptyState kind="columns"/);
+  assert.match(columns, /column-feature-cover/);
   assert.match(emptyState, /content-empty-state/);
 });
 

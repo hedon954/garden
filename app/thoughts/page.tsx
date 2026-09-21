@@ -2,11 +2,11 @@ import { getPublishedThoughts } from "../lib/public-thoughts";
 import { ThoughtCard } from "../components/ThoughtCard";
 import { ContentEmptyState } from "../components/ContentEmptyState";
 import { PageIntro } from "../components/PageIntro";
-import { siteConfig } from "../site.config";
+import { siteConfig, siteDocumentTitle } from "../site.config";
 
 export const metadata = {
-  title: siteConfig.pages.thoughts.title,
-  description: siteConfig.pages.thoughts.subtitle,
+  title: siteDocumentTitle,
+  description: siteConfig.pages.thoughts.subtitle || siteConfig.description,
 };
 
 export default function ThoughtsPage() {

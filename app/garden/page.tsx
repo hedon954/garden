@@ -7,7 +7,7 @@ import { TableOfContents } from "../components/TableOfContents";
 import { siteConfig } from "../site.config";
 
 export const metadata = {
-  title: `Garden · ${siteConfig.pages.garden.title}`,
+  title: "Garden",
   description:
     "一个以 Markdown 为内容源、通过 GitHub Pages 发布的个人博客框架，支持博文、随想、专栏、搜索、RSS 与多媒体。",
 };
