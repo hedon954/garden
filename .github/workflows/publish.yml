@@ -18,12 +18,13 @@ jobs:
 
       - uses: actions/setup-node@v7
         with:
-          node-version: 22
-          cache: npm
+          node-version: 24
           registry-url: https://registry.npmjs.org
+          package-manager-cache: false
 
+      - run: npm install --global npm@11
       - run: npm ci
       - run: npm test
 
       - name: Publish hd-garden
-        run: npm publish --access public --provenance
+        run: npm publish --access public
