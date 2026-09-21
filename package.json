@@ -1,11 +1,26 @@
 {
-  "name": "garden",
-  "version": "0.2.2",
+  "name": "hd-garden",
+  "version": "0.3.0",
   "private": false,
   "description": "用 Markdown 写作、用 GitHub Pages 发布的个人博客引擎。",
   "license": "MIT",
+  "homepage": "https://github.com/hedon954/garden",
+  "bugs": {
+    "url": "https://github.com/hedon954/garden/issues"
+  },
+  "keywords": [
+    "hd-garden",
+    "blog",
+    "markdown",
+    "github-pages",
+    "static-site"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
   "bin": {
-    "garden": "bin/garden.mjs"
+    "garden": "bin/garden.mjs",
+    "hd-garden": "bin/garden.mjs"
   },
   "files": [
     "app",

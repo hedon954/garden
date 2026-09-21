@@ -10,4 +10,4 @@ make dev
 
 第一次 `npx garden dev` 会补齐 Makefile、写稿脚本和图表 skill。Cursor / Codex 打开这个仓库后会读到 `.agents/skills/garden-interactive-chart`。要更新 skill，再运行 `npx garden skill`。
 
-升级引擎：把 `package.json` 里的 `garden` 依赖改到新的 tag，例如 `github:hedon954/garden#v0.3.0`，再运行 `npm install`。
+升级引擎：把 `package.json` 里的 `hd-garden` 改到新版本，例如 `^0.4.0`，再运行 `npm install`。

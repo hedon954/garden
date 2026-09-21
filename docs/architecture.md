@@ -22,11 +22,11 @@ flowchart LR
 
 | 层 | 位置 | 职责 |
 | --- | --- | --- |
-| 引擎 | `garden` 包 / `garden` CLI | 页面、Markdown 渲染、内容编译、本地预览与静态导出 |
+| 引擎 | `hd-garden` 包 / `garden` CLI | 页面、Markdown 渲染、内容编译、本地预览与静态导出 |
 | 配置 | 站点 `site.config.yaml` | 站点名称、作者、一级页文案、关于页正文 |
 | 内容 | 站点 `content/` | 博文、随想、专栏和附件；构建索引写在站点 `.garden/` |
 
-独立站点通过 `github:hedon954/garden#v0.2.0` 引用引擎。Vinext 在站点 `.garden/runtime` 下运行，产物写到站点 `dist/`，不会写入 `node_modules`。
+独立站点通过 `hd-garden` 引用引擎。Vinext 在站点 `.garden/runtime` 下运行，产物写到站点 `dist/`，不会写入 `node_modules`。
 
 ## 代码模块
 

@@ -194,7 +194,7 @@ export default function GardenPage() {
             <span>01</span>
             <h3>创建自己的站点</h3>
             <p>
-              运行 <code>npx github:hedon954/garden init my-blog</code>，站点里只保留
+              运行 <code>npx hd-garden init my-blog</code>，站点里只保留
               <code>content/</code> 和 <code>site.config.yaml</code>。也可以继续用 GitHub 的
               <strong>Use this template</strong>。推荐将仓库命名为
               <code> &lt;owner&gt;.github.io</code>。

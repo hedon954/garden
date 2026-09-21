@@ -231,6 +231,17 @@ function copyTemplate(from, to) {
   }
 }
 
+function writeEngineDependency(destination) {
+  const engine = JSON.parse(fs.readFileSync(path.join(gardenPackageRoot, "package.json"), "utf8"));
+  const sitePkgPath = path.join(destination, "package.json");
+  const sitePkg = JSON.parse(fs.readFileSync(sitePkgPath, "utf8"));
+  const dependencies = { ...(sitePkg.dependencies ?? {}) };
+  if (engine.name !== "garden") delete dependencies.garden;
+  dependencies[engine.name] = `^${engine.version}`;
+  sitePkg.dependencies = dependencies;
+  fs.writeFileSync(sitePkgPath, `${JSON.stringify(sitePkg, null, 2)}\n`);
+}
+
 function initSite() {
   const destination = path.resolve(rest[0] ?? ".");
   const template = path.join(gardenPackageRoot, "templates", "site");
@@ -239,6 +250,7 @@ function initSite() {
     fail(`目录已是 Garden 站点：${destination}`);
   }
   copyTemplate(template, destination);
+  writeEngineDependency(destination);
   fs.mkdirSync(path.join(destination, "scripts"), { recursive: true });
   fs.copyFileSync(
     path.join(gardenPackageRoot, "scripts", "new-post.mjs"),

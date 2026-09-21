@@ -10,9 +10,10 @@
     "build": "garden build",
     "start": "garden start",
     "sync": "garden sync",
-    "pages:validate": "garden pages:validate"
+    "pages:validate": "garden pages:validate",
+    "pages:prepare": "garden pages:prepare"
   },
   "dependencies": {
-    "garden": "github:hedon954/garden#v0.2.2"
+    "hd-garden": "^0.3.0"
   }
 }

@@ -7,12 +7,12 @@
 ## 新建站点
 
 ```bash
-npx github:hedon954/garden init my-blog
+npx hd-garden init my-blog
 cd my-blog
 npm install
 ```
 
-推荐把 GitHub 仓库命名为 `<你的 GitHub 用户名>.github.io`，并在 **Settings → Pages** 把 Source 设为 **GitHub Actions**。然后修改 `site.config.yaml`，再写第一篇 Markdown。
+推荐把 GitHub 仓库命名为 `<你的 GitHub 用户名>.github.io`，并在 **Settings → Pages** 把 Source 设为 **GitHub Actions**。然后修改 `site.config.yaml`，再写第一篇 Markdown。公开包名是 `hd-garden`；装进站点之后也可以用 `garden`。不要运行 `npx garden init`，npm 上的 `garden` 是别人的样式库。
 
 也可以继续用 **Use this template**；该仓库同时是可运行的演示站。
 
@@ -35,7 +35,7 @@ make update
 | 发布一条带多媒体的随想 | [发布随想](docs/content-authoring.md#发布随想) |
 | 改网站名称、作者和一级页标题 | [站点配置](docs/site-configuration.md) |
 | 给 AI 装可交互图表 skill | 第一次 `npx garden dev` 会自动装；更新用 `npx garden skill` |
-| 升级 Garden 引擎 | 把 `package.json` 里的 `garden` tag 改到新版本，再 `npm install` |
+| 升级 Garden 引擎 | 把 `hd-garden` 改到新版本，再 `npm install` |
 | 发布本次改动 | `make update` |
 
 ## 常用命令

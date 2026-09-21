@@ -35,4 +35,6 @@ npm test
 
 ## 升级
 
-独立站点升级引擎时，把 `package.json` 里的 `garden` 依赖改到新的 tag，例如 `github:hedon954/garden#v0.3.0`，再运行 `npm install`。缺 Makefile、写稿脚本或图表 skill 时，下一次 `npx garden sync` 会补上；要覆盖成引擎自带的新版 skill，再运行 `npx garden skill`。Garden 仓库本身定期运行 `npm outdated` 与 `npm audit`，通过 Pull Request 升级依赖，并让 `Verify blog` 工作流通过后再合并。公开站回滚应在源码仓库还原提交并重新发布，不要直接修改生成文件；后台服务仍独立回滚版本。
+独立站点升级引擎时，把 `package.json` 里的 `hd-garden` 改到新版本，例如 `^0.4.0`，再运行 `npm install`。缺 Makefile、写稿脚本或图表 skill 时，下一次 `npx garden sync` 会补上；要覆盖成引擎自带的新版 skill，再运行 `npx garden skill`。Garden 仓库本身定期运行 `npm outdated` 与 `npm audit`，通过 Pull Request 升级依赖，并让 `Verify blog` 工作流通过后再合并。公开站回滚应在源码仓库还原提交并重新发布，不要直接修改生成文件；后台服务仍独立回滚版本。
+
+引擎发到 npm 用 GitHub Actions 的 **Publish npm**（推送 `v*` tag 或手动触发）。包设置里把 Trusted Publisher 配成仓库 `hedon954/garden`、工作流 `publish.yml`，并允许 `npm publish`。不要把长期 `NPM_TOKEN` 写进仓库。
