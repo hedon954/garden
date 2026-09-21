@@ -26,7 +26,7 @@ content/posts/**/<slug>/*.html     与 <slug>.md 同名的图表目录
 2. 校验 slug、日期、专栏引用顺序、媒体类型、重复路径与必填字段。
 3. 排除 `draft: true` 和未到 `publishAt` 的内容；`CONTENT_INCLUDE_DRAFTS=1` 仅用于本地预览。
 4. 扫描 Markdown 图片和原生 `img/audio/video/source` 标签，以及 `cover`、`poster`、`media[].src`。相对路径媒体会被复制到 `public/media/`，正文中的 URL 同步改写为公开路径。`widget` 围栏的 `src` 必须指向与稿件同名目录里的 `.html` 或 `.pdf`；构建同样复制并改写路径，缺 `caption` 或文件越界会直接失败。
-5. 将归一化结果写入 `app/lib/generated-content.ts`。该文件含类型、博文、专栏、随想数组与内容哈希，运行时不再读取文件系统。
+5. 将归一化结果写入站点 `.garden/generated-content.ts` 与 `.garden/site-config.ts`。运行时通过 Vite 别名读这些生成文件，不再读取文件系统。
 6. 由同一份数组生成 `public/rss.xml`、只含长文博文的 `public/posts.xml`、`public/sitemap.xml`、`public/robots.txt`。
 
 ```mermaid

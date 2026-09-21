@@ -1,0 +1,18 @@
+{
+  "name": "my-garden",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "scripts": {
+    "dev": "garden dev",
+    "build": "garden build",
+    "start": "garden start",
+    "sync": "garden sync",
+    "pages:validate": "garden pages:validate"
+  },
+  "dependencies": {
+    "garden": "github:hedon954/garden#v0.2.0"
+  }
+}

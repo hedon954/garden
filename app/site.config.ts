@@ -1,18 +1,35 @@
-import { parse } from "yaml";
-import source from "../site.config.yaml?raw";
+import { githubUrl, siteConfig as raw } from "@garden/site-config";
 
-/** Fork 后编辑根目录 site.config.yaml；页面仅使用标题和副标题。 */
-export const siteConfig = parse(source) as {
+export type PageCopy = {
+  title: string;
+  subtitle: string;
+};
+
+export type AboutPage = PageCopy & {
+  heading?: string;
+  paragraphs?: string[];
+  quote?: string;
+  focus?: string[];
+  cta?: { href: string; label: string };
+};
+
+export type SiteConfig = {
   name: string;
   tagline: string;
   description: string;
   locale: string;
   author: { name: string; github: string; githubBio: string; githubPinned?: string[] };
-  pages: Record<"home" | "blog" | "thoughts" | "columns" | "about" | "garden", {
-    title: string;
-    subtitle: string;
-  }>;
+  pages: {
+    home: PageCopy;
+    blog: PageCopy;
+    thoughts: PageCopy;
+    columns: PageCopy;
+    about: AboutPage;
+    garden: PageCopy;
+  };
   footer: string;
 };
 
-export const githubUrl = `https://github.com/${siteConfig.author.github}`;
+/** 站点身份来自根目录 site.config.yaml，由 garden sync 生成。 */
+export const siteConfig = raw as SiteConfig;
+export { githubUrl };

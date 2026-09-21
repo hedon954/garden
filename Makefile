@@ -26,13 +26,13 @@ prepare:
 	@if [ ! -f .env.local ]; then cp .env.example .env.local; fi
 
 dev: prepare
-	npm run dev
+	node bin/garden.mjs dev
 
 check:
 	npm run lint && npm test
 
 build:
-	npm run build
+	node bin/garden.mjs build
 
 update:
 	@if git diff --quiet && git diff --cached --quiet && [ -z "$$(git ls-files --others --exclude-standard)" ]; then \

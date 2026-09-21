@@ -1,0 +1,16 @@
+/node_modules
+/.garden/
+/dist/
+/.next/
+/.vinext/
+/.wrangler/
+/output/
+/outputs/
+.playwright-cli/
+.env*
+!.env.example
+.DS_Store
+/public/media/
+/public/rss.xml
+/public/sitemap.xml
+/public/robots.txt

@@ -1,10 +1,8 @@
 import { randomUUID } from "node:crypto";
 import { lstat, mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
 
-// Resolve from the checked-in script so forks need no machine-specific paths.
-const root = fileURLToPath(new URL("../", import.meta.url));
+const root = path.resolve(process.env.GARDEN_SITE || process.cwd());
 const option = (name) => (process.env[`GARDEN_NEW_${name}`] ?? "").trim();
 
 async function main() {

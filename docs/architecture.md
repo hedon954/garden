@@ -18,11 +18,22 @@ flowchart LR
 
 后台是可选的独立服务。它保存短期会话、使用 GitHub OAuth 验证登录用户是否在白名单，然后使用服务器端 `CONTENT_GITHUB_TOKEN` 创建或更新 Markdown。内容的权威副本始终在 Git 仓库。
 
+## 三层分工
+
+| 层 | 位置 | 职责 |
+| --- | --- | --- |
+| 引擎 | `garden` 包 / `garden` CLI | 页面、Markdown 渲染、内容编译、本地预览与静态导出 |
+| 配置 | 站点 `site.config.yaml` | 站点名称、作者、一级页文案、关于页正文 |
+| 内容 | 站点 `content/` | 博文、随想、专栏和附件；构建索引写在站点 `.garden/` |
+
+独立站点通过 `github:hedon954/garden#v0.2.0` 引用引擎。Vinext 在站点 `.garden/runtime` 下运行，产物写到站点 `dist/`，不会写入 `node_modules`。
+
 ## 代码模块
 
 | 位置 | 职责 |
 | --- | --- |
-| `content/` | 唯一内容源 |
+| 站点 `content/` | 唯一内容源 |
+| `bin/garden.mjs` | 站点命令：`dev` / `build` / `sync` / `new` / `embed` / `init` |
 | `scripts/build-content.mjs` | 校验、媒体复制、内容索引、静态订阅文件 |
 | `app/` | Next/Vinext 阅读页、Markdown 渲染、搜索与后台接口 |
 | `scripts/prepare-pages-output.mjs` | 校验公开产物并准备生成文件仓库 |
