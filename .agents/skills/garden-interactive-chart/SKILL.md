@@ -3,7 +3,7 @@ name: garden-interactive-chart
 description: >-
   Writes Garden interactive charts as self-contained HTML in a same-name
   sidecar directory and embeds them with a short widget fence. Use when adding
-  or editing garden-blog widgets, steppers, inspect grids, param benches,
+  or editing Garden widgets, steppers, inspect grids, param benches,
   compare views, traces, KV cache charts, or any 可交互图表 / 同名目录 HTML.
 ---
 
@@ -11,7 +11,7 @@ description: >-
 
 复杂交互不写进 Markdown。一篇稿对应一个同名目录，目录里每一份 `.html` 是一张可单独打开的图表；正文只嵌一段短围栏。
 
-设计背景：[docs/interactive-blog-components.md](../../../docs/interactive-blog-components.md)。可抄的成品：[docs/widget-kind-examples/](../../../docs/widget-kind-examples/)。
+设计背景：[可交互组件](https://github.com/hedon954/garden/blob/main/docs/interactive-blog-components.md)。可抄的成品：[widget-kind-examples](https://github.com/hedon954/garden/tree/main/docs/widget-kind-examples)。
 
 ## 何时画、何时停
 
@@ -21,11 +21,11 @@ description: >-
 
 | 要让读者做什么 | 原语 | 抄谁 |
 | --- | --- | --- |
-| 停在某一拍 | 步进器 | [stepper.html](../../../docs/widget-kind-examples/stepper.html)、[waste.html](../../../docs/widget-kind-examples/waste.html) |
-| 盯着格子说话 | 检视格 | [inspect-grid.html](../../../docs/widget-kind-examples/inspect-grid.html) |
-| 拧旋钮看数字/曲线 | 参数台 | [param-bench.html](../../../docs/widget-kind-examples/param-bench.html) |
-| 同一时刻看两边 | 对照台 | [compare.html](../../../docs/widget-kind-examples/compare.html) |
-| 看当前节点和当前边 | 轨迹 | [trace.html](../../../docs/widget-kind-examples/trace.html) |
+| 停在某一拍 | 步进器 | [stepper.html](https://github.com/hedon954/garden/blob/main/docs/widget-kind-examples/stepper.html)、[waste.html](https://github.com/hedon954/garden/blob/main/docs/widget-kind-examples/waste.html) |
+| 盯着格子说话 | 检视格 | [inspect-grid.html](https://github.com/hedon954/garden/blob/main/docs/widget-kind-examples/inspect-grid.html) |
+| 拧旋钮看数字/曲线 | 参数台 | [param-bench.html](https://github.com/hedon954/garden/blob/main/docs/widget-kind-examples/param-bench.html) |
+| 同一时刻看两边 | 对照台 | [compare.html](https://github.com/hedon954/garden/blob/main/docs/widget-kind-examples/compare.html) |
+| 看当前节点和当前边 | 轨迹 | [trace.html](https://github.com/hedon954/garden/blob/main/docs/widget-kind-examples/trace.html) |
 
 装得下就改数据，不新开类型。超过约 9 个节点 / 12 步，拆成两张图。
 

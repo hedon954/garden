@@ -34,6 +34,7 @@ make update
 | 建一个主题专栏 | [创建专栏](docs/content-authoring.md#创建专栏) |
 | 发布一条带多媒体的随想 | [发布随想](docs/content-authoring.md#发布随想) |
 | 改网站名称、作者和一级页标题 | [站点配置](docs/site-configuration.md) |
+| 给 AI 装可交互图表 skill | `npx garden skill` |
 | 升级 Garden 引擎 | 把 `package.json` 里的 `garden` tag 改到新版本，再 `npm install` |
 | 发布本次改动 | `make update` |
 
@@ -41,6 +42,7 @@ make update
 
 ```bash
 make new       # 创建文章草稿（无需安装 npm 依赖）
+make skill     # 安装可交互图表 skill
 make dev       # 首次准备并本地预览
 make check     # 检查内容与运行测试
 make build     # 构建公开站点

@@ -203,11 +203,32 @@ function initSite() {
     path.join(destination, "scripts", "new-post.mjs"),
   );
   process.stdout.write(`已创建站点：${destination}\n`);
+  installSkill(destination);
   process.stdout.write("下一步：\n");
   process.stdout.write(`  cd ${destination}\n`);
   process.stdout.write("  npm install\n");
   process.stdout.write("  make new TITLE=\"你好，世界\" SLUG=hello\n");
   process.stdout.write("  make dev\n");
+}
+
+function packagedSkillRoot() {
+  return path.join(
+    gardenPackageRoot,
+    ".agents",
+    "skills",
+    "garden-interactive-chart",
+  );
+}
+
+function installSkill(destinationRoot = siteRoot) {
+  const from = packagedSkillRoot();
+  if (!fs.existsSync(path.join(from, "SKILL.md"))) {
+    fail("Garden 包里缺少图表 skill。");
+  }
+  const to = path.join(destinationRoot, ".agents", "skills", "garden-interactive-chart");
+  fs.cpSync(from, to, { recursive: true });
+  const shown = path.relative(destinationRoot, to) || to;
+  process.stdout.write(`已安装图表 skill：${shown}\n`);
 }
 
 function help() {
@@ -219,6 +240,7 @@ function help() {
   garden new              创建文章草稿
   garden embed            拉取外链摘要
   garden init [目录]      创建只含稿和配置的新站点
+  garden skill            把可交互图表 skill 装进当前站点
   garden pages:validate   检查 dist/client
   garden pages:prepare    写入公开产物仓库
   garden webmentions      发送 Webmentions
@@ -251,6 +273,10 @@ switch (command) {
     break;
   case "init":
     initSite();
+    break;
+  case "skill":
+  case "skills":
+    installSkill();
     break;
   case "pages:validate":
     runNode("scripts/prepare-pages-output.mjs", [

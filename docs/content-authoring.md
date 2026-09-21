@@ -144,7 +144,7 @@ caption: 朴素 decode 每步重算全部过去 token；6 个 token 共 21 次�
 
 `src` 必须指向该同名目录里的本地 `.html` 或 `.pdf`，`caption` 必须是一句判断（搜索、RSS、关脚本的读者都靠它）。构建会复制文件、改写路径，并区分两种打开方式：带 `garden-chart` 高度回报的 HTML 是可交互图表，直接铺在正文里；普通 HTML 页面和 PDF 默认收成示意入口，读者点「展开」后再加载。Typora 只显示这段短 YAML；要看效果，直接打开文件，或运行 `CONTENT_INCLUDE_DRAFTS=1 make dev`。
 
-五种原语、视觉规范和 AI 写法见 [可交互组件](interactive-blog-components.md) 与 [.agents/skills/garden-interactive-chart](../.agents/skills/garden-interactive-chart/SKILL.md)。拓扑仍用 Mermaid；只有读者需要自己走一步或拧旋钮时才加图表。
+独立站点先在仓库根目录运行 `npx garden skill`，把 skill 装进 `.agents/skills/garden-interactive-chart`。五种原语、视觉规范和 AI 写法见 [可交互组件](interactive-blog-components.md) 与 [.agents/skills/garden-interactive-chart](../.agents/skills/garden-interactive-chart/SKILL.md)。拓扑仍用 Mermaid；只有读者需要自己走一步或拧旋钮时才加图表。
 
 ### 使用语义警告框
 
