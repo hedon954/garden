@@ -1,6 +1,6 @@
 {
   "name": "garden",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "private": false,
   "description": "用 Markdown 写作、用 GitHub Pages 发布的个人博客引擎。",
   "license": "MIT",

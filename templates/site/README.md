@@ -8,12 +8,6 @@ make new TITLE="你好，世界" SLUG=hello
 make dev
 ```
 
-写可交互图表时，在站点根目录运行：
-
-```bash
-npx garden skill
-```
-
-这会把 `garden-interactive-chart` 装进 `.agents/skills/`。Cursor / Codex 打开这个仓库后会自动用它。升级 Garden 后再跑一次即可更新 skill。
+第一次 `npx garden dev` 会补齐 Makefile、写稿脚本和图表 skill。Cursor / Codex 打开这个仓库后会读到 `.agents/skills/garden-interactive-chart`。要更新 skill，再运行 `npx garden skill`。
 
 升级引擎：把 `package.json` 里的 `garden` 依赖改到新的 tag，例如 `github:hedon954/garden#v0.3.0`，再运行 `npm install`。
