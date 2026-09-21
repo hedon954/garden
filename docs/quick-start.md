@@ -12,7 +12,7 @@
 推荐只保留稿件和配置：
 
 ```bash
-npx github:hedon954/garden init my-blog
+npx hd-garden init my-blog
 cd my-blog
 npm install
 ```
