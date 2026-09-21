@@ -189,7 +189,7 @@ test("renders a column entry cover when its source article defines one", async (
 test("hides empty home sections and gives every content index an intentional empty state", async () => {
   const [home, archive, thoughts, columns, emptyState] = await Promise.all([
     readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),
-    readFile(new URL("../app/blog/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/components/BlogArchive.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/thoughts/page.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/columns/page.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/components/ContentEmptyState.tsx", import.meta.url), "utf8"),

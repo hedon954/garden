@@ -14,6 +14,6 @@
     "pages:prepare": "garden pages:prepare"
   },
   "dependencies": {
-    "hd-garden": "^0.3.0"
+    "hd-garden": "^0.3.1"
   }
 }

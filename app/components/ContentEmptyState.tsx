@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import { ArrowRight, Article, Books, Quotes } from "@phosphor-icons/react/ssr";
 
