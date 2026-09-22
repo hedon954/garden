@@ -1,6 +1,6 @@
 {
   "name": "hd-garden",
-  "version": "0.3.6",
+  "version": "0.3.7",
   "private": false,
   "description": "用 Markdown 写作、用 GitHub Pages 发布的个人博客引擎。",
   "license": "MIT",

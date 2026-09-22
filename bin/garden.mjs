@@ -174,14 +174,7 @@ function ensureSiteKit(destinationRoot = siteRoot) {
     process.stdout.write(`已补齐站点文件：${added.join("、")}\n`);
   }
 
-  const skillFile = path.join(
-    destinationRoot,
-    ".agents",
-    "skills",
-    "garden-interactive-chart",
-    "SKILL.md",
-  );
-  if (!fs.existsSync(skillFile)) installSkill(destinationRoot);
+  installSkill(destinationRoot, { onlyMissing: true });
 }
 
 function prepare() {
@@ -252,24 +245,27 @@ function initSite() {
   process.stdout.write("  make dev\n");
 }
 
-function packagedSkillRoot() {
-  return path.join(
-    gardenPackageRoot,
-    ".agents",
-    "skills",
-    "garden-interactive-chart",
-  );
+function packagedSkills() {
+  const root = path.join(gardenPackageRoot, ".agents", "skills");
+  if (!fs.existsSync(root)) return [];
+  return fs.readdirSync(root, { withFileTypes: true })
+    .filter((entry) => entry.isDirectory() && fs.existsSync(path.join(root, entry.name, "SKILL.md")))
+    .map((entry) => entry.name);
 }
 
-function installSkill(destinationRoot = siteRoot) {
-  const from = packagedSkillRoot();
-  if (!fs.existsSync(path.join(from, "SKILL.md"))) {
-    fail("Garden 包里缺少图表 skill。");
+function installSkill(destinationRoot = siteRoot, { onlyMissing = false } = {}) {
+  const names = packagedSkills();
+  if (!names.length) fail("Garden 包里没有 skill。");
+  const installed = [];
+  for (const name of names) {
+    const to = path.join(destinationRoot, ".agents", "skills", name);
+    if (onlyMissing && fs.existsSync(path.join(to, "SKILL.md"))) continue;
+    fs.cpSync(path.join(gardenPackageRoot, ".agents", "skills", name), to, { recursive: true });
+    installed.push(name);
   }
-  const to = path.join(destinationRoot, ".agents", "skills", "garden-interactive-chart");
-  fs.cpSync(from, to, { recursive: true });
-  const shown = path.relative(destinationRoot, to) || to;
-  process.stdout.write(`已安装图表 skill：${shown}\n`);
+  if (installed.length) {
+    process.stdout.write(`已安装 skill：${installed.join("、")}\n`);
+  }
 }
 
 function help() {
@@ -281,7 +277,8 @@ function help() {
   garden new              创建文章草稿
   garden embed            拉取外链摘要
   garden init [目录]      创建只含稿和配置的新站点
-  garden skill            把可交互图表 skill 装进当前站点
+  garden check <文章.md>  检查一篇博文的硬性结构
+  garden skill            把引擎自带的 skill 装进当前站点
   garden pages:validate   检查 dist/client
   garden pages:prepare    写入公开产物仓库
   garden webmentions      发送 Webmentions
@@ -311,6 +308,9 @@ switch (command) {
     break;
   case "embed":
     runNode("scripts/fetch-embed.mjs", rest);
+    break;
+  case "check":
+    runNode("scripts/check-post.mjs", rest);
     break;
   case "init":
     initSite();
