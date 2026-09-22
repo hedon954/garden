@@ -38,7 +38,7 @@ CONTENT_INCLUDE_DRAFTS=1 make dev
 ```md
 ---
 title: 我的文章标题
-date: 2026-07-28T09:00:00+08:00
+date: 2026-07-28 09:00:00
 description: 用一句话说明文章讲什么。
 topic: 写作
 tags: [Markdown, 写作]
@@ -48,6 +48,21 @@ tags: [Markdown, 写作]
 ```
 
 写完后运行 `make update`，或直接在 GitHub 网页提交文件。
+
+`date`、`updated` 和 `publishAt` 写成 `2026-09-18 14:39:00`，按北京时间理解。只写 `2026-09-18` 时，按当天 00:00 计算。以前写过的 ISO 时间仍然能解析。
+
+### 参考列表
+
+来源写在 front matter，不写进正文：
+
+```yaml
+references:
+  - title: KCP repo
+    url: https://github.com/skywind3000/kcp
+  - title: 深入理解计算机系统
+```
+
+每项必须有 `title`。`url` 可选，只接受 `http` 和 `https`。页面在正文下面、标签前面显示成两列表格：第一列是编号，第二列是标题。有链接的整行可以点开，没有链接的只显示标题。不写 `references` 就不显示这块。
 
 ## 丰富文章内容
 
@@ -168,7 +183,7 @@ caption: 朴素 decode 每步重算全部过去 token；6 个 token 共 21 次�
 
 ```yaml
 draft: true
-publishAt: 2026-08-01T09:00:00+08:00
+publishAt: 2026-08-01 09:00:00
 pinned: true
 ```
 

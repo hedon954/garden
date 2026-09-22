@@ -1,6 +1,16 @@
 import matter from "gray-matter";
+import { parse as parseYaml } from "yaml";
 import type { ContentEntry, MediaItem } from "./content";
 import { repositoryPostPath } from "./repository-path.mjs";
+import { canonicalSiteDate, formatAuthorDate } from "../../scripts/site-date.mjs";
+
+const matterOptions = {
+  engines: {
+    yaml: {
+      parse: (input: string) => parseYaml(input) ?? {},
+    },
+  },
+};
 
 const apiBase = "https://api.github.com";
 
@@ -77,10 +87,10 @@ function fileStem(filePath: string) {
 }
 
 function normalizeThought(source: string, filePath: string, sha?: string): RepositoryThought | null {
-  const parsed = matter(source);
+  const parsed = matter(source, matterOptions);
   const data = parsed.data;
   const slug = fileStem(filePath);
-  if (typeof data.title !== "string" || typeof data.date !== "string" || !slug) {
+  if (typeof data.title !== "string" || typeof data.date !== "string" || !canonicalSiteDate(data.date) || !slug) {
     return null;
   }
   if (data.slug !== undefined && data.slug !== slug) return null;
@@ -114,7 +124,7 @@ function serializeThought(thought: {
 }) {
   return matter.stringify(thought.content.trim().concat("\n"), {
     title: thought.title,
-    date: thought.date ?? new Date().toISOString(),
+    date: thought.date ?? formatAuthorDate(),
     tags: thought.tags,
     mediaType: thought.media[0]?.type ?? "text",
     media: thought.media,
@@ -178,7 +188,11 @@ export async function listRepositoryThoughts() {
   );
   return thoughts
     .filter((thought): thought is RepositoryThought => Boolean(thought))
-    .sort((left, right) => Date.parse(right.date) - Date.parse(left.date));
+    .sort((left, right) => {
+      const rightTime = Date.parse(canonicalSiteDate(right.date) ?? "");
+      const leftTime = Date.parse(canonicalSiteDate(left.date) ?? "");
+      return rightTime - leftTime;
+    });
 }
 
 export async function createRepositoryThought(input: Omit<RepositoryThought, "id" | "kind" | "sourcePath" | "draft" | "sha" | "mediaType">) {
@@ -201,7 +215,7 @@ export async function updateRepositoryThought(slug: string, status: "draft" | "p
   if (!existing) throw new Error("未找到对应随想。");
   const thought = normalizeThought(existing.source, path, existing.sha);
   if (!thought) throw new Error("随想内容格式不正确。");
-  const source = serializeThought({ ...thought, status, date: status === "published" ? new Date().toISOString() : thought.date });
+  const source = serializeThought({ ...thought, status, date: status === "published" ? formatAuthorDate() : thought.date });
   const { response } = await mutateRepository(path, "PUT", {
     message: `content: ${status === "published" ? "发布" : "撤回"}随想 ${thought.title}`,
     content: utf8ToBase64(source),

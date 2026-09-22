@@ -2802,6 +2802,72 @@ button {
   color: #7f8790;
 }
 
+.article-references {
+  margin-top: 64px;
+}
+
+.article-references > p {
+  margin: 0 0 14px;
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.article-references table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.article-references td {
+  padding: 0;
+  border: 1px solid var(--line);
+  color: var(--ink-soft);
+  text-align: left;
+  overflow-wrap: anywhere;
+}
+
+.article-references td:first-child {
+  width: 1%;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.article-references td a,
+.article-references td > span {
+  display: block;
+  padding: 11px 13px;
+}
+
+.article-references td:first-child a,
+.article-references td:first-child > span {
+  padding-right: 8px;
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.article-references td a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.article-references td a span {
+  text-decoration: underline;
+  text-decoration-color: var(--accent);
+  text-underline-offset: 4px;
+}
+
+.article-references td a:hover span {
+  color: var(--accent);
+}
+
+.article-references + .article-tags,
+.article-references + .next-entry {
+  margin-top: 36px;
+}
+
 .article-tags {
   display: flex;
   flex-wrap: wrap;

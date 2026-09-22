@@ -26,7 +26,7 @@ function SourcePanel({ path, source, language }: SourcePanelProps) {
 
 const postSource = `---
 title: 我的第一篇文章
-date: 2026-08-03T09:00:00+08:00
+date: 2026-08-03 09:00:00
 description: 这篇文章记录我为什么重新开始写博客。
 topic: 写作
 tags: [Markdown, 博客]
@@ -42,7 +42,7 @@ cover: writing/first-post.jpg
 
 const thoughtSource = `---
 title: 雨后的散步
-date: 2026-08-03T18:30:00+08:00
+date: 2026-08-03 18:30:00
 tags: [生活]
 media:
   - type: image

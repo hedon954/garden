@@ -9,6 +9,7 @@ import {
   postHref,
   posts,
 } from "../../lib/content";
+import { ArticleReferences } from "../../components/ArticleReferences";
 import { MarkdownArticle } from "../../components/MarkdownArticle";
 import { TableOfContents } from "../../components/TableOfContents";
 import { Comments } from "../../components/Comments";
@@ -114,6 +115,7 @@ export default async function PostPage({
             <div className="e-content">
               <MarkdownArticle content={post.content} />
             </div>
+            <ArticleReferences references={post.references} />
             <div className="article-tags">
               {post.tags?.map((tag) => (
                 <span className="p-category" key={tag}>

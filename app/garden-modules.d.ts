@@ -20,6 +20,7 @@ declare module "@garden/generated-content" {
     draft?: boolean;
     topic?: string;
     tags?: string[];
+    references?: { title: string; url?: string }[];
     pinned?: boolean;
     readingTime?: string;
     kind: "post" | "column" | "thought";

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { formatAuthorDate } from "../../scripts/site-date.mjs";
 import { useMemo, useState } from "react";
 import {
   ArrowSquareOut,
@@ -239,7 +240,7 @@ export function AdminDashboard({
     setThoughts((current) =>
       current.map((thought) =>
         thought.id === id
-          ? { ...thought, status, date: status === "published" ? new Date().toISOString() : thought.date }
+          ? { ...thought, status, date: status === "published" ? formatAuthorDate() : thought.date }
           : thought,
       ),
     );

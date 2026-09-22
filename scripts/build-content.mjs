@@ -4,6 +4,7 @@ import path from "node:path";
 import matter from "gray-matter";
 import { marked } from "marked";
 import { parse as parseYaml, stringify as stringifyYaml } from "yaml";
+import { canonicalSiteDate } from "./site-date.mjs";
 
 function resolveSiteRoot() {
   if (process.env.GARDEN_SITE) return path.resolve(process.env.GARDEN_SITE);
@@ -52,15 +53,47 @@ const optionalString = (data, key, sourcePath) => {
 };
 
 const normalizeDate = (value, key, sourcePath) => {
-  const normalized = value instanceof Date ? value.toISOString() : value;
-  if (
-    typeof normalized !== "string" ||
-    !normalized ||
-    Number.isNaN(Date.parse(normalized))
-  ) {
-    fail(sourcePath, `${key} 必须是有效日期`);
+  const canonical = canonicalSiteDate(value);
+  if (!canonical) {
+    fail(sourcePath, `${key} 必须是有效日期，例如 2026-09-18 14:39:00`);
   }
-  return normalized;
+  return canonical;
+};
+
+const normalizeReferences = (value, sourcePath) => {
+  if (value === undefined) return undefined;
+  if (!Array.isArray(value)) fail(sourcePath, "references 必须是数组");
+  const references = value.map((item, index) => {
+    const where = `references[${index}]`;
+    if (!item || typeof item !== "object" || Array.isArray(item)) {
+      fail(sourcePath, `${where} 必须是包含 title 的对象`);
+    }
+    for (const key of Object.keys(item)) {
+      if (key !== "title" && key !== "url") {
+        fail(sourcePath, `${where} 不支持 ${key}`);
+      }
+    }
+    if (typeof item.title !== "string" || !item.title.trim()) {
+      fail(sourcePath, `${where} 缺少有效的 title`);
+    }
+    const title = item.title.trim();
+    if (item.url === undefined || item.url === null || item.url === "") {
+      return { title };
+    }
+    if (typeof item.url !== "string") fail(sourcePath, `${where}.url 必须是字符串`);
+    const url = item.url.trim();
+    let parsed;
+    try {
+      parsed = new URL(url);
+    } catch {
+      fail(sourcePath, `${where}.url 必须是 http 或 https 链接`);
+    }
+    if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+      fail(sourcePath, `${where}.url 必须是 http 或 https 链接`);
+    }
+    return { title, url };
+  });
+  return references.length ? references : undefined;
 };
 
 const isExternalAsset = (value) =>
@@ -291,9 +324,12 @@ function validateAndNormalize(data, content, markdownPath, kind, sourcePath) {
   const publishTime = Date.parse(publishAt ?? date);
   if (!includeDrafts && (data.draft === true || publishTime > now)) return null;
   delete data.coverAlt;
+  const references = normalizeReferences(data.references, sourcePath);
+  delete data.references;
 
   return {
     ...data,
+    references,
     title,
     slug,
     path: kind === "post"
@@ -335,7 +371,13 @@ function readMarkdownTree(directory, kind) {
     if (!entry.name.endsWith(".md")) return [];
 
     const raw = fs.readFileSync(fullPath, "utf8");
-    const parsed = matter(raw);
+    const parsed = matter(raw, {
+      engines: {
+        yaml: {
+          parse: (input) => parseYaml(input) ?? {},
+        },
+      },
+    });
     const sourcePath = path.relative(contentRoot, fullPath);
     const normalized = validateAndNormalize(
       parsed.data,
@@ -482,6 +524,7 @@ export type ContentEntry = {
   draft?: boolean;
   topic?: string;
   tags?: string[];
+  references?: { title: string; url?: string }[];
   pinned?: boolean;
   readingTime?: string;
   kind: "post" | "column" | "thought";

@@ -6,12 +6,12 @@
     <atom:link href="https://example.com/posts.xml" rel="self" type="application/rss+xml" />
     <description>一个可 fork、可长期维护的 Markdown 个人博客系统。</description>
     <language>zh-CN</language>
-    <lastBuildDate>Sat, 25 Jul 2026 00:00:00 GMT</lastBuildDate>
+    <lastBuildDate>Fri, 24 Jul 2026 16:00:00 GMT</lastBuildDate>
     <item>
       <title>Markdown 复杂语法实验场</title>
       <link>https://example.com/blog/markdown-lab/</link>
       <guid isPermaLink="true">https://example.com/blog/markdown-lab/</guid>
-      <pubDate>Sat, 25 Jul 2026 00:00:00 GMT</pubDate>
+      <pubDate>Fri, 24 Jul 2026 16:00:00 GMT</pubDate>
       <description>用一篇真实文章验证 Typora 常用语法、数学公式、Mermaid、脚注、表格与原生 HTML。</description>
       <category>Markdown</category><category>Typora</category><category>Mermaid</category><category>KaTeX</category>
       <content:encoded><![CDATA[<p>这篇文章不是功能清单，而是一份可以长期保留的<strong>渲染验收样本</strong>。我会在 Typora 中常用的语法和网页输出之间建立一条可重复验证的路径。</p>
@@ -237,7 +237,7 @@ WHERE rank &lt;= 3;
       <title>注意力也是一种界面</title>
       <link>https://example.com/blog/attention-is-an-interface/</link>
       <guid isPermaLink="true">https://example.com/blog/attention-is-an-interface/</guid>
-      <pubDate>Tue, 21 Jul 2026 00:00:00 GMT</pubDate>
+      <pubDate>Mon, 20 Jul 2026 16:00:00 GMT</pubDate>
       <description>当工具越来越聪明，真正稀缺的不是功能，而是我们把注意力放在哪里。</description>
       <category>产品设计</category><category>注意力</category>
       <content:encoded><![CDATA[<p>工具总是在争取更短的路径：少一次点击、少一个页面、少等一秒。但如果只把效率当作终点，我们很容易做出一种<strong>没有摩擦，也没有方向</strong>的界面。</p>
@@ -293,7 +293,7 @@ const shouldRemove = (friction: Friction) =&gt;
       <title>03 · 带着证据发布</title>
       <link>https://example.com/blog/building-in-public/ship-with-evidence/</link>
       <guid isPermaLink="true">https://example.com/blog/building-in-public/ship-with-evidence/</guid>
-      <pubDate>Sat, 18 Jul 2026 00:00:00 GMT</pubDate>
+      <pubDate>Fri, 17 Jul 2026 16:00:00 GMT</pubDate>
       <description>“我改完了”不是完成，“用户可以确认它好了”才是。</description>
       <category>验证</category><category>发布</category>
       <content:encoded><![CDATA[<p>发布前最重要的工作不是再写一段漂亮总结，而是找到足以支持结论的证据。</p>
@@ -309,7 +309,7 @@ const shouldRemove = (friction: Friction) =&gt;
       <title>我为什么重新选择本地写作</title>
       <link>https://example.com/blog/local-first-writing/</link>
       <guid isPermaLink="true">https://example.com/blog/local-first-writing/</guid>
-      <pubDate>Sun, 12 Jul 2026 00:00:00 GMT</pubDate>
+      <pubDate>Sat, 11 Jul 2026 16:00:00 GMT</pubDate>
       <description>Markdown 文件、可迁移的媒体资源，以及不被平台锁住的长期写作。</description>
       <category>Markdown</category><category>Local-first</category>
       <content:encoded><![CDATA[<p>我仍然在 Typora 里写下第一版。不是因为它有最多的功能，而是因为一个普通的 Markdown 文件让我知道：十年后，我仍然能打开这些文字。</p>
@@ -330,7 +330,7 @@ const shouldRemove = (friction: Friction) =&gt;
       <title>02 · 让状态变得可靠</title>
       <link>https://example.com/blog/building-in-public/stable-state/</link>
       <guid isPermaLink="true">https://example.com/blog/building-in-public/stable-state/</guid>
-      <pubDate>Fri, 10 Jul 2026 00:00:00 GMT</pubDate>
+      <pubDate>Thu, 09 Jul 2026 16:00:00 GMT</pubDate>
       <description>状态设计的关键，是明确谁拥有事实。</description>
       <category>状态管理</category>
       <content:encoded><![CDATA[<p>状态问题很少只是“少刷新了一次”。更常见的原因是多个地方都以为自己拥有最终事实。</p>
@@ -346,7 +346,7 @@ const shouldRemove = (friction: Friction) =&gt;
       <title>01 · 从最小闭环开始</title>
       <link>https://example.com/blog/building-in-public/smallest-closed-loop/</link>
       <guid isPermaLink="true">https://example.com/blog/building-in-public/smallest-closed-loop/</guid>
-      <pubDate>Sat, 04 Jul 2026 00:00:00 GMT</pubDate>
+      <pubDate>Fri, 03 Jul 2026 16:00:00 GMT</pubDate>
       <description>先让最重要的一条路径真正跑通。</description>
       <category>产品</category><category>工程</category>
       <content:encoded><![CDATA[<p>一个人的时间有限，所以“完整”必须被重新定义。对我来说，完整不是一次做完所有功能，而是先让最重要的一条路径首尾相接。</p>
@@ -370,7 +370,7 @@ const shouldRemove = (friction: Friction) =&gt;
       <title>做一个 PDF 阅读器之后，我重新理解了「位置」</title>
       <link>https://example.com/blog/building-a-pdf-reader/</link>
       <guid isPermaLink="true">https://example.com/blog/building-a-pdf-reader/</guid>
-      <pubDate>Sun, 28 Jun 2026 00:00:00 GMT</pubDate>
+      <pubDate>Sat, 27 Jun 2026 16:00:00 GMT</pubDate>
       <description>阅读位置不是页码，而是一段连续体验的锚点。</description>
       <category>SwiftUI</category><category>阅读体验</category>
       <content:encoded><![CDATA[<p>“打开侧栏不能让正文跳一下”看起来是一条微小的要求，真正实现时却牵动了布局、缩放、滚动和状态恢复。</p>
@@ -386,7 +386,7 @@ const shouldRemove = (friction: Friction) =&gt;
       <title>从逐词生成理解 KV Cache</title>
       <link>https://example.com/blog/understand-kv-cache/</link>
       <guid isPermaLink="true">https://example.com/blog/understand-kv-cache/</guid>
-      <pubDate>Tue, 09 Jun 2026 00:00:00 GMT</pubDate>
+      <pubDate>Mon, 08 Jun 2026 16:00:00 GMT</pubDate>
       <description>不从公式开始，而是从模型下一次到底重复算了什么开始。</description>
       <category>Transformer</category><category>推理</category>
       <content:encoded><![CDATA[<p>理解 KV Cache 最直观的方式，是先看自回归生成里那些被重复计算的部分。</p>

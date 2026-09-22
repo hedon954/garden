@@ -15,7 +15,7 @@ async function fork(t) {
   const root = await mkdtemp(path.join(tmpdir(), "garden-fork-"));
   t.after(() => rm(root, { recursive: true, force: true }));
   await mkdir(path.join(root, "scripts"));
-  for (const file of ["Makefile", "scripts/new-post.mjs"]) {
+  for (const file of ["Makefile", "scripts/new-post.mjs", "scripts/site-date.mjs"]) {
     await cp(path.join(project, file), path.join(root, file));
   }
   // Deliberately no node_modules, .env.local, site configuration or Git remote.
@@ -34,12 +34,13 @@ test("a fresh fork can run bare make new repeatedly without npm setup", async (t
   const files = await readdir(posts);
   assert.equal(files.length, 2);
   for (const file of files) {
-    const { data } = matter(await readFile(path.join(posts, file), "utf8"));
+    const source = await readFile(path.join(posts, file), "utf8");
+    const { data } = matter(source);
     assert.equal(data.title, "新文章");
     assert.equal(data.draft, true);
     assert.equal(data.topic, "未分类");
     assert.ok(data.description);
-    assert.ok(Number.isFinite(Date.parse(data.date)));
+    assert.match(source, /^date: \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/m);
     assert.equal(data.slug, undefined);
     assert.match(file, /^post-\d{4}-\d{2}-\d{2}-[a-f0-9]{8}\.md$/u);
   }
@@ -99,5 +100,8 @@ test("generated articles pass the real pipeline and are excluded from public out
     });
     const generated = await readFile(output, "utf8");
     assert.equal(generated.includes('"path": "notes/pipeline"'), includeDrafts === "1");
+    if (includeDrafts === "1") {
+      assert.match(generated, /"date": "\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\+08:00"/);
+    }
   }
 });

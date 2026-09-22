@@ -7,6 +7,7 @@ import {
   type MediaItem,
 } from "@garden/generated-content";
 import GithubSlugger from "github-slugger";
+import { canonicalSiteDate } from "../../scripts/site-date.mjs";
 import { toString } from "mdast-util-to-string";
 import remarkParse from "remark-parse";
 import { unified } from "unified";
@@ -23,13 +24,18 @@ export const columnEntryPath = (entry: Pick<ContentEntry, "column" | "path">) =>
 export const columnHref = (entry: Pick<ContentEntry, "column" | "path">) =>
   `/columns/${entry.column}/${columnEntryPath(entry)}`;
 
-export const formatDate = (value: string, withTime = false) =>
-  new Intl.DateTimeFormat("zh-CN", {
+export const formatDate = (value: string, withTime = false) => {
+  const canonical = canonicalSiteDate(value) ?? value;
+  const date = new Date(canonical);
+  if (Number.isNaN(date.getTime())) return value;
+  return new Intl.DateTimeFormat("zh-CN", {
+    timeZone: "Asia/Shanghai",
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
     ...(withTime ? { hour: "2-digit", minute: "2-digit" } : {}),
-  }).format(new Date(value));
+  }).format(date);
+};
 
 /**
  * Parses the same Markdown heading text that ReactMarkdown sends to

@@ -10,6 +10,7 @@ import {
   columnHref,
   columnEntryPath,
 } from "../../../lib/content";
+import { ArticleReferences } from "../../../components/ArticleReferences";
 import { MarkdownArticle } from "../../../components/MarkdownArticle";
 import { TableOfContents } from "../../../components/TableOfContents";
 import { Comments } from "../../../components/Comments";
@@ -137,6 +138,7 @@ export default async function ColumnEntryPage({
         <div className="e-content">
           <MarkdownArticle content={entry.content} />
         </div>
+        <ArticleReferences references={entry.references} />
         {next && (
           <Link
             href={columnHref(next)}

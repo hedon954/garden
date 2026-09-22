@@ -1,6 +1,6 @@
 ---
 title: 慢一点看
-date: 2026-07-19T09:20:00+08:00
+date: 2026-07-19 09:20:00
 tags:
   - 影像
 mediaType: video

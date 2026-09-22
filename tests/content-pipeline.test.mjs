@@ -34,6 +34,10 @@ test("content pipeline validates metadata, excludes drafts, and publishes Typora
       path.join(fixture, "scripts", "build-content.mjs"),
     );
     await cp(
+      path.join(projectRoot, "scripts", "site-date.mjs"),
+      path.join(fixture, "scripts", "site-date.mjs"),
+    );
+    await cp(
       path.join(projectRoot, "site.config.yaml"),
       path.join(fixture, "site.config.yaml"),
     );
@@ -124,7 +128,7 @@ topic: 测试
     assert.match(generated, /\/media\/covers\/cover\.jpg/);
     assert.match(generated, /\/media\/posts\/assets\/cover\.jpg/);
     const postsFeed = await readFile(path.join(fixture, "public", "posts.xml"), "utf8");
-    assert.match(postsFeed, /<lastBuildDate>Sat, 25 Jul 2026 00:00:00 GMT<\/lastBuildDate>/);
+    assert.match(postsFeed, /<lastBuildDate>Fri, 24 Jul 2026 16:00:00 GMT<\/lastBuildDate>/);
     assert.doesNotMatch(postsFeed, /草稿文章/);
     await access(path.join(fixture, "public", "media", "covers", "cover.jpg"));
     await access(

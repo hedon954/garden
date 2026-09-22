@@ -4,6 +4,7 @@ import {
   listRepositoryThoughts,
 } from "../../../lib/github-content";
 import type { MediaItem } from "../../../lib/content";
+import { formatAuthorDate } from "../../../../scripts/site-date.mjs";
 
 type ThoughtPayload = {
   title?: unknown;
@@ -108,7 +109,7 @@ export async function POST(request: Request) {
       tags: parsed.value.tags,
       media: parsed.value.media,
       status: parsed.value.status,
-      date: new Date().toISOString(),
+      date: formatAuthorDate(),
     });
     return Response.json({ thought }, { status: 201 });
   } catch (error) {

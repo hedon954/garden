@@ -1,13 +1,14 @@
 import { randomUUID } from "node:crypto";
 import { lstat, mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { formatAuthorDate } from "./site-date.mjs";
 
 const root = path.resolve(process.env.GARDEN_SITE || process.cwd());
 const option = (name) => (process.env[`GARDEN_NEW_${name}`] ?? "").trim();
 
 async function main() {
   const title = option("TITLE") || "新文章";
-  const date = new Date().toISOString();
+  const date = formatAuthorDate();
   const titleSlug = title.toLowerCase().replace(/[^a-z0-9]+/gu, "-").replace(/^-|-$/gu, "");
   const slug = option("SLUG") || titleSlug || `post-${date.slice(0, 10)}-${randomUUID().slice(0, 8)}`;
   const directory = option("DIR");
