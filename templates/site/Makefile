@@ -12,10 +12,10 @@ export GARDEN_NEW_TOPIC := $(value TOPIC)
 export GARDEN_EMBED_URL := $(value URL)
 
 help:
-	@printf "%s\n" "Garden 常用命令：" "  make new                 创建文章草稿（无需安装 npm 依赖）" '  make new TITLE="文章标题" SLUG=my-post DIR=writing TOPIC="写作"' '  make embed URL="https://example.com"  拉取外部网页摘要' "  make skill               安装可交互图表 skill" "  make dev                 安装依赖并本地预览" "  make build               构建公开站点" "  make update              检查、提交并触发自动发布"
+	@printf "%s\n" "Garden 常用命令：" "  make new                 用引擎创建文章草稿" '  make new TITLE="文章标题" SLUG=my-post DIR=writing TOPIC="写作"' '  make embed URL="https://example.com"  拉取外部网页摘要' "  make skill               安装可交互图表 skill" "  make dev                 安装依赖并本地预览" "  make build               构建公开站点" "  make update              检查、提交并触发自动发布"
 
-new:
-	@node scripts/new-post.mjs
+new: prepare
+	npx garden new
 
 embed:
 	@npx garden embed

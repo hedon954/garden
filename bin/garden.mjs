@@ -170,14 +170,6 @@ function ensureSiteKit(destinationRoot = siteRoot) {
   ) {
     added.push("Makefile");
   }
-  if (
-    copyIfMissing(
-      path.join(gardenPackageRoot, "scripts", "new-post.mjs"),
-      path.join(destinationRoot, "scripts", "new-post.mjs"),
-    )
-  ) {
-    added.push("scripts/new-post.mjs");
-  }
   if (added.length) {
     process.stdout.write(`已补齐站点文件：${added.join("、")}\n`);
   }
@@ -251,11 +243,6 @@ function initSite() {
   }
   copyTemplate(template, destination);
   writeEngineDependency(destination);
-  fs.mkdirSync(path.join(destination, "scripts"), { recursive: true });
-  fs.copyFileSync(
-    path.join(gardenPackageRoot, "scripts", "new-post.mjs"),
-    path.join(destination, "scripts", "new-post.mjs"),
-  );
   process.stdout.write(`已创建站点：${destination}\n`);
   installSkill(destination);
   process.stdout.write("下一步：\n");

@@ -17,7 +17,7 @@ cd my-blog
 npm install
 ```
 
-`garden init`、以及之后第一次 `npx garden dev` / `npx garden sync`，都会把 Makefile、`scripts/new-post.mjs` 和图表 skill 补进站点。已有站点缺这些文件时，跑一次同样的命令即可，不必单独记 `garden skill`。要更新已安装的 skill，再运行 `npx garden skill`。
+`garden init`、以及之后第一次 `npx garden dev` / `npx garden sync`，都会把 Makefile 和图表 skill 补进站点。新建文章由引擎里的 `garden new` 完成，站点仓库不保存写稿脚本。已有站点缺 skill 时，跑一次同样的命令即可。要更新已安装的 skill，再运行 `npx garden skill`。
 
 把这个目录推到 GitHub。也可以继续在 Garden 仓库页面点击 **Use this template** 或 **Fork**。
 

@@ -14,19 +14,22 @@ const project = fileURLToPath(new URL("../", import.meta.url));
 async function fork(t) {
   const root = await mkdtemp(path.join(tmpdir(), "garden-fork-"));
   t.after(() => rm(root, { recursive: true, force: true }));
-  await mkdir(path.join(root, "scripts"));
-  for (const file of ["Makefile", "scripts/new-post.mjs", "scripts/site-date.mjs"]) {
-    await cp(path.join(project, file), path.join(root, file));
-  }
-  // Deliberately no node_modules, .env.local, site configuration or Git remote.
   return root;
 }
 
 function run(root, args = []) {
-  return exec("make", ["new", ...args], { cwd: root });
+  const env = { ...process.env, GARDEN_SITE: root };
+  for (const arg of args) {
+    const splitAt = arg.indexOf("=");
+    env[`GARDEN_NEW_${arg.slice(0, splitAt)}`] = arg.slice(splitAt + 1);
+  }
+  return exec(process.execPath, [path.join(project, "scripts/new-post.mjs")], {
+    cwd: root,
+    env,
+  });
 }
 
-test("a fresh fork can run bare make new repeatedly without npm setup", async (t) => {
+test("the engine creates drafts repeatedly without a site copy of the script", async (t) => {
   const root = await fork(t);
   await run(root);
   await run(root);
@@ -44,7 +47,7 @@ test("a fresh fork can run bare make new repeatedly without npm setup", async (t
     assert.equal(data.slug, undefined);
     assert.match(file, /^post-\d{4}-\d{2}-\d{2}-[a-f0-9]{8}\.md$/u);
   }
-  assert.deepEqual((await readdir(root)).sort(), ["Makefile", "content", "scripts"]);
+  assert.deepEqual(await readdir(root), ["content"]);
 });
 
 test("make passes title literally and creates nested, valid front matter", async (t) => {
@@ -90,7 +93,9 @@ test("generated articles pass the real pipeline and are excluded from public out
   const root = await fork(t);
   await run(root, ["TITLE=管线验证", "SLUG=pipeline", "DIR=notes"]);
   await mkdir(path.join(root, "public"));
+  await mkdir(path.join(root, "scripts"));
   await cp(path.join(project, "scripts/build-content.mjs"), path.join(root, "scripts/build-content.mjs"));
+  await cp(path.join(project, "scripts/site-date.mjs"), path.join(root, "scripts/site-date.mjs"));
   await cp(path.join(project, "site.config.yaml"), path.join(root, "site.config.yaml"));
   await symlink(path.join(project, "node_modules"), path.join(root, "node_modules"));
   const output = path.join(root, ".garden/generated-content.ts");

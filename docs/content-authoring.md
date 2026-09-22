@@ -12,7 +12,7 @@ make new TITLE="我的第一篇文章" SLUG=my-first-post
 make new TITLE="Go 垃圾回收笔记" SLUG=gc DIR=go/runtime TOPIC="Go"
 ```
 
-命令直接创建 `content/posts/<DIR>/<SLUG>.md`，默认 `draft: true`，填好当前日期、标题、摘要占位、分类和空标签列表。只需要 `make` 和 Node.js `>=22.13.0`；`make new` 使用站点里的 `scripts/new-post.mjs`，无需先运行 `npm install`，也不依赖 `.env.local` 或 GitHub 凭据。`make embed` 和 `make dev` 需要已安装 Garden 引擎。
+命令直接创建 `content/posts/<DIR>/<SLUG>.md`，默认 `draft: true`，填好当前日期、标题、摘要占位、分类和空标签列表。`make new` 调用已安装的 Garden 引擎；还没有 `node_modules` 时会先安装依赖。写稿脚本在引擎里，不放进站点仓库。
 
 | 参数 | 作用 | 省略时 |
 | --- | --- | --- |
