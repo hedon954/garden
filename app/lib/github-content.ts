@@ -72,17 +72,23 @@ function isMedia(value: unknown): value is MediaItem[] {
   });
 }
 
-function normalizeThought(source: string, path: string, sha?: string): RepositoryThought | null {
+function fileStem(filePath: string) {
+  return (filePath.split("/").pop() ?? "").replace(/\.md$/u, "");
+}
+
+function normalizeThought(source: string, filePath: string, sha?: string): RepositoryThought | null {
   const parsed = matter(source);
   const data = parsed.data;
-  if (typeof data.title !== "string" || typeof data.slug !== "string" || typeof data.date !== "string") {
+  const slug = fileStem(filePath);
+  if (typeof data.title !== "string" || typeof data.date !== "string" || !slug) {
     return null;
   }
+  if (data.slug !== undefined && data.slug !== slug) return null;
   const media = isMedia(data.media) ? data.media : [];
   const status = data.draft === true ? "draft" : "published";
   return {
-    id: data.slug,
-    slug: data.slug,
+    id: slug,
+    slug,
     title: data.title,
     date: data.date,
     tags: isStringArray(data.tags) ? data.tags : [],
@@ -90,7 +96,7 @@ function normalizeThought(source: string, path: string, sha?: string): Repositor
     media,
     kind: "thought",
     draft: status === "draft",
-    sourcePath: path,
+    sourcePath: filePath,
     content: parsed.content.trim(),
     status,
     sha,
@@ -108,7 +114,6 @@ function serializeThought(thought: {
 }) {
   return matter.stringify(thought.content.trim().concat("\n"), {
     title: thought.title,
-    slug: thought.slug,
     date: thought.date ?? new Date().toISOString(),
     tags: thought.tags,
     mediaType: thought.media[0]?.type ?? "text",
@@ -227,7 +232,7 @@ export async function updateRepositoryPostPinned(input: {
   const existing = await readRepositoryFile(repositoryPath);
   if (!existing) throw new Error("未找到对应博文。");
   const parsed = matter(existing.source);
-  if (parsed.data.slug !== input.slug) {
+  if (fileStem(repositoryPath) !== input.slug) {
     throw new Error("博文标识不匹配，已拒绝修改。");
   }
   const data = { ...parsed.data } as Record<string, unknown>;

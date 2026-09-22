@@ -40,7 +40,8 @@ test("a fresh fork can run bare make new repeatedly without npm setup", async (t
     assert.equal(data.topic, "未分类");
     assert.ok(data.description);
     assert.ok(Number.isFinite(Date.parse(data.date)));
-    assert.equal(file, `${data.slug}.md`);
+    assert.equal(data.slug, undefined);
+    assert.match(file, /^post-\d{4}-\d{2}-\d{2}-[a-f0-9]{8}\.md$/u);
   }
   assert.deepEqual((await readdir(root)).sort(), ["Makefile", "content", "scripts"]);
 });

@@ -7,7 +7,7 @@ npm run lint
 npm test
 ```
 
-`npm test` 会执行正常构建和渲染测试；GitHub Actions 还会验证 GitHub Pages 静态导出。内容校验报错时，按报错中的 Markdown 路径修复 front matter、重复 slug 或本地媒体路径。
+`npm test` 会执行正常构建和渲染测试；GitHub Actions 还会验证 GitHub Pages 静态导出。内容校验报错时，按报错中的 Markdown 路径修复 front matter、重复文件名或本地媒体路径。
 
 ## Pages 没有更新
 

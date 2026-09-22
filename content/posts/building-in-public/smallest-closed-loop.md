@@ -1,6 +1,5 @@
 ---
 title: 01 · 从最小闭环开始
-slug: smallest-closed-loop
 description: 先让最重要的一条路径真正跑通。
 date: 2026-07-04
 topic: 独立开发

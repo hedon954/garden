@@ -25,6 +25,7 @@ test("content pipeline validates metadata, excludes drafts, and publishes Typora
     await mkdir(path.join(fixture, "content", "posts", "assets"), {
       recursive: true,
     });
+    await mkdir(path.join(fixture, "content", "covers"), { recursive: true });
     await mkdir(path.join(fixture, "content", "posts", "writing"), {
       recursive: true,
     });
@@ -42,6 +43,10 @@ test("content pipeline validates metadata, excludes drafts, and publishes Typora
       "dir",
     );
     await writeFile(
+      path.join(fixture, "content", "covers", "cover.jpg"),
+      "fixture-cover",
+    );
+    await writeFile(
       path.join(fixture, "content", "posts", "assets", "cover.jpg"),
       "fixture-image",
     );
@@ -49,11 +54,10 @@ test("content pipeline validates metadata, excludes drafts, and publishes Typora
       path.join(fixture, "content", "posts", "published.md"),
       `---
 title: 已发布文章
-slug: published
 description: 验证内容发布管线
 date: 2026-07-25
 topic: 测试
-cover: ./assets/cover.jpg
+cover: cover.jpg
 ---
 
 ![本地图片](./assets/cover.jpg)
@@ -63,7 +67,6 @@ cover: ./assets/cover.jpg
       path.join(fixture, "content", "posts", "draft.md"),
       `---
 title: 草稿文章
-slug: draft
 description: 不应出现在正式构建
 date: 2026-07-25
 topic: 测试
@@ -77,7 +80,6 @@ draft: true
       path.join(fixture, "content", "posts", "writing", "nested.md"),
       `---
 title: 子目录文章
-slug: nested
 description: 验证多级目录中的博文。
 date: 2026-07-25
 topic: 测试
@@ -119,10 +121,12 @@ topic: 测试
     assert.match(generated, /"sourcePath": "posts\/writing\/nested\.md"/);
     assert.doesNotMatch(generated, /"slug": "draft"/);
     assert.match(generated, /"column": "writing"/);
+    assert.match(generated, /\/media\/covers\/cover\.jpg/);
     assert.match(generated, /\/media\/posts\/assets\/cover\.jpg/);
     const postsFeed = await readFile(path.join(fixture, "public", "posts.xml"), "utf8");
     assert.match(postsFeed, /<lastBuildDate>Sat, 25 Jul 2026 00:00:00 GMT<\/lastBuildDate>/);
     assert.doesNotMatch(postsFeed, /草稿文章/);
+    await access(path.join(fixture, "public", "media", "covers", "cover.jpg"));
     await access(
       path.join(fixture, "public", "media", "posts", "assets", "cover.jpg"),
     );
@@ -144,7 +148,6 @@ test("GARDEN_SITE writes generated files into the site, not the process cwd", as
       path.join(fixture, "content", "posts", "isolated.md"),
       `---
 title: Isolated
-slug: isolated
 date: 2026-07-25
 description: 站点隔离
 topic: 测试

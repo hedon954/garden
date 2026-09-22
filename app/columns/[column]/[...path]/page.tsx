@@ -52,7 +52,7 @@ export async function generateMetadata({
         ? new Date(entry.updated).toISOString()
         : undefined,
       tags: entry.tags,
-      images: entry.cover ? [{ url: entry.cover, alt: entry.coverAlt }] : undefined,
+      images: entry.cover ? [{ url: entry.cover, alt: entry.title }] : undefined,
     },
     twitter: {
       card: "summary_large_image",
@@ -115,7 +115,7 @@ export default async function ColumnEntryPage({
             <img
               className="u-photo"
               src={entry.cover}
-              alt={entry.coverAlt ?? `${entry.title} 封面`}
+              alt={`${entry.title} 封面`}
             />
           </figure>
         )}

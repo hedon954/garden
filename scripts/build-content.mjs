@@ -71,12 +71,13 @@ const isExternalAsset = (value) =>
 
 const assetCache = new Map();
 
-function copyLocalAsset(value, markdownPath, sourcePath) {
+function copyLocalAsset(value, markdownPath, sourcePath, options = {}) {
   if (!value || isExternalAsset(value)) return value;
 
+  const baseDir = options.baseDir ?? path.dirname(markdownPath);
   const [assetPath, suffix = ""] = value.split(/(?=[?#])/u, 2);
   const decodedPath = decodeURIComponent(assetPath.replace(/^<|>$/g, ""));
-  const absoluteSource = path.resolve(path.dirname(markdownPath), decodedPath);
+  const absoluteSource = path.resolve(baseDir, decodedPath);
   const relativeSource = path.relative(contentRoot, absoluteSource);
 
   if (
@@ -85,7 +86,7 @@ function copyLocalAsset(value, markdownPath, sourcePath) {
     !fs.existsSync(absoluteSource) ||
     !fs.statSync(absoluteSource).isFile()
   ) {
-    fail(sourcePath, `找不到本地媒体文件 ${value}`);
+    fail(sourcePath, options.missingMessage ?? `找不到本地媒体文件 ${value}`);
   }
 
   if (!assetCache.has(absoluteSource)) {
@@ -254,9 +255,12 @@ function normalizeMedia(media, markdownPath, sourcePath) {
 
 function validateAndNormalize(data, content, markdownPath, kind, sourcePath) {
   const title = requireString(data, "title", sourcePath);
-  const slug = optionalString(data, "slug", sourcePath) ?? path.basename(markdownPath, ".md");
+  const slug = path.basename(markdownPath, ".md");
   if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/u.test(slug)) {
-    fail(sourcePath, "slug 只能包含小写字母、数字和连字符");
+    fail(sourcePath, "文件名只能包含小写字母、数字和连字符");
+  }
+  if (data.slug !== undefined) {
+    fail(sourcePath, "不要写 slug，文件名就是标识");
   }
 
   const date = normalizeDate(data.date, "date", sourcePath);
@@ -286,6 +290,7 @@ function validateAndNormalize(data, content, markdownPath, kind, sourcePath) {
 
   const publishTime = Date.parse(publishAt ?? date);
   if (!includeDrafts && (data.draft === true || publishTime > now)) return null;
+  delete data.coverAlt;
 
   return {
     ...data,
@@ -301,7 +306,10 @@ function validateAndNormalize(data, content, markdownPath, kind, sourcePath) {
     draft: Boolean(data.draft),
     sourcePath,
     cover: data.cover
-      ? copyLocalAsset(data.cover, markdownPath, sourcePath)
+      ? copyLocalAsset(data.cover, markdownPath, sourcePath, {
+          baseDir: path.join(contentRoot, "covers"),
+          missingMessage: `找不到封面 ${data.cover}；本地路径相对 content/covers`,
+        })
       : undefined,
     columnCover: data.columnCover
       ? copyLocalAsset(data.columnCover, markdownPath, sourcePath)
@@ -399,7 +407,7 @@ function readColumnReferences(posts) {
     if (seenColumns.has(slug)) fail(sourcePath, `专栏 slug ${slug} 重复。`);
     seenColumns.add(slug);
     if (!Array.isArray(value.posts) || !value.posts.every((entry) => typeof entry === "string")) {
-      fail(sourcePath, "posts 必须是博文 slug 或相对路径数组。");
+      fail(sourcePath, "posts 必须是博文相对路径数组。");
     }
     const referenced = new Set();
     return value.posts.map((postReference, order) => {
@@ -487,7 +495,6 @@ export type ContentEntry = {
   columnCoverAlt?: string;
   order?: number;
   cover?: string;
-  coverAlt?: string;
   mediaType?: "image" | "audio" | "video" | "link" | "text";
   media?: string | MediaItem[];
   mediaAlt?: string;

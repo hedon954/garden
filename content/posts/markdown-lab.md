@@ -1,6 +1,5 @@
 ---
 title: Markdown 复杂语法实验场
-slug: markdown-lab
 description: 用一篇真实文章验证 Typora 常用语法、数学公式、Mermaid、脚注、表格与原生 HTML。
 date: 2026-07-25
 topic: 写作系统
@@ -12,7 +11,6 @@ tags:
 pinned: false
 readingTime: 10 分钟
 cover: https://images.unsplash.com/photo-1761414500824-e280de5a1b37?auto=format&fit=crop&w=1600&q=84
-coverAlt: 彩色阳台构成的现代建筑立面
 ---
 
 这篇文章不是功能清单，而是一份可以长期保留的**渲染验收样本**。我会在 Typora 中常用的语法和网页输出之间建立一条可重复验证的路径。

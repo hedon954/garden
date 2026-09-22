@@ -77,7 +77,6 @@ make new TITLE="你好，世界" SLUG=hello TOPIC="随笔"
 ```md
 ---
 title: 你好，世界
-slug: hello
 date: 2026-07-28T09:00:00+08:00
 description: 我的第一篇文章。
 topic: 随笔

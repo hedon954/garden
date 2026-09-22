@@ -1,6 +1,5 @@
 ---
 title: 链接不是收藏，是路径
-slug: links-are-paths
 date: 2026-07-16T12:05:00+08:00
 tags:
   - 阅读

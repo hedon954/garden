@@ -1,6 +1,5 @@
 ---
 title: 从逐词生成理解 KV Cache
-slug: understand-kv-cache
 description: 不从公式开始，而是从模型下一次到底重复算了什么开始。
 date: 2026-06-09
 topic: AI 学习
@@ -10,7 +9,6 @@ tags:
 pinned: false
 readingTime: 9 分钟
 cover: https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1600&q=84
-coverAlt: 近距离拍摄的电子电路板
 ---
 
 理解 KV Cache 最直观的方式，是先看自回归生成里那些被重复计算的部分。

@@ -1,6 +1,5 @@
 ---
 title: 02 · 让状态变得可靠
-slug: stable-state
 description: 状态设计的关键，是明确谁拥有事实。
 date: 2026-07-10
 topic: 独立开发

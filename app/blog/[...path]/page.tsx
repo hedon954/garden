@@ -48,7 +48,7 @@ export async function generateMetadata({
         ? new Date(post.updated).toISOString()
         : undefined,
       tags: post.tags,
-      images: post.cover ? [{ url: post.cover, alt: post.coverAlt }] : undefined,
+      images: post.cover ? [{ url: post.cover, alt: post.title }] : undefined,
     },
     twitter: {
       card: "summary_large_image",
@@ -92,7 +92,7 @@ export default async function PostPage({
             <img
               className="u-photo"
               src={post.cover}
-              alt={post.coverAlt ?? `${post.title} 封面`}
+              alt={`${post.title} 封面`}
             />
           </figure>
         )}

@@ -1,6 +1,5 @@
 ---
 title: 03 · 带着证据发布
-slug: ship-with-evidence
 description: “我改完了”不是完成，“用户可以确认它好了”才是。
 date: 2026-07-18
 topic: 独立开发

@@ -39,7 +39,6 @@ async function main() {
   const markdown = [
     "---",
     `title: ${JSON.stringify(title)}`,
-    `slug: ${slug}`,
     `date: ${date}`,
     `description: ${JSON.stringify("请填写一句话摘要。")}`,
     `topic: ${JSON.stringify(topic)}`,

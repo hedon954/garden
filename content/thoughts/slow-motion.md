@@ -1,6 +1,5 @@
 ---
 title: 慢一点看
-slug: slow-motion
 date: 2026-07-19T09:20:00+08:00
 tags:
   - 影像

@@ -186,7 +186,8 @@ test("renders a column entry cover when its source article defines one", async (
   assert.match(columnEntry, /entry\.cover &&/);
   assert.match(columnEntry, /className="article-hero article-cover"/);
   assert.match(columnEntry, /src=\{entry\.cover\}/);
-  assert.match(columnEntry, /entry\.coverAlt \?\?/);
+  assert.match(columnEntry, /\$\{entry\.title\} 封面/);
+  assert.doesNotMatch(columnEntry, /coverAlt/);
 });
 
 test("hides empty home sections and gives every content index an intentional empty state", async () => {

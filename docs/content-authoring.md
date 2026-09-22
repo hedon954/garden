@@ -33,12 +33,11 @@ CONTENT_INCLUDE_DRAFTS=1 make dev
 
 ### 手动创建 Markdown
 
-在 `content/posts/` 或它的任意子目录新建一个 `.md` 文件，例如 `content/posts/go/runtime/gc.md`。目录同时决定网页地址：它会发布为 `/blog/go/runtime/gc`；`slug` 只作为内容标识。
+在 `content/posts/` 或它的任意子目录新建一个 `.md` 文件，例如 `content/posts/go/runtime/gc.md`。文件名就是文章标识，目录同时决定网页地址：它会发布为 `/blog/go/runtime/gc`。
 
 ```md
 ---
 title: 我的文章标题
-slug: my-first-post
 date: 2026-07-28T09:00:00+08:00
 description: 用一句话说明文章讲什么。
 topic: 写作
@@ -54,13 +53,13 @@ tags: [Markdown, 写作]
 
 ### 添加封面
 
-把图片放在文章旁的 `assets/` 目录，并在文章开头填写相对路径：
+本地封面放在 `content/covers/`。`cover` 相对这个目录解析，不相对文章文件：
 
 ```yaml
-cover: ./assets/cover.jpg
+cover: writing/first-post.jpg
 ```
 
-封面会按图片本身比例显示，不会被固定裁切。
+上面这一行对应 `content/covers/writing/first-post.jpg`。构建会把它复制到 `/media/covers/writing/first-post.jpg`。以 `http://`、`https://` 或 `/` 开头的地址原样使用，不会到 `content/covers/` 里查找。封面按图片本身比例显示，不会被固定裁切。
 
 ### 插入图片、音频和视频
 
@@ -193,13 +192,13 @@ columns:
       - reading/notes-from-reading
 ```
 
-`posts` 的顺序就是专栏阅读顺序。路径相对 `content/posts/`，可省略 `.md`。同一篇博文可以被多个专栏引用，正文仍然只维护一份；为避免同名文件歧义，请始终填写路径，不要填写 `slug`。专栏页会显示文章列表和当前文章目录。
+`posts` 的顺序就是专栏阅读顺序。路径相对 `content/posts/`，可省略 `.md`。同一篇博文可以被多个专栏引用，正文仍然只维护一份。为避免同名文件歧义，请填写相对路径。专栏页会显示文章列表和当前文章目录。
 
 ## 发布随想
 
 随想通过管理后台发布最方便：文字、多个图片、音频、视频和链接可以出现在同一条随想里。后台上传的媒体会进入阿里云 OSS，不会提交进 Git。
 
-需要从文件维护时，在 `content/thoughts/` 新建 Markdown，并添加 `title`、`slug` 和 `date`。多媒体格式见 [随想管理后台](admin-service.md)。
+需要从文件维护时，在 `content/thoughts/` 新建 Markdown。文件名就是地址，front matter 填写 `title` 和 `date`。多媒体格式见 [随想管理后台](admin-service.md)。
 
 ## 下一步
 

@@ -10,11 +10,12 @@
 content/posts/**/*.md              普通博文（支持多级目录）
 content/columns.yaml               专栏元数据与博文相对路径引用顺序
 content/thoughts/*.md              随想
-content/**/assets/*                与 Markdown 同目录的本地媒体
+content/covers/*                   本地封面；front matter 的 cover 相对此目录
+content/**/assets/*                与 Markdown 同目录的正文媒体
 content/posts/**/<slug>/*.html     与 <slug>.md 同名的图表目录
 ```
 
-每个文件由 YAML front matter 和 Markdown 正文组成。以博文为例，`title`、`slug`、`date`、`description`、`topic` 是构建时校验字段；`pinned`、`cover`、`tags`、`draft`、`publishAt` 等字段决定列表、封面和可见性。
+每个文件由 YAML front matter 和 Markdown 正文组成。以博文为例，`title`、`date`、`description`、`topic` 是构建时校验字段；文件名就是标识，不另写 `slug`。`pinned`、`cover`、`tags`、`draft`、`publishAt` 等字段决定列表、封面和可见性。
 
 这意味着“置顶”不是后台状态，而是 `pinned: true` 的一次 Git 变更；“发布”则是把内容提交到 `main`。因此回滚、比较、多人协作与备份都复用 Git 本身。内容索引中的 `sourcePath` 相对 `content/` 保存；后台写 GitHub 前会把 `posts/...md` 映射为仓库根路径 `content/posts/...md`，并拒绝空路径、目录穿越和非 Markdown 文件。
 
@@ -23,9 +24,9 @@ content/posts/**/<slug>/*.html     与 <slug>.md 同名的图表目录
 构建前，npm 的 `prebuild` 会执行 `scripts/build-content.mjs`。这个 Node 脚本完成下列工作：
 
 1. 递归读取博文和随想目录，并用 `gray-matter` 分离 front matter 与正文；博文以相对 `content/posts/` 的路径生成公开 URL，`columns.yaml` 使用同一相对路径引用文章。
-2. 校验 slug、日期、专栏引用顺序、媒体类型、重复路径与必填字段。
+2. 校验文件名、日期、专栏引用顺序、媒体类型、重复路径与必填字段。
 3. 排除 `draft: true` 和未到 `publishAt` 的内容；`CONTENT_INCLUDE_DRAFTS=1` 仅用于本地预览。
-4. 扫描 Markdown 图片和原生 `img/audio/video/source` 标签，以及 `cover`、`poster`、`media[].src`。相对路径媒体会被复制到 `public/media/`，正文中的 URL 同步改写为公开路径。`widget` 围栏的 `src` 必须指向与稿件同名目录里的 `.html` 或 `.pdf`；构建同样复制并改写路径，缺 `caption` 或文件越界会直接失败。
+4. 扫描 Markdown 图片和原生 `img/audio/video/source` 标签，以及 `cover`、`poster`、`media[].src`。正文里的相对路径相对 Markdown 文件解析；`cover` 相对 `content/covers/` 解析。完整 URL 和以 `/` 开头的地址原样保留。本地文件复制到 `public/media/`，并保持相对 `content/` 的目录结构。`widget` 围栏的 `src` 必须指向与稿件同名目录里的 `.html` 或 `.pdf`；构建同样复制并改写路径，缺 `caption` 或文件越界会直接失败。
 5. 将归一化结果写入站点 `.garden/generated-content.ts` 与 `.garden/site-config.ts`。运行时通过 Vite 别名读这些生成文件，不再读取文件系统。
 6. 由同一份数组生成 `public/rss.xml`、只含长文博文的 `public/posts.xml`、`public/sitemap.xml`、`public/robots.txt`。
 
@@ -129,7 +130,7 @@ sequenceDiagram
 `app/lib/github-content.ts` 使用 GitHub Contents API：
 
 - 列表：读取 `content/thoughts` 目录，逐个获取 Base64 文件并解析 front matter。
-- 新建：生成 slug，将 front matter + Markdown UTF-8 Base64 编码，`PUT /repos/{owner}/{repo}/contents/...`。
+- 新建：用文件名作为标识，将 front matter + Markdown UTF-8 Base64 编码，`PUT /repos/{owner}/{repo}/contents/...`。
 - 撤回：用原文件 SHA 更新 `draft: true`；重新发布则清除草稿并更新时间。
 - 删除：带 SHA 调用 Contents API 的 DELETE。
 - 媒体：`/api/admin/uploads` 以服务端 OSS 凭据生成短期 Post Policy；浏览器直传阿里云 OSS，随想只保存公开 URL，二进制不进入 Git。

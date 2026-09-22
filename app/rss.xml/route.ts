@@ -37,9 +37,7 @@ export async function GET() {
         breaks: true,
       });
       const cover = entry.cover
-        ? `<p><img src="${escapeXml(entry.cover)}" alt="${escapeXml(
-            entry.coverAlt ?? entry.title,
-          )}" /></p>`
+        ? `<p><img src="${escapeXml(entry.cover)}" alt="${escapeXml(entry.title)}" /></p>`
         : "";
       return `
     <item>

@@ -69,7 +69,7 @@ export function BlogArchive() {
                 <img
                   className="archive-cover"
                   src={post.cover}
-                  alt={post.coverAlt ?? `${post.title} 封面`}
+                  alt={`${post.title} 封面`}
                   loading="lazy"
                 />
               )}

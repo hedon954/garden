@@ -1,6 +1,5 @@
 ---
 title: 做一个 PDF 阅读器之后，我重新理解了「位置」
-slug: building-a-pdf-reader
 description: 阅读位置不是页码，而是一段连续体验的锚点。
 date: 2026-06-28
 topic: 构建手记
@@ -10,7 +9,6 @@ tags:
 pinned: false
 readingTime: 8 分钟
 cover: https://images.unsplash.com/photo-1623276527153-fa38c1616b05?auto=format&fit=crop&w=1600&q=84
-coverAlt: 桌上的平板电脑、笔记本电脑与咖啡
 ---
 
 “打开侧栏不能让正文跳一下”看起来是一条微小的要求，真正实现时却牵动了布局、缩放、滚动和状态恢复。

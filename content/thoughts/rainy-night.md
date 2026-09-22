@@ -1,6 +1,5 @@
 ---
 title: 雨后的城市
-slug: rainy-night
 date: 2026-07-24T22:36:00+08:00
 tags:
   - 摄影

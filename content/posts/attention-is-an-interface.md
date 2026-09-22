@@ -1,6 +1,5 @@
 ---
 title: 注意力也是一种界面
-slug: attention-is-an-interface
 description: 当工具越来越聪明，真正稀缺的不是功能，而是我们把注意力放在哪里。
 date: 2026-07-21
 updated: 2026-07-23
@@ -11,7 +10,6 @@ tags:
 pinned: true
 readingTime: 6 分钟
 cover: https://images.unsplash.com/photo-1630234674857-527eb5534837?auto=format&fit=crop&w=1600&q=84
-coverAlt: 彩色几何建筑立面
 ---
 
 工具总是在争取更短的路径：少一次点击、少一个页面、少等一秒。但如果只把效率当作终点，我们很容易做出一种**没有摩擦，也没有方向**的界面。

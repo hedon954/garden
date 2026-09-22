@@ -26,13 +26,12 @@ function SourcePanel({ path, source, language }: SourcePanelProps) {
 
 const postSource = `---
 title: 我的第一篇文章
-slug: first-post
 date: 2026-08-03T09:00:00+08:00
 description: 这篇文章记录我为什么重新开始写博客。
 topic: 写作
 tags: [Markdown, 博客]
 pinned: false
-cover: ./assets/cover.jpg
+cover: writing/first-post.jpg
 ---
 
 正文从这里开始。
@@ -43,7 +42,6 @@ cover: ./assets/cover.jpg
 
 const thoughtSource = `---
 title: 雨后的散步
-slug: walk-after-rain
 date: 2026-08-03T18:30:00+08:00
 tags: [生活]
 media:
@@ -121,9 +119,9 @@ const guides: Guide[] = [
       "随想适合记录几句话、一个链接或一组多媒体。它同样保存在 Git 仓库中，只需要更少的字段，也可以通过可选管理后台发布。",
     steps: [
       <>
-        直接创建 <code>content/thoughts/&lt;slug&gt;.md</code>，或者在管理后台填写内容。
+        直接创建 <code>content/thoughts/&lt;文件名&gt;.md</code>，或者在管理后台填写内容。
       </>,
-      <>填写标题、唯一 slug 和日期；需要暂存时加入草稿状态。</>,
+      <>文件名就是地址。front matter 填写标题和日期；需要暂存时加入草稿状态。</>,
       <>
         在 <code>media</code> 中按顺序添加图片、音频、视频或外部链接。
       </>,
