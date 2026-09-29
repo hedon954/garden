@@ -85,7 +85,8 @@ Folder: /(root)
 | --- | --- | --- |
 | `SITE_URL` | 自定义域名 | `https://blog.example.com` |
 | `ADMIN_URL` | 已部署独立管理后台后 | `https://admin.example.com` |
-| `GISCUS_REPO`、`GISCUS_REPO_ID`、`GISCUS_CATEGORY`、`GISCUS_CATEGORY_ID` | 启用 Giscus 时 | 见[外部集成](integrations.md) |
+| `GISCUS_REPO`、`GISCUS_REPO_ID`、`GISCUS_CATEGORY`、`GISCUS_CATEGORY_ID` | 发布前必填 | 见[外部集成](integrations.md) |
+| `GISCUS_DISABLED` | 明确关闭评论时设为 `1` | `1` |
 | `WEBMENTION_IO_DOMAIN` | 启用 Webmentions 时 | `blog.example.com` |
 | `ANALYTICS_DOMAIN`、`ANALYTICS_SCRIPT` | 使用无 Cookie 统计时 | `blog.example.com`、脚本 URL |
 | `PAGES_REPOSITORY` | GitHub Free 私有源码双仓 | `owner/owner.github.io` |

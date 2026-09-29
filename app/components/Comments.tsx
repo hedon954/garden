@@ -1,29 +1,9 @@
 import { ChatCircle, GithubLogo } from "@phosphor-icons/react/ssr";
-import {
-  GiscusComments,
-  type GiscusConfig,
-} from "./GiscusComments";
-
-function giscusConfig(): GiscusConfig | undefined {
-  const config = {
-    repo:
-      process.env.GISCUS_REPO ?? process.env.NEXT_PUBLIC_GISCUS_REPO,
-    repoId:
-      process.env.GISCUS_REPO_ID ?? process.env.NEXT_PUBLIC_GISCUS_REPO_ID,
-    category:
-      process.env.GISCUS_CATEGORY ??
-      process.env.NEXT_PUBLIC_GISCUS_CATEGORY,
-    categoryId:
-      process.env.GISCUS_CATEGORY_ID ??
-      process.env.NEXT_PUBLIC_GISCUS_CATEGORY_ID,
-  };
-  return Object.values(config).every(Boolean)
-    ? (config as GiscusConfig)
-    : undefined;
-}
+import { readGiscusConfig } from "../lib/giscus-config";
+import { GiscusComments } from "./GiscusComments";
 
 export function Comments({ slug }: { slug: string }) {
-  const config = giscusConfig();
+  const config = readGiscusConfig();
 
   return (
     <section className="comments" aria-labelledby={`comments-heading-${slug}`}>
@@ -34,7 +14,7 @@ export function Comments({ slug }: { slug: string }) {
           <p>
             {config
               ? "评论由 GitHub Discussions 保存和管理。"
-              : "评论接入已准备好，补充 GitHub Discussions 配置后即可开放。"}
+              : "评论还没开放。配好下面四项后，这里才会出现评论框。"}
           </p>
         </div>
       </div>
@@ -45,8 +25,14 @@ export function Comments({ slug }: { slug: string }) {
         <div className="integration-notice">
           <GithubLogo size={20} weight="fill" />
           <p>
-            需要一个公开 GitHub 仓库，并为它启用 Discussions、安装 Giscus
-            App、选择评论分类。
+            打开{" "}
+            <a href="https://giscus.app/zh-CN" target="_blank" rel="noreferrer">
+              Giscus
+            </a>
+            ，安装到一个已开启 Discussions 的公开仓库，把仓库、仓库 ID、分类、分类 ID
+            写入 <code>.env.local</code> 和 GitHub Actions Variables：
+            <code>GISCUS_REPO</code>、<code>GISCUS_REPO_ID</code>、
+            <code>GISCUS_CATEGORY</code>、<code>GISCUS_CATEGORY_ID</code>。
           </p>
         </div>
       )}

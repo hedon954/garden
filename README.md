@@ -55,11 +55,11 @@ make update    # 检查、提交并触发自动发布
 make update MESSAGE="新增一篇文章"
 ```
 
-`make dev` 会在首次运行时自动安装依赖并创建 `.env.local`。`make update` 会先检查，再提交并推送工作区中的所有改动。不想发布的文件请先移出仓库或加入 `.gitignore`。
+`make dev` 会在首次运行时自动安装依赖并创建 `.env.local`，同时说明如何接上评论。线上发布要求 Actions Variables 里有 `GISCUS_REPO`、`GISCUS_REPO_ID`、`GISCUS_CATEGORY`、`GISCUS_CATEGORY_ID`；留空会让构建失败。确定不开放评论时设置 `GISCUS_DISABLED=1`。`make update` 会先检查，再提交并推送工作区中的所有改动。不想发布的文件请先移出仓库或加入 `.gitignore`。
 
 ## 进一步配置
 
-首次跑通以后，再按需查看：
+评论接法见[从零开始](docs/quick-start.md)。跑通以后，再按需查看：
 
 - [评论、Webmentions 与内容分发](docs/integrations.md)
 - [随想管理后台](docs/admin-service.md)

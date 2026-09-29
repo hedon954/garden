@@ -26,7 +26,6 @@ skill:
 
 prepare:
 	@if [ ! -d node_modules ]; then npm ci; fi
-	@if [ ! -f .env.local ]; then cp .env.example .env.local; fi
 
 dev: prepare
 	node bin/garden.mjs dev

@@ -2,12 +2,9 @@
 
 import { useEffect, useRef } from "react";
 
-export type GiscusConfig = {
-  repo: string;
-  repoId: string;
-  category: string;
-  categoryId: string;
-};
+import type { GiscusConfig } from "../lib/giscus-config";
+
+export type { GiscusConfig };
 
 function currentGiscusTheme() {
   return document.documentElement.dataset.theme === "dark" ? "dark" : "light";

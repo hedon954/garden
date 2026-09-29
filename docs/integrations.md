@@ -2,10 +2,14 @@
 
 ## Giscus 评论
 
-1. 准备公开 GitHub 仓库并开启 Discussions。
-2. 安装 [Giscus App](https://giscus.app/zh-CN)。
+评论默认关闭。`garden init` 和第一次创建 `.env.local` 都会打印下面的步骤。示例值 `owner/repository` 不会被当成已配置；Actions Variables 里留空或仍是示例值时，发布工作流会失败。
+
+1. 准备公开 GitHub 仓库并开启 Discussions。公开源码仓库可以直接用；私有源码要另建一个公开仓库。
+2. 安装 [Giscus App](https://giscus.app/zh-CN)，只授权这个仓库。
 3. 在 Giscus 页面选择仓库与分类，复制仓库、仓库 ID、分类、分类 ID。
-4. 在 GitHub Actions Variables 设置 `GISCUS_REPO`、`GISCUS_REPO_ID`、`GISCUS_CATEGORY`、`GISCUS_CATEGORY_ID`；本地使用 `.env.local`。
+4. 本地写入 `.env.local`，并在 GitHub Actions Variables 设置同名的 `GISCUS_REPO`、`GISCUS_REPO_ID`、`GISCUS_CATEGORY`、`GISCUS_CATEGORY_ID`。
+
+确定不开放评论时，把 Actions Variable `GISCUS_DISABLED` 设为 `1`。这是明确关闭。
 
 `NEXT_PUBLIC_` 配置会出现在浏览器，这是 Giscus 的正常公开配置；不要填入 GitHub PAT 或 OAuth Secret。
 

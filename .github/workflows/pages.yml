@@ -38,16 +38,43 @@ jobs:
           GISCUS_REPO_ID: ${{ vars.GISCUS_REPO_ID }}
           GISCUS_CATEGORY: ${{ vars.GISCUS_CATEGORY }}
           GISCUS_CATEGORY_ID: ${{ vars.GISCUS_CATEGORY_ID }}
+          GISCUS_DISABLED: ${{ vars.GISCUS_DISABLED }}
           WEBMENTION_IO_DOMAIN: ${{ vars.WEBMENTION_IO_DOMAIN }}
           ANALYTICS_DOMAIN: ${{ vars.ANALYTICS_DOMAIN }}
           ANALYTICS_SCRIPT: ${{ vars.ANALYTICS_SCRIPT }}
         run: |
           owner="$GITHUB_REPOSITORY_OWNER"
           default_url="https://$owner.github.io"
+          giscus_ready=1
+          if [ -z "$GISCUS_REPO" ] || [ "$GISCUS_REPO" = "owner/repository" ]; then giscus_ready=0; fi
+          if [ -z "$GISCUS_REPO_ID" ] || [ "$GISCUS_REPO_ID" = "R_xxxxxxxxxx" ]; then giscus_ready=0; fi
+          if [ -z "$GISCUS_CATEGORY" ]; then giscus_ready=0; fi
+          if [ -z "$GISCUS_CATEGORY_ID" ] || [ "$GISCUS_CATEGORY_ID" = "DIC_xxxxxxxxxx" ]; then giscus_ready=0; fi
+          if [ "$giscus_ready" != 1 ]; then
+            if [ "$GISCUS_DISABLED" = "1" ]; then
+              GISCUS_REPO=
+              GISCUS_REPO_ID=
+              GISCUS_CATEGORY=
+              GISCUS_CATEGORY_ID=
+              echo "GISCUS_DISABLED=1，本次构建不开放评论。"
+            else
+              echo "评论还没有配置，构建已停止。"
+              echo "1. 准备一个公开 GitHub 仓库，并开启 Discussions。"
+              echo "2. 打开 https://giscus.app/zh-CN ，安装 Giscus App，选中该仓库和分类。"
+              echo "3. 在 Settings → Secrets and variables → Actions → Variables 写入："
+              echo "   GISCUS_REPO、GISCUS_REPO_ID、GISCUS_CATEGORY、GISCUS_CATEGORY_ID"
+              echo "确定不开放评论时，把 GISCUS_DISABLED 设为 1。留空和示例值 owner/repository 都不会通过。"
+              exit 1
+            fi
+          fi
           {
             echo "SITE_URL=${SITE_URL_OVERRIDE:-$default_url}"
             echo "NEXT_PUBLIC_SITE_URL=${SITE_URL_OVERRIDE:-$default_url}"
             echo "ADMIN_URL=$ADMIN_URL_OVERRIDE"
+            echo "GISCUS_REPO=$GISCUS_REPO"
+            echo "GISCUS_REPO_ID=$GISCUS_REPO_ID"
+            echo "GISCUS_CATEGORY=$GISCUS_CATEGORY"
+            echo "GISCUS_CATEGORY_ID=$GISCUS_CATEGORY_ID"
             echo "NEXT_PUBLIC_GISCUS_REPO=$GISCUS_REPO"
             echo "NEXT_PUBLIC_GISCUS_REPO_ID=$GISCUS_REPO_ID"
             echo "NEXT_PUBLIC_GISCUS_CATEGORY=$GISCUS_CATEGORY"

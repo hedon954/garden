@@ -2934,6 +2934,17 @@ button {
   font-size: 11px;
 }
 
+.integration-notice a,
+.integration-notice code {
+  text-decoration: underline;
+  text-underline-offset: 0.18em;
+}
+
+.integration-notice code {
+  text-decoration: none;
+  font-family: var(--font-mono), ui-monospace, monospace;
+}
+
 .integration-status {
   margin: 22px 0 0;
   color: var(--muted);

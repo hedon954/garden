@@ -1,6 +1,6 @@
 # 从零开始
 
-这篇指南的终点是：你有一个自己的博客地址，并成功发布一篇文章。第一次不需要配置评论、后台或自定义域名。
+这篇指南的终点是：你有一个自己的博客地址，评论接在自己的 GitHub Discussions 上，并成功发布一篇文章。后台和自定义域名可以之后再做。
 
 ## 准备什么
 
@@ -37,7 +37,18 @@ npm install
 
 先不用等待页面出现，下一步推送内容后 GitHub 才会开始构建。
 
-## 3. 写上自己的名字
+## 3. 接上评论
+
+评论在配好之前保持关闭，文章页会显示配置说明。四项没写进 Actions Variables 时，发布工作流会停下来，不会带着示例仓库上线。
+
+1. 准备一个公开 GitHub 仓库，并开启 Discussions。公开源码仓库可以直接用；私有源码要另建一个公开仓库。
+2. 打开 [Giscus](https://giscus.app/zh-CN)，安装 Giscus App，只授权这个仓库，并选一个分类。
+3. 复制仓库、仓库 ID、分类、分类 ID。
+4. 本地写入 `.env.local`，线上写入源码仓库 **Settings → Secrets and variables → Actions → Variables**。名称都是 `GISCUS_REPO`、`GISCUS_REPO_ID`、`GISCUS_CATEGORY`、`GISCUS_CATEGORY_ID`。
+
+`garden init` 和第一次 `make dev` 都会再打印这四步。确定不开放评论时，把 Actions Variable `GISCUS_DISABLED` 设为 `1`。这是明确关闭，留空不算。
+
+## 4. 写上自己的名字
 
 打开根目录的 `site.config.yaml`，至少修改这几项：
 
@@ -60,7 +71,7 @@ make dev
 
 第一次运行会自动安装依赖并创建 `.env.local`。默认不会展示草稿和未来定时文章；需要预览时使用 `CONTENT_INCLUDE_DRAFTS=1 make dev`。
 
-## 4. 发布第一篇文章
+## 5. 发布第一篇文章
 
 把自己的仓库克隆到本地，在根目录运行：
 
@@ -100,7 +111,7 @@ make update
 
 如果你直接在 GitHub 网页编辑文件，点击 **Commit changes** 即可，不需要运行命令。
 
-## 5. 等待首次发布
+## 6. 等待首次发布
 
 打开仓库的 **Actions** 页面，等待 **Deploy public blog to GitHub Pages** 变为绿色。之后可访问：
 
@@ -109,11 +120,11 @@ make update
 
 到这里，你已经完成了第一次发布。
 
-## 6. 之后怎么用
+## 7. 之后怎么用
 
 - 每次写文章：参考[内容编写](content-authoring.md)。
 - 每次需要上线：运行 `make update` 或在 GitHub 网页提交文件。
 - 想先在本地看效果：运行 `make dev`，浏览器打开终端显示的地址。
 - 想绑定自己的域名：参考 [GitHub Pages 与自定义域名](github-pages.md)。
 
-评论、Webmentions、随想后台均为可选功能，等基础写作流程跑顺后再配置即可。
+Webmentions 和随想后台可以等写作流程跑顺后再配置。评论要在第一次发布前接好，或者用 `GISCUS_DISABLED=1` 明确关掉。

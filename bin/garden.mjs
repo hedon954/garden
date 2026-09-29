@@ -88,11 +88,25 @@ function ensurePublic() {
   }
 }
 
+function printGiscusGuide() {
+  process.stdout.write(`评论默认关闭。发布前要接上自己的 Giscus，留空会让 GitHub Actions 构建失败：
+  1. 准备一个公开 GitHub 仓库，并开启 Discussions。公开源码仓库可以直接用；私有源码要另建一个公开仓库。
+  2. 打开 https://giscus.app/zh-CN ，安装 Giscus App，只授权这个仓库，并选一个分类。
+  3. 把仓库、仓库 ID、分类、分类 ID 写入 .env.local 的 GISCUS_REPO、GISCUS_REPO_ID、GISCUS_CATEGORY、GISCUS_CATEGORY_ID。
+  4. 在源码仓库 Settings → Secrets and variables → Actions → Variables 写入同样四项。
+示例值不会被当成已配置。确定不开放评论时，把 Actions Variable GISCUS_DISABLED 设为 1。
+`);
+}
+
 function ensureEnv() {
+  // CI injects the real values. Copying .env.example there would fill any
+  // unset key with a sample, which used to turn comments on for owner/repository.
+  if (process.env.GITHUB_ACTIONS === "true") return;
   const example = path.join(gardenPackageRoot, ".env.example");
   const local = path.join(siteRoot, ".env.local");
   if (!fs.existsSync(local) && fs.existsSync(example)) {
     fs.copyFileSync(example, local);
+    printGiscusGuide();
   }
 }
 
@@ -241,8 +255,10 @@ function initSite() {
   process.stdout.write("下一步：\n");
   process.stdout.write(`  cd ${destination}\n`);
   process.stdout.write("  npm install\n");
+  process.stdout.write("  按下面四步接上评论，再写文章\n");
   process.stdout.write("  make new TITLE=\"你好，世界\" SLUG=hello\n");
   process.stdout.write("  make dev\n");
+  printGiscusGuide();
 }
 
 function packagedSkills() {
