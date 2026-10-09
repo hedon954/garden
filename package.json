@@ -68,7 +68,7 @@
     "@cloudflare/vite-plugin": "1.37.1",
     "@phosphor-icons/react": "^2.1.10",
     "@tailwindcss/postcss": "4.2.1",
-    "@vitejs/plugin-react": "6.0.4",
+    "@vitejs/plugin-react": "6.1.1",
     "@vitejs/plugin-rsc": "0.5.30",
     "fuse.js": "^7.5.0",
     "github-slugger": "^2.0.0",
