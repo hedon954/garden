@@ -6,11 +6,11 @@
 pages:
   home:
     title: |-
-      把复杂的事，
-      慢慢想明白。
+      记一些正在做的事，
+      和想清楚的问题。
     subtitle: 在这里写首页介绍。
   blog:
-    title: 长期写下去，偶尔回头整理。
+    title: 博文
     subtitle: 在这里写博文页介绍。
 ```
 
