@@ -160,6 +160,8 @@ caption: 朴素 decode 每步重算全部过去 token；6 个 token 共 21 次�
 
 第一次 `npx garden sync` 或 `npx garden dev` 会把引擎自带的 skill 装进 `.agents/skills/`。审查一篇稿时，对 AI 说审查这篇，并给出文件路径；硬性结构用 `npx garden check content/posts/文章.md`。五种原语、视觉规范和 AI 写法见 [可交互组件](interactive-blog-components.md) 与 [.agents/skills/garden-interactive-chart](../.agents/skills/garden-interactive-chart/SKILL.md)。拓扑仍用 Mermaid；只有读者需要自己走一步或拧旋钮时才加图表。
 
+还不想记组件名时，用一段 `intent` 围栏写下想法，让 AI 按模板编译。语法、目录和 Typora / VS Code / Obsidian 插件见 [Intelligent UI 写作层](intelligent-ui.md)。
+
 ### 使用语义警告框
 
 使用 Typora / Obsidian 兼容的 `[!TYPE]` 写法。没有自定义标题时，网页会根据类型显示对应中文标签；需要更具体的标题时，可直接写在类型后面。
