@@ -1,0 +1,10 @@
+{
+  "id": "garden-intelligent-ui",
+  "name": "Garden Intelligent UI",
+  "version": "0.1.0",
+  "minAppVersion": "1.5.0",
+  "description": "预览 Garden 交互块（ui / intent 代码块），用一句话插入意图块，查看组件清单。",
+  "author": "hedon",
+  "authorUrl": "https://github.com/hedon954",
+  "isDesktopOnly": false
+}

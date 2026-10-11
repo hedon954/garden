@@ -5,6 +5,7 @@ import matter from "gray-matter";
 import { marked } from "marked";
 import { parse as parseYaml, stringify as stringifyYaml } from "yaml";
 import { canonicalSiteDate } from "./site-date.mjs";
+import { contentForFeed, contentToSearchText, transformUiContent } from "../ui/core/transform.mjs";
 
 function resolveSiteRoot() {
   if (process.env.GARDEN_SITE) return path.resolve(process.env.GARDEN_SITE);
@@ -23,6 +24,8 @@ const gardenDir = path.join(root, ".garden");
 const output = path.join(gardenDir, "generated-content.ts");
 const siteConfigOutput = path.join(gardenDir, "site-config.ts");
 const includeDrafts = process.env.CONTENT_INCLUDE_DRAFTS === "1";
+// Local preview shows broken ui blocks as error cards; public builds fail on them.
+const uiMode = includeDrafts || process.env.GARDEN_CONTENT_MODE === "preview" ? "preview" : "publish";
 const now = Date.now();
 const basePath = (process.env.NEXT_PUBLIC_BASE_PATH ?? "").replace(/\/+$/u, "");
 const siteUrl = (process.env.SITE_URL ?? process.env.NEXT_PUBLIC_SITE_URL ?? "https://example.com")
@@ -249,6 +252,26 @@ function rewriteWidgetFences(content, markdownPath, sourcePath) {
   );
 }
 
+function rewriteUiFences(content, markdownPath, sourcePath, lineOffset) {
+  const { content: transformed, errors } = transformUiContent(content, {
+    mode: uiMode,
+    markdownPath: sourcePath.split(path.sep).join("/"),
+    lineOffset,
+    readData: (src) => {
+      const absolute = path.resolve(path.dirname(markdownPath), src);
+      return fs.existsSync(absolute) && fs.statSync(absolute).isFile() ? fs.readFileSync(absolute, "utf8") : undefined;
+    },
+    resolveAsset: (_sidecarPath, written) => copyLocalAsset(written, markdownPath, sourcePath),
+  });
+  if (errors.length) {
+    fail(
+      sourcePath,
+      `ui 块没有通过检查：\n${errors.map((item) => `  第 ${item.line} 行 ${item.code}：${item.message}`).join("\n")}\n修好后再发布；可以运行 npx garden ui check ${path.join("content", sourcePath)} 拿到修复提示词。`,
+    );
+  }
+  return transformed;
+}
+
 function normalizeMedia(media, markdownPath, sourcePath) {
   if (media === undefined || media === null) return undefined;
   if (typeof media === "string") {
@@ -286,7 +309,7 @@ function normalizeMedia(media, markdownPath, sourcePath) {
   });
 }
 
-function validateAndNormalize(data, content, markdownPath, kind, sourcePath) {
+function validateAndNormalize(data, content, markdownPath, kind, sourcePath, lineOffset = 0) {
   const title = requireString(data, "title", sourcePath);
   const slug = path.basename(markdownPath, ".md");
   if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/u.test(slug)) {
@@ -355,12 +378,18 @@ function validateAndNormalize(data, content, markdownPath, kind, sourcePath) {
       : undefined,
     media: normalizeMedia(data.media, markdownPath, sourcePath),
     content: rewriteWidgetFences(
-      rewriteMarkdownAssets(content.trim(), markdownPath, sourcePath),
+      rewriteMarkdownAssets(
+        rewriteUiFences(content.trim(), markdownPath, sourcePath, lineOffset + leadingLines(content)),
+        markdownPath,
+        sourcePath,
+      ),
       markdownPath,
       sourcePath,
     ),
   };
 }
+
+const leadingLines = (content) => (/^\s*/u.exec(content)?.[0].match(/\n/gu) ?? []).length;
 
 function readMarkdownTree(directory, kind) {
   if (!fs.existsSync(directory)) return [];
@@ -379,12 +408,14 @@ function readMarkdownTree(directory, kind) {
       },
     });
     const sourcePath = path.relative(contentRoot, fullPath);
+    const frontMatterLines = raw.slice(0, raw.length - parsed.content.length).split("\n").length - 1;
     const normalized = validateAndNormalize(
       parsed.data,
       parsed.content,
       fullPath,
       kind,
       sourcePath,
+      frontMatterLines,
     );
     return normalized ? [normalized] : [];
   });
@@ -591,9 +622,9 @@ function writeRssFeed(fileName, entries) {
       <link>${escapeXml(`${publicBaseUrl}${entry.path}`)}</link>
       <guid isPermaLink="true">${escapeXml(`${publicBaseUrl}${entry.path}`)}</guid>
       <pubDate>${new Date(entry.date).toUTCString()}</pubDate>
-      <description>${escapeXml(entry.description ?? entry.content.replace(/\s+/gu, " ").slice(0, 180))}</description>
+      <description>${escapeXml(entry.description ?? contentToSearchText(entry.content).replace(/\s+/gu, " ").trim().slice(0, 180))}</description>
       ${(entry.tags ?? []).map((tag) => `<category>${escapeXml(tag)}</category>`).join("")}
-      <content:encoded><![CDATA[${cdata(marked.parse(entry.content))}]]></content:encoded>
+      <content:encoded><![CDATA[${cdata(marked.parse(contentForFeed(entry.content, { pageUrl: `${publicBaseUrl}${entry.path}`, siteUrl: publicBaseUrl })))}]]></content:encoded>
     </item>`).join("");
 
   fs.writeFileSync(path.join(publicRoot, fileName), `<?xml version="1.0" encoding="UTF-8" ?>

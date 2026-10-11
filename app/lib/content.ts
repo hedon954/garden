@@ -8,6 +8,7 @@ import {
 } from "@garden/generated-content";
 import GithubSlugger from "github-slugger";
 import { canonicalSiteDate } from "../../scripts/site-date.mjs";
+import { contentToSearchText } from "../../ui/core/transform.mjs";
 import { toString } from "mdast-util-to-string";
 import remarkParse from "remark-parse";
 import { unified } from "unified";
@@ -59,7 +60,7 @@ export const extractHeadings = (markdown: string) => {
 };
 
 const toSearchableText = (markdown: string) =>
-  markdown
+  contentToSearchText(markdown)
     .replace(/```[^\n]*\n([\s\S]*?)```/g, " $1 ")
     .replace(/!\[([^\]]*)\]\([^)]+\)/g, " $1 ")
     .replace(/\[([^\]]+)\]\([^)]+\)/g, " $1 ")

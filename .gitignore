@@ -51,6 +51,12 @@ next-env.d.ts
 
 /public/media/
 
+# Editor plugins build into their own dist/; the preview bundle is rebuilt by `npm run ui:build` and on pack.
+/editors/*/node_modules/
+/editors/*/dist/
+/editors/vscode/LICENSE
+*.vsix
+
 # Generated from Markdown during build; GitHub Actions regenerates these for Pages.
 /public/rss.xml
 /public/sitemap.xml

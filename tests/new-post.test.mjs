@@ -98,6 +98,7 @@ test("generated articles pass the real pipeline and are excluded from public out
   await cp(path.join(project, "scripts/site-date.mjs"), path.join(root, "scripts/site-date.mjs"));
   await cp(path.join(project, "site.config.yaml"), path.join(root, "site.config.yaml"));
   await symlink(path.join(project, "node_modules"), path.join(root, "node_modules"));
+  await symlink(path.join(project, "ui"), path.join(root, "ui"), "dir");
   const output = path.join(root, ".garden/generated-content.ts");
   for (const includeDrafts of ["0", "1"]) {
     await exec(process.execPath, ["scripts/build-content.mjs"], {

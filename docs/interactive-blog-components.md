@@ -4,6 +4,8 @@ Christy Jacob 的 [KV Caching](https://www.christyjacob.dev/blog/kv-caching) 证
 
 本文从 **garden-blog 现有文章对读者的具体限制** 出发，收成一小套原语，并规定作者怎么把图表嵌进 Typora 稿——**复杂交互不写进 Markdown**。完整例子见 [widget-kind-examples.md](./widget-kind-examples.md)；写图表时先读仓库里的 [garden-interactive-chart skill](../.agents/skills/garden-interactive-chart/SKILL.md)。
 
+本文讲的是手写 HTML 的 `widget`，"复杂交互不写进 Markdown"也只针对它。作者用自然语言描述、由 AI 编译、写在原位置的 `ui` 块见 [Intelligent UI 写作层](./intelligent-ui.md)。
+
 约束先说死：正文仍是 Typora 可预览的 Markdown；继续走围栏语言注册表（已有 `mermaid`、`embed`，加上 `widget`）；默认管道不加 MDX。Garden 是阅读系统（封面、主题、目录、字数、搜索、RSS、浅色纸面），不是演示站。组件跟站点走，不跟参考文的暗色电影感走。
 
 ---
@@ -186,7 +188,7 @@ MDX 能嵌三个现成 React 组件，但会拆开现在这条作者链路：
 2. 需要读者动手时，在稿件旁建同名目录，按 [garden-interactive-chart skill](../.agents/skills/garden-interactive-chart/SKILL.md) 写 HTML；可从 [widget-kind-examples/](./widget-kind-examples/) 抄最近的同类例子。
 3. 在正文贴一段 `widget` 围栏，写 `src` 和 `caption`。
 4. `CONTENT_INCLUDE_DRAFTS=1 make dev` 看嵌入结果；路径写错时看和 `embed` 同类的错误句。也可直接用浏览器打开那份 HTML。
-5. 不在管理后台里可视化搭图表。后台继续只管随想与置顶；长文仍是 Typora + Git。
+5. 同名目录 HTML 不在管理后台里搭。单块 `ui` 可以在后台的组件工作台里打磨，见 [Intelligent UI 写作层](./intelligent-ui.md#113-组件工作台)；长文仍是本地编辑器 + Git。
 
 ---
 
@@ -215,7 +217,7 @@ MDX 能嵌三个现成 React 组件，但会拆开现在这条作者链路：
 ### 永不做
 
 - 默认把每篇编成 MDX，或从 Markdown 跑 JSX
-- 在 Markdown 正文里摊开步进数组、格子矩阵或公式采样点
+- 在 Markdown 正文里摊开步进数组、格子矩阵或公式采样点（`ui` 块例外：它就写在原位置，大小由元素上限约束；采样点始终由渲染器计算）
 - 图表 HTML 加载远程脚本、远程 iframe，或向父页读写 cookie / DOM
 - 服务端或浏览器执行读者输入的通用代码
 - 移植 Christy 的组件源码、暗色皮肤、电影感封面逻辑
@@ -237,4 +239,4 @@ MDX 能嵌三个现成 React 组件，但会拆开现在这条作者链路：
 
 通过这四问，KV 文是步进器 + 参数台；浮点文是参数台；加密模式是检视格 + 对照；Raft 是步进器（日后才是轨迹）。调色板保持小，作者链路保持「一段短围栏 + 一份独立 HTML」。
 
-作者记不住原语名字时，先写 `intent` 围栏，再由 skill 按模板收成组件。写作入口、目录 schema 和编辑器预览见 [Intelligent UI 写作层](./intelligent-ui.md)。装不进目录的交互仍回到本文的同名目录 HTML。
+作者记不住原语名字时，先写 `intent` 围栏，再由 skill 编译成站点原生绘制的 `ui` 块；五种原语在那里是组合配方。写作入口、组件目录和编辑器预览见 [Intelligent UI 写作层](./intelligent-ui.md)。目录装不进的交互仍回到本文的同名目录 HTML。

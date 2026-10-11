@@ -1,4 +1,6 @@
 @import "tailwindcss";
+@import "../ui/react/ui.css";
+@import "./admin-ui.css";
 
 :root {
   --paper: #f8f8f6;

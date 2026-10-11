@@ -1,11 +1,14 @@
 import Link from "next/link";
 import { ArrowSquareOut, GithubLogo, LockKey } from "@phosphor-icons/react/ssr";
 import { AdminDashboard } from "../components/AdminDashboard";
-import { getAdminUser, isGitHubOAuthConfigured } from "../lib/admin-auth";
+import { getAdminUser, isGitHubLoginAvailable } from "../lib/admin-auth";
 import { columns, posts, thoughts } from "../lib/content";
 import { isContentRepositoryConfigured, listRepositoryThoughts } from "../lib/github-content";
 import { getSiteUrl } from "../lib/site";
 import { siteConfig } from "../site.config";
+import { modelConfig, remainingDrafts } from "../lib/ui-model";
+import { CATALOG_VERSION } from "../../ui/core/catalog.mjs";
+import packageJson from "../../package.json";
 
 export const dynamic = process.env.STATIC_EXPORT === "1" ? "force-static" : "force-dynamic";
 
@@ -45,7 +48,7 @@ export default async function AdminPage({
 
   const [user, query, publicSiteUrl] = await Promise.all([getAdminUser(), searchParams, getSiteUrl()]);
   if (!user) {
-    const oauthReady = isGitHubOAuthConfigured();
+    const oauthReady = isGitHubLoginAvailable();
     return (
       <main className="admin-access-page">
         <div className="admin-access-card">
@@ -57,7 +60,9 @@ export default async function AdminPage({
               ? `登录账号 @${query.account ?? "未知"} 没有后台权限。`
               : oauthReady
                 ? "登录后会检查你的 GitHub 用户名是否在允许名单中。"
-                : "GitHub OAuth 尚未配置；请先设置后台所需的环境变量。"}
+                : process.env.GARDEN_DEV === "1"
+                  ? "本机还没有 GitHub 登录。在终端运行 gh auth login 后，重新启动本地服务。"
+                  : "GitHub OAuth 尚未配置；请先设置后台所需的环境变量。"}
           </p>
           <div className="admin-access-actions">
             {oauthReady && (
@@ -112,6 +117,12 @@ export default async function AdminPage({
       catalog={catalog}
       publicSiteUrl={publicSiteUrl}
       contentWarning={contentWarning}
+      ui={{
+        modelName: modelConfig()?.model ?? null,
+        remaining: remainingDrafts(user.login),
+        engineVersion: packageJson.version,
+        catalogVersion: CATALOG_VERSION,
+      }}
     />
   );
 }

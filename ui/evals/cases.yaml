@@ -1,0 +1,155 @@
+# 提示词回归集。每条是一段作者原话和期望结果：
+#   components  生成的 ui 块里必须出现的组件（可以更多，不能缺）
+#   assert      原话里有已知点：块头必须写 expect，并且通过校验
+#   note        这段用一张表或一句话就够：工作台应在围栏前给出"提醒："
+# 后台模型自检逐条以 mode: create 调用生成接口，记录：校验是否通过、修复轮数、
+# 以上三项是否满足、token 用量、耗时。改提示词或组件目录后跑一遍，和上一次对比。
+
+- id: kv-memory
+  intent: |
+    让读者拧 batch 和序列长度，看 KV cache 占多少显存。
+    batch 1 到 32，默认 1；序列 1K 到 32K，默认 4K，用对数轴。
+    显存 = 2 × 32 层 × 8 个 KV 头 × 128 维 × 序列长度 × batch × 2 字节。
+    batch 1、序列 4096 时是 512 MiB。
+  expect:
+    components: [Slider, Chart]
+    assert: true
+
+- id: prefill-decode
+  intent: |
+    让读者一步步看 KV cache 怎么增长：prompt 3 个 token，然后 decode 两步。
+    每步标出哪一行 K/V 是新算的，哪些是直接读缓存。
+  expect:
+    components: [Steps, Grid]
+
+- id: ecb-vs-cbc
+  intent: |
+    明文分四块：A B A A。让读者在 ECB 和 CBC 之间切换，
+    看 ECB 下密文出现重复块，CBC 下重复消失。点一个密文块能看到它和谁相同。
+  expect:
+    components: [Grid]
+
+- id: mutex-vs-rwlock
+  intent: |
+    并排对比 Mutex 和 RwLock。一个写者，读者数量 1 到 8 可调，每次读写都是 10 ms。
+    Mutex 下所有人排队；RwLock 下读者一起读，写者再独占。3 个读者时 Mutex 要 40 ms。
+  expect:
+    components: [Slider, Columns]
+    assert: true
+
+- id: tcp-handshake
+  intent: |
+    一步步走 TCP 三次握手，每一步列出客户端和服务端各自处于什么状态，
+    标出这一步状态变了的那一方。
+  expect:
+    components: [Steps, Table]
+
+- id: lr-warmup-cosine
+  intent: |
+    学习率先线性预热到 3e-4，再按余弦衰减到 0，总共 10000 步。
+    让读者拖预热步数（100 到 3000，默认 1000），看整条学习率曲线怎么变。
+    预热结束那一步学习率正好是 3e-4。
+  expect:
+    components: [Slider, Chart]
+    assert: true
+
+- id: float-sum
+  intent: |
+    让读者从 0.1、0.2、0.25、0.5 里挑两个数相加，看结果，
+    再看每个数的 64 位二进制表示，体会为什么 0.1 + 0.2 不等于 0.3，而 0.25 + 0.5 没问题。
+  expect:
+    components: [Choice, Table]
+
+- id: gqa-compression
+  intent: |
+    模型有 32 个查询头。GQA 让多个查询头共用一组 K/V。
+    让读者选 KV 头数（1、2、4、8、32），看 KV cache 比 MHA 小了几倍。8 个 KV 头时是 4 倍。
+  expect:
+    components: [Choice]
+    assert: true
+
+- id: raft-election
+  intent: |
+    5 个节点的 Raft 集群，leader 宕机后的一次选举：
+    某个 follower 超时、任期加一、变成 candidate、拉票、拿到多数票成为新 leader。
+    一步步看每个节点的角色和任期。
+  expect:
+    components: [Steps, Table]
+
+- id: go-gpm
+  intent: |
+    一步步看 Go 调度器：新建的 goroutine 先进 P 的本地队列；P 绑在 M 上执行；
+    本地队列空了以后，P 从全局队列偷一批。每步标出当前在动的是 G、P 还是 M。
+  expect:
+    components: [Steps]
+
+- id: compound-savings
+  intent: |
+    每月月末存 2000 元，年化 3%，按月复利。让读者拖存款年限（1 到 30 年，默认 10 年），
+    看到期总额和其中的利息，再画一条总额随年限变化的曲线。10 年后约 27.9 万。
+  expect:
+    components: [Slider, Chart]
+    assert: true
+
+- id: bill-split
+  intent: |
+    聚餐 AA 计算器：总金额、人数、小费比例（0%、10%、15%）都能调，显示每人该付多少。
+    600 元、4 个人、10% 小费时每人 165 元。
+  expect:
+    components: [Slider, Choice]
+    assert: true
+
+- id: roast-shopping
+  intent: |
+    按人数（2 到 12 人，默认 6 人）算周日烤羊腿要买多少：
+    带骨羊腿每人 0.4 kg，土豆每人 250 g，胡萝卜每人 1.5 根，甜点苹果每人半个。
+  expect:
+    components: [Slider, Table]
+    assert: true
+
+- id: roast-timeline
+  intent: |
+    给一张周日烤羊腿的时间线清单，5 点开饭：前一天腌肉、做甜点，
+    当天 13:30 进烤箱，15:30 出炉静置并烤土豆，16:45 切肉，读者可以一项项勾掉。
+  expect:
+    components: [Checklist]
+
+- id: redis-io-threads
+  intent: |
+    把 Redis I/O 线程数的压测结果画成柱状图，再列一张表：
+    1 线程 98000 QPS，2 线程 181000，4 线程 312000，8 线程 356000。
+  expect:
+    components: [Chart, Table]
+
+- id: binary-search
+  intent: |
+    在 [1 3 5 7 9 11 13 15] 里二分查找 9，一步步标出每轮 lo、mid、hi 落在哪一格，
+    以及这一轮比较的结果。
+  expect:
+    components: [Steps, Grid]
+
+- id: hash-load-factor
+  intent: |
+    开放寻址哈希表，一次查找失败时的平均探测次数约为 1 / (1 − α)。
+    让读者拖装载因子 α（0.1 到 0.95），看探测次数，并画出曲线。α = 0.5 时是 2 次。
+  expect:
+    components: [Slider, Chart]
+    assert: true
+
+- id: lock-names
+  intent: |
+    列出 Go 标准库里的三种锁：Mutex、RWMutex、sync.Once，各写一句适用场景。
+  expect:
+    note: true
+
+- id: what-is-kv-cache
+  intent: |
+    用一段话解释什么是 KV cache，以及它为什么能加速推理。
+  expect:
+    note: true
+
+- id: author-photo
+  intent: |
+    在这里放一张我在会场演讲的照片。
+  expect:
+    note: true

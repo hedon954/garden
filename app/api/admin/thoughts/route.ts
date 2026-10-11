@@ -74,7 +74,7 @@ function parsePayload(payload: ThoughtPayload) {
         .slice(0, 12)
     : [];
   const media = parseMedia(payload.media ?? []);
-  const status = payload.status === "draft" ? "draft" : "published";
+  const status: "draft" | "published" = payload.status === "draft" ? "draft" : "published";
 
   if (!title || title.length > 120) return { error: "标题不能为空，且不得超过 120 个字符。" };
   if (!content || content.length > 20_000) return { error: "正文不能为空，且不得超过 20,000 个字符。" };

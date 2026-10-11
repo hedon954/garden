@@ -1,0 +1,1 @@
+# Present so npm ignores ./.gitignore here: dist/ is built on pack and must ship for `garden ui catalog`.

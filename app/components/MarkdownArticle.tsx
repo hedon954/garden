@@ -14,6 +14,11 @@ import { MermaidDiagram } from "./MermaidDiagram";
 import { MarkdownImage } from "./MarkdownImage";
 import { ExternalEmbed } from "./ExternalEmbed";
 import { WidgetChart } from "./WidgetChart";
+import { IntentBlock, UiBlock, UiErrorBlock } from "./UiBlock";
+
+const BLOCK_LANGUAGES = ["language-mermaid", "language-embed", "language-widget", "language-ui", "language-ui-error", "language-intent"];
+const isBlockLanguage = (className?: string) =>
+  Boolean(className) && BLOCK_LANGUAGES.some((language) => className?.split(/\s+/u).includes(language));
 
 function CodeBlock({
   className,
@@ -28,6 +33,15 @@ function CodeBlock({
   }
   if (className?.includes("language-widget")) {
     return <WidgetChart source={String(children).trim()} />;
+  }
+  if (className?.split(/\s+/u).includes("language-ui")) {
+    return <UiBlock source={String(children)} />;
+  }
+  if (className?.split(/\s+/u).includes("language-ui-error")) {
+    return <UiErrorBlock source={String(children)} />;
+  }
+  if (className?.split(/\s+/u).includes("language-intent")) {
+    return <IntentBlock source={String(children)} />;
   }
 
   const codeProps = { ...props };
@@ -118,11 +132,7 @@ export function MarkdownArticle({ content }: { content: string }) {
             const preProps = { ...props };
             delete preProps.node;
 
-            if (
-              className?.includes("language-mermaid") ||
-              className?.includes("language-embed") ||
-              className?.includes("language-widget")
-            ) {
+            if (isBlockLanguage(className)) {
               return <>{children}</>;
             }
 

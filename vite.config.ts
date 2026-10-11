@@ -45,10 +45,10 @@ const localBindingConfig = {
 };
 
 function gardenContent() {
-  const sync = () => {
+  const sync = (mode?: "preview") => {
     spawnSync(process.execPath, [path.join(gardenPackageRoot, "scripts", "build-content.mjs")], {
       cwd: siteRoot,
-      env: { ...process.env, GARDEN_SITE: siteRoot },
+      env: { ...process.env, GARDEN_SITE: siteRoot, ...(mode ? { GARDEN_CONTENT_MODE: mode } : {}) },
       stdio: "inherit",
     });
   };
@@ -80,7 +80,8 @@ function gardenContent() {
       server.watcher.add([contentDir, configFile]);
       server.watcher.on("change", (file) => {
         if (file.startsWith(contentDir) || file === configFile) {
-          sync();
+          // While editing, a broken ui block shows as an error card instead of stopping the server.
+          sync("preview");
           server.ws.send({ type: "full-reload" });
         }
       });

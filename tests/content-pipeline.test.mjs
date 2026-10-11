@@ -46,6 +46,7 @@ test("content pipeline validates metadata, excludes drafts, and publishes Typora
       path.join(fixture, "node_modules"),
       "dir",
     );
+    await symlink(path.join(projectRoot, "ui"), path.join(fixture, "ui"), "dir");
     await writeFile(
       path.join(fixture, "content", "covers", "cover.jpg"),
       "fixture-cover",

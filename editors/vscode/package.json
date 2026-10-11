@@ -1,0 +1,125 @@
+{
+  "name": "garden-ui",
+  "displayName": "Garden Intelligent UI",
+  "description": "在 Markdown 里插入、预览和检查 Garden 交互块（intent / ui 围栏）。",
+  "version": "0.1.0",
+  "publisher": "hedon954",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hedon954/garden"
+  },
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "categories": [
+    "Visualization",
+    "Snippets",
+    "Linters"
+  ],
+  "keywords": [
+    "markdown",
+    "garden",
+    "intelligent ui"
+  ],
+  "main": "./dist/extension.js",
+  "activationEvents": [
+    "onLanguage:markdown"
+  ],
+  "contributes": {
+    "markdown.markdownItPlugins": true,
+    "markdown.previewScripts": [
+      "./dist/garden-ui.iife.js",
+      "./dist/preview.js"
+    ],
+    "markdown.previewStyles": [
+      "./dist/garden-ui.css",
+      "./dist/preview.css"
+    ],
+    "commands": [
+      {
+        "command": "garden.insertIntent",
+        "title": "插入意图块",
+        "category": "Garden"
+      },
+      {
+        "command": "garden.copyCompilePrompt",
+        "title": "复制编译提示词",
+        "category": "Garden"
+      },
+      {
+        "command": "garden.openCatalog",
+        "title": "查看组件清单",
+        "category": "Garden"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "garden.insertIntent",
+        "key": "ctrl+alt+i",
+        "mac": "cmd+alt+i",
+        "when": "editorTextFocus && editorLangId == markdown"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "command": "garden.insertIntent",
+          "when": "editorLangId == markdown",
+          "group": "garden@1"
+        },
+        {
+          "command": "garden.copyCompilePrompt",
+          "when": "editorLangId == markdown",
+          "group": "garden@2"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "garden.insertIntent",
+          "when": "editorLangId == markdown"
+        },
+        {
+          "command": "garden.copyCompilePrompt",
+          "when": "editorLangId == markdown"
+        }
+      ]
+    },
+    "snippets": [
+      {
+        "language": "markdown",
+        "path": "./snippets/markdown.json"
+      }
+    ],
+    "grammars": [
+      {
+        "scopeName": "markdown.garden-ui.codeblock",
+        "path": "./syntaxes/ui-codeblock.json",
+        "injectTo": [
+          "text.html.markdown"
+        ],
+        "embeddedLanguages": {
+          "meta.embedded.block.garden-ui": "markdown"
+        }
+      }
+    ],
+    "configuration": {
+      "title": "Garden",
+      "properties": {
+        "garden.foldUiBodies": {
+          "type": "boolean",
+          "default": true,
+          "description": "打开稿件时折叠 ui 块的正文，只露出块头。"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "build": "node build.mjs",
+    "package": "node build.mjs && vsce package --no-dependencies"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.90.0",
+    "@vscode/vsce": "^3.2.0"
+  }
+}

@@ -102,6 +102,28 @@ Cloudflare 的构建产物由 `vinext build` 生成在 `dist/server/`；工作�
 
 因此源码仓库始终是唯一内容真源；公开产物仓库只是可重建缓存。即使后台服务或公开仓库更换，博客仍可从源码完整构建。
 
-## 组件工作台
+## Intelligent UI
 
-后台将增加 `/admin/ui`，用来单独打磨一块 Intelligent UI：自然语言生成结构化初稿，手改结构化结果时即时渲染。模型密钥只放在这个后台服务上。交互、接口和复制回稿件的方式见 [Intelligent UI 写作层](intelligent-ui.md#10-后台组件工作台)。
+后台有几页服务 [Intelligent UI 写作层](intelligent-ui.md#11-管理后台)。它们只读源码仓库（`CONTENT_REPOSITORY`），不写稿件；没配置仓库时，交互块总览、从稿件打开和草稿预览会说明缺什么，组件工作台和组件清单照常可用：
+
+| 页面 | 作用 |
+| --- | --- |
+| `/admin/ui` | 组件工作台：用自然语言生成或修改一块 `ui`，手改时即时重绘，不再调用模型；改好后复制围栏或写回命令带回本地 |
+| `/admin/ui/catalog` | 组件清单：有哪些组件和配方，各能做成什么样 |
+| `/admin/ui/blocks` | 交互块总览：所有稿件（含草稿）里的块和状态 |
+| `/admin/preview/<稿件路径>` | 草稿预览：渲染仓库里的任意一篇稿 |
+| `/admin/ui/evals` | 模型自检：用回归集给当前模型和提示词打分 |
+
+分发到 CSDN、知乎、掘金时，`ui` 块会换成静态快照的 Markdown 版，并附原文链接。
+
+模型密钥只放在这个后台服务上：
+
+| Variable | 作用 |
+| --- | --- |
+| `UI_MODEL_BASE_URL` | OpenAI 兼容接口的根地址 |
+| `UI_MODEL_API_KEY` | 模型密钥，不进浏览器和公开构建 |
+| `UI_MODEL_NAME` | 模型名 |
+| `UI_DRAFT_RATE_LIMIT` | 可选；每个登录用户每小时的生成次数，默认 60 |
+| `GITHUB_API_URL` | 可选；GitHub API 根地址，用于 GitHub Enterprise 或本地测试替身，默认 `https://api.github.com` |
+
+交互、接口和带回稿件的方式见 [Intelligent UI 写作层](intelligent-ui.md#11-管理后台)。

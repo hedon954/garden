@@ -1,0 +1,7 @@
+{
+  "Garden 意图块": {
+    "prefix": ["intent", "意图"],
+    "body": ["```intent", "$0", "```"],
+    "description": "用一句话写想让读者怎么互动，之后交给 AI 编译成 ui 块"
+  }
+}

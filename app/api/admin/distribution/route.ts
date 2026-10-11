@@ -1,6 +1,7 @@
 import { requireAdminApi, requireAdminMutation } from "../../../lib/admin-auth";
 import { findColumnEntry, findPost } from "../../../lib/content";
 import { absoluteUrl, getSiteUrl } from "../../../lib/site";
+import { contentForDistribution } from "../../../../ui/core/transform.mjs";
 
 type Platform = "x" | "csdn" | "zhihu" | "juejin";
 
@@ -45,7 +46,8 @@ export async function POST(request: Request) {
   if (!source) return Response.json({ error: "未找到对应内容。" }, { status: 404 });
 
   const publicPath = kind === "post" ? `/blog/${source.path}` : `/columns/${source.column}/${source.path}`;
-  const canonicalUrl = absoluteUrl(publicPath, await getSiteUrl());
+  const siteUrl = await getSiteUrl();
+  const canonicalUrl = absoluteUrl(publicPath, siteUrl);
   let status: "queued" | "published" | "needs_credentials" | "failed" = "queued";
   let externalUrl: string | null = null;
   let error: string | null = null;
@@ -87,7 +89,7 @@ export async function POST(request: Request) {
           body: JSON.stringify({
             platform,
             title: source.title,
-            markdown: source.content,
+            markdown: contentForDistribution(source.content, { pageUrl: canonicalUrl, siteUrl }),
             summary: source.description ?? "",
             canonicalUrl,
             tags: source.tags ?? [],
