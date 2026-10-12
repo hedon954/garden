@@ -1,7 +1,7 @@
 "use client";
 
 import { marked } from "marked";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState, useSyncExternalStore } from "react";
 import { COMPONENTS, GROUPS } from "../core/catalog.mjs";
 import { compileUiBlock } from "../core/compile.mjs";
 import { DEMOS, demoFence } from "../core/demos.mjs";
@@ -68,11 +68,45 @@ function PropTable({ spec }: { spec: Spec }) {
 
 const CATEGORIES = ["配方", ...GROUPS];
 
+const hashListeners = new Set<() => void>();
+
+function subscribeCatalogHash(onStoreChange: () => void) {
+  hashListeners.add(onStoreChange);
+  window.addEventListener("hashchange", onStoreChange);
+  return () => {
+    hashListeners.delete(onStoreChange);
+    window.removeEventListener("hashchange", onStoreChange);
+  };
+}
+
+function categoryFromHash(hash: string): string {
+  const id = hash.replace(/^#/, "");
+  if (id.startsWith("component-")) {
+    const spec = COMPONENTS[id.slice("component-".length) as keyof typeof COMPONENTS] as Spec | undefined;
+    if (spec?.group) return spec.group;
+  } else if (id === "配方" || id.startsWith("recipe-")) return "配方";
+  else {
+    try {
+      const decoded = decodeURIComponent(id);
+      if ((CATEGORIES as string[]).includes(decoded)) return decoded;
+    } catch {
+      // A malformed hash stays on the default category.
+    }
+  }
+  return "展示";
+}
+
+function replaceCatalogHash(name: string) {
+  window.history.replaceState(null, "", `#${encodeURIComponent(name)}`);
+  for (const listener of hashListeners) listener();
+}
+
 /** Category rail on the left, a grid of name + preview cards on the right. */
 export function CatalogPage({ recipes = [], onStart }: { recipes?: RecipeSource[]; onStart?: (fence: string) => void }) {
   const parsedRecipes = useMemo(() => recipes.map(parseRecipe).filter((recipe) => recipe.fence), [recipes]);
   const [query, setQuery] = useState("");
-  const [category, setCategory] = useState("展示");
+  const hash = useSyncExternalStore(subscribeCatalogHash, () => window.location.hash, () => "");
+  const category = categoryFromHash(hash);
   const [openId, setOpenId] = useState<string | null>(null);
   const normalized = query.trim().toLowerCase();
 
@@ -108,19 +142,9 @@ export function CatalogPage({ recipes = [], onStart }: { recipes?: RecipeSource[
   const activeCategory = categories.includes(category) ? category : categories[0];
   const cards = activeCategory ? cardsFor(activeCategory) : [];
 
-  useEffect(() => {
-    const id = window.location.hash.replace(/^#/, "");
-    if (id.startsWith("component-")) {
-      const spec = COMPONENTS[id.slice("component-".length) as keyof typeof COMPONENTS] as Spec | undefined;
-      if (spec?.group) setCategory(spec.group);
-    } else if (id === "配方" || id.startsWith("recipe-")) setCategory("配方");
-    else if ((CATEGORIES as string[]).includes(decodeURIComponent(id))) setCategory(decodeURIComponent(id));
-  }, []);
-
   const chooseCategory = (name: string) => {
-    setCategory(name);
     setOpenId(null);
-    window.history.replaceState(null, "", `#${encodeURIComponent(name)}`);
+    replaceCatalogHash(name);
   };
 
   return (
