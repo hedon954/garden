@@ -26,8 +26,8 @@
 
 ### 1.3 不做
 
-- 阅读页上调用模型、流式生成、"继续对话"按钮（ChatGPT 的 `issueNewTurn`）。
-- `ui` 里执行任意 JavaScript、写 CSS、引用远程地址。
+- 阅读页上调用模型。`issuePrompt` 是宿主接口，公开博客不实现它；聊天宿主可以接上。
+- `ui` 正文里写任意 JavaScript、CSS 或远程地址。自包含画布放在 `<Sandbox>` 里，仍然不能加载远程资源。
 - 跨块共享状态，或让 `ui` 块外的正文随状态变化。块外正文必须在 RSS 和 Typora 里独立成立。
 - 读者状态跨刷新保存。
 - 把整篇稿改成 MDX。
@@ -357,10 +357,13 @@ expect:
 | 媒体与代码 | `Image src alt` > `Hotspot x y title` | 带热点的插图，对应 ChatGPT 的自行车结构图 | 6 |
 | | `Code lang code highlight` | 代码走查，`highlight` 可以随步骤变化 | 6 |
 | | `Diagram mermaid highlight` | Mermaid 负责布局，高亮的节点和边随状态变化 | 6 |
+| | `Sandbox title html css js` | 目录表达不了的画布。无网络 iframe，注入 `--viz-*`；`issuePrompt` 由宿主决定 | 6 |
 
 `catalog.mjs` 里每个组件除了属性和规则，还带一句用途、几句作者可能的口语说法和一个最小示例。组件清单、`garden ui prompt` 和校验器都从这里读，说明和实现不会走样。
 
-加组件的门槛：至少两段真实的 `intent` 用现有组件写不出来，并且能写成一份配方。地图、测验、投票、游戏、3D 不进目录。
+加组件的门槛：至少两段真实的 `intent` 用现有组件写不出来，并且能写成一份配方。地图、三维和自由动画不另开组件，写进 `<Sandbox>`：内联 HTML、CSS 和脚本，由模块放进无网络的 iframe，并注入 `--viz-*` 主题变量。继续对话不在模块里调用模型，只通过宿主的 `issuePrompt`；公开博客留空。
+
+模块边界在 `ui/README.md`。`ui/` 不引用 `app/`、`scripts/`、`content/` 或编辑器插件。Garden 只作为宿主：读稿、调用模型、把画好的块嵌进文章页。
 
 ---
 

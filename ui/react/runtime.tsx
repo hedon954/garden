@@ -24,6 +24,18 @@ export type Runtime = {
 
 const RuntimeContext = createContext<Runtime | null>(null);
 
+export type UiHost = {
+  openUrl?: (url: string) => void;
+  issuePrompt?: (text: string) => void;
+  copy?: (text: string) => void;
+};
+
+const HostContext = createContext<UiHost>({});
+
+export function useHost() {
+  return useContext(HostContext);
+}
+
 export function useRuntime() {
   const runtime = useContext(RuntimeContext);
   if (!runtime) throw new Error("Garden UI component outside UiRuntime");
@@ -204,7 +216,9 @@ function carryOver(defaults: Record<string, unknown>, previous: Record<string, u
   return next;
 }
 
-export function UiRuntime({ payload }: { payload: UiPayload }) {
+const EMPTY_HOST: UiHost = {};
+
+export function UiRuntime({ payload, host }: { payload: UiPayload; host?: UiHost }) {
   const decls = useMemo(() => collectDecls(payload.root), [payload.root]);
   const defaults = useMemo(() => defaultStateValues(decls) as Record<string, unknown>, [decls]);
   const [state, setStateValue] = useState<Record<string, unknown>>(defaults);
@@ -230,10 +244,12 @@ export function UiRuntime({ payload }: { payload: UiPayload }) {
     [payload.id, payload.root, decls, data, defaults, state, scope, sliders, setState, reset, scopeFor],
   );
   return (
-    <RuntimeContext.Provider value={runtime}>
-      <div className="garden-ui-body">
-        <RenderNodes nodes={payload.root.c} env={{ locals: [] }} />
-      </div>
-    </RuntimeContext.Provider>
+    <HostContext.Provider value={host ?? EMPTY_HOST}>
+      <RuntimeContext.Provider value={runtime}>
+        <div className="garden-ui-body">
+          <RenderNodes nodes={payload.root.c} env={{ locals: [] }} />
+        </div>
+      </RuntimeContext.Provider>
+    </HostContext.Provider>
   );
 }

@@ -161,6 +161,8 @@ export function toDoc(payload) {
       case "Data":
       case "Button":
         return [];
+      case "Sandbox":
+        return [{ k: "p", inl: [text(`（网页中可交互：${v("title") || "画布"}）`)] }];
       case "If":
       case "Each":
         return expand([node], ctx).flatMap((item) => block(item.node, item.ctx));

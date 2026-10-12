@@ -46,6 +46,7 @@ batch 为 {batch}、序列 {thousands(seq)} 时，KV cache 要 **{bytes(mem)}**�
 - 组件标签用大写开头，属性用名字传：字符串用双引号，数字、布尔、表达式用 `{}`。
 - 正文里可以写普通 Markdown 段落、加粗、列表；用 `{表达式}` 把会变的数字插进句子。字面的 `{` 写成 `\{`。
 - 不能写：标题、HTML 标签、图片语法、代码围栏、脚注、`import` / `export`。
+- 目录表达不了的画布（可转的示意、逐步出现的图钉、一段自包含动画）用 `<Sandbox>`。`html` / `css` / `js` 必须是字面量，不能加载远程脚本、图片或样式。脚本里可以用 `GardenUI.openUrl`（只打开 `https`）、`GardenUI.copy`，以及 `GardenUI.issuePrompt`。`issuePrompt` 只有宿主实现了继续对话时才可用；博客阅读页没有这个能力。
 
 ## 二、状态和表达式
 
