@@ -1,4 +1,5 @@
 import { COMPONENTS, COMPONENT_NAMES, TONES } from "./catalog.mjs";
+import { sandboxLimit, sandboxRemote } from "../host.mjs";
 import { analyzeExpr, createBudget, evaluate, ExprError } from "./expr.mjs";
 import { compiledOf, ID_PATTERN, intentHash, resolveSidecarPath, splitUiBody } from "./fence.mjs";
 import { isValidFormat } from "./format.mjs";
@@ -529,6 +530,16 @@ export function checkUiBlock(body, options = {}) {
             add("ui-prop", bodyLine(node.l), "<Diagram> 只支持 graph、flowchart 和 stateDiagram");
           }
           break;
+        case "Sandbox": {
+          for (const kind of ["html", "css", "js"]) {
+            const text = values[kind];
+            if (typeof text !== "string") continue;
+            if (text.length > sandboxLimit(kind)) add("ui-limit", bodyLine(node.l), `<Sandbox> 的 ${kind} 超过 ${sandboxLimit(kind)} 字`);
+            const remote = sandboxRemote(text);
+            if (remote) add("ui-prop", bodyLine(node.l), `<Sandbox> 的 ${kind}：${remote}`);
+          }
+          break;
+        }
         case "Table": {
           const columns = Array.isArray(values.columns) ? values.columns : [];
           childContext.columns = columns.length;

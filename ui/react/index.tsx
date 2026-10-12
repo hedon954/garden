@@ -5,16 +5,18 @@ import "./components/inputs";
 import "./components/display";
 import "./components/chart";
 import "./components/media";
-import { UiRuntime } from "./runtime";
+import "./components/sandbox";
+import { UiRuntime, type UiHost } from "./runtime";
 import type { Diagnostic, UiPayload } from "./types";
 
 export { UiRuntime } from "./runtime";
+export type { UiHost } from "./runtime";
 export type { Diagnostic, UiNode, UiPayload } from "./types";
 
-export function UiFigure({ payload }: { payload: UiPayload }) {
+export function UiFigure({ payload, host }: { payload: UiPayload; host?: UiHost }) {
   return (
     <figure className="garden-ui" lang="en-US" id={`ui-${payload.id}`}>
-      <UiRuntime payload={payload} />
+      <UiRuntime payload={payload} host={host} />
       <figcaption>{payload.caption}</figcaption>
     </figure>
   );

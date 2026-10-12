@@ -1,3 +1,5 @@
+import { ParityInteractions } from "../../ui/react/parity";
+
 const slices = [
   { label: "商品销售", value: 78.2, color: "#539af8" },
   { label: "平台与营销服务", value: 9.4, color: "#6bc67f" },
@@ -115,6 +117,7 @@ export default function UiParityPage() {
         <p>更丰富的供给与交易数据</p>
         <Loop />
       </section>
+      <ParityInteractions />
     </main>
   );
 }
