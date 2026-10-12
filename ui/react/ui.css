@@ -7,9 +7,11 @@
 .garden-catalog,
 .garden-ui-preview {
   --gui-bg: #fff;
-  --gui-chart: transparent;
+  --gui-chart: #f4f4f4;
   --gui-track: #e4e4e4;
   --gui-thumb: #fff;
+  --gui-slider-track: #0d0d0d1f;
+  --gui-slider-thumb: #333;
   --gui-text: #0d0d0d;
   --gui-muted: #5d5d5d;
   --gui-subtle: #8f8f8f;
@@ -36,6 +38,12 @@
   --gui-popover-border: #0000000d;
   --gui-shadow: 0 2px 6px #00000014;
   --gui-code-bg: #f9f9f9;
+  --gui-accent: #0285ff;
+  --gui-series-plain: #171717;
+  --gui-series-accent: #0285ff;
+  --gui-series-new: #00a240;
+  --gui-series-waste: #e02e2a;
+  --gui-series-same: #924ff7;
   --gui-info: #539af8;
   --gui-info-text: #0169cc;
   --gui-info-soft: #0285ff1a;
@@ -82,6 +90,8 @@
   --gui-segment-shadow: none;
   --gui-track: #3a3a3a;
   --gui-thumb: #fff;
+  --gui-slider-track: #ffffff26;
+  --gui-slider-thumb: #ededed;
   --gui-progress: #0285ff;
   --gui-progress-track: #303030;
   --gui-focus: #3a83f7;
@@ -89,6 +99,10 @@
   --gui-popover-border: #ffffff26;
   --gui-shadow: 0 2px 8px #00000066;
   --gui-code-bg: #171717;
+  --gui-accent: #0285ff;
+  --gui-series-plain: #ededed;
+  --gui-series-new: #04b84c;
+  --gui-series-waste: #fa423e;
   --gui-info: #0285ff;
   --gui-info-text: #66b5ff;
   --gui-info-soft: #0285ff26;
@@ -276,7 +290,7 @@
 .garden-ui-steps-head strong { color: var(--gui-text); font-size: 16px; font-weight: 600; line-height: 1.4; }
 .garden-ui-steps-head span { flex-shrink: 0; color: var(--gui-muted); font-size: 12px; font-variant-numeric: tabular-nums; }
 
-.garden-ui-steps .garden-ui-progress { height: 2px; margin: 2px 0 0; }
+.garden-ui-steps .garden-ui-progress { height: 3px; margin: 2px 0 0; }
 
 .garden-ui-steps-stage { display: grid; }
 
@@ -386,7 +400,7 @@
 
 .garden-ui-button.garden-ui-tone-accent:hover { border-color: var(--gui-solid-hover); background: var(--gui-solid-hover); }
 
-/* slider: thin track, a round thumb sitting on it, as in ChatGPT's scenario slider */
+/* slider: 24px track, 18px thumb inset 3px, no filled portion */
 .garden-ui-slider { display: flex; flex-direction: column; gap: 8px; }
 
 .garden-ui-slider label {
@@ -403,12 +417,12 @@
 
 .garden-ui-slider-track { padding: 8px 0; }
 
-.garden-ui-slider-track:has(input:focus-visible) { outline: 2px solid var(--gui-focus); outline-offset: 4px; border-radius: 999px; }
+.garden-ui-slider-track:has(input:focus-visible) { outline: 2px solid var(--gui-focus); outline-offset: 3px; border-radius: 999px; }
 
 .garden-ui-slider input[type="range"] {
   display: block;
   width: 100%;
-  height: 22px;
+  height: 38px;
   margin: 0;
   background: transparent;
   cursor: ew-resize;
@@ -419,39 +433,39 @@
 .garden-ui-slider input[type="range"]:focus-visible { outline: none; }
 
 .garden-ui-slider input[type="range"]::-webkit-slider-runnable-track {
-  height: 8px;
+  height: 24px;
   border: 0;
   border-radius: 999px;
-  background: var(--gui-track);
+  background: var(--gui-slider-track);
 }
 
 .garden-ui-slider input[type="range"]::-moz-range-track {
-  height: 8px;
+  height: 24px;
   border: 0;
   border-radius: 999px;
-  background: var(--gui-track);
+  background: var(--gui-slider-track);
 }
 
 .garden-ui-slider input[type="range"]::-webkit-slider-thumb {
-  width: 22px;
-  height: 22px;
-  margin-top: -7px;
-  border: 1px solid #0000001a;
+  width: 18px;
+  height: 18px;
+  margin-top: 3px;
+  border: 0;
   border-radius: 50%;
-  background: var(--gui-thumb);
-  box-shadow: 0 1px 4px #00000040;
+  background: var(--gui-slider-thumb);
+  box-shadow: none;
   -webkit-appearance: none;
   appearance: none;
   transition: transform 120ms ease;
 }
 
 .garden-ui-slider input[type="range"]::-moz-range-thumb {
-  width: 22px;
-  height: 22px;
-  border: 1px solid #0000001a;
+  width: 18px;
+  height: 18px;
+  border: 0;
   border-radius: 50%;
-  background: var(--gui-thumb);
-  box-shadow: 0 1px 4px #00000040;
+  background: var(--gui-slider-thumb);
+  box-shadow: none;
 }
 
 .garden-ui-slider input[type="range"]:active::-webkit-slider-thumb { transform: scale(1.08); }
@@ -802,16 +816,16 @@
 }
 .garden-ui-chart-canvas:focus-visible { outline: 2px solid var(--gui-focus); outline-offset: 2px; }
 
-.garden-ui-series-plain { --gui-series: #539af8; }
-.garden-ui-series-accent { --gui-series: #539af8; }
-.garden-ui-series-new { --gui-series: #6bc67f; }
-.garden-ui-series-waste { --gui-series: #ef8b57; }
-.garden-ui-series-same { --gui-series: #ef8b57; }
+.garden-ui-series-plain { --gui-series: var(--gui-series-plain); }
+.garden-ui-series-accent { --gui-series: var(--gui-series-accent); }
+.garden-ui-series-new { --gui-series: var(--gui-series-new); }
+.garden-ui-series-waste { --gui-series: var(--gui-series-waste); }
+.garden-ui-series-same { --gui-series: var(--gui-series-same); }
 .garden-ui-series-muted,
 .garden-ui-series-cached { --gui-series: var(--gui-subtle); }
 
 .garden-ui-chart-grid { stroke: var(--gui-border); stroke-width: 1; stroke-dasharray: 2 4; }
-.garden-ui-chart-axis { stroke: transparent; stroke-width: 1; }
+.garden-ui-chart-axis { stroke: var(--gui-border); stroke-width: 1; }
 .garden-ui-chart .garden-ui-legend { justify-content: center; }
 .garden-ui-chart-tick,
 .garden-ui-chart-label { fill: var(--gui-subtle); font-family: var(--gui-font); font-size: 12px; }
@@ -889,8 +903,8 @@
 }
 
 .garden-ui-code code { padding: 0; border-radius: 0; background: none; color: var(--gui-text); font-size: 13px; }
-.garden-ui-code-line { display: block; padding: 0 14px 0 0; border-left: 2px solid transparent; }
-.garden-ui-code-line[data-highlight="true"] { border-left-color: var(--gui-info); background: var(--gui-info-soft); }
+.garden-ui-code-line { display: block; padding: 0 14px 0 12px; box-shadow: inset 2px 0 0 transparent; }
+.garden-ui-code-line[data-highlight="true"] { background: var(--gui-info-soft); box-shadow: inset 2px 0 0 var(--gui-accent); }
 .garden-ui-code-number { display: inline-block; width: 3em; padding-right: 1em; color: var(--gui-subtle); text-align: right; user-select: none; }
 
 .garden-ui-diagram-canvas { overflow-x: auto; padding: 12px; border-radius: 12px; background: var(--gui-code-bg); }
@@ -908,10 +922,19 @@
 .garden-ui-diagram-canvas .garden-ui-diagram-on rect,
 .garden-ui-diagram-canvas .garden-ui-diagram-on polygon,
 .garden-ui-diagram-canvas .garden-ui-diagram-on circle,
-.garden-ui-diagram-canvas rect.garden-ui-diagram-on { fill: var(--gui-info-soft) !important; stroke: var(--gui-info) !important; }
+.garden-ui-diagram-canvas rect.garden-ui-diagram-on { fill: var(--gui-info-soft) !important; stroke: var(--gui-accent) !important; }
 .garden-ui-diagram-canvas .garden-ui-diagram-on .nodeLabel,
-.garden-ui-diagram-canvas .garden-ui-diagram-on text { color: var(--gui-info-text) !important; fill: var(--gui-info-text) !important; }
-.garden-ui-diagram-canvas path.garden-ui-diagram-on { stroke: var(--gui-info) !important; stroke-width: 2px !important; }
+.garden-ui-diagram-canvas .garden-ui-diagram-on text { color: var(--gui-accent) !important; fill: var(--gui-accent) !important; }
+.garden-ui-diagram-canvas path.garden-ui-diagram-on { stroke: var(--gui-accent) !important; stroke-width: 2px !important; }
+
+.garden-ui-sandbox {
+  display: block;
+  width: 100%;
+  min-height: 48px;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+}
 
 /* intent: the author's words, shown like a message bubble */
 .garden-ui-intent { border: 0; background: transparent; }
