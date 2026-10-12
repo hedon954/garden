@@ -83,9 +83,9 @@ export function AdminBlocks({ siteUrl }: { siteUrl: string }) {
   return (
     <section className="admin-panel ui-admin-blocks">
       <div className="admin-panel-heading">
-        <div><span>交互块</span><h2>所有稿件里的 intent 和 ui 块</h2></div>
+        <div><span>文章里的块</span><h2>哪些还没写完</h2></div>
       </div>
-      <p className="ui-studio-meta">看到的是仓库里已推送的内容（含草稿）；本地没推的改动看不到。</p>
+      <p className="ui-studio-meta">这里是仓库里已经推送的内容，包括草稿。还没推的本地改动看不到。</p>
       <div className="ui-studio-switch" role="group" aria-label="按状态筛选">
         {(["todo", "uncompiled", "stale", "error", "ok", "all"] as const).map((value) => (
           <button key={value} type="button" aria-pressed={filter === value} onClick={() => setFilter(value)}>
@@ -115,7 +115,7 @@ export function AdminBlocks({ siteUrl }: { siteUrl: string }) {
                     <td><span className={`ui-admin-status ui-admin-status-${block.status}`}>{STATUS_LABELS[block.status]}</span></td>
                     <td>{block.caption ?? block.intent?.split("\n")[0] ?? ""}{block.diagnostics.length ? `（${block.diagnostics.length} 条诊断）` : ""}</td>
                     <td className="ui-admin-actions">
-                      <Link href={`/admin/ui?post=${encodeURIComponent(file.path)}&line=${block.startLine}`}>在工作台打开</Link>
+                      <Link href={`/admin/ui?post=${encodeURIComponent(file.path)}&line=${block.startLine}`}>在写作台打开</Link>
                       {block.status !== "ok" ? (
                         <button type="button" onClick={() => copyPrompt(file, block)}>
                           {copied === `${file.path}:${block.startLine}` ? "已复制" : "复制修复提示词"}
@@ -218,9 +218,9 @@ export function AdminEvals({ cases, configured }: { cases: EvalCase[]; configure
   return (
     <section className="admin-panel ui-admin-evals">
       <div className="admin-panel-heading">
-        <div><span>模型自检</span><h2>用 {cases.length} 段原话给当前模型和提示词打分</h2></div>
+        <div><span>检查</span><h2>用 {cases.length} 段原话看模型写得怎么样</h2></div>
       </div>
-      <p className="ui-studio-meta">逐条调用工作台的生成接口，共 {cases.length} 次，计入每小时限额。换模型或改提示词后跑一次。</p>
+      <p className="ui-studio-meta">会逐条调用写作台，一共 {cases.length} 次，计入每小时次数。换了模型或提示词之后跑一次。</p>
       <div className="admin-actions">
         <button type="button" className="admin-primary-button" disabled={!configured || running} onClick={run}>{running ? `正在跑 ${results.length}/${cases.length}…` : "开始自检"}</button>
       </div>

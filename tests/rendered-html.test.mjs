@@ -268,7 +268,7 @@ test("publishes discovery routes, permanent thought pages, and real integration 
 
   assert.equal(gardenResponse.status, 200);
   const garden = await gardenResponse.text();
-  assert.match(garden, /管理后台能做什么/);
+  assert.match(garden, /id="garden-admin-title"/);
   assert.match(garden, /make dev/);
 
   assert.equal(robotsResponse.status, 200);
