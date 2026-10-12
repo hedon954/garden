@@ -13,6 +13,9 @@ const eslintConfig = defineConfig([
     "build/**",
     ".garden/**",
     "templates/**",
+    // Bundled output of the editor preview and plugins.
+    "ui/preview/dist/**",
+    "editors/*/dist/**",
     "next-env.d.ts",
   ]),
 ]);

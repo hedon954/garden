@@ -23,7 +23,11 @@ function configuredLogins() {
 }
 
 export function isGitHubLoginAllowed(login: string) {
-  return configuredLogins().has(login.trim().toLowerCase());
+  const logins = configuredLogins();
+  // Local dev uses the machine's existing gh login. An empty allow-list there
+  // means "whoever gh is", not "nobody".
+  if (logins.size === 0 && process.env.GARDEN_DEV === "1") return true;
+  return logins.has(login.trim().toLowerCase());
 }
 
 export function isGitHubOAuthConfigured() {
@@ -32,6 +36,14 @@ export function isGitHubOAuthConfigured() {
       process.env.GITHUB_OAUTH_CLIENT_SECRET &&
       process.env.GITHUB_SESSION_SECRET,
   );
+}
+
+export function isGitHubDevLoginAvailable() {
+  return process.env.GARDEN_DEV === "1" && Boolean(process.env.GITHUB_DEV_TOKEN);
+}
+
+export function isGitHubLoginAvailable() {
+  return isGitHubOAuthConfigured() || isGitHubDevLoginAvailable();
 }
 
 function toBase64Url(value: Uint8Array | string) {

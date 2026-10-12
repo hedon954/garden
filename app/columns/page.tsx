@@ -53,7 +53,7 @@ export default function ColumnsPage() {
                 <p>
                   {first.columnDescription ??
                     first.description ??
-                    "沿着一条清晰的阅读路径，把一个主题持续写深。"}
+                    "按顺序组织的专题文章系列。"}
                 </p>
                 <strong>
                   从第一篇开始

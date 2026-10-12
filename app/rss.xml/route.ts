@@ -2,6 +2,7 @@ import { marked } from "marked";
 import { columnHref, columns, postHref, posts } from "../lib/content";
 import { getPublishedThoughts } from "../lib/public-thoughts";
 import { configuredSiteUrl, siteDescription, siteName } from "../lib/site";
+import { contentForFeed } from "../../ui/core/transform.mjs";
 
 const escapeXml = (value: string) =>
   value
@@ -31,7 +32,7 @@ export async function GET() {
 
   const items = entries
     .map((entry) => {
-      const body = marked.parse(entry.content, {
+      const body = marked.parse(contentForFeed(entry.content, { pageUrl: `${origin}${entry.path}`, siteUrl: origin }), {
         async: false,
         gfm: true,
         breaks: true,

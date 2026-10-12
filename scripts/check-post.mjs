@@ -4,6 +4,7 @@ import matter from "gray-matter";
 import { parse as parseYaml } from "yaml";
 import { canonicalSiteDate } from "./site-date.mjs";
 import { gardenSiteRoot } from "./garden-paths.mjs";
+import { checkUiBlock } from "../ui/core/validate.mjs";
 
 const siteRoot = gardenSiteRoot();
 const calloutTypes = new Set([
@@ -184,7 +185,22 @@ const checkEmbed = (errors, body, sourcePath, line) => {
   }
 };
 
-const scanBody = (errors, content, markdownPath, sourcePath) => {
+const checkUi = (errors, warnings, body, markdownPath, sourcePath, line) => {
+  const relative = path.relative(path.join(siteRoot, "content"), markdownPath).split(path.sep).join("/");
+  const result = checkUiBlock(body, {
+    lineOffset: line,
+    markdownPath: relative,
+    readData: (src) => {
+      const absolute = path.resolve(path.dirname(markdownPath), src);
+      return fs.existsSync(absolute) ? fs.readFileSync(absolute, "utf8") : undefined;
+    },
+  });
+  for (const item of result.diagnostics) {
+    (item.severity === "warning" ? warnings : errors).push({ code: item.code, line: item.line, message: `${sourcePath}: ${item.message}` });
+  }
+};
+
+const scanBody = (errors, content, markdownPath, sourcePath, { warnings = [], draft = false } = {}) => {
   let fence = null;
   let previousDepth = 1;
   const lines = content.split(/\r?\n/u);
@@ -195,6 +211,10 @@ const scanBody = (errors, content, markdownPath, sourcePath) => {
       if (opener && opener[1][0] === fence.marker && opener[1].length >= fence.marker.length && !opener[2].trim()) {
         if (fence.lang === "widget") checkWidget(errors, fence.body.join("\n"), markdownPath, sourcePath, fence.line);
         if (fence.lang === "embed") checkEmbed(errors, fence.body.join("\n"), sourcePath, fence.line);
+        if (fence.lang === "ui") checkUi(errors, warnings, fence.body.join("\n"), markdownPath, sourcePath, fence.line);
+        if (fence.lang === "intent" && !draft) {
+          error(errors, "intent-uncompiled", fence.line, `${sourcePath}: 还有没编译的 intent 块；对 AI 说「编译这篇」`);
+        }
         fence = null;
       } else {
         fence.body.push(line);
@@ -238,9 +258,10 @@ const checkFile = (filePath) => {
   const absolute = path.resolve(siteRoot, filePath);
   const sourcePath = path.relative(siteRoot, absolute);
   const errors = [];
+  const warnings = [];
   if (!fs.existsSync(absolute)) {
     error(errors, "missing-file", 1, `${sourcePath}: 找不到文件`);
-    return { file: sourcePath, errors };
+    return { file: sourcePath, errors, warnings };
   }
   const parsed = matter(fs.readFileSync(absolute, "utf8"), matterOptions);
   const data = parsed.data ?? {};
@@ -266,8 +287,9 @@ const checkFile = (filePath) => {
     }
   }
   checkReferences(data, sourcePath, errors);
-  scanBody(errors, parsed.content, absolute, sourcePath);
-  return { file: sourcePath, errors };
+  const draft = data.draft === true || (typeof data.publishAt === "string" && Date.parse(canonicalSiteDate(data.publishAt) ?? "") > Date.now());
+  scanBody(errors, parsed.content, absolute, sourcePath, { warnings, draft });
+  return { file: sourcePath, errors, warnings };
 };
 
 const files = process.argv.slice(2);

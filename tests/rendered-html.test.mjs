@@ -32,7 +32,7 @@ test("server-renders the finished blog home", async () => {
 
   const html = await response.text();
   assert.match(html, /<title>[^<]+<\/title>/i);
-  assert.match(html, /把复杂的事/);
+  assert.match(html, /记一些正在做的事/);
   assert.match(html, /置顶博文/);
   assert.match(html, /最近随想/);
   assert.match(html, /主题专栏/);

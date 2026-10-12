@@ -11,6 +11,8 @@ description: >-
 
 只审用户点名的稿。三步按顺序做，后一步看到的是前一步改完的稿。
 
+开始前先运行 `npx garden ui scan content/posts/路径.md`。有 `status` 为 `uncompiled`、`stale` 或 `error` 的块时，先按 [garden-ui](../garden-ui/SKILL.md) 处理完，再进入第 1 步。
+
 硬性检查命令（在站点根目录）：
 
 ```bash

@@ -1,0 +1,12 @@
+{
+  "name": "garden-intelligent-ui-obsidian",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs"
+  },
+  "devDependencies": {
+    "obsidian": "^1.7.2"
+  }
+}

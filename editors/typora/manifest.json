@@ -1,0 +1,12 @@
+{
+  "id": "hedon954.garden-intelligent-ui",
+  "name": "Garden Intelligent UI",
+  "description": "预览 Garden 交互块（ui / intent 围栏），用一句话插入意图块。",
+  "author": "hedon",
+  "authorUrl": "https://github.com/hedon954",
+  "repo": "hedon954/garden",
+  "version": "0.1.0",
+  "minAppVersion": "1.5.0",
+  "minCoreVersion": "2.10.52",
+  "platforms": ["win32", "linux", "darwin"]
+}

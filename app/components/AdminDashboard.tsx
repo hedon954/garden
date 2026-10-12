@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { formatAuthorDate } from "../../scripts/site-date.mjs";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   ArrowSquareOut,
   ArrowUpRight,
@@ -124,6 +124,54 @@ function MediaFields({
   );
 }
 
+type UiOverview = {
+  modelName: string | null;
+  remaining: number;
+  engineVersion: string;
+  catalogVersion: number;
+};
+
+type BlockCounts = { uncompiled: number; stale: number; error: number; ok: number };
+
+function IntelligentUiCard({ ui }: { ui: UiOverview }) {
+  const [counts, setCounts] = useState<BlockCounts | null>(null);
+  const [failed, setFailed] = useState(false);
+  useEffect(() => {
+    let active = true;
+    fetch("/api/admin/ui/blocks")
+      .then((response) => (response.ok ? response.json() : Promise.reject(new Error("blocks"))))
+      .then((body: { counts: BlockCounts }) => {
+        if (active) setCounts(body.counts);
+      })
+      .catch(() => {
+        if (active) setFailed(true);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+  return (
+    <section className="admin-panel admin-ui-card">
+      <div className="admin-panel-heading">
+        <div>
+          <span>Intelligent UI</span>
+          <h2>交互块</h2>
+        </div>
+        <Link href="/admin/ui">打开工作台</Link>
+      </div>
+      <p className="ui-studio-meta">
+        {ui.modelName ? ui.modelName : "模型未连接"}
+        {" · "}
+        {counts
+          ? <Link href="/admin/ui/blocks">{`未编译 ${counts.uncompiled} · 过期 ${counts.stale} · 有错 ${counts.error} · 正常 ${counts.ok}`}</Link>
+          : failed ? "交互块读取失败" : "正在统计交互块…"}
+        {" · "}
+        <Link href="/admin/ui/catalog">组件清单</Link>
+      </p>
+    </section>
+  );
+}
+
 export function AdminDashboard({
   userName,
   initialThoughts,
@@ -131,6 +179,7 @@ export function AdminDashboard({
   catalog,
   publicSiteUrl,
   contentWarning,
+  ui,
 }: {
   userName: string;
   initialThoughts: ManagedThought[];
@@ -138,6 +187,7 @@ export function AdminDashboard({
   catalog: CatalogEntry[];
   publicSiteUrl: string;
   contentWarning: string;
+  ui: UiOverview;
 }) {
   const [thoughts, setThoughts] = useState(initialThoughts);
   const [title, setTitle] = useState("");
@@ -341,6 +391,8 @@ export function AdminDashboard({
           <div><dt>专栏篇目</dt><dd>{catalogEntries.filter((entry) => entry.kind === "column").length}</dd></div>
         </dl>
       </section>
+
+      <IntelligentUiCard ui={ui} />
 
       {notice && <p className="admin-notice"><CheckCircle size={16} /> {notice}</p>}
       {contentWarning && <p className="admin-notice"><CheckCircle size={16} /> {contentWarning}</p>}

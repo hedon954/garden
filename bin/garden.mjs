@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { randomBytes } from "node:crypto";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
@@ -189,6 +190,42 @@ function ensureSiteKit(destinationRoot = siteRoot) {
   }
 
   installSkill(destinationRoot, { onlyMissing: true });
+  if (process.env.GARDEN_SKIP_HOOKS !== "1") installHook(destinationRoot, { quiet: true });
+}
+
+const HOOK_MARKER = "# garden: ui check";
+const HOOK_SCRIPT = `#!/bin/sh
+${HOOK_MARKER}
+if [ ! -d node_modules/hd-garden ]; then
+  echo "garden 还没安装（先运行 npm install），这次跳过 ui 检查。" >&2
+  exit 0
+fi
+exec npx --no-install garden ui check --staged --quiet
+`;
+
+/** Installs the pre-commit hook unless the repository already has one. */
+function installHook(destinationRoot = siteRoot, { quiet = false, force = false } = {}) {
+  const result = spawnSync("git", ["rev-parse", "--git-path", "hooks/pre-commit"], { cwd: destinationRoot, encoding: "utf8" });
+  if (result.status !== 0) {
+    if (!quiet) process.stdout.write("这里不是 git 仓库，没有安装提交前检查。\n");
+    return;
+  }
+  const hookPath = path.resolve(destinationRoot, result.stdout.trim());
+  if (fs.existsSync(hookPath)) {
+    const current = fs.readFileSync(hookPath, "utf8");
+    if (current.includes(HOOK_MARKER) && !force) {
+      if (!quiet) process.stdout.write("提交前检查已经装好了。\n");
+      return;
+    }
+    if (!current.includes(HOOK_MARKER)) {
+      process.stdout.write(`已有 pre-commit 钩子，没有覆盖。请把这一行加进 ${path.relative(destinationRoot, hookPath)}：\n  npx --no-install garden ui check --staged --quiet\n`);
+      return;
+    }
+  }
+  fs.mkdirSync(path.dirname(hookPath), { recursive: true });
+  fs.writeFileSync(hookPath, HOOK_SCRIPT, { mode: 0o755 });
+  fs.chmodSync(hookPath, 0o755);
+  process.stdout.write("已安装提交前检查：提交时会检查暂存稿件里的 ui 块。\n");
 }
 
 function prepare() {
@@ -205,6 +242,31 @@ function sync() {
   }
   prepare();
   runNode("scripts/build-content.mjs");
+}
+
+function upsertEnv(text, key, value) {
+  const pattern = new RegExp(`^${key}=.*$`, "m");
+  if (pattern.test(text)) return text.replace(pattern, `${key}=${value}`);
+  return `${text.endsWith("\n") || text.length === 0 ? text : `${text}\n`}${key}=${value}\n`;
+}
+
+function currentGitHubToken() {
+  const result = spawnSync("gh", ["auth", "token"], { encoding: "utf8" });
+  if (result.status !== 0) return "";
+  return result.stdout.trim();
+}
+
+/** Local dev signs in as the gh user. Production keeps the OAuth app on the worker. */
+function ensureDevGitHubLogin() {
+  const local = path.join(siteRoot, ".env.local");
+  let text = fs.existsSync(local) ? fs.readFileSync(local, "utf8") : "";
+  text = upsertEnv(text, "GARDEN_DEV", "1");
+  const token = currentGitHubToken();
+  if (token) text = upsertEnv(text, "GITHUB_DEV_TOKEN", token);
+  if (!/^GITHUB_SESSION_SECRET=\S+/m.test(text)) {
+    text = upsertEnv(text, "GITHUB_SESSION_SECRET", randomBytes(32).toString("base64url"));
+  }
+  fs.writeFileSync(local, text.endsWith("\n") ? text : `${text}\n`);
 }
 
 function runVinext(vinextArgs, { copyDist = false } = {}) {
@@ -294,6 +356,8 @@ function help() {
   garden embed            拉取外链摘要
   garden init [目录]      创建只含稿和配置的新站点
   garden check <文章.md>  检查一篇博文的硬性结构
+  garden ui <子命令>      Intelligent UI：scan、check、apply、prompt、schema、catalog
+  garden hooks            安装提交前检查（检查暂存稿件里的 ui 块）
   garden skill            把引擎自带的 skill 装进当前站点
   garden pages:validate   检查 dist/client
   garden pages:prepare    写入公开产物仓库
@@ -311,6 +375,7 @@ switch (command) {
     sync();
     break;
   case "dev":
+    ensureDevGitHubLogin();
     runVinext(["dev", ...rest]);
     break;
   case "build":
@@ -327,6 +392,12 @@ switch (command) {
     break;
   case "check":
     runNode("scripts/check-post.mjs", rest);
+    break;
+  case "ui":
+    runNode("scripts/ui-cli.mjs", rest, { cwd: process.cwd() });
+    break;
+  case "hooks":
+    installHook(siteRoot, { force: rest.includes("--force") });
     break;
   case "init":
     initSite();
