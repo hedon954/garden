@@ -8,7 +8,7 @@ import { asNumber, asString, evalExpr, expandChildren, propValue, registerCompon
 import type { Env, Lookup, UiNode } from "../types";
 
 const SERIES = new Set(["Line", "Area", "Bar", "Point"]);
-const DEFAULT_TONES = ["plain", "accent", "new", "same"];
+const DEFAULT_TONES = ["accent", "muted", "new", "same"];
 const MARGIN = { top: 14, right: 16, bottom: 30, left: 60 };
 
 type Scale = { map: (value: number) => number; ticks: number[] };

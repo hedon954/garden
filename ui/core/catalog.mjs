@@ -467,6 +467,20 @@ export const COMPONENTS = {
     children: "none",
     example: "<Code lang=\"go\" highlight=\"2\" code={`a := 1\nb := a + 1`} />",
   },
+  Sandbox: {
+    group: "媒体与代码",
+    phase: 6,
+    summary: "自包含画布。地图、三维和目录里没有的动画写在这里，不能加载远程资源",
+    phrases: ["做一个小工具", "画一张能转的图", "在图上播放"],
+    props: {
+      title: { type: "string", desc: "画布名称，读屏用" },
+      html: { type: "string", literal: true, required: true, desc: "片段 HTML，不能含远程地址" },
+      css: { type: "string", literal: true, desc: "只作用于这块画布的样式" },
+      js: { type: "string", literal: true, desc: "内联脚本。可用 GardenUI.openUrl、GardenUI.copy 和 GardenUI.issuePrompt" },
+    },
+    children: "none",
+    example: "<Sandbox title=\"计数\" html={\"<p id=\\\"n\\\">0</p><button id=\\\"b\\\">加一</button>\"} js=\"document.getElementById('b').onclick=()=>{const n=document.getElementById('n');n.textContent=String(Number(n.textContent)+1)}\" />",
+  },
   Diagram: {
     group: "媒体与代码",
     phase: 6,
