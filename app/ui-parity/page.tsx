@@ -37,13 +37,13 @@ function Loop() {
 
 export default function UiParityPage() {
   const total = slices.reduce((sum, slice) => sum + slice.value, 0);
-  let angle = -Math.PI / 2;
-  const arcs = slices.map((slice) => {
+  const arcs = slices.reduce<{ angle: number; items: Array<(typeof slices)[number] & { path: string }> }>((state, slice) => {
     const sweep = (slice.value / total) * Math.PI * 2;
-    const path = ring(angle, sweep);
-    angle += sweep;
-    return { ...slice, path };
-  });
+    return {
+      angle: state.angle + sweep,
+      items: [...state.items, { ...slice, path: ring(state.angle, sweep) }],
+    };
+  }, { angle: -Math.PI / 2, items: [] }).items;
   const rows = [
     ["消费者状态", "不选择拼多多的原因", "对应的经济学概念"],
     ["不知道拼多多更便宜", "没有进行跨平台比价", "信息不对称、搜索成本"],
