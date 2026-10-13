@@ -62,7 +62,7 @@
     "start": "node bin/garden.mjs start",
     "admin:local": "npm run start -- --host 0.0.0.0 --port 3000",
     "admin:cloudflare": "npm run build && wrangler deploy --config dist/server/wrangler.json",
-    "test": "npm run build && node --test tests/*.test.mjs",
+    "test": "npm run build && node --experimental-strip-types --test tests/*.test.mjs",
     "ui:build": "node scripts/build-ui-preview.mjs",
     "editors:build": "node editors/vscode/build.mjs && node editors/obsidian/build.mjs && node editors/typora/build.mjs",
     "prepack": "node scripts/build-ui-preview.mjs",

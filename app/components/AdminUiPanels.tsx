@@ -83,7 +83,7 @@ export function AdminBlocks({ siteUrl }: { siteUrl: string }) {
   return (
     <section className="admin-panel ui-admin-blocks">
       <div className="admin-panel-heading">
-        <div><span>文章里的块</span><h2>哪些还没写完</h2></div>
+        <h2>文章里的块</h2>
       </div>
       <p className="ui-studio-meta">这里是仓库里已经推送的内容，包括草稿。还没推的本地改动看不到。</p>
       <div className="ui-studio-switch" role="group" aria-label="按状态筛选">
@@ -218,7 +218,7 @@ export function AdminEvals({ cases, configured }: { cases: EvalCase[]; configure
   return (
     <section className="admin-panel ui-admin-evals">
       <div className="admin-panel-heading">
-        <div><span>检查</span><h2>用 {cases.length} 段原话看模型写得怎么样</h2></div>
+        <h2>模型自检</h2>
       </div>
       <p className="ui-studio-meta">会逐条调用写作台，一共 {cases.length} 次，计入每小时次数。换了模型或提示词之后跑一次。</p>
       <div className="admin-actions">

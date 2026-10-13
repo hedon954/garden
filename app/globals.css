@@ -5383,6 +5383,59 @@ button {
   color: var(--garden-muted);
 }
 
+.ui-studio-stage {
+  border: 0;
+  border-radius: 20px;
+  background: var(--garden-stage);
+}
+
+.ui-studio-bar {
+  border-bottom: 0;
+}
+
+.ui-studio-preview {
+  background: transparent;
+}
+
+.ui-studio-starts select {
+  border: 0;
+  border-radius: 12px;
+  background: var(--card);
+}
+
+.ui-admin-blocks.admin-panel,
+.ui-admin-evals.admin-panel {
+  border: 0;
+  border-radius: 20px;
+  background: var(--garden-stage);
+}
+
+.ui-admin-blocks .ui-admin-actions a,
+.ui-admin-blocks .ui-admin-actions button {
+  color: var(--garden-link);
+  text-decoration: none;
+}
+
+.ui-admin-blocks .ui-admin-actions a:hover,
+.ui-admin-blocks .ui-admin-actions button:hover {
+  text-decoration: underline;
+}
+
+.ui-admin-file {
+  border-top-color: var(--line);
+}
+
+.ui-admin-table th,
+.ui-admin-table td {
+  border-bottom-color: var(--line);
+}
+
+.ui-admin-status-uncompiled,
+.ui-admin-status-error {
+  color: var(--garden-ink);
+  font-weight: 600;
+}
+
 .admin-access-page {
   display: grid;
   place-items: center;
