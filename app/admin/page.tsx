@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowSquareOut, GithubLogo, LockKey } from "@phosphor-icons/react/ssr";
+import { ArrowSquareOut, GithubLogo } from "@phosphor-icons/react/ssr";
 import { AdminDashboard } from "../components/AdminDashboard";
 import { getAdminUser, isGitHubLoginAvailable } from "../lib/admin-auth";
 import { columns, posts, thoughts } from "../lib/content";
@@ -27,17 +27,15 @@ export default async function AdminPage({
     return (
       <main className="admin-access-page">
         <div className="admin-access-card">
-          <LockKey size={28} weight="duotone" />
-          <p className="eyebrow">CONTENT MANAGEMENT</p>
-          <h1>内容后台独立运行。</h1>
-          <p>公开博客由 GitHub Pages 静态托管；发布和分发请前往独立后台。</p>
+          <h1>后台在另一个地址。</h1>
+          <p>这个页面是公开博客。写随想、上传和转发，去后台。</p>
           <div className="admin-access-actions">
             {adminUrl ? (
               <a className="admin-github-login" href={adminUrl}>
-                打开内容后台 <ArrowSquareOut size={15} />
+                打开后台 <ArrowSquareOut size={15} />
               </a>
             ) : (
-              <p>尚未配置 ADMIN_URL。</p>
+              <p>还没有填写后台地址。</p>
             )}
             <Link href="/">返回公开博客</Link>
           </div>
@@ -52,22 +50,20 @@ export default async function AdminPage({
     return (
       <main className="admin-access-page">
         <div className="admin-access-card">
-          <LockKey size={28} weight="duotone" />
-          <p className="eyebrow">{siteConfig.name.toUpperCase()} / ADMIN</p>
-          <h1>用 GitHub 身份进入内容管理后台。</h1>
+          <h1>登录后台</h1>
           <p>
             {query.auth === "denied"
-              ? `登录账号 @${query.account ?? "未知"} 没有后台权限。`
+              ? `@${query.account ?? "这个账号"} 不在允许名单里。`
               : oauthReady
-                ? "登录后会检查你的 GitHub 用户名是否在允许名单中。"
+                ? `用 GitHub 登录。只有 ${siteConfig.name} 允许的账号能进来。`
                 : process.env.GARDEN_DEV === "1"
-                  ? "本机还没有 GitHub 登录。在终端运行 gh auth login 后，重新启动本地服务。"
-                  : "GitHub OAuth 尚未配置；请先设置后台所需的环境变量。"}
+                  ? "这台机器还没登录 GitHub。在终端运行 gh auth login，然后重新启动。"
+                  : "还没配好 GitHub 登录。先填后台的环境变量。"}
           </p>
           <div className="admin-access-actions">
             {oauthReady && (
               <Link className="admin-github-login" href="/api/auth/github">
-                <GithubLogo size={18} weight="fill" /> 使用 GitHub 登录
+                <GithubLogo size={18} weight="fill" /> 用 GitHub 登录
               </Link>
             )}
             <Link href="/">

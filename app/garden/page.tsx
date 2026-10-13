@@ -3,92 +3,58 @@ import { GardenAdminGuide } from "../components/GardenAdminGuide";
 import { GardenContentGuide } from "../components/GardenContentGuide";
 import { GardenMediaGuide } from "../components/GardenMediaGuide";
 import { PageIntro } from "../components/PageIntro";
-import { TableOfContents } from "../components/TableOfContents";
 import { siteConfig } from "../site.config";
 
 export const metadata = {
   title: "Garden",
-  description:
-    "一个以 Markdown 为内容源、通过 GitHub Pages 发布的个人博客框架，支持博文、随想、专栏、搜索、RSS 与多媒体。",
+  description: "用 Markdown 写文章。推送到 GitHub 之后，页面、搜索和 RSS 一起生成。",
 };
 
-const systemCapabilities = [
-  {
-    title: "Markdown 与多媒体",
-    description:
-      "兼容 Typora 常用写法，支持 GFM、代码高亮、数学公式、Mermaid，以及图片、音视频、平台嵌入和网页摘要。",
-  },
-  {
-    title: "阅读与内容发现",
-    description:
-      "自动生成文章目录、阅读时长、字数、前后篇导航、主题归档和全文搜索，搜索结果会高亮命中内容。",
-  },
-  {
-    title: "发布与订阅",
-    description:
-      "推送到 main 后由 GitHub Actions 构建并发布到 GitHub Pages，同时生成 RSS、sitemap、robots 和 Open Graph 元数据。",
-  },
-  {
-    title: "开放集成",
-    description:
-      "需要时可以接入 Giscus 评论、Webmention、无 Cookie 统计和对象存储；不配置这些服务也能正常写作和发布。",
-  },
+const jumps = [
+  ["#write-post", "写文章"],
+  ["#write-thought", "随想"],
+  ["#make-column", "专栏"],
+  ["#setup", "跑起来"],
+  ["#media", "视频和链接"],
+  ["#admin", "后台"],
 ];
 
-const responsibilityBoundaries = [
+const setupSteps = [
   {
-    number: "01",
-    title: "Garden 框架",
-    description:
-      "公开模板和上游代码，负责内容模型、页面生成与发布工作流。使用模板后，不需要在这里保存个人文章。",
+    title: "创建站点",
+    body: (
+      <>
+        运行 <code>npx hd-garden init my-blog</code>。目录里留下 <code>content/</code> 和 <code>site.config.yaml</code>。仓库名叫 <code>&lt;owner&gt;.github.io</code> 时，地址最直接。
+      </>
+    ),
   },
   {
-    number: "02",
-    title: "源码仓库",
-    description:
-      "文章、随想、专栏、配置和草稿的唯一真源。你直接编辑这里，管理后台也只向这里提交内容。",
+    title: "在本地看",
+    command: "make dev",
+    body: "第一次会安装依赖。然后打开终端里的地址。",
   },
   {
-    number: "03",
-    title: "公开博客",
-    description:
-      "GitHub Actions 从源码生成静态文件，再交给 GitHub Pages。双仓模式下，公开产物仓库只保存生成结果，不手工修改。",
+    title: "换成你的内容",
+    files: [
+      ["site.config.yaml", "站名、作者、各页标题"],
+      ["content/posts/", "长文和附件"],
+      ["content/thoughts/", "随想"],
+      ["content/columns.yaml", "专栏和阅读顺序"],
+    ],
   },
   {
-    number: "04",
-    title: "可选服务",
-    description:
-      "管理后台补充随想发布和媒体上传；Giscus 评论可以使用独立公开仓库。它们都不会替代源码仓库。",
+    title: "发布",
+    command: "make update",
+    body: "先检查，再提交并推送。main 更新后，网站、搜索和 RSS 会重新生成。",
   },
-];
-
-const gardenHeadings = [
-  { depth: 2, text: "仓库和服务怎么分工", id: "garden-responsibilities-title" },
-  { depth: 2, text: "博文、随想和专栏", id: "garden-guide-title" },
-  { depth: 3, text: "写一篇文章", id: "write-post" },
-  { depth: 3, text: "发布一条随想", id: "write-thought" },
-  { depth: 3, text: "创建一个专栏", id: "make-column" },
-  { depth: 2, text: "高级嵌入", id: "garden-media-title" },
-  { depth: 2, text: "系统能力", id: "garden-system-title" },
-  { depth: 2, text: "管理后台", id: "garden-admin-title" },
-  { depth: 2, text: "安装与配置", id: "garden-setup-title" },
 ];
 
 export default function GardenPage() {
   return (
     <main className="page-shell garden-page">
-      <div className="garden-page-toc">
-        <TableOfContents headings={gardenHeadings} label="本页目录" />
-      </div>
-
-      <PageIntro
-        eyebrow="GARDEN / 博客框架"
-        title={siteConfig.pages.garden.title}
-        subtitle={siteConfig.pages.garden.subtitle}
-      >
+      <PageIntro title={siteConfig.pages.garden.title} subtitle={siteConfig.pages.garden.subtitle}>
         <p className="garden-lede">
-          Garden 是公开的博客框架，不是你的内容仓库。使用模板后，你只在自己的源码仓库里维护
-          Markdown；推送后，GitHub Actions 会把它生成并发布为公开博客。
+          文章放在你自己的仓库里。你改文件，GitHub 构建网站。
         </p>
         <div className="garden-actions">
           <a
@@ -98,187 +64,83 @@ export default function GardenPage() {
             rel="noreferrer"
           >
             <GithubLogo size={18} weight="fill" />
-            在 GitHub 查看源码
+            查看源码
             <ArrowUpRight size={16} />
           </a>
-          <a
-            className="inline-cta"
-            href="#setup"
-          >
-            查看安装与配置
+          <a className="inline-cta" href="#setup">
+            在本地跑起来
             <ArrowRight size={16} />
           </a>
         </div>
-        <ul className="garden-proof-list" aria-label="Garden 核心特点">
-          <li><strong>01</strong><span>Markdown 唯一真源</span></li>
-          <li><strong>02</strong><span>GitHub 自动发布</span></li>
-          <li><strong>03</strong><span>长文、随想与专栏</span></li>
-        </ul>
       </PageIntro>
 
-      <section
-        className="garden-responsibilities"
-        id="responsibilities"
-        aria-labelledby="garden-responsibilities-title"
-      >
-        <header className="garden-section-heading">
-          <div>
-            <p className="eyebrow">FLOW / 职责划分</p>
-            <h2 id="garden-responsibilities-title">你只需要维护源码仓库</h2>
-          </div>
-          <p>
-            日常写作从源码仓库开始，也在源码仓库结束。框架提供能力，Actions 负责构建，Pages
-            只负责展示；管理后台和评论都是可选补充。
-          </p>
-        </header>
-
-        <div className="garden-responsibility-flow" aria-label="Garden 发布链路">
-          <strong>Garden 模板</strong>
-          <ArrowRight size={16} aria-hidden="true" />
-          <strong>你的源码仓库</strong>
-          <ArrowRight size={16} aria-hidden="true" />
-          <strong>GitHub Actions</strong>
-          <ArrowRight size={16} aria-hidden="true" />
-          <strong>公开博客</strong>
-        </div>
-
-        <div className="garden-responsibility-grid">
-          {responsibilityBoundaries.map((boundary) => (
-            <article key={boundary.number}>
-              <span>{boundary.number}</span>
-              <h3>{boundary.title}</h3>
-              <p>{boundary.description}</p>
-            </article>
-          ))}
-        </div>
-      </section>
+      <nav className="garden-jumps" aria-label="本页">
+        {jumps.map(([href, label]) => (
+          <a key={href} href={href}>{label}</a>
+        ))}
+      </nav>
 
       <GardenContentGuide />
 
+      <section className="garden-setup" id="setup" aria-labelledby="garden-setup-title">
+        <header className="garden-section-heading">
+          <h2 id="garden-setup-title">跑起来</h2>
+          <p>不需要数据库。换上你的名字和第一篇文章，推送即可。</p>
+        </header>
+
+        <ol className="garden-steps">
+          {setupSteps.map((step, index) => (
+            <li key={step.title}>
+              <span>{index + 1}</span>
+              <div>
+                <h3>{step.title}</h3>
+                {"command" in step && step.command ? <pre><code>{step.command}</code></pre> : null}
+                {"files" in step && step.files ? (
+                  <dl>
+                    {step.files.map(([name, note]) => (
+                      <div key={name}>
+                        <dt>{name}</dt>
+                        <dd>{note}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                ) : null}
+                {"body" in step && step.body ? <p>{step.body}</p> : null}
+              </div>
+            </li>
+          ))}
+        </ol>
+
+        <div className="garden-setup-notes">
+          <p>
+            <strong>仓库可以是私有的。</strong>
+            公开仓库一种就够。想把草稿留在私有仓库时，用 <code>PAGES_REPOSITORY</code> 指向公开的页面仓库。两种都是 <code>make update</code>。
+          </p>
+          <p>
+            <strong>先看草稿。</strong>
+            <code>CONTENT_INCLUDE_DRAFTS=1 make dev</code> 会把草稿和还没到时间的文章也显示出来。
+          </p>
+          <p>
+            <strong>密钥不进仓库。</strong>
+            评论、统计和后台的密钥放在部署平台。
+          </p>
+        </div>
+      </section>
+
       <GardenMediaGuide />
 
-      <section className="garden-system" aria-labelledby="garden-system-title">
-        <header>
-          <p className="eyebrow">SYSTEM / 系统能力</p>
-          <h2 id="garden-system-title">Markdown、搜索与自动发布</h2>
-          <p>
-            写作者只维护 Markdown、附件和专栏配置。页面生成、搜索索引和订阅文件由构建脚本统一处理。
-          </p>
+      <section className="garden-after" aria-labelledby="garden-after-title">
+        <header className="garden-section-heading">
+          <h2 id="garden-after-title">推送之后</h2>
         </header>
-        <div className="garden-system-grid">
-          {systemCapabilities.map((capability, index) => (
-            <article key={capability.title}>
-              <span>{String(index + 1).padStart(2, "0")}</span>
-              <h3>{capability.title}</h3>
-              <p>{capability.description}</p>
-            </article>
-          ))}
+        <p className="garden-after-lead">你的仓库，到 GitHub 构建，再到公开网站。</p>
+        <div className="garden-after-copy">
+          <p>框架画页面。你的文章不放在框架仓库里，而在你自己的内容仓库。读者打开的是生成出来的静态页。</p>
+          <p>同一次构建会带上正文、目录、前后篇、搜索、RSS 和 sitemap。后台和评论都可以以后再加，不接也能发布。</p>
         </div>
       </section>
 
       <GardenAdminGuide />
-
-      <section className="garden-setup" id="setup" aria-labelledby="garden-setup-title">
-        <header className="garden-section-heading">
-          <div>
-            <p className="eyebrow">SETUP / 安装与配置</p>
-            <h2 id="garden-setup-title">从模板到公开博客</h2>
-          </div>
-          <p>
-            公开博客不需要数据库和服务器。创建仓库、替换配置与内容，再推送到 main，GitHub Actions 就会完成构建和发布。
-          </p>
-        </header>
-
-        <div className="garden-setup-grid">
-          <article>
-            <span>01</span>
-            <h3>创建自己的站点</h3>
-            <p>
-              运行 <code>npx hd-garden init my-blog</code>，站点里只保留
-              <code>content/</code> 和 <code>site.config.yaml</code>。也可以继续用 GitHub 的
-              <strong>Use this template</strong>。推荐将仓库命名为
-              <code> &lt;owner&gt;.github.io</code>。
-            </p>
-          </article>
-          <article>
-            <span>02</span>
-            <h3>在本地启动</h3>
-            <pre>
-              <code>make dev</code>
-            </pre>
-            <p>第一次运行会自动安装依赖并创建本地配置，随后启动预览。浏览器打开终端显示的地址即可。</p>
-          </article>
-          <article>
-            <span>03</span>
-            <h3>替换配置与内容</h3>
-            <dl>
-              <div>
-                <dt>site.config.yaml</dt>
-                <dd>站点名称、作者资料和各页面标题</dd>
-              </div>
-              <div>
-                <dt>content/posts/</dt>
-                <dd>长文章与附件</dd>
-              </div>
-              <div>
-                <dt>content/thoughts/</dt>
-                <dd>随想 Markdown</dd>
-              </div>
-              <div>
-                <dt>content/columns.yaml</dt>
-                <dd>专栏资料与文章顺序</dd>
-              </div>
-            </dl>
-          </article>
-          <article>
-            <span>04</span>
-            <h3>提交并发布</h3>
-            <pre>
-              <code>make update</code>
-            </pre>
-            <p>
-              命令会先完成检查，再提交并推送源码仓库。main 分支更新后，Actions 自动生成页面、搜索索引、RSS 和 sitemap。
-            </p>
-          </article>
-        </div>
-
-        <div className="garden-setup-notes">
-          <div>
-            <strong>两种部署方式</strong>
-            <p>
-              公开源码使用单仓即可；需要隐藏草稿时，把源码放进私有仓库，并配置 <code>PAGES_REPOSITORY</code>
-              指向公开产物仓库。两种方式都只运行 <code>make update</code>。
-            </p>
-          </div>
-          <div>
-            <strong>草稿预览</strong>
-            <p>
-              本地使用 <code>CONTENT_INCLUDE_DRAFTS=1 make dev</code>，即可预览草稿和未来定时文章。
-            </p>
-          </div>
-          <div>
-            <strong>可选服务</strong>
-            <p>评论、Webmention、统计和管理后台按需配置；任何密钥都只放在部署平台的 Secret 中。</p>
-          </div>
-        </div>
-
-        <div className="garden-setup-finish">
-          <div>
-            <p className="eyebrow">START / 开始使用</p>
-            <h3>先把公开博客跑起来，再决定是否接入后台。</h3>
-          </div>
-          <a
-            className="garden-primary-link"
-            href="https://github.com/hedon954/garden"
-            target="_blank"
-            rel="noreferrer"
-          >
-            <GithubLogo size={18} weight="fill" />
-            使用 Garden 模板
-            <ArrowUpRight size={16} />
-          </a>
-        </div>
-      </section>
     </main>
   );
 }

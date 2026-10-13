@@ -46,7 +46,7 @@ export const siteConfig = {
       },
     },
     garden: {
-      title: "一个基于 Markdown 的个人博客框架。",
+      title: "用 Markdown 写。\n推送之后，网站自己更新。",
       subtitle: "",
     },
   },

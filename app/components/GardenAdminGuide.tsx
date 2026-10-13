@@ -1,35 +1,31 @@
-const adminCapabilities = [
+const adminJobs = [
   {
-    number: "01",
-    title: "发布和管理随想",
-    description:
-      "新建随想、保存草稿、正式发布、撤回或删除。每次修改都会写回 content/thoughts/，不会另存一份数据库副本。",
+    title: "写随想",
+    description: "保存草稿，或直接发布。文件写回 content/thoughts/，没有另一份数据库。",
   },
   {
-    number: "02",
-    title: "上传多媒体",
-    description:
-      "图片、音频和视频可以直接上传到阿里云 OSS，随想中只保存公开地址，避免把大文件塞进 Git 历史。",
+    title: "上传附件",
+    description: "图片、音频和视频可以传到对象存储。文章里只留下地址。",
   },
   {
-    number: "03",
-    title: "管理博文置顶",
-    description:
-      "后台可以切换博文的首页置顶状态，并查看博文所属专栏。正文仍然使用 Markdown 编辑，专栏顺序仍由 columns.yaml 管理。",
+    title: "置顶",
+    description: "让一篇博文出现在首页前面。正文还是在编辑器里改。",
   },
   {
-    number: "04",
-    title: "分发到其他平台",
-    description:
-      "可以直接发布到 X，或调用自建服务同步到 CSDN、知乎和掘金；没有配置接口时，也能复制标题、栏目和公开链接。",
+    title: "发到别处",
+    description: "可以发到 X，或同步到 CSDN、知乎、掘金。没配接口时，复制标题和链接。",
+  },
+  {
+    title: "改文章里的交互",
+    description: "写作台把一句话收成可交互的块。组件页能看到每一种块长什么样。",
   },
 ];
 
 const adminFlow = [
-  ["GitHub 登录", "只允许白名单中的账号进入后台。"],
-  ["执行内容操作", "发布随想、上传附件、置顶或分发博文。"],
-  ["提交到内容仓库", "后台使用服务端令牌修改 Markdown。"],
-  ["自动更新博客", "main 分支变更后由 Actions 重新发布。"],
+  ["用 GitHub 登录", "只有名单里的账号能进来。"],
+  ["做一件事", "写随想、上传、置顶，或发到别处。"],
+  ["写回仓库", "后台把改动提交到你的内容仓库。"],
+  ["网站更新", "main 变了之后，页面会重新发布。"],
 ];
 
 export function GardenAdminGuide() {
@@ -37,11 +33,10 @@ export function GardenAdminGuide() {
     <section className="garden-admin" id="admin" aria-labelledby="garden-admin-title">
       <header className="garden-section-heading">
         <div>
-          <p className="eyebrow">ADMIN / 管理后台</p>
-          <h2 id="garden-admin-title">管理后台能做什么</h2>
+          <h2 id="garden-admin-title">后台</h2>
         </div>
         <p>
-          后台是一个可选的独立服务，处理需要登录和服务端密钥的工作。公开博客仍然是静态站点，内容仍然保存在 Git 仓库中。
+          长文继续在编辑器里写。后台只做需要登录的事：随想、附件、置顶、转发，以及文章里的交互。
         </p>
       </header>
 
@@ -50,40 +45,39 @@ export function GardenAdminGuide() {
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src="/images/garden/admin-studio.png"
-          alt="Garden 内容管理后台，包含随想发布、草稿管理与博文分发"
-          width={1440}
-          height={1000}
+          alt="Garden 后台：上面写一条随想，下面是草稿和已发布"
+          width={920}
+          height={1033}
           loading="lazy"
         />
         <figcaption>
-          <strong>实际后台界面</strong>
-          <span>随想编辑、已发布与草稿管理，以及博文置顶和分发都集中在同一个工作区。</span>
+          <strong>后台首页</strong>
+          <span>上面写一条随想。下面是草稿，以及可以置顶或转发的文章。</span>
         </figcaption>
       </figure>
 
       <div className="garden-admin-capabilities">
-        {adminCapabilities.map((capability) => (
-          <article key={capability.number}>
-            <span>{capability.number}</span>
-            <h3>{capability.title}</h3>
-            <p>{capability.description}</p>
+        {adminJobs.map((job) => (
+          <article key={job.title}>
+            <h3>{job.title}</h3>
+            <p>{job.description}</p>
           </article>
         ))}
       </div>
 
       <div className="garden-admin-boundary">
-        <strong>后台的边界</strong>
+        <strong>它不是整套编辑器</strong>
         <p>
-          它不是一套完整 CMS。长文章继续在 Typora 或其他 Markdown 编辑器中编写，专栏继续在
+          长文仍用 Typora 或其他 Markdown 编辑器。专栏顺序仍在
           <code> content/columns.yaml </code>
-          中编排；后台主要补上随想发布、媒体上传、博文置顶和内容分发。
+          里排。
         </p>
       </div>
 
-      <ol className="garden-admin-flow" aria-label="管理后台发布流程">
+      <ol className="garden-admin-flow" aria-label="从登录到网站更新">
         {adminFlow.map(([title, description], index) => (
           <li key={title}>
-            <span>{String(index + 1).padStart(2, "0")}</span>
+            <span>{index + 1}</span>
             <strong>{title}</strong>
             <p>{description}</p>
           </li>
@@ -92,21 +86,20 @@ export function GardenAdminGuide() {
 
       <div className="garden-admin-enable">
         <div>
-          <p className="eyebrow">ENABLE / 启用后台</p>
-          <h3>单独部署，再连接内容仓库</h3>
+          <h3>想用后台，再单独部署一份</h3>
           <ol>
             <li>把同一份 Garden 部署到 Node、Docker 或 Cloudflare Workers。</li>
-            <li>配置 GitHub OAuth、允许登录的账号，以及仅能写入内容仓库的令牌。</li>
-            <li>需要上传附件或跨平台分发时，再配置 OSS 和各平台接口。</li>
+            <li>配好 GitHub 登录、允许的账号，以及只能改内容仓库的令牌。</li>
+            <li>要上传附件或转发到其他网站时，再配存储和各平台接口。</li>
           </ol>
         </div>
-        <pre aria-label="管理后台核心配置示例">
+        <pre aria-label="后台需要的环境变量">
           <code>{`ADMIN_URL=https://admin.example.com
 CONTENT_REPOSITORY=owner/repository
 CONTENT_BRANCH=main
 ADMIN_GITHUB_LOGINS=your-github-login
 
-# 令牌与密钥只保存在后台服务中
+# 令牌只放在后台服务里
 CONTENT_GITHUB_TOKEN=github_pat_xxx
 GITHUB_OAUTH_CLIENT_ID=Ov23li_xxx`}</code>
         </pre>

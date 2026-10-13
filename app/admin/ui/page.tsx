@@ -3,7 +3,7 @@ import { UiStudio } from "../../components/UiStudio";
 import { modelConfig, recipeSources, remainingDrafts } from "../../lib/ui-model";
 
 export const dynamic = process.env.STATIC_EXPORT === "1" ? "force-static" : "force-dynamic";
-export const metadata = { title: "组件工作台", robots: { index: false, follow: false } };
+export const metadata = { title: "写作台", robots: { index: false, follow: false } };
 
 export default async function UiStudioPage() {
   if (isStaticExport()) return <StaticAdminNotice />;

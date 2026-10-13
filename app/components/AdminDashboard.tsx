@@ -8,9 +8,6 @@ import {
   ArrowUpRight,
   CheckCircle,
   Copy,
-  DotsThree,
-  FileText,
-  LinkSimple,
   PaperPlaneTilt,
   Plus,
   Trash,
@@ -55,7 +52,7 @@ function MediaFields({
       <div className="admin-field-heading">
         <div>
           <span>附件</span>
-          <small>支持一条随想中混合多个图片、音频、视频与链接。</small>
+          <small>一条随想里可以混放图片、音频、视频和链接。</small>
         </div>
         <button type="button" className="admin-quiet-button" onClick={() => onChange([...attachments, emptyAttachment()])}>
           <Plus size={14} /> 添加附件
@@ -153,20 +150,17 @@ function IntelligentUiCard({ ui }: { ui: UiOverview }) {
   return (
     <section className="admin-panel admin-ui-card">
       <div className="admin-panel-heading">
-        <div>
-          <span>Intelligent UI</span>
-          <h2>交互块</h2>
-        </div>
-        <Link href="/admin/ui">打开工作台</Link>
+        <h2>文章里的交互</h2>
+        <Link href="/admin/ui">打开写作台</Link>
       </div>
       <p className="ui-studio-meta">
-        {ui.modelName ? ui.modelName : "模型未连接"}
+        {ui.modelName ? ui.modelName : "还没接上模型"}
         {" · "}
         {counts
           ? <Link href="/admin/ui/blocks">{`未编译 ${counts.uncompiled} · 过期 ${counts.stale} · 有错 ${counts.error} · 正常 ${counts.ok}`}</Link>
-          : failed ? "交互块读取失败" : "正在统计交互块…"}
+          : failed ? "没读到文章里的块" : "正在查看文章…"}
         {" · "}
-        <Link href="/admin/ui/catalog">组件清单</Link>
+        <Link href="/admin/ui/catalog">看组件</Link>
       </p>
     </section>
   );
@@ -367,7 +361,7 @@ export function AdminDashboard({
   return (
     <main className="admin-shell">
       <header className="admin-topbar">
-        <Link className="admin-brand" href="/admin">HEDON <span>STUDIO</span></Link>
+        <Link className="admin-brand" href="/admin">Garden<span>后台</span></Link>
         <div>
           <span>{userName}</span>
           <form action="/api/auth/logout" method="post">
@@ -380,16 +374,15 @@ export function AdminDashboard({
       </header>
 
       <section className="admin-hero">
-        <div>
-          <p className="eyebrow">CONTENT OPERATIONS</p>
-          <h1>写作留在本地，发布与分发留在这里。</h1>
-          <p>博文和专栏仍由 Typora 与 Git 管理；这里负责随想、发布状态和跨平台分发。</p>
-        </div>
-        <dl className="admin-metrics">
-          <div><dt>公开随想</dt><dd>{publishedCount + staticThoughtCount}</dd></div>
-          <div><dt>本地博文</dt><dd>{catalogEntries.filter((entry) => entry.kind === "post").length}</dd></div>
-          <div><dt>专栏篇目</dt><dd>{catalogEntries.filter((entry) => entry.kind === "column").length}</dd></div>
-        </dl>
+        <h1>写一条随想。</h1>
+        <p>长文仍在编辑器里改。这里写随想、上传附件、置顶，以及发到其他网站。</p>
+        <p className="admin-quiet-count">
+          {publishedCount + staticThoughtCount} 条公开随想
+          {" · "}
+          {catalogEntries.filter((entry) => entry.kind === "post").length} 篇博文
+          {" · "}
+          {catalogEntries.filter((entry) => entry.kind === "column").length} 篇专栏
+        </p>
       </section>
 
       <IntelligentUiCard ui={ui} />
@@ -400,12 +393,11 @@ export function AdminDashboard({
       <section className="admin-grid">
         <div className="admin-panel admin-compose-panel">
           <div className="admin-panel-heading">
-            <div><span>发布随想</span><h2>一条记录，可以有多种媒介。</h2></div>
-            <PaperPlaneTilt size={22} />
+            <h2>写一条</h2>
           </div>
-          <label>标题<input value={title} onChange={(event) => setTitle(event.target.value)} placeholder="给这条记录一个标题" /></label>
-          <label>正文（Markdown）<textarea value={content} onChange={(event) => setContent(event.target.value)} placeholder="写下此刻想留下的文字…" rows={8} /></label>
-          <label>标签（用逗号分隔）<input value={tags} onChange={(event) => setTags(event.target.value)} placeholder="例如：产品, 夜晚, 摄影" /></label>
+          <label>标题<input value={title} onChange={(event) => setTitle(event.target.value)} placeholder="标题" /></label>
+          <label>正文<textarea value={content} onChange={(event) => setContent(event.target.value)} placeholder="写下来。可以用 Markdown。" rows={8} /></label>
+          <label>标签<input value={tags} onChange={(event) => setTags(event.target.value)} placeholder="用逗号分开，例如：夜晚, 散步" /></label>
           <MediaFields attachments={attachments} onChange={setAttachments} onUpload={uploadMedia} uploading={uploadingCount > 0} />
           <div className="admin-actions">
             <button type="button" className="admin-secondary-button" disabled={isSaving || uploadingCount > 0} onClick={() => publishThought("draft")}>保存草稿</button>
@@ -415,11 +407,10 @@ export function AdminDashboard({
 
         <div className="admin-panel admin-thoughts-panel">
           <div className="admin-panel-heading">
-            <div><span>后台随想</span><h2>已发布与草稿</h2></div>
-            <DotsThree size={23} />
+            <h2>草稿和已发布</h2>
           </div>
           <div className="admin-thought-list">
-            {thoughts.length === 0 ? <p className="admin-empty">还没有从后台创建的随想。</p> : thoughts.map((thought) => (
+            {thoughts.length === 0 ? <p className="admin-empty">还没有在这里写过随想。</p> : thoughts.map((thought) => (
               <article key={thought.id}>
                 <div><span className={`admin-status ${thought.status}`}>{thought.status === "published" ? "已发布" : "草稿"}</span><h3>{thought.title}</h3><p>{thought.content.slice(0, 76)}{thought.content.length > 76 ? "…" : ""}</p></div>
                 <div className="admin-item-actions">
@@ -434,10 +425,9 @@ export function AdminDashboard({
 
       <section className="admin-panel admin-distribution-panel">
         <div className="admin-panel-heading">
-          <div><span>博文与专栏分发</span><h2>后台不改正文，只生成发布动作。</h2></div>
-          <FileText size={22} />
+          <h2>置顶，或发到别处</h2>
         </div>
-        <p className="admin-distribution-note"><LinkSimple size={16} /> CSDN、知乎、掘金采用你配置的同步服务；X 在填写用户访问令牌后可直接发布。没有配置时仍可一键复制分发包。</p>
+        <p className="admin-distribution-note">正文仍在仓库里改。这里可以置顶，发到 X，或同步到 CSDN、知乎、掘金。没配接口时，复制标题和链接。</p>
         <div className="admin-catalog">
           {catalogEntries.map((entry) => (
             <article key={`${entry.kind}-${entry.column ?? ""}-${entry.path}`}>

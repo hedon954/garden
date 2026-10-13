@@ -71,7 +71,7 @@ type StudioProps = { configured: boolean; modelName: string | null; remaining: n
 
 export function UiStudio(props: StudioProps) {
   const mounted = useSyncExternalStore(subscribeNothing, () => true, () => false);
-  if (!mounted) return <section className="admin-panel ui-studio-loading">正在打开工作台…</section>;
+  if (!mounted) return <section className="admin-panel ui-studio-loading">正在打开写作台…</section>;
   return <Studio {...props} />;
 }
 
@@ -397,7 +397,7 @@ function Studio({ configured, modelName, remaining: initialRemaining, recipes }:
               </figure>
             )
           ) : (
-            <p className="ui-studio-empty">左边写一句，或者从配方打开。</p>
+            <p className="ui-studio-empty">左边写你想让读者看到的东西，或从配方开始。</p>
           )}
         </div>
 

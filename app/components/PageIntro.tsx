@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 
 type PageIntroProps = {
-  eyebrow: string;
+  eyebrow?: string;
   title: string;
   subtitle?: string;
   children?: ReactNode;
@@ -16,7 +16,7 @@ export function PageIntro({
 }: PageIntroProps) {
   return (
     <header className="page-intro">
-      <p className="eyebrow">{eyebrow}</p>
+      {eyebrow ? <p className="eyebrow">{eyebrow}</p> : null}
       <h1>
         {title.split("\n").map((line, index) => (
           <span key={`${line}-${index}`}>

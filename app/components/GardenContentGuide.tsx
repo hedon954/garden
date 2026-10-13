@@ -10,11 +10,6 @@ function SourcePanel({ path, source, language }: SourcePanelProps) {
   return (
     <div className="garden-source-panel">
       <div className="garden-source-bar">
-        <span aria-hidden="true">
-          <i />
-          <i />
-          <i />
-        </span>
         <code>{path}</code>
       </div>
       <pre>
@@ -69,12 +64,10 @@ const columnSource = `columns:
 
 type Guide = {
   id: string;
-  number: string;
   label: string;
   title: string;
   introduction: string;
   steps: ReactNode[];
-  features: string[];
   result: string;
   path: string;
   source: string;
@@ -84,88 +77,45 @@ type Guide = {
 const guides: Guide[] = [
   {
     id: "write-post",
-    number: "01",
     label: "博文",
     title: "写一篇文章",
-    introduction:
-      "博文保存在 content/posts/ 中，可以按照主题建立任意层级的子目录。文件路径同时决定文章地址，正文仍然是普通 Markdown。",
+    introduction: "文件放在 content/posts/。路径就是网址，正文是普通 Markdown。可以按主题分子目录。",
     steps: [
-      <>
-        在 <code>content/posts/</code> 中创建一个 <code>.md</code> 文件。
-      </>,
-      <>在 Front Matter 中填写标题、日期、摘要、主题、标签和封面。</>,
-      <>使用 Markdown 编写正文，图片和其他附件可以使用相对路径。</>,
+      <>在 <code>content/posts/</code> 里新建一个 <code>.md</code> 文件。</>,
+      <>开头写下标题、日期、摘要、主题和标签。封面可有可无。</>,
+      <>接着写正文。图片用相对路径，和文件放在一起。</>,
     ],
-    features: [
-      "GFM 表格、任务列表与脚注",
-      "TypeScript、Go、Rust 等代码高亮",
-      "数学公式与 Mermaid 图表",
-      "图片、音视频与平台嵌入",
-      "草稿、定时发布与置顶",
-      "文章目录、上一篇与下一篇",
-    ],
-    result:
-      "构建时会生成文章页面，并把标题、摘要和正文加入博文列表、主题归档、全文搜索与 RSS。",
+    result: "推送后，这篇文章会出现在列表、主题、搜索和 RSS 里。",
     path: "content/posts/writing/first-post.md",
     source: postSource,
     language: "markdown",
   },
   {
     id: "write-thought",
-    number: "02",
     label: "随想",
-    title: "发布一条随想",
-    introduction:
-      "随想适合记录几句话、一个链接或一组多媒体。它同样保存在 Git 仓库中，只需要更少的字段，也可以通过可选管理后台发布。",
+    title: "写一条随想",
+    introduction: "几句话、一张图或一个链接。字段更少。也可以在后台写，写完同样进仓库。",
     steps: [
-      <>
-        直接创建 <code>content/thoughts/&lt;文件名&gt;.md</code>，或者在管理后台填写内容。
-      </>,
-      <>文件名就是地址。front matter 填写标题和日期；需要暂存时加入草稿状态。</>,
-      <>
-        在 <code>media</code> 中按顺序添加图片、音频、视频或外部链接。
-      </>,
+      <>新建 <code>content/thoughts/文件名.md</code>，或在后台填写。</>,
+      <>文件名就是地址。标题和日期写在开头。先存着就标成草稿。</>,
+      <>图片、音频、视频和链接按顺序放进 <code>media</code>。</>,
     ],
-    features: [
-      "纯文字短内容",
-      "多张图片与混合图集",
-      "音频和视频",
-      "带标题的外部链接",
-      "草稿与公开状态",
-      "独立永久链接",
-    ],
-    result:
-      "发布后的内容会出现在随想时间线和首页最近随想中，每条随想都有可以单独分享的永久链接。",
+    result: "它会出现在随想页和首页，并且有自己的链接。",
     path: "content/thoughts/walk-after-rain.md",
     source: thoughtSource,
     language: "markdown",
   },
   {
     id: "make-column",
-    number: "03",
     label: "专栏",
-    title: "创建一个专栏",
-    introduction:
-      "专栏不复制文章，而是在 content/columns.yaml 中引用已经存在的博文。posts 的排列顺序就是专栏的阅读顺序。",
+    title: "把文章收成专栏",
+    introduction: "专栏不复制文章。它只是 content/columns.yaml 里的一份阅读顺序。",
     steps: [
-      <>
-        在 <code>content/columns.yaml</code> 中添加专栏名称、介绍、状态和封面。
-      </>,
-      <>
-        在 <code>posts</code> 中填写博文相对 <code>content/posts/</code> 的路径。
-      </>,
-      <>按照希望读者阅读的顺序排列路径；同一篇文章可以加入多个专栏。</>,
+      <>在 <code>content/columns.yaml</code> 里写名称、介绍和封面。</>,
+      <>在 <code>posts</code> 里填文章相对 <code>content/posts/</code> 的路径。</>,
+      <>按你希望读者阅读的顺序排列。同一篇可以进多个专栏。</>,
     ],
-    features: [
-      "专栏标题、说明和状态",
-      "独立专栏封面",
-      "文章顺序可控",
-      "复用同一份 Markdown",
-      "一篇文章加入多个专栏",
-      "系列文章导航",
-    ],
-    result:
-      "构建后会生成独立专栏页面。读者可以按照配置顺序浏览文章，文章页也会显示它所属的系列与前后篇目。",
+    result: "读者按这个顺序读。文章页也会显示它属于哪一组，以及上一篇、下一篇。",
     path: "content/columns.yaml",
     source: columnSource,
     language: "yaml",
@@ -174,56 +124,22 @@ const guides: Guide[] = [
 
 export function GardenContentGuide() {
   return (
-    <section className="garden-guide" aria-labelledby="garden-guide-title">
-      <header className="garden-guide-heading">
-        <div>
-          <p className="eyebrow">CONTENT / 内容</p>
-          <h2 id="garden-guide-title">博文、随想和专栏</h2>
-        </div>
-        <p>
-          先选择内容类型，再编辑对应文件。三种内容都保存在源码仓库中，直接编辑文件即可完成全部公开内容的维护和发布。
-        </p>
-      </header>
-
-      <nav className="garden-guide-index" aria-label="内容类型">
-        {guides.map((guide) => (
-          <a href={`#${guide.id}`} key={guide.id}>
-            <span>{guide.number}</span>
-            <strong>{guide.title}</strong>
-            <small>{guide.label}</small>
-          </a>
-        ))}
-      </nav>
-
+    <div className="garden-guide">
       <div className="garden-guide-sections">
         {guides.map((guide) => (
           <article className="garden-content-guide" id={guide.id} key={guide.id}>
             <div className="garden-content-copy">
-              <p className="eyebrow">
-                {guide.number} / {guide.label}
-              </p>
+              <p className="garden-content-label">{guide.label}</p>
               <h2>{guide.title}</h2>
               <p className="garden-content-introduction">{guide.introduction}</p>
 
               <ol className="garden-content-steps">
                 {guide.steps.map((step, index) => (
-                  <li key={index}>
-                    <strong>{index + 1}</strong>
-                    <span>{step}</span>
-                  </li>
+                  <li key={index}>{step}</li>
                 ))}
               </ol>
 
-              <ul className="garden-content-features" aria-label={`${guide.title}支持的能力`}>
-                {guide.features.map((feature) => (
-                  <li key={feature}>{feature}</li>
-                ))}
-              </ul>
-
-              <aside className="garden-content-result">
-                <strong>发布后</strong>
-                <p>{guide.result}</p>
-              </aside>
+              <p className="garden-content-result">{guide.result}</p>
             </div>
 
             <SourcePanel
@@ -234,6 +150,6 @@ export function GardenContentGuide() {
           </article>
         ))}
       </div>
-    </section>
+    </div>
   );
 }
