@@ -70,7 +70,7 @@ fmt.Println(b)\`} />
     id: "parity-sandbox",
     width: 768,
     body: `${header("parity-sandbox", "目录以外的交互放在无网络的画布里。")}
-<Sandbox title="计数" html={"<p id=\\"n\\">0</p><button id=\\"b\\" type=\\"button\\">加一</button>"} css="button{color:var(--viz-accent)}" js="document.getElementById('b').onclick=()=>{const n=document.getElementById('n');n.textContent=String(Number(n.textContent)+1)}" />
+<Sandbox title="计数" html={"<p id=\\"n\\">0</p><button id=\\"b\\" type=\\"button\\">加一</button>"} css="button{color:var(--blue)}" js="document.getElementById('b').onclick=()=>{const n=document.getElementById('n');n.textContent=String(Number(n.textContent)+1)}" />
 `,
   },
 ];

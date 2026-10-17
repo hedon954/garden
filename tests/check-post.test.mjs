@@ -43,6 +43,21 @@ async function check(root, markdown) {
 
 const codes = (result) => result.results[0].errors.map((item) => item.code);
 
+test("an older ISO timestamp still passes", async (t) => {
+  const root = await site(t);
+  const result = await check(root, `---
+title: 测试
+description: 一篇用来检查结构的文章。
+date: 2026-09-18T14:39:00+08:00
+topic: 测试
+---
+
+## 正文
+`);
+  assert.equal(result.ok, true);
+  assert.deepEqual(codes(result), []);
+});
+
 test("a post with a matched external link passes", async (t) => {
   const root = await site(t);
   const result = await check(root, post(`references:
@@ -63,7 +78,7 @@ test("structure errors use stable codes and leave translated bibliographies alon
   const broken = await check(root, `---
 title: 测试
 description: 一篇用来检查结构的文章。
-date: 2026-09-18T14:39:00+08:00
+date: not-a-date
 topic: 测试
 slug: sample
 references:

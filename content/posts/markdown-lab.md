@@ -243,6 +243,11 @@ actor ReadingProgress {
   <p>Typora 文件中的 details / summary 会保留为可交互的折叠区域。</p>
 </details>
 
+```garden html
+code: |
+  <p class="garden-html-probe">静态 HTML 块</p>
+```
+
 ---
 
 最后用一个脚注说明这篇文章的角色：它既是示例，也是未来升级 Markdown 依赖时的回归测试。[^regression]

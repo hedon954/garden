@@ -6,6 +6,7 @@ import { marked } from "marked";
 import { parse as parseYaml, stringify as stringifyYaml } from "yaml";
 import { canonicalSiteDate } from "./site-date.mjs";
 import { contentForFeed, contentToSearchText, transformUiContent } from "../ui/core/transform.mjs";
+import { countDemoWords } from "../ui/garden/word-count.mjs";
 
 function resolveSiteRoot() {
   if (process.env.GARDEN_SITE) return path.resolve(process.env.GARDEN_SITE);
@@ -527,9 +528,17 @@ assertUnique(
 );
 assertUnique(thoughts, (item) => item.slug, "随想 slug");
 
+const parityDir = path.join(root, "parity", "articles");
+const a2WordCounts = fs.existsSync(parityDir)
+  ? Object.fromEntries(fs.readdirSync(parityDir).filter((name) => name.endsWith(".md")).sort().map((name) => {
+      const parsed = matter(fs.readFileSync(path.join(parityDir, name), "utf8"));
+      return [name.slice(0, -3), countDemoWords(parsed.content)];
+    }))
+  : {};
+
 const contentHash = crypto
   .createHash("sha256")
-  .update(JSON.stringify({ posts, columns, thoughts }))
+  .update(JSON.stringify({ posts, columns, thoughts, a2WordCounts }))
   .digest("hex")
   .slice(0, 12);
 
@@ -581,6 +590,7 @@ export const contentHash = "${contentHash}";
 export const posts = ${JSON.stringify(posts, null, 2)} as ContentEntry[];
 export const columns = ${JSON.stringify(columns, null, 2)} as ContentEntry[];
 export const thoughts = ${JSON.stringify(thoughts, null, 2)} as ContentEntry[];
+export const a2WordCounts = ${JSON.stringify(a2WordCounts, null, 2)} as Record<string, number>;
 `;
 
 fs.mkdirSync(path.dirname(output), { recursive: true });

@@ -9,7 +9,9 @@ import {
   postHref,
   posts,
 } from "../../lib/content";
+import { ArticleMeasure } from "../../components/ArticleMeasure";
 import { ArticleReferences } from "../../components/ArticleReferences";
+import { ArticleTitle, originalUrl } from "../../components/ArticleTitle";
 import { MarkdownArticle } from "../../components/MarkdownArticle";
 import { TableOfContents } from "../../components/TableOfContents";
 import { Comments } from "../../components/Comments";
@@ -87,32 +89,41 @@ export default async function PostPage({
         >
           {siteConfig.author.name}
         </a>
-        {post.cover && (
-          <figure className="article-hero article-cover">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              className="u-photo"
-              src={post.cover}
-              alt={`${post.title} 封面`}
-            />
-          </figure>
-        )}
-        <header className="article-header article-summary-row">
-          <p className="eyebrow">{post.topic}</p>
-          <h1 className="p-name">{post.title}</h1>
-          <p className="article-deck p-summary">{post.description}</p>
-          <div className="article-meta">
-            <time className="dt-published" dateTime={post.date}>
-              发布于 {formatDate(post.date)}
-            </time>
-            {post.updated && <span>更新于 {formatDate(post.updated)}</span>}
-            <span>{post.readingTime}</span>
-            <span>约 {wordCount.toLocaleString("zh-CN")} 字</span>
-          </div>
+        <header className="article-header article-summary-row hero">
+          <ArticleTitle title={post.title} />
+          <ul className="meta article-meta">
+            <li>{siteConfig.author.name}</li>
+            <li>
+              <time className="dt-published" dateTime={post.date}>
+                {formatDate(post.date)}
+              </time>
+            </li>
+            {post.updated ? <li>更新于 {formatDate(post.updated)}</li> : null}
+            <li>{post.readingTime}</li>
+            <li>约 {wordCount.toLocaleString("en-US")} 字</li>
+            {post.topic ? (
+              <li>
+                <a className="cat" href={`/blog?topic=${encodeURIComponent(post.topic)}`}>{post.topic}</a>
+              </li>
+            ) : null}
+            {originalUrl(post) ? (
+              <li>
+                <a className="orig ext" href={originalUrl(post)} target="_blank" rel="noopener noreferrer">原文 ↗</a>
+              </li>
+            ) : null}
+          </ul>
+          {post.cover && (
+            <figure className="article-hero article-cover cover-card cover-img">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img className="u-photo" src={post.cover} alt={`${post.title} 封面`} />
+            </figure>
+          )}
         </header>
         <div className="article-reading-layout">
           <div className="article-reading-column">
+            <ArticleMeasure />
             <div className="e-content">
+              {post.description ? <p className="lead quote-plain p-summary">{post.description}</p> : null}
               <MarkdownArticle content={post.content} />
             </div>
             <ArticleReferences references={post.references} />

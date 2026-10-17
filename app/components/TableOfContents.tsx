@@ -11,7 +11,7 @@ import {
 } from "react";
 import { List, X } from "@phosphor-icons/react";
 
-type Heading = { depth: number; text: string; id: string };
+type Heading = { depth: number; text: string; id: string; no?: string };
 
 type TocNode = Heading & { children: TocNode[] };
 
@@ -354,6 +354,7 @@ export function TableOfContents({
             onFocus={() => prefetchHeadingLayout(node.id)}
             aria-current={activeId === node.id ? "location" : undefined}
           >
+            {node.no ? <span className="t-no">{node.no}</span> : null}
             {node.text}
           </a>
           {node.children.length > 0 ? (
@@ -407,7 +408,7 @@ export function TableOfContents({
         onClick={() => closeMobileToc(true)}
       />
       <aside
-        className="toc"
+        className="toc toc-rail"
         id={panelId}
         aria-label={label}
         data-mobile-open={mobileOpen}

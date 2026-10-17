@@ -5,6 +5,7 @@ import { parse as parseYaml } from "yaml";
 import { canonicalSiteDate } from "./site-date.mjs";
 import { gardenSiteRoot } from "./garden-paths.mjs";
 import { checkUiBlock } from "../ui/core/validate.mjs";
+import { checkGardenMarkdown } from "../ui/garden/check.mjs";
 
 const siteRoot = gardenSiteRoot();
 const calloutTypes = new Set([
@@ -18,7 +19,7 @@ const calloutTypes = new Set([
   "DANGER",
   "FAILURE",
 ]);
-const authorDate = /^(?:\d{4}-\d{2}-\d{2}|\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})$/u;
+const authorDate = /^(?:\d{4}-\d{2}-\d{2}(?:[ T]\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:?\d{2})?)?)$/u;
 const matterOptions = {
   engines: {
     yaml: {
@@ -202,7 +203,7 @@ const checkUi = (errors, warnings, body, markdownPath, sourcePath, line) => {
 
 const scanBody = (errors, content, markdownPath, sourcePath, { warnings = [], draft = false } = {}) => {
   let fence = null;
-  let previousDepth = 1;
+  let previousDepth = 2;
   const lines = content.split(/\r?\n/u);
   lines.forEach((line, index) => {
     const lineNumber = index + 1;
@@ -277,8 +278,11 @@ const checkFile = (filePath) => {
   if (data.slug !== undefined) {
     error(errors, "unexpected-slug", 1, `${sourcePath}: 不要写 slug，文件名就是标识`);
   }
-  if (typeof data.date !== "string" || !authorDate.test(data.date.trim()) || !canonicalSiteDate(data.date)) {
-    error(errors, "date-format", 1, `${sourcePath}: date 必须是 2026-09-18 或 2026-09-18 14:39:00`);
+  const dateText = data.date instanceof Date
+    ? (Number.isNaN(data.date.getTime()) ? "" : data.date.toISOString())
+    : typeof data.date === "string" ? data.date.trim() : "";
+  if (!authorDate.test(dateText) || !canonicalSiteDate(data.date)) {
+    error(errors, "date-format", 1, `${sourcePath}: date 必须是 2026-09-18、2026-09-18 14:39:00，或带时区的 ISO 时间`);
   }
   if (typeof data.cover === "string" && data.cover.trim() && !isExternalAsset(data.cover.trim())) {
     const coverPath = path.join(siteRoot, "content", "covers", data.cover.trim());
@@ -289,6 +293,15 @@ const checkFile = (filePath) => {
   checkReferences(data, sourcePath, errors);
   const draft = data.draft === true || (typeof data.publishAt === "string" && Date.parse(canonicalSiteDate(data.publishAt) ?? "") > Date.now());
   scanBody(errors, parsed.content, absolute, sourcePath, { warnings, draft });
+  const raw = fs.readFileSync(absolute, "utf8");
+  const titleLine = Math.max(1, raw.split(/\r?\n/u).findIndex((line) => /^title:/u.test(line)) + 1);
+  for (const item of checkGardenMarkdown(raw, {
+    draft,
+    title: typeof data.title === "string" ? data.title : "",
+    titleLine,
+  })) {
+    error(errors, item.code, item.line, `${sourcePath}: ${item.message} 建议：${item.suggestion}`);
+  }
   return { file: sourcePath, errors, warnings };
 };
 

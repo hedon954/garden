@@ -1,9 +1,12 @@
 import { markdownPlugins } from "../lib/markdown-plugins";
 import {
   Children,
+  cloneElement,
   isValidElement,
   type HTMLAttributes,
+  type ReactNode,
 } from "react";
+import { articleHeadingBase, articleUsesHeadingNumbers, displayHeadingLevel, splitHeadingNumber } from "../lib/content";
 import ReactMarkdown from "react-markdown";
 import rehypeRaw from "rehype-raw";
 import rehypeKatex from "rehype-katex";
@@ -12,40 +15,32 @@ import rehypeAutolinkHeadings from "rehype-autolink-headings";
 import rehypeHighlight from "rehype-highlight";
 import { MermaidDiagram } from "./MermaidDiagram";
 import { MarkdownImage } from "./MarkdownImage";
-import { ExternalEmbed } from "./ExternalEmbed";
-import { WidgetChart } from "./WidgetChart";
-import { IntentBlock, UiBlock, UiErrorBlock } from "./UiBlock";
+import { CodeCopy } from "./garden/chrome";
+import { CodeDiff } from "./garden/chrome";
+import { GardenBlock } from "./garden/GardenBlock";
 
-const BLOCK_LANGUAGES = ["language-mermaid", "language-embed", "language-widget", "language-ui", "language-ui-error", "language-intent"];
+const BLOCK_LANGUAGES = ["language-mermaid"];
 const isBlockLanguage = (className?: string) =>
   Boolean(className) && BLOCK_LANGUAGES.some((language) => className?.split(/\s+/u).includes(language));
+
+function codeText(node: unknown): string {
+  if (!node || typeof node !== "object") return "";
+  const record = node as { type?: string; value?: string; children?: unknown[] };
+  if (typeof record.value === "string" && record.type === "text") return record.value;
+  return (record.children ?? []).map((child) => codeText(child)).join("");
+}
 
 function CodeBlock({
   className,
   children,
+  node,
   ...props
 }: HTMLAttributes<HTMLElement> & { node?: unknown }) {
   if (className?.includes("language-mermaid")) {
-    return <MermaidDiagram source={String(children).trim()} />;
-  }
-  if (className?.includes("language-embed")) {
-    return <ExternalEmbed source={String(children).trim()} />;
-  }
-  if (className?.includes("language-widget")) {
-    return <WidgetChart source={String(children).trim()} />;
-  }
-  if (className?.split(/\s+/u).includes("language-ui")) {
-    return <UiBlock source={String(children)} />;
-  }
-  if (className?.split(/\s+/u).includes("language-ui-error")) {
-    return <UiErrorBlock source={String(children)} />;
-  }
-  if (className?.split(/\s+/u).includes("language-intent")) {
-    return <IntentBlock source={String(children)} />;
+    return <MermaidDiagram source={codeText(node) || String(children ?? "").trim()} />;
   }
 
   const codeProps = { ...props };
-  delete codeProps.node;
 
   return (
     <code className={className} {...codeProps}>
@@ -94,9 +89,111 @@ export function normalizeCallouts(markdown: string) {
   }).join("\n");
 }
 
-export function MarkdownArticle({ content }: { content: string }) {
+function stripPrefix(children: ReactNode, prefix: string): ReactNode {
+  let rest = prefix;
+  const walk = (node: ReactNode): ReactNode => {
+    if (!rest) return node;
+    if (typeof node === "string" || typeof node === "number") {
+      const value = String(node);
+      if (value.startsWith(rest)) {
+        const kept = value.slice(rest.length);
+        rest = "";
+        return kept;
+      }
+      if (rest.startsWith(value)) {
+        rest = rest.slice(value.length);
+        return "";
+      }
+      return value;
+    }
+    if (Array.isArray(node)) return node.map(walk);
+    if (isValidElement<{ children?: ReactNode }>(node)) {
+      return cloneElement(node, undefined, walk(node.props.children));
+    }
+    return node;
+  };
+  return walk(children);
+}
+
+function LinkCard({ href }: { href: string }) {
+  let host = href;
+  try { host = new URL(href).hostname.replace(/^www\./u, ""); } catch { /* keep the raw url */ }
   return (
-    <div className="markdown-body">
+    <ul className="link-cards">
+      <li>
+        <a className="link-card ext" href={href} target="_blank" rel="noopener noreferrer">
+          <span className="lc-body">
+            <span className="lc-site">
+              <span className="lc-sitename">{host}</span>
+              <span className="lc-host">{host}</span>
+              <span className="lc-arrow" aria-hidden="true" />
+            </span>
+            <span className="lc-title">{href}</span>
+          </span>
+        </a>
+      </li>
+    </ul>
+  );
+}
+
+const headingText = (children: ReactNode) => {
+  const parts: string[] = [];
+  const walk = (node: ReactNode) => {
+    if (typeof node === "string" || typeof node === "number") parts.push(String(node));
+    else if (Array.isArray(node)) node.forEach(walk);
+    else if (isValidElement<{ children?: React.ReactNode }>(node)) walk(node.props.children);
+  };
+  walk(children);
+  return parts.join("");
+};
+
+export function MarkdownArticle({ content }: { content: string }) {
+  const numbers = { h2: 0, h3: 0 };
+  const numberedArticle = articleUsesHeadingNumbers(content);
+  const headingBase = articleHeadingBase(content);
+  const section = (depth: 2 | 3, children: ReactNode) => {
+    const raw = headingText(children).trim();
+    const split = splitHeadingNumber(raw);
+    if (split) {
+      if (depth === 2) { numbers.h2 += 1; numbers.h3 = 0; }
+      else numbers.h3 += 1;
+      const prefix = raw.slice(0, raw.length - split.text.length);
+      return { no: split.no, children: stripPrefix(children, prefix) };
+    }
+    if (numberedArticle) return { no: "", children };
+    if (depth === 2) { numbers.h2 += 1; numbers.h3 = 0; return { no: String(numbers.h2), children }; }
+    numbers.h3 += 1;
+    return { no: numbers.h2 ? `${numbers.h2}.${numbers.h3}` : String(numbers.h3), children };
+  };
+  const heading = (source: 2 | 3 | 4, children: ReactNode, props: HTMLAttributes<HTMLHeadingElement> & { node?: unknown }) => {
+    const level = displayHeadingLevel(source, headingBase);
+    const Tag = level === 2 ? "h2" : level === 3 ? "h3" : "h4";
+    const domProps = { ...props };
+    Reflect.deleteProperty(domProps, "node");
+    if (level > 3) return <Tag {...domProps}>{children}</Tag>;
+    const sectioned = section(level as 2 | 3, children);
+    return <Tag {...domProps}>{sectioned.no ? <span className="sec-no">{sectioned.no}</span> : null}{sectioned.children}</Tag>;
+  };
+  const gardenComponents = {
+    "garden-block": (props: { dataPayload?: string; "data-payload"?: string }) => (
+      <GardenBlock dataPayload={props.dataPayload ?? props["data-payload"]} />
+    ),
+    "garden-codediff": (props: {
+      children?: ReactNode;
+      dataDiff?: string;
+      dataNew?: string;
+      "data-diff"?: string;
+      "data-new"?: string;
+    }) => (
+      <CodeDiff
+        code={props.children}
+        diff={decodeURIComponent(props.dataDiff ?? props["data-diff"] ?? "")}
+        next={decodeURIComponent(props.dataNew ?? props["data-new"] ?? "")}
+      />
+    ),
+  };
+  return (
+    <div className="markdown-body prose">
       <ReactMarkdown
         remarkPlugins={markdownPlugins}
         rehypePlugins={[
@@ -107,14 +204,24 @@ export function MarkdownArticle({ content }: { content: string }) {
           rehypeHighlight,
         ]}
         components={{
+          p: ({ children, ...props }) => {
+            const domProps = { ...props };
+            Reflect.deleteProperty(domProps, "node");
+            const nodes = Children.toArray(children).filter((node) => !(typeof node === "string" && !node.trim()));
+            const only = nodes.length === 1 && isValidElement<{ href?: string; children?: ReactNode }>(nodes[0]) ? nodes[0] : null;
+            const href = only?.props.href;
+            const text = only ? headingText(only.props.children).trim() : "";
+            if (href && text === href && /^https?:\/\//iu.test(href)) return <LinkCard href={href} />;
+            return <p {...domProps}>{children}</p>;
+          },
           a: ({ href, children, ...props }) => {
-            const external = href?.startsWith("http");
+            const external = Boolean(href && /^(https?:)?\/\//iu.test(href));
             return (
               <a
                 href={href}
                 {...props}
                 {...(external
-                  ? { target: "_blank", rel: "noopener noreferrer" }
+                  ? { className: "ext", target: "_blank", rel: "noopener noreferrer" }
                   : {})}
               >
                 {children}
@@ -122,9 +229,18 @@ export function MarkdownArticle({ content }: { content: string }) {
             );
           },
           img: MarkdownImage,
+          table: ({ children, ...props }) => (
+            <div className="table-wrap" role="region" aria-label="表格，可横向滚动" tabIndex={0}>
+              <table {...props}>{children}</table>
+            </div>
+          ),
+          h2: ({ children, ...props }) => heading(2, children, props),
+          h3: ({ children, ...props }) => heading(3, children, props),
+          h4: ({ children, ...props }) => heading(4, children, props),
           code: CodeBlock,
+          ...gardenComponents,
           pre: ({ children, ...props }) => {
-            const child = Children.only(children);
+            const child = Children.toArray(children)[0];
             const className = isValidElement<{ className?: string }>(child)
               ? child.props.className
               : undefined;
@@ -137,9 +253,11 @@ export function MarkdownArticle({ content }: { content: string }) {
             }
 
             return (
-              <pre {...preProps} data-language={language?.toUpperCase()}>
-                {children}
-              </pre>
+              <CodeCopy>
+                <pre className="code" {...preProps} data-language={language?.toUpperCase()}>
+                  {children}
+                </pre>
+              </CodeCopy>
             );
           },
         }}

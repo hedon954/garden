@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 import { lstat, mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { formatAuthorDate } from "./site-date.mjs";
+import { cheatSheet } from "../ui/garden/catalog.mjs";
 
 const root = path.resolve(process.env.GARDEN_SITE || process.cwd());
 const option = (name) => (process.env[`GARDEN_NEW_${name}`] ?? "").trim();
@@ -50,6 +51,8 @@ async function main() {
     "## 起因",
     "",
     "从这里开始写正文。",
+    "",
+    cheatSheet(),
     "",
   ].join("\n");
   try {

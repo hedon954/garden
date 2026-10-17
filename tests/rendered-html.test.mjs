@@ -33,9 +33,13 @@ test("server-renders the finished blog home", async () => {
   const html = await response.text();
   assert.match(html, /<title>[^<]+<\/title>/i);
   assert.match(html, /记一些正在做的事/);
-  assert.match(html, /置顶博文/);
+  assert.doesNotMatch(html, /class="sh-feature"[\s\S]{0,400}style="background:var\(--cover\)"/);
+  const shell = await readFile(new URL("../app/styles/shell.css", import.meta.url), "utf8");
+  assert.match(shell, /\.sh-intro h1\{[^}]*max-width:var\(--list\);text-wrap:balance/);
+  assert.match(shell, /\.sh-intro p\{[^}]*text-wrap:balance/);
+  assert.match(html, /id="h-pin">置顶</);
   assert.match(html, /最近随想/);
-  assert.match(html, /主题专栏/);
+  assert.match(html, /id="h-cols">专栏</);
   assert.match(html, /rel="me(?: [^"]*)?"/);
   assert.doesNotMatch(html, /section-index|pinned-list/);
   assert.match(html, /section-heading accent-heading/);
@@ -86,10 +90,12 @@ test("renders complex Markdown, article covers, and mixed thought media", async 
   assert.match(article, /Markdown 复杂语法实验场/);
   assert.match(article, /class="katex-display"/);
   assert.match(article, /language-mermaid/);
-  assert.match(article, /data-mermaid-theme="neutral"/);
-  assert.match(article, /mermaid-view-switcher/);
-  assert.match(article, />图表<\/button>/);
-  assert.match(article, />Code<\/button>/);
+  assert.match(article, /data-mermaid-theme="a2"/);
+  assert.match(article, /class="[^"]*g-mermaid/);
+  assert.match(article, /mermaid-src/);
+  assert.doesNotMatch(article, /mermaid-view-switcher/);
+  assert.doesNotMatch(article, />图表<\/button>/);
+  assert.doesNotMatch(article, />Code<\/button>/);
   assert.doesNotMatch(article, /mermaid-theme-picker|森林/);
   assert.match(article, /language-typescript/);
   assert.match(article, /language-python/);
@@ -98,16 +104,16 @@ test("renders complex Markdown, article covers, and mixed thought media", async 
   assert.match(article, /language-sql/);
   assert.match(article, /language-swift/);
   assert.match(article, /<details>/);
-  assert.match(article, /class="article-hero article-cover"/);
-  assert.match(article, /class="article-header article-summary-row"/);
+  assert.match(article, /class="article-hero article-cover/);
+  assert.match(article, /class="article-header article-summary-row/);
   assert.match(article, /class="article-reading-layout"/);
   assert.match(article, /class="article-reading-column"/);
   assert.doesNotMatch(article, /<strong>(?:提示|建议|告警|警示)<\/strong>/);
   assert.match(article, /约 <!-- -->[\d,]+<!-- --> 字/);
   assert.ok(
-    article.indexOf('class="article-hero article-cover"') <
-      article.indexOf('class="article-header article-summary-row"'),
-    "article cover should render before the title header",
+    article.indexOf('class="article-header article-summary-row hero"') <
+      article.indexOf('class="article-hero article-cover'),
+    "article cover sits in the header after the title, at column width",
   );
   assert.ok(
     article.indexOf('class="article-header article-summary-row"') <
@@ -123,6 +129,18 @@ test("renders complex Markdown, article covers, and mixed thought media", async 
   assert.match(thoughts, /<video/);
   assert.match(thoughts, /class="link-embed u-bookmark-of"/);
   assert.match(thoughts, /href="\/thoughts\/rainy-night"/);
+
+  const kv = await render("/a2/kv-cache");
+  assert.equal(kv.status, 200);
+  const kvHtml = await kv.text();
+  assert.match(kvHtml, /2026 年 9 月 18 日/);
+  assert.match(kvHtml, /约 <!-- -->[\d,]+<!-- --> 字/);
+  assert.doesNotMatch(kvHtml, /mermaid-view-switcher/);
+  assert.ok(
+    kvHtml.indexOf('class="article-header article-summary-row hero"') <
+      kvHtml.indexOf('class="article-hero article-cover'),
+    "a2 cover stays below the title",
+  );
 
   assert.equal(archiveResponse.status, 200);
   const archive = await archiveResponse.text();
@@ -184,7 +202,7 @@ test("renders a column entry cover when its source article defines one", async (
   );
 
   assert.match(columnEntry, /entry\.cover &&/);
-  assert.match(columnEntry, /className="article-hero article-cover"/);
+  assert.match(columnEntry, /className="article-hero article-cover/);
   assert.match(columnEntry, /src=\{entry\.cover\}/);
   assert.match(columnEntry, /\$\{entry\.title\} 封面/);
   assert.doesNotMatch(columnEntry, /coverAlt/);
@@ -221,7 +239,8 @@ test("renders safe external embeds and the complete GitHub profile experience", 
     readFile(new URL("../docs/content-authoring.md", import.meta.url), "utf8"),
   ]);
 
-  assert.match(markdown, /language-embed/);
+  assert.match(markdown, /garden-block/);
+  assert.match(markdown, /className: "ext"/);
   assert.match(embed, /youtube-nocookie\.com\/embed/);
   assert.match(embed, /player\.bilibili\.com\/player\.html/);
   assert.match(embed, /\['http:', 'https:'\]/);
@@ -242,7 +261,7 @@ test("renders every reading TOC link with a matching Markdown heading ID", async
   const response = await render("/blog/markdown-lab");
   assert.equal(response.status, 200);
   const html = await response.text();
-  const toc = html.match(/<aside class="toc"[\s\S]*?<\/aside>/u)?.[0];
+  const toc = html.match(/<aside class="toc[\s\S]*?<\/aside>/u)?.[0];
   assert.ok(toc, "the Markdown lab should render a table of contents");
   const targets = [...toc.matchAll(/href="#([^"]+)"/gu)].map((match) => match[1]);
   assert.ok(targets.length > 0, "the Markdown lab should expose TOC links");

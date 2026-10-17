@@ -282,7 +282,7 @@ function Cite({ node, env }: { node: UiNode; env: Env }) {
   const icon = href ? faviconSrc(href) : null;
   const body = (
     <>
-      {icon ? <img src={icon} alt="" width={12} height={12} /> : null}
+      {icon ? <span className="garden-ui-cite-icon" aria-hidden="true" style={{ backgroundImage: `url("${icon}")` }} /> : null}
       {label}
     </>
   );
