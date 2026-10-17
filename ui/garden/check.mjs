@@ -28,16 +28,17 @@ function compareTooLong(props) {
  */
 export function checkGardenMarkdown(markdown, { draft = false, title = "", titleLine = 1 } = {}) {
   const diagnostics = [];
-  const push = (line, code, message, suggestion) => {
-    diagnostics.push({ line, code, message, suggestion });
+  const push = (line, code, message, suggestion, severity = "error") => {
+    diagnostics.push({ line, code, message, suggestion, severity });
   };
 
   if (title) {
     const split = splitTitle(title);
+    // Titles stay exactly as written. splitTitle already keeps one line when it cannot split.
     if (split.issue === "multiple") {
-      push(titleLine, "title-split", "标题里有不止一个分隔符，无法分成正好两行。", "只留一个 丨、｜ 或 \" | \"。");
+      push(titleLine, "title-split", "标题里有不止一个分隔符，无法分成正好两行。", "只留一个 丨、｜ 或 \" | \"。", "warning");
     } else if (split.issue === "empty") {
-      push(titleLine, "title-split", "分隔符两侧都要有文字。", "写成「主题丨副题」。");
+      push(titleLine, "title-split", "分隔符两侧都要有文字。", "写成「主题丨副题」。", "warning");
     }
   }
 

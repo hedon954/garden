@@ -18,6 +18,15 @@ test("a title splits into two equal lines at one separator", () => {
   assert.equal(splitTitle("Full | width title").separator, " | ");
 });
 
+test("a title that cannot split warns and still stays one line", () => {
+  const multiple = checkGardenMarkdown("", { title: "甲丨乙｜丙", titleLine: 2 });
+  assert.deepEqual(multiple.map((item) => [item.code, item.severity, item.line]), [["title-split", "warning", 2]]);
+  const empty = checkGardenMarkdown("", { title: "只有左边丨", titleLine: 3 });
+  assert.deepEqual(empty.map((item) => [item.code, item.severity]), [["title-split", "warning"]]);
+  const clean = checkGardenMarkdown("", { title: "Rust 实战丨手写一个 SpinLock" });
+  assert.equal(clean.some((item) => item.code === "title-split"), false);
+});
+
 test("title width counts CJK as 1 and capitals as 0.68", () => {
   assert.equal(titleWidthUnits("AB"), 1.36);
   assert.equal(titleWidthUnits("甲"), 1);
@@ -69,6 +78,7 @@ test("check reports long compare cells, trivial interactive, orphan diffs and ba
   assert.ok(codes.includes("garden-name"));
   assert.ok(codes.includes("interactive-trivial"));
   const named = checkGardenMarkdown(markdown).find((item) => item.code === "garden-name");
+  assert.equal(named.severity, "error");
   assert.match(named.suggestion, /card/);
 });
 

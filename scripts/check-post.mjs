@@ -300,7 +300,8 @@ const checkFile = (filePath) => {
     title: typeof data.title === "string" ? data.title : "",
     titleLine,
   })) {
-    error(errors, item.code, item.line, `${sourcePath}: ${item.message} 建议：${item.suggestion}`);
+    const target = item.severity === "warning" ? warnings : errors;
+    target.push({ code: item.code, line: item.line, message: `${sourcePath}: ${item.message} 建议：${item.suggestion}` });
   }
   return { file: sourcePath, errors, warnings };
 };

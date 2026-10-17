@@ -135,7 +135,8 @@ class BlockIndex implements vscode.CodeLensProvider, vscode.FoldingRangeProvider
     const draft = /^draft:\s*true\s*$/mu.test(text);
     const gardenDiagnostics = checkGardenMarkdown(text, { draft, title, titleLine }).map((item) => {
       const range = document.lineAt(Math.min(Math.max(item.line - 1, 0), last)).range;
-      const diagnostic = new vscode.Diagnostic(range, `${item.message} 建议：${item.suggestion}`, vscode.DiagnosticSeverity.Error);
+      const severity = item.severity === "warning" ? vscode.DiagnosticSeverity.Warning : vscode.DiagnosticSeverity.Error;
+      const diagnostic = new vscode.Diagnostic(range, `${item.message} 建议：${item.suggestion}`, severity);
       diagnostic.code = item.code;
       diagnostic.source = "garden";
       return diagnostic;
