@@ -36,10 +36,19 @@ test("server-renders the finished blog home", async () => {
   assert.doesNotMatch(html, /class="sh-feature"[\s\S]{0,400}style="background:var\(--cover\)"/);
   assert.match(html, /<time class="num" dateTime="2026-10-10">2026-10-10<\/time>/);
   const shell = await readFile(new URL("../app/styles/shell.css", import.meta.url), "utf8");
-  assert.match(shell, /\.sh-feature \.cover\{border-radius:var\(--r-lg\);height:auto;display:block;overflow:hidden\}/);
+  assert.match(shell, /\.sh-feature \.cover\{[^}]*aspect-ratio:auto;display:block/);
+  assert.match(shell, /\.sh-feature \.cover\{[^}]*background:none/);
   assert.match(shell, /\.sh-feature \.cover img\{display:block;width:100%;height:auto\}/);
-  assert.doesNotMatch(shell, /\.sh-feature \.cover\{[^}]*aspect-ratio/);
+  assert.doesNotMatch(shell, /\.sh-feature \.cover\{[^}]*aspect-ratio:16\/9/);
   assert.doesNotMatch(shell, /\.sh-feature \.cover\{border-radius:16px\}/);
+  const feature = html.match(/<article class="sh-feature"[\s\S]*?<\/article>/)?.[0] ?? "";
+  assert.doesNotMatch(feature, /class="cover"/);
+  const [blogPage, columnPage] = await Promise.all([
+    readFile(new URL("../app/blog/[...path]/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/columns/[column]/[...path]/page.tsx", import.meta.url), "utf8"),
+  ]);
+  assert.doesNotMatch(blogPage, /readingTime/);
+  assert.doesNotMatch(columnPage, /readingTime/);
   assert.match(shell, /\.sh-intro h1\{[^}]*max-width:var\(--list\);text-wrap:balance/);
   assert.match(shell, /\.sh-intro p\{[^}]*text-wrap:balance/);
   assert.match(html, /id="h-pin">置顶</);

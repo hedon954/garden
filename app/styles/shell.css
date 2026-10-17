@@ -134,7 +134,7 @@ html[data-theme="dark"] .sh-rail{color:var(--muted)}
 .sh-intro .links a:hover{color:var(--blue);text-decoration-color:currentColor}
 .sh-feature{position:relative;display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:48px;align-items:center;margin:56px 0 0}
 .sh-feature:not(:has(.cover)){grid-template-columns:minmax(0,1fr)}
-.sh-feature .cover{border-radius:var(--r-lg);height:auto;display:block;overflow:hidden}
+.sh-feature .cover{border-radius:var(--r-lg);aspect-ratio:auto;display:block;overflow:hidden;background:none}
 .sh-feature .cover img{display:block;width:100%;height:auto}
 .sh-feature .cover .cover-art{height:86%;width:auto}
 .sh-feature .kicker{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:var(--fs-small);color:var(--muted);margin:0 0 12px}
