@@ -271,14 +271,17 @@ html,body{background:transparent!important;height:auto!important;min-height:0!im
 body>*{max-width:100%;box-sizing:border-box}
 svg,img,canvas,video,table{max-width:100%;height:auto}
 </style><script>(function(){
-var last=0;
-function m(){var b=document.body;if(!b)return;var h=0,cs=getComputedStyle(b);[].forEach.call(b.children,function(e){if(e.tagName==="SCRIPT"||e.tagName==="STYLE")return;var r=e.getBoundingClientRect(),st=getComputedStyle(e);h=Math.max(h,r.bottom+parseFloat(st.marginBottom||0))});h=Math.ceil(h+parseFloat(cs.paddingBottom||0)+parseFloat(cs.marginBottom||0)+2);if(h!==last){last=h;parent.postMessage({type:"ux:size",height:h},"*")}}
+var last=0,lock=0;
 function row(root){var nodes=root.children;for(var i=0;i<nodes.length;i++){var e=nodes[i];if(e.tagName==="SCRIPT"||e.tagName==="STYLE"||getComputedStyle(e).display==="none")continue;return e}return null}
 function pad(){var b=document.body;if(!b)return;var top=row(b);if(!top)return;var inner=row(top);var target=inner&&top.getBoundingClientRect().height>inner.getBoundingClientRect().height+8?inner:top;target.style.setProperty("box-sizing","border-box");target.style.setProperty("padding-right","44px")}
-var q=0;function s(){if(!q){q=1;requestAnimationFrame(function(){q=0;m()})}}
+function fit(){var b=document.body,root=document.documentElement;if(!b)return 1;b.style.zoom="";b.style.transform="";b.style.transformOrigin="";b.style.height="";root.style.height="";var cw=root.clientWidth||b.clientWidth;if(!(cw>0))return 1;var sw=Math.max(root.scrollWidth,b.scrollWidth);if(!(sw>cw+1))return 1;var z=cw/sw;b.style.zoom=String(z);var again=root.scrollWidth;if(again>cw+1&&again<sw-1){z=z*cw/again;b.style.zoom=String(z);again=root.scrollWidth}if(again>cw+1){b.style.zoom="";var h=Math.max(root.scrollHeight,b.scrollHeight);b.style.transformOrigin="0 0";b.style.transform="scale("+z+")";b.style.height=Math.ceil(h*z)+"px";root.style.height=Math.ceil(h*z)+"px"}return z}
+function m(force){if(lock)return;var b=document.body;if(!b)return;lock=1;fit();var h=0,cs=getComputedStyle(b);[].forEach.call(b.children,function(e){if(e.tagName==="SCRIPT"||e.tagName==="STYLE")return;var r=e.getBoundingClientRect(),st=getComputedStyle(e);h=Math.max(h,r.bottom+parseFloat(st.marginBottom||0))});h=Math.ceil(h+parseFloat(cs.paddingBottom||0)+parseFloat(cs.marginBottom||0)+2);if(h>0&&(force||h!==last)){last=h;parent.postMessage({type:"ux:size",height:h},"*")}lock=0}
+var q=0,pending=0;function s(force){if(force)pending=1;if(q)return;q=1;requestAnimationFrame(function(){q=0;var run=pending;pending=0;m(run)})}
 function watch(){[].forEach.call(document.images||[],function(img){if(img.dataset.uxSized)return;img.dataset.uxSized="1";img.addEventListener("load",s);img.addEventListener("error",s)})}
 var started=0;function boot(){pad();watch();s();if(started||!window.ResizeObserver)return;started=1;var ro=new ResizeObserver(s);ro.observe(document.documentElement);if(document.body)ro.observe(document.body)}
 addEventListener("DOMContentLoaded",boot);addEventListener("load",boot);addEventListener("resize",s);
+addEventListener("message",function(e){if(!e.data||e.data.type!=="ux:measure")return;last=0;s(1)});
+setTimeout(function(){last=0;s(1)},0);setTimeout(function(){last=0;s(1)},400);
 })()<\/script>`;
 
 export function frameSrcdoc(html: string, title: string) {
@@ -294,18 +297,24 @@ export function SandboxFrame({ html, title }: { html: string; title: string }) {
   const srcDoc = frameSrcdoc(html, title);
 
   useEffect(() => {
+    const frame = ref.current;
     const onMessage = (event: MessageEvent) => {
-      const frame = ref.current;
       if (!frame || event.source !== frame.contentWindow) return;
       const data = event.data;
       if (!data || (data.type !== "ux:size" && data.type !== "garden:resize")) return;
       const next = Number(data.height);
-      if (!Number.isFinite(next)) return;
+      if (!Number.isFinite(next) || next < 48) return;
       if (frame.closest(".ux-fs:fullscreen, .ux-fs-on")) return;
       setHeight(Math.max(60, Math.min(1600, next)));
     };
+    const ask = () => frame?.contentWindow?.postMessage({ type: "ux:measure" }, "*");
     window.addEventListener("message", onMessage);
-    return () => window.removeEventListener("message", onMessage);
+    frame?.addEventListener("load", ask);
+    ask();
+    return () => {
+      window.removeEventListener("message", onMessage);
+      frame?.removeEventListener("load", ask);
+    };
   }, []);
 
   return (

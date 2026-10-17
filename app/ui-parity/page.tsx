@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { ParityInteractions } from "../../ui/react/parity";
 
 const slices = [
@@ -61,7 +62,7 @@ export default function UiParityPage() {
         <p className="garden-ui-text-sm">统计期为 2024 年 8 月至 2025 年 8 月。</p>
         <p className="garden-ui-caption">
           {"抖音电商官方报告，经新华社报道。该增速不能直接代表抖音电商整体 GMV 增速。"}<a id="parity-cite" className="garden-ui-cite" href="https://www.news.cn">
-            <img src="https://www.google.com/s2/favicons?domain=www.news.cn&sz=32" alt="" width={12} height={12} />
+            <Image src="https://www.google.com/s2/favicons?domain=www.news.cn&sz=32" alt="" width={12} height={12} unoptimized />
             Xinhua Net
           </a>
         </p>
@@ -72,7 +73,7 @@ export default function UiParityPage() {
         <p className="garden-ui-text-xs">商品条目</p>
         <p className="garden-ui-caption">
           {"阿里巴巴披露其 AI 搜索推荐系统索引了超过 20 亿商品条目。"}<a className="garden-ui-cite" href="https://www.alibabagroup.com">
-            <img src="https://www.google.com/s2/favicons?domain=www.alibabagroup.com&sz=32" alt="" width={12} height={12} />
+            <Image src="https://www.google.com/s2/favicons?domain=www.alibabagroup.com&sz=32" alt="" width={12} height={12} unoptimized />
             Alibaba Group
           </a>
         </p>

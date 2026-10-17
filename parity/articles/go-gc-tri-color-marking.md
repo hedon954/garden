@@ -141,8 +141,70 @@ Go 将对象用三种颜色来进行标记：
 
 加入删除屏障后，C 会被强制置灰，就不会误清了。
 
-```sandbox title="三色标记 + 删除屏障演示" src="./assets/tricolor.html" height=430
-fallback: 比如一开始 B → C，当 B 在灰色集合的时候，释放了对 C 的指针，但是这个时候有一个在黑色集合的 E 指向了 C，也就是 E → C。由于 E 已经分析过了，所以在对 B 进行分析的时候，就会漏掉 C，导致后面 C 还是在白色集合中，就被误清了。加入删除屏障后，C 会被强制置灰，就不会误清了。
+```garden html
+title: 三色标记 + 删除屏障演示
+---
+<!doctype html><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'">
+<style>:root{--ink:#1B1A18;--soft:#4A4844;--muted:#6E6B64;--rule:#E6E3DC;--rule-strong:#D6D2C9;--card:#fff;--blue:#2C55B4;--blue-tint:#EAF0FC;--blue-line:rgba(44,85,180,.28);--paper:#F8F7F3;--well:#F0EEE8}
+#r{display:flow-root;padding:16px}body{margin:0;font:15px/1.6 -apple-system,BlinkMacSystemFont,"PingFang SC","Noto Sans SC",sans-serif;color:var(--ink);background:transparent}
+button{font:600 14px/1 inherit;font-family:inherit;padding:10px 14px;min-height:40px;border-radius:8px;border:1px solid var(--rule-strong);background:var(--card);color:var(--ink);cursor:pointer}
+button:hover{border-color:var(--blue-line)}button:focus-visible{outline:2px solid var(--blue);outline-offset:2px}button:disabled{opacity:.45;cursor:default}
+.bar{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+.cap{font-size:13px;color:var(--muted);margin:10px 0 0}
+</style><script>function size(){var r=document.getElementById('r');if(r)parent.postMessage({type:'garden:resize',height:Math.ceil(r.getBoundingClientRect().bottom)+4},'*')}</script><main id="r"><style>
+svg{width:100%;height:auto;display:block}
+.n circle{stroke:var(--ink);stroke-width:1.5}.n text{font:600 14px ui-monospace,Menlo,monospace;text-anchor:middle;dominant-baseline:central}
+.w circle{fill:var(--card)}.w text{fill:var(--ink)}.g circle{fill:#9A9890}.g text{fill:#fff}.k circle{fill:#1B1A18}.k text{fill:#fff}
+.dead circle{stroke:#B4213A;stroke-dasharray:4 3;stroke-width:2.5}
+.rt rect{fill:var(--blue-tint);stroke:var(--blue-line)}.rt text{font:600 13px sans-serif;fill:var(--blue);text-anchor:middle;dominant-baseline:central}
+line{stroke:var(--muted);stroke-width:1.5}line.gone{stroke-dasharray:5 4;opacity:.35}line.new{stroke:var(--blue);stroke-width:2}
+.st{display:flex;gap:16px;flex-wrap:wrap;font-size:13px;color:var(--soft);margin-top:8px}.st b{color:var(--ink)}
+.msg{margin:10px 0 0;min-height:3.2em}.tg{display:flex;align-items:center;gap:8px;font-size:14px;margin-bottom:8px}
+</style>
+<label class="tg"><input type="checkbox" id="bar"> 开启删除屏障（对指针释放的白色对象置灰）</label>
+<svg viewBox="0 0 520 190" role="img" aria-label="对象引用图（示例）">
+<defs><marker id="a" viewBox="0 0 8 8" refX="8" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L8 4L0 8z" fill="#6E6B64"/></marker></defs>
+<line id="eRE" x1="72" y1="80" x2="148" y2="48" marker-end="url(#a)"/><line id="eRB" x1="72" y1="100" x2="148" y2="132" marker-end="url(#a)"/>
+<line id="eBC" x1="192" y1="132" x2="278" y2="100" marker-end="url(#a)"/><line id="eEC" class="gone" x1="192" y1="48" x2="278" y2="80" marker-end="url(#a)"/>
+<line x1="412" y1="58" x2="412" y2="116" marker-end="url(#a)"/><line x1="428" y1="122" x2="428" y2="64" marker-end="url(#a)"/>
+<g class="rt"><rect x="6" y="70" width="66" height="40" rx="8"/><text x="39" y="90">Roots</text></g>
+<g id="E" class="n w"><circle cx="170" cy="40" r="20"/><text x="170" y="40">E</text></g>
+<g id="B" class="n w"><circle cx="170" cy="140" r="20"/><text x="170" y="140">B</text></g>
+<g id="C" class="n w"><circle cx="300" cy="90" r="20"/><text x="300" y="90">C</text></g>
+<g id="F" class="n w"><circle cx="420" cy="40" r="20"/><text x="420" y="40">F</text></g>
+<g id="G" class="n w"><circle cx="420" cy="140" r="20"/><text x="420" y="140">G</text></g>
+</svg>
+<div class="st"><span>白色：<b id="sw"></b></span><span>灰色：<b id="sg"></b></span><span>黑色：<b id="sk"></b></span></div>
+<p class="msg" id="msg" aria-live="polite"></p>
+<div class="bar"><button id="nx">下一步</button><button id="rs">重来</button><span class="mono cap" id="ct" style="margin:auto 0"></span></div>
+<p class="cap">示例对象图：F、G 互相引用但不可达；第 4 步模拟用户代码在并发标记时把 B → C 改成 E → C。</p>
+<script>
+var S,col,ids=['E','B','C','F','G'];
+var steps=[
+ function(){say('1. 起初所有堆上的对象都是【白色】的。')},
+ function(){col.E='g';col.B='g';say('2. 将 GC Roots 直接引用到的对象（E、B）挪到【灰色】中。')},
+ function(){col.E='k';say('3. 扫描灰色对象 E：它此时没有引用其他对象，自己挪到【黑色】中。')},
+ function(){document.getElementById('eBC').classList.add('gone');var ec=document.getElementById('eEC');ec.classList.remove('gone');ec.classList.add('new');
+   if(bar()){col.C='g';say('并发修改：B 释放了对 C 的指针，黑色的 E 指向了 C。删除屏障生效，C 被强制置灰。')}
+   else say('并发修改：B 释放了对 C 的指针，黑色的 E 指向了 C。由于 E 已经分析过了，没人会再扫描到 C。')},
+ function(){col.B='k';say('3. 扫描灰色对象 B：它已经不再引用 C，自己挪到【黑色】中。')},
+ function(){if(col.C==='g'){col.C='k';say('3. 扫描灰色对象 C，自己挪到【黑色】中。')}else{say('4. 【灰色】已经为空，标记结束。');return 'skip'}},
+ function(){var w=ids.filter(function(i){return col[i]==='w'});w.forEach(function(i){document.getElementById(i).classList.add('dead')});
+   say('5. 回收【白色】中的对象：'+w.join('、')+'。'+(w.indexOf('C')>=0?' C 仍被 E 引用却被误清了！':' C 保住了，F、G 作为不可达对象被回收。'))}
+];
+function bar(){return document.getElementById('bar').checked}
+function say(t){document.getElementById('msg').textContent=t}
+function init(){S=0;col={};ids.forEach(function(i){col[i]='w';document.getElementById(i).classList.remove('dead')});
+ var bc=document.getElementById('eBC'),ec=document.getElementById('eEC');bc.classList.remove('gone');ec.classList.add('gone');ec.classList.remove('new');steps[0]();draw()}
+function draw(){ids.forEach(function(i){var g=document.getElementById(i);g.classList.remove('w','g','k');g.classList.add(col[i])});
+ ['w','g','k'].forEach(function(c){document.getElementById('s'+c).textContent=ids.filter(function(i){return col[i]===c}).join(' ')||'—'});
+ document.getElementById('ct').textContent=(S+1)+' / '+steps.length;document.getElementById('nx').disabled=S>=steps.length-1;size()}
+document.getElementById('nx').onclick=function(){S++;steps[S]();draw()};
+document.getElementById('rs').onclick=init;document.getElementById('bar').onchange=init;init();
+</script></main><script>
+addEventListener('message',function(e){if(e.source!==parent||!e.data||e.data.type!=='garden:theme')return;if(e.data.scheme==='dark'||e.data.scheme==='light')document.documentElement.style.colorScheme=e.data.scheme;var t=e.data.tokens||{};for(var k in t)if(/^--[a-z-]+$/.test(k)&&/^[#\w(),.% -]+$/.test(t[k]))document.documentElement.style.setProperty(k,t[k])});
+addEventListener('resize',size);
+</script>
 ```
 
 ![](https://hedonspace.oss-cn-beijing.aliyuncs.com/img2/e6c9d24egy1h5uqiowdqbj21e80awgm4.jpg)
@@ -161,15 +223,38 @@ fallback: 比如一开始 B → C，当 B 在灰色集合的时候，释放了�
 
 ### 2.3 GC 四阶段循环
 
-```garden:explore
-svgFile: ./assets/gccycle.svg
+```garden figure
 parts:
-  - { id: all,  label: 全部, text: "GC 循环周期" }
-  - { id: trig, label: GC Trigger, text: "GC Trigger 堆阈值/定时/手动" }
-  - { id: p1,   label: 清扫终止, text: "STW: 准备根对象, 清理上一轮残余" }
-  - { id: p2,   label: 并发标记, text: "所有对象标记完成 gcMarkDone" }
-  - { id: p3,   label: 标记终止, text: "STW: 保证全局标记完成, 必须全局一致" }
-  - { id: p4,   label: 并发清扫, text: "清理结束 & 等待下一轮" }
+  - id: all
+    label: 全部
+    text: GC 循环周期
+  - id: trig
+    label: GC Trigger
+    text: GC Trigger 堆阈值/定时/手动
+  - id: p1
+    label: 清扫终止
+    text: "STW: 准备根对象, 清理上一轮残余"
+  - id: p2
+    label: 并发标记
+    text: 所有对象标记完成 gcMarkDone
+  - id: p3
+    label: 标记终止
+    text: "STW: 保证全局标记完成, 必须全局一致"
+  - id: p4
+    label: 并发清扫
+    text: 清理结束 & 等待下一轮
+---
+<svg viewBox="0 0 680 210" class="dx-svg g-flow" role="img" aria-label="GC 四阶段循环：GC Trigger → 清扫终止（STW）→ 并发标记 → 标记终止（STW）→ 并发清扫 → 等待下一轮">
+<defs><marker id="ahc" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L8 4L0 8z" class="fl-ah"/></marker></defs>
+<g class="fl-e"><line x1="92" y1="90" x2="114" y2="90" marker-end="url(#ahc)"/><line x1="232" y1="90" x2="254" y2="90" marker-end="url(#ahc)"/><line x1="372" y1="90" x2="394" y2="90" marker-end="url(#ahc)"/><line x1="512" y1="90" x2="534" y2="90" marker-end="url(#ahc)"/>
+<path d="M594 116 V176 H50 V118" fill="none" stroke="currentColor" class="fl-e1" marker-end="url(#ahc)"/></g>
+<text x="243" y="52" text-anchor="middle" class="dx-cap">开启写屏障</text><text x="383" y="52" text-anchor="middle" class="dx-cap">gcMarkDone</text><text x="523" y="52" text-anchor="middle" class="dx-cap">关闭写屏障</text><text x="322" y="196" text-anchor="middle" class="dx-cap">清理结束 &amp; 等待下一轮</text>
+<rect x="8" y="66" width="84" height="48" rx="8" class="fl-n" data-p="trig" stroke-dasharray="5 4"/><text x="50" y="86" text-anchor="middle" class="dx-l">GC Trigger</text><text x="50" y="104" text-anchor="middle" class="dx-cap">堆阈值/定时/手动</text>
+<rect x="116" y="62" width="116" height="56" rx="8" class="fl-n gc-stw" data-p="p1 stw"/><text x="174" y="84" text-anchor="middle" class="dx-l">① 清扫终止</text><text x="174" y="104" text-anchor="middle" class="dx-cap">STW</text>
+<rect x="256" y="62" width="116" height="56" rx="8" class="fl-n fl-m" data-p="p2 conc"/><text x="314" y="84" text-anchor="middle" class="dx-l">② 并发标记</text><text x="314" y="104" text-anchor="middle" class="dx-cap">Concurrent</text>
+<rect x="396" y="62" width="116" height="56" rx="8" class="fl-n gc-stw" data-p="p3 stw"/><text x="454" y="84" text-anchor="middle" class="dx-l">③ 标记终止</text><text x="454" y="104" text-anchor="middle" class="dx-cap">STW</text>
+<rect x="536" y="62" width="116" height="56" rx="8" class="fl-n fl-m" data-p="p4 conc"/><text x="594" y="84" text-anchor="middle" class="dx-l">④ 并发清扫</text><text x="594" y="104" text-anchor="middle" class="dx-cap">Concurrent</text>
+</svg>
 ```
 
 ### 2.4 GC 触发机制
@@ -1109,13 +1194,35 @@ func greyobject(obj, base, off uintptr, span *mspan, gcw *gcWork, objIndex uintp
 
 整个 `gcDrain()` 的标记循环流程可以总结为如下图所示：
 
-```garden:explore
-svgFile: ./assets/drain.svg
+```garden figure
 parts:
-  - { id: all,   label: 全部, text: "`gcDrain` 的核心逻辑是一个消费循环。" }
-  - { id: q,     label: 灰色对象队列, text: "它从本地或全局的工作缓冲区（`gcWork`）中提取指针（灰色对象）" }
-  - { id: scan,  label: 扫描函数, text: "`markroot()`: 标记 GC 的根集（root set），这些是追踪的起点。" }
-  - { id: grey,  label: greyobject, text: "识别其引用的子对象，并通过 greyobject 将子对象加入工作队列（即着色为灰色）。" }
+  - id: all
+    label: 全部
+    text: "`gcDrain` 的核心逻辑是一个消费循环。"
+  - id: q
+    label: 灰色对象队列
+    text: 它从本地或全局的工作缓冲区（`gcWork`）中提取指针（灰色对象）
+  - id: scan
+    label: 扫描函数
+    text: "`markroot()`: 标记 GC 的根集（root set），这些是追踪的起点。"
+  - id: grey
+    label: greyobject
+    text: 识别其引用的子对象，并通过 greyobject 将子对象加入工作队列（即着色为灰色）。
+---
+<svg viewBox="0 0 680 200" class="dx-svg g-flow" role="img" aria-label="gcDrain 标记循环：灰色对象队列 → gcDrain → markroot / scanobject / scanSpan → greyobject → 设置标记位（白→灰）→ 入队">
+<defs><marker id="ahd" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L8 4L0 8z" class="fl-ah"/></marker></defs>
+<g class="fl-e"><line x1="110" y1="100" x2="136" y2="100" marker-end="url(#ahd)"/><line x1="222" y1="92" x2="262" y2="44" marker-end="url(#ahd)"/><line x1="222" y1="100" x2="262" y2="100" marker-end="url(#ahd)"/><line x1="222" y1="108" x2="262" y2="156" marker-end="url(#ahd)"/>
+<line x1="372" y1="44" x2="410" y2="92" marker-end="url(#ahd)"/><line x1="372" y1="100" x2="410" y2="100" marker-end="url(#ahd)"/><line x1="372" y1="156" x2="410" y2="108" marker-end="url(#ahd)"/><line x1="512" y1="100" x2="540" y2="100" marker-end="url(#ahd)"/>
+<path d="M604 120 V186 H60 V122" fill="none" class="fl-e1" marker-end="url(#ahd)"/></g>
+<text x="526" y="88" text-anchor="middle" class="dx-cap">白→灰</text><text x="332" y="182" text-anchor="middle" class="dx-cap">入队</text><text x="124" y="88" text-anchor="middle" class="dx-cap">取出</text>
+<rect x="8" y="78" width="102" height="44" rx="8" class="fl-n" data-p="q"/><text x="59" y="105" text-anchor="middle" class="dx-l">灰色对象队列</text>
+<rect x="138" y="78" width="84" height="44" rx="8" class="fl-n fl-m" data-p="drain"/><text x="180" y="105" text-anchor="middle" class="dx-l">gcDrain</text>
+<rect x="264" y="26" width="108" height="36" rx="6" class="fl-n" data-p="scan root"/><text x="318" y="49" text-anchor="middle" class="dx-l">markroot</text>
+<rect x="264" y="82" width="108" height="36" rx="6" class="fl-n" data-p="scan obj"/><text x="318" y="105" text-anchor="middle" class="dx-l">scanobject</text>
+<rect x="264" y="138" width="108" height="36" rx="6" class="fl-n" data-p="scan span"/><text x="318" y="161" text-anchor="middle" class="dx-l">scanSpan</text>
+<rect x="412" y="78" width="100" height="44" rx="8" class="fl-n gc-stw" data-p="grey"/><text x="462" y="105" text-anchor="middle" class="dx-l">greyobject</text>
+<rect x="542" y="78" width="124" height="44" rx="8" class="fl-n" data-p="grey"/><text x="604" y="105" text-anchor="middle" class="dx-l">设置标记位</text>
+</svg>
 ```
 
 ### 3.3 标记终止检测 gcMarkDone()
@@ -1583,15 +1690,38 @@ GC 结束时，通过 pacer 计算下次触发点：
 
 ### 3.6 STW 分析
 
-```garden:explore
-svgFile: ./assets/gccycle.svg
+```garden figure
 parts:
-  - { id: all,  label: 全部, text: "GC 循环周期" }
-  - { id: trig, label: GC Trigger, text: "GC Trigger 堆阈值/定时/手动" }
-  - { id: p1,   label: 清扫终止, text: "STW: 准备根对象, 清理上一轮残余" }
-  - { id: p2,   label: 并发标记, text: "所有对象标记完成 gcMarkDone" }
-  - { id: p3,   label: 标记终止, text: "STW: 保证全局标记完成, 必须全局一致" }
-  - { id: p4,   label: 并发清扫, text: "清理结束 & 等待下一轮" }
+  - id: all
+    label: 全部
+    text: GC 循环周期
+  - id: trig
+    label: GC Trigger
+    text: GC Trigger 堆阈值/定时/手动
+  - id: p1
+    label: 清扫终止
+    text: "STW: 准备根对象, 清理上一轮残余"
+  - id: p2
+    label: 并发标记
+    text: 所有对象标记完成 gcMarkDone
+  - id: p3
+    label: 标记终止
+    text: "STW: 保证全局标记完成, 必须全局一致"
+  - id: p4
+    label: 并发清扫
+    text: 清理结束 & 等待下一轮
+---
+<svg viewBox="0 0 680 210" class="dx-svg g-flow" role="img" aria-label="GC 四阶段循环：GC Trigger → 清扫终止（STW）→ 并发标记 → 标记终止（STW）→ 并发清扫 → 等待下一轮">
+<defs><marker id="ahc" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L8 4L0 8z" class="fl-ah"/></marker></defs>
+<g class="fl-e"><line x1="92" y1="90" x2="114" y2="90" marker-end="url(#ahc)"/><line x1="232" y1="90" x2="254" y2="90" marker-end="url(#ahc)"/><line x1="372" y1="90" x2="394" y2="90" marker-end="url(#ahc)"/><line x1="512" y1="90" x2="534" y2="90" marker-end="url(#ahc)"/>
+<path d="M594 116 V176 H50 V118" fill="none" stroke="currentColor" class="fl-e1" marker-end="url(#ahc)"/></g>
+<text x="243" y="52" text-anchor="middle" class="dx-cap">开启写屏障</text><text x="383" y="52" text-anchor="middle" class="dx-cap">gcMarkDone</text><text x="523" y="52" text-anchor="middle" class="dx-cap">关闭写屏障</text><text x="322" y="196" text-anchor="middle" class="dx-cap">清理结束 &amp; 等待下一轮</text>
+<rect x="8" y="66" width="84" height="48" rx="8" class="fl-n" data-p="trig" stroke-dasharray="5 4"/><text x="50" y="86" text-anchor="middle" class="dx-l">GC Trigger</text><text x="50" y="104" text-anchor="middle" class="dx-cap">堆阈值/定时/手动</text>
+<rect x="116" y="62" width="116" height="56" rx="8" class="fl-n gc-stw" data-p="p1 stw"/><text x="174" y="84" text-anchor="middle" class="dx-l">① 清扫终止</text><text x="174" y="104" text-anchor="middle" class="dx-cap">STW</text>
+<rect x="256" y="62" width="116" height="56" rx="8" class="fl-n fl-m" data-p="p2 conc"/><text x="314" y="84" text-anchor="middle" class="dx-l">② 并发标记</text><text x="314" y="104" text-anchor="middle" class="dx-cap">Concurrent</text>
+<rect x="396" y="62" width="116" height="56" rx="8" class="fl-n gc-stw" data-p="p3 stw"/><text x="454" y="84" text-anchor="middle" class="dx-l">③ 标记终止</text><text x="454" y="104" text-anchor="middle" class="dx-cap">STW</text>
+<rect x="536" y="62" width="116" height="56" rx="8" class="fl-n fl-m" data-p="p4 conc"/><text x="594" y="84" text-anchor="middle" class="dx-l">④ 并发清扫</text><text x="594" y="104" text-anchor="middle" class="dx-cap">Concurrent</text>
+</svg>
 ```
 
 我们再来看一下这张图，分析一下为什么 ① ③ 阶段需要 STW，而 ② ④ 却不需要呢？

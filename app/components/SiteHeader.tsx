@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
   useCallback,
   useEffect,
@@ -140,6 +141,8 @@ function searchPreview(
 }
 
 export function SiteHeader() {
+  const pathname = usePathname() || "/";
+  const [menuOpen, setMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [dark, setDark] = useState(false);
@@ -271,43 +274,45 @@ export function SiteHeader() {
     window.localStorage.setItem("theme", next ? "dark" : "light");
   };
 
+  const current = (href: string) => (href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(`${href}/`));
+
   return (
     <>
-      <header className="site-header">
-        <div className="header-inner">
-          <Link href="/" className="brand" aria-label={`${siteConfig.name} 首页`}>
-            <strong>{siteConfig.name}</strong>
-          </Link>
-
-          <nav className="main-nav" aria-label="主导航">
+      <header className="sh-header">
+        <div className="sh-bar">
+          <Link href="/" className="sh-word">{siteConfig.name}</Link>
+          <nav className="sh-nav" aria-label="站点导航">
             {nav.map((item) => (
-              <Link key={item.href} href={item.href}>
+              <Link key={item.href} href={item.href} aria-current={current(item.href) ? "page" : undefined}>
                 {item.label}
               </Link>
             ))}
           </nav>
-
-          <div className="header-actions">
-            <button
-              ref={searchTriggerRef}
-              className="icon-button search-trigger"
-              onClick={openSearch}
-              aria-label="搜索文章"
-              aria-expanded={searchOpen}
-              aria-controls="site-search-dialog"
-            >
-              <MagnifyingGlass size={22} weight="regular" />
-              <span className="key-hint">⌘K</span>
+          <div className="sh-tools">
+            <button ref={searchTriggerRef} className="sh-search" type="button" onClick={openSearch} aria-label="搜索文章" aria-expanded={searchOpen} aria-controls="site-search-dialog">
+              <MagnifyingGlass size={18} />
+              <span className="lbl">搜索文章</span>
+              <kbd>⌘K</kbd>
             </button>
-            <button
-              className="icon-button"
-              onClick={toggleTheme}
-              aria-label={dark ? "切换到浅色模式" : "切换到深色模式"}
-            >
-              {dark ? <Sun size={23} /> : <Moon size={23} />}
+            <button className="sh-icon sh-search-m" type="button" onClick={openSearch} aria-label="搜索文章">
+              <MagnifyingGlass size={18} />
+            </button>
+            <button className="sh-icon sh-theme" type="button" onClick={toggleTheme} aria-label={dark ? "切换到浅色模式" : "切换到深色模式"}>
+              <Moon className="i-moon" size={18} />
+              <Sun className="i-sun" size={18} />
+            </button>
+            <button className="sh-icon sh-menu-btn" type="button" aria-expanded={menuOpen} aria-controls="sh-menu" aria-label={menuOpen ? "关闭菜单" : "打开菜单"} onClick={() => setMenuOpen((open) => !open)}>
+              {menuOpen ? <X size={18} /> : <span aria-hidden="true">☰</span>}
             </button>
           </div>
         </div>
+        <nav className={`sh-menu${menuOpen ? " is-open" : ""}`} id="sh-menu" aria-label="站点导航（移动端）">
+          {nav.map((item) => (
+            <Link key={item.href} href={item.href} aria-current={current(item.href) ? "page" : undefined} onClick={() => setMenuOpen(false)}>
+              {item.label}
+            </Link>
+          ))}
+        </nav>
       </header>
 
       {searchOpen && (

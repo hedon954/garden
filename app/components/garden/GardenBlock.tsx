@@ -34,9 +34,9 @@ export function GardenBlock({ dataPayload }: { dataPayload?: string }) {
     case "chart":
       return <GardenChart props={props} />;
     case "figure":
-      return <GardenFigure props={props} />;
+      return <GardenFigure props={props}>{String(block.children ?? "")}</GardenFigure>;
     case "html":
-      return <GardenHtml props={props} children={String(block.children ?? "")} />;
+      return <GardenHtml props={props}>{String(block.children ?? "")}</GardenHtml>;
     case "interactive":
       return <GardenInteractive block={{ id: block.id, props, children: block.children }} />;
     default:

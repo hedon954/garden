@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import { siteConfig, siteDocumentTitle } from "../site.config";
 import { BlogArchive } from "../components/BlogArchive";
-import { PageIntro } from "../components/PageIntro";
+import { posts } from "../lib/content";
 
 export const metadata = {
   title: siteDocumentTitle,
@@ -10,12 +10,11 @@ export const metadata = {
 
 export default function BlogIndex() {
   return (
-    <main className="page-shell index-page">
-      <PageIntro
-        eyebrow="POSTS / 博文"
-        title={siteConfig.pages.blog.title}
-        subtitle={siteConfig.pages.blog.subtitle}
-      />
+    <main className="sh-main" id="content">
+      <div className="sh-head">
+        <h1>{siteConfig.pages.blog.title || "文章"}</h1>
+        <p className="sh-deck">阶段性的完整沉淀，关于工程、架构与技术思考。共 {posts.length} 篇，按年份归档。</p>
+      </div>
       <Suspense>
         <BlogArchive />
       </Suspense>

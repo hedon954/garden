@@ -38,22 +38,51 @@ export const formatDate = (value: string, withTime = false) => {
   }).format(date);
 };
 
+const NUMBERED_ARTICLE = /^#{2,3}[ \t]+\d/m;
+
+/** An article that already writes its own heading numbers is not auto-numbered. */
+export const articleUsesHeadingNumbers = (markdown: string) => NUMBERED_ARTICLE.test(markdown);
+
+/** Pull a leading `2.1` into the section marker and leave the heading sentence. */
+export const splitHeadingNumber = (text: string) => {
+  const match = /^(\d+(?:\.\d+)*)\.?[ \t]+([\s\S]+)$/u.exec(text.trim());
+  return match ? { no: match[1], text: match[2] } : null;
+};
+
 /**
  * Parses the same Markdown heading text that ReactMarkdown sends to
  * rehype-slug. Every heading depth advances the slugger so headings outside
  * the H2-H5 TOC range cannot shift the IDs shown in the directory.
+ * `no` follows the prototype: keep an author-written number, otherwise
+ * auto-number h2/h3 only when the article has no numbered headings.
  */
 export const extractHeadings = (markdown: string) => {
   const slugger = new GithubSlugger();
-  const headings: Array<{ depth: number; text: string; id: string }> = [];
+  const numbered = articleUsesHeadingNumbers(markdown);
+  const headings: Array<{ depth: number; text: string; id: string; no?: string }> = [];
   const tree = unified().use(remarkParse).use(markdownPlugins).parse(markdown);
+  let h2 = 0;
+  let h3 = 0;
 
   visit(tree, "heading", (node) => {
-    const text = toString(node).trim();
-    const id = slugger.slug(text);
-    if (text && node.depth >= 2 && node.depth <= 5) {
-      headings.push({ depth: node.depth, text, id });
+    const raw = toString(node).trim();
+    const id = slugger.slug(raw);
+    if (!(raw && node.depth >= 2 && node.depth <= 5)) return;
+    let text = raw;
+    let no: string | undefined;
+    if (node.depth === 2 || node.depth === 3) {
+      const split = splitHeadingNumber(raw);
+      if (split) {
+        no = split.no;
+        text = split.text;
+        if (node.depth === 2) { h2 += 1; h3 = 0; }
+        else h3 += 1;
+      } else if (!numbered) {
+        if (node.depth === 2) { h2 += 1; h3 = 0; no = String(h2); }
+        else { h3 += 1; no = h2 ? `${h2}.${h3}` : String(h3); }
+      }
     }
+    headings.push({ depth: node.depth, text, id, ...(no ? { no } : {}) });
   });
 
   return headings;

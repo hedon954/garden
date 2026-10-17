@@ -23,32 +23,75 @@ cover: ai-agent-react-vs-workflow.jpg
 
 当然，这句话不是说 ReAct 没有价值，也不是说 Workflow 能解决一切问题。更准确一点说，ReAct 适合处理那些路径未知、需要动态探索的问题；Workflow 适合承接那些目标明确、流程稳定、需要强兜底的业务系统。真正靠谱的生产架构，通常也不是二选一，而是让 Workflow 控制主流程，让 ReAct 只进入那些局部不确定、但又可以被验证和兜底的小闭环里。
 
-
-
 ### 什么是 ReAct、什么是 Workflow
 
 先讲 Workflow。
 
 Workflow 看名字就知道，它代表的是一个需要被前置定义好的工作流程。系统按照一个相对明确的执行图往下跑。它适合那些流程比较固定的场景，优点就是确定性高、稳定性强、好调试、好兜底，缺点也很明显：通用性较差，不太适合那种一开始就不知道要怎么做的开放性任务。
 
-```garden:explore
-svgFile: ./assets/wf.svg
+```garden figure
 parts:
-  - { id: all,  label: 全部,   text: "Workflow 看名字就知道，它代表的是一个需要被前置定义好的工作流程。系统按照一个相对明确的执行图往下跑。" }
-  - { id: flow, label: 控制流, text: "Workflow 是人提前设计控制流" }
-  - { id: node, label: 节点,   text: "模型只是某些节点里的能力组件" }
+  - id: all
+    label: 全部
+    text: Workflow 看名字就知道，它代表的是一个需要被前置定义好的工作流程。系统按照一个相对明确的执行图往下跑。
+  - id: flow
+    label: 控制流
+    text: Workflow 是人提前设计控制流
+  - id: node
+    label: 节点
+    text: 模型只是某些节点里的能力组件
+---
+<svg viewBox="0 0 640 200" class="dx-svg g-flow" role="img" aria-label="Workflow：Input 到 Step 1，经 Gate 路由到 Step 2 或 Step 3，汇合到 Join 后输出 Output">
+<defs><marker id="ah1" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L8 4L0 8z" class="fl-ah"/></marker></defs>
+<rect x="8" y="22" width="624" height="170" rx="12" class="fl-group" data-p="flow"/><text x="20" y="40" class="dx-cap">Workflow（人提前设计的执行图）</text>
+<g data-p="flow" class="fl-e"><line x1="78" y1="110" x2="104" y2="110" marker-end="url(#ah1)"/><line x1="196" y1="110" x2="226" y2="110" marker-end="url(#ah1)"/><line x1="300" y1="100" x2="340" y2="72" marker-end="url(#ah1)"/><line x1="300" y1="120" x2="340" y2="148" marker-end="url(#ah1)"/><line x1="432" y1="70" x2="470" y2="100" marker-end="url(#ah1)"/><line x1="432" y1="150" x2="470" y2="120" marker-end="url(#ah1)"/><line x1="548" y1="110" x2="566" y2="110" marker-end="url(#ah1)"/></g>
+<rect x="18" y="94" width="58" height="32" rx="6" class="fl-n" data-p="io"/><text x="47" y="115" text-anchor="middle" class="dx-l">Input</text>
+<rect x="106" y="94" width="88" height="32" rx="6" class="fl-n fl-m" data-p="node"/><text x="150" y="115" text-anchor="middle" class="dx-l">Step 1</text>
+<path d="M264 84 L302 110 L264 136 L226 110 Z" class="fl-n" data-p="flow gate"/><text x="264" y="115" text-anchor="middle" class="dx-l">Gate</text>
+<rect x="342" y="54" width="88" height="32" rx="6" class="fl-n fl-m" data-p="node"/><text x="386" y="75" text-anchor="middle" class="dx-l">Step 2</text>
+<rect x="342" y="134" width="88" height="32" rx="6" class="fl-n fl-m" data-p="node"/><text x="386" y="155" text-anchor="middle" class="dx-l">Step 3</text>
+<rect x="472" y="94" width="74" height="32" rx="6" class="fl-n" data-p="flow gate"/><text x="509" y="115" text-anchor="middle" class="dx-l">Join</text>
+<rect x="568" y="94" width="58" height="32" rx="6" class="fl-n" data-p="io"/><text x="597" y="115" text-anchor="middle" class="dx-l">Output</text>
+</svg>
 ```
 
 ReAct 则不一样。ReAct 来自 `Reasoning and Acting`。在工程实现中，它通常被展开为 `Thought/Reasoning → Action → Observation` 的循环：模型先基于上下文生成下一步判断，再调用工具或执行动作，然后把外部观察结果重新放回上下文，继续下一轮决策。
 
-```garden:explore
-svgFile: ./assets/react.svg
+```garden figure
 parts:
-  - { id: all,   label: 全部,        text: "在工程实现中，它通常被展开为 `Thought/Reasoning → Action → Observation` 的循环" }
-  - { id: think, label: Reasoning,   text: "模型先基于上下文生成下一步判断" }
-  - { id: act,   label: Action,      text: "再调用工具或执行动作" }
-  - { id: obs,   label: Observation, text: "然后把外部观察结果重新放回上下文，继续下一轮决策。" }
-  - { id: exit,  label: 退出,        text: "模型不再产生 Tool Call，或者返回了最终答案，或者触发了最大轮次、异常、业务停止条件。" }
+  - id: all
+    label: 全部
+    text: 在工程实现中，它通常被展开为 `Thought/Reasoning → Action → Observation` 的循环
+  - id: think
+    label: Reasoning
+    text: 模型先基于上下文生成下一步判断
+  - id: act
+    label: Action
+    text: 再调用工具或执行动作
+  - id: obs
+    label: Observation
+    text: 然后把外部观察结果重新放回上下文，继续下一轮决策。
+  - id: exit
+    label: 退出
+    text: 模型不再产生 Tool Call，或者返回了最终答案，或者触发了最大轮次、异常、业务停止条件。
+---
+<svg viewBox="0 0 640 230" class="dx-svg g-flow" role="img" aria-label="ReAct：User task 进入 Prompt and tool schemas，模型推理后判断是否调用工具；是则得到工具结果或环境观察并回到推理，否则输出最终答案">
+<defs><marker id="ah2" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L8 4L0 8z" class="fl-ah"/></marker></defs>
+<rect x="8" y="10" width="13" height="13" rx="3" class="fl-n" data-p="io" style="display:none"/>
+<rect x="8" y="78" width="80" height="34" rx="6" class="fl-n" data-p="io"/><text x="48" y="100" text-anchor="middle" class="dx-l">User task</text>
+<rect x="104" y="20" width="528" height="200" rx="12" class="fl-group" data-p="loop"/><text x="116" y="38" class="dx-cap">ReAct（每一步由模型决定下一步）</text>
+<line x1="88" y1="95" x2="118" y2="95" class="fl-e1" marker-end="url(#ah2)" data-p="io"/>
+<rect x="120" y="78" width="110" height="34" rx="6" class="fl-n" data-p="ctx"/><text x="175" y="93" text-anchor="middle" class="dx-l">Prompt and</text><text x="175" y="106" text-anchor="middle" class="dx-l">tool schemas</text>
+<line x1="230" y1="95" x2="258" y2="95" class="fl-e1" marker-end="url(#ah2)" data-p="loop"/>
+<rect x="260" y="78" width="110" height="34" rx="6" class="fl-n fl-m" data-p="think loop"/><text x="315" y="100" text-anchor="middle" class="dx-l">Model reasoning</text>
+<line x1="370" y1="95" x2="398" y2="95" class="fl-e1" marker-end="url(#ah2)" data-p="loop"/>
+<path d="M450 68 L500 95 L450 122 L400 95 Z" class="fl-n" data-p="act loop exit"/><text x="450" y="99" text-anchor="middle" class="dx-l">Tool action?</text>
+<line x1="450" y1="122" x2="450" y2="160" class="fl-e1" marker-end="url(#ah2)" data-p="act loop"/><text x="458" y="145" class="dx-cap">yes</text>
+<rect x="330" y="162" width="240" height="34" rx="6" class="fl-n" data-p="obs loop"/><text x="450" y="184" text-anchor="middle" class="dx-l">Tool result or environment observation</text>
+<path d="M330 179 L315 179 L315 114" class="fl-e1" fill="none" marker-end="url(#ah2)" data-p="obs loop"/>
+<line x1="500" y1="95" x2="532" y2="95" class="fl-e1" marker-end="url(#ah2)" data-p="exit"/><text x="506" y="88" class="dx-cap">no</text>
+<rect x="534" y="78" width="90" height="34" rx="6" class="fl-n" data-p="exit"/><text x="579" y="100" text-anchor="middle" class="dx-l">Final answer</text>
+</svg>
 ```
 
 从技术实现细节上看，很多 ReAct Agent 的退出条件都比较简单：模型不再产生 Tool Call，或者返回了最终答案，或者触发了最大轮次、异常、业务停止条件。也就是说，ReAct 的核心不是"固定执行哪几步"，而是"每一步都由模型根据当前上下文决定下一步"。
@@ -60,8 +103,6 @@ Workflow 是人提前设计控制流，模型只是某些节点里的能力组�
 ![](https://hedonspace.oss-cn-beijing.aliyuncs.com/img/ChatGPT%20Image%20Jun%2016,%202026,%2009_16_41%20AM%20(1).png)
 
 很多复杂 Agent 架构都可以看成 ReAct Loop 的扩展，只不过有人在里面加了 Planner，有人加了 Memory，有人加了 Reflection，有人加了 Evaluator，有人加了多 Agent 协作，有人用图结构把它包起来。名字越来越多，架构图越来越复杂，但究其根本，都是 ReAct。
-
-
 
 ### ReAct 和 Workflow 怎么选
 
@@ -94,8 +135,6 @@ Workflow 是人提前设计控制流，模型只是某些节点里的能力组�
 | 调试难度   | 更难调试               | 更容易调试             |
 | 生产适用性 | 适合探索型、不确定任务 | 适合明确流程、业务系统 |
 
-
-
 ### 为什么大家都在做 ReAct Agent
 
 看似 ReAct 和 Workflow 各有优劣，应该是各站半壁江山的场面，那为什么大厂和各种社交媒体里面，都在鼓吹它们做的 ReAct Agent~~（Demo）~~呢？
@@ -115,8 +154,6 @@ Workflow 更像是一个 SOP，一个流程引擎，一个状态机。它可能�
 它可以讲"自主规划"，可以讲"动态决策"，可以讲"自我修复"，可以讲"像人一样工作"。这些词放在 PPT 里非常好看，放在 Demo 里也非常震撼。至于真实线上系统里它能不能稳定跑、成本能不能兜住、RT 能不能接受、异常能不能监控，那就是另外一回事了。
 
 当然啦，上述观点肯定略显偏颇。笔者斗胆猜测，还有另外一个很重要的原因就是：Claude Code 和 Codex 这类 Coding Agent（当然它们不止 coding 能力）做得太好了，太突出了，太令人意外了。所以都认为能在他们的业务领域内做出比肩甚至超过 Claude Code、Codex 的 Agent。
-
-
 
 ### 为什么 Coding Agent 是一个特殊样本
 
@@ -143,8 +180,6 @@ Workflow 更像是一个 SOP，一个流程引擎，一个状态机。它可能�
 
 事实上，更重要的还有什么？还需要有人愿意主动去使用、去反馈、甚至去为它构建一系列的设施工具来增强它。Coding Agent 有大量专业的使用者，其中不乏大量自愿付费的使用者，他们在各种各样的业务场景下进行了各种各样的验证和反馈，才能让 Coding Agent 有如此快速和惊人的发展。
 
-
-
 ### 反观常规业务系统
 
 那反观常规的业务系统呢？存在以下几个必须要面对的难题：
@@ -169,8 +204,6 @@ Coding Agent 跑几分钟、十几分钟，甚至更久，开发者很多时候�
 
 常规的业务系统需要把用户当小白，尽可能让系统通用、易用、好用。你不敢让你的用户做太多的操作，因为每多一个步骤，你就害怕用户弃之而去。Coding Agent 不一样啊，它的受众绝大部分都是一群专业的开发者，他们天生就具备构建能力，他们也愿意去根据当下 Coding Agent 的不足去捣鼓各种技巧来提升 Agent 的上限。不仅如此，他们还乐于分享（~~真是该死~~）！他们会把自己的各种奇技淫巧分享在各大平台上，让那些本没那么专业的用户也能提升使用 Coding Agent 的能力。
 
-
-
 ### 于是我们踩了什么坑
 
 为什么笔者会有这样的一些感想呢？回到开头，笔者提到，最近一直在公司做一款电商方向的 AI Agent。
@@ -193,11 +226,27 @@ demo 阶段当然是说得过去了，做 demo 谁不会呢？AI 时代，是个
 
 真是痛苦啊~
 
-
-
 ### 更现实的答案：Macro Workflow + Micro ReAct
 
-```html garden src="./assets/macro.html"
+```garden html
+title: HTML
+---
+<style>
+:host{display:block}
+.wf{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font:500 14px/1.4 -apple-system,"PingFang SC","Noto Sans SC",sans-serif;color:var(--ink)}
+.n{padding:9px 12px;border:1px solid var(--rule-strong);border-radius:8px;background:var(--card)}
+.ar{color:var(--muted)}
+.loop{padding:8px 10px 10px;border:1.5px dashed var(--blue);border-radius:10px;background:var(--blue-tint)}
+.loop b{display:block;font-size:12px;color:var(--blue);margin-bottom:6px}
+.loop .row{display:flex;gap:6px;align-items:center;font-size:13px}
+.loop .row span{padding:5px 8px;border-radius:6px;background:var(--card);border:1px solid var(--blue-line)}
+.cap{margin:10px 0 0;font:13px/1.5 -apple-system,"PingFang SC",sans-serif;color:var(--muted)}
+</style>
+<div class="wf" role="img" aria-label="Workflow 主流程中的一个节点是被关在小闭环里的 ReAct">
+<span class="n">主流程</span><span class="ar">→</span><span class="n">状态机</span><span class="ar">→</span>
+<span class="loop"><b>Micro ReAct（小闭环）</b><span class="row"><span>Thought</span>→<span>Action</span>→<span>Observation</span>↺</span></span>
+<span class="ar">→</span><span class="n">校验 / 兜底</span><span class="ar">→</span><span class="n">输出</span></div>
+<p class="cap">Macro Workflow：主流程、状态机、成本控制、权限控制、异常兜底、观测指标和业务确定性。示意图，节点顺序为示例。</p>
 ```
 
 所以，综上所述，在笔者有限的认知看来，只要大模型的底层原理没有发生本质改变，传统业务为了 AI 而 AI，强行套上一个全局 ReAct Agent，从一开始就大概率不是一条好路。
@@ -222,8 +271,6 @@ Workflow 负责主流程、状态机、成本控制、权限控制、异常兜�
 
 你要知道它什么时候进来，什么时候出去，输出怎么校验，失败怎么兜底，成本怎么控制，效果怎么监控。否则 ReAct 的灵活性很快就会变成系统的不确定性。
 
-
-
 ### 那应该怎么做
 
 经过这段时间的折磨后，笔者觉得比较好的实践路径可能是这样的：
@@ -233,8 +280,6 @@ Workflow 负责主流程、状态机、成本控制、权限控制、异常兜�
 - 从一个小的、局部的、高频率的、高优先级的、高确定性的点出发，再逐步扩大，即能快速看到效果，又能控制成本，又可以把异常情况缩小在一个可控的范围内。
 
 别一上来就想做一个无所不能的 Agent。无所不能，通常意味着无所能稳定。
-
-
 
 ### 最后
 

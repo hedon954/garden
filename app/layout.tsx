@@ -4,6 +4,7 @@ import "katex/dist/katex.min.css";
 import "./globals.css";
 import "./styles/tokens.css";
 import "./styles/a2.css";
+import "./styles/shell.css";
 import { SiteChrome } from "./components/SiteChrome";
 import {
   getSiteUrl,
