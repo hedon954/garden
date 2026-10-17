@@ -258,6 +258,9 @@ WHERE rank &lt;= 3;
   <p>Typora 文件中的 details / summary 会保留为可交互的折叠区域。</p>
 </details>
 
+<pre><code class="language-garden">code: |
+  &lt;p class=&quot;garden-html-probe&quot;&gt;静态 HTML 块&lt;/p&gt;
+</code></pre>
 <hr>
 <p>最后用一个脚注说明这篇文章的角色：它既是示例，也是未来升级 Markdown 依赖时的回归测试。[^regression]</p>
 <p>[^regression]: 页面构建测试会检查公式与示例内容，浏览器验收会检查 Mermaid 是否被转换为 SVG。</p>

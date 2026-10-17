@@ -452,12 +452,88 @@ html[data-theme="dark"] .markdown-body a.ext {
 .g-timeline,
 .g-chart,
 .g-figure,
+.g-explore,
 .g-html,
 .g-idea,
 .g-legacy,
 .g-unknown {
   margin: 0 0 1.2em;
   box-shadow: none;
+}
+
+.g-explore {
+  border: 1px solid var(--rule);
+  border-radius: var(--r);
+  padding: 12px 14px 14px;
+  background: var(--card);
+  max-width: 100%;
+}
+
+.g-explore [role="tablist"] {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+}
+
+.g-explore [role="tab"] {
+  font: 500 14px / 1 var(--sans);
+  padding: 9px 12px;
+  min-height: 38px;
+  border-radius: 999px;
+  border: 1px solid var(--rule);
+  background: transparent;
+  color: var(--soft);
+  cursor: pointer;
+}
+
+.g-explore [role="tab"][aria-selected="true"] {
+  border-color: var(--blue);
+  color: var(--blue);
+  background: var(--blue-tint);
+}
+
+.dx-wrap {
+  overflow: hidden;
+  margin-top: 10px;
+  max-width: 100%;
+}
+
+.dx-wrap svg {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+}
+
+.g-explore:not([data-sel="all"]) .dx-wrap [data-p]:not(.on),
+.g-explore:not([data-sel="all"]) .dx-wrap text:not(.on) {
+  opacity: 0.22;
+}
+
+.g-explore .on {
+  opacity: 1;
+}
+
+.dx-exp p {
+  margin: 10px 0 0;
+}
+
+.g-explore figcaption {
+  font-size: 13px;
+  color: var(--muted);
+  margin-top: 8px;
+  text-align: left;
+}
+
+.g-sandbox,
+.g-play,
+.g-html,
+.g-explore,
+.dx-wrap {
+  max-width: 100%;
+  overflow-x: clip;
 }
 
 .g-card,
@@ -696,6 +772,22 @@ html[data-theme="dark"] .markdown-body a.ext {
   padding: 0 10px;
   color: var(--blue);
   border-color: var(--blue-line);
+}
+
+@media (pointer: coarse) {
+  .ux-btn:not(.ux-copy) {
+    position: relative;
+  }
+
+  .ux-btn::before {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 44px;
+    height: 44px;
+    transform: translate(-50%, -50%);
+  }
 }
 
 .ux-cb {

@@ -101,20 +101,20 @@ const headingText = (children: ReactNode) => {
 export function MarkdownArticle({ content }: { content: string }) {
   const numbers = { h2: 0, h3: 0 };
   const gardenComponents = {
-    "garden-block": ({ dataPayload }: { dataPayload?: string }) => <GardenBlock dataPayload={dataPayload} />,
-    "garden-codediff": ({
-      children,
-      dataDiff,
-      dataNew,
-    }: {
+    "garden-block": (props: { dataPayload?: string; "data-payload"?: string }) => (
+      <GardenBlock dataPayload={props.dataPayload ?? props["data-payload"]} />
+    ),
+    "garden-codediff": (props: {
       children?: ReactNode;
       dataDiff?: string;
       dataNew?: string;
+      "data-diff"?: string;
+      "data-new"?: string;
     }) => (
       <CodeDiff
-        code={children}
-        diff={dataDiff ? decodeURIComponent(dataDiff) : ""}
-        next={dataNew ? decodeURIComponent(dataNew) : ""}
+        code={props.children}
+        diff={decodeURIComponent(props.dataDiff ?? props["data-diff"] ?? "")}
+        next={decodeURIComponent(props.dataNew ?? props["data-new"] ?? "")}
       />
     ),
   };

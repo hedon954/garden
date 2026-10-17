@@ -109,9 +109,6 @@ export function CodeDiff({
   const [tab, setTab] = useState(0);
   const base = useId();
   const tabs = ["代码", "对比上一版"];
-  const copyText = () => (tab === 0
-    ? (typeof code === "string" ? code : "")
-    : next);
 
   return (
     <div className="g-tabs g-code-group g-codediff" data-g="tabs">
@@ -127,10 +124,10 @@ export function CodeDiff({
             tabIndex={tab === index ? 0 : -1}
             onClick={() => setTab(index)}
             onKeyDown={(event) => {
-              const nextIndex = event.key === "ArrowRight" ? (index + 1) % 2 : event.key === "ArrowLeft" ? (index + 1) % 2 === 0 ? 0 : 1 : -1;
-              if (event.key === "ArrowLeft") setTab(index === 0 ? 1 : 0);
-              if (event.key === "ArrowRight") setTab(index === 1 ? 0 : 1);
-              if (nextIndex >= 0) event.preventDefault();
+              const nextIndex = event.key === "ArrowRight" || event.key === "ArrowLeft" ? (index + 1) % 2 : -1;
+              if (nextIndex < 0) return;
+              event.preventDefault();
+              setTab(nextIndex);
             }}
           >
             {label}
@@ -193,7 +190,6 @@ export function FullscreenFrame({ children, label = "演示" }: { children: Reac
   useEffect(() => {
     if (!overlay) return undefined;
     const root = ref.current;
-    const previous = document.body.style.overflow;
     document.documentElement.classList.add("ux-lock");
     const trap = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
@@ -223,7 +219,6 @@ export function FullscreenFrame({ children, label = "演示" }: { children: Reac
     buttonRef.current?.focus();
     return () => {
       document.documentElement.classList.remove("ux-lock");
-      document.body.style.overflow = previous;
       document.removeEventListener("keydown", trap, true);
       document.removeEventListener("focusin", pull);
     };
@@ -271,7 +266,20 @@ export function FullscreenFrame({ children, label = "演示" }: { children: Reac
   );
 }
 
-const FRAME_BOOT = `<style>html,body{background:transparent!important;overflow:hidden!important;height:auto!important;min-height:0!important}body>:first-child{padding-right:44px;box-sizing:border-box}svg{max-width:100%;height:auto}</style><script>(function(){var last=0;function m(){var b=document.body;if(!b)return;var h=0,cs=getComputedStyle(b);[].forEach.call(b.children,function(e){if(e.tagName==="SCRIPT"||e.tagName==="STYLE")return;var r=e.getBoundingClientRect(),st=getComputedStyle(e);h=Math.max(h,r.bottom+parseFloat(st.marginBottom||0))});h=Math.ceil(h+parseFloat(cs.paddingBottom||0)+parseFloat(cs.marginBottom||0)+2);if(h!==last){last=h;parent.postMessage({type:"ux:size",height:h},"*")}}var q=0;function s(){if(!q){q=1;requestAnimationFrame(function(){q=0;m()})}}addEventListener("load",s);addEventListener("resize",s);if(window.ResizeObserver)new ResizeObserver(s).observe(document.documentElement);s();setInterval(m,1000)})()<\/script>`;
+const FRAME_BOOT = `<style>
+html,body{background:transparent!important;height:auto!important;min-height:0!important;margin:0;max-width:100%}
+body>*{max-width:100%;box-sizing:border-box}
+svg,img,canvas,video,table{max-width:100%;height:auto}
+</style><script>(function(){
+var last=0;
+function m(){var b=document.body;if(!b)return;var h=0,cs=getComputedStyle(b);[].forEach.call(b.children,function(e){if(e.tagName==="SCRIPT"||e.tagName==="STYLE")return;var r=e.getBoundingClientRect(),st=getComputedStyle(e);h=Math.max(h,r.bottom+parseFloat(st.marginBottom||0))});h=Math.ceil(h+parseFloat(cs.paddingBottom||0)+parseFloat(cs.marginBottom||0)+2);if(h!==last){last=h;parent.postMessage({type:"ux:size",height:h},"*")}}
+function row(root){var nodes=root.children;for(var i=0;i<nodes.length;i++){var e=nodes[i];if(e.tagName==="SCRIPT"||e.tagName==="STYLE"||getComputedStyle(e).display==="none")continue;return e}return null}
+function pad(){var b=document.body;if(!b)return;var top=row(b);if(!top)return;var inner=row(top);var target=inner&&top.getBoundingClientRect().height>inner.getBoundingClientRect().height+8?inner:top;target.style.setProperty("box-sizing","border-box");target.style.setProperty("padding-right","44px")}
+var q=0;function s(){if(!q){q=1;requestAnimationFrame(function(){q=0;m()})}}
+function watch(){[].forEach.call(document.images||[],function(img){if(img.dataset.uxSized)return;img.dataset.uxSized="1";img.addEventListener("load",s);img.addEventListener("error",s)})}
+var started=0;function boot(){pad();watch();s();if(started||!window.ResizeObserver)return;started=1;var ro=new ResizeObserver(s);ro.observe(document.documentElement);if(document.body)ro.observe(document.body)}
+addEventListener("DOMContentLoaded",boot);addEventListener("load",boot);addEventListener("resize",s);
+})()<\/script>`;
 
 export function frameSrcdoc(html: string, title: string) {
   const csp = `<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: blob:;">`;

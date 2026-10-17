@@ -299,6 +299,24 @@ function htmlHasScript(source: string) {
   return /<script\b/iu.test(source);
 }
 
+function StaticGardenHtml({ code }: { code: string }) {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const host = ref.current;
+    if (!host) return;
+    const root = host.shadowRoot ?? host.attachShadow({ mode: "open" });
+    root.innerHTML = code;
+  }, [code]);
+  return (
+    <div
+      className="g-html"
+      ref={ref}
+      suppressHydrationWarning
+      dangerouslySetInnerHTML={{ __html: `<template shadowrootmode="open">${code}</template>` }}
+    />
+  );
+}
+
 export function GardenHtml({ props, children }: { props: Record<string, unknown>; children?: string }) {
   const code = typeof props.code === "string" ? props.code : children || "";
   const title = String(props.title ?? "HTML");
@@ -309,7 +327,7 @@ export function GardenHtml({ props, children }: { props: Record<string, unknown>
     return <SandboxFrame html={code} title={title} />;
   }
   const interactive = /<(button|input|select)\b|data-p=/iu.test(code);
-  const view = <div className="g-html" dangerouslySetInnerHTML={{ __html: `<template shadowrootmode="open">${code}</template>` }} />;
+  const view = <StaticGardenHtml code={code} />;
   return interactive ? <FullscreenFrame label={title}>{view}</FullscreenFrame> : view;
 }
 
