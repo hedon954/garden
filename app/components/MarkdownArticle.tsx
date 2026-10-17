@@ -6,7 +6,7 @@ import {
   type HTMLAttributes,
   type ReactNode,
 } from "react";
-import { articleUsesHeadingNumbers, splitHeadingNumber } from "../lib/content";
+import { articleHeadingBase, articleUsesHeadingNumbers, displayHeadingLevel, splitHeadingNumber } from "../lib/content";
 import ReactMarkdown from "react-markdown";
 import rehypeRaw from "rehype-raw";
 import rehypeKatex from "rehype-katex";
@@ -150,6 +150,7 @@ const headingText = (children: ReactNode) => {
 export function MarkdownArticle({ content }: { content: string }) {
   const numbers = { h2: 0, h3: 0 };
   const numberedArticle = articleUsesHeadingNumbers(content);
+  const headingBase = articleHeadingBase(content);
   const section = (depth: 2 | 3, children: ReactNode) => {
     const raw = headingText(children).trim();
     const split = splitHeadingNumber(raw);
@@ -163,6 +164,15 @@ export function MarkdownArticle({ content }: { content: string }) {
     if (depth === 2) { numbers.h2 += 1; numbers.h3 = 0; return { no: String(numbers.h2), children }; }
     numbers.h3 += 1;
     return { no: numbers.h2 ? `${numbers.h2}.${numbers.h3}` : String(numbers.h3), children };
+  };
+  const heading = (source: 2 | 3 | 4, children: ReactNode, props: HTMLAttributes<HTMLHeadingElement> & { node?: unknown }) => {
+    const level = displayHeadingLevel(source, headingBase);
+    const Tag = level === 2 ? "h2" : level === 3 ? "h3" : "h4";
+    const domProps = { ...props };
+    Reflect.deleteProperty(domProps, "node");
+    if (level > 3) return <Tag {...domProps}>{children}</Tag>;
+    const sectioned = section(level as 2 | 3, children);
+    return <Tag {...domProps}>{sectioned.no ? <span className="sec-no">{sectioned.no}</span> : null}{sectioned.children}</Tag>;
   };
   const gardenComponents = {
     "garden-block": (props: { dataPayload?: string; "data-payload"?: string }) => (
@@ -224,14 +234,9 @@ export function MarkdownArticle({ content }: { content: string }) {
               <table {...props}>{children}</table>
             </div>
           ),
-          h2: ({ children, ...props }) => {
-            const sectioned = section(2, children);
-            return <h2 {...props}>{sectioned.no ? <span className="sec-no">{sectioned.no}</span> : null}{sectioned.children}</h2>;
-          },
-          h3: ({ children, ...props }) => {
-            const sectioned = section(3, children);
-            return <h3 {...props}>{sectioned.no ? <span className="sec-no">{sectioned.no}</span> : null}{sectioned.children}</h3>;
-          },
+          h2: ({ children, ...props }) => heading(2, children, props),
+          h3: ({ children, ...props }) => heading(3, children, props),
+          h4: ({ children, ...props }) => heading(4, children, props),
           code: CodeBlock,
           ...gardenComponents,
           pre: ({ children, ...props }) => {

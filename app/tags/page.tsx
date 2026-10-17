@@ -1,6 +1,7 @@
+import { Suspense } from "react";
 import { posts } from "../lib/content";
 import { TagIndex } from "../components/TagIndex";
-import { siteConfig, siteDocumentTitle } from "../site.config";
+import { siteDocumentTitle } from "../site.config";
 
 export const metadata = {
   title: siteDocumentTitle,
@@ -8,14 +9,20 @@ export const metadata = {
 };
 
 export default function TagsPage() {
-  const tagged = posts.filter((post) => (post.tags ?? []).length > 0).length;
+  const counts = new Map<string, number>();
+  for (const post of posts) {
+    for (const tag of post.tags ?? []) counts.set(tag, (counts.get(tag) ?? 0) + 1);
+  }
+  const once = [...counts.values()].filter((count) => count === 1).length;
   return (
     <main className="sh-main" id="content">
       <div className="sh-head">
         <h1>标签</h1>
-        <p className="sh-deck">{siteConfig.description} 共 {tagged || posts.length} 篇带标签的文章。点一个标签就只留下它。</p>
+        <p className="sh-deck">{counts.size} 个标签，按使用次数排序；只用过一次的 {once} 个收在下面。点选一个标签，下方列出对应文章。</p>
       </div>
-      <TagIndex posts={posts} />
+      <Suspense>
+        <TagIndex posts={posts} />
+      </Suspense>
     </main>
   );
 }

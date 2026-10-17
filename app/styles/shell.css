@@ -69,6 +69,7 @@ html[data-theme="dark"] .i-moon,html:not([data-theme="dark"]) .i-sun{display:non
 .sh-rail{position:sticky;top:calc(var(--hdr) + 28px);font-size:var(--fs-small);color:#737069}
 html[data-theme="dark"] .sh-rail{color:var(--muted)}
 .sh-rail h2{font:600 var(--fs-small)/1.4 var(--sans);color:var(--soft);margin:0 0 10px}
+.sh-rail > p{margin:0;line-height:1.7}
 .sh-rail ol{list-style:none;margin:0 0 28px;padding:0}
 .sh-rail li a{display:flex;justify-content:space-between;gap:12px;padding:5px 0;text-decoration:none;color:inherit}
 .sh-rail li a:hover{color:var(--ink)}
@@ -88,7 +89,7 @@ html[data-theme="dark"] .sh-rail{color:var(--muted)}
 .sh-chip.toggle svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:1.8;transition:transform .2s ease}
 .sh-chip.toggle[aria-expanded="true"] svg{transform:rotate(180deg)}
 .sh-status{display:flex;align-items:center;gap:12px;min-height:40px;margin:4px 0 0;font-size:var(--fs-small);color:var(--muted)}
-.sh-status > button{font:inherit;color:var(--blue);background:none;border:0;padding:6px 0;cursor:pointer;text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1px}
+.sh-status > button,.sh-status > a{font:inherit;color:var(--blue);background:none;border:0;padding:6px 0;cursor:pointer;text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1px}
 .sh-view{display:inline-flex;margin-left:auto;border:1px solid var(--rule);border-radius:var(--r);padding:2px;background:var(--card)}
 .sh-view button{font:400 13px/1 var(--sans);color:var(--muted);background:none;border:0;border-radius:9px;padding:7px 10px;cursor:pointer;min-height:30px}
 .sh-view button[aria-pressed="true"]{background:var(--well);color:var(--ink);font-weight:600}
@@ -245,7 +246,7 @@ html[data-theme="dark"] .sh-pal-scrim{background:rgba(0,0,0,.55)}
   .sh-cols{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
 @media (max-width:820px){
-  :root{--hdr:56px;--fs-display:34px;--fs-h2:22px}
+  :root,:root[data-theme="light"],:root[data-theme="dark"],html[data-theme="dark"]{--hdr:56px;--fs-display:34px;--fs-h2:22px}
   .sh-bar{padding:0 12px 0 20px;gap:4px}
   .sh-nav,.sh-search{display:none}
   .sh-word{margin-right:auto}

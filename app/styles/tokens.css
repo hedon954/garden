@@ -103,7 +103,6 @@ html[data-theme="dark"] {
   :root[data-theme="light"],
   :root[data-theme="dark"],
   html[data-theme="dark"] {
-    --fs-display: 30px;
     --fs-hero: 30px;
     --fs-h2: 23px;
     --fs-lead: 18px;

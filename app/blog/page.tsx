@@ -12,7 +12,7 @@ export default function BlogIndex() {
   return (
     <main className="sh-main" id="content">
       <div className="sh-head">
-        <h1>{siteConfig.pages.blog.title || "文章"}</h1>
+        <h1 id="sh-title">文章</h1>
         <p className="sh-deck">阶段性的完整沉淀，关于工程、架构与技术思考。共 {posts.length} 篇，按年份归档。</p>
       </div>
       <Suspense>
