@@ -691,12 +691,29 @@ html[data-theme="dark"] .markdown-body a.ext {
 
 .g-mermaid {
   margin: 28px 0;
-  padding: 16px;
+  padding: 0;
   border: 1px solid var(--rule);
   border-radius: var(--r);
   overflow: hidden;
   text-align: center;
   background: transparent;
+}
+
+.g-mermaid .mermaid-canvas {
+  min-height: 0;
+  padding: 16px;
+  display: block;
+}
+
+.markdown-body .g-mermaid .mermaid-canvas svg,
+.g-mermaid svg {
+  max-height: none;
+}
+
+.g-mermaid pre.code {
+  margin: 0;
+  text-align: left;
+  white-space: pre;
 }
 
 .g-codediff {
@@ -993,7 +1010,8 @@ html[data-theme="dark"] .hljs-params {
   }
 
   .post-reading-page .article-reading-column {
-    max-width: none;
+    max-width: var(--col);
+    margin-inline: auto;
   }
 }
 

@@ -88,7 +88,7 @@ export default function Home() {
         </section>
         {pinned.length > 0 ? (
           <section className="sh-section" aria-labelledby="h-pin">
-            <div className="sh-sec-head section-heading accent-heading"><h2 id="h-pin">置顶博文</h2></div>
+            <div className="sh-sec-head section-heading accent-heading"><h2 id="h-pin">置顶</h2></div>
             <ul className="sh-side-list">
               {pinned.map((post) => (
                 <li key={post.path}>
@@ -104,7 +104,7 @@ export default function Home() {
       {columns[0] && series.length ? (
         <section className="sh-section" aria-labelledby="h-cols">
           <div className="sh-sec-head">
-            <h2 id="h-cols">主题专栏</h2>
+            <h2 id="h-cols">专栏</h2>
             <Link className="sh-more" href="/columns">全部专栏</Link>
           </div>
           <div className="sh-cols">

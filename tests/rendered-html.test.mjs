@@ -33,9 +33,9 @@ test("server-renders the finished blog home", async () => {
   const html = await response.text();
   assert.match(html, /<title>[^<]+<\/title>/i);
   assert.match(html, /记一些正在做的事/);
-  assert.match(html, /置顶博文/);
+  assert.match(html, /id="h-pin">置顶</);
   assert.match(html, /最近随想/);
-  assert.match(html, /主题专栏/);
+  assert.match(html, /id="h-cols">专栏</);
   assert.match(html, /rel="me(?: [^"]*)?"/);
   assert.doesNotMatch(html, /section-index|pinned-list/);
   assert.match(html, /section-heading accent-heading/);
@@ -87,9 +87,9 @@ test("renders complex Markdown, article covers, and mixed thought media", async 
   assert.match(article, /class="katex-display"/);
   assert.match(article, /language-mermaid/);
   assert.match(article, /data-mermaid-theme="a2"/);
-  assert.doesNotMatch(article, /mermaid-view-switcher/);
-  assert.doesNotMatch(article, />图表<\/button>/);
-  assert.doesNotMatch(article, />Code<\/button>/);
+  assert.match(article, /mermaid-view-switcher/);
+  assert.match(article, />图表<\/button>/);
+  assert.match(article, />Code<\/button>/);
   assert.doesNotMatch(article, /mermaid-theme-picker|森林/);
   assert.match(article, /language-typescript/);
   assert.match(article, /language-python/);

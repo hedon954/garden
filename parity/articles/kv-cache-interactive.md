@@ -611,7 +611,7 @@ title: 读懂了吗
 
 示例（不是原文）：
 
-```diff
+```python
   messages = [
 -   {"role": "system", "content": f"当前时间：{now}\n" + SYSTEM_PROMPT},
 +   {"role": "system", "content": SYSTEM_PROMPT},              # 稳定前缀在前

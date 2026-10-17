@@ -34,11 +34,14 @@ export function readA2Article(slug: string): A2Article | null {
   const parsed = matter(fs.readFileSync(file, "utf8"));
   const data = parsed.data ?? {};
   const cover = typeof data.cover === "string" ? data.cover : "";
+  const date = data.date instanceof Date && !Number.isNaN(data.date.getTime())
+    ? data.date.toISOString()
+    : typeof data.date === "string" ? data.date : "";
   return {
     slug,
     title: String(data.title ?? slug),
     description: String(data.description ?? ""),
-    date: String(data.date ?? ""),
+    date,
     topic: String(data.topic ?? ""),
     cover: cover && !/^https?:/iu.test(cover) ? `https://hedon.top/media/covers/${cover}` : cover,
     original: originals[slug] ?? "",
