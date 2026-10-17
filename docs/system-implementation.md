@@ -69,7 +69,7 @@ rehype-highlight 代码高亮
 
 当代码块语言为 `mermaid` 时，组件会交给 `MermaidDiagram`：客户端动态加载 Mermaid，固定中性主题，并在“图表”和“Code”两个视图之间切换。`embed` 交给 `ExternalEmbed`；`widget` 交给 `WidgetChart`。构建会给围栏标上 `kind`：带 `garden-chart` 高度回报的 HTML 是图表，立即用沙箱 iframe 打开并加上 `?theme=`；普通 HTML 与 PDF 先渲染示意入口，展开后再加载。普通代码块则保留语言标记供样式层显示。
 
-`normalizeCallouts()` 在 Markdown 解析前把 `[!TYPE]` 转换为带语义色和中文标签的警告框，同时兼容旧迁移内容中的 `garden-callout-marker`。旧内容若把标题统一写成「提示」，渲染时会按色调恢复为提示、建议、告警或警示，不要求批量改写文章源文件。
+`remarkA2` 在 Markdown 解析后把 `[!NOTE]`、`[!TIP]`、`[!IMPORTANT]`、`[!WARNING]`、`[!CAUTION]` 渲染成带图标和默认标签（提醒、建议、重要、警告、注意）的 alert 卡片，并兼容旧文里的 `garden-callout-marker`。自定义标题仍来自原文，不改写文章句子。同一插件把带说明的图片收成 `figure.fig`。
 
 搜索索引不依赖第三方服务。`content.ts` 将 Markdown 去掉标记形成标题、摘要、正文文本，客户端用 Fuse.js 模糊匹配，再根据 Fuse 的匹配范围包装高亮片段。
 

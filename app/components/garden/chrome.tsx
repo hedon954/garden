@@ -7,6 +7,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { acceptSandboxSizeMessage } from "./sandbox-message";
 
 const COPY_ICON = (
   <svg viewBox="0 0 16 16" aria-hidden="true">
@@ -307,8 +308,7 @@ export function SandboxFrame({ html, title }: { html: string; title: string }) {
     const onMessage = (event: MessageEvent) => {
       if (!frame) return;
       const data = event.data;
-      if (!data || (data.type !== "ux:size" && data.type !== "garden:resize")) return;
-      if (data.fid !== fid && event.source !== frame.contentWindow) return;
+      if (!acceptSandboxSizeMessage(data, fid, event.source, frame.contentWindow)) return;
       const next = Number(data.height);
       if (!Number.isFinite(next) || next < 48) return;
       if (frame.closest(".ux-fs:fullscreen, .ux-fs-on")) return;
