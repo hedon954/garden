@@ -20,10 +20,11 @@ test("slider, chart, steps, grid, code and diagram keep the measured sizes", () 
   assert.match(css, /input\[type="range"\] \{\s*display: block;\s*width: 100%;\s*height: 38px;/u);
   assert.match(css, /\.garden-ui-steps \.garden-ui-progress \{ height: 3px;/u);
   assert.match(css, /\.garden-ui-chart-axis \{ stroke: var\(--gui-border\);/u);
-  assert.match(css, /--gui-chart: #f4f4f4;/u);
-  assert.match(css, /--gui-series-accent: #0285ff;/u);
+  assert.match(css, /--gui-chart: var\(--well\);/u);
+  assert.match(css, /--gui-series-accent: var\(--blue\);/u);
   assert.match(css, /\.garden-ui-cell \{\s*min-width: 40px;\s*height: 36px;/u);
   assert.match(css, /\.garden-ui-code \{[^}]*border-radius: 12px;[^}]*font-size: 13px;\s*line-height: 1\.6;/u);
   assert.match(css, /data-highlight="true"\] \{ background: var\(--gui-info-soft\); box-shadow: inset 2px 0 0 var\(--gui-accent\);/u);
-  assert.match(css, /path\.garden-ui-diagram-on \{ stroke: var\(--gui-accent\) !important; stroke-width: 2px/u);
+  assert.match(css, /path\.garden-ui-diagram-on \{ stroke: var\(--gui-accent\); stroke-width: 2px/u);
+  assert.match(css, /opacity: 0\.22/u);
 });

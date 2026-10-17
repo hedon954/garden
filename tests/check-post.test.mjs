@@ -42,6 +42,22 @@ async function check(root, markdown) {
 }
 
 const codes = (result) => result.results[0].errors.map((item) => item.code);
+const warnings = (result) => result.results[0].warnings.map((item) => item.code);
+
+test("an older ISO timestamp still passes", async (t) => {
+  const root = await site(t);
+  const result = await check(root, `---
+title: 测试
+description: 一篇用来检查结构的文章。
+date: 2026-09-18T14:39:00+08:00
+topic: 测试
+---
+
+## 正文
+`);
+  assert.equal(result.ok, true);
+  assert.deepEqual(codes(result), []);
+});
 
 test("a post with a matched external link passes", async (t) => {
   const root = await site(t);
@@ -63,7 +79,7 @@ test("structure errors use stable codes and leave translated bibliographies alon
   const broken = await check(root, `---
 title: 测试
 description: 一篇用来检查结构的文章。
-date: 2026-09-18T14:39:00+08:00
+date: not-a-date
 topic: 测试
 slug: sample
 references:
@@ -100,4 +116,30 @@ references:
 [1] 一篇留在正文里的译文文献。
 `));
   assert.equal(translated.ok, true);
+});
+
+test("a title that cannot split warns without failing the check", async (t) => {
+  const root = await site(t);
+  const article = (title) => `---
+title: ${title}
+description: 一篇用来检查结构的文章。
+date: 2026-09-18 14:39:00
+topic: 测试
+---
+
+## 正文
+`;
+  const multiple = await check(root, article("甲丨乙｜丙"));
+  assert.equal(multiple.ok, true);
+  assert.deepEqual(codes(multiple), []);
+  assert.deepEqual(warnings(multiple), ["title-split"]);
+
+  const empty = await check(root, article("只有左边丨"));
+  assert.equal(empty.ok, true);
+  assert.deepEqual(codes(empty), []);
+  assert.deepEqual(warnings(empty), ["title-split"]);
+
+  const split = await check(root, article("Rust 实战丨手写一个 SpinLock"));
+  assert.equal(split.ok, true);
+  assert.deepEqual(warnings(split), []);
 });

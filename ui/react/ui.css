@@ -6,41 +6,41 @@
 .garden-ui,
 .garden-catalog,
 .garden-ui-preview {
-  --gui-bg: #fff;
-  --gui-chart: #f4f4f4;
-  --gui-track: #e4e4e4;
-  --gui-thumb: #fff;
-  --gui-slider-track: #0d0d0d1f;
-  --gui-slider-thumb: #333;
-  --gui-text: #0d0d0d;
-  --gui-muted: #5d5d5d;
-  --gui-subtle: #8f8f8f;
-  --gui-completed: #777;
-  --gui-border: #0000001a;
-  --gui-border-soft: #00000014;
-  --gui-border-strong: #0000001f;
-  --gui-control-border: #ccc;
-  --gui-check-border: #d2d2d2;
-  --gui-control-bg: #fff;
-  --gui-surface: #f5f5f5;
-  --gui-chip: #f3f3f3;
-  --gui-hover: #f5f5f5;
-  --gui-solid: #171717;
-  --gui-solid-hover: #303030;
-  --gui-on-solid: #fff;
-  --gui-segment: #ededed;
-  --gui-segment-selected: #fff;
-  --gui-segment-shadow: 0 1px 4px -1px #0003;
-  --gui-progress: #0d0d0d;
-  --gui-progress-track: #f3f3f3;
-  --gui-focus: #0285ff;
-  --gui-bubble: #eaf2ff;
-  --gui-popover-border: #0000000d;
-  --gui-shadow: 0 2px 6px #00000014;
-  --gui-code-bg: #f9f9f9;
-  --gui-accent: #0285ff;
-  --gui-series-plain: #171717;
-  --gui-series-accent: #0285ff;
+  --gui-bg: var(--card, #fff);
+  --gui-chart: var(--well);
+  --gui-track: var(--rule, #e6e3dc);
+  --gui-thumb: var(--card, #fff);
+  --gui-slider-track: var(--rule, #e6e3dc);
+  --gui-slider-thumb: var(--ink, #1b1a18);
+  --gui-text: var(--ink, #1b1a18);
+  --gui-muted: var(--muted, #6e6b64);
+  --gui-subtle: var(--grey, #737069);
+  --gui-completed: var(--muted, #6e6b64);
+  --gui-border: var(--rule, #e6e3dc);
+  --gui-border-soft: var(--rule, #e6e3dc);
+  --gui-border-strong: var(--rule-strong, #d6d2c9);
+  --gui-control-border: var(--rule-strong, #d6d2c9);
+  --gui-check-border: var(--rule-strong, #d6d2c9);
+  --gui-control-bg: var(--card, #fff);
+  --gui-surface: var(--well, #f0eee8);
+  --gui-chip: var(--well, #f0eee8);
+  --gui-hover: var(--well, #f0eee8);
+  --gui-solid: var(--ink, #1b1a18);
+  --gui-solid-hover: var(--soft, #4a4844);
+  --gui-on-solid: var(--paper, #f8f7f3);
+  --gui-segment: var(--well, #f0eee8);
+  --gui-segment-selected: var(--card, #fff);
+  --gui-segment-shadow: none;
+  --gui-progress: var(--blue, #2c55b4);
+  --gui-progress-track: var(--well, #f0eee8);
+  --gui-focus: var(--blue, #2c55b4);
+  --gui-bubble: var(--blue-tint, #eaf0fc);
+  --gui-popover-border: var(--rule, #e6e3dc);
+  --gui-shadow: none;
+  --gui-code-bg: var(--well, #f0eee8);
+  --gui-accent: var(--blue, #2c55b4);
+  --gui-series-plain: var(--ink, #1b1a18);
+  --gui-series-accent: var(--blue);
   --gui-series-new: #00a240;
   --gui-series-waste: #e02e2a;
   --gui-series-same: #924ff7;
@@ -56,7 +56,7 @@
   --gui-discovery: #924ff7;
   --gui-discovery-text: #8046d9;
   --gui-discovery-soft: #924ff71a;
-  --gui-font: -apple-system-body, ui-sans-serif, -apple-system, system-ui, "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol";
+  --gui-font: var(--sans, -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Noto Sans SC", sans-serif);
   --gui-mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
 }
 
@@ -67,40 +67,41 @@
 .garden-ui[data-theme="dark"],
 .garden-catalog[data-theme="dark"],
 .garden-ui-preview[data-theme="dark"] {
-  --gui-bg: #0e0e0e;
-  --gui-chart: #212121;
-  --gui-text: #ededed;
-  --gui-muted: #cdcdcd;
-  --gui-subtle: #afafaf;
-  --gui-completed: #afafaf;
-  --gui-border: #ffffff1a;
-  --gui-border-soft: #ffffff0d;
-  --gui-border-strong: #fff3;
-  --gui-control-border: #fff3;
-  --gui-check-border: #fff3;
-  --gui-control-bg: #303030;
-  --gui-surface: #2a2a2a;
-  --gui-chip: #303030;
-  --gui-hover: #ffffff1a;
-  --gui-solid: #ededed;
-  --gui-solid-hover: #dcdcdc;
-  --gui-on-solid: #0d0d0d;
-  --gui-segment: #303030;
-  --gui-segment-selected: #303030;
+  --gui-bg: var(--card);
+  --gui-chart: var(--well);
+  --gui-text: var(--ink);
+  --gui-muted: var(--muted);
+  --gui-subtle: var(--grey);
+  --gui-completed: var(--muted);
+  --gui-border: var(--rule);
+  --gui-border-soft: var(--rule);
+  --gui-border-strong: var(--rule-strong);
+  --gui-control-border: var(--rule-strong);
+  --gui-check-border: var(--rule-strong);
+  --gui-control-bg: var(--card);
+  --gui-surface: var(--well);
+  --gui-chip: var(--well);
+  --gui-hover: var(--tint);
+  --gui-solid: var(--ink);
+  --gui-solid-hover: var(--soft);
+  --gui-on-solid: var(--paper);
+  --gui-segment: var(--well);
+  --gui-segment-selected: var(--card);
   --gui-segment-shadow: none;
-  --gui-track: #3a3a3a;
-  --gui-thumb: #fff;
-  --gui-slider-track: #ffffff26;
-  --gui-slider-thumb: #ededed;
-  --gui-progress: #0285ff;
-  --gui-progress-track: #303030;
-  --gui-focus: #3a83f7;
-  --gui-bubble: #133463;
-  --gui-popover-border: #ffffff26;
-  --gui-shadow: 0 2px 8px #00000066;
-  --gui-code-bg: #171717;
-  --gui-accent: #0285ff;
-  --gui-series-plain: #ededed;
+  --gui-track: var(--rule);
+  --gui-thumb: var(--card);
+  --gui-slider-track: var(--rule-strong);
+  --gui-slider-thumb: var(--ink);
+  --gui-progress: var(--blue);
+  --gui-progress-track: var(--well);
+  --gui-focus: var(--blue);
+  --gui-bubble: var(--blue-tint);
+  --gui-popover-border: var(--rule);
+  --gui-shadow: none;
+  --gui-code-bg: var(--well);
+  --gui-accent: var(--blue);
+  --gui-series-plain: var(--ink);
+  --gui-series-accent: var(--blue);
   --gui-series-new: #04b84c;
   --gui-series-waste: #fa423e;
   --gui-info: #0285ff;
@@ -919,13 +920,14 @@
   line-height: 1.3 !important;
   letter-spacing: normal !important;
 }
-.garden-ui-diagram-canvas .garden-ui-diagram-on rect,
-.garden-ui-diagram-canvas .garden-ui-diagram-on polygon,
-.garden-ui-diagram-canvas .garden-ui-diagram-on circle,
-.garden-ui-diagram-canvas rect.garden-ui-diagram-on { fill: var(--gui-info-soft) !important; stroke: var(--gui-accent) !important; }
-.garden-ui-diagram-canvas .garden-ui-diagram-on .nodeLabel,
-.garden-ui-diagram-canvas .garden-ui-diagram-on text { color: var(--gui-accent) !important; fill: var(--gui-accent) !important; }
-.garden-ui-diagram-canvas path.garden-ui-diagram-on { stroke: var(--gui-accent) !important; stroke-width: 2px !important; }
+/* Selected nodes keep the 「全部」 look, text included. Only the rest fades. */
+.garden-ui-diagram-canvas:has(.garden-ui-diagram-on) .node:not(.garden-ui-diagram-on),
+.garden-ui-diagram-canvas:has(.garden-ui-diagram-on) .statediagram-state:not(.garden-ui-diagram-on),
+.garden-ui-diagram-canvas:has(.garden-ui-diagram-on) .cluster:not(.garden-ui-diagram-on) { opacity: 0.22; }
+.garden-ui-diagram-canvas .garden-ui-diagram-on,
+.garden-ui-diagram-canvas .garden-ui-diagram-on text,
+.garden-ui-diagram-canvas .garden-ui-diagram-on .nodeLabel { opacity: 1; }
+.garden-ui-diagram-canvas path.garden-ui-diagram-on { stroke: var(--gui-accent); stroke-width: 2px; }
 
 .garden-ui-sandbox {
   display: block;
@@ -1131,7 +1133,9 @@
   position: relative;
   top: -2px;
 }
-.garden-ui-cite img { width: 12px; height: 12px; border-radius: 2px; }
+.garden-ui-cite img,
+.garden-ui-cite-icon { width: 12px; height: 12px; border-radius: 2px; }
+.garden-ui-cite-icon { display: inline-block; background-position: center; background-size: contain; background-repeat: no-repeat; vertical-align: -2px; }
 
 .garden-ui-pie { display: flex; flex-direction: column; align-items: stretch; gap: 0; margin: 0; }
 .garden-ui-pie-title { align-self: stretch; margin: 0 0 8px; color: var(--gui-text); font-size: 16px; font-weight: 600; line-height: 26px; text-align: start; }

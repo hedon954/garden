@@ -48,16 +48,16 @@ cover: https://images.unsplash.com/photo-1761414500824-e280de5a1b37?auto=format&
 ## 语义警告框
 
 > [!NOTE]
-> 普通补充信息会显示为「提示」。
+> 普通补充信息会显示为「提醒」。
 
 > [!TIP]
 > 推荐做法会显示为「建议」。
 
 > [!WARNING]
-> 需要关注的风险会显示为「告警」。
+> 需要关注的风险会显示为「警告」。
 
 > [!CAUTION]
-> 可能造成严重后果的操作会显示为「警示」。
+> 可能造成严重后果的操作会显示为「注意」。
 
 ## 数学公式
 
@@ -242,6 +242,11 @@ actor ReadingProgress {
   <summary>展开原生 HTML 内容</summary>
   <p>Typora 文件中的 details / summary 会保留为可交互的折叠区域。</p>
 </details>
+
+```garden html
+code: |
+  <p class="garden-html-probe">静态 HTML 块</p>
+```
 
 ---
 

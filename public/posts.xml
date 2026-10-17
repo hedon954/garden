@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
   <channel>
-    <title>Garden</title>
+    <title>Hedon Garden</title>
     <link>https://example.com</link>
     <atom:link href="https://example.com/posts.xml" rel="self" type="application/rss+xml" />
     <description>一个可 fork、可长期维护的 Markdown 个人博客系统。</description>
@@ -100,7 +100,7 @@
 <h2>语义警告框</h2>
 <blockquote>
 <p>[!NOTE]
-普通补充信息会显示为「提示」。</p>
+普通补充信息会显示为「提醒」。</p>
 </blockquote>
 <blockquote>
 <p>[!TIP]
@@ -108,11 +108,11 @@
 </blockquote>
 <blockquote>
 <p>[!WARNING]
-需要关注的风险会显示为「告警」。</p>
+需要关注的风险会显示为「警告」。</p>
 </blockquote>
 <blockquote>
 <p>[!CAUTION]
-可能造成严重后果的操作会显示为「警示」。</p>
+可能造成严重后果的操作会显示为「注意」。</p>
 </blockquote>
 <h2>数学公式</h2>
 <p><strong>求和部分：$\sum_{j=1}^{N}$（上下限）</strong>。</p>
@@ -258,6 +258,9 @@ WHERE rank &lt;= 3;
   <p>Typora 文件中的 details / summary 会保留为可交互的折叠区域。</p>
 </details>
 
+<pre><code class="language-garden">code: |
+  &lt;p class=&quot;garden-html-probe&quot;&gt;静态 HTML 块&lt;/p&gt;
+</code></pre>
 <hr>
 <p>最后用一个脚注说明这篇文章的角色：它既是示例，也是未来升级 Markdown 依赖时的回归测试。[^regression]</p>
 <p>[^regression]: 页面构建测试会检查公式与示例内容，浏览器验收会检查 Mermaid 是否被转换为 SVG。</p>

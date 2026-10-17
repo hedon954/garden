@@ -177,7 +177,7 @@ caption: 朴素 decode 每步重算全部过去 token；6 个 token 共 21 次�
 > 这项操作需要先备份。
 ```
 
-常用类型包括 `NOTE`（提示）、`INFO`（说明）、`TIP`（建议）、`SUCCESS`（成功）、`IMPORTANT`（重要）、`WARNING`（告警）、`CAUTION`（警示）、`DANGER`（危险）和 `FAILURE`（失败）。
+常用类型包括 `NOTE`（提醒）、`INFO`（提醒）、`TIP`（建议）、`SUCCESS`（建议）、`IMPORTANT`（重要）、`WARNING`（警告）、`CAUTION`（注意）、`DANGER`（注意）和 `FAILURE`（注意）。
 
 ## 草稿与置顶
 
