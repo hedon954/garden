@@ -1,8 +1,8 @@
 ---
 name: garden-ui
 description: >-
-  Compiles the intent blocks in one Garden post into ui blocks (or prose, or a
-  widget), recompiles stale or broken ui blocks, and suggests where a post
+  Compiles the intent blocks in one Garden post into ui blocks (or prose, or
+  garden html), recompiles stale or broken ui blocks, and suggests where a post
   could use interaction. Use when the user says 编译这篇 / 编译意图块 / 重编译
   <id> / 这篇哪里适合交互, or pastes a garden ui check fix prompt.
 ---
@@ -43,7 +43,7 @@ description: >-
 3. 每块读原话和所在小节，三选一：
    - **写回正文**：一句话、一张表或一张 Mermaid 就能说清时。
    - **写 `ui`**：读者需要拖、点、翻才能看懂时。
-   - **写 `widget`**：目录表达不了的画布动画、音频、物理模拟等。按 [garden-interactive-chart](../garden-interactive-chart/SKILL.md) 在同名目录写 HTML，并在 `widget` 的 YAML 里加 `intent:` 保留原话。
+   - **写 `garden html`**：目录表达不了的画布动画、音频、物理模拟等。按 [garden-interactive-chart](../garden-interactive-chart/SKILL.md) 在同名目录写 HTML，用 `title` 写下判断。
 
 4. 写 `ui` 时：
    - 原话原样放进块头的 `intent`，一个字都不改。`compiled` 不用写，`apply` 会写。
@@ -69,7 +69,7 @@ description: >-
    ````
 
    - 没写 id 的 `intent` 块用 `--intent-hash <intentHash>` 定位；原话重复时改用 `--at <startLine>`。
-   - 新内容可以是一个 `ui` 围栏、一个 `widget` 围栏，或一段普通 Markdown（写回正文时）。
+   - 新内容可以是一个 `ui` 围栏、一个 `garden html` 围栏，或一段普通 Markdown（写回正文时）。
    - 成功时 stdout 是 `{"ok":true,...}`。失败时 stderr 是 JSON，按 `code` 处理：
      - `apply-invalid`：新内容没通过校验，按 `diagnostics` 改了再写。
      - `apply-base`：块在扫描之后被改过。重新 `scan`，用新的 `hash`。
