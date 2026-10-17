@@ -45,6 +45,9 @@ img,svg{max-width:100%}
 .sh-search .lbl{min-width:84px;text-align:left}
 kbd{font:500 12px/1 var(--sans);color:var(--muted);border:1px solid var(--rule);border-bottom-width:2px;border-radius:6px;padding:3px 6px;background:var(--paper)}
 .sh-search .kbd-mod{display:inline-block;min-width:2.5em;text-align:end}
+.sh-search .kbd-other{display:none}
+html[data-mod="other"] .sh-search .kbd-mac{display:none}
+html[data-mod="other"] .sh-search .kbd-other{display:inline-block}
 .sh-search-m{color:var(--soft);opacity:1}
 .sh-search-m svg{opacity:1}
 .sh-icon{display:inline-grid;place-items:center;width:40px;height:40px;border:0;background:transparent;color:var(--soft);border-radius:var(--r);cursor:pointer;transition:background-color .15s ease,color .15s ease}

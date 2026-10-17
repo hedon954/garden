@@ -147,7 +147,6 @@ export function SiteHeader() {
   const [query, setQuery] = useState("");
   const [dark, setDark] = useState(false);
   const [activeResult, setActiveResult] = useState(-1);
-  const [modKey, setModKey] = useState("⌘");
   const searchTriggerRef = useRef<HTMLButtonElement>(null);
   const searchPanelRef = useRef<HTMLElement>(null);
   const resultRefs = useRef<Array<HTMLAnchorElement | null>>([]);
@@ -181,7 +180,7 @@ export function SiteHeader() {
 
   useEffect(() => {
     const isMac = /Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent);
-    setModKey(isMac ? "⌘" : "Ctrl");
+    document.documentElement.dataset.mod = isMac ? "mac" : "other";
   }, []);
 
   useEffect(() => {
@@ -303,7 +302,7 @@ export function SiteHeader() {
             <button ref={searchTriggerRef} className="sh-search" type="button" onClick={openSearch} aria-label="搜索文章" aria-expanded={searchOpen} aria-controls="site-search-dialog">
               <MagnifyingGlass size={18} />
               <span className="lbl">搜索文章</span>
-              <kbd><span className="kbd-mod">{modKey}</span>{" "}K</kbd>
+              <kbd><span className="kbd-mod kbd-mac">⌘</span><span className="kbd-mod kbd-other">Ctrl</span>{" "}K</kbd>
             </button>
             <button className="sh-icon sh-search-m" type="button" onClick={openSearch} aria-label="搜索文章">
               <svg viewBox="0 0 20 20" aria-hidden="true">
