@@ -5,6 +5,7 @@ import { parse as parseYaml } from "yaml";
 import { canonicalSiteDate } from "./site-date.mjs";
 import { gardenSiteRoot } from "./garden-paths.mjs";
 import { checkUiBlock } from "../ui/core/validate.mjs";
+import { checkGardenMarkdown } from "../ui/garden/check.mjs";
 
 const siteRoot = gardenSiteRoot();
 const calloutTypes = new Set([
@@ -289,6 +290,15 @@ const checkFile = (filePath) => {
   checkReferences(data, sourcePath, errors);
   const draft = data.draft === true || (typeof data.publishAt === "string" && Date.parse(canonicalSiteDate(data.publishAt) ?? "") > Date.now());
   scanBody(errors, parsed.content, absolute, sourcePath, { warnings, draft });
+  const raw = fs.readFileSync(absolute, "utf8");
+  const titleLine = Math.max(1, raw.split(/\r?\n/u).findIndex((line) => /^title:/u.test(line)) + 1);
+  for (const item of checkGardenMarkdown(raw, {
+    draft,
+    title: typeof data.title === "string" ? data.title : "",
+    titleLine,
+  })) {
+    error(errors, item.code, item.line, `${sourcePath}: ${item.message} 建议：${item.suggestion}`);
+  }
   return { file: sourcePath, errors, warnings };
 };
 

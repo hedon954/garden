@@ -4,13 +4,13 @@ import {
   collectDataSources,
   compileUiBlock,
   findBlocks,
-  intentFence,
   renderStatic,
   resolveSidecarPath,
   scanMarkdown,
   splitUiBody,
-  STARTERS,
 } from "../../../ui/core/index.mjs";
+import { checkGardenMarkdown } from "../../../ui/garden/check.mjs";
+import { pickerItems } from "../../../ui/garden/snippets.mjs";
 
 declare const __GARDEN_RECIPES__: { file: string; markdown: string }[];
 
@@ -129,18 +129,32 @@ class BlockIndex implements vscode.CodeLensProvider, vscode.FoldingRangeProvider
     }).filter((block) => block.lang === "ui" || block.lang === "intent");
     this.blocks.set(document.uri.toString(), blocks);
     const last = Math.max(0, document.lineCount - 1);
+    const text = document.getText();
+    const titleLine = Math.max(1, text.split(/\r?\n/u).findIndex((line) => /^title:/u.test(line)) + 1);
+    const title = text.match(/^title:\s*(.+)$/mu)?.[1]?.replace(/^["']|["']$/gu, "") ?? "";
+    const draft = /^draft:\s*true\s*$/mu.test(text);
+    const gardenDiagnostics = checkGardenMarkdown(text, { draft, title, titleLine }).map((item) => {
+      const range = document.lineAt(Math.min(Math.max(item.line - 1, 0), last)).range;
+      const diagnostic = new vscode.Diagnostic(range, `${item.message} 建议：${item.suggestion}`, vscode.DiagnosticSeverity.Error);
+      diagnostic.code = item.code;
+      diagnostic.source = "garden";
+      return diagnostic;
+    });
     this.diagnostics.set(
       document.uri,
-      blocks.flatMap((block) =>
-        block.diagnostics.map((item: { code: string; line: number; message: string; severity: string }) => {
-          const range = document.lineAt(Math.min(Math.max(item.line - 1, 0), last)).range;
-          const severity = item.severity === "error" ? vscode.DiagnosticSeverity.Error : vscode.DiagnosticSeverity.Warning;
-          const diagnostic = new vscode.Diagnostic(range, item.message, severity);
-          diagnostic.code = item.code;
-          diagnostic.source = "garden";
-          return diagnostic;
-        }),
-      ),
+      [
+        ...blocks.flatMap((block) =>
+          block.diagnostics.map((item: { code: string; line: number; message: string; severity: string }) => {
+            const range = document.lineAt(Math.min(Math.max(item.line - 1, 0), last)).range;
+            const severity = item.severity === "error" ? vscode.DiagnosticSeverity.Error : vscode.DiagnosticSeverity.Warning;
+            const diagnostic = new vscode.Diagnostic(range, item.message, severity);
+            diagnostic.code = item.code;
+            diagnostic.source = "garden";
+            return diagnostic;
+          }),
+        ),
+        ...gardenDiagnostics,
+      ],
     );
     this.changed.fire();
   }
@@ -203,29 +217,40 @@ async function foldBodies(editor: vscode.TextEditor, folded: Set<string>) {
 
 /* ---------- Commands ---------- */
 
-function snippetFor(text: string) {
-  let index = 0;
-  const body = text
-    .replace(/[$}\\]/gu, (char) => `\\${char}`)
-    .replace(/「」/gu, () => `「$${(index += 1)}」`);
-  return `${body}${index ? "" : "$0"}`;
-}
-
 async function insertIntent() {
   const editor = vscode.window.activeTextEditor;
   if (!editor || editor.document.languageId !== "markdown") return;
-  const items = [
-    { label: "空白意图块", description: "自己写", text: "" },
-    ...STARTERS.map((starter: { label: string; text: string }) => ({ label: starter.label, description: starter.text, text: starter.text })),
-  ];
-  const picked = await vscode.window.showQuickPick(items, { placeHolder: "想让读者做什么？用一句话描述就行" });
+  const items = pickerItems().map((item) => ({ label: item.label, description: item.when, text: item.body }));
+  const picked = await vscode.window.showQuickPick(items, { placeHolder: "插入 Garden 块" });
   if (!picked) return;
   const position = editor.selection.active;
   const lineText = editor.document.lineAt(position.line).text;
   const prefix = lineText.trim() ? "\n\n" : "";
-  const fence = intentFence("__BODY__").replace("__BODY__", snippetFor(picked.text));
   const at = prefix ? new vscode.Position(position.line, lineText.length) : position;
-  await editor.insertSnippet(new vscode.SnippetString(`${prefix}${fence}`), at);
+  await editor.insertSnippet(new vscode.SnippetString(`${prefix}${picked.text}\n`), at);
+}
+
+function gardenCompletions() {
+  return vscode.languages.registerCompletionItemProvider(
+    { language: "markdown" },
+    {
+      provideCompletionItems(document, position) {
+        const line = document.lineAt(position).text.slice(0, position.character);
+        if (!/(^|\s)`{3,}g(?:arden)?\s*$/u.test(line) && !/`{3,}garden\s+\w*$/u.test(line)) return undefined;
+        return pickerItems().map((item) => {
+          const completion = new vscode.CompletionItem(item.name || "想法", vscode.CompletionItemKind.Snippet);
+          completion.detail = item.label;
+          completion.documentation = `${item.when} ${item.whenNot}`;
+          const info = item.name ? `garden ${item.name}` : "garden";
+          completion.insertText = new vscode.SnippetString(`${info}\n$0\n\`\`\``);
+          completion.filterText = `garden ${item.name}`;
+          return completion;
+        });
+      },
+    },
+    " ",
+    "n",
+  );
 }
 
 async function copyCompilePrompt(uri?: vscode.Uri) {
@@ -302,6 +327,7 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     index.diagnostics,
     vscode.languages.registerCodeLensProvider(selector, index),
+    gardenCompletions(),
     vscode.languages.registerFoldingRangeProvider(selector, index),
     vscode.workspace.onDidOpenTextDocument((document) => index.schedule(document, 0)),
     vscode.workspace.onDidChangeTextDocument((event) => index.schedule(event.document)),

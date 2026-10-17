@@ -1,5 +1,7 @@
 import { resolveSidecarPath } from "../../../ui/core/fence.mjs";
-import { intentFence, render, renderIntent, starters } from "../../../ui/preview/index";
+import { pickerItems } from "../../../ui/garden/snippets.mjs";
+import { render, renderIntent } from "../../../ui/preview/index";
+import { parse as parseYaml } from "yaml";
 
 // typora-community-plugin exposes its core on this symbol; its own build plugin rewrites imports to the same lookup.
 type Dispose = () => void;
@@ -65,9 +67,10 @@ export default class GardenTyporaPlugin extends core.Plugin {
     const { codeblock } = this.app.features.markdownEditor;
     this.register(codeblock.registerMode({ lang: "ui", mode: codeMode, render: (code) => this.mount("ui", code) }));
     this.register(codeblock.registerMode({ lang: "intent", mode: codeMode, render: (code) => this.mount("intent", code) }));
+    this.register(codeblock.registerMode({ lang: "garden", mode: codeMode, render: (code) => this.previewGarden(code) }));
     this.registerCommand({
       id: "insert-intent",
-      title: "Garden：插入意图块",
+      title: "插入 Garden 块",
       scope: "editor",
       // macOS Option rewrites event.key (Option+I is "ˆ"), which the hotkey matcher compares; bind it in settings there.
       hotkey: isMac ? null : "Ctrl+Alt+I",
@@ -129,12 +132,81 @@ export default class GardenTyporaPlugin extends core.Plugin {
     return path ? `file://${encodeURI(path.replaceAll("\\", "/"))}` : src;
   }
 
+  private previewGarden(code: string) {
+    const host = document.createElement("div");
+    host.className = "garden-ui-typora";
+    if (/<script\b/iu.test(code)) {
+      const note = document.createElement("p");
+      note.textContent = "含脚本的 html 在预览里不执行。";
+      const pre = document.createElement("pre");
+      pre.textContent = code;
+      host.append(note, pre);
+      return host;
+    }
+    if (/<(State|Slider|Let|Chart|Steps|Step)\b/u.test(code)) {
+      const pre = document.createElement("pre");
+      pre.textContent = code;
+      host.append(pre);
+      return host;
+    }
+    if (/<[a-z][\s\S]*>/iu.test(code)) {
+      const shadow = host.attachShadow({ mode: "open" });
+      shadow.innerHTML = code;
+      return host;
+    }
+    let data: Record<string, unknown> | null = null;
+    try {
+      const parsed = parseYaml(code);
+      if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) data = parsed as Record<string, unknown>;
+    } catch {
+      data = null;
+    }
+    if (!data) {
+      host.textContent = code.trim();
+      return host;
+    }
+    const items = Array.isArray(data.items) ? data.items : null;
+    if (items?.every((item) => item && typeof item === "object" && "date" in item)) {
+      const list = document.createElement("ol");
+      for (const item of items as Array<Record<string, unknown>>) {
+        const row = document.createElement("li");
+        row.textContent = `${item.date ?? ""} ${item.title ?? ""} ${item.text ?? ""}`.trim();
+        list.append(row);
+      }
+      host.append(list);
+      return host;
+    }
+    if (items) {
+      const list = document.createElement("ul");
+      for (const item of items as Array<Record<string, unknown>>) {
+        const row = document.createElement("li");
+        row.textContent = `${item.title ?? item.label ?? ""} ${item.value ?? ""} ${item.text ?? item.unit ?? ""}`.trim();
+        list.append(row);
+      }
+      host.append(list);
+      return host;
+    }
+    if (typeof data.title === "string" || typeof data.url === "string") {
+      const title = document.createElement("strong");
+      title.textContent = String(data.title ?? data.url);
+      host.append(title);
+      if (typeof data.description === "string") {
+        const text = document.createElement("p");
+        text.textContent = data.description;
+        host.append(text);
+      }
+      return host;
+    }
+    host.textContent = code.trim();
+    return host;
+  }
+
   private async insertIntent() {
-    const items = [{ label: "空白意图块", text: "" }, ...starters.map((item: { label: string; text: string }) => ({ label: item.label, text: item.text }))];
-    const picked = await core.openQuickPick(items, { placeholder: "想让读者做什么？用一句话描述就行" });
+    const items = pickerItems().map((item) => ({ label: item.label, text: item.body }));
+    const picked = await core.openQuickPick(items, { placeholder: "插入 Garden 块" });
     if (!picked) return;
     const editor = typora.editor;
-    editor?.UserOp?.pasteHandler(editor, `\n${intentFence(picked.text)}`, true);
+    editor?.UserOp?.pasteHandler(editor, `\n${picked.text}\n`, true);
   }
 
   private async copyPrompt() {

@@ -34,6 +34,7 @@ declare module "@garden/generated-content" {
     columnCoverAlt?: string;
     order?: number;
     cover?: string;
+    original?: string;
     mediaType?: "image" | "audio" | "video" | "link" | "text";
     media?: string | MediaItem[];
     mediaAlt?: string;

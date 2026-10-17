@@ -39,7 +39,7 @@
     "commands": [
       {
         "command": "garden.insertIntent",
-        "title": "插入意图块",
+        "title": "插入 Garden 块",
         "category": "Garden"
       },
       {

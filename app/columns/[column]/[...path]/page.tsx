@@ -10,7 +10,9 @@ import {
   columnHref,
   columnEntryPath,
 } from "../../../lib/content";
+import { ArticleMeasure } from "../../../components/ArticleMeasure";
 import { ArticleReferences } from "../../../components/ArticleReferences";
+import { ArticleTitle, originalUrl } from "../../../components/ArticleTitle";
 import { MarkdownArticle } from "../../../components/MarkdownArticle";
 import { TableOfContents } from "../../../components/TableOfContents";
 import { Comments } from "../../../components/Comments";
@@ -73,6 +75,7 @@ export default async function ColumnEntryPage({
   const entry = findColumnEntry(column, path.join("/"));
   if (!entry) notFound();
   const series = columns.filter((item) => item.column === column);
+  const listed = [...series].sort((left, right) => Date.parse(right.date) - Date.parse(left.date));
   const currentIndex = series.findIndex((item) => item.path === entry.path);
   const next = series[currentIndex + 1];
   const headings = extractHeadings(entry.content);
@@ -90,7 +93,7 @@ export default async function ColumnEntryPage({
         <p>主题专栏</p>
         <h2>{entry.columnTitle}</h2>
         <ol>
-          {series.map((item) => (
+          {listed.map((item) => (
             <li key={item.path} className={item.path === entry.path ? "active" : ""}>
               <Link href={columnHref(item)}>{item.title}</Link>
             </li>
@@ -110,32 +113,37 @@ export default async function ColumnEntryPage({
         >
           {siteConfig.author.name}
         </a>
-        {entry.cover && (
-          <figure className="article-hero article-cover">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              className="u-photo"
-              src={entry.cover}
-              alt={`${entry.title} 封面`}
-            />
-          </figure>
-        )}
-        <header className="article-header">
-          <p className="eyebrow">
-            {entry.columnTitle} · 第 {currentIndex + 1} 篇
-          </p>
-          <h1 className="p-name">
-            {entry.title.replace(/^\d+\s*·\s*/u, "")}
-          </h1>
-          <p className="article-deck p-summary">{entry.description}</p>
-          <div className="article-meta">
-            <time className="dt-published" dateTime={entry.date}>
-              {formatDate(entry.date)}
-            </time>
-            <span>{entry.readingTime}</span>
-          </div>
+        <header className="article-header hero">
+          <ArticleTitle title={entry.title.replace(/^\d+\s*·\s*/u, "")} />
+          <ul className="meta article-meta">
+            <li>{siteConfig.author.name}</li>
+            <li>
+              <time className="dt-published" dateTime={entry.date}>
+                {formatDate(entry.date)}
+              </time>
+            </li>
+            <li>{entry.readingTime}</li>
+            {entry.topic && entry.topic !== entry.columnTitle ? (
+              <li><a className="cat" href={`/blog?topic=${encodeURIComponent(entry.topic)}`}>{entry.topic}</a></li>
+            ) : null}
+            {originalUrl(entry) ? (
+              <li><a className="orig ext" href={originalUrl(entry)} target="_blank" rel="noopener noreferrer">原文 ↗</a></li>
+            ) : null}
+          </ul>
+          {entry.cover && (
+            <figure className="article-hero article-cover cover-img">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                className="u-photo"
+                src={entry.cover}
+                alt={`${entry.title} 封面`}
+              />
+            </figure>
+          )}
         </header>
+        <ArticleMeasure />
         <div className="e-content">
+          {entry.description ? <p className="lead p-summary">{entry.description}</p> : null}
           <MarkdownArticle content={entry.content} />
         </div>
         <ArticleReferences references={entry.references} />

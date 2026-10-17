@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Geist_Mono } from "next/font/google";
 import "katex/dist/katex.min.css";
 import "./globals.css";
+import "./styles/tokens.css";
+import "./styles/a2.css";
 import { SiteChrome } from "./components/SiteChrome";
 import {
   getSiteUrl,
@@ -82,6 +84,12 @@ export default function RootLayout({
   return (
     <html lang="zh-CN" suppressHydrationWarning>
       <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              '(function(){try{var t=localStorage.getItem("theme");var d=t==="dark"||(!t&&matchMedia("(prefers-color-scheme: dark)").matches);document.documentElement.dataset.theme=d?"dark":"light";}catch(e){}})();',
+          }}
+        />
         {mentionEndpoint && <link rel="webmention" href={mentionEndpoint} />}
         {analyticsDomain && (
           <script

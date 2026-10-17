@@ -3,6 +3,7 @@ import {
   Children,
   isValidElement,
   type HTMLAttributes,
+  type ReactNode,
 } from "react";
 import ReactMarkdown from "react-markdown";
 import rehypeRaw from "rehype-raw";
@@ -12,40 +13,32 @@ import rehypeAutolinkHeadings from "rehype-autolink-headings";
 import rehypeHighlight from "rehype-highlight";
 import { MermaidDiagram } from "./MermaidDiagram";
 import { MarkdownImage } from "./MarkdownImage";
-import { ExternalEmbed } from "./ExternalEmbed";
-import { WidgetChart } from "./WidgetChart";
-import { IntentBlock, UiBlock, UiErrorBlock } from "./UiBlock";
+import { CodeCopy } from "./garden/chrome";
+import { CodeDiff } from "./garden/chrome";
+import { GardenBlock } from "./garden/GardenBlock";
 
-const BLOCK_LANGUAGES = ["language-mermaid", "language-embed", "language-widget", "language-ui", "language-ui-error", "language-intent"];
+const BLOCK_LANGUAGES = ["language-mermaid"];
 const isBlockLanguage = (className?: string) =>
   Boolean(className) && BLOCK_LANGUAGES.some((language) => className?.split(/\s+/u).includes(language));
+
+function codeText(node: unknown): string {
+  if (!node || typeof node !== "object") return "";
+  const record = node as { type?: string; value?: string; children?: unknown[] };
+  if (typeof record.value === "string" && record.type === "text") return record.value;
+  return (record.children ?? []).map((child) => codeText(child)).join("");
+}
 
 function CodeBlock({
   className,
   children,
+  node,
   ...props
 }: HTMLAttributes<HTMLElement> & { node?: unknown }) {
   if (className?.includes("language-mermaid")) {
-    return <MermaidDiagram source={String(children).trim()} />;
-  }
-  if (className?.includes("language-embed")) {
-    return <ExternalEmbed source={String(children).trim()} />;
-  }
-  if (className?.includes("language-widget")) {
-    return <WidgetChart source={String(children).trim()} />;
-  }
-  if (className?.split(/\s+/u).includes("language-ui")) {
-    return <UiBlock source={String(children)} />;
-  }
-  if (className?.split(/\s+/u).includes("language-ui-error")) {
-    return <UiErrorBlock source={String(children)} />;
-  }
-  if (className?.split(/\s+/u).includes("language-intent")) {
-    return <IntentBlock source={String(children)} />;
+    return <MermaidDiagram source={codeText(node) || String(children ?? "").trim()} />;
   }
 
   const codeProps = { ...props };
-  delete codeProps.node;
 
   return (
     <code className={className} {...codeProps}>
@@ -94,9 +87,39 @@ export function normalizeCallouts(markdown: string) {
   }).join("\n");
 }
 
+const headingText = (children: ReactNode) => {
+  const parts: string[] = [];
+  const walk = (node: ReactNode) => {
+    if (typeof node === "string" || typeof node === "number") parts.push(String(node));
+    else if (Array.isArray(node)) node.forEach(walk);
+    else if (isValidElement<{ children?: React.ReactNode }>(node)) walk(node.props.children);
+  };
+  walk(children);
+  return parts.join("");
+};
+
 export function MarkdownArticle({ content }: { content: string }) {
+  const numbers = { h2: 0, h3: 0 };
+  const gardenComponents = {
+    "garden-block": ({ dataPayload }: { dataPayload?: string }) => <GardenBlock dataPayload={dataPayload} />,
+    "garden-codediff": ({
+      children,
+      dataDiff,
+      dataNew,
+    }: {
+      children?: ReactNode;
+      dataDiff?: string;
+      dataNew?: string;
+    }) => (
+      <CodeDiff
+        code={children}
+        diff={dataDiff ? decodeURIComponent(dataDiff) : ""}
+        next={dataNew ? decodeURIComponent(dataNew) : ""}
+      />
+    ),
+  };
   return (
-    <div className="markdown-body">
+    <div className="markdown-body prose">
       <ReactMarkdown
         remarkPlugins={markdownPlugins}
         rehypePlugins={[
@@ -108,13 +131,13 @@ export function MarkdownArticle({ content }: { content: string }) {
         ]}
         components={{
           a: ({ href, children, ...props }) => {
-            const external = href?.startsWith("http");
+            const external = Boolean(href && /^(https?:)?\/\//iu.test(href));
             return (
               <a
                 href={href}
                 {...props}
                 {...(external
-                  ? { target: "_blank", rel: "noopener noreferrer" }
+                  ? { className: "ext", target: "_blank", rel: "noopener noreferrer" }
                   : {})}
               >
                 {children}
@@ -122,9 +145,27 @@ export function MarkdownArticle({ content }: { content: string }) {
             );
           },
           img: MarkdownImage,
+          table: ({ children, ...props }) => (
+            <div className="table-wrap" role="region" aria-label="表格，可横向滚动" tabIndex={0}>
+              <table {...props}>{children}</table>
+            </div>
+          ),
+          h2: ({ children, ...props }) => {
+            numbers.h2 += 1;
+            numbers.h3 = 0;
+            const numbered = /^\d/u.test(headingText(children).trim());
+            return <h2 {...props}>{numbered ? null : <span className="sec-no">{numbers.h2}</span>}{children}</h2>;
+          },
+          h3: ({ children, ...props }) => {
+            numbers.h3 += 1;
+            const numbered = /^\d/u.test(headingText(children).trim());
+            const label = numbers.h2 ? `${numbers.h2}.${numbers.h3}` : String(numbers.h3);
+            return <h3 {...props}>{numbered ? null : <span className="sec-no">{label}</span>}{children}</h3>;
+          },
           code: CodeBlock,
+          ...gardenComponents,
           pre: ({ children, ...props }) => {
-            const child = Children.only(children);
+            const child = Children.toArray(children)[0];
             const className = isValidElement<{ className?: string }>(child)
               ? child.props.className
               : undefined;
@@ -137,9 +178,11 @@ export function MarkdownArticle({ content }: { content: string }) {
             }
 
             return (
-              <pre {...preProps} data-language={language?.toUpperCase()}>
-                {children}
-              </pre>
+              <CodeCopy>
+                <pre className="code" {...preProps} data-language={language?.toUpperCase()}>
+                  {children}
+                </pre>
+              </CodeCopy>
             );
           },
         }}

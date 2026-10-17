@@ -11,7 +11,6 @@ import {
 } from "react";
 import Fuse, { type FuseResultMatch } from "fuse.js";
 import {
-  Cactus,
   MagnifyingGlass,
   Moon,
   Sun,
@@ -21,10 +20,10 @@ import { searchRecords } from "../lib/content";
 import { siteConfig } from "../site.config";
 
 const nav = [
-  { href: "/", label: "首页" },
-  { href: "/blog", label: "博文" },
+  { href: "/blog", label: "文章" },
   { href: "/thoughts", label: "随想" },
   { href: "/columns", label: "专栏" },
+  { href: "/tags", label: "标签" },
   { href: "/about", label: "关于" },
 ];
 
@@ -277,13 +276,7 @@ export function SiteHeader() {
       <header className="site-header">
         <div className="header-inner">
           <Link href="/" className="brand" aria-label={`${siteConfig.name} 首页`}>
-            <span className="brand-mark">
-              <Cactus size={34} weight="thin" aria-hidden="true" />
-            </span>
-            <span>
-              <strong>{siteConfig.name}</strong>
-              <small>{siteConfig.tagline}</small>
-            </span>
+            <strong>{siteConfig.name}</strong>
           </Link>
 
           <nav className="main-nav" aria-label="主导航">

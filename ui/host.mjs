@@ -53,26 +53,34 @@ export function isHttpsUrl(value) {
 
 const THEMES = {
   light: {
-    color: "#0d0d0d",
-    text: "#0d0d0d",
-    muted: "#5d5d5d",
-    subtle: "#8f8f8f",
-    panel: "#ffffff",
-    border: "#0000001a",
-    accent: "#0169cc",
-    series: "#0285ff",
-    track: "#0d0d0d1f",
+    ink: "#1B1A18",
+    text: "#2D2C29",
+    soft: "#4A4844",
+    muted: "#6E6B64",
+    grey: "#737069",
+    rule: "#E6E3DC",
+    ruleStrong: "#D6D2C9",
+    card: "#FFFFFF",
+    paper: "#F8F7F3",
+    well: "#F0EEE8",
+    blue: "#2C55B4",
+    blueTint: "#EAF0FC",
+    blueLine: "rgba(44,85,180,.28)",
   },
   dark: {
-    color: "#ededed",
-    text: "#ededed",
-    muted: "#cdcdcd",
-    subtle: "#afafaf",
-    panel: "#212121",
-    border: "#ffffff1a",
-    accent: "#66b5ff",
-    series: "#0285ff",
-    track: "#ffffff26",
+    ink: "#EEECE7",
+    text: "#DCD9D2",
+    soft: "#BDB9B0",
+    muted: "#A09B91",
+    grey: "#A09B91",
+    rule: "#2F2D29",
+    ruleStrong: "#45423C",
+    card: "#1E1D1A",
+    paper: "#161513",
+    well: "#22211D",
+    blue: "#93B2F4",
+    blueTint: "rgba(147,178,244,.13)",
+    blueLine: "rgba(147,178,244,.35)",
   },
 };
 
@@ -80,19 +88,28 @@ function tokenCss(theme) {
   const token = THEMES[theme] ?? THEMES.light;
   return `
 :root {
-  color: ${token.color};
+  color: ${token.text};
+  color-scheme: ${theme === "dark" ? "dark" : "light"};
   background: transparent;
-  font-family: -apple-system-body, ui-sans-serif, system-ui, "Segoe UI", Helvetica, Arial, sans-serif;
-  --viz-text: ${token.text};
-  --viz-muted: ${token.muted};
-  --viz-subtle: ${token.subtle};
-  --viz-panel: ${token.panel};
-  --viz-border: ${token.border};
-  --viz-accent: ${token.accent};
-  --viz-series: ${token.series};
-  --viz-track: ${token.track};
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Noto Sans SC", sans-serif;
+  --ink: ${token.ink};
+  --text: ${token.text};
+  --soft: ${token.soft};
+  --muted: ${token.muted};
+  --grey: ${token.grey};
+  --rule: ${token.rule};
+  --rule-strong: ${token.ruleStrong};
+  --card: ${token.card};
+  --paper: ${token.paper};
+  --well: ${token.well};
+  --blue: ${token.blue};
+  --blue-tint: ${token.blueTint};
+  --blue-line: ${token.blueLine};
 }
+html, body { background: transparent !important; overflow: hidden !important; height: auto !important; }
 body { margin: 0; }
+body > :first-child { padding-right: 44px; box-sizing: border-box; }
+svg { max-width: 100%; height: auto; }
 `;
 }
 

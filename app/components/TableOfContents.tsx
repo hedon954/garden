@@ -407,7 +407,7 @@ export function TableOfContents({
         onClick={() => closeMobileToc(true)}
       />
       <aside
-        className="toc"
+        className="toc toc-rail"
         id={panelId}
         aria-label={label}
         data-mobile-open={mobileOpen}

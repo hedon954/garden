@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<array>
+  <dict>
+    <key>phrase</key>
+    <string>```garden
+让读者……；想让读者看出……
+```</string>
+    <key>shortcut</key>
+    <string>;garden想法</string>
+  </dict>
+  <dict>
+    <key>phrase</key>
+    <string>```garden
+让读者……；想让读者看出……
+```</string>
+    <key>shortcut</key>
+    <string>;gidea</string>
+  </dict>
+  <dict>
+    <key>phrase</key>
+    <string>```garden card
+url: https://arxiv.org/abs/2309.06180
+title: PagedAttention
+description: vLLM 的分页 KV 管理。
+```</string>
+    <key>shortcut</key>
+    <string>;gcard</string>
+  </dict>
+  <dict>
+    <key>phrase</key>
+    <string>```garden stat
+items:
+  - label: Llama-2-13B · 4K 上下文
+    value: 3.2
+    unit: GiB
+    source: https://arxiv.org/abs/2309.06180
+```</string>
+    <key>shortcut</key>
+    <string>;gstat</string>
+  </dict>
+  <dict>
+    <key>phrase</key>
+    <string>```garden compare
+items:
+  - title: 自旋锁
+    text: 临界区极短时忙等，不进入休眠。
+  - title: 互斥锁
+    text: 争用久就休眠，避免空转占满 CPU。
+```</string>
+    <key>shortcut</key>
+    <string>;gcompare</string>
+  </dict>
+  <dict>
+    <key>phrase</key>
+    <string>```garden timeline
+items:
+  - date: 2015
+    title: 并发标记
+    text: 暂停时间降下来。
+  - date: 2017
+    title: 栈重扫移出 STW
+    text: 停顿通常低于 100 微秒。
+  - date: 2022
+    title: 软内存上限
+    text: 运行时可以设 GOMEMLIMIT。
+```</string>
+    <key>shortcut</key>
+    <string>;gtimeline</string>
+  </dict>
+  <dict>
+    <key>phrase</key>
+    <string>```garden chart
+type: bar
+title: 示例延迟
+x: 方案
+series:
+  - name: 延迟
+    data: [120, 85]
+unit: ms
+```</string>
+    <key>shortcut</key>
+    <string>;gchart</string>
+  </dict>
+  <dict>
+    <key>phrase</key>
+    <string>```garden figure
+image: ./figure.svg
+parts:
+  - name: 全部
+    text: 整张图。
+  - name: 标记
+    text: 这一步只做标记。
+```</string>
+    <key>shortcut</key>
+    <string>;gfigure</string>
+  </dict>
+  <dict>
+    <key>phrase</key>
+    <string>```garden html
+src: ./demo.html
+title: 示意图
+```</string>
+    <key>shortcut</key>
+    <string>;ghtml</string>
+  </dict>
+  <dict>
+    <key>phrase</key>
+    <string>```garden interactive #kv-memory
+caption: 显存与 batch、序列长度都成正比。
+intent: |
+  让读者拧 batch，看 KV 显存。
+---
+&lt;State batch={1} /&gt;
+```</string>
+    <key>shortcut</key>
+    <string>;ginteractive</string>
+  </dict>
+</array>
+</plist>

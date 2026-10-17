@@ -1,0 +1,112 @@
+/* A2 tokens. One source for the site, the article, and every component. */
+
+:root,
+:root[data-theme="light"] {
+  --paper: #f8f7f3;
+  --paper-deep: #f0eee8;
+  --card: #ffffff;
+  --ink: #1b1a18;
+  --ink-soft: #2d2c29;
+  --text: #2d2c29;
+  --soft: #4a4844;
+  --muted: #6e6b64;
+  --grey: #737069;
+  --faint: #737069;
+  --rule: #e6e3dc;
+  --rule-strong: #d6d2c9;
+  --line: #e6e3dc;
+  --line-strong: #d6d2c9;
+  --well: #f0eee8;
+  --tint: rgb(27 26 24 / 5.5%);
+  --blue: #2c55b4;
+  --blue-tint: #eaf0fc;
+  --blue-line: rgb(44 85 180 / 28%);
+  --cover: #5e86e0;
+  --accent: var(--blue);
+  --accent-soft: var(--blue-tint);
+  --selection: #eaf0fc;
+  --hl: #ffe58f;
+  --red: #d82d48;
+  --red-text: #c2263f;
+  --red-tint: #fbeef0;
+  --sans: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Noto Sans SC", "Noto Sans CJK SC", "Microsoft YaHei", "Segoe UI", system-ui, sans-serif;
+  --serif: "Source Han Serif SC", "Noto Serif SC", "Noto Serif CJK SC", "Songti SC", "STSong", "Source Serif 4", Georgia, serif;
+  --mono: "JetBrains Mono", "SF Mono", ui-monospace, Menlo, Consolas, "Noto Sans Mono CJK SC", monospace;
+  --font-mono: var(--mono);
+  --fs-display: 46px;
+  --fs-hero: 52px;
+  --fs-h2: 26px;
+  --fs-lead: 20px;
+  --fs-body: 17px;
+  --fs-small: 14px;
+  --fs-meta: 13px;
+  --r: 12px;
+  --r-lg: 24px;
+  --col: 700px;
+  --rail: 232px;
+  --gap: 48px;
+  --content: var(--col);
+  --wide: 1200px;
+  --shell: 1200px;
+  --hdr: 64px;
+  color-scheme: light;
+}
+
+:root[data-theme="dark"],
+html[data-theme="dark"] {
+  --paper: #161513;
+  --paper-deep: #22211d;
+  --card: #1e1d1a;
+  --ink: #eeece7;
+  --ink-soft: #dcd9d2;
+  --text: #dcd9d2;
+  --soft: #bdb9b0;
+  --muted: #a09b91;
+  --grey: #a09b91;
+  --faint: #a09b91;
+  --rule: #2f2d29;
+  --rule-strong: #45423c;
+  --line: #2f2d29;
+  --line-strong: #45423c;
+  --well: #22211d;
+  --tint: rgb(238 236 231 / 7%);
+  --blue: #93b2f4;
+  --blue-tint: rgb(147 178 244 / 13%);
+  --blue-line: rgb(147 178 244 / 35%);
+  --cover: #4c72c9;
+  --accent: var(--blue);
+  --accent-soft: var(--blue-tint);
+  --selection: rgb(147 178 244 / 22%);
+  --hl: #6b5a2a;
+  --red: #f29aab;
+  --red-text: #f29aab;
+  --red-tint: rgb(242 154 171 / 12%);
+  color-scheme: dark;
+}
+
+@media (min-width: 1400px) {
+  :root,
+  :root[data-theme="light"],
+  :root[data-theme="dark"],
+  html[data-theme="dark"] { --fs-hero: 56px; }
+}
+
+@media (max-width: 1239px) {
+  :root,
+  :root[data-theme="light"],
+  :root[data-theme="dark"],
+  html[data-theme="dark"] { --fs-hero: 44px; }
+}
+
+@media (max-width: 640px) {
+  :root,
+  :root[data-theme="light"],
+  :root[data-theme="dark"],
+  html[data-theme="dark"] {
+    --fs-display: 30px;
+    --fs-hero: 30px;
+    --fs-h2: 23px;
+    --fs-lead: 18px;
+    --fs-body: 16.5px;
+  }
+}
