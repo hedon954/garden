@@ -4,7 +4,8 @@ import { ArticleMeasure } from "../../components/ArticleMeasure";
 import { ArticleTitle } from "../../components/ArticleTitle";
 import { MarkdownArticle } from "../../components/MarkdownArticle";
 import { TableOfContents } from "../../components/TableOfContents";
-import { countRenderedWords, demoDateLabel, demoDateTime } from "../../lib/a2-meta";
+import { a2WordCounts } from "@garden/generated-content";
+import { demoDateLabel, demoDateTime } from "../../lib/a2-meta";
 import { extractHeadings } from "../../lib/content";
 import { a2Slugs, readA2Article } from "../../lib/a2-preview";
 
@@ -24,7 +25,7 @@ export default async function A2ArticlePage({ params }: { params: Promise<{ slug
   const article = readA2Article(slug);
   if (!article) notFound();
   const headings = extractHeadings(article.content);
-  const wordCount = countRenderedWords(article.content);
+  const wordCount = a2WordCounts[slug] ?? 0;
   return (
     <main className="reading-page post-reading-page">
       <article className="post-article">
@@ -48,7 +49,7 @@ export default async function A2ArticlePage({ params }: { params: Promise<{ slug
           <div className="article-reading-column">
             <ArticleMeasure />
             <div className="e-content">
-              {article.description ? <p className="lead">{article.description}</p> : null}
+              {article.description ? <p className="lead quote-plain">{article.description}</p> : null}
               <MarkdownArticle content={article.content} />
             </div>
           </div>

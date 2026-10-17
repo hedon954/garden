@@ -147,6 +147,7 @@ export function SiteHeader() {
   const [query, setQuery] = useState("");
   const [dark, setDark] = useState(false);
   const [activeResult, setActiveResult] = useState(-1);
+  const [modKey, setModKey] = useState("⌘");
   const searchTriggerRef = useRef<HTMLButtonElement>(null);
   const searchPanelRef = useRef<HTMLElement>(null);
   const resultRefs = useRef<Array<HTMLAnchorElement | null>>([]);
@@ -176,6 +177,11 @@ export function SiteHeader() {
     document.documentElement.dataset.theme = useDark ? "dark" : "light";
     const frame = window.requestAnimationFrame(() => setDark(useDark));
     return () => window.cancelAnimationFrame(frame);
+  }, []);
+
+  useEffect(() => {
+    const isMac = /Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent);
+    setModKey(isMac ? "⌘" : "Ctrl");
   }, []);
 
   useEffect(() => {
@@ -274,7 +280,12 @@ export function SiteHeader() {
     window.localStorage.setItem("theme", next ? "dark" : "light");
   };
 
-  const current = (href: string) => (href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(`${href}/`));
+  const current = (href: string) => {
+    if (href === "/blog") {
+      return pathname === "/blog" || pathname.startsWith("/blog/") || pathname.startsWith("/a2/");
+    }
+    return pathname === href || pathname.startsWith(`${href}/`);
+  };
 
   return (
     <>
@@ -292,10 +303,13 @@ export function SiteHeader() {
             <button ref={searchTriggerRef} className="sh-search" type="button" onClick={openSearch} aria-label="搜索文章" aria-expanded={searchOpen} aria-controls="site-search-dialog">
               <MagnifyingGlass size={18} />
               <span className="lbl">搜索文章</span>
-              <kbd>⌘K</kbd>
+              <kbd><span className="kbd-mod">{modKey}</span>{" "}K</kbd>
             </button>
             <button className="sh-icon sh-search-m" type="button" onClick={openSearch} aria-label="搜索文章">
-              <MagnifyingGlass size={18} />
+              <svg viewBox="0 0 20 20" aria-hidden="true">
+                <circle cx="9" cy="9" r="5.8" />
+                <path d="M13.3 13.3 17 17" />
+              </svg>
             </button>
             <button className="sh-icon sh-theme" type="button" onClick={toggleTheme} aria-label={dark ? "切换到浅色模式" : "切换到深色模式"}>
               <Moon className="i-moon" size={18} />

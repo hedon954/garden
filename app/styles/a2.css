@@ -97,8 +97,17 @@ body {
 
 .post-reading-page,
 .column-reading-page {
-  width: min(1340px, calc(100% - 64px));
   padding-top: 0;
+}
+
+.column-reading-page {
+  width: min(1340px, calc(100% - 64px));
+}
+
+.post-reading-page {
+  width: min(1340px, 100%);
+  padding-right: 32px;
+  padding-left: 32px;
 }
 
 .post-reading-page .article-summary-row.hero,
@@ -218,8 +227,10 @@ body {
 }
 
 .post-reading-page .article-reading-layout {
+  --rail: 200px;
+  --gap: 72px;
   display: grid;
-  grid-template-columns: minmax(0, var(--col)) var(--rail);
+  grid-template-columns: minmax(0, var(--rail)) minmax(0, var(--col)) var(--rail);
   column-gap: var(--gap);
   justify-content: center;
   align-items: start;
@@ -227,17 +238,18 @@ body {
 }
 
 .post-reading-page .article-reading-column {
-  grid-column: 1;
+  grid-column: 2;
   grid-row: 1;
+  min-width: 0;
   max-width: var(--col);
 }
 
 .post-reading-page .article-reading-layout > .toc {
-  grid-column: 2;
+  grid-column: 3;
   grid-row: 1;
   margin-top: 0;
   border-left: 0;
-  padding: 8px 0 24px;
+  padding: 4px 0 24px;
   color: var(--grey);
 }
 
@@ -246,6 +258,31 @@ body {
   line-height: 1.65;
   color: var(--soft);
   margin: 0 0 36px;
+}
+
+.post-reading-page .e-content,
+.column-reading-page .e-content {
+  --qa-bar: #e2e4e8;
+  --qa-text: #737069;
+}
+
+:root[data-theme="dark"] .post-reading-page .e-content,
+:root[data-theme="dark"] .column-reading-page .e-content,
+html[data-theme="dark"] .post-reading-page .e-content,
+html[data-theme="dark"] .column-reading-page .e-content {
+  --qa-bar: #3a3833;
+  --qa-text: #a39e94;
+}
+
+.lead.quote-plain {
+  margin: 0 0 32px;
+  padding: 2px 0 2px 24px;
+  border-left: 3px solid var(--qa-bar, #e2e4e8);
+  border-radius: 0;
+  background: none;
+  color: var(--qa-text, #737069);
+  font-size: var(--fs-body);
+  line-height: 1.75;
 }
 
 .markdown-body.prose {
@@ -1044,9 +1081,18 @@ html[data-theme="dark"] .hljs-params {
     padding: 12px 0;
   }
 
-  .post-reading-page,
   .column-reading-page {
     width: min(1340px, calc(100% - 40px));
+  }
+
+  .post-reading-page {
+    width: 100%;
+    padding-right: 20px;
+    padding-left: 20px;
+  }
+
+  .lead.quote-plain {
+    padding-left: 18px;
   }
 
   .hero,
