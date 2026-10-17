@@ -34,7 +34,21 @@ test("server-renders the finished blog home", async () => {
   assert.match(html, /<title>[^<]+<\/title>/i);
   assert.match(html, /记一些正在做的事/);
   assert.doesNotMatch(html, /class="sh-feature"[\s\S]{0,400}style="background:var\(--cover\)"/);
+  assert.match(html, /<time class="num" dateTime="2026-10-10">2026-10-10<\/time>/);
   const shell = await readFile(new URL("../app/styles/shell.css", import.meta.url), "utf8");
+  assert.match(shell, /\.sh-feature \.cover\{[^}]*aspect-ratio:auto;display:block/);
+  assert.match(shell, /\.sh-feature \.cover\{[^}]*background:none/);
+  assert.match(shell, /\.sh-feature \.cover img\{display:block;width:100%;height:auto\}/);
+  assert.doesNotMatch(shell, /\.sh-feature \.cover\{[^}]*aspect-ratio:16\/9/);
+  assert.doesNotMatch(shell, /\.sh-feature \.cover\{border-radius:16px\}/);
+  const feature = html.match(/<article class="sh-feature"[\s\S]*?<\/article>/)?.[0] ?? "";
+  assert.doesNotMatch(feature, /class="cover"/);
+  const [blogPage, columnPage] = await Promise.all([
+    readFile(new URL("../app/blog/[...path]/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/columns/[column]/[...path]/page.tsx", import.meta.url), "utf8"),
+  ]);
+  assert.doesNotMatch(blogPage, /readingTime/);
+  assert.doesNotMatch(columnPage, /readingTime/);
   assert.match(shell, /\.sh-intro h1\{[^}]*max-width:var\(--list\);text-wrap:balance/);
   assert.match(shell, /\.sh-intro p\{[^}]*text-wrap:balance/);
   assert.match(html, /id="h-pin">置顶</);
@@ -117,6 +131,13 @@ test("renders complex Markdown, article covers, and mixed thought media", async 
   assert.match(article, /需要关注的风险会显示为「警告」/);
   assert.match(article, /可能造成严重后果的操作会显示为「注意」/);
   assert.doesNotMatch(article, /\[!(?:NOTE|TIP|WARNING|CAUTION)\]/);
+  assert.match(article, /<time class="dt-published" dateTime="2026-07-25T00:00:00\+08:00">2026 年 7 月 25 日<\/time>/);
+  assert.doesNotMatch(article, /2026\/07\/25/);
+  const meta = article.match(/<ul class="meta article-meta">[\s\S]*?<\/ul>/)?.[0] ?? "";
+  const metaText = meta.replace(/<!-- -->/g, "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+  assert.match(metaText, /^Your Name 2026 年 7 月 25 日 约 [\d,]+ 字 写作系统$/);
+  assert.doesNotMatch(meta, /<li>\s*<\/li>/);
+  assert.doesNotMatch(meta, /分钟/);
   assert.match(article, /约 <!-- -->[\d,]+<!-- --> 字/);
   assert.ok(
     article.indexOf('class="article-header article-summary-row hero"') <
@@ -154,7 +175,7 @@ test("renders complex Markdown, article covers, and mixed thought media", async 
   const archive = await archiveResponse.text();
   assert.match(archive, /class="archive-cover"/);
   assert.match(archive, /class="archive-copy"/);
-  assert.match(archive, /class="archive-meta"/);
+  assert.match(archive, /class="archive-meta" dateTime="2026-07-25">07-25</);
   assert.match(archive, /href="\/blog\?topic=/);
 });
 

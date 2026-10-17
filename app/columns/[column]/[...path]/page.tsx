@@ -122,7 +122,6 @@ export default async function ColumnEntryPage({
                 {formatDate(entry.date)}
               </time>
             </li>
-            <li>{entry.readingTime}</li>
             {entry.topic && entry.topic !== entry.columnTitle ? (
               <li><a className="cat" href={`/blog?topic=${encodeURIComponent(entry.topic)}`}>{entry.topic}</a></li>
             ) : null}

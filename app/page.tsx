@@ -49,7 +49,7 @@ export default function Home() {
       {posts.length > 0 && feature ? (
         <article className="sh-feature" aria-labelledby="ft">
           {feature.cover ? (
-            <div className="cover" style={{ background: "var(--cover)" }}>
+            <div className="cover">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={feature.cover} alt="" />
             </div>

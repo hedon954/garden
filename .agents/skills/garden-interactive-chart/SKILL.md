@@ -2,7 +2,7 @@
 name: garden-interactive-chart
 description: >-
   Writes Garden interactive charts as self-contained HTML in a same-name
-  sidecar directory and embeds them with a short widget fence. Use when adding
+  sidecar directory and embeds them with a short garden html fence. Use when adding
   or editing Garden widgets, steppers, inspect grids, param benches,
   compare views, traces, KV cache charts, or any 可交互图表 / 同名目录 HTML.
 ---
@@ -41,9 +41,9 @@ content/posts/understand-kv-cache/waste.html
 正文：
 
 ````md
-```widget
+```garden html
 src: ./understand-kv-cache/waste.html
-caption: 朴素 decode 每步重算全部过去 token；6 个 token 共 21 次计算，其中 15 次是浪费。
+title: 朴素 decode 每步重算全部过去 token；6 个 token 共 21 次计算，其中 15 次是浪费。
 ```
 ````
 
@@ -51,7 +51,7 @@ caption: 朴素 decode 每步重算全部过去 token；6 个 token 共 21 次�
 
 - `src` 必须是该同名目录里的本地 `.html` 或 `.pdf`，不能指到 `assets/`、别的文章或 `https://`
 - 带 `garden-chart` 高度回报的 HTML 是图表，直接铺开；普通 HTML 和 PDF 默认收成示意入口，读者展开后再加载
-- `caption` 必须是判断，不能是「见下图」
+- `title` 必须是判断，不能是「见下图」
 - 一份 HTML 一张图；文件名用 `waste.html`、`stepper.html` 这种短 kebab
 - HTML 自包含：CSS、SVG、脚本都在这一个文件里
 - 先写 HTML，再写围栏；围栏里不要再摊步进数组或采样点
@@ -77,8 +77,8 @@ caption: 朴素 decode 每步重算全部过去 token；6 个 token 共 21 次�
 
 ## 交稿前
 
-- [ ] 文件在同名目录内，围栏只有 `src` + `caption`
+- [ ] 文件在同名目录内，围栏只有 `src` + `title`
 - [ ] 单独打开 HTML 就能用；iframe 能撑开高度
 - [ ] 浅色 / 深色主题都跟 Garden 纸面
 - [ ] 减少动态时不自动循环
-- [ ] `caption` 让关 JS 的人也能读到结论
+- [ ] `title` 让关 JS 的人也能读到结论

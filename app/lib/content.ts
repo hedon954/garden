@@ -8,6 +8,7 @@ import {
 } from "@garden/generated-content";
 import GithubSlugger from "github-slugger";
 import { canonicalSiteDate } from "../../scripts/site-date.mjs";
+import { demoDateLabel } from "./a2-meta";
 import { contentToSearchText } from "../../ui/core/transform.mjs";
 import { toString } from "mdast-util-to-string";
 import remarkParse from "remark-parse";
@@ -26,6 +27,7 @@ export const columnHref = (entry: Pick<ContentEntry, "column" | "path">) =>
   `/columns/${entry.column}/${columnEntryPath(entry)}`;
 
 export const formatDate = (value: string, withTime = false) => {
+  if (!withTime) return demoDateLabel(value);
   const canonical = canonicalSiteDate(value) ?? value;
   const date = new Date(canonical);
   if (Number.isNaN(date.getTime())) return value;
@@ -34,7 +36,8 @@ export const formatDate = (value: string, withTime = false) => {
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
-    ...(withTime ? { hour: "2-digit", minute: "2-digit" } : {}),
+    hour: "2-digit",
+    minute: "2-digit",
   }).format(date);
 };
 

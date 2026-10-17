@@ -99,7 +99,6 @@ export default async function PostPage({
               </time>
             </li>
             {post.updated ? <li>更新于 {formatDate(post.updated)}</li> : null}
-            <li>{post.readingTime}</li>
             <li>约 {wordCount.toLocaleString("en-US")} 字</li>
             {post.topic ? (
               <li>

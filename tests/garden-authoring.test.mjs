@@ -125,4 +125,11 @@ test("editor snippets, Typora templates and text replacements come from one cata
   assert.equal(JSON.parse(onDisk)["Garden 块"].prefix, snippets["Garden 块"].prefix);
   const template = readFileSync(new URL("../templates/garden-blocks.md", import.meta.url), "utf8");
   assert.equal(template, markdown);
+  const chartSkill = readFileSync(new URL("../.agents/skills/garden-interactive-chart/SKILL.md", import.meta.url), "utf8");
+  assert.match(chartSkill, /```garden html\nsrc: \.\/understand-kv-cache\/waste\.html/);
+  assert.doesNotMatch(chartSkill, /```widget/);
+  const shipped = ["../.agents/skills/garden-interactive-chart/SKILL.md", "../.agents/skills/garden-post-review/SKILL.md", "../.agents/skills/garden-ui/SKILL.md", "../templates/garden-blocks.md"]
+    .map((file) => readFileSync(new URL(file, import.meta.url), "utf8"))
+    .join("\n");
+  assert.doesNotMatch(shipped, /```(?:widget|embed|intent)\b/);
 });
