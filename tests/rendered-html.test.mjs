@@ -87,9 +87,11 @@ test("renders complex Markdown, article covers, and mixed thought media", async 
   assert.match(article, /class="katex-display"/);
   assert.match(article, /language-mermaid/);
   assert.match(article, /data-mermaid-theme="a2"/);
-  assert.match(article, /mermaid-view-switcher/);
-  assert.match(article, />图表<\/button>/);
-  assert.match(article, />Code<\/button>/);
+  assert.match(article, /class="[^"]*g-mermaid/);
+  assert.match(article, /mermaid-src/);
+  assert.doesNotMatch(article, /mermaid-view-switcher/);
+  assert.doesNotMatch(article, />图表<\/button>/);
+  assert.doesNotMatch(article, />Code<\/button>/);
   assert.doesNotMatch(article, /mermaid-theme-picker|森林/);
   assert.match(article, /language-typescript/);
   assert.match(article, /language-python/);
@@ -123,6 +125,18 @@ test("renders complex Markdown, article covers, and mixed thought media", async 
   assert.match(thoughts, /<video/);
   assert.match(thoughts, /class="link-embed u-bookmark-of"/);
   assert.match(thoughts, /href="\/thoughts\/rainy-night"/);
+
+  const kv = await render("/a2/kv-cache");
+  assert.equal(kv.status, 200);
+  const kvHtml = await kv.text();
+  assert.match(kvHtml, /2026 年 9 月 18 日/);
+  assert.match(kvHtml, /约 <!-- -->[\d,]+<!-- --> 字/);
+  assert.doesNotMatch(kvHtml, /mermaid-view-switcher/);
+  assert.ok(
+    kvHtml.indexOf('class="article-header article-summary-row hero"') <
+      kvHtml.indexOf('class="article-hero article-cover'),
+    "a2 cover stays below the title",
+  );
 
   assert.equal(archiveResponse.status, 200);
   const archive = await archiveResponse.text();

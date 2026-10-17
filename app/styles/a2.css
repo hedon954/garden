@@ -103,6 +103,9 @@ body {
 
 .post-reading-page .article-summary-row.hero,
 .column-reading-page .article-header.hero {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
   width: 100%;
   max-width: none;
   margin: 0;
@@ -116,9 +119,18 @@ body {
   font: 700 var(--fs-hero) / 1.22 var(--sans);
   color: var(--ink);
   letter-spacing: 0;
+  width: 100%;
   max-width: 1200px;
   margin: 0 auto;
   text-wrap: balance;
+}
+
+@media (min-width: 1240px) {
+  .hero h1:not(.h1-br),
+  .article-header h1:not(.h1-br) {
+    white-space: nowrap;
+    max-width: none;
+  }
 }
 
 .hero h1.h1-br {
@@ -172,6 +184,7 @@ body {
 
 .cover-card.cover-img,
 .article-hero.article-cover {
+  width: 100%;
   max-width: 880px;
   margin: 48px auto 0;
   aspect-ratio: auto;
@@ -184,7 +197,15 @@ body {
 }
 
 .cover-img img,
-.article-hero img,
+.article-hero img {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 70vh;
+  object-fit: contain;
+  border-radius: inherit;
+}
+
 .column-feature-cover,
 .archive-cover {
   display: block;
@@ -691,23 +712,23 @@ html[data-theme="dark"] .markdown-body a.ext {
 
 .g-mermaid {
   margin: 28px 0;
-  padding: 0;
+  padding: 16px;
   border: 1px solid var(--rule);
   border-radius: var(--r);
-  overflow: hidden;
+  overflow-x: auto;
   text-align: center;
   background: transparent;
 }
 
-.g-mermaid .mermaid-canvas {
-  min-height: 0;
-  padding: 16px;
-  display: block;
+.g-mermaid svg {
+  max-width: 100% !important;
+  max-height: none;
+  height: auto;
+  display: inline-block;
 }
 
-.markdown-body .g-mermaid .mermaid-canvas svg,
-.g-mermaid svg {
-  max-height: none;
+.g-mermaid.ok > pre {
+  display: none;
 }
 
 .g-mermaid pre.code {

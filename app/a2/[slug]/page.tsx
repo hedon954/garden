@@ -4,7 +4,8 @@ import { ArticleMeasure } from "../../components/ArticleMeasure";
 import { ArticleTitle } from "../../components/ArticleTitle";
 import { MarkdownArticle } from "../../components/MarkdownArticle";
 import { TableOfContents } from "../../components/TableOfContents";
-import { extractHeadings, formatDate } from "../../lib/content";
+import { countRenderedWords, demoDateLabel, demoDateTime } from "../../lib/a2-meta";
+import { extractHeadings } from "../../lib/content";
 import { a2Slugs, readA2Article } from "../../lib/a2-preview";
 
 export function generateStaticParams() {
@@ -23,6 +24,7 @@ export default async function A2ArticlePage({ params }: { params: Promise<{ slug
   const article = readA2Article(slug);
   if (!article) notFound();
   const headings = extractHeadings(article.content);
+  const wordCount = countRenderedWords(article.content);
   return (
     <main className="reading-page post-reading-page">
       <article className="post-article">
@@ -30,8 +32,9 @@ export default async function A2ArticlePage({ params }: { params: Promise<{ slug
           <ArticleTitle title={article.title.replace(/（互动版）$/u, "")} />
           <ul className="meta article-meta">
             <li>Hedon</li>
-            {article.date ? <li><time dateTime={article.date}>{formatDate(article.date)}</time></li> : null}
-            {article.topic ? <li>{article.topic}</li> : null}
+            {article.date ? <li><time dateTime={demoDateTime(article.date)}>{demoDateLabel(article.date)}</time></li> : null}
+            <li>约 {wordCount.toLocaleString("en-US")} 字</li>
+            {article.topic ? <li><span className="cat">{article.topic}</span></li> : null}
             {article.original ? <li><a className="orig ext" href={article.original} target="_blank" rel="noopener noreferrer">原文 ↗</a></li> : null}
           </ul>
           {article.cover ? (

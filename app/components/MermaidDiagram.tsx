@@ -46,11 +46,8 @@ function renderMermaid(source: string, id: string) {
 
 export function MermaidDiagram({ source }: { source: string }) {
   const reactId = useId();
-  const panelId = `${reactId.replaceAll(":", "")}-panel`;
   const [svg, setSvg] = useState("");
-  const [error, setError] = useState(false);
   const [theme, setTheme] = useState("light");
-  const [view, setView] = useState<"chart" | "code">("chart");
 
   useEffect(() => {
     const sync = () => setTheme(document.documentElement.getAttribute("data-theme") === "dark" ? "dark" : "light");
@@ -63,14 +60,13 @@ export function MermaidDiagram({ source }: { source: string }) {
   useEffect(() => {
     let active = true;
     const draw = async () => {
-      setError(false);
       setSvg("");
       try {
         const id = `mermaid-${reactId.replaceAll(":", "")}-${theme}`;
         const result = await renderMermaid(source, id);
         if (active) setSvg(result.svg);
       } catch {
-        if (active) setError(true);
+        if (active) setSvg("");
       }
     };
     void draw();
@@ -79,44 +75,16 @@ export function MermaidDiagram({ source }: { source: string }) {
     };
   }, [reactId, source, theme]);
 
-  const select = (next: "chart" | "code") => setView(next);
-
   return (
-    <figure className="g-mermaid mermaid-block language-mermaid" data-g="mermaid" data-mermaid-theme="a2">
-      <figcaption className="mermaid-toolbar">
-        <span>Mermaid</span>
-        <span className="mermaid-view-switcher" role="tablist" aria-label="切换 Mermaid 显示方式">
-          {(["chart", "code"] as const).map((id) => (
-            <button
-              key={id}
-              type="button"
-              role="tab"
-              aria-selected={view === id}
-              aria-controls={panelId}
-              tabIndex={view === id ? 0 : -1}
-              onClick={() => select(id)}
-              onKeyDown={(event) => {
-                if (event.key !== "ArrowRight" && event.key !== "ArrowLeft") return;
-                event.preventDefault();
-                select(view === "chart" ? "code" : "chart");
-              }}
-            >
-              {id === "chart" ? "图表" : "Code"}
-            </button>
-          ))}
-        </span>
-      </figcaption>
-      <div className="mermaid-canvas" id={panelId} role="tabpanel" aria-live="polite">
-        {view === "code" || error ? (
-          <pre className="code mermaid-src">
-            <code>{source}</code>
-          </pre>
-        ) : svg ? (
-          <div className="g-mermaid-out mermaid-svg" dangerouslySetInnerHTML={{ __html: svg }} />
-        ) : (
-          <span className="mermaid-loading">正在绘制图表…</span>
-        )}
-      </div>
+    <figure
+      className={`g-mermaid mermaid-block language-mermaid${svg ? " ok" : ""}`}
+      data-g="mermaid"
+      data-mermaid-theme="a2"
+    >
+      {svg ? <div className="g-mermaid-out mermaid-svg" dangerouslySetInnerHTML={{ __html: svg }} /> : null}
+      <pre className="code mermaid-src">
+        <code>{source}</code>
+      </pre>
     </figure>
   );
 }
