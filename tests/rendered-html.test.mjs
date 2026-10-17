@@ -33,6 +33,10 @@ test("server-renders the finished blog home", async () => {
   const html = await response.text();
   assert.match(html, /<title>[^<]+<\/title>/i);
   assert.match(html, /记一些正在做的事/);
+  assert.doesNotMatch(html, /class="sh-feature"[\s\S]{0,400}style="background:var\(--cover\)"/);
+  const shell = await readFile(new URL("../app/styles/shell.css", import.meta.url), "utf8");
+  assert.match(shell, /\.sh-intro h1\{[^}]*max-width:var\(--list\);text-wrap:balance/);
+  assert.match(shell, /\.sh-intro p\{[^}]*text-wrap:balance/);
   assert.match(html, /id="h-pin">置顶</);
   assert.match(html, /最近随想/);
   assert.match(html, /id="h-cols">专栏</);

@@ -11,12 +11,7 @@ import {
   type KeyboardEvent,
 } from "react";
 import Fuse, { type FuseResultMatch } from "fuse.js";
-import {
-  MagnifyingGlass,
-  Moon,
-  Sun,
-  X,
-} from "@phosphor-icons/react";
+import { MagnifyingGlass, X } from "@phosphor-icons/react";
 import { searchRecords } from "../lib/content";
 import { siteConfig } from "../site.config";
 
@@ -300,7 +295,10 @@ export function SiteHeader() {
           </nav>
           <div className="sh-tools">
             <button ref={searchTriggerRef} className="sh-search" type="button" onClick={openSearch} aria-label="搜索文章" aria-expanded={searchOpen} aria-controls="site-search-dialog">
-              <MagnifyingGlass size={18} />
+              <svg viewBox="0 0 20 20" aria-hidden="true">
+                <circle cx="9" cy="9" r="5.8" />
+                <path d="M13.3 13.3 17 17" />
+              </svg>
               <span className="lbl">搜索文章</span>
               <kbd><span className="kbd-mod kbd-mac">⌘</span><span className="kbd-mod kbd-other">Ctrl</span>{" "}K</kbd>
             </button>
@@ -311,8 +309,13 @@ export function SiteHeader() {
               </svg>
             </button>
             <button className="sh-icon sh-theme" type="button" onClick={toggleTheme} aria-label={dark ? "切换到浅色模式" : "切换到深色模式"}>
-              <Moon className="i-moon" size={18} />
-              <Sun className="i-sun" size={18} />
+              <svg className="i-moon" viewBox="0 0 20 20" aria-hidden="true">
+                <path d="M16.5 12.2A6.8 6.8 0 0 1 7.8 3.5a6.8 6.8 0 1 0 8.7 8.7Z" />
+              </svg>
+              <svg className="i-sun" viewBox="0 0 20 20" aria-hidden="true">
+                <circle cx="10" cy="10" r="3.6" />
+                <path d="M10 1.8v2M10 16.2v2M1.8 10h2M16.2 10h2M4.2 4.2l1.4 1.4M14.4 14.4l1.4 1.4M4.2 15.8l1.4-1.4M14.4 5.6l1.4-1.4" />
+              </svg>
             </button>
             <button className="sh-icon sh-menu-btn" type="button" aria-expanded={menuOpen} aria-controls="sh-menu" aria-label={menuOpen ? "关闭菜单" : "打开菜单"} onClick={() => setMenuOpen((open) => !open)}>
               {menuOpen ? <X size={18} /> : <span aria-hidden="true">☰</span>}

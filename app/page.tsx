@@ -48,12 +48,12 @@ export default function Home() {
 
       {posts.length > 0 && feature ? (
         <article className="sh-feature" aria-labelledby="ft">
-          <div className="cover" style={{ background: "var(--cover)" }}>
-            {feature.cover ? (
-              // eslint-disable-next-line @next/next/no-img-element
+          {feature.cover ? (
+            <div className="cover" style={{ background: "var(--cover)" }}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={feature.cover} alt="" />
-            ) : null}
-          </div>
+            </div>
+          ) : null}
           <div>
             <p className="kicker">
               <span>最新文章</span>

@@ -39,7 +39,7 @@ img,svg{max-width:100%}
 .sh-nav a:hover{color:var(--ink);background:var(--tint)}
 .sh-nav a[aria-current="page"],.sh-nav a[aria-current="true"]{color:var(--blue);font-weight:600}
 .sh-tools{display:flex;align-items:center;gap:8px}
-.sh-search{display:inline-flex;align-items:center;gap:10px;height:38px;padding:0 8px 0 12px;border:1px solid var(--rule);background:var(--card);color:var(--muted);border-radius:var(--r);font:400 var(--fs-small)/1 var(--sans);cursor:pointer;transition:border-color .15s ease,color .15s ease}
+.sh-search{display:inline-flex;align-items:center;gap:10px;height:38px;padding:0 8px 0 12px;border:1px solid var(--rule);background:var(--card);color:var(--muted);border-radius:var(--r);font:400 var(--fs-small)/1 var(--sans);cursor:pointer;appearance:none;transition:border-color .15s ease,color .15s ease}
 .sh-search:hover{border-color:var(--rule-strong);color:var(--soft)}
 .sh-search svg,.sh-icon svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;flex:none}
 .sh-search .lbl{min-width:84px;text-align:left}
@@ -127,12 +127,13 @@ html[data-theme="dark"] .sh-rail{color:var(--muted)}
 
 /* ---------- home ---------- */
 .sh-intro{padding:80px 0 8px;max-width:var(--list)}
-.sh-intro h1{font:700 var(--fs-display)/1.25 var(--sans);color:var(--ink);margin:0;letter-spacing:0}
-.sh-intro p{margin:18px 0 0;font-size:var(--fs-lead);line-height:1.7;color:var(--soft);max-width:32em}
+.sh-intro h1{font:700 var(--fs-display)/1.25 var(--sans);color:var(--ink);margin:0;letter-spacing:0;max-width:var(--list);text-wrap:balance}
+.sh-intro p{margin:18px 0 0;font-size:var(--fs-lead);line-height:1.7;color:var(--soft);max-width:32em;text-wrap:balance}
 .sh-intro .links{display:flex;flex-wrap:wrap;gap:8px 22px;margin-top:22px;font-size:15px}
 .sh-intro .links a{color:var(--soft);text-decoration:underline;text-decoration-color:var(--rule-strong);text-underline-offset:5px;text-decoration-thickness:1px;padding:4px 0}
 .sh-intro .links a:hover{color:var(--blue);text-decoration-color:currentColor}
 .sh-feature{position:relative;display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:48px;align-items:center;margin:56px 0 0}
+.sh-feature:not(:has(.cover)){grid-template-columns:minmax(0,1fr)}
 .sh-feature .cover{border-radius:var(--r-lg);aspect-ratio:16/9;display:flex;align-items:center;justify-content:center;overflow:hidden}
 .sh-feature .cover .cover-art{height:86%;width:auto}
 .sh-feature .kicker{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:var(--fs-small);color:var(--muted);margin:0 0 12px}
