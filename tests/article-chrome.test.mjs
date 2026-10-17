@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
 import test from "node:test";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
@@ -67,6 +68,100 @@ test("maps a legacy callout marker onto the demo alert kind", () => {
   assert.match(html, /markdown-alert-title"><svg[^>]*>.*?<\/svg>一句话核心<\/p>/);
   assert.match(html, /ReAct 是更好的故事。/);
   assert.doesNotMatch(html, /garden-callout-marker/);
+});
+
+test("keeps a compact alert body that starts on the next line of the same paragraph", () => {
+  const html = render([
+    "> [!NOTE]",
+    "> 普通补充信息会显示为「提醒」。",
+  ].join("\n"));
+  assert.match(html, /class="markdown-alert markdown-alert-note"/);
+  assert.match(html, /markdown-alert-title"><svg[^>]*>[\s\S]*?<\/svg>提醒<\/p>\s*<p>普通补充信息会显示为「提醒」。<\/p>/);
+  assert.doesNotMatch(html, /\[!NOTE\]/);
+});
+
+test("keeps a compact alert when the custom title and body share the paragraph", () => {
+  const html = render([
+    "> [!TIP] 推荐做法",
+    "> 先在本地预览，再发布文章。",
+  ].join("\n"));
+  assert.match(html, /class="markdown-alert markdown-alert-tip"/);
+  assert.match(html, /markdown-alert-title"><svg[^>]*>[\s\S]*?<\/svg>推荐做法<\/p>\s*<p>先在本地预览，再发布文章。<\/p>/);
+  assert.doesNotMatch(html, /\[!TIP\]/);
+});
+
+test("keeps the separate-paragraph alert form", () => {
+  const html = render([
+    "> [!WARNING]",
+    ">",
+    "> 这项操作需要先备份。",
+  ].join("\n"));
+  assert.match(html, /class="markdown-alert markdown-alert-warning"/);
+  assert.match(html, /markdown-alert-title"><svg[^>]*>.*?<\/svg>警告<\/p>\s*<p>这项操作需要先备份。<\/p>/);
+  assert.doesNotMatch(html, /\[!WARNING\]/);
+});
+
+test("maps the legacy alert aliases onto the current labels", () => {
+  const html = render([
+    "> [!INFO]",
+    "> 说明也是提醒。",
+    "",
+    "> [!SUCCESS]",
+    "> 成功也是建议。",
+    "",
+    "> [!DANGER]",
+    "> 危险也是注意。",
+    "",
+    "> [!FAILURE]",
+    "> 失败也是注意。",
+  ].join("\n"));
+  assert.match(html, /markdown-alert-note"[^>]*>[\s\S]*?<\/svg>提醒<\/p>\s*<p>说明也是提醒。<\/p>/);
+  assert.match(html, /markdown-alert-tip"[^>]*>[\s\S]*?<\/svg>建议<\/p>\s*<p>成功也是建议。<\/p>/);
+  assert.match(html, /markdown-alert-caution"[^>]*>[\s\S]*?<\/svg>注意<\/p>\s*<p>危险也是注意。<\/p>/);
+  assert.match(html, /markdown-alert-caution"[^>]*>[\s\S]*?<\/svg>注意<\/p>\s*<p>失败也是注意。<\/p>/);
+  assert.doesNotMatch(html, /\[!(?:INFO|SUCCESS|DANGER|FAILURE)\]/);
+});
+
+test("drops a marker line that continues inside the same text node", () => {
+  const tree = {
+    type: "root",
+    children: [{
+      type: "blockquote",
+      children: [{
+        type: "paragraph",
+        children: [{ type: "text", value: "[!NOTE]\n正文还在同一段" }],
+      }],
+    }],
+  };
+  remarkA2()(tree);
+  const quote = tree.children[0];
+  assert.ok(quote.data.hProperties.className.includes("markdown-alert-note"));
+  assert.equal(quote.children[1].children[0].value, "正文还在同一段");
+  assert.equal(quote.children.length, 2);
+});
+
+test("renders the lab sample and the authoring examples as alert cards", async () => {
+  const [lab, authoring] = await Promise.all([
+    readFile(new URL("../content/posts/markdown-lab.md", import.meta.url), "utf8"),
+    readFile(new URL("../docs/content-authoring.md", import.meta.url), "utf8"),
+  ]);
+  const labSample = lab.split("\n").slice(49, 60).join("\n");
+  const authoringSample = authoring.split("\n").slice(169, 177).join("\n");
+  const labHtml = render(labSample);
+  const authoringHtml = render(authoringSample);
+  for (const kind of ["note", "tip", "warning", "caution"]) {
+    assert.match(labHtml, new RegExp(`markdown-alert-${kind}`));
+  }
+  assert.match(labHtml, /提醒/);
+  assert.match(labHtml, /警告/);
+  assert.match(labHtml, /注意/);
+  assert.doesNotMatch(labHtml, /「提示」|「告警」|「警示」/);
+  assert.match(authoringHtml, /markdown-alert-note/);
+  assert.match(authoringHtml, /markdown-alert-tip/);
+  assert.match(authoringHtml, /markdown-alert-warning/);
+  assert.match(authoringHtml, /推荐做法/);
+  assert.match(authoringHtml, /先在本地预览，再发布文章。/);
+  assert.doesNotMatch(authoringHtml, /\[!/);
 });
 
 test("leaves a plain quote unmarked and captions a markdown figure", () => {

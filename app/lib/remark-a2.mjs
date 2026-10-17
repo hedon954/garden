@@ -57,11 +57,67 @@ function alertTitle(kind, label) {
   };
 }
 
+const ALERT_KIND = {
+  NOTE: "note",
+  INFO: "note",
+  TIP: "tip",
+  SUCCESS: "tip",
+  IMPORTANT: "important",
+  WARNING: "warning",
+  CAUTION: "caution",
+  DANGER: "caution",
+  FAILURE: "caution",
+};
+
+function paragraphFirstLine(node) {
+  let line = "";
+  for (const child of node.children ?? []) {
+    if (child.type === "break") break;
+    if (child.type === "text") {
+      const newline = child.value.indexOf("\n");
+      line += newline >= 0 ? child.value.slice(0, newline) : child.value;
+      if (newline >= 0) break;
+      continue;
+    }
+    line += toString(child);
+  }
+  return line;
+}
+
+function withoutMarkerLine(node) {
+  const children = [];
+  let skipping = true;
+  for (const child of node.children ?? []) {
+    if (!skipping) {
+      children.push(child);
+      continue;
+    }
+    if (child.type === "break") {
+      skipping = false;
+      continue;
+    }
+    if (child.type === "text") {
+      const newline = child.value.indexOf("\n");
+      if (newline >= 0) {
+        skipping = false;
+        const rest = child.value.slice(newline + 1);
+        if (rest) children.push({ type: "text", value: rest });
+      }
+    }
+  }
+  if (!children.some((child) => child.type !== "text" || child.value.trim())) return null;
+  return { type: "paragraph", children };
+}
+
 function gfmAlert(node) {
   if (node?.type !== "paragraph") return null;
-  const match = /^\[!(NOTE|TIP|IMPORTANT|WARNING|CAUTION)\][ \t]*([^\n]*)$/iu.exec(toString(node).trim());
+  const match = /^\[!(NOTE|INFO|TIP|SUCCESS|IMPORTANT|WARNING|CAUTION|DANGER|FAILURE)\][ \t]*(.*)$/iu.exec(paragraphFirstLine(node).trim());
   if (!match) return null;
-  return { kind: match[1].toLowerCase(), label: match[2].trim() };
+  return {
+    kind: ALERT_KIND[match[1].toUpperCase()],
+    label: match[2].trim(),
+    body: withoutMarkerLine(node),
+  };
 }
 
 function legacyAlert(node) {
@@ -86,7 +142,7 @@ function rewriteAlert(node) {
   if (!gfm && !legacy) return;
   const kind = gfm ? gfm.kind : legacy;
   let label = gfm ? gfm.label : "";
-  let rest = children.slice(1);
+  let rest = gfm?.body ? [gfm.body, ...children.slice(1)] : children.slice(1);
   if (!label) {
     const custom = strongOnlyText(rest.find((child) => !isBlankParagraph(child)));
     if (custom) {

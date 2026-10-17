@@ -109,6 +109,14 @@ test("renders complex Markdown, article covers, and mixed thought media", async 
   assert.match(article, /class="article-reading-layout"/);
   assert.match(article, /class="article-reading-column"/);
   assert.doesNotMatch(article, /<strong>(?:提示|建议|告警|警示)<\/strong>/);
+  assert.match(article, /markdown-alert-note/);
+  assert.match(article, /markdown-alert-tip/);
+  assert.match(article, /markdown-alert-warning/);
+  assert.match(article, /markdown-alert-caution/);
+  assert.match(article, /普通补充信息会显示为「提醒」/);
+  assert.match(article, /需要关注的风险会显示为「警告」/);
+  assert.match(article, /可能造成严重后果的操作会显示为「注意」/);
+  assert.doesNotMatch(article, /\[!(?:NOTE|TIP|WARNING|CAUTION)\]/);
   assert.match(article, /约 <!-- -->[\d,]+<!-- --> 字/);
   assert.ok(
     article.indexOf('class="article-header article-summary-row hero"') <

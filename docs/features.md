@@ -13,7 +13,7 @@
 
 外部内容使用统一的 `embed` 代码块：YouTube、Bilibili 显示响应式播放器；X、微信公众号与其他网站显示可靠的摘要卡片和原文入口。构建不会自动抓取网页摘要；写稿可用 `make embed` 把 Open Graph 快照进围栏。本地 HTML / PDF 使用 `widget` 代码块，指向与 Markdown 同名目录里的文件。可交互图表直接铺开；普通页面和 PDF 默认显示示意入口，读者手动展开后再加载，并保留判断性说明。
 
-兼容 Typora / Obsidian 的 `[!TYPE]` 警告框语法，并按语义显示提示、说明、建议、成功、重要、告警、警示、危险或失败，避免不同类型统一显示为「提示」。
+兼容 Typora / Obsidian 的 `[!TYPE]` 警告框语法。`NOTE`、`TIP`、`IMPORTANT`、`WARNING`、`CAUTION` 分别显示提醒、建议、重要、警告、注意；`INFO` 同提醒，`SUCCESS` 同建议，`DANGER` 与 `FAILURE` 同注意。
 
 Mermaid 固定使用中性主题，并提供“图表 / Code”两种查看方式。代码块按语言高亮，示例覆盖 TypeScript、Python、Rust、Go、SQL、Swift 与 Diff。
 
