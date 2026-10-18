@@ -34,8 +34,10 @@ test("server-renders the finished blog home", async () => {
   assert.match(html, /<title>[^<]+<\/title>/i);
   assert.match(html, /记一些正在做的事/);
   assert.doesNotMatch(html, /class="sh-feature"[\s\S]{0,400}style="background:var\(--cover\)"/);
-  assert.match(html, /<time class="num" dateTime="2026-10-16">2026-10-16<\/time>/);
-  assert.match(html, /<time class="num" dateTime="2026-10-10">2026-10-10<\/time>/);
+  assert.match(html, /<time class="num" dateTime="2026-10-16">2026 年 10 月 16 日<\/time>/);
+  assert.match(html, /<time class="num" dateTime="2026-10-10">2026 年 10 月 10 日<\/time>/);
+  const rows = html.match(/<ol class="sh-rows"[\s\S]*?<\/ol>/)?.[0] ?? "";
+  assert.doesNotMatch(rows, /2026-10-16|2026 年 10 月 16 日/);
   const [shell, articleCss] = await Promise.all([
     readFile(new URL("../app/styles/shell.css", import.meta.url), "utf8"),
     readFile(new URL("../app/styles/a2.css", import.meta.url), "utf8"),

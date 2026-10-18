@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { columns, postHref, posts } from "./lib/content";
+import { columns, formatDate, postHref, posts } from "./lib/content";
 import { githubUrl, siteConfig } from "./site.config";
 
 export const metadata = {
@@ -19,8 +19,9 @@ function day(value: string) {
 }
 
 export default function Home() {
-  const recent = [...posts].sort((left, right) => Date.parse(right.date) - Date.parse(left.date));
-  const feature = recent[0];
+  const recentAll = [...posts].sort((left, right) => Date.parse(right.date) - Date.parse(left.date));
+  const feature = recentAll[0];
+  const recent = recentAll.filter((post) => post.path !== feature?.path);
   const pinned = posts.filter((post) => post.pinned);
   const series = Array.from(
     columns.reduce((result, entry) => {
@@ -54,7 +55,7 @@ export default function Home() {
           <div>
             <p className="kicker">
               <span>最新文章</span>
-              <time className="num" dateTime={day(feature.date)}>{day(feature.date)}</time>
+              <time className="num" dateTime={day(feature.date)}>{formatDate(feature.date)}</time>
               {feature.topic ? <span>{feature.topic}</span> : null}
             </p>
             <h2 id="ft"><Link href={postHref(feature)}>{feature.title}</Link></h2>
@@ -73,9 +74,9 @@ export default function Home() {
             <Link className="sh-more" href="/blog">全部 {posts.length} 篇</Link>
           </div>
           <ol className="sh-rows">
-            {recent.slice(0, 7).map((post) => (
+            {recent.slice(0, 6).map((post) => (
               <li className="sh-row" key={post.path}>
-                <time className="num" dateTime={day(post.date)}>{day(post.date)}</time>
+                <time className="num" dateTime={day(post.date)}>{formatDate(post.date)}</time>
                 <h3><Link href={postHref(post)}>{post.title}</Link></h3>
                 {post.description ? <p>{post.description}</p> : null}
                 {post.topic ? <Link className="cat" href={`/blog?topic=${encodeURIComponent(post.topic)}`}>{post.topic}</Link> : null}
@@ -90,7 +91,7 @@ export default function Home() {
               {pinned.map((post) => (
                 <li key={post.path}>
                   <Link href={postHref(post)}>{post.title}</Link>
-                  <span><time className="num" dateTime={day(post.date)}>{day(post.date)}</time>{post.topic ? `　${post.topic}` : ""}</span>
+                  <span><time className="num" dateTime={day(post.date)}>{formatDate(post.date)}</time>{post.topic ? `　${post.topic}` : ""}</span>
                 </li>
               ))}
             </ul>
