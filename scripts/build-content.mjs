@@ -27,7 +27,7 @@ import {
   readFileProps,
 } from "../ui/garden/file-block.mjs";
 import { resolveRepoFile } from "../ui/garden/file-paths.mjs";
-import { trailingSlashEnabled } from "../ui/garden/site-href.mjs";
+import { trailingSlashEnabled, withTrailingSlash } from "../ui/garden/site-href.mjs";
 
 function resolveSiteRoot() {
   if (process.env.GARDEN_SITE) return path.resolve(process.env.GARDEN_SITE);
@@ -785,9 +785,15 @@ const publicRoot = path.join(root, "public");
 const columnEntryPath = (entry) => entry.path.startsWith(`${entry.column}/`)
   ? entry.path.slice(entry.column.length + 1)
   : entry.path;
+// Page addresses in the feeds and the sitemap follow trailingSlash like every site link.
+const pageAddress = (pathname) => withTrailingSlash(pathname, trailingSlashEnabled(process.env));
+// A feed item's guid is how readers tell items apart: it keeps the form it has had since 0.5.14
+// (`/blog/<path>/`, `/thoughts/<slug>/`) whatever the link looks like, or every reader would show
+// the whole feed as new again.
+const feedEntry = (entry, pathname) => ({ ...entry, path: pageAddress(pathname), guidPath: pathname });
 const feedEntries = [
-  ...posts.map((entry) => ({ ...entry, path: `/blog/${entry.path}/` })),
-  ...thoughts.map((entry) => ({ ...entry, path: `/thoughts/${entry.slug}/` })),
+  ...posts.map((entry) => feedEntry(entry, `/blog/${entry.path}/`)),
+  ...thoughts.map((entry) => feedEntry(entry, `/thoughts/${entry.slug}/`)),
 ].sort((left, right) => Date.parse(right.date) - Date.parse(left.date));
 
 const feedLastBuildDate = (entries) => new Date(entries.reduce(
@@ -800,7 +806,7 @@ function writeRssFeed(fileName, entries) {
     <item>
       <title>${escapeXml(entry.title)}</title>
       <link>${escapeXml(`${publicBaseUrl}${entry.path}`)}</link>
-      <guid isPermaLink="true">${escapeXml(`${publicBaseUrl}${entry.path}`)}</guid>
+      <guid isPermaLink="true">${escapeXml(`${publicBaseUrl}${entry.guidPath}`)}</guid>
       <pubDate>${new Date(entry.date).toUTCString()}</pubDate>
       <description>${escapeXml(entry.description ?? contentToSearchText(entry.content).replace(/\s+/gu, " ").trim().slice(0, 180))}</description>
       ${(entry.tags ?? []).map((tag) => `<category>${escapeXml(tag)}</category>`).join("")}
@@ -824,14 +830,14 @@ function writeRssFeed(fileName, entries) {
 writeRssFeed("rss.xml", feedEntries);
 writeRssFeed(
   "posts.xml",
-  posts.map((entry) => ({ ...entry, path: `/blog/${entry.path}/` })),
+  posts.map((entry) => feedEntry(entry, `/blog/${entry.path}/`)),
 );
 const sitemapEntries = [
   "/", "/blog/", "/thoughts/", "/columns/", "/about/",
   ...posts.map((entry) => `/blog/${entry.path}/`),
   ...columns.map((entry) => `/columns/${entry.column}/${columnEntryPath(entry)}/`),
   ...thoughts.map((entry) => `/thoughts/${entry.slug}/`),
-];
+].map(pageAddress);
 // Card URLs in published entries: the only pages the link-card Worker may read.
 fs.writeFileSync(
   path.join(publicRoot, "link-allowlist.json"),

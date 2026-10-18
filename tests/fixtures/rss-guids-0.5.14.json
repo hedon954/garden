@@ -1,0 +1,19 @@
+{
+  "note": "guids of the example site's /rss.xml as built by Garden 0.5.14 (STATIC_EXPORT=1, SITE_URL=https://example.github.io). Feed readers tell items apart by guid, so these must never change.",
+  "origin": "https://example.github.io",
+  "guids": [
+    "/blog/windowsill-herbs/",
+    "/blog/intelligent-ui-lab/",
+    "/blog/markdown-lab/",
+    "/thoughts/rainy-night/",
+    "/thoughts/field-recording/",
+    "/blog/attention-is-an-interface/",
+    "/thoughts/slow-motion/",
+    "/blog/building-in-public/ship-with-evidence/",
+    "/thoughts/links-are-paths/",
+    "/blog/local-first-writing/",
+    "/blog/building-in-public/stable-state/",
+    "/blog/building-in-public/smallest-closed-loop/",
+    "/blog/building-a-pdf-reader/"
+  ]
+}

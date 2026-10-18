@@ -25,5 +25,5 @@ jobs:
           NEXT_PUBLIC_SITE_URL: https://example.github.io
           ADMIN_URL: https://admin.example.com
         run: npm run build && npm run pages:validate
-      - name: Check internal links in the export end with a slash
-        run: node --test tests/static-links.test.mjs
+      - name: Check internal links in the export end with a slash and the feed keeps its guids
+        run: node --test tests/static-links.test.mjs tests/rss-guids.test.mjs
