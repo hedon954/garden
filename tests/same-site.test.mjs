@@ -137,7 +137,7 @@ draft: false
     const allowlist = JSON.parse(fs.readFileSync(path.join(fixture, "public", "link-allowlist.json"), "utf8"));
     assert.deepEqual(allowlist.urls, ["https://docs.blog.example.org/a/"]);
     const siteConfig = fs.readFileSync(path.join(fixture, ".garden", "site-config.ts"), "utf8");
-    assert.match(siteConfig, /export const siteLinks = \{"address":"https:\/\/blog\.example\.org\/","basePath":""\}/u);
+    assert.match(siteConfig, /export const siteLinks = \{"address":"https:\/\/blog\.example\.org\/","basePath":"","trailingSlash":(true|false)\}/u);
   } finally {
     fs.rmSync(fixture, { recursive: true, force: true });
   }

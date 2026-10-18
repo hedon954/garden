@@ -188,7 +188,7 @@ test("article tags render with the framework Link, not a plain anchor", async ()
   const fs = await import("node:fs");
   const source = fs.readFileSync(new URL("../app/components/ArticleTags.tsx", import.meta.url), "utf8");
   assert.match(source, /^import Link from "next\/link";/mu);
-  assert.match(source, /<Link className="tag-chip p-category" href=\{articleTagHref\(tag\)\}>/u);
+  assert.match(source, /<Link className="tag-chip p-category" href=\{siteHref\(articleTagHref\(tag\)\)\}>/u, "siteHref shapes the slash for the build");
   assert.doesNotMatch(source, /<a[\s>]/u);
   assert.doesNotMatch(source, /tagFilterHref\(/u, "the href comes from articleTagHref, so it always carries the slash");
 });

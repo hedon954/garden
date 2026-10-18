@@ -82,6 +82,8 @@ rehype-highlight 代码高亮
 
 公开端通过 `STATIC_EXPORT=1` 启动构建。`next.config.ts` 在此模式开启 `output: "export"`、结尾斜杠和未优化图片；`/admin` 则被导出为一个指向独立后台的说明页，API 路由不会进入 Pages 产物。
 
+站内链接是否以 `/` 结尾跟随 Next 的 `trailingSlash`：静态导出总是开启；服务端构建默认关闭（服务器会把 `/x/` 308 到 `/x`，所以链接不带斜杠），设 `TRAILING_SLASH=1` 才开启。`next.config.ts` 和生成的 `siteLinks` 读同一个开关（`ui/garden/site-href.mjs` 的 `trailingSlashEnabled`），所有站内地址经 `siteHref` 生成。
+
 `.github/workflows/pages.yml` 的关键顺序是：
 
 ```text

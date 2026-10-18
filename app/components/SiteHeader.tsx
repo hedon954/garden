@@ -87,7 +87,7 @@ function loadSearchEngine() {
   return engineLoad;
 }
 
-const nav = SITE_NAV;
+const nav = SITE_NAV.map((item) => ({ ...item, href: siteHref(item.href) }));
 
 function rangesFor(
   matches: readonly SearchMatch[] | undefined,

@@ -27,6 +27,7 @@ import {
   readFileProps,
 } from "../ui/garden/file-block.mjs";
 import { resolveRepoFile } from "../ui/garden/file-paths.mjs";
+import { trailingSlashEnabled } from "../ui/garden/site-href.mjs";
 
 function resolveSiteRoot() {
   if (process.env.GARDEN_SITE) return path.resolve(process.env.GARDEN_SITE);
@@ -762,7 +763,7 @@ export const searchFull = ${JSON.stringify({ url: `${basePath}/${fullIndex.fileN
 // Header logo (inlined SVG) and icon URLs, from brand in site.config.yaml.
 export const brand = ${JSON.stringify(resolveBrand(root, siteConfig, basePath, (line) => console.warn(line)))};
 // Full URLs to this address render as internal links.
-export const siteLinks = ${JSON.stringify({ address: siteAddress, basePath })};
+export const siteLinks = ${JSON.stringify({ address: siteAddress, basePath, trailingSlash: trailingSlashEnabled(process.env) })};
 `,
 );
 fs.mkdirSync(path.join(root, "public"), { recursive: true });

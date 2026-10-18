@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import test from "node:test";
-import { findSlashlessLinks, withTrailingSlash } from "../ui/garden/site-href.mjs";
+import { findMisshapenLinks, findSlashlessLinks, trailingSlashEnabled, withTrailingSlash } from "../ui/garden/site-href.mjs";
 
 test("site addresses end with a slash, with ?query and #hash after it", () => {
   assert.equal(withTrailingSlash("/blog"), "/blog/");
@@ -18,6 +18,34 @@ test("site addresses end with a slash, with ?query and #hash after it", () => {
   assert.equal(withTrailingSlash("#top"), "#top");
   assert.equal(withTrailingSlash("https://example.org/a"), "https://example.org/a");
   assert.equal(withTrailingSlash("//cdn.example.org/a"), "//cdn.example.org/a");
+});
+
+test("without trailingSlash the slash goes, with ?query and #hash after the path", () => {
+  assert.equal(withTrailingSlash("/blog/", false), "/blog");
+  assert.equal(withTrailingSlash("/blog", false), "/blog");
+  assert.equal(withTrailingSlash("/", false), "/");
+  assert.equal(withTrailingSlash("/blog/go/go-lock/#mutex", false), "/blog/go/go-lock#mutex");
+  assert.equal(withTrailingSlash("/blog/?t=Go&t=Rust", false), "/blog?t=Go&t=Rust");
+  assert.equal(withTrailingSlash("/columns/#rust-action", false), "/columns#rust-action");
+  assert.equal(withTrailingSlash("/rss.xml", false), "/rss.xml");
+  assert.equal(withTrailingSlash("#top", false), "#top");
+  assert.equal(withTrailingSlash("https://example.org/a/", false), "https://example.org/a/");
+});
+
+test("trailingSlash: always in a static export, on a server only with TRAILING_SLASH=1", () => {
+  assert.equal(trailingSlashEnabled({ STATIC_EXPORT: "1" }), true);
+  assert.equal(trailingSlashEnabled({ STATIC_EXPORT: "1", TRAILING_SLASH: "0" }), true);
+  assert.equal(trailingSlashEnabled({}), false);
+  assert.equal(trailingSlashEnabled({ TRAILING_SLASH: "1" }), true);
+  const config = fs.readFileSync(new URL("../next.config.ts", import.meta.url), "utf8");
+  assert.match(config, /trailingSlash: trailingSlashEnabled\(process\.env\)/u, "Next and the links read the same switch");
+  const build = fs.readFileSync(new URL("../scripts/build-content.mjs", import.meta.url), "utf8");
+  assert.match(build, /trailingSlash: trailingSlashEnabled\(process\.env\)/u);
+});
+
+test("findMisshapenLinks without trailingSlash reports page links that carry the slash", () => {
+  const html = '<a href="/">home</a><a href="/blog/">x</a><a href="/blog?t=Go">ok</a><a href="/columns/#a">y</a><a href="/media/a.pdf">f</a><a href="/about">ok</a>';
+  assert.deepEqual(findMisshapenLinks(html, { trailing: false }), ["/blog/", "/columns/#a"]);
 });
 
 test("findSlashlessLinks reports internal page links without the slash", () => {

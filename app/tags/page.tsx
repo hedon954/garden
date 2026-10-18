@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Suspense } from "react";
 import { posts } from "../lib/content";
+import { siteHref } from "../lib/site-href";
 import { articleTagHref, tagCounts } from "../lib/tag-filter";
 import { TagRedirect } from "../components/TagRedirect";
 import { siteDocumentTitle } from "../site.config";
@@ -25,7 +26,7 @@ export default function TagsPage() {
         <ul className="sh-tagchips sh-tagindex" aria-label="全部标签">
           {tags.map(([tag, count]) => (
             <li key={tag}>
-              <Link className="sh-tagchip" href={articleTagHref(tag)}>
+              <Link className="sh-tagchip" href={siteHref(articleTagHref(tag))}>
                 #{tag}<span className="n num">{count}</span>
               </Link>
             </li>
