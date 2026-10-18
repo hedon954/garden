@@ -103,11 +103,17 @@ test("article titles wrap instead of running off the page, on /blog/ and /column
 
 test("column, archive-year and thought anchors land at the page's scroll padding, not twice it", () => {
   const shell = read("app/styles/shell.css");
-  for (const selector of [/\.sh-series h2\{[^}]*\}/u, /\.sh-year > h2\{[^}]*\}/u, /\.sh-note\{[^}]*\}/u]) {
+  for (const selector of [/\.sh-series h2\{[^}]*\}/u, /\.sh-year > h2\{[^}]*\}/u]) {
     assert.doesNotMatch(shell.match(selector)[0], /scroll-margin/u, String(selector));
   }
-  assert.match(shell, /\.sh-note:target\{background:/u, "the targeted thought keeps its highlight");
   assert.doesNotMatch(read("app/globals.css").match(/\.thought-card \{[^}]*\}/u)[0], /scroll-margin/u);
+});
+
+test("a targeted thought changes only its border, in the ink accent", () => {
+  const globals = read("app/globals.css");
+  const rule = globals.match(/\.thought-card:target \{([^}]*)\}/u)?.[1] ?? "";
+  assert.equal(rule.trim(), "border-color: var(--accent);");
+  assert.doesNotMatch(read("app/styles/shell.css"), /\.sh-note/u, "the unused .sh-note styles are gone");
 });
 
 test("the archive jumps to a #year link again after its list replaces the static fallback", () => {

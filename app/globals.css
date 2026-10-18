@@ -1521,6 +1521,11 @@ button {
   border: 1px solid var(--line);
 }
 
+/* A thought opened from a link: only the border changes, in the ink accent. */
+.thought-card:target {
+  border-color: var(--accent);
+}
+
 .thought-card > header {
   display: flex;
   justify-content: space-between;
