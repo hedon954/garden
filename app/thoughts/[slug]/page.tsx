@@ -12,6 +12,7 @@ import {
   getSiteUrl,
   webmentionApiEndpoint,
 } from "../../lib/site";
+import { siteHref } from "../../lib/site-href";
 
 export function generateStaticParams() {
   return thoughts.map((thought) => ({ slug: thought.slug }));
@@ -26,7 +27,7 @@ export async function generateMetadata({
   const thought = findPublishedThought(slug);
   if (!thought) return {};
   const baseUrl = await getSiteUrl();
-  const pathname = `/thoughts/${slug}`;
+  const pathname = siteHref(`/thoughts/${slug}`);
   const images = Array.isArray(thought.media)
     ? thought.media.filter((item) => item.type === "image").slice(0, 4)
     : [];
@@ -60,11 +61,11 @@ export default async function ThoughtPage({
   const thought = findPublishedThought(slug);
   if (!thought) notFound();
   const baseUrl = await getSiteUrl();
-  const pathname = `/thoughts/${slug}`;
+  const pathname = siteHref(`/thoughts/${slug}`);
 
   return (
     <main className="page-shell thought-detail-page">
-      <Link href="/thoughts" className="back-link">
+      <Link href={siteHref("/thoughts")} className="back-link">
         <ArrowLeft size={16} />
         返回随想
       </Link>

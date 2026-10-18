@@ -193,7 +193,7 @@ test("renders complex Markdown, article covers, and mixed thought media", async 
   assert.match(thoughts, /<audio/);
   assert.match(thoughts, /<video/);
   assert.match(thoughts, /class="link-embed u-bookmark-of"/);
-  assert.match(thoughts, /href="\/thoughts\/rainy-night"/);
+  assert.match(thoughts, /href="\/thoughts\/rainy-night"/, "a server build without trailingSlash links without the slash");
 
   const kv = await render("/a2/kv-cache");
   assert.equal(kv.status, 200);
@@ -553,7 +553,7 @@ test("0.4.3: wider reading column, transparent column cards, and tag chips under
     assert.ok(meta >= 0 && row > meta, "tag row sits right after the meta row");
     for (const tag of tags) {
       // Link, straight at the exported list address (/blog/, no 301 first).
-      assert.match(header, new RegExp(`<a href="/blog/\\?t=${encodeURIComponent(tag)}" class="tag-chip p-category">#(<!-- -->)?${tag}</a>`));
+      assert.match(header, new RegExp(`<a href="/blog\\?t=${encodeURIComponent(tag)}" class="tag-chip p-category">#(<!-- -->)?${tag}</a>`));
     }
     assert.doesNotMatch(header, /class="cat"|\/blog\?topic=/);
     assert.doesNotMatch(html, /class="article-tags"/);
@@ -582,7 +582,7 @@ test("/blog rows show the post's column, linked to that column; other posts show
   const rows = [...html.matchAll(/<li class="sh-row">[\s\S]*?<\/li>/g)].map((match) => match[0]);
   assert.ok(rows.length >= 9);
   const inColumn = rows.find((row) => row.includes("/blog/building-in-public/ship-with-evidence"));
-  assert.match(inColumn ?? "", /<a (?=[^>]*class="cat")(?=[^>]*href="\/columns\/#building-in-public")[^>]*>一个人造产品<\/a>/);
+  assert.match(inColumn ?? "", /<a (?=[^>]*class="cat")(?=[^>]*href="\/columns#building-in-public")[^>]*>一个人造产品<\/a>/);
   const standalone = rows.find((row) => row.includes("/blog/markdown-lab"));
   assert.ok(standalone);
   assert.doesNotMatch(standalone, /class="cat"/);
@@ -598,7 +598,7 @@ test("/blog filters by several tags through the URL, and /tags is only an index"
   ]);
   const chips = archive.match(/<ul class="sh-tagchips" aria-label="按标签筛选">[\s\S]*?<\/ul>/)?.[0] ?? "";
   assert.match(chips, /<button type="button" class="sh-tagchip" aria-pressed="false">/);
-  assert.match(archive, /<span aria-live="polite">共 <!-- -->?9<!-- -->? 篇<\/span>|<span aria-live="polite">共 9 篇<\/span>/);
+  assert.match(archive, /<span aria-live="polite">共 <!-- -->?10<!-- -->? 篇<\/span>|<span aria-live="polite">共 10 篇<\/span>/);
   assert.match(source, /searchParams\.getAll\(TAG_PARAM\)/);
   assert.match(source, /filterByTags\(posts, selected\)/);
   assert.match(source, /router\.push\(tagFilterHref/);
@@ -609,7 +609,7 @@ test("/blog filters by several tags through the URL, and /tags is only an index"
   assert.doesNotMatch(source, /topic|按分类筛选/);
 
   assert.match(tagsPage, /<ul class="sh-tagchips sh-tagindex" aria-label="全部标签">/);
-  assert.match(tagsPage, /<a href="\/blog\/\?t=Markdown" class="sh-tagchip">#<!-- -->Markdown<span class="n num">/);
+  assert.match(tagsPage, /<a href="\/blog\?t=Markdown" class="sh-tagchip">#<!-- -->Markdown<span class="n num">/);
   assert.doesNotMatch(tagsPage, /aria-pressed|sh-tagresult|分类/);
   assert.match(redirect, /router\.replace\(target\)/);
 
@@ -874,37 +874,72 @@ test("0.5.14: the header carries the no-JS menu links next to the ☰ button", a
   const header = html.match(/<header class="sh-header" id="site-header">[\s\S]*?<\/header>/)?.[0] ?? "";
   assert.ok(header, "header rendered with its id");
   assert.match(header, /<button class="sh-icon sh-menu-btn" type="button" aria-expanded="false" aria-controls="sh-menu" aria-label="打开菜单">/);
-  assert.match(header, /<a class="sh-icon sh-menu-nojs" id="sh-menu-open" href="#sh-menu" aria-label="打开菜单"><span aria-hidden="true">☰<\/span><\/a>/);
-  assert.match(header, /<a class="sh-icon sh-menu-nojs-close" href="#site-header" aria-label="关闭菜单"><svg/);
+  assert.match(header, /<a class="sh-icon sh-menu-nojs" id="sh-menu-open" href="#sh-menu-on" aria-label="打开菜单"><span aria-hidden="true">☰<\/span><\/a>/);
+  assert.match(header, /<a class="sh-icon sh-menu-nojs-close" href="#sh-menu-off" aria-label="关闭菜单"><svg/);
+  assert.match(html, /<span class="sh-menu-target" id="sh-menu-on" aria-hidden="true"><\/span><span class="sh-menu-target" id="sh-menu-off" aria-hidden="true"><\/span><header class="sh-header" id="site-header">/);
   assert.match(header, /<nav class="sh-menu" id="sh-menu" aria-label="站点导航（移动端）">/);
 });
 
-test("0.5.14: header nav links end with a slash and still mark the current section", async () => {
+test("header nav links follow trailingSlash (none in this server build) and still mark the current section", async () => {
   for (const [pathname, label] of [["/", null], ["/blog", "文章"], ["/tags", "标签"], ["/columns", "专栏"]]) {
     const html = await (await render(pathname)).text();
     const bar = html.match(/<nav class="sh-nav"[\s\S]*?<\/nav>/)?.[0] ?? "";
     assert.ok(bar, `desktop nav on ${pathname}`);
     const links = [...bar.matchAll(/<a ([^>]*)>([^<]+)<\/a>/g)].map((m) => ({ attrs: m[1], text: m[2] }));
-    assert.deepEqual(links.map((link) => link.attrs.match(/href="([^"]+)"/)[1]), ["/blog/", "/thoughts/", "/columns/", "/tags/", "/about/"], pathname);
+    assert.deepEqual(links.map((link) => link.attrs.match(/href="([^"]+)"/)[1]), ["/blog", "/thoughts", "/columns", "/tags", "/about"], pathname);
     assert.deepEqual(links.filter((link) => /aria-current="page"/.test(link.attrs)).map((link) => link.text), label ? [label] : [], pathname);
     const menu = html.match(/<nav class="sh-menu" id="sh-menu"[\s\S]*?<\/nav>/)?.[0] ?? "";
-    assert.equal((menu.match(/href="\/(blog|thoughts|columns|tags|about)\/"/g) ?? []).length, 5, `mobile menu on ${pathname}`);
+    assert.equal((menu.match(/href="\/(blog|thoughts|columns|tags|about)"/g) ?? []).length, 5, `mobile menu on ${pathname}`);
   }
 });
 
-test("0.5.14: /tags links point at /blog/?t=… with the slash, URL-encoded", async () => {
+test("/tags links point at the filtered list, shaped by trailingSlash (/blog?t=… here), URL-encoded", async () => {
   const html = await (await render("/tags")).text();
   const list = html.match(/<ul class="sh-tagchips sh-tagindex"[\s\S]*?<\/ul>/)?.[0] ?? "";
   const hrefs = [...list.matchAll(/<a [^>]*href="([^"]+)"[^>]*class="sh-tagchip"|<a class="sh-tagchip" href="([^"]+)"/g)].map((m) => m[1] ?? m[2]);
   assert.ok(hrefs.length > 3, `found ${hrefs.length} tag links`);
   for (const href of hrefs) {
     const decoded = href.replace(/&amp;/g, "&");
-    assert.match(decoded, /^\/blog\/\?t=[^&]+$/u, href);
+    assert.match(decoded, /^\/blog\?t=[^&]+$/u, href);
     const tag = new URL(decoded, "https://example.com").searchParams.get("t");
-    assert.equal(decoded, `/blog/?${new URLSearchParams({ t: tag })}`, "URL-encoded the same way the list reads it");
+    assert.equal(decoded, `/blog?${new URLSearchParams({ t: tag })}`, "URL-encoded the same way the list reads it");
   }
   const source = await readFile(new URL("../app/tags/page.tsx", import.meta.url), "utf8");
-  assert.match(source, /<Link className="sh-tagchip" href=\{articleTagHref\(tag\)\}>/u);
+  assert.match(source, /<Link className="sh-tagchip" href=\{siteHref\(articleTagHref\(tag\)\)\}>/u);
   const redirect = await readFile(new URL("../app/components/TagRedirect.tsx", import.meta.url), "utf8");
-  assert.match(redirect, /tagFilterHref\(tags, ARTICLE_TAG_LIST\)/u);
+  assert.match(redirect, /siteHref\(tagFilterHref\(tags, ARTICLE_TAG_LIST\)\)/u);
+});
+
+test("garden file renders cards on the server; the Markdown preview stays out of the page and is fetched on demand", async () => {
+  const response = await render("/blog/windowsill-herbs-kit");
+  assert.equal(response.status, 200);
+  const html = await response.text();
+  const visible = html.replace(/<script[\s\S]*?<\/script>/gu, "");
+  assert.equal(visible.match(/class="gf single"/gu)?.length, 2);
+  assert.equal(visible.match(/class="gf group"/gu)?.length, 1);
+  assert.match(visible, /<a class="gf-btn pri" href="\/media\/posts\/windowsill-herbs-kit\/herb-kit\.zip" download="herb-kit\.zip"/u);
+  assert.match(visible, /ZIP · 1\.8 KB/u);
+  assert.match(visible, /JPG · 4\.3 MB/u);
+  assert.equal(visible.match(/class="gf-btn gf-preview"/gu)?.length, 3);
+  // The OSS row: open in a new tab and download, no preview.
+  assert.match(visible, /<a class="gf-btn icon" href="https:\/\/upload\.wikimedia\.org\/[^"]+" target="_blank" rel="noopener noreferrer"/u);
+  // The previewed document is nowhere in the page: not in the HTML, not in the RSC payload, not as source.
+  assert.doesNotMatch(visible, /resolved/u);
+  assert.doesNotMatch(html, /窗台香草浇水记录|土面下两指还湿就不浇|第 1 周|怎么记/u);
+  // The page only links to the prerendered preview: the 预览 link (what a reader without JavaScript follows).
+  assert.match(visible, /<a href="\/media\/posts\/windowsill-herbs-kit\/watering-log\.md\.preview\.html" target="_blank" rel="noopener noreferrer" class="gf-btn gf-preview"/u);
+  const preview = await readFile(new URL("../public/media/posts/windowsill-herbs-kit/watering-log.md.preview.html", import.meta.url), "utf8");
+  assert.match(preview, /<h1 id="gf-窗台香草浇水记录">窗台香草浇水记录<\/h1>/u);
+});
+
+test("a server build without trailingSlash links every page without the slash (no 308 per click)", async () => {
+  const { findMisshapenLinks } = await import("../ui/garden/site-href.mjs");
+  const pages = ["/", "/blog", "/columns", "/thoughts", "/tags", "/about", "/blog/windowsill-herbs-kit", "/thoughts/rainy-night"];
+  const found = [];
+  for (const pathname of pages) {
+    const response = await render(pathname);
+    assert.equal(response.status, 200, pathname);
+    for (const href of findMisshapenLinks(await response.text(), { trailing: false })) found.push(`${pathname}: ${href}`);
+  }
+  assert.deepEqual(found, []);
 });

@@ -4,7 +4,7 @@
  * Names describe what the reader sees. English only.
  */
 
-export const GARDEN_NAMES = ["card", "stat", "compare", "timeline", "chart", "figure", "html", "interactive"];
+export const GARDEN_NAMES = ["card", "stat", "compare", "timeline", "chart", "figure", "html", "interactive", "file"];
 
 export const LEGACY_FENCES = {
   embed: { name: "card", suggestion: "`embed` 已改为 `garden card`" },
@@ -131,6 +131,20 @@ intent: |
 <State batch={1} />
 \`\`\``,
     triggers: ["ginteractive"],
+  },
+  file: {
+    label: "文件",
+    when: "给读者一份可以下载的文件：规格包、PDF、示例代码。Markdown、HTML、PDF 还能在页面里预览。",
+    whenNot: "只是引用一个网页时用 card；要在正文里直接展示的图表或页面用 html。",
+    keys: ["src", "title", "note", "files"],
+    itemKeys: ["src", "title", "note"],
+    // Written by the build in place of the authored keys; never by hand.
+    builtKeys: ["resolved"],
+    example: `\`\`\`garden file
+src: ./post-name/spec.zip
+note: 一句话说明里面有什么
+\`\`\``,
+    triggers: ["gfile"],
   },
 };
 

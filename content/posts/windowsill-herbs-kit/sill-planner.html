@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>窗台排盆</title>
+<style>
+  body { margin: 0; padding: 24px; font: 15px/1.7 -apple-system, "PingFang SC", "Noto Sans SC", sans-serif; color: #2d2c29; background: #fff; }
+  h1 { margin: 0 0 8px; font-size: 20px; color: #1b1a18; }
+  p { margin: 0 0 16px; color: #4a4844; }
+  label { display: flex; gap: 12px; align-items: center; margin-bottom: 16px; }
+  input { flex: 1; accent-color: #1b1a18; }
+  .sill { display: flex; gap: 8px; padding: 12px; border: 1px solid #e6e3dc; border-radius: 8px; background: #faf9f5; }
+  .pot { flex: 1; height: 56px; border-radius: 6px 6px 14px 14px; background: #c9b79c; display: grid; place-items: center; color: #fff; font-size: 13px; }
+  output { font-weight: 600; color: #1b1a18; }
+</style>
+</head>
+<body>
+  <h1>窗台排盆</h1>
+  <p>窗台长 90 厘米。拖动滑块，看每只盆能分到多宽。</p>
+  <label>盆数 <input id="count" type="range" min="1" max="6" value="3"> <output id="out">3 只</output></label>
+  <div class="sill" id="sill"></div>
+  <p id="note"></p>
+  <script>
+    const count = document.getElementById("count");
+    const draw = () => {
+      const n = Number(count.value);
+      document.getElementById("out").textContent = `${n} 只`;
+      document.getElementById("sill").innerHTML = Array.from({ length: n }, (_, i) => `<div class="pot">${i + 1}</div>`).join("");
+      const width = Math.round(90 / n);
+      document.getElementById("note").textContent = width >= 20 ? `每只盆约 ${width} 厘米，够罗勒长开。` : `每只盆约 ${width} 厘米，罗勒会挤，换成薄荷或香葱。`;
+    };
+    count.addEventListener("input", draw);
+    draw();
+  </script>
+</body>
+</html>

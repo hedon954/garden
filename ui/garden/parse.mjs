@@ -137,7 +137,7 @@ export function parseGardenBlock(info, body) {
       error: { code: "garden-name", message: `未知名字 ${header.name}` },
     };
   }
-  const unknown = Object.keys(props).filter((key) => key !== "id" && !spec.keys.includes(key));
+  const unknown = Object.keys(props).filter((key) => key !== "id" && !spec.keys.includes(key) && !spec.builtKeys?.includes(key));
   if (unknown.length) {
     return {
       name: header.name,

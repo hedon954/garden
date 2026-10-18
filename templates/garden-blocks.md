@@ -126,3 +126,14 @@ intent: |
 ---
 <State batch={1} />
 ```
+
+## file · 文件
+
+给读者一份可以下载的文件：规格包、PDF、示例代码。Markdown、HTML、PDF 还能在页面里预览。
+
+不该用：只是引用一个网页时用 card；要在正文里直接展示的图表或页面用 html。
+
+```garden file
+src: ./post-name/spec.zip
+note: 一句话说明里面有什么
+```

@@ -16,6 +16,7 @@ import {
   visibleTagOptions,
 } from "../lib/tag-filter";
 import { ContentEmptyState } from "./ContentEmptyState";
+import { siteHref } from "../lib/site-href";
 
 function day(value: string) {
   const date = new Date(value);
@@ -29,8 +30,8 @@ function day(value: string) {
 }
 
 // Kept local: importing ../lib/content here would pull every post body into the client bundle.
-const postHref = (post: Pick<ArchivePost, "path">) => `/blog/${post.path}`;
-const columnIndexHref = (slug: string) => `/columns/#${slug}`;
+const postHref = (post: Pick<ArchivePost, "path">) => siteHref(`/blog/${post.path}`);
+const columnIndexHref = (slug: string) => siteHref(`/columns/#${slug}`);
 
 function ColumnLabel({ column }: { column?: ArchivePost["column"] }) {
   return column ? <Link className="cat" href={columnIndexHref(column.slug)}>{column.title}</Link> : null;

@@ -1,9 +1,10 @@
 import { marked } from "marked";
-import { columnHref, columns, postHref, posts } from "../lib/content";
+import { columnHref, columns, postHref, posts, thoughtHref } from "../lib/content";
 import { getPublishedThoughts } from "../lib/public-thoughts";
 import { configuredSiteUrl, siteDescription, siteName } from "../lib/site";
 import { contentForFeed } from "../../ui/core/transform.mjs";
 import { stripCardMarkers } from "../../ui/garden/markdown-links.mjs";
+import { withTrailingSlash } from "../../ui/garden/site-href.mjs";
 
 const escapeXml = (value: string) =>
   value
@@ -15,6 +16,8 @@ const escapeXml = (value: string) =>
 
 const cdata = (value: string) => value.replaceAll("]]>", "]]]]><![CDATA[>");
 
+// The link follows trailingSlash; the guid keeps this route's 0.5.14 form (no trailing slash),
+// because readers tell items apart by it.
 export async function GET() {
   const origin = configuredSiteUrl();
   const thoughts = getPublishedThoughts();
@@ -27,7 +30,7 @@ export async function GET() {
     ...thoughts.map((thought) => ({
       ...thought,
       description: stripCardMarkers(thought.content).replace(/\s+/gu, " ").slice(0, 180),
-      path: `/thoughts/${thought.slug}`,
+      path: thoughtHref(thought.slug),
     })),
   ].sort((a, b) => Date.parse(b.date) - Date.parse(a.date));
 
@@ -45,7 +48,7 @@ export async function GET() {
     <item>
       <title>${escapeXml(entry.title)}</title>
       <link>${origin}${entry.path}</link>
-      <guid isPermaLink="true">${origin}${entry.path}</guid>
+      <guid isPermaLink="true">${origin}${withTrailingSlash(entry.path, false)}</guid>
       <pubDate>${new Date(entry.date).toUTCString()}</pubDate>
       <description>${escapeXml(entry.description ?? "")}</description>
       ${(entry.tags ?? [])

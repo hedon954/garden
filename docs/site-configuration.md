@@ -62,7 +62,7 @@ redirects:
   /wiki/rust/04-action/rust-action-httpie.html: /blog/rust-action-httpie/
 ```
 
-静态导出（例如 GitHub Pages）没有服务器返回 301，构建时会为每个旧路径生成一个小页面：立即跳到新地址，保留链接里的 `#` 锚点，并用 `rel="canonical"` 告诉搜索引擎新地址。跳转页不加 noindex，搜索引擎能顺着跳转和 canonical 把旧地址归到新地址上。新地址指向的页面不存在、或旧路径上已经有页面时，这一条会跳过并在构建日志里提醒。
+静态导出（例如 GitHub Pages）没有服务器返回 301，构建时会为每个旧路径生成一个小页面：立即跳到新地址，保留链接里的 `#` 锚点，并用 `rel="canonical"` 告诉搜索引擎新地址。跳转页不加 noindex，搜索引擎能顺着跳转和 canonical 把旧地址归到新地址上。新地址指向的页面不存在、或旧路径上已经有页面时，这一条会跳过并在构建日志里提醒，构建照常完成。
 
 作者资料还可以配置 GitHub 降级数据：
 

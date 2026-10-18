@@ -14,6 +14,7 @@ import {
   GardenTimeline,
   GardenUnknown,
 } from "./blocks";
+import { GardenFile } from "./GardenFile";
 
 export function GardenBlock({ dataPayload }: { dataPayload?: string }) {
   const block = readGardenPayload(dataPayload);
@@ -39,6 +40,9 @@ export function GardenBlock({ dataPayload }: { dataPayload?: string }) {
       return <GardenHtml props={props}>{String(block.children ?? "")}</GardenHtml>;
     case "interactive":
       return <GardenInteractive block={{ id: block.id, props, children: block.children }} />;
+    case "file":
+      // Post bodies render file cards on the server (MarkdownArticle); this path has no Markdown preview.
+      return <GardenFile props={props} />;
     default:
       return <GardenUnknown name={String(block.name)} />;
   }

@@ -21,6 +21,8 @@ import { MarkdownImage } from "./MarkdownImage";
 import { CodeCopy } from "./garden/chrome";
 import { CodeDiff } from "./garden/chrome";
 import { GardenBlock } from "./garden/GardenBlock";
+import { GardenFile } from "./garden/GardenFile";
+import { readGardenPayload } from "../lib/remark-garden.mjs";
 import { imageSizes, linkAssets } from "@garden/generated-content";
 import { imageDimensions, lookupImageSize } from "../../ui/garden/image-dims.mjs";
 import { siteConfig, siteLinks } from "@garden/site-config";
@@ -30,6 +32,7 @@ import { columnHref, columns, postHref, posts, thoughts } from "../lib/content";
 import { LinkCardRefresh } from "./LinkCardRefresh";
 import { linkHost } from "../../scripts/link-meta-core.mjs";
 import { cardDate } from "../../ui/garden/card-refresh.mjs";
+import { siteHref } from "../lib/site-href";
 
 // Full URLs back to this site are internal links, written as root-relative paths.
 const sameSite = sameSiteMatcher(siteLinks?.address ?? "", siteLinks?.basePath ?? "");
@@ -48,6 +51,8 @@ const internalRoute = internalLinkResolver({
     ...thoughts.map((thought) => `/thoughts/${thought.slug}`),
   ],
   basePath: siteLinks?.basePath ?? "",
+  // Same shape as every other address in the site (the slash follows trailingSlash).
+  format: siteHref,
 });
 
 /** The site's favicon, downloaded at build time; nothing when there is none. */
@@ -238,9 +243,12 @@ export function MarkdownArticle({ content }: { content: string }) {
         standalone={(props.dataStandalone ?? props["data-standalone"]) === "true"}
       />
     ),
-    "garden-block": (props: { dataPayload?: string; "data-payload"?: string }) => (
-      <GardenBlock dataPayload={props.dataPayload ?? props["data-payload"]} />
-    ),
+    "garden-block": (props: { dataPayload?: string; "data-payload"?: string }) => {
+      const payload = props.dataPayload ?? props["data-payload"];
+      const block = readGardenPayload(payload);
+      if (block?.name === "file" && !block.error) return <GardenFile props={(block.props ?? {}) as Record<string, unknown>} />;
+      return <GardenBlock dataPayload={payload} />;
+    },
     "garden-codediff": (props: {
       children?: ReactNode;
       dataDiff?: string;

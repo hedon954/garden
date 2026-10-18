@@ -68,7 +68,7 @@ declare module "@garden/site-config" {
   /** The full-text index file and the hash its contents are cached under. */
   export const searchFull: { url: string; hash: string };
   /** The site address (site.config.yaml `url`, else SITE_URL) and base path, for spotting links back to the site. */
-  export const siteLinks: { address: string; basePath: string };
+  export const siteLinks: { address: string; basePath: string; trailingSlash?: boolean };
   /** Header logo as inline SVG ("" when hidden) and icon URLs, from brand in site.config.yaml. */
   export const brand: { logo: string; favicon: string; appleTouchIcon: string };
   export const siteConfig: {

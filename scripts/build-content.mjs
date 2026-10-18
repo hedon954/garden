@@ -15,6 +15,20 @@ import { resolveBrand } from "./brand.mjs";
 import { imageSources, readImageCache, sizeFromBytes } from "./image-sizes.mjs";
 import { buildFullIndex, buildSearchIndex } from "../ui/garden/search-index.mjs";
 import { coverImageSet, loadSharp } from "./cover-images.mjs";
+import { readFileSizeCache } from "./file-sizes.mjs";
+import { previewDocument, previewFileName, renderFilePreview } from "./file-preview.mjs";
+import { parseGardenBlock, parseGardenInfo, scanFences } from "../ui/garden/parse.mjs";
+import {
+  fileIcon,
+  fileName,
+  formatLabel,
+  isRemoteSrc,
+  previewKind,
+  maskHtmlComments,
+  readFileProps,
+} from "../ui/garden/file-block.mjs";
+import { resolveRepoFile } from "../ui/garden/file-paths.mjs";
+import { trailingSlashEnabled, withTrailingSlash } from "../ui/garden/site-href.mjs";
 
 function resolveSiteRoot() {
   if (process.env.GARDEN_SITE) return path.resolve(process.env.GARDEN_SITE);
@@ -266,6 +280,80 @@ function rewriteWidgetFences(content, markdownPath, sourcePath) {
   );
 }
 
+const remoteFileSizes = readFileSizeCache(root).files;
+
+/** One file of a `garden file` fence, resolved for the page. */
+function resolveFileEntry(file, markdownPath, sourcePath) {
+  const src = file.src;
+  const name = fileName(src);
+  const entry = {
+    name,
+    title: file.title || name,
+    ...(file.note ? { note: file.note } : {}),
+    format: formatLabel(src),
+    icon: fileIcon(src),
+  };
+  if (isRemoteSrc(src)) {
+    const size = remoteFileSizes[src]?.size;
+    return { ...entry, url: src, remote: true, preview: "", ...(size > 0 ? { size } : {}) };
+  }
+  if (src.startsWith("/")) {
+    // A site path: served as is, download only.
+    const file = path.join(root, "public", src.split(/[?#]/u, 1)[0]);
+    const size = fs.existsSync(file) && fs.statSync(file).isFile() ? fs.statSync(file).size : 0;
+    return { ...entry, url: `${basePath}${src}`, remote: false, preview: "", ...(size > 0 ? { size } : {}) };
+  }
+  const resolved = resolveRepoFile(src, markdownPath, contentRoot);
+  if (resolved.error) fail(sourcePath, `garden file：${resolved.error}`);
+  const missingMessage = `garden file 找不到 ${src}；src 相对这篇 Markdown 所在的目录`;
+  if (!fs.existsSync(resolved.path) || !fs.statSync(resolved.path).isFile()) fail(sourcePath, missingMessage);
+  const url = copyLocalAsset(src, markdownPath, sourcePath, { missingMessage });
+  const preview = previewKind(src, { remote: false });
+  const next = { ...entry, url, size: fs.statSync(resolved.path).size, remote: false, preview };
+  if (preview === "md") {
+    // Rendered now into its own file next to the copy; the page only links to it and the
+    // preview fetches it on demand. Images next to the Markdown file are copied too.
+    const { content } = matter(fs.readFileSync(resolved.path, "utf8"));
+    const html = renderFilePreview(rewriteMarkdownAssets(content.trim(), resolved.path, sourcePath));
+    const { destination } = assetFiles.get(url.split(/[?#]/u, 1)[0]);
+    fs.writeFileSync(previewFileName(destination), previewDocument(html, { title: entry.title }));
+    next.previewSrc = previewFileName(url.split(/[?#]/u, 1)[0]);
+  }
+  return next;
+}
+
+/**
+ * `garden file` fences: resolve every src next to the Markdown file, copy repo
+ * files to the public folder, and replace the YAML with `resolved:` data the
+ * page renders without reading the file system.
+ */
+function rewriteFileFences(content, markdownPath, sourcePath) {
+  const fences = scanFences(maskHtmlComments(content)).filter((fence) => parseGardenInfo(fence.info)?.name === "file" && !fence.unclosed);
+  if (!fences.length) return content;
+  const lines = content.split("\n");
+  for (const fence of [...fences].reverse()) {
+    const block = parseGardenBlock(fence.info, fence.body);
+    if (block?.error) fail(sourcePath, `第 ${fence.line} 行 garden file：${block.error.message}`);
+    if (block.props.resolved) fail(sourcePath, `第 ${fence.line} 行 garden file：resolved 由构建生成，不要手写`);
+    const read = readFileProps(block.props);
+    if (read.errors.length) fail(sourcePath, `第 ${fence.line} 行 garden file：${read.errors.join("；")}`);
+    const resolved = {
+      layout: read.layout,
+      ...(read.title ? { title: read.title } : {}),
+      files: read.files.map((file) => resolveFileEntry(file, markdownPath, sourcePath)),
+    };
+    const indent = " ".repeat(fence.indent);
+    lines.splice(
+      fence.line - 1,
+      fence.endLine - fence.line + 1,
+      `${indent}${fence.marker}${fence.info}`,
+      `${indent}resolved: ${JSON.stringify(resolved)}`,
+      `${indent}${fence.marker}`,
+    );
+  }
+  return lines.join("\n");
+}
+
 function rewriteUiFences(content, markdownPath, sourcePath, lineOffset) {
   const { content: transformed, errors } = transformUiContent(content, {
     mode: uiMode,
@@ -392,9 +480,13 @@ function validateAndNormalize(data, content, markdownPath, kind, sourcePath, lin
       ? copyLocalAsset(data.poster, markdownPath, sourcePath)
       : undefined,
     media: normalizeMedia(data.media, markdownPath, sourcePath),
-    content: rewriteWidgetFences(
-      rewriteMarkdownAssets(
-        rewriteUiFences(content.trim(), markdownPath, sourcePath, lineOffset + leadingLines(content)),
+    content: rewriteFileFences(
+      rewriteWidgetFences(
+        rewriteMarkdownAssets(
+          rewriteUiFences(content.trim(), markdownPath, sourcePath, lineOffset + leadingLines(content)),
+          markdownPath,
+          sourcePath,
+        ),
         markdownPath,
         sourcePath,
       ),
@@ -411,7 +503,9 @@ function readMarkdownTree(directory, kind) {
 
   return fs.readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
     const fullPath = path.join(directory, entry.name);
-    if (entry.isDirectory()) return readMarkdownTree(fullPath, kind);
+    // `post.md` + `post/` is the post's own folder of files (garden html, garden file):
+    // Markdown inside it is a file to download or preview, not another post.
+    if (entry.isDirectory()) return fs.existsSync(`${fullPath}.md`) ? [] : readMarkdownTree(fullPath, kind);
     if (!entry.name.endsWith(".md")) return [];
 
     const raw = fs.readFileSync(fullPath, "utf8");
@@ -674,7 +768,7 @@ export const searchFull = ${JSON.stringify({ url: `${basePath}/${fullIndex.fileN
 // Header logo (inlined SVG) and icon URLs, from brand in site.config.yaml.
 export const brand = ${JSON.stringify(resolveBrand(root, siteConfig, basePath, (line) => console.warn(line)))};
 // Full URLs to this address render as internal links.
-export const siteLinks = ${JSON.stringify({ address: siteAddress, basePath })};
+export const siteLinks = ${JSON.stringify({ address: siteAddress, basePath, trailingSlash: trailingSlashEnabled(process.env) })};
 `,
 );
 fs.mkdirSync(path.join(root, "public"), { recursive: true });
@@ -696,9 +790,15 @@ const publicRoot = path.join(root, "public");
 const columnEntryPath = (entry) => entry.path.startsWith(`${entry.column}/`)
   ? entry.path.slice(entry.column.length + 1)
   : entry.path;
+// Page addresses in the feeds and the sitemap follow trailingSlash like every site link.
+const pageAddress = (pathname) => withTrailingSlash(pathname, trailingSlashEnabled(process.env));
+// A feed item's guid is how readers tell items apart: it keeps the form it has had since 0.5.14
+// (`/blog/<path>/`, `/thoughts/<slug>/`) whatever the link looks like, or every reader would show
+// the whole feed as new again.
+const feedEntry = (entry, pathname) => ({ ...entry, path: pageAddress(pathname), guidPath: pathname });
 const feedEntries = [
-  ...posts.map((entry) => ({ ...entry, path: `/blog/${entry.path}/` })),
-  ...thoughts.map((entry) => ({ ...entry, path: `/thoughts/${entry.slug}/` })),
+  ...posts.map((entry) => feedEntry(entry, `/blog/${entry.path}/`)),
+  ...thoughts.map((entry) => feedEntry(entry, `/thoughts/${entry.slug}/`)),
 ].sort((left, right) => Date.parse(right.date) - Date.parse(left.date));
 
 const feedLastBuildDate = (entries) => new Date(entries.reduce(
@@ -711,7 +811,7 @@ function writeRssFeed(fileName, entries) {
     <item>
       <title>${escapeXml(entry.title)}</title>
       <link>${escapeXml(`${publicBaseUrl}${entry.path}`)}</link>
-      <guid isPermaLink="true">${escapeXml(`${publicBaseUrl}${entry.path}`)}</guid>
+      <guid isPermaLink="true">${escapeXml(`${publicBaseUrl}${entry.guidPath}`)}</guid>
       <pubDate>${new Date(entry.date).toUTCString()}</pubDate>
       <description>${escapeXml(entry.description ?? contentToSearchText(entry.content).replace(/\s+/gu, " ").trim().slice(0, 180))}</description>
       ${(entry.tags ?? []).map((tag) => `<category>${escapeXml(tag)}</category>`).join("")}
@@ -735,14 +835,14 @@ function writeRssFeed(fileName, entries) {
 writeRssFeed("rss.xml", feedEntries);
 writeRssFeed(
   "posts.xml",
-  posts.map((entry) => ({ ...entry, path: `/blog/${entry.path}/` })),
+  posts.map((entry) => feedEntry(entry, `/blog/${entry.path}/`)),
 );
 const sitemapEntries = [
   "/", "/blog/", "/thoughts/", "/columns/", "/about/",
   ...posts.map((entry) => `/blog/${entry.path}/`),
   ...columns.map((entry) => `/columns/${entry.column}/${columnEntryPath(entry)}/`),
   ...thoughts.map((entry) => `/thoughts/${entry.slug}/`),
-];
+].map(pageAddress);
 // Card URLs in published entries: the only pages the link-card Worker may read.
 fs.writeFileSync(
   path.join(publicRoot, "link-allowlist.json"),

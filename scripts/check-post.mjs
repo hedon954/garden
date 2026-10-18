@@ -6,6 +6,7 @@ import { canonicalSiteDate } from "./site-date.mjs";
 import { gardenSiteRoot } from "./garden-paths.mjs";
 import { checkUiBlock } from "../ui/core/validate.mjs";
 import { checkGardenMarkdown } from "../ui/garden/check.mjs";
+import { checkFileSources } from "../ui/garden/file-paths.mjs";
 
 const siteRoot = gardenSiteRoot();
 const calloutTypes = new Set([
@@ -255,6 +256,45 @@ const scanBody = (errors, content, markdownPath, sourcePath, { warnings = [], dr
   if (fence?.lang === "embed") checkEmbed(errors, fence.body.join("\n"), sourcePath, fence.line);
 };
 
+const markdownBelow = (directory) =>
+  fs.readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
+    const full = path.join(directory, entry.name);
+    if (entry.isDirectory()) return markdownBelow(full);
+    return entry.name.endsWith(".md") ? [full] : [];
+  });
+
+/** Does the post's Markdown point at this file (garden file, a link)? Then it is there on purpose. */
+const postUses = (postRaw, postPath, file) => {
+  const relative = path.relative(path.dirname(postPath), file).split(path.sep).join("/");
+  return postRaw.includes(`./${relative}`) || postRaw.includes(relative);
+};
+
+/**
+ * `post.md` + `post/` is the post's folder of files, and the build no longer
+ * publishes Markdown inside it as a post. Name each such file, so one that used
+ * to be a post does not disappear from the site unnoticed.
+ */
+const checkFolderMarkdown = (warnings, absolute, raw) => {
+  const contentRoot = path.join(siteRoot, "content");
+  const warn = (file, post) => warnings.push({
+    code: "folder-markdown",
+    line: 1,
+    message: `${path.relative(siteRoot, file)}: 在 ${path.relative(siteRoot, post)} 的同名目录里，不会作为文章发布。建议：它是给读者下载或预览的文件，就在文章里用 garden file 引用；要单独发布，把它移出 ${path.relative(siteRoot, post.replace(/\.md$/u, ""))}/。`,
+  });
+  const folder = absolute.replace(/\.md$/u, "");
+  if (fs.existsSync(folder) && fs.statSync(folder).isDirectory()) {
+    for (const file of markdownBelow(folder).sort()) if (!postUses(raw, absolute, file)) warn(file, absolute);
+  }
+  // Checked directly: the file itself sits in some post's folder.
+  for (let dir = path.dirname(absolute); dir.startsWith(contentRoot + path.sep); dir = path.dirname(dir)) {
+    const post = `${dir}.md`;
+    if (fs.existsSync(post)) {
+      if (!postUses(fs.readFileSync(post, "utf8"), post, absolute)) warn(absolute, post);
+      break;
+    }
+  }
+};
+
 const checkFile = (filePath) => {
   const absolute = path.resolve(siteRoot, filePath);
   const sourcePath = path.relative(siteRoot, absolute);
@@ -300,6 +340,11 @@ const checkFile = (filePath) => {
     const target = item.severity === "warning" ? warnings : errors;
     target.push({ code: item.code, line: item.line, message: `${sourcePath}: ${item.message} 建议：${item.suggestion}` });
   }
+  for (const item of checkFileSources(raw, absolute, path.join(siteRoot, "content"))) {
+    const target = item.severity === "warning" ? warnings : errors;
+    target.push({ code: item.code, line: item.line, message: `${sourcePath}: ${item.message} 建议：${item.suggestion}` });
+  }
+  checkFolderMarkdown(warnings, absolute, raw);
   return { file: sourcePath, errors, warnings };
 };
 

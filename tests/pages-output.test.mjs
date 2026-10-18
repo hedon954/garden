@@ -52,6 +52,28 @@ test("rejects source files and symbolic links in Pages output", async () => {
   await assert.rejects(validateStaticOutput(linkFixture.source), /linked\.html/);
 });
 
+test("a Markdown file a post offers for download (media/) is allowed; source elsewhere is not", async () => {
+  const offered = await fixture();
+  await mkdir(path.join(offered.source, "media", "posts", "kit"), { recursive: true });
+  await writeFile(path.join(offered.source, "media", "posts", "kit", "notes.md"), "# Notes\n");
+  await validateStaticOutput(offered.source);
+
+  const stray = await fixture();
+  await writeFile(path.join(stray.source, "notes.md"), "# Notes\n");
+  await assert.rejects(validateStaticOutput(stray.source), /notes\.md/);
+
+  const nested = await fixture();
+  await mkdir(path.join(nested.source, "assets", "media"), { recursive: true });
+  await writeFile(path.join(nested.source, "assets", "media", "notes.md"), "# Notes\n");
+  await assert.rejects(validateStaticOutput(nested.source), /assets\/media\/notes\.md/, "only the top-level media folder");
+
+  const map = await fixture();
+  await mkdir(path.join(map.source, "media"), { recursive: true });
+  await writeFile(path.join(map.source, "media", "app.js.map"), "{}");
+  await writeFile(path.join(map.source, "media", "leak.ts"), "export {}\n");
+  await assert.rejects(validateStaticOutput(map.source), /media\/(app\.js\.map|leak\.ts)/, "source maps and TypeScript stay out, even in media/");
+});
+
 test("refuses to clean a destination without Git metadata", async () => {
   const { root, source } = await fixture();
   const unsafeDestination = path.join(root, "not-a-repository");

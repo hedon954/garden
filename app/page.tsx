@@ -3,6 +3,7 @@ import { CoverImage } from "./components/CoverImage";
 import { homeListDate } from "./lib/a2-meta";
 import { columns, formatDate, postHref, posts } from "./lib/content";
 import { githubUrl, siteConfig } from "./site.config";
+import { siteHref } from "./lib/site-href";
 
 export const metadata = {
   title: { absolute: siteConfig.name },
@@ -40,7 +41,7 @@ export default function Home() {
         <h1>{siteConfig.pages.home.title}</h1>
         <p>{siteConfig.pages.home.subtitle || siteConfig.description}</p>
         <div className="links">
-          <Link href="/about">关于我</Link>
+          <Link href={siteHref("/about")}>关于我</Link>
           <a href={githubUrl} rel="me">GitHub</a>
           <a href="/rss.xml">RSS 订阅</a>
         </div>
@@ -71,7 +72,7 @@ export default function Home() {
         <section className="sh-section" aria-labelledby="h-recent">
           <div className="sh-sec-head">
             <h2 id="h-recent">最近更新</h2>
-            <Link className="sh-more" href="/blog">全部 {posts.length} 篇</Link>
+            <Link className="sh-more" href={siteHref("/blog")}>全部 {posts.length} 篇</Link>
           </div>
           <ol className="sh-rows">
             {recent.slice(0, 6).map((post) => (
@@ -102,7 +103,7 @@ export default function Home() {
         <section className="sh-section" aria-labelledby="h-cols">
           <div className="sh-sec-head">
             <h2 id="h-cols">专栏</h2>
-            <Link className="sh-more" href="/columns">全部专栏</Link>
+            <Link className="sh-more" href={siteHref("/columns")}>全部专栏</Link>
           </div>
           <div className="sh-cols">
             {series.map(([slug, entries]) => {
@@ -116,7 +117,7 @@ export default function Home() {
                     ) : null}
                   </div>
                   <div className="body">
-                    <h3><Link href={`/columns/#${slug}`}>{first.columnTitle}</Link></h3>
+                    <h3><Link href={siteHref(`/columns/#${slug}`)}>{first.columnTitle}</Link></h3>
                     <p className="count">{entries.length} 篇，{first.columnStatus ?? "持续更新"}</p>
                     <p>{first.columnDescription ?? first.description}</p>
                   </div>

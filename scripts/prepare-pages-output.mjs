@@ -21,6 +21,12 @@ const forbiddenFileNames = new Set([
   "wrangler.jsonc",
 ]);
 const forbiddenExtensions = new Set([".map", ".md", ".ts", ".tsx"]);
+// The build copies into media/ only the files a post links to (images, garden file downloads):
+// a Markdown file there is a download the author offers, not leaked source.
+const publishedExtensions = { media: new Set([".md"]) };
+
+const isPublishedFile = (relativePath) =>
+  publishedExtensions[relativePath.split("/", 1)[0]]?.has(path.extname(relativePath)) === true;
 const deploymentVersionPlaceholder = "00000000-0000-4000-8000-000000000000";
 
 function fail(message) {
@@ -55,7 +61,7 @@ async function inspectTree(root, directory = root) {
     if (forbiddenFileNames.has(entry.name)) {
       fail(`不允许源码配置：${relativePath}`);
     }
-    if (entry.isFile() && forbiddenExtensions.has(path.extname(entry.name))) {
+    if (entry.isFile() && forbiddenExtensions.has(path.extname(entry.name)) && !isPublishedFile(relativePath)) {
       fail(`不允许源码或 Source Map：${relativePath}`);
     }
     if (entry.isDirectory()) await inspectTree(root, absolutePath);

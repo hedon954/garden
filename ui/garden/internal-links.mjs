@@ -77,8 +77,9 @@ const splitHref = (href) => {
  * - redirects: `{ from, to }` pairs (readRedirects + columnRedirects).
  * - routes: every page address the site builds, without the base path.
  * - basePath: NEXT_PUBLIC_BASE_PATH; Link adds it back.
+ * - format: shapes the route it returns (the app passes siteHref, which adds the trailing slash).
  */
-export function internalLinkResolver({ redirects = [], routes = [], basePath = "" } = {}) {
+export function internalLinkResolver({ redirects = [], routes = [], basePath = "", format = (href) => href } = {}) {
   const moved = new Map();
   for (const { from, to } of redirects) if (!moved.has(routeKey(from))) moved.set(routeKey(from), to);
   const pages = new Set([...routes].map(routeKey));
@@ -106,6 +107,7 @@ export function internalLinkResolver({ redirects = [], routes = [], basePath = "
       target = { pathname: next.pathname || "/", search: own.search || next.search, hash: own.hash || next.hash };
     }
     if (!pages.has(routeKey(target.pathname))) return null;
-    return clientRoute(`${target.pathname}${target.search}${target.hash}`);
+    const route = clientRoute(`${target.pathname}${target.search}${target.hash}`);
+    return route ? format(route) : route;
   };
 }
