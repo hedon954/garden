@@ -35,6 +35,14 @@ pages:
 
 导航、按钮结构和页面骨架由引擎统一维护。
 
+站点的公开地址写在 `url`：
+
+```yaml
+url: https://blog.example.com
+```
+
+文章里写成完整网址的站内链接（例如 `https://blog.example.com/blog/hello/`）会按站内链接显示：在当前标签页打开，不带外链图标，也不会生成链接卡片。http 和 https、带不带 `www.`、结尾有没有 `/` 都算同一个站点；其他子域名（例如 `docs.blog.example.com`）仍是外链。链接会改写成 `/blog/hello/` 这样的站内路径，查询参数和 `#` 锚点保留。不写 `url` 时使用构建环境里的 `SITE_URL`；两者都没有，就不做这项识别。
+
 作者资料还可以配置 GitHub 降级数据：
 
 ```yaml

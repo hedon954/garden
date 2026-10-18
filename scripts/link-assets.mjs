@@ -17,7 +17,9 @@ import path from "node:path";
 import { pathToFileURL } from "node:url";
 import matter from "gray-matter";
 import { fetchFavicon, fetchImage, fetchPageMeta, isPublicUrl, linkHost } from "./link-meta-core.mjs";
+import { parse as parseYaml } from "yaml";
 import { markdownLinks } from "../ui/garden/markdown-links.mjs";
+import { configuredSiteAddress, sameSiteMatcher } from "../ui/garden/same-site.mjs";
 
 export const CACHE_FILE = "link-assets.json";
 export const ASSET_DIR = path.join("public", "link-assets");
@@ -49,15 +51,26 @@ function markdownFiles(directory) {
   });
 }
 
+function readSiteConfig(siteRoot) {
+  try {
+    return parseYaml(fs.readFileSync(path.join(siteRoot, "site.config.yaml"), "utf8")) ?? {};
+  } catch {
+    return {};
+  }
+}
+
 /** External links across every post: the sites (for favicons) and the URLs. */
-export function collectSiteLinks(siteRoot) {
+export function collectSiteLinks(siteRoot, env = process.env) {
+  const config = readSiteConfig(siteRoot);
+  // Links back to this site are internal: no favicon, no card.
+  const sameSite = sameSiteMatcher(configuredSiteAddress(config, env), env.NEXT_PUBLIC_BASE_PATH ?? "");
   const hosts = new Map();
   const cards = new Set();
   const urls = new Set();
   for (const file of markdownFiles(path.join(siteRoot, "content"))) {
     const { content } = matter(fs.readFileSync(file, "utf8"));
     for (const { url, card } of markdownLinks(content)) {
-      if (!isPublicUrl(url)) continue;
+      if (!isPublicUrl(url) || sameSite(url)) continue;
       urls.add(url);
       if (card) cards.add(url);
       const host = linkHost(url);

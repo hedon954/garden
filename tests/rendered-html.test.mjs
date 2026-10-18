@@ -623,9 +623,10 @@ test("palette: warm paper, ink accent, no blue, readable chips in both themes", 
   assert.match(shell, /:root\{\s*--paper:#FAF9F5;/);
   assert.match(globals, /:root \{\s*--paper: #faf9f5;\s*--paper-deep: #f0eee6;/);
 
-  // no blue left in the site styles
+  // no blue left in the site styles, except the NOTE callout, which follows the A2 demo
   const blues = /2c55b4|93b2f4|5e86e0|4c72c9|eaf0fc|eef3fc|44,\s*85,\s*180|44 85 180|147,\s*178,\s*244|147 178 244/i;
-  for (const [name, css] of Object.entries({ tokens, shell, globals, a2, ui })) assert.doesNotMatch(css, blues, name);
+  const a2WithoutCallouts = a2.replace(/--al-note(-bg|-line)?: [^;]+;/g, "");
+  for (const [name, css] of Object.entries({ tokens, shell, globals, a2: a2WithoutCallouts, ui })) assert.doesNotMatch(css, blues, name);
 
   // WCAG AA (4.5:1) for chip text, selected chips and muted text
   const lum = (hex) => {
@@ -699,31 +700,76 @@ test("references render as a numbered list in one warm card, with the source sit
   assert.doesNotMatch(globals, /\.article-references (table|td|tr)\b/);
 });
 
-test("the IMPORTANT callout is ink, with a dark bar and a bold title; no purple is left", async () => {
+test("callouts use the A2 demo colours, all five styled alike", async () => {
   const [a2, response] = await Promise.all([
     readFile(new URL("../app/styles/a2.css", import.meta.url), "utf8"),
     render("/blog/markdown-lab"),
   ]);
-  assert.match(a2, /--al-important: #30302e;\s*--al-important-bg: #f0eee6;/);
-  assert.match(a2, /--al-important: #eeece7;\s*--al-important-bg: #30302e;/);
-  assert.match(a2, /\.markdown-body \.markdown-alert-important \{[^}]*border-left: 3px solid var\(--al-important\);/);
-  assert.match(a2, /\.markdown-body \.markdown-alert-important \.markdown-alert-title \{[^}]*font-weight: 700;/);
-  // the other four keep their own colours
-  for (const kind of ["note", "tip", "warning", "caution"]) assert.match(a2, new RegExp(`--al-${kind}: #`));
-  // no purple anywhere in the callouts
-  const alerts = a2.slice(a2.indexOf(".markdown-body.prose {"), a2.indexOf(".markdown-body .markdown-alert > :last-child"));
-  assert.ok(alerts.length > 0);
-  assert.doesNotMatch(alerts, /6a3fb5|f3effa|bfa5f0|106,\s*63,\s*181|191,\s*165,\s*240/i);
-  const purple = (hex) => {
-    const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
-    return b > g + 30 && r > g + 15;
+  // Values from https://hedon-garden-demos.pages.dev/a2/callouts/
+  const demo = {
+    light: {
+      note: ["#2c55b4", "#eef3fc", "rgba(44, 85, 180, 0.22)"],
+      tip: ["#2d6a3e", "#edf5ef", "rgba(45, 106, 62, 0.22)"],
+      important: ["#6a3fb5", "#f3effa", "rgba(106, 63, 181, 0.22)"],
+      warning: ["#8a5300", "#fbf3e5", "rgba(176, 108, 0, 0.26)"],
+      caution: ["#b4213a", "#fbeef0", "rgba(216, 45, 72, 0.28)"],
+    },
+    dark: {
+      note: ["#93b2f4", "rgba(147, 178, 244, 0.09)", "rgba(147, 178, 244, 0.28)"],
+      tip: ["#8fcb9f", "rgba(143, 203, 159, 0.08)", "rgba(143, 203, 159, 0.26)"],
+      important: ["#bfa5f0", "rgba(191, 165, 240, 0.09)", "rgba(191, 165, 240, 0.28)"],
+      warning: ["#e6b566", "rgba(230, 181, 102, 0.08)", "rgba(230, 181, 102, 0.28)"],
+      caution: ["#f2909f", "rgba(242, 144, 159, 0.08)", "rgba(242, 144, 159, 0.28)"],
+    },
   };
-  for (const hex of alerts.match(/#[0-9a-f]{6}\b/gi) ?? []) assert.equal(purple(hex), false, hex);
+  const lightBlock = a2.slice(a2.indexOf(".markdown-body.prose {"), a2.indexOf(':root[data-theme="dark"] .markdown-body.prose'));
+  const darkStart = a2.indexOf(':root[data-theme="dark"] .markdown-body.prose');
+  const darkBlock = a2.slice(darkStart, a2.indexOf("}", darkStart));
+  for (const [theme, block] of [["light", lightBlock], ["dark", darkBlock]]) {
+    for (const [kind, [fg, bg, line]] of Object.entries(demo[theme])) {
+      assert.ok(block.includes(`--al-${kind}: ${fg};`), `${theme} ${kind} colour`);
+      assert.ok(block.includes(`--al-${kind}-bg: ${bg};`), `${theme} ${kind} background`);
+      assert.ok(block.includes(`--al-${kind}-line: ${line};`), `${theme} ${kind} border`);
+    }
+  }
+  // IMPORTANT differs only in colour: no bar of its own, no heavier title.
+  assert.match(a2, /\.markdown-body \.markdown-alert-important \{\s*--al: var\(--al-important\);\s*--al-bg: var\(--al-important-bg\);\s*--al-line: var\(--al-important-line\);\s*\}/);
+  assert.doesNotMatch(a2, /markdown-alert-important[^{]*\{[^}]*(border-left|padding-left|font-weight)/);
+  assert.match(a2, /\.markdown-body \.markdown-alert \.markdown-alert-title \{[^}]*font-size: 14px;[^}]*font-weight: 600;/);
+  assert.match(a2, /@media \(max-width: 640px\) \{\s*\.markdown-body \.markdown-alert \{\s*padding: 14px 16px 16px;/);
 
   const html = await response.text();
   for (const kind of ["note", "tip", "important", "warning", "caution"]) {
     assert.match(html, new RegExp(`markdown-alert markdown-alert-${kind}`));
   }
+  // Icons are the demo's own drawings.
+  const icons = await readFile(new URL("../app/lib/remark-a2.mjs", import.meta.url), "utf8");
+  for (const path of [
+    '<circle cx="8" cy="8" r="6.25"/><path d="M8 7.2v4"/>',
+    '<path d="M8 1.75a4.25 4.25 0 0 0-2.5 7.7c.4.3.6.7.6 1.2v.6h3.8v-.6c0-.5.2-.9.6-1.2A4.25 4.25 0 0 0 8 1.75z"/><path d="M6.2 13.6h3.6"/>',
+    '<path d="M2.25 3.25a1.5 1.5 0 0 1 1.5-1.5h8.5a1.5 1.5 0 0 1 1.5 1.5v6.5a1.5 1.5 0 0 1-1.5 1.5H7.5l-3 2.75v-2.75h-.75a1.5 1.5 0 0 1-1.5-1.5z"/>',
+    '<path d="M7.13 2.4a1 1 0 0 1 1.74 0l5.6 9.9a1 1 0 0 1-.87 1.5H2.4a1 1 0 0 1-.87-1.5z"/>',
+    '<path d="M5.3 1.75h5.4l3.55 3.55v5.4l-3.55 3.55H5.3L1.75 10.7V5.3z"/>',
+  ]) assert.ok(icons.includes(path), path);
+});
+
+test("underline, mark and .hl share the demo's highlighter stroke", async () => {
+  const [globals, tokens] = await Promise.all([
+    readFile(new URL("../app/globals.css", import.meta.url), "utf8"),
+    readFile(new URL("../app/styles/tokens.css", import.meta.url), "utf8"),
+  ]);
+  const rule = globals.match(/\.markdown-body u,\s*\.markdown-body mark,\s*\.markdown-body \.hl \{([^}]*)\}/)?.[1] ?? "";
+  assert.ok(rule, "highlighter rule");
+  assert.match(rule, /background: linear-gradient\(to bottom, transparent 58%, var\(--hl\) 58%, var\(--hl\) 92%, transparent 92%\);/);
+  assert.match(rule, /font-weight: 500;/);
+  assert.match(rule, /padding: 0 0\.08em;/);
+  assert.match(rule, /-webkit-box-decoration-break: clone;\s*box-decoration-break: clone;/);
+  assert.match(rule, /text-decoration: none;/);
+  assert.match(rule, /border-bottom: 0;/);
+  assert.match(globals, /\.markdown-body u strong,[^{]*\{[^}]*font-weight: 600;[^}]*text-decoration: none;/);
+  assert.doesNotMatch(globals, /\.markdown-body u \{[^}]*border-bottom: 1px/);
+  assert.match(tokens, /--hl: #ffe58f;/);
+  assert.match(tokens, /--hl: #5e4e17;/);
 });
 
 test("link cards: inline links keep the text and get a preview card, standalone links become the card", async () => {

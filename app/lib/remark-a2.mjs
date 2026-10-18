@@ -18,10 +18,10 @@ const LEGACY_KIND = {
 
 const ALERT_ICON = {
   note: '<svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.25"/><path d="M8 7.2v4"/><path d="M8 4.8v.1" stroke-width="2"/></svg>',
-  tip: '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M6 12.5h4M6.5 14.5h3M8 1.75a4.5 4.5 0 0 0-2.6 8.2c.4.3.6.7.6 1.2v.35h4v-.35c0-.5.2-.9.6-1.2A4.5 4.5 0 0 0 8 1.75Z"/></svg>',
-  important: '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2.25 3.25a1 1 0 0 1 1-1h9.5a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H7l-3 2.5v-2.5h-.75a1 1 0 0 1-1-1Z"/><path d="M8 4.75v3"/><path d="M8 9.4v.1" stroke-width="2"/></svg>',
-  warning: '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2 1.75 13.25h12.5Z"/><path d="M8 6.5v3.25"/><path d="M8 11.6v.1" stroke-width="2"/></svg>',
-  caution: '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M5.3 1.75h5.4l3.55 3.55v5.4l-3.55 3.55H5.3l-3.55-3.55V5.3Z"/><path d="M8 4.75v3.75"/><path d="M8 10.9v.1" stroke-width="2"/></svg>',
+  tip: '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.75a4.25 4.25 0 0 0-2.5 7.7c.4.3.6.7.6 1.2v.6h3.8v-.6c0-.5.2-.9.6-1.2A4.25 4.25 0 0 0 8 1.75z"/><path d="M6.2 13.6h3.6"/></svg>',
+  important: '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2.25 3.25a1.5 1.5 0 0 1 1.5-1.5h8.5a1.5 1.5 0 0 1 1.5 1.5v6.5a1.5 1.5 0 0 1-1.5 1.5H7.5l-3 2.75v-2.75h-.75a1.5 1.5 0 0 1-1.5-1.5z"/><path d="M8 4.5v3"/><path d="M8 9.4v.1" stroke-width="2"/></svg>',
+  warning: '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M7.13 2.4a1 1 0 0 1 1.74 0l5.6 9.9a1 1 0 0 1-.87 1.5H2.4a1 1 0 0 1-.87-1.5z"/><path d="M8 6.3v3.1"/><path d="M8 11.4v.1" stroke-width="2"/></svg>',
+  caution: '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M5.3 1.75h5.4l3.55 3.55v5.4l-3.55 3.55H5.3L1.75 10.7V5.3z"/><path d="M8 4.8v3.6"/><path d="M8 10.6v.1" stroke-width="2"/></svg>',
 };
 
 function meaningfulChildren(node) {

@@ -2061,13 +2061,30 @@ button {
   text-decoration-thickness: 2px;
 }
 
-/* A per-line border stays continuous across inline code and descenders. */
-.markdown-body u {
+/* Highlighter for key claims, as in the A2 demo: a soft stroke under the lower part of the line. */
+.markdown-body u,
+.markdown-body mark,
+.markdown-body .hl {
+  color: var(--ink);
+  font-weight: 500;
   text-decoration: none;
-  border-bottom: 1px solid currentColor;
-  padding-bottom: 0.1em;
+  border-bottom: 0;
+  background: linear-gradient(to bottom, transparent 58%, var(--hl) 58%, var(--hl) 92%, transparent 92%);
+  padding: 0 0.08em;
   -webkit-box-decoration-break: clone;
   box-decoration-break: clone;
+}
+
+.markdown-body u strong,
+.markdown-body u u,
+.markdown-body mark strong,
+.markdown-body mark u,
+.markdown-body .hl strong,
+.markdown-body .hl u {
+  font-weight: 600;
+  text-decoration: none;
+  background: none;
+  padding: 0;
 }
 
 .markdown-body strong {
