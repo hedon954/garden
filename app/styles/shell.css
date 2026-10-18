@@ -214,6 +214,7 @@ html[data-theme="dark"] .sh-rail{color:var(--muted)}
 .sh-foot nav{display:flex;flex-wrap:wrap;gap:4px 20px}
 .sh-foot a{display:inline-flex;align-items:center;gap:6px;min-height:44px;color:var(--soft);text-decoration:none;padding:4px 0;white-space:nowrap}
 .sh-foot a:hover{color:var(--blue)}
+.sh-foot .footer-framework a{display:inline;min-height:0;padding:0;color:var(--soft);text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1px}
 .sh-foot-links{display:flex;align-items:center;gap:20px}
 .sh-foot-links a svg{display:block;flex:none;width:16px;height:16px}
 .sh-demo{width:100%;font-size:var(--fs-meta);color:var(--muted)}

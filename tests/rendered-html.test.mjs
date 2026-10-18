@@ -56,6 +56,7 @@ test("server-renders the finished blog home", async () => {
   assert.match(footer, /class="sh-foot-links"/);
   assert.match(footer, /GitHub/);
   assert.match(footer, /RSS\s*<\/a>/);
+  assert.match(footer, /基于 <a [^>]*href="https:\/\/github\.com\/hedon954\/garden"[^>]*>Garden<\/a> 构建/);
   assert.doesNotMatch(footer, /aria-label/);
   assert.match(shell, /\.sh-feature \.cover\{[^}]*aspect-ratio:auto;display:block/);
   assert.match(shell, /\.sh-feature \.cover\{[^}]*background:none/);
@@ -281,6 +282,30 @@ test("hides empty home sections and gives every content index an intentional emp
   assert.match(columns, /siteConfig\.pages\.columns\.subtitle/);
   assert.doesNotMatch(columns, /与文章分类相互独立/);
   assert.match(emptyState, /content-empty-state/);
+});
+
+test("the example post keeps a wide local image, and tags create a release", async () => {
+  const [post, image, measure, publish] = await Promise.all([
+    readFile(new URL("../content/posts/windowsill-herbs.md", import.meta.url), "utf8"),
+    readFile(new URL("../content/posts/windowsill-herbs/sill.svg", import.meta.url), "utf8"),
+    readFile(new URL("../app/components/ArticleMeasure.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../.github/workflows/publish.yml", import.meta.url), "utf8"),
+  ]);
+  assert.match(post, /!\[朝北的窗台，从左到右是罗勒、薄荷和一只空盆。\]\(\.\/windowsill-herbs\/sill\.svg\)/);
+  assert.doesNotMatch(post, /oss-|aliyuncs|myqcloud/i);
+  assert.match(image, /width="1280"/);
+  assert.match(measure, /querySelectorAll<HTMLElement>\("\.fig"\)/);
+  assert.match(measure, /naturalWidth/);
+  assert.match(publish, /if: github\.event_name == 'push' && startsWith\(github\.ref, 'refs\/tags\/v'\)/);
+  assert.match(publish, /gh release create "\$tag" --generate-notes/);
+
+  const response = await render("/blog/windowsill-herbs");
+  assert.equal(response.status, 200);
+  const html = await response.text();
+  assert.match(html, /\/media\/posts\/windowsill-herbs\/sill\.svg/);
+  assert.match(html, /class="fig"/);
+  assert.match(html, /朝北的窗台，从左到右是罗勒、薄荷和一只空盆。/);
+  assert.doesNotMatch(html, /oss-|aliyuncs|myqcloud/i);
 });
 
 test("columns index shows the configured subtitle", async () => {

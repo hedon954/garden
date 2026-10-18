@@ -19,24 +19,44 @@ export function ArticleMeasure() {
     const layout = () => {
       const articleBox = article.getBoundingClientRect();
       const viewport = root.clientWidth;
-      article.querySelectorAll<HTMLElement>(".table-wrap").forEach((wrap) => {
-        const table = wrap.querySelector("table");
-        wrap.classList.remove("ux-wide");
-        wrap.style.removeProperty("--wl");
-        wrap.style.removeProperty("--wr");
-        if (!table) return;
+      const widen = (element: HTMLElement, contentWidth: number) => {
+        element.classList.remove("ux-wide");
+        element.style.removeProperty("--wl");
+        element.style.removeProperty("--wr");
         const margin = tableBreakout({
           viewport,
           articleLeft: articleBox.left,
           articleRight: articleBox.right,
-          tableClient: wrap.clientWidth,
-          tableScroll: table.scrollWidth,
+          tableClient: element.clientWidth,
+          tableScroll: contentWidth,
         });
         if (margin.left > 0) {
-          wrap.style.setProperty("--wl", `${margin.left}px`);
-          wrap.style.setProperty("--wr", `${margin.right}px`);
-          wrap.classList.add("ux-wide");
+          element.style.setProperty("--wl", `${margin.left}px`);
+          element.style.setProperty("--wr", `${margin.right}px`);
+          element.classList.add("ux-wide");
         }
+      };
+
+      article.querySelectorAll<HTMLElement>(".table-wrap").forEach((wrap) => {
+        const table = wrap.querySelector("table");
+        if (!table) {
+          wrap.classList.remove("ux-wide");
+          wrap.style.removeProperty("--wl");
+          wrap.style.removeProperty("--wr");
+          return;
+        }
+        widen(wrap, table.scrollWidth);
+      });
+
+      article.querySelectorAll<HTMLElement>(".fig").forEach((figure) => {
+        const image = figure.querySelector("img");
+        if (!image?.naturalWidth) {
+          figure.classList.remove("ux-wide");
+          figure.style.removeProperty("--wl");
+          figure.style.removeProperty("--wr");
+          return;
+        }
+        widen(figure, image.naturalWidth);
       });
 
       if (!toc) {
