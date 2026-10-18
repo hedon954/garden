@@ -70,7 +70,12 @@ test("header: 26px logo 10px from the name, no divider or fixed box", () => {
 test("search entry: magnifier and 搜索 like a nav link, ⌘K only with a fine pointer, 44px button on phones", () => {
   const shell = read("app/styles/shell.css");
   const rule = shell.match(/\.sh-search\{[^}]*\}/u)[0];
-  assert.match(rule, /border:0;background:transparent;color:var\(--soft\)/u);
+  // A hairline box on desktop: rule-coloured border, 8px radius, 34px tall, transparent.
+  assert.match(rule, /height:34px;padding:0 10px 0 12px;border:1px solid var\(--rule\);background:transparent;color:var\(--soft\)/u);
+  assert.match(rule, /border-radius:8px/u);
+  assert.match(shell, /\.sh-search:hover\{color:var\(--ink\);border-color:var\(--rule-strong\)\}/u);
+  // The phone icon buttons stay unboxed and identical.
+  assert.match(shell, /\.sh-icon\{[^}]*border:0;background:transparent/u);
   assert.match(rule, /font:400 15px\/1 var\(--sans\)/u);
   assert.match(shell, /\.sh-nav a\{font-size:15px;color:var\(--soft\)/u, "same size and colour as the nav links");
   assert.match(shell, /\.sh-search kbd\{display:none;/u);
