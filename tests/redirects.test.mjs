@@ -143,3 +143,100 @@ test("the build step writes the pages when run as a script (configured and colum
     fs.rmSync(site, { recursive: true, force: true });
   }
 });
+
+function cliSite({ config, pages = [], columns }) {
+  const site = fs.mkdtempSync(path.join(os.tmpdir(), "garden-redirects-step-"));
+  const out = path.join(site, "dist", "client");
+  fs.mkdirSync(out, { recursive: true });
+  for (const page of pages) {
+    fs.mkdirSync(path.join(out, page), { recursive: true });
+    fs.writeFileSync(path.join(out, page, "index.html"), "<p>page</p>");
+  }
+  fs.writeFileSync(path.join(site, "site.config.yaml"), config);
+  if (columns) {
+    fs.mkdirSync(path.join(site, "content"), { recursive: true });
+    fs.writeFileSync(path.join(site, "content", "columns.yaml"), columns);
+  }
+  return { site, out };
+}
+
+async function runStep(site) {
+  const { spawnSync } = await import("node:child_process");
+  return spawnSync(process.execPath, [new URL("../scripts/redirects.mjs", import.meta.url).pathname], {
+    env: { ...process.env, GARDEN_SITE: site },
+    encoding: "utf8",
+  });
+}
+
+test("the build step fails when writing a redirect page throws", async () => {
+  const { site, out } = cliSite({
+    config: "redirects:\n  /old/post/: /blog/post/\n",
+    pages: ["blog/post"],
+  });
+  try {
+    // `old` is a file, so the folder for old/post/index.html cannot be made.
+    fs.writeFileSync(path.join(out, "old"), "not a folder");
+    const result = await runStep(site);
+    assert.equal(result.status, 1, result.stdout + result.stderr);
+    assert.match(result.stderr, /旧地址跳转页生成失败/u);
+    assert.doesNotMatch(result.stdout, /继续构建/u);
+  } finally {
+    fs.rmSync(site, { recursive: true, force: true });
+  }
+});
+
+test("the build step fails when fewer pages are written than redirects configured", async () => {
+  const { site, out } = cliSite({
+    config: "redirects:\n  /old/kept/: /blog/kept/\n  /old/gone/: /blog/never-built/\n",
+    pages: ["blog/kept"],
+  });
+  try {
+    const result = await runStep(site);
+    assert.equal(result.status, 1, result.stdout + result.stderr);
+    assert.match(result.stdout, /旧地址跳转页：1 个/u);
+    assert.match(result.stderr, /应有 2 个，只生成了 1 个/u);
+    assert.match(result.stderr, /\/old\/gone\/ → \/blog\/never-built\//u);
+    assert.ok(fs.existsSync(path.join(out, "old/kept/index.html")));
+  } finally {
+    fs.rmSync(site, { recursive: true, force: true });
+  }
+});
+
+test("a malformed redirect entry only warns; the step still succeeds", async () => {
+  const { site, out } = cliSite({
+    config: [
+      "redirects:",
+      "  not-a-site-path: /blog/post/",
+      "  /old/bad-target/: ftp://example.org/file",
+      "  /old/post/: /blog/post/",
+      "  /old/post: /blog/post/",
+      "",
+    ].join("\n"),
+    pages: ["blog/post", "columns"],
+    columns: "columns:\n  - slug: field-notes\n",
+  });
+  try {
+    const result = await runStep(site);
+    assert.equal(result.status, 0, result.stdout + result.stderr);
+    assert.equal(result.stderr, "");
+    assert.match(result.stdout, /警告：redirects：旧路径 not-a-site-path 必须是站内路径/u);
+    assert.match(result.stdout, /警告：redirects：\/old\/bad-target\/ 的新地址/u);
+    assert.match(result.stdout, /警告：redirects：\/old\/post 和前面的旧路径是同一个页面/u);
+    assert.match(result.stdout, /旧地址跳转页：2 个/u);
+    assert.ok(fs.existsSync(path.join(out, "old/post/index.html")));
+    assert.ok(fs.existsSync(path.join(out, "columns/field-notes/index.html")));
+  } finally {
+    fs.rmSync(site, { recursive: true, force: true });
+  }
+});
+
+test("the build step is quiet and succeeds when no redirects are configured", async () => {
+  const { site } = cliSite({ config: "name: Example\n" });
+  try {
+    const result = await runStep(site);
+    assert.equal(result.status, 0, result.stdout + result.stderr);
+    assert.equal(result.stdout, "");
+  } finally {
+    fs.rmSync(site, { recursive: true, force: true });
+  }
+});

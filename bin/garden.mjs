@@ -32,7 +32,8 @@ function runNode(script, scriptArgs = [], { cwd = siteRoot, env } = {}) {
     env: env ?? siteEnv(),
     stdio: "inherit",
   });
-  if (result.status) process.exit(result.status ?? 1);
+  // A non-zero exit or a signal (status null) stops the command with a failure.
+  if (result.status !== 0) process.exit(result.status || 1);
 }
 
 function resolveVinext() {
@@ -278,7 +279,8 @@ function runVinext(vinextArgs, { copyDist = false } = {}) {
     stdio: "inherit",
   });
   if (copyDist) publishDist(cwd);
-  if (result.status) process.exit(result.status ?? 1);
+  // A non-zero exit or a signal (status null) stops the command with a failure.
+  if (result.status !== 0) process.exit(result.status || 1);
 }
 
 function copyTemplate(from, to) {
