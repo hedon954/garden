@@ -42,7 +42,14 @@ test("server-renders the finished blog home", async () => {
   ]);
   assert.match(articleCss, /\.article-hero\.article-cover \{[^}]*border-radius: var\(--r-lg\)/);
   assert.doesNotMatch(articleCss, /article-hero\.article-cover \{\s*border-radius:\s*16px/);
-  assert.match(shell, /\.sh-foot-links a\{display:inline-flex;align-items:center;gap:8px;min-height:44px/);
+  assert.match(shell, /\.sh-foot-links\{display:flex;align-items:center;gap:20px\}/);
+  assert.match(shell, /\.sh-foot a\{display:inline-flex;align-items:center;gap:6px;min-height:44px/);
+  assert.match(shell, /\.sh-foot-links a svg\{display:block;flex:none;width:16px;height:16px\}/);
+  const footer = html.match(/<footer class="sh-footer"[\s\S]*?<\/footer>/)?.[0] ?? "";
+  assert.match(footer, /class="sh-foot-links"/);
+  assert.match(footer, /GitHub/);
+  assert.match(footer, /RSS\s*<\/a>/);
+  assert.doesNotMatch(footer, /aria-label/);
   assert.match(shell, /\.sh-feature \.cover\{[^}]*aspect-ratio:auto;display:block/);
   assert.match(shell, /\.sh-feature \.cover\{[^}]*background:none/);
   assert.match(shell, /\.sh-feature \.cover img\{display:block;width:100%;height:auto\}/);

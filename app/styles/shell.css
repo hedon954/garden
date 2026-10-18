@@ -211,11 +211,10 @@ html[data-theme="dark"] .sh-rail{color:var(--muted)}
 .sh-foot p{margin:0}
 .sh-foot strong{color:var(--ink);font:600 15px/1 var(--serif);margin-right:12px}
 .sh-foot nav{display:flex;flex-wrap:wrap;gap:4px 20px}
-.sh-foot a{color:var(--soft);text-decoration:none;padding:4px 0}
+.sh-foot a{display:inline-flex;align-items:center;gap:6px;min-height:44px;color:var(--soft);text-decoration:none;padding:4px 0;white-space:nowrap}
 .sh-foot a:hover{color:var(--blue)}
-.sh-foot-links{display:flex;flex:none;flex-wrap:wrap;align-items:center;gap:4px 8px}
-.sh-foot-links a{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 8px;white-space:nowrap}
-.sh-foot-links a svg{display:block;flex:none;width:19px;height:19px}
+.sh-foot-links{display:flex;align-items:center;gap:20px}
+.sh-foot-links a svg{display:block;flex:none;width:16px;height:16px}
 .sh-demo{width:100%;font-size:var(--fs-meta);color:var(--muted)}
 .sh-demo a{text-decoration:underline;text-underline-offset:3px}
 
@@ -287,7 +286,7 @@ html[data-theme="dark"] .sh-pal-scrim{background:rgba(0,0,0,.55)}
   .sh-row h3{font-size:var(--fs-body)}
   .sh-404{padding:48px 0 0}
   .sh-footer{margin-top:80px}
-  .sh-foot{padding:24px 20px 40px;flex-direction:column}
+  .sh-foot{padding:24px 20px 40px;flex-direction:column;align-items:flex-start}
   /* palette becomes a full-screen sheet */
   .sh-pal{padding:0}
   .sh-pal-box{width:100%;max-height:none;height:100%;border-radius:0;border:0;animation:none}
