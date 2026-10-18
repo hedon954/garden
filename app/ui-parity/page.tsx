@@ -1,8 +1,9 @@
 import Image from "next/image";
 import { ParityInteractions } from "../../ui/react/parity";
-import { pageAlternates } from "../lib/page-alternates";
 
-export const metadata = { alternates: pageAlternates("/ui-parity") };
+// Internal comparison page (docs/intelligent-ui-parity.md): Garden's renders next
+// to the ChatGPT originals. Kept out of search, so it has no canonical address.
+export const metadata = { robots: { index: false, follow: false } };
 
 const slices = [
   { label: "商品销售", value: 78.2, color: "#539af8" },
