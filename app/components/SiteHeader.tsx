@@ -301,6 +301,10 @@ export function SiteHeader() {
 
   return (
     <>
+      {/* Targets for the no-JavaScript menu links below. Fixed and outside the sticky header, so
+          following #sh-menu-on or #sh-menu-off never scrolls the page (the TOC drawer works the same way). */}
+      <span className="sh-menu-target" id="sh-menu-on" aria-hidden="true" />
+      <span className="sh-menu-target" id="sh-menu-off" aria-hidden="true" />
       <header className="sh-header" id="site-header">
         <div className="sh-bar">
           <Link href="/" className="sh-word">
@@ -343,11 +347,11 @@ export function SiteHeader() {
               {menuOpen ? <X size={18} /> : <span aria-hidden="true">☰</span>}
             </button>
             {/* Without JavaScript the button above cannot open anything: these two links take its place
-                and open or close the menu through :target, like the TOC drawer (shell.css). */}
-            <a className="sh-icon sh-menu-nojs" id="sh-menu-open" href="#sh-menu" aria-label="打开菜单">
+                and open or close the menu through :target on the fixed anchors above (shell.css). */}
+            <a className="sh-icon sh-menu-nojs" id="sh-menu-open" href="#sh-menu-on" aria-label="打开菜单">
               <span aria-hidden="true">☰</span>
             </a>
-            <a className="sh-icon sh-menu-nojs-close" href="#site-header" aria-label="关闭菜单">
+            <a className="sh-icon sh-menu-nojs-close" href="#sh-menu-off" aria-label="关闭菜单">
               <X size={18} />
             </a>
           </div>

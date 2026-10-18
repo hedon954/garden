@@ -874,8 +874,9 @@ test("0.5.14: the header carries the no-JS menu links next to the ☰ button", a
   const header = html.match(/<header class="sh-header" id="site-header">[\s\S]*?<\/header>/)?.[0] ?? "";
   assert.ok(header, "header rendered with its id");
   assert.match(header, /<button class="sh-icon sh-menu-btn" type="button" aria-expanded="false" aria-controls="sh-menu" aria-label="打开菜单">/);
-  assert.match(header, /<a class="sh-icon sh-menu-nojs" id="sh-menu-open" href="#sh-menu" aria-label="打开菜单"><span aria-hidden="true">☰<\/span><\/a>/);
-  assert.match(header, /<a class="sh-icon sh-menu-nojs-close" href="#site-header" aria-label="关闭菜单"><svg/);
+  assert.match(header, /<a class="sh-icon sh-menu-nojs" id="sh-menu-open" href="#sh-menu-on" aria-label="打开菜单"><span aria-hidden="true">☰<\/span><\/a>/);
+  assert.match(header, /<a class="sh-icon sh-menu-nojs-close" href="#sh-menu-off" aria-label="关闭菜单"><svg/);
+  assert.match(html, /<span class="sh-menu-target" id="sh-menu-on" aria-hidden="true"><\/span><span class="sh-menu-target" id="sh-menu-off" aria-hidden="true"><\/span><header class="sh-header" id="site-header">/);
   assert.match(header, /<nav class="sh-menu" id="sh-menu" aria-label="站点导航（移动端）">/);
 });
 
