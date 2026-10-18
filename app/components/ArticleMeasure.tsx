@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { tableBreakout, tocShift } from "../../ui/garden/enhance.mjs";
+import { figureBreakout, tableBreakout, tocShift } from "../../ui/garden/enhance.mjs";
 
 function translatedX(element: Element) {
   const value = new DOMMatrix(getComputedStyle(element).transform).m41;
@@ -37,16 +37,11 @@ export function ArticleMeasure() {
     let tocFrame = 0;
     let refreshPending = false;
 
-    const contentWidth = (element: HTMLElement, refresh: boolean) => {
-      if (!refresh && natural.has(element)) return natural.get(element) ?? 0;
-      let width = 0;
-      if (element.classList.contains("table-wrap")) {
-        const table = element.querySelector("table");
-        width = table ? naturalWidth(table) : 0;
-      } else {
-        width = element.querySelector("img")?.naturalWidth ?? 0;
-      }
-      natural.set(element, width);
+    const tableWidth = (wrap: HTMLElement, refresh: boolean) => {
+      if (!refresh && natural.has(wrap)) return natural.get(wrap) ?? 0;
+      const table = wrap.querySelector("table");
+      const width = table ? naturalWidth(table) : 0;
+      natural.set(wrap, width);
       return width;
     };
 
@@ -83,22 +78,39 @@ export function ArticleMeasure() {
       // Measure the text column, not the whole article grid (which includes the TOC rail).
       const articleBox = (article.querySelector(".markdown-body") ?? article).getBoundingClientRect();
       const viewport = root.clientWidth;
-      article.querySelectorAll<HTMLElement>(".table-wrap, .fig").forEach((element) => {
-        const width = contentWidth(element, refresh);
-        resetWide(element);
+      const widen = (element: HTMLElement, margin: { left: number; right: number }) => {
+        if (margin.left <= 0) return;
+        element.style.setProperty("--wl", `${margin.left}px`);
+        element.style.setProperty("--wr", `${margin.right}px`);
+        element.classList.add("ux-wide");
+      };
+      // Tables: as wide as their unwrapped content, up to 300px a side.
+      article.querySelectorAll<HTMLElement>(".table-wrap").forEach((wrap) => {
+        const width = tableWidth(wrap, refresh);
+        resetWide(wrap);
         if (!width) return;
-        const margin = tableBreakout({
+        widen(wrap, tableBreakout({
           viewport,
           articleLeft: articleBox.left,
           articleRight: articleBox.right,
-          tableClient: element.clientWidth,
+          tableClient: wrap.clientWidth,
           tableScroll: width,
-        });
-        if (margin.left > 0) {
-          element.style.setProperty("--wl", `${margin.left}px`);
-          element.style.setProperty("--wr", `${margin.right}px`);
-          element.classList.add("ux-wide");
-        }
+        }));
+      });
+      // Images: as wide as they display (2x screenshots at half their pixels), up to 1040px in total.
+      article.querySelectorAll<HTMLElement>(".fig").forEach((figure) => {
+        const image = figure.querySelector("img");
+        resetWide(figure);
+        if (!image?.naturalWidth) return;
+        widen(figure, figureBreakout({
+          viewport,
+          articleLeft: articleBox.left,
+          articleRight: articleBox.right,
+          figureClient: figure.clientWidth,
+          imageClient: image.clientWidth,
+          naturalWidth: image.naturalWidth,
+          attrWidth: Number(image.getAttribute("width")) || 0,
+        }));
       });
       placeToc();
     };

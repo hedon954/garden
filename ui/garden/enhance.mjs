@@ -75,6 +75,38 @@ export function tableBreakout({
 }
 
 /**
+ * How far a figure steps out on each side. Screenshots are usually 2x, so an
+ * image displays at naturalWidth / density unless it states its own width.
+ * A figure widens only when that display width is wider than the column, and
+ * never past the display width, maxWidth in total, or the room on screen.
+ */
+export function figureBreakout({
+  viewport,
+  articleLeft,
+  articleRight,
+  figureClient,
+  imageClient = figureClient,
+  naturalWidth = 0,
+  attrWidth = 0,
+  density = 2,
+  maxWidth = 1040,
+  minViewport = 900,
+  edge = 24,
+}) {
+  if (viewport < minViewport) return { left: 0, right: 0 };
+  const display = attrWidth > 0 ? attrWidth : naturalWidth / density;
+  // Wider than the text column, or it stays in the column.
+  if (!(display > figureClient)) return { left: 0, right: 0 };
+  const need = Math.floor(display - imageClient);
+  if (!(need > 1)) return { left: 0, right: 0 };
+  const target = Math.min(figureClient + need, Math.max(maxWidth, figureClient));
+  const room = Math.max(0, Math.min(articleLeft - edge, viewport - edge - articleRight));
+  const side = Math.min(room, Math.floor((target - figureClient) / 2));
+  if (side <= 0) return { left: 0, right: 0 };
+  return { left: side, right: side };
+}
+
+/**
  * Slide the TOC right of a wide element measured against the TOC's original
  * position. Hide it when the shifted TOC would not fit on screen.
  */

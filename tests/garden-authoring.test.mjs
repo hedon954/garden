@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 import { checkGardenMarkdown } from "../ui/garden/check.mjs";
-import { diffToNewCode, protectMathIdentifiers, tableBreakout, tocShift } from "../ui/garden/enhance.mjs";
+import { diffToNewCode, figureBreakout, protectMathIdentifiers, tableBreakout, tocShift } from "../ui/garden/enhance.mjs";
 import { parseGardenBlock, scanFences } from "../ui/garden/parse.mjs";
 import { gardenBlocksMarkdown, textReplacementPlist, vscodeSnippets } from "../ui/garden/snippets.mjs";
 import { splitTitle, titleLineScale, titleWidthUnits } from "../ui/garden/title.mjs";
@@ -144,6 +144,43 @@ test("tableBreakout never goes past the cap", () => {
   const base = { viewport: 2400, articleLeft: 830, articleRight: 1570, tableClient: 740, tableScroll: 3000 };
   assert.deepEqual(tableBreakout(base), { left: 300, right: 300 });
   assert.deepEqual(tableBreakout({ ...base, cap: 120 }), { left: 120, right: 120 });
+});
+
+// 1440 wide, 740px text column centred at 350..1090; the figure card adds 26px around the image.
+const figureAt1440 = { viewport: 1440, articleLeft: 350, articleRight: 1090, figureClient: 740, imageClient: 714 };
+
+test("figureBreakout: a 2x screenshot narrower than the column does not widen", () => {
+  assert.deepEqual(figureBreakout({ ...figureAt1440, naturalWidth: 1400 }), { left: 0, right: 0 });
+  assert.deepEqual(figureBreakout({ ...figureAt1440, naturalWidth: 1428 }), { left: 0, right: 0 });
+  // 724px on screen is wider than the image box (714) but not than the column (740): it stays.
+  assert.deepEqual(figureBreakout({ ...figureAt1440, naturalWidth: 1448 }), { left: 0, right: 0 });
+  assert.deepEqual(figureBreakout({ ...figureAt1440, naturalWidth: 1480 }), { left: 0, right: 0 });
+  // 742px on screen: just past the column, the image grows to 742.
+  assert.deepEqual(figureBreakout({ ...figureAt1440, naturalWidth: 1484 }), { left: 14, right: 14 });
+  // A 1x image the same pixel width would have widened under the old rule; it is 700px on screen now.
+  assert.deepEqual(figureBreakout({ ...figureAt1440, naturalWidth: 1400, density: 2 }), { left: 0, right: 0 });
+});
+
+test("figureBreakout: a wide 2x screenshot widens to its display width, never beyond", () => {
+  // 1800px 2x -> 900px on screen; the image grows by 186px, 93 a side.
+  assert.deepEqual(figureBreakout({ ...figureAt1440, naturalWidth: 1800 }), { left: 93, right: 93 });
+  // An explicit width attribute wins over the pixel count.
+  assert.deepEqual(figureBreakout({ ...figureAt1440, naturalWidth: 4000, attrWidth: 800 }), { left: 43, right: 43 });
+  assert.deepEqual(figureBreakout({ ...figureAt1440, naturalWidth: 4000, attrWidth: 600 }), { left: 0, right: 0 });
+});
+
+test("figureBreakout: a very wide image stops at 1040px in total", () => {
+  assert.deepEqual(figureBreakout({ ...figureAt1440, naturalWidth: 5000 }), { left: 150, right: 150 });
+  assert.deepEqual(figureBreakout({ ...figureAt1440, naturalWidth: 2560 }), { left: 150, right: 150 });
+  // Tables keep their own, wider allowance.
+  assert.deepEqual(tableBreakout({ viewport: 1440, articleLeft: 350, articleRight: 1090, tableClient: 740, tableScroll: 3000 }), { left: 300, right: 300 });
+});
+
+test("figureBreakout: under 900px wide or with no room, nothing widens", () => {
+  assert.deepEqual(figureBreakout({ ...figureAt1440, viewport: 899, naturalWidth: 5000 }), { left: 0, right: 0 });
+  assert.deepEqual(figureBreakout({ viewport: 1000, articleLeft: 24, articleRight: 976, figureClient: 952, imageClient: 926, naturalWidth: 5000 }), { left: 0, right: 0 });
+  assert.deepEqual(figureBreakout({ viewport: 1100, articleLeft: 130, articleRight: 870, figureClient: 740, imageClient: 714, naturalWidth: 5000 }), { left: 106, right: 106 });
+  assert.deepEqual(figureBreakout({ ...figureAt1440, naturalWidth: 0 }), { left: 0, right: 0 });
 });
 
 test("tocShift stays put without overlap, slides past the widest overlap, and hides when it would leave the screen", () => {
