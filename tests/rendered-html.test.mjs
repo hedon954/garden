@@ -67,6 +67,13 @@ test("server-renders the finished blog home", async () => {
   assert.doesNotMatch(columnPage, /readingTime/);
   assert.match(shell, /\.sh-intro h1\{[^}]*max-width:var\(--list\);text-wrap:balance/);
   assert.match(shell, /\.sh-intro p\{[^}]*text-wrap:balance/);
+  assert.match(html, /class="sh-mark"[^>]*src="\/favicon\.svg"/);
+  assert.match(html, /class="sh-main home-a"/);
+  assert.match(shell, /\.home-a \.sh-pin-a li\{[^}]*border-left:2px solid var\(--blue\)/);
+  assert.match(shell, /\.home-b \.sh-pin-b\{background:var\(--paper-2\);border-radius:var\(--r-lg\)/);
+  assert.match(shell, /\.home-b \.sh-split \.sh-pin-b\{order:-1\}/);
+  assert.match(shell, /\.home-c \.sh-feature h2\{font:600 56px\/1\.15 var\(--serif\)/);
+  assert.match(shell, /@media \(pointer: fine\)\{\.sh-search kbd\{display:inline-flex/);
   assert.match(html, /id="h-pin">置顶</);
   assert.doesNotMatch(html, /最近随想/);
   assert.doesNotMatch(html, /home-thought-list/);

@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import {
   useCallback,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -178,6 +179,16 @@ export function SiteHeader() {
     document.documentElement.dataset.mod = isMac ? "mac" : "other";
   }, []);
 
+  useLayoutEffect(() => {
+    const value = new URLSearchParams(window.location.search).get("home");
+    const direction = value === "b" || value === "c" ? value : pathname === "/" ? "a" : "";
+    if (direction) document.documentElement.dataset.home = direction;
+    else delete document.documentElement.dataset.home;
+    return () => {
+      delete document.documentElement.dataset.home;
+    };
+  }, [pathname]);
+
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
@@ -285,7 +296,11 @@ export function SiteHeader() {
     <>
       <header className="sh-header">
         <div className="sh-bar">
-          <Link href="/" className="sh-word">{siteConfig.name}</Link>
+          <Link href="/" className="sh-word">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img className="sh-mark" src={siteConfig.logo} alt="" />
+            <span>{siteConfig.name}</span>
+          </Link>
           <nav className="sh-nav" aria-label="站点导航">
             {nav.map((item) => (
               <Link key={item.href} href={item.href} aria-current={current(item.href) ? "page" : undefined}>
@@ -299,7 +314,7 @@ export function SiteHeader() {
                 <circle cx="9" cy="9" r="5.8" />
                 <path d="M13.3 13.3 17 17" />
               </svg>
-              <span className="lbl">搜索文章</span>
+              <span className="lbl">搜索</span>
               <kbd><span className="kbd-mod kbd-mac">⌘</span><span className="kbd-mod kbd-other">Ctrl</span>{" "}K</kbd>
             </button>
             <button className="sh-icon sh-search-m" type="button" onClick={openSearch} aria-label="搜索文章">

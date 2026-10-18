@@ -28,10 +28,18 @@ export type SiteConfig = {
     garden: PageCopy;
   };
   footer: string;
+  logo: string;
 };
 
+function siteMark(logo: unknown) {
+  return typeof logo === "string" && /^(\/|\.|https?:)/.test(logo) ? logo : "/favicon.svg";
+}
+
 /** 站点身份来自根目录 site.config.yaml，由 garden sync 生成。 */
-export const siteConfig = raw as SiteConfig;
+export const siteConfig = {
+  ...(raw as SiteConfig),
+  logo: siteMark((raw as { logo?: unknown }).logo),
+};
 export { githubUrl };
 
 /** 列表页浏览器标题用站点名；页面大标题仍用 pages.*.title。 */
