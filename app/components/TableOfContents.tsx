@@ -40,18 +40,16 @@ const getCssScrollPaddingTop = () => {
   return Number.isFinite(offset) ? offset : 0;
 };
 
-// Where a heading should stop: its own scroll-margin-top when the stylesheet
-// sets one (article headings clear the sticky header), otherwise just below
-// the header.
-const getScrollPaddingTop = (target?: Element | null) => {
-  const margin = target
-    ? Number.parseFloat(window.getComputedStyle(target).scrollMarginTop)
-    : Number.NaN;
-  if (Number.isFinite(margin) && margin > 0) return margin;
+// Where a heading should stop: the page's scroll-padding-top, the same
+// offset the browser uses for a #link, so a script jump never differs from
+// the native one. If that padding would leave the heading under the sticky
+// header, stop 16px below the header instead.
+const getScrollPaddingTop = () => {
+  const padding = getCssScrollPaddingTop();
   const header = document.querySelector(".sh-header, .site-header");
   const headerBottom = header?.getBoundingClientRect().bottom ?? 0;
-  if (headerBottom > 8) return headerBottom + 16;
-  return Math.min(24, getCssScrollPaddingTop());
+  if (headerBottom > 8 && padding < headerBottom) return headerBottom + 16;
+  return padding > 0 ? padding : 24;
 };
 
 const getReadingProbe = () => {
@@ -101,7 +99,7 @@ const scrollToHeading = (id: string) => {
 
   const top = Math.max(
     0,
-    window.scrollY + target.getBoundingClientRect().top - getScrollPaddingTop(target),
+    window.scrollY + target.getBoundingClientRect().top - getScrollPaddingTop(),
   );
   if (Math.abs(top - window.scrollY) <= 1) return;
 
