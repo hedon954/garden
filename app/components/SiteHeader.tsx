@@ -276,11 +276,17 @@ export function SiteHeader() {
 
   // Excerpts first, full text once it is here. Typos fall back to Fuse's fuzzy match.
   const matcher = useMemo(() => (engine ? createSearch(engine.records, fullText) : null), [engine, fullText]);
-  const results: SearchHit[] = useMemo(() => {
-    if (!engine || !matcher) return [];
-    if (!query.trim()) return engine.records.slice(0, 5).map((item) => ({ item, matches: [] }));
-    const exact = matcher.search(query, 6) as unknown as SearchHit[];
-    return exact.length ? exact : engine.fuse.search(query).slice(0, 6);
+  // The list shows the best few; the label counts every match.
+  const { hits: results, total: resultTotal } = useMemo((): { hits: SearchHit[]; total: number } => {
+    if (!engine || !matcher) return { hits: [], total: 0 };
+    if (!query.trim()) {
+      const recent = engine.records.slice(0, 5).map((item) => ({ item, matches: [] }));
+      return { hits: recent, total: recent.length };
+    }
+    const exact = matcher.find(query, 6) as unknown as { hits: SearchHit[]; total: number };
+    if (exact.total) return exact;
+    const fuzzy = engine.fuse.search(query);
+    return { hits: fuzzy.slice(0, 6), total: fuzzy.length };
   }, [engine, matcher, query]);
 
   useEffect(() => {
@@ -459,7 +465,7 @@ export function SiteHeader() {
               aria-label="搜索结果"
             >
               <p className="search-label">
-                {query ? `${results.length} 个相关结果` : "最近内容"}
+                {query ? `${resultTotal} 篇相关文章` : "最近内容"}
               </p>
               {results.map((result, index) => {
                 const preview = searchPreview(result.item, result.matches);

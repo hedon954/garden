@@ -215,3 +215,16 @@ test("search lists a post once, at its /blog/ URL, with its column as the chip",
   // The full-text file follows the same entries.
   assert.deepEqual(buildFullIndex({ posts, columns, thoughts }).docs.map(([url]) => url), records.map((record) => record.path));
 });
+
+test("the search label counts every match, not only the rows shown", () => {
+  const posts = Array.from({ length: 9 }, (_, index) => ({ title: `Go 内存 ${index}`, path: `p${index}`, date: `2026-01-0${index + 1}`, content: "x" }));
+  const engine = createSearch(buildSearchIndex({ posts }));
+  const { hits, total } = engine.find("go 内存", 6);
+  assert.equal(hits.length, 6);
+  assert.equal(total, 9);
+  assert.deepEqual(engine.find("", 6), { hits: [], total: 0 });
+  // The dialog shows six rows, so its label uses the total.
+  const header = fs.readFileSync(new URL("../app/components/SiteHeader.tsx", import.meta.url), "utf8");
+  assert.match(header, /\$\{resultTotal\} 篇相关文章/);
+  assert.doesNotMatch(header, /results\.length\} 个相关结果/);
+});
