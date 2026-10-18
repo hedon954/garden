@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import { FEED_ALTERNATES } from "../../lib/page-alternates";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "@phosphor-icons/react/ssr";
 import { Comments } from "../../components/Comments";
@@ -34,7 +35,7 @@ export async function generateMetadata({
   return {
     title: thought.title,
     description: thought.content.replace(/\s+/gu, " ").slice(0, 160),
-    alternates: { canonical: pathname },
+    alternates: { canonical: pathname, types: FEED_ALTERNATES },
     openGraph: {
       type: "article",
       url: absoluteUrl(pathname, baseUrl),

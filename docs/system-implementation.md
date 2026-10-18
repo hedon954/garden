@@ -63,7 +63,7 @@ remark-math      识别 TeX
 rehype-raw       保留受支持的原生 HTML
 rehype-katex     输出数学公式
 rehype-slug      为标题生成 id
-rehype-autolink-headings  标题锚点
+heading-anchors  标题锚点（ui/garden/heading-anchors.mjs：标题里有链接时，链接两侧的文字各自成为锚点，不会出现 a 套 a）
 rehype-highlight 代码高亮
 ```
 

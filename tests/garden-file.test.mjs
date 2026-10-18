@@ -25,7 +25,7 @@ import {
   previewBody,
 } from "../ui/garden/file-block.mjs";
 import { checkFileSources, resolveRepoFile } from "../ui/garden/file-paths.mjs";
-import { previewDocument, previewFileName, renderFilePreview } from "../scripts/file-preview.mjs";
+import { PREVIEW_TOKENS, highlightRules, previewDocument, previewFileName, renderFilePreview } from "../scripts/file-preview.mjs";
 import { probeFileSize, readFileSizeCache, refreshFileSizes, remoteFileSources } from "../scripts/file-sizes.mjs";
 import { contentForDistribution, contentForFeed, contentToSearchText } from "../ui/core/transform.mjs";
 import { countDemoWords } from "../ui/garden/word-count.mjs";
@@ -79,8 +79,10 @@ test("garden check flags a broken file block and a hand-written resolved", () =>
 });
 
 test("format, size and preview kind come from the file name", () => {
-  assert.equal(formatLabel("./a/01-prd.md"), "Markdown");
-  assert.equal(formatLabel("./a/demo.HTM"), "HTML");
+  assert.equal(formatLabel("./a/01-prd.md"), "MD");
+  assert.equal(formatLabel("./a/notes.markdown"), "MARKDOWN");
+  assert.equal(formatLabel("./a/demo.HTM"), "HTM");
+  assert.equal(formatLabel("./a/demo.html"), "HTML");
   assert.equal(formatLabel("./a/guide.pdf?v=2#p3"), "PDF");
   assert.equal(formatLabel("./a/kit.zip"), "ZIP");
   assert.equal(formatLabel("./a/data.csv"), "CSV");
@@ -111,7 +113,7 @@ test("an HTML preview is sandboxed without the site's origin; PDF uses the nativ
   assert.equal(pdf.sandbox, undefined);
   assert.equal(previewFrameProps({ preview: "md" }), null);
   const drawer = await readFile(new URL("../app/components/garden/FilePreview.tsx", import.meta.url), "utf8");
-  assert.match(drawer, /<iframe className="gf-frame" \{\.\.\.frame\} \/>/u);
+  assert.match(drawer, /<iframe ref=\{frameRef\} className="gf-frame" \{\.\.\.frame\} \/>/u);
   assert.doesNotMatch(drawer, /allow-same-origin/u);
   // No Markdown parser in the drawer: Markdown arrives rendered.
   assert.doesNotMatch(drawer, /react-markdown|from "marked"|remark|rehype/u);
@@ -288,7 +290,7 @@ test("search, word count, RSS and distribution see titles and notes, not the pre
     layout: "group",
     title: "种植资料",
     files: [
-      { name: "log.md", title: "浇水记录", note: "前四周", url: "/media/posts/a/log.md", format: "Markdown", size: 654, preview: "md", previewSrc: "/media/posts/a/log.md.preview.html" },
+      { name: "log.md", title: "浇水记录", note: "前四周", url: "/media/posts/a/log.md", format: "MD", size: 654, preview: "md", previewSrc: "/media/posts/a/log.md.preview.html" },
       { name: "kit.zip", title: "资料包", url: "https://oss.example.com/kit.zip", format: "ZIP", remote: true },
     ],
   };
@@ -298,7 +300,7 @@ test("search, word count, RSS and distribution see titles and notes, not the pre
   assert.doesNotMatch(search, /preview\.html|resolved|media/u);
   assert.doesNotMatch(countDemoWords ? String(countDemoWords(built)) : "", /NaN/u);
   const feed = contentForFeed(built, { siteUrl: "https://blog.example.org" });
-  assert.match(feed, /\[浇水记录\]\(<https:\/\/blog\.example\.org\/media\/posts\/a\/log\.md>\)（Markdown · 654 B）：前四周/u);
+  assert.match(feed, /\[浇水记录\]\(<https:\/\/blog\.example\.org\/media\/posts\/a\/log\.md>\)（MD · 654 B）：前四周/u);
   assert.match(feed, /\[资料包\]\(<https:\/\/oss\.example\.com\/kit\.zip>\)（ZIP）/u);
   assert.doesNotMatch(feed, /preview\.html/u);
   assert.match(contentForDistribution(built, { siteUrl: "https://blog.example.org" }), /\[资料包\]/u);
@@ -408,4 +410,80 @@ test("the build fails on a missing file or a file outside content/", async () =>
       await rm(site, { recursive: true, force: true });
     }
   }
+});
+
+test("preview code blocks look like the article's: same code type and backgrounds, light and dark", async () => {
+  const [tokens, articleCss, drawer] = await Promise.all([
+    readFile(new URL("../app/styles/tokens.css", import.meta.url), "utf8"),
+    readFile(new URL("../app/styles/a2.css", import.meta.url), "utf8"),
+    readFile(new URL("../app/components/garden/FilePreview.tsx", import.meta.url), "utf8"),
+  ]);
+  // In the drawer: the preview's pre.code sits in .markdown-body.prose, so the article's own rules style it ...
+  assert.match(renderFilePreview("```js\nlet a\n```"), /^<pre class="code" data-language="JS">/u);
+  assert.match(drawer, /className="markdown-body prose gf-doc"/u);
+  assert.match(articleCss, /\.markdown-body pre\.code,\n\.prose pre\.code \{[^}]*background: var\(--well\)/u);
+  // ... and nothing scoped to the drawer overrides them.
+  assert.doesNotMatch(articleCss, /\.gf-(?:doc|db|drawer)[^{]*\b(?:pre|code)\b[^{]*\{/u);
+  // On the standalone page (no JavaScript): the article's tokens, light and dark.
+  const block = (selector) => tokens.slice(tokens.indexOf(selector)).split("}")[0];
+  const token = (css, name) => css.match(new RegExp(`--${name}:\\s*([^;]+);`, "u"))?.[1].trim();
+  const light = block(':root[data-theme="light"] {');
+  const dark = block(':root[data-theme="dark"]');
+  assert.equal(PREVIEW_TOKENS.mono, token(light, "mono"));
+  assert.equal(PREVIEW_TOKENS.sans, token(light, "sans"));
+  for (const name of ["paper", "ink", "well", "tint", "rule"]) {
+    assert.equal(PREVIEW_TOKENS.light[name], token(light, name), `light --${name}`);
+    assert.equal(PREVIEW_TOKENS.dark[name], token(dark, name), `dark --${name}`);
+  }
+  // The block itself (.markdown-body pre in globals.css) and inline code (a2.css), value by value.
+  const globalsCss = await readFile(new URL("../app/globals.css", import.meta.url), "utf8");
+  const rule = (css, selector) => css.slice(css.indexOf(`\n${selector} {`)).split("}")[0];
+  const legacyPre = rule(globalsCss, ".markdown-body pre");
+  assert.match(legacyPre, new RegExp(`font-size: ${PREVIEW_TOKENS.pre.fontSize};`, "u"));
+  assert.match(legacyPre, new RegExp(`line-height: ${PREVIEW_TOKENS.pre.lineHeight};`, "u"));
+  assert.match(legacyPre, new RegExp(`color: ${PREVIEW_TOKENS.pre.color};`, "u"));
+  const inline = rule(articleCss, ".markdown-body :not(pre) > code");
+  assert.match(inline, /font: 400 var\(--fs-small\) \/ 1 var\(--mono\);[\s\S]*background: var\(--tint\);[\s\S]*padding: 3px 6px;[\s\S]*border-radius: 5px;/u);
+  assert.equal(token(light, "fs-small"), "14px");
+  const page = previewDocument("<pre><code>x</code></pre><p><code>y</code></p>");
+  const style = page.match(/<style>([\s\S]*)<\/style>/u)[1];
+  assert.ok(style.includes(`pre,code{font-family:${PREVIEW_TOKENS.mono}}`));
+  assert.ok(style.includes(`pre{margin:28px 0;padding:18px 22px;border-radius:8px;overflow-x:auto;font-size:12px;line-height:1.7;color:#e6e6e2}`));
+  assert.ok(style.includes("pre code{display:block;background:none;padding:0;font-size:14px;line-height:1.6}"));
+  assert.ok(style.includes(`:not(pre)>code{font:400 14px/1 ${PREVIEW_TOKENS.mono};padding:3px 6px;border-radius:5px}`));
+  assert.ok(style.includes(`pre{background:${PREVIEW_TOKENS.light.well}}pre code{color:${PREVIEW_TOKENS.light.ink}}:not(pre)>code{background:${PREVIEW_TOKENS.light.tint};color:${PREVIEW_TOKENS.light.ink}}`));
+  assert.ok(style.includes(`@media (prefers-color-scheme:dark){body{background:${PREVIEW_TOKENS.dark.paper};color:${PREVIEW_TOKENS.dark.ink}}pre{background:${PREVIEW_TOKENS.dark.well}}pre code{color:${PREVIEW_TOKENS.dark.ink}}:not(pre)>code{background:${PREVIEW_TOKENS.dark.tint};color:${PREVIEW_TOKENS.dark.ink}}`));
+  // Highlight colours: every .hljs-* rule of globals.css then a2.css, in that order; the dark ones under prefers-color-scheme.
+  const sheets = [highlightRules(globalsCss), highlightRules(articleCss)];
+  const lightRules = sheets.flatMap((sheet) => sheet.light);
+  const darkRules = sheets.flatMap((sheet) => sheet.dark);
+  assert.ok(lightRules.length >= 15 && darkRules.length >= 6, `${lightRules.length} light, ${darkRules.length} dark`);
+  const [outside, inside] = style.split("@media (prefers-color-scheme:dark){");
+  assert.ok(outside.includes(lightRules.join("")), "light highlight rules, in order");
+  assert.ok(inside.includes(darkRules.join("")), "dark highlight rules, in order");
+  // Spot checks against the article: decorators, keywords, strings, comments.
+  assert.ok(lightRules.includes(".hljs-meta,.hljs-symbol,.hljs-bullet{color:#c7a0e8}"));
+  assert.ok(lightRules.includes(".hljs-keyword,.hljs-built_in,.hljs-type,.hljs-meta .hljs-keyword{color:#30302e;font-weight:600}"));
+  assert.ok(lightRules.includes(".hljs-comment,.hljs-quote{color:#6e6b64;font-style:normal}"));
+  assert.ok(darkRules.includes("html:root .hljs-string{color:#8fd1a0}"), "dark rules keep the weight of html[data-theme=dark]");
+  // Highlighted at build time; nothing on the page runs.
+  assert.match(previewDocument(renderFilePreview("```python\n@dataclass\ndef f(): return 1\n```")), /<span class="hljs-meta">@dataclass<\/span>/u);
+  assert.doesNotMatch(page, /<script|\son[a-z]+=/iu);
+});
+
+test("an html or pdf preview keeps focus in the drawer: sentinels around the iframe, and a quiet Esc hint", async () => {
+  const [drawer, css] = await Promise.all([
+    readFile(new URL("../app/components/garden/FilePreview.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/styles/a2.css", import.meta.url), "utf8"),
+  ]);
+  // Keys inside the iframe never reach the page: Tab out of it lands on a sentinel, which sends focus back into the drawer.
+  assert.match(drawer, /<span tabIndex=\{0\} className="gf-sentinel" data-gf-sentinel="before" onFocus=\{fromBefore\} \/>\s*<iframe ref=\{frameRef\} className="gf-frame" \{\.\.\.frame\} \/>\s*<span tabIndex=\{0\} className="gf-sentinel" data-gf-sentinel="after" onFocus=\{fromAfter\} \/>/u);
+  assert.match(drawer, /const fromAfter = \(\) => \{\s*panel\.current\?\.querySelector<HTMLElement>\("\.gf-dh a\[href\], \.gf-dh button"\)\?\.focus\(\);/u, "after the iframe: round to the first control");
+  assert.match(drawer, /if \(from && panel\.current\?\.querySelector\("\.gf-dh"\)\?\.contains\(from\)\) frameRef\.current\?\.focus\(\);\s*else closeButton\.current\?\.focus\(\);/u, "before the iframe: on into it, or back to 关闭");
+  assert.match(drawer, /\.filter\(\(element\) => !element\.hasAttribute\("data-gf-sentinel"\)\)/u, "the Tab handler skips the sentinels");
+  assert.match(css, /\.gf-sentinel \{ position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset\(50%\);/u);
+  // The hint: one quiet line at the bottom, muted, hidden where there is no keyboard.
+  assert.match(drawer, /<p className="gf-hint">Esc 关闭<\/p>\s*<\/aside>/u);
+  assert.match(css, /\.gf-hint \{[^}]*font-size: 12px;[^}]*color: var\(--muted\);/u);
+  assert.match(css, /@media \(hover: none\) and \(pointer: coarse\) \{ \.gf-hint \{ display: none; \} \}/u);
 });

@@ -14,8 +14,8 @@ import ReactMarkdown from "react-markdown";
 import rehypeRaw from "rehype-raw";
 import rehypeKatex from "rehype-katex";
 import rehypeSlug from "rehype-slug";
-import rehypeAutolinkHeadings from "rehype-autolink-headings";
 import rehypeHighlight from "rehype-highlight";
+import { rehypeHeadingAnchors } from "../../ui/garden/heading-anchors.mjs";
 import { MermaidDiagram } from "./MermaidDiagram";
 import { MarkdownImage } from "./MarkdownImage";
 import { CodeCopy } from "./garden/chrome";
@@ -33,6 +33,7 @@ import { LinkCardRefresh } from "./LinkCardRefresh";
 import { linkHost } from "../../scripts/link-meta-core.mjs";
 import { cardDate } from "../../ui/garden/card-refresh.mjs";
 import { siteHref } from "../lib/site-href";
+import { codeLanguageLabel } from "../../ui/garden/code-language.mjs";
 
 // Full URLs back to this site are internal links, written as root-relative paths.
 const sameSite = sameSiteMatcher(siteLinks?.address ?? "", siteLinks?.basePath ?? "");
@@ -271,7 +272,8 @@ export function MarkdownArticle({ content }: { content: string }) {
           rehypeRaw,
           rehypeKatex,
           rehypeSlug,
-          [rehypeAutolinkHeadings, { behavior: "wrap", properties: { className: ["h-anchor"] } }],
+          // Not rehype-autolink-headings "wrap": a heading with a link in it would nest <a> in <a> (React #418).
+          [rehypeHeadingAnchors, { className: ["h-anchor"] }],
           rehypeHighlight,
         ]}
         components={{
@@ -341,7 +343,7 @@ export function MarkdownArticle({ content }: { content: string }) {
 
             return (
               <CodeCopy>
-                <pre className="code" {...preProps} data-language={language?.toUpperCase()}>
+                <pre className="code" {...preProps} data-language={codeLanguageLabel(language) || undefined}>
                   {children}
                 </pre>
               </CodeCopy>

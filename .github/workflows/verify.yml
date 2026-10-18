@@ -25,5 +25,5 @@ jobs:
           NEXT_PUBLIC_SITE_URL: https://example.github.io
           ADMIN_URL: https://admin.example.com
         run: npm run build && npm run pages:validate
-      - name: Check internal links in the export end with a slash and the feed keeps its guids
-        run: node --test tests/static-links.test.mjs tests/rss-guids.test.mjs
+      - name: "Check the export: internal links end with a slash, every page names its canonical address, the feed keeps its guids, no markup the parser repairs"
+        run: node --test tests/static-links.test.mjs tests/canonical-links.test.mjs tests/rss-guids.test.mjs tests/html-nesting.test.mjs

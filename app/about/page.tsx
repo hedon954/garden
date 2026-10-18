@@ -4,6 +4,7 @@ import { GithubProfile } from "../components/GithubProfile";
 import { PageIntro } from "../components/PageIntro";
 import { siteConfig } from "../site.config";
 import { siteHref } from "../lib/site-href";
+import { pageAlternates } from "../lib/page-alternates";
 
 const about = siteConfig.pages.about;
 const heading = about.heading ?? "关于";
@@ -18,6 +19,7 @@ const cta = about.cta ?? { href: "/blog", label: "浏览博文" };
 export const metadata = {
   title: { absolute: siteConfig.name },
   description: about.subtitle || siteConfig.description,
+  alternates: pageAlternates("/about"),
 };
 
 export default function AboutPage() {

@@ -5,10 +5,12 @@ import { siteHref } from "../lib/site-href";
 import { articleTagHref, tagCounts } from "../lib/tag-filter";
 import { TagRedirect } from "../components/TagRedirect";
 import { siteDocumentTitle } from "../site.config";
+import { pageAlternates } from "../lib/page-alternates";
 
 export const metadata = {
   title: siteDocumentTitle,
   description: "全部标签。",
+  alternates: pageAlternates("/tags"),
 };
 
 export default function TagsPage() {

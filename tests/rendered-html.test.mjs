@@ -407,13 +407,19 @@ test("heading anchors carry no underline while a link inside a heading keeps its
     .filter(([, , id]) => id !== "footnote-label")
     .map(([all, level, , inner]) => [all, level, inner]);
   assert.ok(headings.length > 3);
-  for (const [, , inner] of headings) assert.match(inner, /<a href="#[^"]+" class="h-anchor">/u);
+  for (const [, , inner] of headings) assert.match(inner, /<a href="#[^"]+" class="h-anchor"[ >]/u);
   // The external link inside a heading stays an a.ext.
   const withExt = headings.find(([, , inner]) => inner.includes("typora.io"));
   assert.ok(withExt, "markdown-lab should have a heading with an external link");
   assert.match(withExt[2], /<a href="https:\/\/typora\.io\/" class="ext"/u);
+  // Split around the link, the heading still has exactly one self-link, and is marked .h-split.
+  assert.equal(withExt[2].match(/class="h-anchor"/gu)?.length, 1);
+  assert.match(withExt[0], /^<h3 id="[^"]+" class="h-split">/u);
+  // The stretched self-link reads as the whole heading.
+  assert.match(withExt[2], /<a href="#[^"]+" class="h-anchor" aria-label="标题里的 Typora 外链">标题里的 <\/a>/u);
+  for (const [, , inner] of headings) assert.equal(inner.match(/class="h-anchor"/gu)?.length, 1);
   assert.match(styles, /\.markdown-body \.h-anchor,\n\.markdown-body \.h-anchor:hover,\n\.markdown-body \.h-anchor:active \{\n  color: inherit;\n  text-decoration: none;/);
-  assert.match(styles, /\.markdown-body \.h-anchor:focus-visible \{\n  outline: 2px solid/);
+  assert.match(styles, /\.markdown-body :is\(h2, h3, h4\):has\(\.h-anchor:focus-visible\) \{\n  outline: 2px solid/);
   // The h-anchor rule must not reach a.ext, which keeps the body-link underline.
   assert.doesNotMatch(styles, /\.h-anchor a|\.h-anchor \.ext/);
 });
@@ -920,6 +926,9 @@ test("garden file renders cards on the server; the Markdown preview stays out of
   assert.match(visible, /<a class="gf-btn pri" href="\/media\/posts\/windowsill-herbs-kit\/herb-kit\.zip" download="herb-kit\.zip"/u);
   assert.match(visible, /ZIP · 1\.8 KB/u);
   assert.match(visible, /JPG · 4\.3 MB/u);
+  // Every format label is the extension in capitals.
+  assert.match(visible, /class="gf-meta">MD · /u);
+  assert.doesNotMatch(visible, /Markdown · /u);
   assert.equal(visible.match(/class="gf-btn gf-preview"/gu)?.length, 3);
   // The OSS row: open in a new tab and download, no preview.
   assert.match(visible, /<a class="gf-btn icon" href="https:\/\/upload\.wikimedia\.org\/[^"]+" target="_blank" rel="noopener noreferrer"/u);
@@ -942,4 +951,25 @@ test("a server build without trailingSlash links every page without the slash (n
     for (const href of findMisshapenLinks(await response.text(), { trailing: false })) found.push(`${pathname}: ${href}`);
   }
   assert.deepEqual(found, []);
+});
+
+test("the article code block labels its language through the shared mapping, next to the copy button", async () => {
+  const response = await render("/blog/markdown-lab");
+  assert.equal(response.status, 200);
+  const html = await response.text();
+  assert.match(html, /<div class="ux-cb"><pre class="code" data-language="PYTHON">/u);
+  assert.doesNotMatch(html, /data-language="PY"/u);
+  // ```typescript reads TS; Go, Rust, SQL keep their full names.
+  assert.match(html, /<pre class="code" data-language="TS">/u);
+  assert.doesNotMatch(html, /data-language="TYPESCRIPT"/u);
+  for (const name of ["GO", "RUST", "SQL"]) assert.match(html, new RegExp(`data-language="${name}"`, "u"));
+});
+
+test("article, column article and thought pages link the RSS feed in <head> next to their canonical", async () => {
+  for (const pathname of ["/blog/markdown-lab", "/columns/building-in-public/ship-with-evidence", "/thoughts/rainy-night"]) {
+    const html = await (await render(pathname)).text();
+    const head = html.slice(0, html.indexOf("</head>"));
+    assert.equal(head.match(/<link rel="alternate" type="application\/rss\+xml" href="[^"]*\/rss\.xml"\/>/gu)?.length, 1, `${pathname} should link the feed once`);
+    assert.match(head, /<link rel="canonical" href="[^"]+"\/>/u, `${pathname} keeps its canonical`);
+  }
 });

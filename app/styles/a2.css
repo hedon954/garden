@@ -386,8 +386,7 @@ html[data-theme="dark"] .column-reading-page .e-content {
 }
 
 /* A heading's own anchor link reads as the heading: no underline in any
-   state. Keyboard focus keeps the ring. Links inside the heading (a.ext)
-   keep their own underline. */
+   state. Links inside the heading (a.ext) keep their own underline. */
 .markdown-body .h-anchor,
 .markdown-body .h-anchor:hover,
 .markdown-body .h-anchor:active {
@@ -395,10 +394,33 @@ html[data-theme="dark"] .column-reading-page .e-content {
   text-decoration: none;
 }
 
+/* Keyboard focus rings the heading, not the anchor, so a heading split
+   around a link shows one ring. */
 .markdown-body .h-anchor:focus-visible {
+  outline: none;
+}
+
+.markdown-body :is(h2, h3, h4):has(.h-anchor:focus-visible) {
   outline: 2px solid var(--blue);
   outline-offset: 2px;
   border-radius: 2px;
+}
+
+/* A heading with a link in it has one self-link (its first stretch of text),
+   stretched over the whole heading; the link inside sits above it. */
+.markdown-body .h-split {
+  position: relative;
+}
+
+.markdown-body .h-split .h-anchor::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+
+.markdown-body .h-split a:not(.h-anchor) {
+  position: relative;
+  z-index: 1;
 }
 
 .markdown-body a.ext {
@@ -1233,6 +1255,25 @@ html[data-theme="dark"] .markdown-body .markdown-alert code {
   transform: translateY(-50%);
 }
 
+/* The language label sits left of the copy button, 8px apart, centred on it. */
+.markdown-body .ux-cb > pre[data-language]::before {
+  top: 8px;
+  right: 48px;
+  line-height: 32px;
+}
+
+/* 「已复制」 widens the button over the label; the label steps aside meanwhile. */
+.markdown-body .ux-cb:has(> .ux-done) > pre[data-language]::before {
+  visibility: hidden;
+}
+
+/* Narrow screens: only the copy button; the code block layout stays as it is. */
+@media (max-width: 639.98px) {
+  .markdown-body .ux-cb > pre[data-language]::before {
+    display: none;
+  }
+}
+
 @media (hover: hover) {
   .ux-copy {
     opacity: 0;
@@ -1599,6 +1640,11 @@ html[data-theme="dark"] .gf-scrim { background: rgb(0 0 0 / 45%); }
 .gf-db-frame { padding: 0; overflow: hidden; background: var(--card); }
 .gf-frame { display: block; width: 100%; height: 100%; border: 0; background: #fff; }
 .gf-drawer[data-preview="pdf"] .gf-frame { background: var(--paper-deep); }
+/* Focus catchers around the iframe: reachable by Tab, never seen. */
+.gf-sentinel { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+/* A quiet reminder; Esc pressed inside an iframe cannot reach the page. Phones have no Esc. */
+.gf-hint { flex: none; margin: 0; padding: 6px 20px 8px; font-size: 12px; line-height: 1.5; color: var(--muted); }
+@media (hover: none) and (pointer: coarse) { .gf-hint { display: none; } }
 .gf-db .gf-doc { max-width: none; margin: 0; font-size: 15px; line-height: 1.75; }
 .gf-db .gf-doc > :first-child { margin-top: 0; }
 @keyframes gf-fade { from { opacity: 0; } }

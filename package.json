@@ -1,6 +1,6 @@
 {
   "name": "hd-garden",
-  "version": "0.5.15",
+  "version": "0.5.16",
   "private": false,
   "description": "用 Markdown 写作、用 GitHub Pages 发布的个人博客引擎。",
   "license": "MIT",
@@ -97,7 +97,6 @@
     "react-dom": "19.3.0",
     "react-markdown": "^10.1.0",
     "react-server-dom-webpack": "19.3.0",
-    "rehype-autolink-headings": "^7.1.0",
     "rehype-highlight": "^7.0.2",
     "rehype-katex": "^7.0.1",
     "rehype-raw": "^7.0.0",

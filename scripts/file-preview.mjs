@@ -12,6 +12,7 @@
  * removed here: script-like elements, on* attributes, javascript: and other
  * non-http URLs (images may still use data:).
  */
+import fs from "node:fs";
 import rehypeHighlight from "rehype-highlight";
 import rehypeKatex from "rehype-katex";
 import rehypeRaw from "rehype-raw";
@@ -22,6 +23,7 @@ import remarkRehype from "remark-rehype";
 import { unified } from "unified";
 import { visit } from "unist-util-visit";
 import { markdownSyntaxPlugins } from "../ui/garden/markdown-syntax.mjs";
+import { codeLanguageLabel } from "../ui/garden/code-language.mjs";
 
 const DROPPED_ELEMENTS = new Set(["script", "noscript", "iframe", "frame", "frameset", "object", "embed", "applet", "base", "link", "meta", "form", "template"]);
 const URL_PROPERTIES = new Set(["href", "src", "action", "formAction", "poster", "cite", "background", "xLinkHref"]);
@@ -82,7 +84,7 @@ export function rehypePreviewShape() {
         const code = node.children.find((child) => child.type === "element" && child.tagName === "code");
         const language = [].concat(code?.properties?.className ?? []).map(String).find((name) => name.startsWith("language-"))?.slice(9);
         node.properties.className = [...[].concat(node.properties.className ?? []), "code"];
-        if (language) node.properties.dataLanguage = language.toUpperCase();
+        if (codeLanguageLabel(language)) node.properties.dataLanguage = codeLanguageLabel(language);
       }
       if (node.tagName === "a" && node.properties?.target === "_blank") {
         node.properties.className = [...[].concat(node.properties.className ?? []), "ext"];
@@ -113,6 +115,88 @@ export function renderFilePreview(markdown, { idPrefix = "gf-" } = {}) {
 const escapeText = (value) => String(value).replace(/&/gu, "&amp;").replace(/</gu, "&lt;").replace(/>/gu, "&gt;");
 
 /**
+ * The article's colours and code type (app/styles/tokens.css, the code rules in
+ * app/globals.css and a2.css), so a reader without JavaScript sees code as on
+ * the article page. The page has no theme switch: dark follows the system.
+ * tests/garden-file.test.mjs checks these against the stylesheets.
+ */
+export const PREVIEW_TOKENS = {
+  mono: '"JetBrains Mono", "SF Mono", ui-monospace, Menlo, Consolas, "Noto Sans Mono CJK SC", monospace',
+  sans: '-apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Noto Sans SC", "Noto Sans CJK SC", "Microsoft YaHei", "Segoe UI", system-ui, sans-serif',
+  light: { paper: "#faf9f5", ink: "#1b1a18", well: "#f0eee6", tint: "rgb(27 26 24 / 5.5%)", rule: "#e6e3dc" },
+  dark: { paper: "#1f1e1d", ink: "#eeece7", well: "#262624", tint: "rgb(238 236 231 / 7%)", rule: "#3d3d3a" },
+  // .markdown-body pre in globals.css: the block's own type, under the <code> that holds the text.
+  pre: { fontSize: "12px", lineHeight: "1.7", color: "#e6e6e2" },
+};
+
+// Highlight colours are not copied by hand: every .hljs-* rule of the article's
+// stylesheets, in the order the site loads them.
+const STYLESHEETS = ["../app/globals.css", "../app/styles/a2.css"];
+const DARK_PREFIX = /^(?::root|html)\[data-theme="dark"\]\s+/u;
+const HLJS_SELECTOR = /^\.hljs-[\w-]+(?:\.[\w-]+)*(?:\s+\.hljs-[\w-]+)?$/u;
+
+/** The .hljs-* rules of some CSS, split into light (always) and dark (html[data-theme="dark"]). */
+export function highlightRules(css) {
+  const light = [];
+  const dark = [];
+  const text = css.replace(/\/\*[\s\S]*?\*\//gu, "");
+  let depth = 0;
+  let start = 0;
+  // Top-level rules only: nothing inside @media or other blocks.
+  for (let index = 0; index < text.length; index++) {
+    const char = text[index];
+    if (char === "{") {
+      if (depth === 0) {
+        const selectorText = text.slice(start, index).trim();
+        const end = text.indexOf("}", index);
+        const body = text.slice(index + 1, end);
+        if (!selectorText.startsWith("@") && !body.includes("{")) {
+          const declarations = body.split(";").map((part) => part.trim().replace(/\s*:\s*/u, ":")).filter(Boolean).join(";");
+          const selectors = selectorText.split(",").map((part) => part.trim());
+          const lightSelectors = selectors.filter((selector) => HLJS_SELECTOR.test(selector));
+          const darkSelectors = selectors.filter((selector) => DARK_PREFIX.test(selector)).map((selector) => selector.replace(DARK_PREFIX, "")).filter((selector) => HLJS_SELECTOR.test(selector));
+          if (lightSelectors.length) light.push(`${lightSelectors.join(",")}{${declarations}}`);
+          // html:root keeps the weight of html[data-theme="dark"], so the dark rules win exactly where they do on the site.
+          if (darkSelectors.length) dark.push(`${[...new Set(darkSelectors)].map((selector) => `html:root ${selector}`).join(",")}{${declarations}}`);
+          start = end + 1;
+          index = end;
+          continue;
+        }
+      }
+      depth++;
+    } else if (char === "}") {
+      depth--;
+      if (depth === 0) start = index + 1;
+    }
+  }
+  return { light, dark };
+}
+
+let previewStyle;
+/** The standalone page's stylesheet, built once per build. */
+export function previewStyleSheet() {
+  if (previewStyle) return previewStyle;
+  const rules = STYLESHEETS.map((file) => highlightRules(fs.readFileSync(new URL(file, import.meta.url), "utf8")));
+  const { mono, sans, light, dark, pre } = PREVIEW_TOKENS;
+  const theme = (colors) => `body{background:${colors.paper};color:${colors.ink}}pre{background:${colors.well}}pre code{color:${colors.ink}}:not(pre)>code{background:${colors.tint};color:${colors.ink}}th,td{border-color:${colors.rule}}`;
+  previewStyle = [
+    `body{margin:0;font:16px/1.75 ${sans}}`,
+    "main{max-width:720px;margin:0 auto;padding:32px 20px 64px}",
+    "img{max-width:100%;height:auto}",
+    `pre,code{font-family:${mono}}`,
+    `pre{margin:28px 0;padding:18px 22px;border-radius:8px;overflow-x:auto;font-size:${pre.fontSize};line-height:${pre.lineHeight};color:${pre.color}}`,
+    "pre code{display:block;background:none;padding:0;font-size:14px;line-height:1.6}",
+    `:not(pre)>code{font:400 14px/1 ${mono};padding:3px 6px;border-radius:5px}`,
+    ".table-wrap{overflow-x:auto}table{border-collapse:collapse}th,td{border:1px solid;padding:6px 10px}",
+    "a{color:inherit}.katex-html{display:none}",
+    theme(light),
+    ...rules.flatMap((sheet) => sheet.light),
+    `@media (prefers-color-scheme:dark){${theme(dark)}${rules.flatMap((sheet) => sheet.dark).join("")}}`,
+  ].join("");
+  return previewStyle;
+}
+
+/**
  * The published preview: a small standalone page, so a reader without
  * JavaScript who follows the 预览 link gets something readable. The drawer
  * takes only what is inside <main>.
@@ -125,7 +209,7 @@ export function previewDocument(html, { title = "预览" } = {}) {
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
 <title>${escapeText(title)}</title>
-<style>body{margin:0;background:#fbfaf7;color:#1f1e1c;font:16px/1.75 -apple-system,BlinkMacSystemFont,"PingFang SC","Noto Sans SC",sans-serif}main{max-width:720px;margin:0 auto;padding:32px 20px 64px}img{max-width:100%;height:auto}pre{overflow:auto;padding:12px 14px;background:#f2f0ea;border-radius:8px}code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.9em}.table-wrap{overflow-x:auto}table{border-collapse:collapse}th,td{border:1px solid #ddd8cc;padding:6px 10px}a{color:inherit}.katex-html{display:none}@media (prefers-color-scheme:dark){body{background:#191918;color:#e9e6df}pre{background:#252422}th,td{border-color:#3a3833}}</style>
+<style>${previewStyleSheet()}</style>
 </head>
 <body><main class="gf-preview-doc">
 ${html}

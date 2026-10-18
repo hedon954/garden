@@ -3,10 +3,12 @@ import { ThoughtCard } from "../components/ThoughtCard";
 import { ContentEmptyState } from "../components/ContentEmptyState";
 import { PageIntro } from "../components/PageIntro";
 import { siteConfig, siteDocumentTitle } from "../site.config";
+import { pageAlternates } from "../lib/page-alternates";
 
 export const metadata = {
   title: siteDocumentTitle,
   description: siteConfig.pages.thoughts.subtitle || siteConfig.description,
+  alternates: pageAlternates("/thoughts"),
 };
 
 export default function ThoughtsPage() {
