@@ -55,7 +55,9 @@ const serverBuilt = fs.existsSync(new URL("../dist/server/index.js", import.meta
 
 test("no page of the server build has markup the parser would repair", { skip: serverBuilt ? false : "needs npm run build" }, async () => {
   const sitemap = fs.readFileSync(new URL("../public/sitemap.xml", import.meta.url), "utf8");
-  const pages = [...new Set([...sitemap.matchAll(/<loc>([^<]+)<\/loc>/gu)].map(([, loc]) => new URL(loc).pathname)), "/tags"];
+  const listed = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/gu)].map(([, loc]) => new URL(loc).pathname);
+  // /tags is not in the sitemap; shape it like the listed pages (trailingSlash on or off).
+  const pages = [...new Set([...listed, listed.some((page) => page.length > 1 && page.endsWith("/")) ? "/tags/" : "/tags"])];
   assert.ok(pages.length > 15, `only ${pages.length} pages`);
   assert.ok(pages.some((page) => page.startsWith("/blog/markdown-lab")), "markdown-lab has a heading with a link in it");
   const found = [];
