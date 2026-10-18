@@ -1987,7 +1987,9 @@ button {
 
 .toc-mobile-trigger,
 .toc-mobile-backdrop,
-.toc-mobile-close {
+.toc-mobile-close,
+.toc-nojs-trigger,
+.toc-nojs-close {
   display: none;
 }
 
@@ -3731,7 +3733,8 @@ html[data-theme="dark"] .article-references {
     overflow: visible;
   }
 
-  .toc-mobile-trigger {
+  .toc-mobile-trigger,
+  .toc-nojs-trigger {
     position: fixed;
     right: calc(16px + env(safe-area-inset-right));
     bottom: calc(16px + env(safe-area-inset-bottom));
@@ -3754,19 +3757,25 @@ html[data-theme="dark"] .article-references {
   }
 
   :root[data-theme="dark"] .toc-mobile-trigger,
-  html[data-theme="dark"] .toc-mobile-trigger {
+  html[data-theme="dark"] .toc-mobile-trigger,
+  :root[data-theme="dark"] .toc-nojs-trigger,
+  html[data-theme="dark"] .toc-nojs-trigger {
     background: rgb(30 29 26 / 94%);
     border-color: var(--rule-strong);
     color: var(--ink);
   }
 
   .toc-mobile-trigger:hover,
-  .toc-mobile-trigger:focus-visible {
+  .toc-mobile-trigger:focus-visible,
+  .toc-nojs-trigger:hover,
+  .toc-nojs-trigger:focus-visible {
     transform: translateY(-2px);
   }
 
   .toc-mobile-trigger:focus-visible,
-  .toc-mobile-close:focus-visible {
+  .toc-mobile-close:focus-visible,
+  .toc-nojs-trigger:focus-visible,
+  .toc-nojs-close:focus-visible {
     outline: 2px solid var(--accent);
     outline-offset: 3px;
   }
@@ -3849,7 +3858,8 @@ html[data-theme="dark"] .article-references {
     letter-spacing: 0.04em;
   }
 
-  .toc-mobile-close {
+  .toc-mobile-close,
+  .toc-nojs-close {
     width: 34px;
     height: 34px;
     padding: 0;
@@ -3862,8 +3872,16 @@ html[data-theme="dark"] .article-references {
     touch-action: manipulation;
   }
 
-  .toc-mobile-close:hover {
+  .toc-mobile-close:hover,
+  .toc-nojs-close:hover {
     color: var(--ink);
+  }
+
+  /* The no-JS links share the button styles above but stay hidden unless
+     scripting is off (see the scripting: none block below). */
+  .toc-nojs-trigger,
+  .toc-nojs-close {
+    display: none;
   }
 
   .toc .toc-list {
@@ -5466,5 +5484,54 @@ html[data-theme="dark"] .article-references {
   .admin-distribution-actions {
     flex-wrap: wrap;
     justify-content: flex-start;
+  }
+}
+
+/* No JavaScript: the drawer button cannot open anything, so swap in plain
+   links that open the drawer through :target. A TOC link moves the target to
+   the heading, which closes the drawer and jumps there natively. */
+@media (max-width: 900px) and (scripting: none) {
+  .toc-mobile-trigger,
+  .toc-mobile-close {
+    display: none;
+  }
+
+  .toc-nojs-trigger {
+    display: inline-flex;
+    color: var(--ink);
+    text-decoration: none;
+  }
+
+  .toc-nojs-close {
+    display: grid;
+    text-decoration: none;
+  }
+
+  /* Sub-lists are all open without JS, so the collapse toggles have no job. */
+  .toc-section-toggle {
+    display: none;
+  }
+
+  /* Same dim as the JS drawer; taps pass through to the page behind. */
+  body:has(.toc:target) .toc-mobile-backdrop {
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 180ms ease, visibility 0s;
+  }
+
+  body:has(.toc:target) .toc-nojs-trigger {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  .reading-page > .toc:target,
+  .post-reading-page .article-reading-layout .toc:target,
+  .column-reading-page > .toc:target,
+  .garden-page-toc .toc:target {
+    visibility: visible;
+    pointer-events: auto;
+    transform: translateY(0);
+    transition: transform 220ms ease, visibility 0s;
   }
 }

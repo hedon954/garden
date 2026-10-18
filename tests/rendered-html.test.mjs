@@ -245,6 +245,15 @@ test("collapses the reading table of contents per heading and keeps its active i
   assert.match(styles, /\.toc-mobile-trigger[\s\S]*position: fixed/);
   assert.match(styles, /\.toc-mobile-backdrop\[data-mobile-open="true"\]/);
   assert.match(styles, /\.toc\[data-mobile-open="true"\][\s\S]*transform: translateY\(0\)/);
+  // Without JavaScript the drawer opens through :target, and only then.
+  assert.match(toc, /className="toc-nojs-trigger" id=\{`\$\{panelId\}-open`\} href=\{`#\$\{panelId\}`\}/);
+  assert.match(toc, /className="toc-nojs-close" href=\{`#\$\{panelId\}-open`\}/);
+  assert.match(styles, /\.toc-nojs-trigger,\n\.toc-nojs-close \{\n  display: none;/);
+  const noScript = styles.slice(styles.indexOf("@media (max-width: 900px) and (scripting: none)"));
+  assert.ok(noScript.length > 50, "missing the scripting: none block");
+  assert.match(noScript, /\.toc-mobile-trigger,\n  \.toc-mobile-close \{\n    display: none;/);
+  assert.match(noScript, /\.toc-nojs-trigger \{\n    display: inline-flex;/);
+  assert.match(noScript, /\.post-reading-page \.article-reading-layout \.toc:target[\s\S]*transform: translateY\(0\)/);
   assert.match(styles, /\.markdown-body h2,[\s\S]*scroll-margin-top: 0/);
   assert.match(styles, /\.markdown-body h3[\s\S]*font-size: clamp\(20px/);
   assert.match(styles, /\.markdown-body h4[\s\S]*font-size: clamp\(19px/);
