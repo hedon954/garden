@@ -36,6 +36,7 @@
 import katex from "katex";
 import { Marked } from "marked";
 import { parse as parseYaml } from "yaml";
+import { fileSearchText } from "./file-block.mjs";
 
 const marked = new Marked({
   gfm: true,
@@ -155,6 +156,10 @@ function gardenHtml(info, body) {
     const document = children.trim() ? children : body;
     if (!children.trim() || isHtmlDocument(document)) return sandboxHtml(title, document);
     return document;
+  }
+  if (name === "file") {
+    // Only what the card shows: titles and notes, not the previewed document.
+    return `<p>${escapeHtml(fileSearchText(readYaml(yamlText) ?? {}))}</p>`;
   }
   if (name === "figure") {
     const data = readYaml(yamlText);

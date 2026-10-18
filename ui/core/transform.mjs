@@ -3,6 +3,7 @@ import { parse as parseYaml } from "yaml";
 import { compileUiBlock, jsonFence, readPayload } from "./compile.mjs";
 import { findBlocks, scanFences } from "./fence.mjs";
 import { renderStatic } from "./static.mjs";
+import { fileFeedMarkdown, fileSearchText } from "../garden/file-block.mjs";
 
 /**
  * Turns authored `ui` / `intent` fences into what the site renders.
@@ -59,6 +60,17 @@ function widgetCaption(body) {
   }
 }
 
+/** Props of a `garden file` fence (authored or built), or null for any other fence. */
+function fileFenceProps(fence) {
+  if (fence.lang !== "garden" || !/^file(?:\s|$)/iu.test(fence.info ?? "")) return null;
+  try {
+    const data = parseYaml(fence.body);
+    return data && typeof data === "object" && !Array.isArray(data) ? data : {};
+  } catch {
+    return {};
+  }
+}
+
 function replaceFences(content, replacer) {
   let output = content;
   for (const fence of [...scanFences(content)].reverse()) {
@@ -94,6 +106,8 @@ export function contentToSearchText(content) {
     }
     if (fence.lang === "intent") return " ";
     if (fence.lang === "widget") return ` ${widgetCaption(fence.body).caption} `;
+    const file = fileFenceProps(fence);
+    if (file) return ` ${fileSearchText(file)} `;
     return undefined;
   });
 }
@@ -113,6 +127,8 @@ export function contentForFeed(content, { pageUrl = "", siteUrl = "" } = {}) {
       const href = absolute(src, siteUrl);
       return `${caption}${href ? `（[打开图表](${href})）` : ""}`;
     }
+    const file = fileFenceProps(fence);
+    if (file) return fileFeedMarkdown(file, { siteUrl });
     return undefined;
   });
 }
@@ -132,6 +148,8 @@ export function contentForDistribution(content, { pageUrl = "", siteUrl = "" } =
       const href = absolute(src, siteUrl);
       return `${caption}${href ? `（[打开图表](${href})）` : ""}`;
     }
+    const file = fileFenceProps(fence);
+    if (file) return fileFeedMarkdown(file, { siteUrl });
     return undefined;
   });
 }
