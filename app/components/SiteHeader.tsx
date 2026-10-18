@@ -477,9 +477,11 @@ export function SiteHeader() {
                     aria-selected={activeResult === index}
                     className={`search-result${activeResult === index ? " active" : ""}`}
                   >
-                    <span className="search-chip">
-                      {result.item.section}
-                    </span>
+                    {result.item.section ? (
+                      <span className="search-chip">
+                        {result.item.section}
+                      </span>
+                    ) : null}
                     <strong>
                       <HighlightedText
                         text={result.item.title}

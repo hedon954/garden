@@ -58,8 +58,18 @@ const excerpt = (text, length = EXCERPT_LENGTH) => {
 const columnEntryPath = (entry) =>
   entry.column && entry.path.startsWith(`${entry.column}/`) ? entry.path.slice(entry.column.length + 1) : entry.path;
 
-/** Records in the same order the header has always listed them: posts, column entries, thoughts. */
-export function buildSearchIndex({ posts = [], columns = [], thoughts = [] }, { length = EXCERPT_LENGTH } = {}) {
+const entryKey = (item) => item.sourcePath ?? item.path;
+const columnKey = (item) => item.sourcePath ?? columnEntryPath(item);
+
+/**
+ * One search entry per piece of writing, as `{ item, record }`, in the order
+ * the header lists them: posts, then column entries that are not also posts,
+ * then thoughts. A post that sits in a column is listed once, at its /blog/
+ * URL, with the column's title as its section; a post in no column has an
+ * empty section. A column entry is only listed on its own when no post has
+ * the same source (a column-only page).
+ */
+function searchEntries({ posts = [], columns = [], thoughts = [] }, { length = EXCERPT_LENGTH } = {}) {
   const record = (item, extra) => {
     const text = searchableText(item.content ?? "");
     return {
@@ -71,25 +81,37 @@ export function buildSearchIndex({ posts = [], columns = [], thoughts = [] }, { 
       ...extra(text),
     };
   };
+  const postKeys = new Set(posts.map(entryKey));
+  const columnOf = new Map();
+  for (const item of columns) {
+    const key = columnKey(item);
+    if (postKeys.has(key) && !columnOf.has(key)) columnOf.set(key, item.columnTitle ?? "专栏");
+  }
   return [
-    ...posts.map((item) => record(item, () => ({ section: "文章", path: `/blog/${item.path}` }))),
-    ...columns.map((item) => record(item, () => ({ section: item.columnTitle ?? "专栏", path: `/columns/${item.column}/${columnEntryPath(item)}` }))),
-    ...thoughts.map((item) => record(item, (text) => ({ section: "随想", path: `/thoughts/${item.slug}`, description: excerpt(text, length) }))),
+    ...posts.map((item) => ({ item, record: record(item, () => ({ section: columnOf.get(entryKey(item)) ?? "", path: `/blog/${item.path}` })) })),
+    ...columns
+      .filter((item) => !postKeys.has(columnKey(item)))
+      .map((item) => ({ item, record: record(item, () => ({ section: item.columnTitle ?? "专栏", path: `/columns/${item.column}/${columnEntryPath(item)}` })) })),
+    ...thoughts.map((item) => ({ item, record: record(item, (text) => ({ section: "随想", path: `/thoughts/${item.slug}`, description: excerpt(text, length) })) })),
   ];
+}
+
+/** The small index: one record per piece of writing (see searchEntries). */
+export function buildSearchIndex(content, options) {
+  return searchEntries(content, options).map(({ record }) => record);
 }
 
 /**
  * The full-text file: `{ hash, texts, docs }`, where docs is
- * `[[path, textIndex], ...]` in the small index's order. A post that also
- * sits in a column has one body under two paths, so texts are stored once.
+ * `[[path, textIndex], ...]` in the small index's order. Identical bodies
+ * are stored once.
  * The hash is of the contents, so the file name changes exactly when they do.
  */
 export function buildFullIndex({ posts = [], columns = [], thoughts = [] }) {
-  const items = [...posts, ...columns, ...thoughts];
   const texts = [];
   const seen = new Map();
-  const docs = buildSearchIndex({ posts, columns, thoughts }).map((record, index) => {
-    const text = fullText(items[index].content ?? "");
+  const docs = searchEntries({ posts, columns, thoughts }).map(({ item, record }) => {
+    const text = fullText(item.content ?? "");
     if (!seen.has(text)) {
       seen.set(text, texts.length);
       texts.push(text);

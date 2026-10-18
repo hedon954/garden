@@ -3704,6 +3704,11 @@ html[data-theme="dark"] .search-panel {
   white-space: nowrap;
 }
 
+/* A post in no column has no chip: its excerpt takes the whole line. */
+.search-result:not(:has(> .search-chip)) small {
+  grid-column: 1 / -1;
+}
+
 .search-match {
   padding: 0 1px;
   border-radius: 3px;
