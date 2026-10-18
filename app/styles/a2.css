@@ -611,6 +611,7 @@ html[data-theme="dark"] .markdown-body .markdown-alert code {
 }
 
 .table-wrap table {
+  margin: 0;
   border-collapse: collapse;
   width: 100%;
   font-size: var(--fs-small);
@@ -620,6 +621,8 @@ html[data-theme="dark"] .markdown-body .markdown-alert code {
 .table-wrap th,
 .table-wrap td {
   padding: 10px 14px;
+  overflow-wrap: normal;
+  word-break: normal;
   text-align: left;
   vertical-align: top;
   border-bottom: 1px solid var(--rule);
