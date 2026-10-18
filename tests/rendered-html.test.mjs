@@ -273,7 +273,17 @@ test("hides empty home sections and gives every content index an intentional emp
   assert.match(thoughts, /ContentEmptyState kind="thoughts"/);
   assert.match(columns, /ContentEmptyState kind="columns"/);
   assert.match(columns, /column-feature-cover/);
+  assert.match(columns, /siteConfig\.pages\.columns\.subtitle/);
+  assert.doesNotMatch(columns, /与文章分类相互独立/);
   assert.match(emptyState, /content-empty-state/);
+});
+
+test("columns index shows the configured subtitle", async () => {
+  const response = await render("/columns");
+  assert.equal(response.status, 200);
+  const html = await response.text();
+  assert.match(html, /class="sh-deck">按顺序读的一组文章。<\/p>/);
+  assert.doesNotMatch(html, /与文章分类相互独立/);
 });
 
 test("renders safe external embeds and the complete GitHub profile experience", async () => {
