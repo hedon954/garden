@@ -742,6 +742,15 @@ test("callouts use the A2 demo colours, all five styled alike", async () => {
   for (const kind of ["note", "tip", "important", "warning", "caution"]) {
     assert.match(html, new RegExp(`markdown-alert markdown-alert-${kind}`));
   }
+  // Icons are the demo's own drawings.
+  const icons = await readFile(new URL("../app/lib/remark-a2.mjs", import.meta.url), "utf8");
+  for (const path of [
+    '<circle cx="8" cy="8" r="6.25"/><path d="M8 7.2v4"/>',
+    '<path d="M8 1.75a4.25 4.25 0 0 0-2.5 7.7c.4.3.6.7.6 1.2v.6h3.8v-.6c0-.5.2-.9.6-1.2A4.25 4.25 0 0 0 8 1.75z"/><path d="M6.2 13.6h3.6"/>',
+    '<path d="M2.25 3.25a1.5 1.5 0 0 1 1.5-1.5h8.5a1.5 1.5 0 0 1 1.5 1.5v6.5a1.5 1.5 0 0 1-1.5 1.5H7.5l-3 2.75v-2.75h-.75a1.5 1.5 0 0 1-1.5-1.5z"/>',
+    '<path d="M7.13 2.4a1 1 0 0 1 1.74 0l5.6 9.9a1 1 0 0 1-.87 1.5H2.4a1 1 0 0 1-.87-1.5z"/>',
+    '<path d="M5.3 1.75h5.4l3.55 3.55v5.4l-3.55 3.55H5.3L1.75 10.7V5.3z"/>',
+  ]) assert.ok(icons.includes(path), path);
 });
 
 test("underline, mark and .hl share the demo's highlighter stroke", async () => {
