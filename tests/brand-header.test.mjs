@@ -100,3 +100,9 @@ test("article titles wrap instead of running off the page, on /blog/ and /column
     assert.doesNotMatch(rule, /word-break: keep-all/u, "CJK wraps between characters");
   }
 });
+
+test("a column heading on /columns/ lands at the page's scroll padding, not twice it", () => {
+  const shell = read("app/styles/shell.css");
+  const rule = shell.match(/\.sh-series h2\{[^}]*\}/u)[0];
+  assert.doesNotMatch(rule, /scroll-margin/u);
+});
