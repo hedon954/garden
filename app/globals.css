@@ -3035,7 +3035,10 @@ html[data-theme="dark"] .article-references {
 }
 
 .giscus-container {
-  min-height: 180px;
+  /* giscus's empty state (reactions + sign-in box) is 372px tall at every
+     width; reserving it keeps the footer still when the frame loads. More
+     comments simply make it taller. */
+  min-height: 372px;
   margin-top: 24px;
 }
 
