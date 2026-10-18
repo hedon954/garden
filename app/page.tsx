@@ -116,7 +116,7 @@ export default function Home() {
                     ) : null}
                   </div>
                   <div className="body">
-                    <h3><Link href={`/columns#${slug}`}>{first.columnTitle}</Link></h3>
+                    <h3><Link href={`/columns/#${slug}`}>{first.columnTitle}</Link></h3>
                     <p className="count">{entries.length} 篇，{first.columnStatus ?? "持续更新"}</p>
                     <p>{first.columnDescription ?? first.description}</p>
                   </div>

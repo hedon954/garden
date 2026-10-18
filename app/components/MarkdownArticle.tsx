@@ -39,10 +39,23 @@ function Favicon({ href }: { href: string }) {
   return <img className="fav" src={src} alt="" width={14} height={14} loading="lazy" decoding="async" aria-hidden="true" />;
 }
 
-/** The first word of a link (or its first CJK character) and the rest. */
+const CJK = "\\p{Script=Han}\\p{Script=Hiragana}\\p{Script=Katakana}\\p{Script=Hangul}";
+const FIRST_WORD = new RegExp(`^(\\s*(?:[${CJK}]|[^\\s${CJK}]+))([\\s\\S]*)$`, "u");
+const WORD_HEAD = new RegExp(`^(\\s*[\\p{L}\\p{N}_]+[^\\s\\p{L}\\p{N}_]?)([\\s\\S]*)$`, "u");
+
+/**
+ * The first word of a link (or its first CJK character) and the rest. A very
+ * long first word, such as a bare URL or a path, keeps only its head
+ * ("https:") with the icon, so the rest of it can wrap.
+ */
 const firstWord = (text: string) => {
-  const match = /^(\s*(?:[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Hangul}]|[^\s\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Hangul}]+))([\s\S]*)$/u.exec(text);
-  return match ? [match[1], match[2]] : [text, ""];
+  const match = FIRST_WORD.exec(text);
+  if (!match) return [text, ""];
+  if (match[1].trim().length > 24) {
+    const head = WORD_HEAD.exec(match[1]);
+    if (head) return [head[1], head[2] + match[2]];
+  }
+  return [match[1], match[2]];
 };
 
 /** Icon plus the link's first word on one line, so the icon never ends a line alone. */
@@ -231,7 +244,7 @@ export function MarkdownArticle({ content }: { content: string }) {
           rehypeRaw,
           rehypeKatex,
           rehypeSlug,
-          [rehypeAutolinkHeadings, { behavior: "wrap" }],
+          [rehypeAutolinkHeadings, { behavior: "wrap", properties: { className: ["h-anchor"] } }],
           rehypeHighlight,
         ]}
         components={{

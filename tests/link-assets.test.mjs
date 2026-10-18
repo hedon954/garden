@@ -216,6 +216,9 @@ test("external links show the local favicon before the text", () => {
   const css = fs.readFileSync(new URL("../app/styles/a2.css", import.meta.url), "utf8");
   assert.match(css, /\.markdown-body a\.ext img\.fav \{[^}]*width: 14px;[^}]*height: 14px;/u);
   assert.match(css, /\.markdown-body a\.ext \.fav-keep \{\s*white-space: nowrap;/u);
+  // A long first word (a bare URL) keeps only its head with the icon; the rest wraps.
+  assert.match(source, /if \(match\[1\]\.trim\(\)\.length > 24\)/u);
+  assert.match(css, /\.markdown-body a\.ext \{\s*overflow-wrap: break-word;/u);
   const bin = fs.readFileSync(new URL("../bin/garden.mjs", import.meta.url), "utf8");
   assert.match(bin, /case "build":\s*\/\/[^\n]*\n\s*if \(process\.env\.GARDEN_OFFLINE !== "1"\) runNode\("scripts\/link-assets\.mjs"\);/u);
 });

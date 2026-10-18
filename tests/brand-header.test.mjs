@@ -70,7 +70,12 @@ test("header: 26px logo 10px from the name, no divider or fixed box", () => {
 test("search entry: magnifier and 搜索 like a nav link, ⌘K only with a fine pointer, 44px button on phones", () => {
   const shell = read("app/styles/shell.css");
   const rule = shell.match(/\.sh-search\{[^}]*\}/u)[0];
-  assert.match(rule, /border:0;background:transparent;color:var\(--soft\)/u);
+  // A hairline box on desktop: rule-coloured border, 8px radius, 34px tall, transparent.
+  assert.match(rule, /height:34px;padding:0 10px 0 12px;border:1px solid var\(--rule\);background:transparent;color:var\(--soft\)/u);
+  assert.match(rule, /border-radius:8px/u);
+  assert.match(shell, /\.sh-search:hover\{color:var\(--ink\);border-color:var\(--rule-strong\)\}/u);
+  // The phone icon buttons stay unboxed and identical.
+  assert.match(shell, /\.sh-icon\{[^}]*border:0;background:transparent/u);
   assert.match(rule, /font:400 15px\/1 var\(--sans\)/u);
   assert.match(shell, /\.sh-nav a\{font-size:15px;color:var\(--soft\)/u, "same size and colour as the nav links");
   assert.match(shell, /\.sh-search kbd\{display:none;/u);
@@ -82,4 +87,30 @@ test("search entry: magnifier and 搜索 like a nav link, ⌘K only with a fine 
 test("article cover leaves half a gutter before the TOC rail", () => {
   const css = read("app/styles/a2.css");
   assert.match(css, /\.article-hero\.article-cover \{\s*width: 100%;\s*\/\*[^*]*\*\/\s*max-width: calc\(var\(--col\) \+ 72px\);\s*margin: 48px auto 0;/u);
+});
+
+test("article titles wrap instead of running off the page, on /blog/ and /columns/ alike", () => {
+  const css = read("app/styles/a2.css");
+  const title = css.match(/\.hero h1,\n\.article-header h1 \{[^}]*\}/u)[0];
+  assert.match(title, /overflow-wrap: break-word;/u, "break an English word only when it alone cannot fit");
+  assert.doesNotMatch(title, /overflow-wrap: anywhere/u);
+  // No nowrap left on the title or its split lines.
+  for (const rule of css.match(/(?:\.hero h1|\.article-header h1|\.h1-line)[^{]*\{[^}]*\}/gu)) {
+    assert.doesNotMatch(rule, /white-space: nowrap/u, rule);
+    assert.doesNotMatch(rule, /word-break: keep-all/u, "CJK wraps between characters");
+  }
+});
+
+test("column, archive-year and thought anchors land at the page's scroll padding, not twice it", () => {
+  const shell = read("app/styles/shell.css");
+  for (const selector of [/\.sh-series h2\{[^}]*\}/u, /\.sh-year > h2\{[^}]*\}/u, /\.sh-note\{[^}]*\}/u]) {
+    assert.doesNotMatch(shell.match(selector)[0], /scroll-margin/u, String(selector));
+  }
+  assert.match(shell, /\.sh-note:target\{background:/u, "the targeted thought keeps its highlight");
+  assert.doesNotMatch(read("app/globals.css").match(/\.thought-card \{[^}]*\}/u)[0], /scroll-margin/u);
+});
+
+test("the archive jumps to a #year link again after its list replaces the static fallback", () => {
+  const archive = read("app/components/BlogArchive.tsx");
+  assert.match(archive, /useEffect\(\(\) => \{[\s\S]*?window\.location\.hash[\s\S]*?scrollIntoView\(\{ block: "start" \}\)[\s\S]*?\}, \[\]\);/u);
 });

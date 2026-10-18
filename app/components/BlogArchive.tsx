@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { ArchivePost, ArchiveSeries } from "../lib/archive";
 import {
   TAG_PARAM,
@@ -30,7 +30,7 @@ function day(value: string) {
 
 // Kept local: importing ../lib/content here would pull every post body into the client bundle.
 const postHref = (post: Pick<ArchivePost, "path">) => `/blog/${post.path}`;
-const columnIndexHref = (slug: string) => `/columns#${slug}`;
+const columnIndexHref = (slug: string) => `/columns/#${slug}`;
 
 function ColumnLabel({ column }: { column?: ArchivePost["column"] }) {
   return column ? <Link className="cat" href={columnIndexHref(column.slug)}>{column.title}</Link> : null;
@@ -47,6 +47,18 @@ export function BlogArchive({ posts, series }: ArchiveData) {
   const searchParams = useSearchParams();
   const paramKey = searchParams.getAll(TAG_PARAM).join("\u0000");
   const selected = useMemo(() => canonicalTags(posts, selectedTags(paramKey ? paramKey.split("\u0000") : [])), [paramKey, posts]);
+  // This list replaces the static fallback after scripts load, which can undo
+  // the browser's jump to a #year link. Jump again once, to the same place the
+  // browser would (scrollIntoView honours the page's scroll-padding).
+  useEffect(() => {
+    let id = "";
+    try {
+      id = decodeURIComponent(window.location.hash.slice(1));
+    } catch {
+      return;
+    }
+    if (id) document.getElementById(id)?.scrollIntoView({ block: "start" });
+  }, []);
   return <ArchiveView posts={posts} series={series} selected={selected} go={(next) => router.push(tagFilterHref(next, pathname), { scroll: false })} />;
 }
 

@@ -83,6 +83,10 @@ cover: https://images.unsplash.com/photo-1761414500824-e280de5a1b37?auto=format&
 
 写在代码里的 `[文字](https://example.com){card}` 不会变成卡片，原样显示。
 
+### 标题里的 [Typora](https://typora.io/) 外链
+
+标题本身点了会定位到这里，不带下划线；标题里的外链照常带虚线下划线。
+
 ## 数学公式
 
 **求和部分：$\sum_{j=1}^{N}$（上下限）**。
