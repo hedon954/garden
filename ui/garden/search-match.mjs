@@ -55,9 +55,10 @@ export function createSearch(records, bodies = null) {
     };
   });
 
-  function search(query, limit = 6) {
+  /** The best `limit` hits, plus how many records match in all. */
+  function find(query, limit = 6) {
     const terms = queryTerms(query);
-    if (!terms.length) return [];
+    if (!terms.length) return { hits: [], total: 0 };
     const hits = [];
     for (const doc of docs) {
       let score = 0;
@@ -89,8 +90,10 @@ export function createSearch(records, bodies = null) {
       hits.push({ score, order: doc.order, item: doc.item, matches });
     }
     hits.sort((a, b) => b.score - a.score || a.order - b.order);
-    return hits.slice(0, limit).map(({ item, matches }) => ({ item, matches }));
+    return { hits: hits.slice(0, limit).map(({ item, matches }) => ({ item, matches })), total: hits.length };
   }
 
-  return { full: Boolean(bodies), search };
+  const search = (query, limit = 6) => find(query, limit).hits;
+
+  return { full: Boolean(bodies), find, search };
 }

@@ -57,7 +57,8 @@ test("search loads a small index on demand", () => {
     columns: [{ title: "C", path: "col/x", column: "col", columnTitle: "专栏一", date: "2026-01-02", content: "short" }],
     thoughts: [{ title: "想", slug: "s", date: "2026-01-03", content: "一条随想" }],
   });
-  assert.deepEqual(sample.map((record) => [record.section, record.path]), [["文章", "/blog/a/b"], ["专栏一", "/columns/col/x"], ["随想", "/thoughts/s"]]);
+  // A post in no column has no section; a column page that is not a post keeps its column URL.
+  assert.deepEqual(sample.map((record) => [record.section, record.path]), [["", "/blog/a/b"], ["专栏一", "/columns/col/x"], ["随想", "/thoughts/s"]]);
   assert.equal(Array.from(sample[0].content).length, EXCERPT_LENGTH + 1);
   assert.equal(sample[2].description, "一条随想");
   assert.equal(searchableText("**粗** [链接](https://a.dev) `x`"), "粗 链接 x");

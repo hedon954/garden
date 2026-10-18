@@ -42,11 +42,11 @@ test("full text: markdown, HTML, math and long code blocks are stripped; short c
 test("full index: aligned with the small index, named by a hash of its text", () => {
   const posts = [{ title: "A", path: "a", date: "2026-01-01", content: "第一篇正文" }];
   const thoughts = [{ title: "T", slug: "t", date: "2026-01-02", content: "一条随想" }];
-  // The same body in a column is stored once.
+  // A post that sits in a column is one entry, at its /blog/ URL.
   const columns = [{ ...posts[0], column: "c", columnTitle: "专栏", path: "c/a" }];
   const full = buildFullIndex({ posts, columns, thoughts });
   assert.deepEqual(full.texts, ["第一篇正文", "一条随想"]);
-  assert.deepEqual(expandFullIndex(full), [["/blog/a", "第一篇正文"], ["/columns/c/a", "第一篇正文"], ["/thoughts/t", "一条随想"]]);
+  assert.deepEqual(expandFullIndex(full), [["/blog/a", "第一篇正文"], ["/thoughts/t", "一条随想"]]);
   assert.deepEqual(full.docs.map(([url]) => url), buildSearchIndex({ posts, columns, thoughts }).map((record) => record.path));
   assert.match(full.fileName, /^search-full\.[0-9a-f]{10}\.json$/u);
   assert.deepEqual(JSON.parse(full.json), { hash: full.hash, texts: full.texts, docs: full.docs });
@@ -190,4 +190,41 @@ test("the header loads full text in the background, never in the page bundle", (
   for (const name of fs.readdirSync(assets).filter((file) => file.endsWith(".js"))) {
     assert.ok(!fs.readFileSync(path.join(assets, name), "utf8").includes("剪叶之后把盆转半圈"), `${name} carries body text`);
   }
+});
+
+test("search lists a post once, at its /blog/ URL, with its column as the chip", () => {
+  // As the build makes them: a column entry is the post itself plus column fields.
+  const go = { title: "内存模型", path: "go/go-memory-model", sourcePath: "posts/go/go-memory-model.md", date: "2026-01-03", content: "Go 内存模型" };
+  const lone = { title: "独立文章", path: "lone", sourcePath: "posts/lone.md", date: "2026-01-02", content: "没有专栏" };
+  const posts = [go, lone];
+  const columns = [{ ...go, kind: "column", column: "go-advance", columnTitle: "Go 底层原理", order: 1 }];
+  const thoughts = [{ title: "T", slug: "t", date: "2026-01-01", content: "一条随想" }];
+  const records = buildSearchIndex({ posts, columns, thoughts });
+  assert.deepEqual(records.map((record) => [record.path, record.section]), [
+    ["/blog/go/go-memory-model", "Go 底层原理"],
+    ["/blog/lone", ""],
+    ["/thoughts/t", "随想"],
+  ]);
+  assert.equal(new Set(records.map((record) => record.title)).size, records.length, "no post twice");
+  assert.ok(!records.some((record) => record.path.startsWith("/columns/")));
+  // The recent list is the first records: no duplicates there either.
+  assert.deepEqual(records.slice(0, 2).map((record) => record.title), ["内存模型", "独立文章"]);
+  // Searching returns the post once, so the count is the number of posts.
+  const hits = createSearch(records, new Map(expandFullIndex(buildFullIndex({ posts, columns, thoughts })))).search("内存", 6);
+  assert.deepEqual(hits.map((hit) => hit.item.path), ["/blog/go/go-memory-model"]);
+  // The full-text file follows the same entries.
+  assert.deepEqual(buildFullIndex({ posts, columns, thoughts }).docs.map(([url]) => url), records.map((record) => record.path));
+});
+
+test("the search label counts every match, not only the rows shown", () => {
+  const posts = Array.from({ length: 9 }, (_, index) => ({ title: `Go 内存 ${index}`, path: `p${index}`, date: `2026-01-0${index + 1}`, content: "x" }));
+  const engine = createSearch(buildSearchIndex({ posts }));
+  const { hits, total } = engine.find("go 内存", 6);
+  assert.equal(hits.length, 6);
+  assert.equal(total, 9);
+  assert.deepEqual(engine.find("", 6), { hits: [], total: 0 });
+  // The dialog shows six rows, so its label uses the total.
+  const header = fs.readFileSync(new URL("../app/components/SiteHeader.tsx", import.meta.url), "utf8");
+  assert.match(header, /\$\{resultTotal\} 篇相关文章/);
+  assert.doesNotMatch(header, /results\.length\} 个相关结果/);
 });

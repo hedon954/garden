@@ -120,3 +120,23 @@ test("the archive jumps to a #year link again after its list replaces the static
   const archive = read("app/components/BlogArchive.tsx");
   assert.match(archive, /useEffect\(\(\) => \{[\s\S]*?window\.location\.hash[\s\S]*?scrollIntoView\(\{ block: "start" \}\)[\s\S]*?\}, \[\]\);/u);
 });
+
+test("the search dialog is a soft paper sheet: rounded, no hard rules, chip labels", () => {
+  const globals = read("app/globals.css");
+  const block = globals.slice(globals.indexOf(".search-backdrop {"), globals.indexOf(".site-footer {"));
+  const rule = (selector) => block.match(new RegExp(`(?:^|\\n)${selector.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&")} \\{([^}]*)\\}`, "u"))?.[1] ?? "";
+  assert.match(rule(".search-panel"), /border-radius: 16px;/u);
+  assert.match(rule(".search-panel"), /background: var\(--paper\);/u);
+  assert.match(rule(".search-panel"), /box-shadow: 0 18px 48px/u);
+  assert.doesNotMatch(rule(".search-input-wrap"), /border/u, "the input is not boxed off");
+  assert.match(rule(".search-result"), /border-radius: 10px;/u);
+  assert.doesNotMatch(rule(".search-result"), /border-top|border-bottom/u, "no dividers between results");
+  assert.match(block, /\.search-result:hover,\n\.search-result\.active \{\s*background: var\(--card-hover\);\s*box-shadow: var\(--card-shadow\);/u);
+  assert.doesNotMatch(block, /transform|translate/u, "rows do not move");
+  assert.match(rule(".search-result > .search-chip"), /border-radius: 999px;/u);
+  assert.match(rule(".search-footer"), /border-radius: 0 0 15px 15px;/u);
+  assert.doesNotMatch(block, /var\(--blue\)/u, "ink accents only");
+  assert.match(block, /@media \(max-width: 640px\) \{[\s\S]*?\.search-panel \{[^}]*border-radius: 16px 16px 0 0;/u);
+  assert.doesNotMatch(read("app/styles/a2.css"), /\.search-panel,/u, "the dialog keeps its shadow");
+  assert.match(read("app/components/SiteHeader.tsx"), /<span className="search-chip">/u);
+});
