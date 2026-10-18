@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { cardUpdates, refreshUrl, safeToUpdate } from "../../ui/garden/card-refresh.mjs";
+import { cardUpdates, fetchCardText, refreshUrl, safeToUpdate } from "../../ui/garden/card-refresh.mjs";
 
 /**
  * After the page is idle, ask the link-card Worker for each card's current
@@ -12,14 +12,13 @@ export function LinkCardRefresh({ endpoint }: { endpoint: string }) {
   useEffect(() => {
     const cards = [...document.querySelectorAll<HTMLElement>(".link-cards[data-card-url]")];
     if (!cards.length || !refreshUrl(endpoint, "https://example.com/")) return;
+    // Aborts every request when the page goes away; each request also has its own timeout.
     const controller = new AbortController();
     const run = () => {
       for (const card of cards) {
         const target = refreshUrl(endpoint, card.dataset.cardUrl ?? "");
         if (!target) continue;
-        const timer = setTimeout(() => controller.abort(), 6000);
-        fetch(target, { mode: "cors", credentials: "omit", signal: controller.signal })
-          .then((response) => (response.ok ? response.json() : null))
+        fetchCardText(target, { shared: controller.signal })
           .then((fresh) => {
             if (!fresh || !safeToUpdate(card.getBoundingClientRect().top, window.innerHeight)) return;
             const fields = new Map(
@@ -31,8 +30,7 @@ export function LinkCardRefresh({ endpoint }: { endpoint: string }) {
               if (node) node.textContent = text;
             }
           })
-          .catch(() => {})
-          .finally(() => clearTimeout(timer));
+          .catch(() => {});
       }
     };
     const idle = window.requestIdleCallback ?? ((callback: () => void) => window.setTimeout(callback, 1500));

@@ -5,7 +5,8 @@
  *
  * Guards: only GET from the site's own origins; only URLs in the site's
  * published allowlist; only public http(s) hosts, redirects re-checked; HTML
- * only, at most 1 MB, 5 s; a per-IP request budget; results cached. It never
+ * only, at most 1 MB, 5 s; a per-IP request budget; results cached for a day,
+ * failures for ten minutes. It never
  * returns a remote image URL: cards keep their build-time local picture.
  */
 import { fetchPageMeta } from "../../scripts/link-meta-core.mjs";
@@ -14,7 +15,9 @@ export const DEFAULTS = {
   allowedOrigins: ["https://hedon.top"],
   allowLocalhost: true,
   allowlistTtlMs: 5 * 60 * 1000,
-  resultTtlSeconds: 6 * 60 * 60,
+  resultTtlSeconds: 24 * 60 * 60,
+  // A page that could not be read is not tried again for this long.
+  failureTtlSeconds: 10 * 60,
   timeoutMs: 5000,
   maxBytes: 1024 * 1024,
   ratePerMinute: 30,
@@ -114,13 +117,21 @@ export function createHandler({
     const cached = await cache?.get(cacheKey);
     if (cached) return json(cached, 200, { ...cors, "cache-control": "public, max-age=3600", "x-cache": "hit" });
 
+    const failureKey = `og-fail:${target}`;
+    const failed = await cache?.get(failureKey);
+    if (failed) return json(failed, 502, { ...cors, "x-cache": "hit" });
+    const fail = async (body) => {
+      await cache?.put(failureKey, body, config.failureTtlSeconds);
+      return json(body, 502, { ...cors, "x-cache": "miss" });
+    };
+
     let meta;
     try {
       meta = await fetchPageMeta(target, { fetch: fetcher, timeoutMs: config.timeoutMs, maxBytes: config.maxBytes });
     } catch (error) {
-      return json({ error: "could not read page", detail: String(error?.message ?? error).slice(0, 120) }, 502, cors);
+      return fail({ error: "could not read page", detail: String(error?.message ?? error).slice(0, 120) });
     }
-    if (!meta.title) return json({ error: "no title" }, 502, cors);
+    if (!meta.title) return fail({ error: "no title" });
     // Text only. Pictures stay the local copies made at build time.
     const body = Object.fromEntries(Object.entries({
       url: target,

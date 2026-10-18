@@ -1,8 +1,8 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import test from "node:test";
-import { createHandler, createRateLimiter, originAllowed } from "../worker/og/handler.mjs";
-import { cardDate, cardUpdates, refreshUrl, safeToUpdate } from "../ui/garden/card-refresh.mjs";
+import { createHandler, createRateLimiter, DEFAULTS, originAllowed } from "../worker/og/handler.mjs";
+import { cardDate, cardUpdates, fetchCardText, refreshUrl, requestSignal, safeToUpdate } from "../ui/garden/card-refresh.mjs";
 
 const PAGE = `<html><head><meta property="og:title" content="KV Caching, revised">
 <meta property="og:description" content="Now with numbers."><meta property="og:image" content="https://cdn.example/x.png">
@@ -12,6 +12,7 @@ const LISTED = "https://huggingface.co/blog/kv";
 function setup({ routes = {}, list = [LISTED], options = {}, now } = {}) {
   const calls = [];
   const store = new Map();
+  const ttls = new Map();
   const fetch = async (url, init) => {
     calls.push(url);
     const route = routes[url];
@@ -22,11 +23,11 @@ function setup({ routes = {}, list = [LISTED], options = {}, now } = {}) {
   const handle = createHandler({
     fetch,
     loadAllowlist: async () => ({ urls: list }),
-    cache: { get: async (key) => store.get(key) ?? null, put: async (key, value) => void store.set(key, value) },
+    cache: { get: async (key) => store.get(key) ?? null, put: async (key, value, ttl) => { store.set(key, value); ttls.set(key, ttl); } },
     options: { ratePerMinute: 1000, ...options },
     now,
   });
-  return { handle, calls, store };
+  return { handle, calls, store, ttls };
 }
 
 const ask = (target, { origin = "https://hedon.top", method = "GET" } = {}) =>
@@ -163,10 +164,84 @@ test("client: no Worker configured means no script, and cards work without JavaS
   assert.match(article, /\{cardWorker \? <LinkCardRefresh endpoint=\{cardWorker\} \/> : null\}/u);
   const refresh = fs.readFileSync(new URL("../app/components/LinkCardRefresh.tsx", import.meta.url), "utf8");
   assert.match(refresh, /\.catch\(\(\) => \{\}\)/u);
-  assert.match(refresh, /credentials: "omit"/u);
+  assert.match(refresh, /fetchCardText\(target, \{ shared: controller\.signal \}\)/u);
+  assert.doesNotMatch(refresh, /setTimeout\(\(\) => controller\.abort/u);
+  assert.match(fs.readFileSync(new URL("../ui/garden/card-refresh.mjs", import.meta.url), "utf8"), /credentials: "omit"/u);
   assert.doesNotMatch(refresh, /lc-thumb|\.src\s*=/u);
   const allowlist = JSON.parse(fs.readFileSync(new URL("../public/link-allowlist.json", import.meta.url), "utf8"));
   assert.deepEqual(allowlist.urls, ["https://github.com/remarkjs/remark-gfm", "https://katex.org/docs/supported.html"]);
   const toml = fs.readFileSync(new URL("../worker/og/wrangler.toml", import.meta.url), "utf8");
   assert.match(toml, /main = "index\.mjs"/u);
+});
+
+test("worker: results are cached for a day, failures for ten minutes", async () => {
+  assert.equal(DEFAULTS.resultTtlSeconds, 86400);
+  assert.equal(DEFAULTS.failureTtlSeconds, 600);
+  const { handle, calls, ttls } = setup({
+    list: [LISTED, "https://a.dev/down", "https://a.dev/untitled"],
+    routes: {
+      [LISTED]: { body: PAGE },
+      "https://a.dev/down": { status: 500, body: "oops" },
+      "https://a.dev/untitled": { body: "<html><head></head></html>" },
+    },
+  });
+  assert.equal((await handle(ask(LISTED))).status, 200);
+  assert.equal(ttls.get(`og:${LISTED}`), 86400);
+
+  for (const target of ["https://a.dev/down", "https://a.dev/untitled"]) {
+    const first = await handle(ask(target));
+    assert.equal(first.status, 502);
+    assert.equal(first.headers.get("x-cache"), "miss");
+    assert.equal(ttls.get(`og-fail:${target}`), 600);
+    const fetchesSoFar = calls.length;
+    const second = await handle(ask(target));
+    assert.equal(second.status, 502);
+    assert.equal(second.headers.get("x-cache"), "hit");
+    assert.equal(second.headers.get("access-control-allow-origin"), "https://hedon.top");
+    assert.equal(calls.length, fetchesSoFar, `${target} was fetched again inside the failure window`);
+  }
+});
+
+test("card refresh: one slow card does not abort the others", async () => {
+  const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+  const fetcher = (url, { signal }) => new Promise((resolve, reject) => {
+    signal.addEventListener("abort", () => reject(new DOMException("aborted", "AbortError")));
+    // The slow card never answers; the others answer 50 ms after they start.
+    if (!url.includes("slow")) setTimeout(() => resolve(Response.json({ title: url })), 50);
+  });
+  // The slow card starts first and times out at 60 ms, while the other two
+  // are still waiting for answers due at 90 ms (their own deadline is 100 ms).
+  const run = async (signalOptions) => {
+    const shared = new AbortController();
+    const fetchOne = (target) => fetchCardText(target, { shared: shared.signal, fetcher, timeoutMs: 60, signalOptions });
+    const slow = fetchOne("https://og/?url=slow");
+    await sleep(40);
+    return Promise.all([slow, fetchOne("https://og/?url=a"), fetchOne("https://og/?url=b")]);
+  };
+  const expected = [null, { title: "https://og/?url=a" }, { title: "https://og/?url=b" }];
+  assert.deepEqual(await run(), expected);
+  // Same without AbortSignal.any / AbortSignal.timeout.
+  assert.deepEqual(await run({ Signal: {}, Controller: AbortController }), expected);
+});
+
+test("card refresh: leaving the page aborts every request, with or without AbortSignal.any", async () => {
+  for (const signalOptions of [undefined, { Signal: {}, Controller: AbortController }]) {
+    const shared = new AbortController();
+    const signals = [];
+    const fetcher = (url, { signal }) => {
+      signals.push(signal);
+      return new Promise((_, reject) => signal.addEventListener("abort", () => reject(new Error("aborted"))));
+    };
+    const pending = ["https://og/?url=a", "https://og/?url=b"].map((target) =>
+      fetchCardText(target, { shared: shared.signal, fetcher, timeoutMs: 60000, signalOptions }));
+    shared.abort();
+    assert.deepEqual(await Promise.all(pending), [null, null]);
+    assert.ok(signals.every((signal) => signal.aborted));
+  }
+  // Already gone before the request starts.
+  const gone = new AbortController();
+  gone.abort();
+  const early = requestSignal(gone.signal, 60000, { Signal: {}, Controller: AbortController });
+  assert.equal(early.signal.aborted, true);
+  early.done();
 });
