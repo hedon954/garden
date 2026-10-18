@@ -393,6 +393,26 @@ test("renders every reading TOC link with a matching Markdown heading ID", async
   }
 });
 
+test("heading anchors carry no underline while a link inside a heading keeps its own", async () => {
+  const html = await (await render("/blog/markdown-lab")).text();
+  const styles = await readFile(new URL("../app/styles/a2.css", import.meta.url), "utf8");
+  // Every h2–h4 wraps its text in the h-anchor link.
+  const body = html.slice(html.indexOf('<div class="markdown-body'), html.indexOf('id="footnote-label"'));
+  const headings = [...body.matchAll(/<h([234]) id="([^"]+)"[^>]*>([\s\S]*?)<\/h\1>/gu)]
+    .filter(([, , id]) => id !== "footnote-label")
+    .map(([all, level, , inner]) => [all, level, inner]);
+  assert.ok(headings.length > 3);
+  for (const [, , inner] of headings) assert.match(inner, /<a href="#[^"]+" class="h-anchor">/u);
+  // The external link inside a heading stays an a.ext.
+  const withExt = headings.find(([, , inner]) => inner.includes("typora.io"));
+  assert.ok(withExt, "markdown-lab should have a heading with an external link");
+  assert.match(withExt[2], /<a href="https:\/\/typora\.io\/" class="ext"/u);
+  assert.match(styles, /\.markdown-body \.h-anchor,\n\.markdown-body \.h-anchor:hover,\n\.markdown-body \.h-anchor:active \{\n  color: inherit;\n  text-decoration: none;/);
+  assert.match(styles, /\.markdown-body \.h-anchor:focus-visible \{\n  outline: 2px solid/);
+  // The h-anchor rule must not reach a.ext, which keeps the body-link underline.
+  assert.doesNotMatch(styles, /\.h-anchor a|\.h-anchor \.ext/);
+});
+
 test("publishes discovery routes, permanent thought pages, and real integration adapters", async () => {
   const [sitemapResponse, robotsResponse, thoughtResponse, gardenResponse] = await Promise.all([
     render("/sitemap.xml"),

@@ -231,7 +231,7 @@ export function MarkdownArticle({ content }: { content: string }) {
           rehypeRaw,
           rehypeKatex,
           rehypeSlug,
-          [rehypeAutolinkHeadings, { behavior: "wrap" }],
+          [rehypeAutolinkHeadings, { behavior: "wrap", properties: { className: ["h-anchor"] } }],
           rehypeHighlight,
         ]}
         components={{
