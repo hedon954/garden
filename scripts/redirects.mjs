@@ -23,44 +23,9 @@ import { configuredSiteAddress } from "../ui/garden/same-site.mjs";
 
 const escapeHtml = (value) => String(value).replace(/&/gu, "&amp;").replace(/"/gu, "&quot;").replace(/</gu, "&lt;").replace(/>/gu, "&gt;");
 
-/** Valid `{ from, to }` pairs from the config; anything malformed is reported and skipped. */
-export function readRedirects(config = {}, warn = () => {}) {
-  const map = config?.redirects;
-  if (!map) return [];
-  if (typeof map !== "object" || Array.isArray(map)) {
-    warn("redirects 应写成「旧路径: 新地址」的映射，已忽略。");
-    return [];
-  }
-  const pairs = [];
-  for (const [rawFrom, rawTo] of Object.entries(map)) {
-    let from = String(rawFrom).trim();
-    const to = String(rawTo ?? "").trim();
-    try {
-      from = decodeURI(from);
-    } catch {
-      // keep as written
-    }
-    if (!from.startsWith("/") || from.startsWith("//") || from === "/" || /(^|\/)\.\.?(\/|$)/u.test(from) || /[?#]/u.test(from)) {
-      warn(`redirects：旧路径 ${rawFrom} 必须是站内路径（以 / 开头，不带 ?、# 和 ..），已跳过。`);
-      continue;
-    }
-    if (!(to.startsWith("/") && !to.startsWith("//")) && !/^https?:\/\//iu.test(to)) {
-      warn(`redirects：${rawFrom} 的新地址 ${rawTo} 应以 / 开头或是完整网址，已跳过。`);
-      continue;
-    }
-    pairs.push({ from, to });
-  }
-  return pairs;
-}
-
-/** `/columns/<slug>/` → `/columns/#<slug>` for every valid column slug in columns.yaml. */
-export function columnRedirects(columnsConfig = {}) {
-  const columns = Array.isArray(columnsConfig?.columns) ? columnsConfig.columns : [];
-  return columns
-    .map((column) => (column && typeof column.slug === "string" ? column.slug.trim() : ""))
-    .filter((slug) => /^[a-z0-9]+(?:-[a-z0-9]+)*$/u.test(slug))
-    .map((slug) => ({ from: `/columns/${slug}/`, to: `/columns/#${slug}` }));
-}
+// Shared with the article renderer, which rewrites links to old addresses (ui/garden/internal-links.mjs).
+export { columnRedirects, readRedirects } from "../ui/garden/internal-links.mjs";
+import { readRedirects } from "../ui/garden/internal-links.mjs";
 
 /** The file an old path is served from: `/a/b/` and `/a/b` → a/b/index.html, `/a/b.html` → a/b.html. */
 export function redirectFile(from) {

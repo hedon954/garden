@@ -160,6 +160,6 @@ test("in-article links to other pages of the site go through the framework Link"
   const fs = await import("node:fs");
   const source = fs.readFileSync(new URL("../app/components/MarkdownArticle.tsx", import.meta.url), "utf8");
   assert.match(source, /^import Link from "next\/link";/mu);
-  assert.match(source, /const route = external \|\| domProps\.target \|\| domProps\.download !== undefined \? null : clientRoute\(href, siteLinks\?\.basePath \?\? ""\);/u);
+  assert.match(source, /const route = external \|\| domProps\.target \|\| domProps\.download !== undefined \? null : internalRoute\(href\);/u);
   assert.match(source, /<Link href=\{route\} prefetch=\{false\} \{\.\.\.domProps\}>/u);
 });
