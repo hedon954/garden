@@ -3730,6 +3730,12 @@ html[data-theme="dark"] .search-panel {
   color: var(--muted);
   font-size: var(--fs-small);
   text-align: center;
+  overflow-wrap: anywhere;
+}
+
+/* No results: the one line sits in the middle of the list area. */
+.search-results:has(> .empty-state:only-child) {
+  align-content: center;
 }
 
 .search-footer {
