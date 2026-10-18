@@ -386,8 +386,7 @@ html[data-theme="dark"] .column-reading-page .e-content {
 }
 
 /* A heading's own anchor link reads as the heading: no underline in any
-   state. Keyboard focus keeps the ring. Links inside the heading (a.ext)
-   keep their own underline. */
+   state. Links inside the heading (a.ext) keep their own underline. */
 .markdown-body .h-anchor,
 .markdown-body .h-anchor:hover,
 .markdown-body .h-anchor:active {
@@ -395,10 +394,33 @@ html[data-theme="dark"] .column-reading-page .e-content {
   text-decoration: none;
 }
 
+/* Keyboard focus rings the heading, not the anchor, so a heading split
+   around a link shows one ring. */
 .markdown-body .h-anchor:focus-visible {
+  outline: none;
+}
+
+.markdown-body :is(h2, h3, h4):has(.h-anchor:focus-visible) {
   outline: 2px solid var(--blue);
   outline-offset: 2px;
   border-radius: 2px;
+}
+
+/* A heading with a link in it has one self-link (its first stretch of text),
+   stretched over the whole heading; the link inside sits above it. */
+.markdown-body .h-split {
+  position: relative;
+}
+
+.markdown-body .h-split .h-anchor::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+
+.markdown-body .h-split a:not(.h-anchor) {
+  position: relative;
+  z-index: 1;
 }
 
 .markdown-body a.ext {

@@ -26,18 +26,38 @@ function headingHtml(markdown) {
   return String(unified().use(remarkParse).use(remarkRehype).use(rehypeSlug).use(rehypeHeadingAnchors).use(rehypeStringify).processSync(markdown));
 }
 
-test("heading self-links never nest: text around a link in a heading gets its own anchor", () => {
+test("heading self-links never nest: a heading with a link has one self-link, on its first stretch of text", () => {
   assert.equal(headingHtml("## 普通标题"), '<h2 id="普通标题"><a href="#普通标题" class="h-anchor">普通标题</a></h2>');
   const withLink = headingHtml("### 标题里的 [Typora](https://typora.io/) 外链");
   assert.equal(
     withLink,
-    '<h3 id="标题里的-typora-外链"><a href="#标题里的-typora-外链" class="h-anchor">标题里的 </a><a href="https://typora.io/">Typora</a><a href="#标题里的-typora-外链" class="h-anchor"> 外链</a></h3>',
+    '<h3 id="标题里的-typora-外链" class="h-split"><a href="#标题里的-typora-外链" class="h-anchor">标题里的 </a><a href="https://typora.io/">Typora</a> 外链</h3>',
   );
+  // One self-link per heading: one tab stop, one link to the heading for assistive tech.
+  assert.equal(withLink.match(/class="h-anchor"/gu).length, 1);
   const nested = headingHtml("## **粗体 [链接](https://e.org)** 和 `code`");
   assert.deepEqual(findInvalidNesting(nested), []);
-  assert.match(nested, /<strong><a href="#[^"]+" class="h-anchor">粗体 <\/a><a href="https:\/\/e\.org">链接<\/a><\/strong><a href="#[^"]+" class="h-anchor"> 和 <code>code<\/code><\/a>/u);
-  assert.equal(headingHtml("## [整个标题是链接](https://e.org)"), '<h2 id="整个标题是链接"><a href="https://e.org">整个标题是链接</a></h2>');
+  assert.match(nested, /<h2 id="[^"]+" class="h-split"><strong><a href="#[^"]+" class="h-anchor">粗体 <\/a><a href="https:\/\/e\.org">链接<\/a><\/strong> 和 <code>code<\/code><\/h2>/u);
+  // A heading that opens with a link: the self-link goes on the text after it, not on a stray space.
+  assert.equal(
+    headingHtml("## [Typora](https://typora.io/) 入门"),
+    '<h2 id="typora-入门" class="h-split"><a href="https://typora.io/">Typora</a><a href="#typora-入门" class="h-anchor"> 入门</a></h2>',
+  );
+  assert.equal(headingHtml("## [整个标题是链接](https://e.org)"), '<h2 id="整个标题是链接" class="h-split"><a href="https://e.org">整个标题是链接</a></h2>');
   assert.equal(headingHtml("##### 五级标题"), "<h5>五级标题</h5>".replace("<h5>", '<h5 id="五级标题">'));
+});
+
+test("a split heading hovers, focuses and clicks as one heading", () => {
+  const css = fs.readFileSync(new URL("../app/styles/a2.css", import.meta.url), "utf8");
+  // The ring is drawn by the heading, never by an anchor piece.
+  assert.match(css, /\.markdown-body \.h-anchor:focus-visible \{\s*outline: none;\s*\}/u);
+  assert.match(css, /\.markdown-body :is\(h2, h3, h4\):has\(\.h-anchor:focus-visible\) \{\s*outline: 2px solid var\(--blue\);/u);
+  // The one self-link covers the heading; the link inside stays on top and clickable.
+  assert.match(css, /\.markdown-body \.h-split \{\s*position: relative;\s*\}/u);
+  assert.match(css, /\.markdown-body \.h-split \.h-anchor::after \{\s*content: "";\s*position: absolute;\s*inset: 0;\s*\}/u);
+  assert.match(css, /\.markdown-body \.h-split a:not\(\.h-anchor\) \{\s*position: relative;\s*z-index: 1;\s*\}/u);
+  // No hover or focus effect hangs on an anchor piece by itself.
+  assert.doesNotMatch(css, /\.h-anchor:hover \{|\.h-anchor:focus-visible \{\s*outline: 2px/u);
 });
 
 async function render(pathname) {

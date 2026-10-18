@@ -412,8 +412,12 @@ test("heading anchors carry no underline while a link inside a heading keeps its
   const withExt = headings.find(([, , inner]) => inner.includes("typora.io"));
   assert.ok(withExt, "markdown-lab should have a heading with an external link");
   assert.match(withExt[2], /<a href="https:\/\/typora\.io\/" class="ext"/u);
+  // Split around the link, the heading still has exactly one self-link, and is marked .h-split.
+  assert.equal(withExt[2].match(/class="h-anchor"/gu)?.length, 1);
+  assert.match(withExt[0], /^<h3 id="[^"]+" class="h-split">/u);
+  for (const [, , inner] of headings) assert.equal(inner.match(/class="h-anchor"/gu)?.length, 1);
   assert.match(styles, /\.markdown-body \.h-anchor,\n\.markdown-body \.h-anchor:hover,\n\.markdown-body \.h-anchor:active \{\n  color: inherit;\n  text-decoration: none;/);
-  assert.match(styles, /\.markdown-body \.h-anchor:focus-visible \{\n  outline: 2px solid/);
+  assert.match(styles, /\.markdown-body :is\(h2, h3, h4\):has\(\.h-anchor:focus-visible\) \{\n  outline: 2px solid/);
   // The h-anchor rule must not reach a.ext, which keeps the body-link underline.
   assert.doesNotMatch(styles, /\.h-anchor a|\.h-anchor \.ext/);
 });
