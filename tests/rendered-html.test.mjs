@@ -959,6 +959,10 @@ test("the article code block labels its language through the shared mapping, nex
   const html = await response.text();
   assert.match(html, /<div class="ux-cb"><pre class="code" data-language="PYTHON">/u);
   assert.doesNotMatch(html, /data-language="PY"/u);
+  // ```typescript reads TS; Go, Rust, SQL keep their full names.
+  assert.match(html, /<pre class="code" data-language="TS">/u);
+  assert.doesNotMatch(html, /data-language="TYPESCRIPT"/u);
+  for (const name of ["GO", "RUST", "SQL"]) assert.match(html, new RegExp(`data-language="${name}"`, "u"));
 });
 
 test("article, column article and thought pages link the RSS feed in <head> next to their canonical", async () => {

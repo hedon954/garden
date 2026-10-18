@@ -8,9 +8,18 @@ test("one label per language, whatever alias the fence uses", () => {
   assert.equal(codeLanguageLabel("py"), "PYTHON");
   assert.equal(codeLanguageLabel("python"), "PYTHON");
   assert.equal(codeLanguageLabel("Python"), "PYTHON");
-  assert.equal(codeLanguageLabel("js"), "JAVASCRIPT");
-  assert.equal(codeLanguageLabel("ts"), "TYPESCRIPT");
-  assert.equal(codeLanguageLabel("sh"), "SHELL");
+  // JS and TS by their abbreviations, whatever the fence says.
+  assert.equal(codeLanguageLabel("js"), "JS");
+  assert.equal(codeLanguageLabel("javascript"), "JS");
+  assert.equal(codeLanguageLabel("mjs"), "JS");
+  assert.equal(codeLanguageLabel("ts"), "TS");
+  assert.equal(codeLanguageLabel("typescript"), "TS");
+  assert.equal(codeLanguageLabel("tsx"), "TSX");
+  // Everything else by its full name.
+  assert.equal(codeLanguageLabel("bash"), "BASH");
+  assert.equal(codeLanguageLabel("sh"), "BASH");
+  assert.equal(codeLanguageLabel("rs"), "RUST");
+  assert.equal(codeLanguageLabel("rust"), "RUST");
   assert.equal(codeLanguageLabel("yml"), "YAML");
   assert.equal(codeLanguageLabel("golang"), "GO");
   assert.equal(codeLanguageLabel("c++"), "C++");

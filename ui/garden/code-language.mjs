@@ -1,8 +1,9 @@
 /**
  * The label a code block shows for its fence language. The article, the preview
  * drawer and the standalone preview page all go through here, so ```py and
- * ```python read the same everywhere. Common aliases map to one name; anything
- * else is the fence language in capitals.
+ * ```python read the same everywhere. Common aliases map to one language; JS and
+ * TS use their abbreviations, every other language its full name in capitals
+ * (PYTHON, GO, RUST, BASH), and an unknown fence language is shown in capitals.
  */
 const ALIASES = {
   py: "python",
@@ -14,8 +15,8 @@ const ALIASES = {
   ts: "typescript",
   mts: "typescript",
   tsx: "tsx",
-  sh: "shell",
-  zsh: "shell",
+  sh: "bash",
+  zsh: "bash",
   shell: "shell",
   console: "shell",
   golang: "go",
@@ -35,7 +36,8 @@ const ALIASES = {
   txt: "text",
 };
 
-const NAMES = { cpp: "C++", csharp: "C#" };
+/** JavaScript and TypeScript go by their common abbreviations; everything else by its full name. */
+const NAMES = { javascript: "JS", typescript: "TS", cpp: "C++", csharp: "C#" };
 
 /** Display label for a fence language, or "" when there is none. */
 export function codeLanguageLabel(language) {
