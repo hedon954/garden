@@ -13,7 +13,8 @@
  * them becomes the self-link; the rest stays plain heading text. The heading gets
  * .h-split, and CSS stretches that one self-link over the whole heading, so a
  * click anywhere on it still jumps, while there is one tab stop and one link to
- * the heading for assistive tech, and hover and focus read as one heading.
+ * the heading for assistive tech, and hover and focus read as one heading. That
+ * link's aria-label is the full heading text, so a screen reader reads all of it.
  */
 const HEADINGS = new Set(["h2", "h3", "h4"]);
 
@@ -25,12 +26,18 @@ export function containsLink(node) {
   return Array.isArray(node?.children) && node.children.some(containsLink);
 }
 
-const selfLink = (id, children, className) => ({
+const selfLink = (id, children, className, label) => ({
   type: "element",
   tagName: "a",
-  properties: { href: `#${id}`, className: [...className] },
+  properties: { href: `#${id}`, className: [...className], ...(label ? { ariaLabel: label } : {}) },
   children,
 });
+
+/** Visible text of a node, whitespace collapsed. */
+export function headingText(node) {
+  const walk = (item) => (item.type === "text" ? item.value : Array.isArray(item.children) ? item.children.map(walk).join("") : "");
+  return walk(node).replace(/\s+/gu, " ").trim();
+}
 
 const hasContent = (nodes) => nodes.some((node) => node.type !== "text" || node.value.trim() !== "");
 
@@ -44,7 +51,7 @@ function wrapFirstRun(children, id, className, state) {
   let run = [];
   const flush = () => {
     if (!state.done && hasContent(run)) {
-      out.push(selfLink(id, run, className));
+      out.push(selfLink(id, run, className, state.label));
       state.done = true;
     } else {
       out.push(...run);
@@ -71,7 +78,9 @@ export function rehypeHeadingAnchors({ className = ["h-anchor"] } = {}) {
       if (isElement(child) && HEADINGS.has(child.tagName) && child.properties?.id) {
         const id = String(child.properties.id);
         if (containsLink(child)) {
-          child.children = wrapFirstRun(child.children, id, className, { done: false });
+          // The self-link covers the whole heading but holds only its first stretch of
+          // text, so it carries the whole heading as its name.
+          child.children = wrapFirstRun(child.children, id, className, { done: false, label: headingText(child) });
           child.properties.className = [...[].concat(child.properties.className ?? []), "h-split"];
         } else {
           child.children = [selfLink(id, child.children, className)];

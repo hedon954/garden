@@ -28,20 +28,22 @@ function headingHtml(markdown) {
 
 test("heading self-links never nest: a heading with a link has one self-link, on its first stretch of text", () => {
   assert.equal(headingHtml("## 普通标题"), '<h2 id="普通标题"><a href="#普通标题" class="h-anchor">普通标题</a></h2>');
+  // A heading without links needs no label: its link holds all of the text.
+  assert.doesNotMatch(headingHtml("## 普通标题"), /aria-label/u);
   const withLink = headingHtml("### 标题里的 [Typora](https://typora.io/) 外链");
   assert.equal(
     withLink,
-    '<h3 id="标题里的-typora-外链" class="h-split"><a href="#标题里的-typora-外链" class="h-anchor">标题里的 </a><a href="https://typora.io/">Typora</a> 外链</h3>',
+    '<h3 id="标题里的-typora-外链" class="h-split"><a href="#标题里的-typora-外链" class="h-anchor" aria-label="标题里的 Typora 外链">标题里的 </a><a href="https://typora.io/">Typora</a> 外链</h3>',
   );
   // One self-link per heading: one tab stop, one link to the heading for assistive tech.
   assert.equal(withLink.match(/class="h-anchor"/gu).length, 1);
   const nested = headingHtml("## **粗体 [链接](https://e.org)** 和 `code`");
   assert.deepEqual(findInvalidNesting(nested), []);
-  assert.match(nested, /<h2 id="[^"]+" class="h-split"><strong><a href="#[^"]+" class="h-anchor">粗体 <\/a><a href="https:\/\/e\.org">链接<\/a><\/strong> 和 <code>code<\/code><\/h2>/u);
+  assert.match(nested, /<h2 id="[^"]+" class="h-split"><strong><a href="#[^"]+" class="h-anchor" aria-label="粗体 链接 和 code">粗体 <\/a><a href="https:\/\/e\.org">链接<\/a><\/strong> 和 <code>code<\/code><\/h2>/u);
   // A heading that opens with a link: the self-link goes on the text after it, not on a stray space.
   assert.equal(
     headingHtml("## [Typora](https://typora.io/) 入门"),
-    '<h2 id="typora-入门" class="h-split"><a href="https://typora.io/">Typora</a><a href="#typora-入门" class="h-anchor"> 入门</a></h2>',
+    '<h2 id="typora-入门" class="h-split"><a href="https://typora.io/">Typora</a><a href="#typora-入门" class="h-anchor" aria-label="Typora 入门"> 入门</a></h2>',
   );
   assert.equal(headingHtml("## [整个标题是链接](https://e.org)"), '<h2 id="整个标题是链接" class="h-split"><a href="https://e.org">整个标题是链接</a></h2>');
   assert.equal(headingHtml("##### 五级标题"), "<h5>五级标题</h5>".replace("<h5>", '<h5 id="五级标题">'));

@@ -407,7 +407,7 @@ test("heading anchors carry no underline while a link inside a heading keeps its
     .filter(([, , id]) => id !== "footnote-label")
     .map(([all, level, , inner]) => [all, level, inner]);
   assert.ok(headings.length > 3);
-  for (const [, , inner] of headings) assert.match(inner, /<a href="#[^"]+" class="h-anchor">/u);
+  for (const [, , inner] of headings) assert.match(inner, /<a href="#[^"]+" class="h-anchor"[ >]/u);
   // The external link inside a heading stays an a.ext.
   const withExt = headings.find(([, , inner]) => inner.includes("typora.io"));
   assert.ok(withExt, "markdown-lab should have a heading with an external link");
@@ -415,6 +415,8 @@ test("heading anchors carry no underline while a link inside a heading keeps its
   // Split around the link, the heading still has exactly one self-link, and is marked .h-split.
   assert.equal(withExt[2].match(/class="h-anchor"/gu)?.length, 1);
   assert.match(withExt[0], /^<h3 id="[^"]+" class="h-split">/u);
+  // The stretched self-link reads as the whole heading.
+  assert.match(withExt[2], /<a href="#[^"]+" class="h-anchor" aria-label="标题里的 Typora 外链">标题里的 <\/a>/u);
   for (const [, , inner] of headings) assert.equal(inner.match(/class="h-anchor"/gu)?.length, 1);
   assert.match(styles, /\.markdown-body \.h-anchor,\n\.markdown-body \.h-anchor:hover,\n\.markdown-body \.h-anchor:active \{\n  color: inherit;\n  text-decoration: none;/);
   assert.match(styles, /\.markdown-body :is\(h2, h3, h4\):has\(\.h-anchor:focus-visible\) \{\n  outline: 2px solid/);
