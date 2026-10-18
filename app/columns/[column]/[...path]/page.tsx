@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { CoverImage } from "../../../components/CoverImage";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ArrowLeft, ArrowRight } from "@phosphor-icons/react/ssr";
@@ -130,12 +131,7 @@ export default async function ColumnEntryPage({
           <ArticleTags tags={entry.tags} />
           {entry.cover && (
             <figure className="article-hero article-cover cover-img">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                className="u-photo"
-                src={entry.cover}
-                alt={`${entry.title} 封面`}
-              />
+              <CoverImage className="u-photo" src={entry.cover} image={entry.coverImage} alt={`${entry.title} 封面`} sizes="(max-width: 920px) calc(100vw - 40px), 880px" priority />
             </figure>
           )}
         </header>

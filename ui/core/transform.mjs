@@ -1,3 +1,4 @@
+import { stripCardMarkers } from "../garden/markdown-links.mjs";
 import { parse as parseYaml } from "yaml";
 import { compileUiBlock, jsonFence, readPayload } from "./compile.mjs";
 import { findBlocks, scanFences } from "./fence.mjs";
@@ -75,7 +76,7 @@ const escapeHtml = (value) =>
 
 /** Readable text for search and word count: captions and snapshot text, never intent. */
 export function contentToSearchText(content) {
-  return replaceFences(content, (fence) => {
+  return replaceFences(stripCardMarkers(content), (fence) => {
     if (fence.lang === "ui") {
       const payload = readPayload(fence.body);
       if (!payload) return " ";
@@ -99,7 +100,7 @@ export function contentToSearchText(content) {
 
 /** Markdown for RSS: snapshots become an HTML block, widgets become caption + link. */
 export function contentForFeed(content, { pageUrl = "", siteUrl = "" } = {}) {
-  return replaceFences(content, (fence) => {
+  return replaceFences(stripCardMarkers(content), (fence) => {
     if (fence.lang === "ui") {
       const payload = readPayload(fence.body);
       if (!payload) return "";
@@ -118,7 +119,7 @@ export function contentForFeed(content, { pageUrl = "", siteUrl = "" } = {}) {
 
 /** Markdown for CSDN / 知乎 / 掘金: snapshot Markdown plus a link back to the block. */
 export function contentForDistribution(content, { pageUrl = "", siteUrl = "" } = {}) {
-  return replaceFences(content, (fence) => {
+  return replaceFences(stripCardMarkers(content), (fence) => {
     if (fence.lang === "ui") {
       const payload = readPayload(fence.body);
       if (!payload) return "";

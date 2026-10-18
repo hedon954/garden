@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { CoverImage } from "./components/CoverImage";
 import { homeListDate } from "./lib/a2-meta";
 import { columns, formatDate, postHref, posts } from "./lib/content";
 import { githubUrl, siteConfig } from "./site.config";
@@ -49,8 +50,7 @@ export default function Home() {
         <article className="sh-feature" aria-labelledby="ft">
           {feature.cover ? (
             <div className="cover">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={feature.cover} alt="" />
+              <CoverImage src={feature.cover} image={feature.coverImage} alt="" sizes="(max-width: 700px) calc(100vw - 40px), 604px" priority />
             </div>
           ) : null}
           <div>
@@ -112,7 +112,7 @@ export default function Home() {
                   <div className="cover" style={{ background: "var(--well)" }}>
                     {first.columnCover ? (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img src={first.columnCover} alt={first.columnCoverAlt ?? ""} />
+                      <img src={first.columnCover} alt={first.columnCoverAlt ?? ""} loading="lazy" decoding="async" />
                     ) : null}
                   </div>
                   <div className="body">

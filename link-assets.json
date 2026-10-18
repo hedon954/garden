@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "favicons": {
+    "github.com": {
+      "file": "/link-assets/fav/github.com-74cf90ac2f.png"
+    },
+    "typora.io": {
+      "file": "/link-assets/fav/typora.io-ac8bd1d6ec.png"
+    }
+  },
+  "cards": {
+    "https://github.com/remarkjs/remark-gfm": {
+      "title": "GitHub - remarkjs/remark-gfm: remark plugin to support GFM (autolink literals, footnotes, strikethrough, tables, tasklists)",
+      "description": "remark plugin to support GFM (autolink literals, footnotes, strikethrough, tables, tasklists) - remarkjs/remark-gfm",
+      "siteName": "GitHub",
+      "image": "/link-assets/og/6bffa3ac1b-70c8987f6c.webp"
+    },
+    "https://katex.org/docs/supported.html": {
+      "title": "Supported Functions · KaTeX",
+      "description": "This is a list of TeX functions supported by KaTeX. It is sorted into logical groups.",
+      "image": "/link-assets/og/efd1a1b69c-1f8ad2ea4a.webp"
+    }
+  }
+}

@@ -1,11 +1,13 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
+  canonicalTags,
   filterByTags,
   selectedTags,
   tagCounts,
   tagFilterHref,
   tagOptions,
+  tagKey,
   tagSummary,
   toggleTag,
   visibleTagOptions,
@@ -137,4 +139,32 @@ test("toggling, links and the summary line", () => {
   assert.equal(new URL(tagFilterHref(["AI Agent"]), "http://x").searchParams.get("t"), "AI Agent");
   assert.equal(tagSummary(0, 9), "共 9 篇");
   assert.equal(tagSummary(2, 5), "2 个标签，共 5 篇");
+});
+
+test("tags match regardless of case, and each post keeps its own spelling", () => {
+  const mixed = [
+    { path: "r1", tags: ["rust", "并发编程"] },
+    { path: "r2", tags: ["rust"] },
+    { path: "r3", tags: ["Rust", "并发编程"] },
+    { path: "g", tags: ["Go"] },
+  ];
+  assert.equal(tagKey(" Rust "), "rust");
+  // one tag, shown in its most common spelling
+  assert.deepEqual(tagCounts(mixed).slice(0, 2), [["rust", 3], ["并发编程", 2]]);
+  // ?t=Rust matches posts tagged rust and Rust
+  assert.deepEqual(filterByTags(mixed, ["Rust"]).map((post) => post.path), ["r1", "r2", "r3"]);
+  assert.deepEqual(filterByTags(mixed, ["RUST", "并发编程"]).map((post) => post.path), ["r1", "r3"]);
+  // the posts themselves are untouched
+  assert.deepEqual(mixed[2].tags, ["Rust", "并发编程"]);
+  // the URL spelling is mapped to the chip's spelling, and duplicates in other cases collapse
+  assert.deepEqual(selectedTags(["Rust", "rust", "RUST"]), ["Rust"]);
+  assert.deepEqual(canonicalTags(mixed, ["Rust", "Python"]), ["rust", "Python"]);
+  const options = tagOptions(mixed, ["Rust"]);
+  const rust = options.find((option) => option.tag === "rust");
+  assert.deepEqual(rust, { tag: "rust", total: 3, next: 3, selected: true, disabled: false });
+  assert.equal(options.filter((option) => option.selected).length, 1);
+  assert.equal(options.find((option) => option.tag === "并发编程")?.next, 2);
+  // toggling removes the tag in any spelling
+  assert.deepEqual(toggleTag(["Rust", "并发编程"], "rust"), ["并发编程"]);
+  assert.deepEqual(toggleTag(["并发编程"], "rust"), ["并发编程", "rust"]);
 });

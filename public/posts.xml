@@ -341,6 +341,10 @@ description: 叶子对生，花排成穗。窗台上的那盆对得上。
 推荐做法会显示为「建议」。</p>
 </blockquote>
 <blockquote>
+<p>[!IMPORTANT]
+读者不能漏掉的要点会显示为「重要」。</p>
+</blockquote>
+<blockquote>
 <p>[!WARNING]
 需要关注的风险会显示为「警告」。</p>
 </blockquote>
@@ -348,6 +352,11 @@ description: 叶子对生，花排成穗。窗台上的那盆对得上。
 <p>[!CAUTION]
 可能造成严重后果的操作会显示为「注意」。</p>
 </blockquote>
+<h2>链接卡片</h2>
+<p>在链接后面紧跟 <code>{card}</code>，网页里会多出一张卡片，写着对方页面的标题、简介和配图。链接写在句子里时，文字照常可点，卡片跟在这一段后面：表格、任务列表和脚注都来自 <a href="https://github.com/remarkjs/remark-gfm">remark-gfm</a>，它让 GFM 语法在这里生效。</p>
+<p>链接单独占一行时，卡片就放在这一行的位置：</p>
+<p><a href="https://katex.org/docs/supported.html">KaTeX 支持的函数</a></p>
+<p>写在代码里的 <code>[文字](https://example.com){card}</code> 不会变成卡片，原样显示。</p>
 <h2>数学公式</h2>
 <p><strong>求和部分：$\sum_{j=1}^{N}$（上下限）</strong>。</p>
 <p>$$

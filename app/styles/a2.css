@@ -408,6 +408,34 @@ html[data-theme="dark"] .markdown-body a.ext {
   text-decoration-thickness: 2px;
 }
 
+/* Site favicon before an external link, downloaded at build time. */
+.markdown-body a.ext img.fav {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  margin: 0 5px 0 0;
+  border-radius: 3px;
+  vertical-align: -2px;
+  object-fit: contain;
+}
+
+.markdown-body a.ext .fav-keep {
+  white-space: nowrap;
+}
+
+/* Many icons are black on transparent; give them a light backing in dark mode. */
+html[data-theme="dark"] .markdown-body img.fav {
+  padding: 1px;
+  box-sizing: border-box;
+  background: #f5f4ed;
+}
+
+.markdown-body .table-wrap a.ext img.fav,
+.markdown-body h2 a.ext img.fav,
+.markdown-body h3 a.ext img.fav {
+  display: none;
+}
+
 .markdown-body :not(pre) > code {
   font: 400 var(--fs-small) / 1 var(--mono);
   color: var(--ink);
@@ -444,9 +472,9 @@ html[data-theme="dark"] .markdown-body a.ext {
   --al-tip: #2d6a3e;
   --al-tip-bg: #edf5ef;
   --al-tip-line: rgba(45, 106, 62, 0.22);
-  --al-important: #6a3fb5;
-  --al-important-bg: #f3effa;
-  --al-important-line: rgba(106, 63, 181, 0.22);
+  --al-important: #30302e;
+  --al-important-bg: #f0eee6;
+  --al-important-line: rgba(20, 20, 19, 0.14);
   --al-warning: #8a5300;
   --al-warning-bg: #fbf3e5;
   --al-warning-line: rgba(176, 108, 0, 0.26);
@@ -465,9 +493,9 @@ html[data-theme="dark"] .prose {
   --al-tip: #8fcb9f;
   --al-tip-bg: rgba(143, 203, 159, 0.08);
   --al-tip-line: rgba(143, 203, 159, 0.26);
-  --al-important: #bfa5f0;
-  --al-important-bg: rgba(191, 165, 240, 0.09);
-  --al-important-line: rgba(191, 165, 240, 0.28);
+  --al-important: #eeece7;
+  --al-important-bg: #30302e;
+  --al-important-line: rgba(238, 236, 231, 0.14);
   --al-warning: #e6b566;
   --al-warning-bg: rgba(230, 181, 102, 0.08);
   --al-warning-line: rgba(230, 181, 102, 0.28);
@@ -507,10 +535,17 @@ html[data-theme="dark"] .prose {
   --al-line: var(--al-tip-line);
 }
 
+/* IMPORTANT reads in ink: a dark bar on the left and a bold title. */
 .markdown-body .markdown-alert-important {
   --al: var(--al-important);
   --al-bg: var(--al-important-bg);
   --al-line: var(--al-important-line);
+  border-left: 3px solid var(--al-important);
+  padding-left: 18px;
+}
+
+.markdown-body .markdown-alert-important .markdown-alert-title {
+  font-weight: 700;
 }
 
 .markdown-body .markdown-alert-warning {
@@ -1443,16 +1478,32 @@ html[data-theme="dark"] .g-quiz-out.no { color: #f29aab; }
 .g-flow .fl-e line, .g-flow .fl-e1 { stroke: var(--muted); stroke-width: 1.3; fill: none; }
 .g-flow .fl-ah { fill: var(--muted); }
 .g-flow .gc-stw { fill: rgba(180, 33, 58, 0.08); stroke: rgba(180, 33, 58, 0.45); }
+/* Link cards: `[text](url){card}`. Title, description and picture come from the build. */
 .prose .link-cards { list-style: none; padding: 0; margin: 24px 0 32px; display: grid; gap: 12px; }
 .prose .link-cards li { margin: 0; padding: 0; }
-.link-card { display: flex; gap: 20px; align-items: stretch; padding: 16px; border: 1px solid var(--rule); border-radius: 12px; color: inherit; text-decoration: none; }
-.prose a.link-card { text-decoration: none; }
+.link-card { display: flex; gap: 20px; align-items: stretch; padding: 16px; border: 1px solid var(--rule); border-radius: 12px; background: transparent; color: inherit; text-decoration: none; transition: border-color .15s ease, background-color .15s ease; }
+.prose a.link-card, .markdown-body a.link-card { text-decoration: none; padding-right: 16px; background-image: none; }
+.link-card:hover { border-color: var(--rule-strong, #cfcbc2); background: var(--card-hover); }
+.link-card:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
 .lc-body { display: flex; flex-direction: column; gap: 4px; min-width: 0; flex: 1; }
-.lc-site { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); }
-.lc-sitename { color: var(--soft); font-weight: 600; }
+.lc-site { display: flex; align-items: center; gap: 8px; min-width: 0; font-size: 13px; line-height: 1.5; color: var(--muted); }
+.markdown-body .lc-site img.fav { display: block; flex: 0 0 auto; width: 14px; height: 14px; margin: 0; border-radius: 3px; object-fit: contain; }
+.lc-sitename { color: var(--soft); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .lc-host { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.lc-arrow { width: 10px; height: 10px; margin-left: auto; background: var(--muted); mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Cpath d='M3 1.5h5.5V7M8.5 1.5 1.5 8.5' fill='none' stroke='black' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / contain no-repeat; }
-.lc-title { font-weight: 600; font-size: 16px; line-height: 1.45; color: var(--ink); }
+.lc-arrow { flex: 0 0 auto; width: 10px; height: 10px; margin-left: auto; background: var(--muted); mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Cpath d='M3 1.5h5.5V7M8.5 1.5 1.5 8.5' fill='none' stroke='black' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / contain no-repeat; }
+.lc-title { font-weight: 600; font-size: 16px; line-height: 1.45; color: var(--ink); text-wrap: pretty; }
+.lc-desc { font-size: var(--fs-small); line-height: 1.55; color: var(--soft); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.lc-meta { display: flex; flex-wrap: wrap; gap: 4px 16px; margin-top: auto; padding-top: 4px; font-size: 13px; line-height: 1.5; color: var(--muted); }
+/* Fixed aspect ratio, so a picture arriving late never moves the text. */
+.markdown-body img.lc-thumb { display: block; flex: 0 0 auto; width: 168px; max-width: none; height: auto; aspect-ratio: 1.91 / 1; object-fit: cover; align-self: center; margin: 0; border: 1px solid var(--rule); border-radius: 8px; background: var(--well); }
+@media (max-width: 640px) {
+  .link-card { flex-direction: column-reverse; gap: 12px; padding: 12px; }
+  .prose a.link-card, .markdown-body a.link-card { padding-right: 12px; }
+  .markdown-body img.lc-thumb { width: 100%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .link-card { transition: none; }
+}
 .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
 .g-chart-t { margin: 0 0 12px; font-weight: 600; color: var(--ink); font-size: 15px; }
 .g-bars { display: grid; grid-template-columns: fit-content(40%) minmax(0, 1fr) max-content; gap: 8px 10px; align-items: center; }

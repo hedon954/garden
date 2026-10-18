@@ -9,6 +9,18 @@ tags:
   - KaTeX
 pinned: false
 readingTime: 10 分钟
+references:
+  - title: CommonMark Spec
+    url: https://spec.commonmark.org/
+  - title: GitHub Flavored Markdown Spec
+    url: https://github.github.com/gfm/
+  - title: Typora 支持的 Markdown 语法
+    url: https://support.typora.io/Markdown-Reference/
+  - title: KaTeX 支持的函数
+    url: https://katex.org/docs/supported.html
+  - title: Mermaid 文档
+    url: https://mermaid.js.org/intro/
+  - title: 《The Elements of Typographic Style》
 cover: https://images.unsplash.com/photo-1761414500824-e280de5a1b37?auto=format&fit=crop&w=1600&q=84
 ---
 
@@ -52,11 +64,24 @@ cover: https://images.unsplash.com/photo-1761414500824-e280de5a1b37?auto=format&
 > [!TIP]
 > 推荐做法会显示为「建议」。
 
+> [!IMPORTANT]
+> 读者不能漏掉的要点会显示为「重要」。
+
 > [!WARNING]
 > 需要关注的风险会显示为「警告」。
 
 > [!CAUTION]
 > 可能造成严重后果的操作会显示为「注意」。
+
+## 链接卡片
+
+在链接后面紧跟 `{card}`，网页里会多出一张卡片，写着对方页面的标题、简介和配图。链接写在句子里时，文字照常可点，卡片跟在这一段后面：表格、任务列表和脚注都来自 [remark-gfm](https://github.com/remarkjs/remark-gfm){card}，它让 GFM 语法在这里生效。
+
+链接单独占一行时，卡片就放在这一行的位置：
+
+[KaTeX 支持的函数](https://katex.org/docs/supported.html){card}
+
+写在代码里的 `[文字](https://example.com){card}` 不会变成卡片，原样显示。
 
 ## 数学公式
 

@@ -14,3 +14,6 @@
 /public/rss.xml
 /public/sitemap.xml
 /public/robots.txt
+/public/link-allowlist.json
+/public/search-index.json
+/public/search-full.*.json

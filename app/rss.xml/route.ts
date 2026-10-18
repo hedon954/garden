@@ -3,6 +3,7 @@ import { columnHref, columns, postHref, posts } from "../lib/content";
 import { getPublishedThoughts } from "../lib/public-thoughts";
 import { configuredSiteUrl, siteDescription, siteName } from "../lib/site";
 import { contentForFeed } from "../../ui/core/transform.mjs";
+import { stripCardMarkers } from "../../ui/garden/markdown-links.mjs";
 
 const escapeXml = (value: string) =>
   value
@@ -25,7 +26,7 @@ export async function GET() {
     })),
     ...thoughts.map((thought) => ({
       ...thought,
-      description: thought.content.replace(/\s+/gu, " ").slice(0, 180),
+      description: stripCardMarkers(thought.content).replace(/\s+/gu, " ").slice(0, 180),
       path: `/thoughts/${thought.slug}`,
     })),
   ].sort((a, b) => Date.parse(b.date) - Date.parse(a.date));

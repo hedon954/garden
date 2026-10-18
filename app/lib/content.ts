@@ -9,11 +9,12 @@ import {
 import GithubSlugger from "github-slugger";
 import { canonicalSiteDate } from "../../scripts/site-date.mjs";
 import { demoDateLabel } from "./a2-meta";
-import { contentToSearchText } from "../../ui/core/transform.mjs";
+import { searchableText } from "../../ui/garden/search-index.mjs";
 import { toString } from "mdast-util-to-string";
 import remarkParse from "remark-parse";
 import { unified } from "unified";
 import { visit } from "unist-util-visit";
+import { splitHeadingNumber } from "./heading-number";
 
 export { columns, posts, thoughts };
 export type { ContentEntry, MediaItem };
@@ -65,11 +66,8 @@ export const displayHeadingLevel = (depth: number, base: number) => {
   return level > 3 ? 4 : level;
 };
 
-/** Pull a leading `2.1` into the section marker and leave the heading sentence. */
-export const splitHeadingNumber = (text: string) => {
-  const match = /^(\d+(?:\.\d+)*)\.?[ \t]+([\s\S]+)$/u.exec(text.trim());
-  return match ? { no: match[1], text: match[2] } : null;
-};
+/** Kept exactly as the author wrote it; see heading-number.ts. */
+export { splitHeadingNumber };
 
 /**
  * Parses the same Markdown heading text that ReactMarkdown sends to
@@ -112,15 +110,7 @@ export const extractHeadings = (markdown: string) => {
   return headings;
 };
 
-const toSearchableText = (markdown: string) =>
-  contentToSearchText(markdown)
-    .replace(/```[^\n]*\n([\s\S]*?)```/g, " $1 ")
-    .replace(/!\[([^\]]*)\]\([^)]+\)/g, " $1 ")
-    .replace(/\[([^\]]+)\]\([^)]+\)/g, " $1 ")
-    .replace(/<[^>]+>/g, " ")
-    .replace(/[#>*_~`|[\]{}()]/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
+const toSearchableText = (markdown: string) => searchableText(markdown);
 
 export const estimateWordCount = (markdown: string) => {
   const text = toSearchableText(markdown);
@@ -130,30 +120,6 @@ export const estimateWordCount = (markdown: string) => {
     .match(/[\p{L}\p{N}]+/gu)?.length ?? 0;
   return hanCharacters + otherWords;
 };
-
-export const searchRecords = [
-  ...posts.map((item) => ({
-    title: item.title,
-    description: item.description ?? "",
-    section: "文章",
-    path: postHref(item),
-    content: toSearchableText(item.content),
-  })),
-  ...columns.map((item) => ({
-    title: item.title,
-    description: item.description ?? "",
-    section: item.columnTitle ?? "专栏",
-    path: columnHref(item),
-    content: toSearchableText(item.content),
-  })),
-  ...thoughts.map((item) => ({
-    title: item.title,
-    description: toSearchableText(item.content),
-    section: "随想",
-    path: `/thoughts/${item.slug}`,
-    content: toSearchableText(item.content),
-  })),
-];
 
 export const findPost = (path: string): ContentEntry | undefined =>
   posts.find((post) => post.path === path);

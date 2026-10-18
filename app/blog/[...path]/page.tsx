@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { CoverImage } from "../../components/CoverImage";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import {
@@ -110,8 +111,7 @@ export default async function PostPage({
           <ArticleTags tags={post.tags} />
           {post.cover && (
             <figure className="article-hero article-cover cover-card cover-img">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img className="u-photo" src={post.cover} alt={`${post.title} 封面`} />
+              <CoverImage className="u-photo" src={post.cover} image={post.coverImage} alt={`${post.title} 封面`} sizes="(max-width: 920px) calc(100vw - 40px), 880px" priority />
             </figure>
           )}
         </header>

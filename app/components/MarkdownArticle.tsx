@@ -1,5 +1,6 @@
 import { markdownPlugins } from "../lib/markdown-plugins";
 import { remarkA2 } from "../lib/remark-a2.mjs";
+import { remarkLinkCard } from "../lib/remark-link-card.mjs";
 import {
   Children,
   cloneElement,
@@ -19,6 +20,42 @@ import { MarkdownImage } from "./MarkdownImage";
 import { CodeCopy } from "./garden/chrome";
 import { CodeDiff } from "./garden/chrome";
 import { GardenBlock } from "./garden/GardenBlock";
+import { linkAssets } from "@garden/generated-content";
+import { siteConfig } from "@garden/site-config";
+import { LinkCardRefresh } from "./LinkCardRefresh";
+import { linkHost } from "../../scripts/link-meta-core.mjs";
+import { cardDate } from "../../ui/garden/card-refresh.mjs";
+
+/** The site's favicon, downloaded at build time; nothing when there is none. */
+function Favicon({ href }: { href: string }) {
+  const src = linkAssets?.favicons?.[linkHost(href)];
+  if (!src) return null;
+  // eslint-disable-next-line @next/next/no-img-element -- a 14px local icon, no optimisation needed
+  return <img className="fav" src={src} alt="" width={14} height={14} loading="lazy" decoding="async" aria-hidden="true" />;
+}
+
+/** The first word of a link (or its first CJK character) and the rest. */
+const firstWord = (text: string) => {
+  const match = /^(\s*(?:[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Hangul}]|[^\s\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Hangul}]+))([\s\S]*)$/u.exec(text);
+  return match ? [match[1], match[2]] : [text, ""];
+};
+
+/** Icon plus the link's first word on one line, so the icon never ends a line alone. */
+function WithFavicon({ href, children }: { href: string; children: ReactNode }) {
+  const icon = <Favicon href={href} />;
+  if (!linkAssets?.favicons?.[linkHost(href)]) return <>{children}</>;
+  const nodes = Children.toArray(children);
+  const head = nodes[0];
+  if (typeof head !== "string") return <><span className="fav-keep">{icon}</span>{children}</>;
+  const [first, rest] = firstWord(head);
+  return (
+    <>
+      <span className="fav-keep">{icon}{first}</span>
+      {rest}
+      {nodes.slice(1)}
+    </>
+  );
+}
 
 const BLOCK_LANGUAGES = ["language-mermaid"];
 const isBlockLanguage = (className?: string) =>
@@ -76,24 +113,43 @@ function stripPrefix(children: ReactNode, prefix: string): ReactNode {
   return walk(children);
 }
 
-function LinkCard({ href }: { href: string }) {
-  let host = href;
-  try { host = new URL(href).hostname.replace(/^www\./u, ""); } catch { /* keep the raw url */ }
+
+/**
+ * A link card. Standalone (the author's paragraph was just the link), it is the
+ * link. After a paragraph that keeps the link, it is a preview: out of the tab
+ * order and hidden from screen readers, since the link is already there.
+ */
+export function LinkCard({ href, text, standalone = true }: { href: string; text?: string; standalone?: boolean }) {
+  const meta = linkAssets?.cards?.[href];
+  const host = linkHost(href) || href;
+  const icon = linkAssets?.favicons?.[host];
+  const title = meta?.title || text || href;
+  const date = cardDate(meta?.publishedTime);
+  const preview = standalone ? {} : { tabIndex: -1, "aria-hidden": true as const };
   return (
-    <ul className="link-cards">
-      <li>
-        <a className="link-card ext" href={href} target="_blank" rel="noopener noreferrer">
-          <span className="lc-body">
-            <span className="lc-site">
-              <span className="lc-sitename">{host}</span>
-              <span className="lc-host">{host}</span>
-              <span className="lc-arrow" aria-hidden="true" />
-            </span>
-            <span className="lc-title">{href}</span>
+    <div className="link-cards" data-card-url={href}>
+      <a className="link-card" href={href} target="_blank" rel="noopener noreferrer" {...preview}>
+        <span className="lc-body">
+          <span className="lc-site">
+            {/* eslint-disable-next-line @next/next/no-img-element -- local 14px icon */}
+            {icon ? <img className="fav" src={icon} alt="" width={14} height={14} loading="lazy" decoding="async" /> : null}
+            <span className="lc-sitename" data-field="siteName">{meta?.siteName || host}</span>
+            {meta?.siteName && meta.siteName.toLowerCase() !== host ? <span className="lc-host">{host}</span> : null}
+            <span className="lc-arrow" aria-hidden="true" />
           </span>
-        </a>
-      </li>
-    </ul>
+          <span className="lc-title" data-field="title">{title}</span>
+          {meta?.description ? <span className="lc-desc" data-field="description">{meta.description}</span> : null}
+          {meta?.author || date ? (
+            <span className="lc-meta">
+              {meta?.author ? <span data-field="author">{meta.author}</span> : null}
+              {date ? <time data-field="publishedTime" dateTime={meta?.publishedTime}>{date}</time> : null}
+            </span>
+          ) : null}
+        </span>
+        {/* eslint-disable-next-line @next/next/no-img-element -- copied into the site at build time */}
+        {meta?.image ? <img className="lc-thumb" src={meta.image} alt="" width={168} height={88} loading="lazy" decoding="async" /> : null}
+      </a>
+    </div>
   );
 }
 
@@ -109,6 +165,8 @@ const headingText = (children: ReactNode) => {
 };
 
 export function MarkdownArticle({ content }: { content: string }) {
+  // Optional layer 2: a Worker that refreshes card text. Without it, cards stay as built.
+  const cardWorker = content.includes("{card}") ? siteConfig.linkPreview?.worker : undefined;
   const numbers = { h2: 0, h3: 0 };
   const numberedArticle = articleUsesHeadingNumbers(content);
   const headingBase = articleHeadingBase(content);
@@ -136,6 +194,13 @@ export function MarkdownArticle({ content }: { content: string }) {
     return <Tag {...domProps}>{sectioned.no ? <span className="sec-no">{sectioned.no}</span> : null}{sectioned.children}</Tag>;
   };
   const gardenComponents = {
+    "garden-linkcard": (props: Record<string, string | undefined>) => (
+      <LinkCard
+        href={props.dataUrl ?? props["data-url"] ?? ""}
+        text={props.dataText ?? props["data-text"]}
+        standalone={(props.dataStandalone ?? props["data-standalone"]) === "true"}
+      />
+    ),
     "garden-block": (props: { dataPayload?: string; "data-payload"?: string }) => (
       <GardenBlock dataPayload={props.dataPayload ?? props["data-payload"]} />
     ),
@@ -156,7 +221,7 @@ export function MarkdownArticle({ content }: { content: string }) {
   return (
     <div className="markdown-body prose">
       <ReactMarkdown
-        remarkPlugins={[...markdownPlugins, remarkA2]}
+        remarkPlugins={[...markdownPlugins, remarkLinkCard, remarkA2]}
         rehypePlugins={[
           rehypeRaw,
           rehypeKatex,
@@ -177,15 +242,17 @@ export function MarkdownArticle({ content }: { content: string }) {
           },
           a: ({ href, children, ...props }) => {
             const external = Boolean(href && /^(https?:)?\/\//iu.test(href));
+            const domProps = { ...props };
+            Reflect.deleteProperty(domProps, "node");
             return (
               <a
                 href={href}
-                {...props}
+                {...domProps}
                 {...(external
                   ? { className: "ext", target: "_blank", rel: "noopener noreferrer" }
                   : {})}
               >
-                {children}
+                {external && href ? <WithFavicon href={href}>{children}</WithFavicon> : children}
               </a>
             );
           },
@@ -225,6 +292,7 @@ export function MarkdownArticle({ content }: { content: string }) {
       >
         {content}
       </ReactMarkdown>
+      {cardWorker ? <LinkCardRefresh endpoint={cardWorker} /> : null}
     </div>
   );
 }

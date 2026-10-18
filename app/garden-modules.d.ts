@@ -19,7 +19,7 @@ declare module "@garden/generated-content" {
     publishAt?: string;
     draft?: boolean;
     tags?: string[];
-    references?: { title: string; url?: string }[];
+    references?: { title: string; url?: string; domain?: string }[];
     pinned?: boolean;
     readingTime?: string;
     kind: "post" | "column" | "thought";
@@ -33,6 +33,8 @@ declare module "@garden/generated-content" {
     columnCoverAlt?: string;
     order?: number;
     cover?: string;
+    /** Resized WebP copies of a local cover, when the build had sharp. */
+    coverImage?: { src: string; srcset: string; width: number; height: number };
     original?: string;
     mediaType?: "image" | "audio" | "video" | "link" | "text";
     media?: string | MediaItem[];
@@ -47,9 +49,22 @@ declare module "@garden/generated-content" {
   export const columns: ContentEntry[];
   export const thoughts: ContentEntry[];
   export const a2WordCounts: Record<string, number>;
+  export type LinkCardMeta = {
+    title: string;
+    description?: string;
+    siteName?: string;
+    author?: string;
+    publishedTime?: string;
+    image?: string;
+  };
+  export type LinkAssets = { favicons: Record<string, string>; cards: Record<string, LinkCardMeta> };
+  export const linkAssets: LinkAssets;
 }
 
 declare module "@garden/site-config" {
+  export const searchIndexUrl: string;
+  /** The full-text index file and the hash its contents are cached under. */
+  export const searchFull: { url: string; hash: string };
   export const siteConfig: {
     name: string;
     tagline: string;
@@ -58,6 +73,7 @@ declare module "@garden/site-config" {
     author: { name: string; github: string; githubBio: string; githubPinned?: string[] };
     pages: Record<string, Record<string, unknown>>;
     footer: string;
+    linkPreview?: { worker?: string };
   };
   export const githubUrl: string;
 }

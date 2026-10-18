@@ -198,7 +198,8 @@ test("renders complex Markdown, article covers, and mixed thought media", async 
 
   assert.equal(archiveResponse.status, 200);
   const archive = await archiveResponse.text();
-  assert.match(archive, /class="archive-cover"/);
+  // The row cover was always clipped to 1px; it is no longer downloaded at all.
+  assert.doesNotMatch(archive, /class="archive-cover"/);
   assert.match(archive, /class="archive-copy"/);
   assert.match(archive, /class="archive-meta" dateTime="2026-07-25">07-25</);
   assert.doesNotMatch(archive, /\?topic=|class="sh-filters" aria-label="按分类筛选"/);
@@ -592,7 +593,7 @@ test("/blog renders the full list on the server, before any script runs", async 
     assert.ok(visible.includes(`href="/blog/${post.path}"`), `${post.path} is in the server-rendered list`);
     assert.ok(visible.includes(post.title.replace(/&/g, "&amp;")), `${post.title} is in the server-rendered list`);
   }
-  assert.match(page, /<Suspense fallback=\{<BlogArchiveFallback \/>\}>/);
+  assert.match(page, /<Suspense fallback=\{<BlogArchiveFallback posts=\{list\} series=\{series\} \/>\}>/);
 });
 
 test("palette: warm paper, ink accent, no blue, readable chips in both themes", async () => {
@@ -663,4 +664,108 @@ test("body links answer hover with a darker underline, and the current TOC item 
   assert.match(a2, /\.markdown-body a\.ext:hover \{[^}]*text-decoration-color: var\(--ink\);[^}]*text-decoration-thickness: 2px;/);
   assert.match(a2, /\.toc li\.active > \.toc-item-row > a \{[^}]*font-weight: 600;/);
   assert.match(a2, /\.toc li\.active > \.toc-item-row::before \{[^}]*width: 2px;[^}]*background: var\(--ink\);/);
+});
+
+test("references render as a numbered list in one warm card, with the source site after each title", async () => {
+  const [response, generated, globals] = await Promise.all([
+    render("/blog/markdown-lab"),
+    readFile(new URL("../.garden/generated-content.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/globals.css", import.meta.url), "utf8"),
+  ]);
+  assert.equal(response.status, 200);
+  const html = await response.text();
+  const section = html.match(/<section class="article-references[^"]*"[\s\S]*?<\/section>/)?.[0] ?? "";
+  assert.ok(section, "references section");
+  // six entries: two columns on wide screens
+  assert.match(section, /class="article-references is-split"/);
+  assert.match(section, /<h2 id="article-references-heading">参考<\/h2>/);
+  assert.match(section, /<ol>/);
+  assert.doesNotMatch(section, /<table|<td|<tr/);
+  assert.equal((section.match(/<li>/g) ?? []).length, 6);
+  // the domain is worked out at build time and shown after the title
+  assert.match(generated, /"domain":\s*"spec\.commonmark\.org"/);
+  assert.match(section, /<a href="https:\/\/spec\.commonmark\.org\/" rel="noreferrer">CommonMark Spec<\/a> <span class="ref-domain">spec\.commonmark\.org<\/span>/);
+  assert.match(section, /<span class="ref-domain">github\.github\.com<\/span>/);
+  // an entry without a link shows the title only
+  assert.match(section, /<li><span class="ref-title">《The Elements of Typographic Style》<\/span><\/li>/);
+
+  const card = globals.match(/\.article-references \{[^}]*\}/)?.[0] ?? "";
+  assert.match(card, /background: var\(--card-hover\);/);
+  assert.match(card, /border: 1px solid var\(--rule\);/);
+  assert.match(card, /border-radius: var\(--r\);/);
+  assert.match(globals, /\.article-references > h2 \{[^}]*font: 600 17px \/ 1\.4 var\(--sans\);/);
+  assert.match(globals, /@media \(min-width: 900px\) \{\s*\.article-references\.is-split ol \{\s*columns: 2;/);
+  assert.match(globals, /\.article-references a \{[^}]*text-decoration-color: color-mix\(in srgb, var\(--ink\) 35%, transparent\);/);
+  assert.doesNotMatch(globals, /\.article-references (table|td|tr)\b/);
+});
+
+test("the IMPORTANT callout is ink, with a dark bar and a bold title; no purple is left", async () => {
+  const [a2, response] = await Promise.all([
+    readFile(new URL("../app/styles/a2.css", import.meta.url), "utf8"),
+    render("/blog/markdown-lab"),
+  ]);
+  assert.match(a2, /--al-important: #30302e;\s*--al-important-bg: #f0eee6;/);
+  assert.match(a2, /--al-important: #eeece7;\s*--al-important-bg: #30302e;/);
+  assert.match(a2, /\.markdown-body \.markdown-alert-important \{[^}]*border-left: 3px solid var\(--al-important\);/);
+  assert.match(a2, /\.markdown-body \.markdown-alert-important \.markdown-alert-title \{[^}]*font-weight: 700;/);
+  // the other four keep their own colours
+  for (const kind of ["note", "tip", "warning", "caution"]) assert.match(a2, new RegExp(`--al-${kind}: #`));
+  // no purple anywhere in the callouts
+  const alerts = a2.slice(a2.indexOf(".markdown-body.prose {"), a2.indexOf(".markdown-body .markdown-alert > :last-child"));
+  assert.ok(alerts.length > 0);
+  assert.doesNotMatch(alerts, /6a3fb5|f3effa|bfa5f0|106,\s*63,\s*181|191,\s*165,\s*240/i);
+  const purple = (hex) => {
+    const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
+    return b > g + 30 && r > g + 15;
+  };
+  for (const hex of alerts.match(/#[0-9a-f]{6}\b/gi) ?? []) assert.equal(purple(hex), false, hex);
+
+  const html = await response.text();
+  for (const kind of ["note", "tip", "important", "warning", "caution"]) {
+    assert.match(html, new RegExp(`markdown-alert markdown-alert-${kind}`));
+  }
+});
+
+test("link cards: inline links keep the text and get a preview card, standalone links become the card", async () => {
+  const html = await (await render("/blog/markdown-lab")).text();
+  const section = html.slice(html.indexOf('id="链接卡片"'), html.indexOf('id="数学公式"'));
+  // Inline: the link stays in the sentence, with its favicon, and the card follows the paragraph.
+  assert.match(section, /<p>[^]*?<a href="https:\/\/github\.com\/remarkjs\/remark-gfm" class="ext"[^>]*>(<span class="fav-keep"><img class="fav"[^>]*>remark-gfm<\/span>|remark-gfm)<\/a>[^]*?<\/p>\s*<div class="link-cards" data-card-url="https:\/\/github\.com\/remarkjs\/remark-gfm">/u);
+  const preview = section.match(/<div class="link-cards" data-card-url="https:\/\/github\.com\/remarkjs\/remark-gfm">[^]*?<\/div>/u)?.[0] ?? "";
+  assert.match(preview, /<a class="link-card"[^>]*tabindex="-1"[^>]*aria-hidden="true"/u);
+  // Standalone: no paragraph and no inline link; the card itself is the link and stays focusable.
+  assert.doesNotMatch(section, /<p>\s*<a href="https:\/\/katex\.org\/docs\/supported\.html"/u);
+  const standalone = section.match(/<div class="link-cards" data-card-url="https:\/\/katex\.org\/docs\/supported\.html">[^]*?<\/div>/u)?.[0] ?? "";
+  assert.ok(standalone, "standalone card rendered");
+  assert.doesNotMatch(standalone, /tabindex|aria-hidden="true"[^>]*class="link-card"|class="link-card"[^>]*aria-hidden/u);
+  assert.equal((section.match(/https:\/\/katex\.org\/docs\/supported\.html"/gu) ?? []).length, 2); // data-card-url + the card's href
+  // Card text comes from the build; pictures are local files with a fixed ratio.
+  assert.match(standalone, /<span class="lc-title" data-field="title">[^<]+<\/span>/u);
+  assert.doesNotMatch(section, /<img class="lc-thumb" src="https?:/u);
+  // The marker never shows, except inside code.
+  assert.match(section, /<code>\[文字\]\(https:\/\/example\.com\)\{card\}<\/code>/u);
+  assert.doesNotMatch(section.replace(/<code>[^<]*<\/code>/gu, ""), /\{card\}/u);
+  const feed = await readFile(new URL("../public/posts.xml", import.meta.url), "utf8");
+  assert.doesNotMatch(feed.replace(/<code>[^<]*<\/code>/gu, ""), /\)\{card\}/u);
+  const css = await readFile(new URL("../app/styles/a2.css", import.meta.url), "utf8");
+  assert.match(css, /\.markdown-body img\.lc-thumb \{[^}]*aspect-ratio: 1\.91 \/ 1;/u);
+  assert.match(css, /\.link-card:focus-visible \{/u);
+});
+
+test("list pages: images below the fold are lazy, at most one cover loads early", async () => {
+  for (const pathname of ["/", "/blog", "/columns"]) {
+    const html = await (await render(pathname)).text();
+    const images = html.match(/<img\b[^>]*>/gu) ?? [];
+    const early = images.filter((tag) => /fetchPriority="high"|fetchpriority="high"/u.test(tag));
+    assert.ok(early.length <= 1, `${pathname}: ${early.length} early images`);
+    for (const tag of images) {
+      if (early.includes(tag)) continue;
+      assert.match(tag, /loading="lazy"/u, `${pathname}: ${tag}`);
+    }
+  }
+});
+
+test("no web font is preloaded: the page never uses one outside KaTeX", async () => {
+  const html = await (await render("/")).text();
+  assert.doesNotMatch(html, /rel="preload"[^>]*as="font"/u);
 });

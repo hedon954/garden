@@ -95,7 +95,9 @@ test("generated articles pass the real pipeline and are excluded from public out
   await mkdir(path.join(root, "public"));
   await mkdir(path.join(root, "scripts"));
   await cp(path.join(project, "scripts/build-content.mjs"), path.join(root, "scripts/build-content.mjs"));
-  await cp(path.join(project, "scripts/site-date.mjs"), path.join(root, "scripts/site-date.mjs"));
+  for (const script of ["site-date.mjs", "link-assets.mjs", "link-meta-core.mjs", "cover-images.mjs"]) {
+    await cp(path.join(project, "scripts", script), path.join(root, "scripts", script));
+  }
   await cp(path.join(project, "site.config.yaml"), path.join(root, "site.config.yaml"));
   await symlink(path.join(project, "node_modules"), path.join(root, "node_modules"));
   await symlink(path.join(project, "ui"), path.join(root, "ui"), "dir");
