@@ -2,6 +2,8 @@ name: Garden
 tagline: 写作 · 记录 · 保持好奇
 description: 文章、随想和专栏。
 locale: zh_CN
+# 站点的公开地址。文章里指向这个地址的完整网址会按站内链接显示。
+# url: https://blog.example.com
 
 author:
   name: Your Name

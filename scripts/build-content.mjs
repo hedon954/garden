@@ -10,6 +10,7 @@ import { countDemoWords } from "../ui/garden/word-count.mjs";
 import { referenceDomain } from "../ui/garden/references.mjs";
 import { linkAssetsForRender } from "./link-assets.mjs";
 import { cardUrls } from "../ui/garden/markdown-links.mjs";
+import { configuredSiteAddress, sameSiteMatcher } from "../ui/garden/same-site.mjs";
 import { buildFullIndex, buildSearchIndex } from "../ui/garden/search-index.mjs";
 import { coverImageSet, loadSharp } from "./cover-images.mjs";
 
@@ -39,6 +40,9 @@ const siteUrl = (process.env.SITE_URL ?? process.env.NEXT_PUBLIC_SITE_URL ?? "ht
 const publicBaseUrl = basePath && !siteUrl.endsWith(basePath)
   ? `${siteUrl}${basePath}`
   : siteUrl;
+// Full URLs to this address are internal links: no new tab, no card.
+const siteAddress = configuredSiteAddress(siteConfig, process.env);
+const sameSite = sameSiteMatcher(siteAddress, basePath);
 const siteName = process.env.SITE_NAME ?? siteConfig.name;
 const siteDescription = process.env.SITE_DESCRIPTION ?? siteConfig.description;
 
@@ -630,6 +634,8 @@ export const githubUrl = ${JSON.stringify(`https://github.com/${siteConfig.autho
 export const searchIndexUrl = ${JSON.stringify(`${basePath}/search-index.json?v=${contentHash}`)};
 // Every body as plain text, fetched in the background after load; the name changes with the text.
 export const searchFull = ${JSON.stringify({ url: `${basePath}/${fullIndex.fileName}`, hash: fullIndex.hash })};
+// Full URLs to this address render as internal links.
+export const siteLinks = ${JSON.stringify({ address: siteAddress, basePath })};
 `,
 );
 fs.mkdirSync(path.join(root, "public"), { recursive: true });
@@ -701,7 +707,7 @@ const sitemapEntries = [
 // Card URLs in published entries: the only pages the link-card Worker may read.
 fs.writeFileSync(
   path.join(publicRoot, "link-allowlist.json"),
-  `${JSON.stringify({ urls: [...new Set([...posts, ...columns, ...thoughts].flatMap((entry) => cardUrls(entry.content)))].sort() }, null, 2)}\n`,
+  `${JSON.stringify({ urls: [...new Set([...posts, ...columns, ...thoughts].flatMap((entry) => cardUrls(entry.content)).filter((url) => !sameSite(url)))].sort() }, null, 2)}\n`,
 );
 fs.writeFileSync(path.join(publicRoot, "sitemap.xml"), `<?xml version="1.0" encoding="UTF-8" ?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${sitemapEntries.map((entry) => `

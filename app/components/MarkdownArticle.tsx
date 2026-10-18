@@ -21,10 +21,14 @@ import { CodeCopy } from "./garden/chrome";
 import { CodeDiff } from "./garden/chrome";
 import { GardenBlock } from "./garden/GardenBlock";
 import { linkAssets } from "@garden/generated-content";
-import { siteConfig } from "@garden/site-config";
+import { siteConfig, siteLinks } from "@garden/site-config";
+import { articleLink, sameSiteMatcher } from "../../ui/garden/same-site.mjs";
 import { LinkCardRefresh } from "./LinkCardRefresh";
 import { linkHost } from "../../scripts/link-meta-core.mjs";
 import { cardDate } from "../../ui/garden/card-refresh.mjs";
+
+// Full URLs back to this site are internal links, written as root-relative paths.
+const sameSite = sameSiteMatcher(siteLinks?.address ?? "", siteLinks?.basePath ?? "");
 
 /** The site's favicon, downloaded at build time; nothing when there is none. */
 function Favicon({ href }: { href: string }) {
@@ -221,7 +225,7 @@ export function MarkdownArticle({ content }: { content: string }) {
   return (
     <div className="markdown-body prose">
       <ReactMarkdown
-        remarkPlugins={[...markdownPlugins, remarkLinkCard, remarkA2]}
+        remarkPlugins={[...markdownPlugins, [remarkLinkCard, { sameSite }], remarkA2]}
         rehypePlugins={[
           rehypeRaw,
           rehypeKatex,
@@ -237,11 +241,11 @@ export function MarkdownArticle({ content }: { content: string }) {
             const only = nodes.length === 1 && isValidElement<{ href?: string; children?: ReactNode }>(nodes[0]) ? nodes[0] : null;
             const href = only?.props.href;
             const text = only ? headingText(only.props.children).trim() : "";
-            if (href && text === href && /^https?:\/\//iu.test(href)) return <LinkCard href={href} />;
+            if (href && text === href && /^https?:\/\//iu.test(href) && !sameSite(href)) return <LinkCard href={href} />;
             return <p {...domProps}>{children}</p>;
           },
-          a: ({ href, children, ...props }) => {
-            const external = Boolean(href && /^(https?:)?\/\//iu.test(href));
+          a: ({ href: written, children, ...props }) => {
+            const { href, external } = articleLink(written, sameSite);
             const domProps = { ...props };
             Reflect.deleteProperty(domProps, "node");
             return (

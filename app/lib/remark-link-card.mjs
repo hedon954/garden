@@ -32,7 +32,7 @@ const meaningful = (children) =>
   children.filter((child) => !(child.type === "text" && !child.value.trim()) && child.type !== "break");
 
 /** Take the markers out of one parent's inline children; return the marked links. */
-function takeMarkers(parent, source) {
+function takeMarkers(parent, source, sameSite) {
   const marked = [];
   const children = parent.children ?? [];
   for (let index = 0; index < children.length - 1; index += 1) {
@@ -41,13 +41,14 @@ function takeMarkers(parent, source) {
     if (link.type !== "link" || next.type !== "text" || !next.value.startsWith(MARKER)) continue;
     if (!isHttp(link.url) || !writtenAsLink(link, source)) continue;
     next.value = next.value.slice(MARKER.length);
-    marked.push(link);
+    // A link back to this site is an ordinary internal link: the marker goes, no card.
+    if (!sameSite(link.url)) marked.push(link);
   }
   parent.children = children.filter((child) => !(child.type === "text" && child.value === ""));
   return marked;
 }
 
-function walk(parent, source) {
+function walk(parent, source, sameSite) {
   const children = parent.children ?? [];
   for (let index = 0; index < children.length; index += 1) {
     const node = children[index];
@@ -55,14 +56,14 @@ function walk(parent, source) {
     if (node.type !== "paragraph") {
       if (node.children) {
         // Headings, table cells and the like: drop the marker, no card.
-        if (node.type === "heading" || node.type === "tableCell") takeMarkers(node, source);
-        walk(node, source);
+        if (node.type === "heading" || node.type === "tableCell") takeMarkers(node, source, sameSite);
+        walk(node, source, sameSite);
       }
       continue;
     }
     // Links nested in emphasis count too.
-    const marked = takeMarkers(node, source);
-    for (const child of node.children) if (child.children && child.type !== "link") marked.push(...takeMarkers(child, source));
+    const marked = takeMarkers(node, source, sameSite);
+    for (const child of node.children) if (child.children && child.type !== "link") marked.push(...takeMarkers(child, source, sameSite));
     if (!marked.length) continue;
     const rest = meaningful(node.children);
     if (marked.length === 1 && rest.length === 1 && rest[0] === marked[0]) {
@@ -75,9 +76,10 @@ function walk(parent, source) {
   }
 }
 
-export function remarkLinkCard() {
+export function remarkLinkCard(options = {}) {
+  const sameSite = typeof options?.sameSite === "function" ? options.sameSite : () => null;
   return (tree, file) => {
     const source = typeof file?.value === "string" ? file.value : String(file?.value ?? "");
-    walk(tree, source);
+    walk(tree, source, sameSite);
   };
 }

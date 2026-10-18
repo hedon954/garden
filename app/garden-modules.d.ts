@@ -65,6 +65,8 @@ declare module "@garden/site-config" {
   export const searchIndexUrl: string;
   /** The full-text index file and the hash its contents are cached under. */
   export const searchFull: { url: string; hash: string };
+  /** The site address (site.config.yaml `url`, else SITE_URL) and base path, for spotting links back to the site. */
+  export const siteLinks: { address: string; basePath: string };
   export const siteConfig: {
     name: string;
     tagline: string;
@@ -74,6 +76,7 @@ declare module "@garden/site-config" {
     pages: Record<string, Record<string, unknown>>;
     footer: string;
     linkPreview?: { worker?: string };
+    url?: string;
   };
   export const githubUrl: string;
 }
