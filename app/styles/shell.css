@@ -438,13 +438,13 @@ html[data-theme="dark"] .sh-repos > li.sk::after{background:linear-gradient(90de
 @media (max-width:820px){.sh-row .incol{grid-column:1 / -1}}
 
 /* ---------- home directions (0.4.3). ?home=a|b|c ---------- */
+html[data-home="b"] .sh-word span{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+html[data-home="b"] .sh-mark{width:28px;height:28px;border-radius:8px}
+html[data-home="c"] .sh-mark{width:36px;height:36px;padding:8px;background:var(--paper-2);border-radius:var(--r)}
 @media (min-width:821px){
   html[data-home="a"] .sh-search,html[data-home="b"] .sh-search,html[data-home="c"] .sh-search{border:0;background:transparent;height:44px;padding:0 4px;color:var(--soft)}
   html[data-home="b"] .sh-search svg{display:none}
-  html[data-home="b"] .sh-word span{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
-  html[data-home="b"] .sh-mark{width:28px;height:28px;border-radius:8px}
   html[data-home="c"] .sh-search .lbl{display:none}
-  html[data-home="c"] .sh-mark{width:36px;height:36px;padding:8px;background:var(--paper-2);border-radius:var(--r)}
 }
 .home-a .sh-intro,.home-c .sh-intro{padding:56px 0 0;max-width:22em}
 .home-a .sh-intro h1,.home-c .sh-intro h1{font:500 15px/1.5 var(--sans);color:var(--muted);max-width:none}
