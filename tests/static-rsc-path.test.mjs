@@ -3,10 +3,11 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import test from "node:test";
-import staticRscPath, { exportRscAddress } from "../build/static-rsc-path-plugin.mjs";
+import staticRscPath, { exportNavigation, exportRscAddress } from "../build/static-rsc-path-plugin.mjs";
 
 const vinextDist = path.dirname(fileURLToPath(import.meta.resolve("vinext")));
 const busting = path.join(vinextDist, "server", "app-rsc-cache-busting.js");
+const browserEntry = path.join(vinextDist, "server", "app-browser-entry.js");
 
 // Just vinext's address builder, taken out of its module.
 function addressBuilder(code) {
@@ -51,4 +52,24 @@ test("the exported client bundle asks for /index.rsc for the home page", { skip:
   const assets = new URL("../dist/client/assets/", import.meta.url);
   const scripts = fs.readdirSync(assets).filter((name) => name.endsWith(".js")).map((name) => fs.readFileSync(new URL(name, assets), "utf8")).join("\n");
   assert.match(scripts, /[`"]\/index[`"]/);
+});
+
+test("client navigation accepts .rsc served as application/octet-stream and never lands on /index", () => {
+  const original = fs.readFileSync(browserEntry, "utf8");
+  const patched = exportNavigation(original);
+  // vinext 0.0.50 only takes text/x-component; GitHub Pages sends .rsc as octet-stream.
+  const check = patched.match(/const isRscResponse = (.+);/u)[1];
+  const accepts = (type) => new Function("navResponse", `return ${check};`)({ headers: new Headers(type ? { "content-type": type } : {}) });
+  assert.equal(accepts("text/x-component; charset=utf-8"), true);
+  assert.equal(accepts("application/octet-stream"), true);
+  assert.equal(accepts("text/html; charset=utf-8"), false, "a 404 page is still not a payload");
+  assert.equal(accepts(null), false);
+  // The full-load fallback for the home payload goes to "/", not "/index".
+  assert.match(patched, /let pathname = stripRscSuffix\(parsed\.pathname\); if \(pathname === "\/index"\) pathname = "\/";/u);
+  assert.throws(() => exportNavigation("const isRscResponse = true;"), /could not find/u);
+  // Client bundle of a static export only.
+  const run = (plugin, name) => plugin.transform.call({ environment: { name } }, original, browserEntry);
+  assert.equal(run(staticRscPath({ enabled: true }), "ssr"), null);
+  assert.equal(run(staticRscPath({ enabled: false }), "client"), null);
+  assert.match(run(staticRscPath({ enabled: true }), "client").code, /application\\\/octet-stream/u);
 });
