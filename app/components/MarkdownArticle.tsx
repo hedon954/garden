@@ -14,8 +14,8 @@ import ReactMarkdown from "react-markdown";
 import rehypeRaw from "rehype-raw";
 import rehypeKatex from "rehype-katex";
 import rehypeSlug from "rehype-slug";
-import rehypeAutolinkHeadings from "rehype-autolink-headings";
 import rehypeHighlight from "rehype-highlight";
+import { rehypeHeadingAnchors } from "../../ui/garden/heading-anchors.mjs";
 import { MermaidDiagram } from "./MermaidDiagram";
 import { MarkdownImage } from "./MarkdownImage";
 import { CodeCopy } from "./garden/chrome";
@@ -271,7 +271,8 @@ export function MarkdownArticle({ content }: { content: string }) {
           rehypeRaw,
           rehypeKatex,
           rehypeSlug,
-          [rehypeAutolinkHeadings, { behavior: "wrap", properties: { className: ["h-anchor"] } }],
+          // Not rehype-autolink-headings "wrap": a heading with a link in it would nest <a> in <a> (React #418).
+          [rehypeHeadingAnchors, { className: ["h-anchor"] }],
           rehypeHighlight,
         ]}
         components={{

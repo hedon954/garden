@@ -77,7 +77,7 @@ garden-blog is a Typora-first, `content/*.md` pipeline: `react-markdown` + remar
 | Technique on Christy’s page | Garden-blog today |
 | --- | --- |
 | Cover + title + deck | Yes. Front matter `cover`, `description`; also dates, reading time, word count, tags. |
-| Heading permalinks | Yes. `rehype-slug` + `rehype-autolink-headings` (`behavior: "wrap"`). |
+| Heading permalinks | Yes. `rehype-slug` + `ui/garden/heading-anchors.mjs` (wraps the heading text; a link inside a heading stays outside the anchor). |
 | Inline + display KaTeX | Yes. `remark-math` + `rehype-katex`, including CJK-adjacent bold and display-math scroll. |
 | Syntax-highlighted code + language label | Yes. `rehype-highlight`; `pre[data-language]` badge, top-right. Always-dark code theme. |
 | Line numbers, traffic lights, centered language | No. |
