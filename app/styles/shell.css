@@ -65,10 +65,9 @@ html[data-mod="other"] .sh-search .kbd-other{display:inline}
 .sh-icon{display:inline-grid;place-items:center;width:40px;height:40px;border:0;background:transparent;color:var(--soft);border-radius:var(--r);cursor:pointer;transition:background-color .15s ease,color .15s ease}
 @media (hover:hover){.sh-icon:hover{background:var(--tint);color:var(--ink)}}
 .sh-menu-btn,.sh-search-m{display:none}
+.sh-menu-nojs,.sh-menu-nojs-close{display:none}
 .i-sun,html[data-theme="dark"] .i-moon{display:none}
 html[data-theme="dark"] .i-sun{display:inline}
-/* No JavaScript: the theme cannot be switched, the page follows the system (build/dark-fallback-postcss.mjs). */
-@media (scripting:none){.sh-theme,.sh-menu-theme{display:none}}
 .sh-menu{display:none}
 
 /* ---------- page frame ---------- */
@@ -303,6 +302,25 @@ html[data-theme="dark"] .sh-pal-scrim{background:rgba(0,0,0,.55)}
   .sh-pal-cancel{display:block}
   .sh-pal-foot{display:none}
   .sh-pal-input{font-size:17px;height:56px}
+}
+/* No JavaScript: the theme cannot be switched, the page follows the system (build/dark-fallback-postcss.mjs).
+   Keep this after every rule that shows the toggles (the 820px block above sets .sh-menu-theme to flex);
+   tests/header-nojs.test.mjs checks the order in the built CSS. */
+@media (scripting:none){.sh-theme,.sh-menu-theme{display:none}}
+/* Search needs JavaScript too: without it the desktop 「搜索」 button would do nothing. */
+@media (scripting:none){.sh-search{display:none}}
+/* No JavaScript: the ☰ button cannot open the menu, so a ☰ link in the same place opens it through :target,
+   as the TOC drawer does, and ✕ closes it by targeting the header. With JavaScript none of this applies. */
+@media (max-width:820px) and (scripting:none){
+  .sh-menu-btn{display:none}
+  /* Search needs JavaScript (the index loads on demand); without it the button would do nothing. */
+  .sh-search-m{display:none}
+  .sh-menu-nojs{display:inline-grid;width:44px;height:44px;text-decoration:none}
+  /* The menu sits right under the sticky header: opening it should not scroll the page. */
+  .sh-menu{scroll-margin-top:var(--hdr)}
+  .sh-menu:target{opacity:1;transform:none;visibility:visible;transition:opacity .18s ease,transform .18s var(--ease)}
+  body:has(#sh-menu:target) .sh-menu-nojs{display:none}
+  body:has(#sh-menu:target) .sh-menu-nojs-close{display:inline-grid;width:44px;height:44px;text-decoration:none}
 }
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation:none!important;transition:none!important}

@@ -9,6 +9,7 @@ import {
   type ReactNode,
 } from "react";
 import { articleHeadingBase, articleUsesHeadingNumbers, displayHeadingLevel, splitHeadingNumber } from "../lib/content";
+import Link from "next/link";
 import ReactMarkdown from "react-markdown";
 import rehypeRaw from "rehype-raw";
 import rehypeKatex from "rehype-katex";
@@ -24,12 +25,30 @@ import { imageSizes, linkAssets } from "@garden/generated-content";
 import { imageDimensions, lookupImageSize } from "../../ui/garden/image-dims.mjs";
 import { siteConfig, siteLinks } from "@garden/site-config";
 import { articleLink, sameSiteMatcher } from "../../ui/garden/same-site.mjs";
+import { columnRedirects, internalLinkResolver, readRedirects } from "../../ui/garden/internal-links.mjs";
+import { columnHref, columns, postHref, posts, thoughts } from "../lib/content";
 import { LinkCardRefresh } from "./LinkCardRefresh";
 import { linkHost } from "../../scripts/link-meta-core.mjs";
 import { cardDate } from "../../ui/garden/card-refresh.mjs";
 
 // Full URLs back to this site are internal links, written as root-relative paths.
 const sameSite = sameSiteMatcher(siteLinks?.address ?? "", siteLinks?.basePath ?? "");
+
+// Links to other pages of the site render as Link. A link to an old address listed under
+// redirects is rewritten to the page it moved to; a link that lands on no known page stays a plain anchor.
+const internalRoute = internalLinkResolver({
+  redirects: [
+    ...readRedirects(siteConfig),
+    ...columnRedirects({ columns: [...new Set(columns.map((entry) => entry.column).filter(Boolean))].map((slug) => ({ slug })) }),
+  ],
+  routes: [
+    "/", "/blog", "/columns", "/thoughts", "/tags", "/about",
+    ...posts.map(postHref),
+    ...columns.map(columnHref),
+    ...thoughts.map((thought) => `/thoughts/${thought.slug}`),
+  ],
+  basePath: siteLinks?.basePath ?? "",
+});
 
 /** The site's favicon, downloaded at build time; nothing when there is none. */
 function Favicon({ href }: { href: string }) {
@@ -262,6 +281,16 @@ export function MarkdownArticle({ content }: { content: string }) {
             const { href, external } = articleLink(written, sameSite);
             const domProps = { ...props };
             Reflect.deleteProperty(domProps, "node");
+            // A link to another page of the site navigates in place, like the header and lists do.
+            // No viewport prefetch: a long article can link to many pages.
+            const route = external || domProps.target || domProps.download !== undefined ? null : internalRoute(href);
+            if (route) {
+              return (
+                <Link href={route} prefetch={false} {...domProps}>
+                  {children}
+                </Link>
+              );
+            }
             return (
               <a
                 href={href}

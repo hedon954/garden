@@ -145,6 +145,14 @@ export function tagFilterHref(selected: readonly string[], pathname = "/blog") {
   return query ? `${pathname}?${query}` : pathname;
 }
 
+/**
+ * Where a tag link points (tags on an article, the /tags page): the list page at its exported address
+ * (`/blog/`, with the slash, so the static host does not answer /blog?t=… with
+ * a 301 first), filtered to that one tag. The tag is URL-encoded.
+ */
+export const ARTICLE_TAG_LIST = "/blog/";
+export const articleTagHref = (tag: string) => tagFilterHref([tag], ARTICLE_TAG_LIST);
+
 /** 「共 N 篇」, or 「2 个标签，共 5 篇」 with a selection. */
 export function tagSummary(selectedCount: number, resultCount: number) {
   return selectedCount ? `${selectedCount} 个标签，共 ${resultCount} 篇` : `共 ${resultCount} 篇`;

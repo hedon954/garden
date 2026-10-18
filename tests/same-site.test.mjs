@@ -142,3 +142,24 @@ draft: false
     fs.rmSync(fixture, { recursive: true, force: true });
   }
 });
+
+test("in-article links to other pages of the site go through the framework Link", async () => {
+  const { clientRoute } = await import("../ui/garden/same-site.mjs");
+  assert.equal(clientRoute("/blog/ai-agent/ai-agent-react-vs-workflow/"), "/blog/ai-agent/ai-agent-react-vs-workflow/");
+  assert.equal(clientRoute("/blog/claude-code-source/#2-prompt"), "/blog/claude-code-source/#2-prompt");
+  assert.equal(clientRoute("/blog/?t=Prompt"), "/blog/?t=Prompt");
+  assert.equal(clientRoute("/"), "/");
+  // Files, folders of static files, hashes, other hosts: plain anchors.
+  for (const href of ["/posts.xml", "/files/report.pdf", "/images/a.png", "/media/clip", "/assets/x", "/api/admin", "#section", "//cdn.example.com/x", "https://example.com/", "mailto:a@b.c", "notes/x", "", undefined]) {
+    assert.equal(clientRoute(href), null, String(href));
+  }
+  // Link adds the base path itself.
+  assert.equal(clientRoute("/garden/blog/x/", "/garden"), "/blog/x/");
+  assert.equal(clientRoute("/garden", "/garden/"), "/");
+  assert.equal(clientRoute("/other/x/", "/garden"), null);
+  const fs = await import("node:fs");
+  const source = fs.readFileSync(new URL("../app/components/MarkdownArticle.tsx", import.meta.url), "utf8");
+  assert.match(source, /^import Link from "next\/link";/mu);
+  assert.match(source, /const route = external \|\| domProps\.target \|\| domProps\.download !== undefined \? null : internalRoute\(href\);/u);
+  assert.match(source, /<Link href=\{route\} prefetch=\{false\} \{\.\.\.domProps\}>/u);
+});

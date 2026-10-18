@@ -121,3 +121,25 @@ test("each column gets /columns/<slug>/ → /columns/#<slug>, with the column's 
   // Ordinary redirects still keep the reader's hash.
   assert.match(fs.readFileSync(path.join(out, "columns/book-note/index.html"), "utf8"), /"\/blog\/go\/go-gpm\/" \+ location\.hash/u);
 });
+
+test("the build step writes the pages when run as a script (configured and column redirects)", async () => {
+  const { execFileSync } = await import("node:child_process");
+  const site = fs.mkdtempSync(path.join(os.tmpdir(), "garden-redirects-cli-"));
+  try {
+    const out = path.join(site, "dist", "client");
+    for (const page of ["blog/go/go-gc-tri-color-marking", "columns"]) {
+      fs.mkdirSync(path.join(out, page), { recursive: true });
+      fs.writeFileSync(path.join(out, page, "index.html"), "<p>page</p>");
+    }
+    fs.writeFileSync(path.join(site, "site.config.yaml"), "url: https://blog.example.org\nredirects:\n  /2025/11/17/go/go-gc/: /blog/go/go-gc-tri-color-marking/\n");
+    fs.mkdirSync(path.join(site, "content"));
+    fs.writeFileSync(path.join(site, "content", "columns.yaml"), "columns:\n  - slug: rust-action\n");
+    const stdout = execFileSync(process.execPath, [new URL("../scripts/redirects.mjs", import.meta.url).pathname], { env: { ...process.env, GARDEN_SITE: site }, encoding: "utf8" });
+    assert.doesNotMatch(stdout, /警告/u, stdout);
+    assert.match(stdout, /旧地址跳转页：2 个/u);
+    assert.match(fs.readFileSync(path.join(out, "2025/11/17/go/go-gc/index.html"), "utf8"), /url=\/blog\/go\/go-gc-tri-color-marking\//u);
+    assert.match(fs.readFileSync(path.join(out, "columns/rust-action/index.html"), "utf8"), /url=\/columns\/#rust-action/u);
+  } finally {
+    fs.rmSync(site, { recursive: true, force: true });
+  }
+});

@@ -16,6 +16,7 @@ import { brand, searchFull, searchIndexUrl } from "@garden/site-config";
 import { createSearch } from "../../ui/garden/search-match.mjs";
 import { cropMatchedText, highlightParts, noResultsText } from "../../ui/garden/search-preview.mjs";
 import { resolveDark, themeSwitchProps } from "../../ui/garden/theme.mjs";
+import { SITE_NAV, isCurrentNav } from "../../ui/garden/site-nav.mjs";
 import { createIdbStore, loadFullIndex, saveDataOn, whenIdleAfterLoad } from "../../ui/garden/search-full.mjs";
 import { siteConfig } from "../site.config";
 
@@ -85,13 +86,7 @@ function loadSearchEngine() {
   return engineLoad;
 }
 
-const nav = [
-  { href: "/blog", label: "文章" },
-  { href: "/thoughts", label: "随想" },
-  { href: "/columns", label: "专栏" },
-  { href: "/tags", label: "标签" },
-  { href: "/about", label: "关于" },
-];
+const nav = SITE_NAV;
 
 function rangesFor(
   matches: readonly SearchMatch[] | undefined,
@@ -302,16 +297,11 @@ export function SiteHeader() {
     window.localStorage.setItem("theme", next ? "dark" : "light");
   };
 
-  const current = (href: string) => {
-    if (href === "/blog") {
-      return pathname === "/blog" || pathname.startsWith("/blog/") || pathname.startsWith("/a2/");
-    }
-    return pathname === href || pathname.startsWith(`${href}/`);
-  };
+  const current = (href: string) => isCurrentNav(pathname, href);
 
   return (
     <>
-      <header className="sh-header">
+      <header className="sh-header" id="site-header">
         <div className="sh-bar">
           <Link href="/" className="sh-word">
             {/* Build-time SVG from brand.logo, cleaned of scripts and handlers. */}
@@ -352,6 +342,14 @@ export function SiteHeader() {
             <button className="sh-icon sh-menu-btn" type="button" aria-expanded={menuOpen} aria-controls="sh-menu" aria-label={menuOpen ? "关闭菜单" : "打开菜单"} onClick={() => setMenuOpen((open) => !open)}>
               {menuOpen ? <X size={18} /> : <span aria-hidden="true">☰</span>}
             </button>
+            {/* Without JavaScript the button above cannot open anything: these two links take its place
+                and open or close the menu through :target, like the TOC drawer (shell.css). */}
+            <a className="sh-icon sh-menu-nojs" id="sh-menu-open" href="#sh-menu" aria-label="打开菜单">
+              <span aria-hidden="true">☰</span>
+            </a>
+            <a className="sh-icon sh-menu-nojs-close" href="#site-header" aria-label="关闭菜单">
+              <X size={18} />
+            </a>
           </div>
         </div>
         <nav className={`sh-menu${menuOpen ? " is-open" : ""}`} id="sh-menu" aria-label="站点导航（移动端）">

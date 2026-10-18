@@ -552,7 +552,8 @@ test("0.4.3: wider reading column, transparent column cards, and tag chips under
     const row = header.indexOf('class="article-tagrow"');
     assert.ok(meta >= 0 && row > meta, "tag row sits right after the meta row");
     for (const tag of tags) {
-      assert.match(header, new RegExp(`<a class="tag-chip p-category" href="/blog\\?t=${encodeURIComponent(tag)}">#(<!-- -->)?${tag}</a>`));
+      // Link, straight at the exported list address (/blog/, no 301 first).
+      assert.match(header, new RegExp(`<a href="/blog/\\?t=${encodeURIComponent(tag)}" class="tag-chip p-category">#(<!-- -->)?${tag}</a>`));
     }
     assert.doesNotMatch(header, /class="cat"|\/blog\?topic=/);
     assert.doesNotMatch(html, /class="article-tags"/);
@@ -608,7 +609,7 @@ test("/blog filters by several tags through the URL, and /tags is only an index"
   assert.doesNotMatch(source, /topic|按分类筛选/);
 
   assert.match(tagsPage, /<ul class="sh-tagchips sh-tagindex" aria-label="全部标签">/);
-  assert.match(tagsPage, /<a href="\/blog\?t=Markdown" class="sh-tagchip">#<!-- -->Markdown<span class="n num">/);
+  assert.match(tagsPage, /<a href="\/blog\/\?t=Markdown" class="sh-tagchip">#<!-- -->Markdown<span class="n num">/);
   assert.doesNotMatch(tagsPage, /aria-pressed|sh-tagresult|分类/);
   assert.match(redirect, /router\.replace\(target\)/);
 
@@ -866,4 +867,44 @@ test("the header carries the brand logo, and the page links the configured icons
   assert.match(html, /<link rel="icon" href="[^"]*\/favicon\.svg" type="image\/svg\+xml"\/>/u);
   assert.match(html, /<link rel="apple-touch-icon" href="[^"]*\/apple-touch-icon\.png" sizes="180x180"\/>/u);
   assert.match(html, /<span class="lbl">搜索<\/span>/u);
+});
+
+test("0.5.14: the header carries the no-JS menu links next to the ☰ button", async () => {
+  const html = await (await render()).text();
+  const header = html.match(/<header class="sh-header" id="site-header">[\s\S]*?<\/header>/)?.[0] ?? "";
+  assert.ok(header, "header rendered with its id");
+  assert.match(header, /<button class="sh-icon sh-menu-btn" type="button" aria-expanded="false" aria-controls="sh-menu" aria-label="打开菜单">/);
+  assert.match(header, /<a class="sh-icon sh-menu-nojs" id="sh-menu-open" href="#sh-menu" aria-label="打开菜单"><span aria-hidden="true">☰<\/span><\/a>/);
+  assert.match(header, /<a class="sh-icon sh-menu-nojs-close" href="#site-header" aria-label="关闭菜单"><svg/);
+  assert.match(header, /<nav class="sh-menu" id="sh-menu" aria-label="站点导航（移动端）">/);
+});
+
+test("0.5.14: header nav links end with a slash and still mark the current section", async () => {
+  for (const [pathname, label] of [["/", null], ["/blog", "文章"], ["/tags", "标签"], ["/columns", "专栏"]]) {
+    const html = await (await render(pathname)).text();
+    const bar = html.match(/<nav class="sh-nav"[\s\S]*?<\/nav>/)?.[0] ?? "";
+    assert.ok(bar, `desktop nav on ${pathname}`);
+    const links = [...bar.matchAll(/<a ([^>]*)>([^<]+)<\/a>/g)].map((m) => ({ attrs: m[1], text: m[2] }));
+    assert.deepEqual(links.map((link) => link.attrs.match(/href="([^"]+)"/)[1]), ["/blog/", "/thoughts/", "/columns/", "/tags/", "/about/"], pathname);
+    assert.deepEqual(links.filter((link) => /aria-current="page"/.test(link.attrs)).map((link) => link.text), label ? [label] : [], pathname);
+    const menu = html.match(/<nav class="sh-menu" id="sh-menu"[\s\S]*?<\/nav>/)?.[0] ?? "";
+    assert.equal((menu.match(/href="\/(blog|thoughts|columns|tags|about)\/"/g) ?? []).length, 5, `mobile menu on ${pathname}`);
+  }
+});
+
+test("0.5.14: /tags links point at /blog/?t=… with the slash, URL-encoded", async () => {
+  const html = await (await render("/tags")).text();
+  const list = html.match(/<ul class="sh-tagchips sh-tagindex"[\s\S]*?<\/ul>/)?.[0] ?? "";
+  const hrefs = [...list.matchAll(/<a [^>]*href="([^"]+)"[^>]*class="sh-tagchip"|<a class="sh-tagchip" href="([^"]+)"/g)].map((m) => m[1] ?? m[2]);
+  assert.ok(hrefs.length > 3, `found ${hrefs.length} tag links`);
+  for (const href of hrefs) {
+    const decoded = href.replace(/&amp;/g, "&");
+    assert.match(decoded, /^\/blog\/\?t=[^&]+$/u, href);
+    const tag = new URL(decoded, "https://example.com").searchParams.get("t");
+    assert.equal(decoded, `/blog/?${new URLSearchParams({ t: tag })}`, "URL-encoded the same way the list reads it");
+  }
+  const source = await readFile(new URL("../app/tags/page.tsx", import.meta.url), "utf8");
+  assert.match(source, /<Link className="sh-tagchip" href=\{articleTagHref\(tag\)\}>/u);
+  const redirect = await readFile(new URL("../app/components/TagRedirect.tsx", import.meta.url), "utf8");
+  assert.match(redirect, /tagFilterHref\(tags, ARTICLE_TAG_LIST\)/u);
 });

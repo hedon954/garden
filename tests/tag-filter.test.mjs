@@ -6,6 +6,8 @@ import {
   selectedTags,
   tagCounts,
   tagFilterHref,
+  articleTagHref,
+  ARTICLE_TAG_LIST,
   tagOptions,
   tagKey,
   tagSummary,
@@ -167,4 +169,26 @@ test("tags match regardless of case, and each post keeps its own spelling", () =
   // toggling removes the tag in any spelling
   assert.deepEqual(toggleTag(["Rust", "并发编程"], "rust"), ["并发编程"]);
   assert.deepEqual(toggleTag(["并发编程"], "rust"), ["并发编程", "rust"]);
+});
+
+test("tags on an article point at /blog/?t=… with the slash, URL-encoded", () => {
+  assert.equal(ARTICLE_TAG_LIST, "/blog/");
+  assert.equal(articleTagHref("Prompt"), "/blog/?t=Prompt");
+  assert.equal(articleTagHref("工程实践"), `/blog/?t=${encodeURIComponent("工程实践")}`);
+  assert.equal(articleTagHref("AI Agent"), "/blog/?t=AI+Agent");
+  assert.equal(articleTagHref("C++ & Go/Rust?#1"), "/blog/?t=C%2B%2B+%26+Go%2FRust%3F%231");
+  for (const tag of ["Prompt", "工程实践", "AI Agent", "C++ & Go/Rust?#1"]) {
+    const url = new URL(articleTagHref(tag), "https://example.com");
+    assert.equal(url.pathname, "/blog/");
+    assert.deepEqual(url.searchParams.getAll("t"), [tag], "the list page reads back the same tag");
+  }
+});
+
+test("article tags render with the framework Link, not a plain anchor", async () => {
+  const fs = await import("node:fs");
+  const source = fs.readFileSync(new URL("../app/components/ArticleTags.tsx", import.meta.url), "utf8");
+  assert.match(source, /^import Link from "next\/link";/mu);
+  assert.match(source, /<Link className="tag-chip p-category" href=\{articleTagHref\(tag\)\}>/u);
+  assert.doesNotMatch(source, /<a[\s>]/u);
+  assert.doesNotMatch(source, /tagFilterHref\(/u, "the href comes from articleTagHref, so it always carries the slash");
 });
