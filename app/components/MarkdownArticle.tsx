@@ -124,7 +124,7 @@ export function LinkCard({ href, text, standalone = true }: { href: string; text
           ) : null}
         </span>
         {/* eslint-disable-next-line @next/next/no-img-element -- copied into the site at build time */}
-        {meta?.image ? <img className="lc-thumb" src={meta.image} alt="" width={168} height={105} loading="lazy" decoding="async" /> : null}
+        {meta?.image ? <img className="lc-thumb" src={meta.image} alt="" width={168} height={88} loading="lazy" decoding="async" /> : null}
       </a>
     </div>
   );

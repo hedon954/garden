@@ -419,6 +419,13 @@ html[data-theme="dark"] .markdown-body a.ext {
   object-fit: contain;
 }
 
+/* Many icons are black on transparent; give them a light backing in dark mode. */
+html[data-theme="dark"] .markdown-body img.fav {
+  padding: 1px;
+  box-sizing: border-box;
+  background: #f5f4ed;
+}
+
 .markdown-body .table-wrap a.ext img.fav,
 .markdown-body h2 a.ext img.fav,
 .markdown-body h3 a.ext img.fav {
@@ -1484,11 +1491,11 @@ html[data-theme="dark"] .g-quiz-out.no { color: #f29aab; }
 .lc-desc { font-size: var(--fs-small); line-height: 1.55; color: var(--soft); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .lc-meta { display: flex; flex-wrap: wrap; gap: 4px 16px; margin-top: auto; padding-top: 4px; font-size: 13px; line-height: 1.5; color: var(--muted); }
 /* Fixed aspect ratio, so a picture arriving late never moves the text. */
-.markdown-body img.lc-thumb { display: block; flex: 0 0 auto; width: 168px; max-width: none; height: auto; aspect-ratio: 16 / 10; object-fit: cover; align-self: center; margin: 0; border: 1px solid var(--rule); border-radius: 8px; background: var(--well); }
+.markdown-body img.lc-thumb { display: block; flex: 0 0 auto; width: 168px; max-width: none; height: auto; aspect-ratio: 1.91 / 1; object-fit: cover; align-self: center; margin: 0; border: 1px solid var(--rule); border-radius: 8px; background: var(--well); }
 @media (max-width: 640px) {
   .link-card { flex-direction: column-reverse; gap: 12px; padding: 12px; }
   .prose a.link-card, .markdown-body a.link-card { padding-right: 12px; }
-  .markdown-body img.lc-thumb { width: 100%; aspect-ratio: 2 / 1; }
+  .markdown-body img.lc-thumb { width: 100%; }
 }
 @media (prefers-reduced-motion: reduce) {
   .link-card { transition: none; }

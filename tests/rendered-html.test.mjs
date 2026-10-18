@@ -747,6 +747,6 @@ test("link cards: inline links keep the text and get a preview card, standalone 
   const feed = await readFile(new URL("../public/posts.xml", import.meta.url), "utf8");
   assert.doesNotMatch(feed.replace(/<code>[^<]*<\/code>/gu, ""), /\)\{card\}/u);
   const css = await readFile(new URL("../app/styles/a2.css", import.meta.url), "utf8");
-  assert.match(css, /\.markdown-body img\.lc-thumb \{[^}]*aspect-ratio: 16 \/ 10;/u);
+  assert.match(css, /\.markdown-body img\.lc-thumb \{[^}]*aspect-ratio: 1\.91 \/ 1;/u);
   assert.match(css, /\.link-card:focus-visible \{/u);
 });
