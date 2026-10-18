@@ -1467,16 +1467,32 @@ html[data-theme="dark"] .g-quiz-out.no { color: #f29aab; }
 .g-flow .fl-e line, .g-flow .fl-e1 { stroke: var(--muted); stroke-width: 1.3; fill: none; }
 .g-flow .fl-ah { fill: var(--muted); }
 .g-flow .gc-stw { fill: rgba(180, 33, 58, 0.08); stroke: rgba(180, 33, 58, 0.45); }
+/* Link cards: `[text](url){card}`. Title, description and picture come from the build. */
 .prose .link-cards { list-style: none; padding: 0; margin: 24px 0 32px; display: grid; gap: 12px; }
 .prose .link-cards li { margin: 0; padding: 0; }
-.link-card { display: flex; gap: 20px; align-items: stretch; padding: 16px; border: 1px solid var(--rule); border-radius: 12px; color: inherit; text-decoration: none; }
-.prose a.link-card { text-decoration: none; }
+.link-card { display: flex; gap: 20px; align-items: stretch; padding: 16px; border: 1px solid var(--rule); border-radius: 12px; background: transparent; color: inherit; text-decoration: none; transition: border-color .15s ease, background-color .15s ease; }
+.prose a.link-card, .markdown-body a.link-card { text-decoration: none; padding-right: 16px; background-image: none; }
+.link-card:hover { border-color: var(--rule-strong, #cfcbc2); background: var(--card-hover); }
+.link-card:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
 .lc-body { display: flex; flex-direction: column; gap: 4px; min-width: 0; flex: 1; }
-.lc-site { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); }
-.lc-sitename { color: var(--soft); font-weight: 600; }
+.lc-site { display: flex; align-items: center; gap: 8px; min-width: 0; font-size: 13px; line-height: 1.5; color: var(--muted); }
+.markdown-body .lc-site img.fav { display: block; flex: 0 0 auto; width: 14px; height: 14px; margin: 0; border-radius: 3px; object-fit: contain; }
+.lc-sitename { color: var(--soft); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .lc-host { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.lc-arrow { width: 10px; height: 10px; margin-left: auto; background: var(--muted); mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Cpath d='M3 1.5h5.5V7M8.5 1.5 1.5 8.5' fill='none' stroke='black' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / contain no-repeat; }
-.lc-title { font-weight: 600; font-size: 16px; line-height: 1.45; color: var(--ink); }
+.lc-arrow { flex: 0 0 auto; width: 10px; height: 10px; margin-left: auto; background: var(--muted); mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Cpath d='M3 1.5h5.5V7M8.5 1.5 1.5 8.5' fill='none' stroke='black' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / contain no-repeat; }
+.lc-title { font-weight: 600; font-size: 16px; line-height: 1.45; color: var(--ink); text-wrap: pretty; }
+.lc-desc { font-size: var(--fs-small); line-height: 1.55; color: var(--soft); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.lc-meta { display: flex; flex-wrap: wrap; gap: 4px 16px; margin-top: auto; padding-top: 4px; font-size: 13px; line-height: 1.5; color: var(--muted); }
+/* Fixed aspect ratio, so a picture arriving late never moves the text. */
+.markdown-body img.lc-thumb { display: block; flex: 0 0 auto; width: 168px; max-width: none; height: auto; aspect-ratio: 16 / 10; object-fit: cover; align-self: center; margin: 0; border: 1px solid var(--rule); border-radius: 8px; background: var(--well); }
+@media (max-width: 640px) {
+  .link-card { flex-direction: column-reverse; gap: 12px; padding: 12px; }
+  .prose a.link-card, .markdown-body a.link-card { padding-right: 12px; }
+  .markdown-body img.lc-thumb { width: 100%; aspect-ratio: 2 / 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .link-card { transition: none; }
+}
 .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
 .g-chart-t { margin: 0 0 12px; font-weight: 600; color: var(--ink); font-size: 15px; }
 .g-bars { display: grid; grid-template-columns: fit-content(40%) minmax(0, 1fr) max-content; gap: 8px 10px; align-items: center; }

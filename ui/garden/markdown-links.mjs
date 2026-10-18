@@ -65,3 +65,20 @@ export function markdownLinks(markdown) {
   });
   return links;
 }
+
+/** The marker that asks for a link card: `[text](url){card}`, nothing in between. */
+export const CARD_MARKER = "{card}";
+
+/**
+ * The same Markdown without `{card}` markers, for excerpts, RSS and the search
+ * index. Markers inside code stay, since there they are literal text.
+ */
+export function stripCardMarkers(markdown) {
+  if (!String(markdown ?? "").includes(CARD_MARKER)) return markdown;
+  return mapOutsideCode(markdown, (text) => text.replace(LINK, (whole, bang, url, card) => (card ? whole.slice(0, -CARD_MARKER.length) : whole)));
+}
+
+/** URLs the author asked to show as cards, in order, without repeats. */
+export function cardUrls(markdown) {
+  return [...new Set(markdownLinks(markdown).filter((link) => link.card).map((link) => link.url))];
+}

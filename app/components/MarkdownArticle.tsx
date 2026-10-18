@@ -1,5 +1,6 @@
 import { markdownPlugins } from "../lib/markdown-plugins";
 import { remarkA2 } from "../lib/remark-a2.mjs";
+import { remarkLinkCard } from "../lib/remark-link-card.mjs";
 import {
   Children,
   cloneElement,
@@ -86,24 +87,47 @@ function stripPrefix(children: ReactNode, prefix: string): ReactNode {
   return walk(children);
 }
 
-function LinkCard({ href }: { href: string }) {
-  let host = href;
-  try { host = new URL(href).hostname.replace(/^www\./u, ""); } catch { /* keep the raw url */ }
+const cardDate = (value?: string) => {
+  const match = /^(\d{4})-(\d{2})-(\d{2})/u.exec(value ?? "");
+  return match ? `${match[1]} 年 ${Number(match[2])} 月 ${Number(match[3])} 日` : "";
+};
+
+/**
+ * A link card. Standalone (the author's paragraph was just the link), it is the
+ * link. After a paragraph that keeps the link, it is a preview: out of the tab
+ * order and hidden from screen readers, since the link is already there.
+ */
+export function LinkCard({ href, text, standalone = true }: { href: string; text?: string; standalone?: boolean }) {
+  const meta = linkAssets?.cards?.[href];
+  const host = linkHost(href) || href;
+  const icon = linkAssets?.favicons?.[host];
+  const title = meta?.title || text || href;
+  const date = cardDate(meta?.publishedTime);
+  const preview = standalone ? {} : { tabIndex: -1, "aria-hidden": true as const };
   return (
-    <ul className="link-cards">
-      <li>
-        <a className="link-card ext" href={href} target="_blank" rel="noopener noreferrer">
-          <span className="lc-body">
-            <span className="lc-site">
-              <span className="lc-sitename">{host}</span>
-              <span className="lc-host">{host}</span>
-              <span className="lc-arrow" aria-hidden="true" />
-            </span>
-            <span className="lc-title">{href}</span>
+    <div className="link-cards" data-card-url={href}>
+      <a className="link-card" href={href} target="_blank" rel="noopener noreferrer" {...preview}>
+        <span className="lc-body">
+          <span className="lc-site">
+            {/* eslint-disable-next-line @next/next/no-img-element -- local 14px icon */}
+            {icon ? <img className="fav" src={icon} alt="" width={14} height={14} loading="lazy" decoding="async" /> : null}
+            <span className="lc-sitename" data-field="siteName">{meta?.siteName || host}</span>
+            {meta?.siteName && meta.siteName.toLowerCase() !== host ? <span className="lc-host">{host}</span> : null}
+            <span className="lc-arrow" aria-hidden="true" />
           </span>
-        </a>
-      </li>
-    </ul>
+          <span className="lc-title" data-field="title">{title}</span>
+          {meta?.description ? <span className="lc-desc" data-field="description">{meta.description}</span> : null}
+          {meta?.author || date ? (
+            <span className="lc-meta">
+              {meta?.author ? <span data-field="author">{meta.author}</span> : null}
+              {date ? <time data-field="publishedTime" dateTime={meta?.publishedTime}>{date}</time> : null}
+            </span>
+          ) : null}
+        </span>
+        {/* eslint-disable-next-line @next/next/no-img-element -- copied into the site at build time */}
+        {meta?.image ? <img className="lc-thumb" src={meta.image} alt="" width={168} height={105} loading="lazy" decoding="async" /> : null}
+      </a>
+    </div>
   );
 }
 
@@ -146,6 +170,13 @@ export function MarkdownArticle({ content }: { content: string }) {
     return <Tag {...domProps}>{sectioned.no ? <span className="sec-no">{sectioned.no}</span> : null}{sectioned.children}</Tag>;
   };
   const gardenComponents = {
+    "garden-linkcard": (props: Record<string, string | undefined>) => (
+      <LinkCard
+        href={props.dataUrl ?? props["data-url"] ?? ""}
+        text={props.dataText ?? props["data-text"]}
+        standalone={(props.dataStandalone ?? props["data-standalone"]) === "true"}
+      />
+    ),
     "garden-block": (props: { dataPayload?: string; "data-payload"?: string }) => (
       <GardenBlock dataPayload={props.dataPayload ?? props["data-payload"]} />
     ),
@@ -166,7 +197,7 @@ export function MarkdownArticle({ content }: { content: string }) {
   return (
     <div className="markdown-body prose">
       <ReactMarkdown
-        remarkPlugins={[...markdownPlugins, remarkA2]}
+        remarkPlugins={[...markdownPlugins, remarkLinkCard, remarkA2]}
         rehypePlugins={[
           rehypeRaw,
           rehypeKatex,

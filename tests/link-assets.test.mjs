@@ -171,6 +171,7 @@ test("refreshLinkAssets downloads icons into the site and caches them", async ()
   assert.deepEqual([...fs.readFileSync(file)], [...PNG]);
   assert.deepEqual(linkAssetsForRender(root, "/blog"), {
     favicons: { "huggingface.co": `/blog${cache.favicons["huggingface.co"].file}` },
+    cards: {},
   });
 });
 
@@ -194,15 +195,15 @@ test("a build with no network keeps the cached icons and never throws", async ()
 
   // A cache entry whose file is gone is not used.
   fs.rmSync(path.join(root, "public", "link-assets"), { recursive: true });
-  assert.deepEqual(linkAssetsForRender(root), { favicons: {} });
+  assert.deepEqual(linkAssetsForRender(root), { favicons: {}, cards: {} });
 });
 
 test("a site with no cache and no network renders links without icons", async () => {
   const root = site({ "a.md": "[x](https://x.dev/)" });
   await refreshLinkAssets({ siteRoot: root, fetch: async () => { throw new Error("offline"); }, dnsCheck: false });
-  assert.deepEqual(linkAssetsForRender(root), { favicons: {} });
+  assert.deepEqual(linkAssetsForRender(root), { favicons: {}, cards: {} });
   const empty = fs.mkdtempSync(path.join(os.tmpdir(), "garden-empty-"));
-  assert.deepEqual(linkAssetsForRender(empty), { favicons: {} });
+  assert.deepEqual(linkAssetsForRender(empty), { favicons: {}, cards: {} });
   await refreshLinkAssets({ siteRoot: empty, fetch: async () => { throw new Error("offline"); } });
 });
 

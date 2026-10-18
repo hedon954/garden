@@ -724,3 +724,29 @@ test("the IMPORTANT callout is ink, with a dark bar and a bold title; no purple 
     assert.match(html, new RegExp(`markdown-alert markdown-alert-${kind}`));
   }
 });
+
+test("link cards: inline links keep the text and get a preview card, standalone links become the card", async () => {
+  const html = await (await render("/blog/markdown-lab")).text();
+  const section = html.slice(html.indexOf('id="链接卡片"'), html.indexOf('id="数学公式"'));
+  // Inline: the link stays in the sentence, with its favicon, and the card follows the paragraph.
+  assert.match(section, /<p>[^]*?<a href="https:\/\/github\.com\/remarkjs\/remark-gfm" class="ext"[^>]*>(<img class="fav"[^>]*>)?remark-gfm<\/a>[^]*?<\/p>\s*<div class="link-cards" data-card-url="https:\/\/github\.com\/remarkjs\/remark-gfm">/u);
+  const preview = section.match(/<div class="link-cards" data-card-url="https:\/\/github\.com\/remarkjs\/remark-gfm">[^]*?<\/div>/u)?.[0] ?? "";
+  assert.match(preview, /<a class="link-card"[^>]*tabindex="-1"[^>]*aria-hidden="true"/u);
+  // Standalone: no paragraph and no inline link; the card itself is the link and stays focusable.
+  assert.doesNotMatch(section, /<p>\s*<a href="https:\/\/katex\.org\/docs\/supported\.html"/u);
+  const standalone = section.match(/<div class="link-cards" data-card-url="https:\/\/katex\.org\/docs\/supported\.html">[^]*?<\/div>/u)?.[0] ?? "";
+  assert.ok(standalone, "standalone card rendered");
+  assert.doesNotMatch(standalone, /tabindex|aria-hidden="true"[^>]*class="link-card"|class="link-card"[^>]*aria-hidden/u);
+  assert.equal((section.match(/https:\/\/katex\.org\/docs\/supported\.html"/gu) ?? []).length, 2); // data-card-url + the card's href
+  // Card text comes from the build; pictures are local files with a fixed ratio.
+  assert.match(standalone, /<span class="lc-title" data-field="title">[^<]+<\/span>/u);
+  assert.doesNotMatch(section, /<img class="lc-thumb" src="https?:/u);
+  // The marker never shows, except inside code.
+  assert.match(section, /<code>\[文字\]\(https:\/\/example\.com\)\{card\}<\/code>/u);
+  assert.doesNotMatch(section.replace(/<code>[^<]*<\/code>/gu, ""), /\{card\}/u);
+  const feed = await readFile(new URL("../public/posts.xml", import.meta.url), "utf8");
+  assert.doesNotMatch(feed.replace(/<code>[^<]*<\/code>/gu, ""), /\)\{card\}/u);
+  const css = await readFile(new URL("../app/styles/a2.css", import.meta.url), "utf8");
+  assert.match(css, /\.markdown-body img\.lc-thumb \{[^}]*aspect-ratio: 16 \/ 10;/u);
+  assert.match(css, /\.link-card:focus-visible \{/u);
+});

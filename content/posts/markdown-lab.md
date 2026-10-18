@@ -73,6 +73,16 @@ cover: https://images.unsplash.com/photo-1761414500824-e280de5a1b37?auto=format&
 > [!CAUTION]
 > 可能造成严重后果的操作会显示为「注意」。
 
+## 链接卡片
+
+在链接后面紧跟 `{card}`，网页里会多出一张卡片，写着对方页面的标题、简介和配图。链接写在句子里时，文字照常可点，卡片跟在这一段后面：表格、任务列表和脚注都来自 [remark-gfm](https://github.com/remarkjs/remark-gfm){card}，它让 GFM 语法在这里生效。
+
+链接单独占一行时，卡片就放在这一行的位置：
+
+[KaTeX 支持的函数](https://katex.org/docs/supported.html){card}
+
+写在代码里的 `[文字](https://example.com){card}` 不会变成卡片，原样显示。
+
 ## 数学公式
 
 **求和部分：$\sum_{j=1}^{N}$（上下限）**。
