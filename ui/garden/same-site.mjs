@@ -61,3 +61,30 @@ export function articleLink(href, sameSite) {
   if (local !== null) return { href: local, external: false };
   return { href, external: /^(https?:)?\/\//iu.test(href) };
 }
+
+/** Static files the site serves next to its pages; these always load as files. */
+const FILE_PREFIXES = ["/api/", "/assets/", "/images/", "/media/", "/link-assets/", "/_next/", "/fonts/"];
+
+/**
+ * The route to hand to the framework Link for an in-article link, or null to
+ * keep a plain anchor. Only a root-relative page address qualifies: no
+ * protocol or host, not just a hash, no file extension in the last segment,
+ * none of the static file folders. Link adds the base path itself, so it is
+ * taken off here; a path outside the base path stays a plain anchor.
+ */
+export function clientRoute(href, basePath = "") {
+  if (typeof href !== "string") return null;
+  const value = href.trim();
+  if (!value.startsWith("/") || value.startsWith("//")) return null;
+  const base = normalizeBase(basePath);
+  const [pathname] = value.split(/[?#]/u);
+  let route = pathname;
+  if (base) {
+    if (route !== base && !route.startsWith(`${base}/`)) return null;
+    route = route.slice(base.length) || "/";
+  }
+  if (FILE_PREFIXES.some((prefix) => route.startsWith(prefix) || `${route}/` === prefix)) return null;
+  const last = route.split("/").filter(Boolean).at(-1) ?? "";
+  if (/\.[a-z0-9]{1,8}$/iu.test(last)) return null;
+  return `${route}${value.slice(pathname.length)}`;
+}

@@ -9,6 +9,7 @@ import {
   type ReactNode,
 } from "react";
 import { articleHeadingBase, articleUsesHeadingNumbers, displayHeadingLevel, splitHeadingNumber } from "../lib/content";
+import Link from "next/link";
 import ReactMarkdown from "react-markdown";
 import rehypeRaw from "rehype-raw";
 import rehypeKatex from "rehype-katex";
@@ -23,7 +24,7 @@ import { GardenBlock } from "./garden/GardenBlock";
 import { imageSizes, linkAssets } from "@garden/generated-content";
 import { imageDimensions, lookupImageSize } from "../../ui/garden/image-dims.mjs";
 import { siteConfig, siteLinks } from "@garden/site-config";
-import { articleLink, sameSiteMatcher } from "../../ui/garden/same-site.mjs";
+import { articleLink, clientRoute, sameSiteMatcher } from "../../ui/garden/same-site.mjs";
 import { LinkCardRefresh } from "./LinkCardRefresh";
 import { linkHost } from "../../scripts/link-meta-core.mjs";
 import { cardDate } from "../../ui/garden/card-refresh.mjs";
@@ -262,6 +263,16 @@ export function MarkdownArticle({ content }: { content: string }) {
             const { href, external } = articleLink(written, sameSite);
             const domProps = { ...props };
             Reflect.deleteProperty(domProps, "node");
+            // A link to another page of the site navigates in place, like the header and lists do.
+            // No viewport prefetch: a long article can link to many pages.
+            const route = external || domProps.target || domProps.download !== undefined ? null : clientRoute(href, siteLinks?.basePath ?? "");
+            if (route) {
+              return (
+                <Link href={route} prefetch={false} {...domProps}>
+                  {children}
+                </Link>
+              );
+            }
             return (
               <a
                 href={href}
