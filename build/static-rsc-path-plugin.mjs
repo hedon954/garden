@@ -13,7 +13,8 @@
 // client navigation fell back to a full page load, aimed at the payload URL
 // minus ".rsc" (for home that is "/index"). In the browser navigation code the
 // export also accepts application/octet-stream, and a fallback to "/index"
-// goes to "/".
+// goes to "/". Only a 2xx response with a body counts: vinext's own
+// `!navResponse.ok` check stays in front, and the build stops if it is gone.
 //
 // Rewrites vinext 0.0.50. Remove this plugin once vinext fixes it upstream
 // (draft issue: /workspace/dev/vinext-issue.md); a vinext whose code no longer
@@ -24,6 +25,8 @@ const NAVIGATION = /[\\/]vinext[\\/]dist[\\/]server[\\/]app-browser-entry\.js$/u
 const RSC_CHECK = 'const isRscResponse = (navResponse.headers.get("content-type") ?? "").startsWith("text/x-component");';
 const RSC_CHECK_EXPORTED = 'const isRscResponse = /^(text\\/x-component|application\\/octet-stream)/.test(navResponse.headers.get("content-type") ?? "");';
 const FALLBACK = "let pathname = stripRscSuffix(parsed.pathname);";
+// Must stay: any non-2xx response is a failure whatever its content-type.
+const FAILURE = "if (!navResponse.ok || !isRscResponse || !navResponse.body) {";
 const FALLBACK_EXPORTED = 'let pathname = stripRscSuffix(parsed.pathname); if (pathname === "/index") pathname = "/";';
 const ADDRESS = "return `${pathname.length > 1 && pathname.endsWith(\"/\") ? pathname.slice(0, -1) : pathname}.rsc${query}`;";
 const EXPORTED = "return `${pathname === \"/\" ? \"/index\" : pathname.length > 1 && pathname.endsWith(\"/\") ? pathname.slice(0, -1) : pathname}.rsc${query}`;";
@@ -38,7 +41,7 @@ export function exportRscAddress(code, id = "app-rsc-cache-busting.js") {
 
 /** Rewrite vinext's client navigation for static hosts; throws if vinext changed shape. */
 export function exportNavigation(code, id = "app-browser-entry.js") {
-  for (const needle of [RSC_CHECK, FALLBACK]) {
+  for (const needle of [RSC_CHECK, FALLBACK, FAILURE]) {
     if (code.split(needle).length !== 2) {
       throw new Error(`garden static RSC path: could not find \`${needle}\` exactly once in ${id}. vinext changed; update build/static-rsc-path-plugin.mjs (or remove it if vinext fixed static hosting).`);
     }

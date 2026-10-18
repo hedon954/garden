@@ -73,3 +73,31 @@ test("client navigation accepts .rsc served as application/octet-stream and neve
   assert.equal(run(staticRscPath({ enabled: false }), "client"), null);
   assert.match(run(staticRscPath({ enabled: true }), "client").code, /application\\\/octet-stream/u);
 });
+
+test("only a 2xx octet-stream or text/x-component response with a body counts as a payload", () => {
+  const patched = exportNavigation(fs.readFileSync(browserEntry, "utf8"));
+  const check = patched.match(/const isRscResponse = (.+);/u)[1];
+  const failure = patched.match(/if \((!navResponse\.ok \|\| !isRscResponse \|\| !navResponse\.body)\) \{/u)?.[1];
+  assert.ok(failure, "vinext's failure check is still there");
+  const fails = (status, type, body = "x") => {
+    const navResponse = new Response(status === 204 || status === 304 ? null : body, { status, headers: type ? { "content-type": type } : {} });
+    const isRscResponse = new Function("navResponse", `return ${check};`)(navResponse);
+    return new Function("navResponse", "isRscResponse", `return ${failure};`)(navResponse, isRscResponse);
+  };
+  // Success: 2xx with either payload type.
+  assert.equal(fails(200, "application/octet-stream"), false);
+  assert.equal(fails(200, "text/x-component; charset=utf-8"), false);
+  // Any non-2xx fails, whatever it claims to be.
+  for (const status of [301, 304, 400, 403, 404, 410, 500, 503]) {
+    assert.equal(fails(status, "application/octet-stream"), true, `${status} octet-stream`);
+    assert.equal(fails(status, "text/x-component"), true, `${status} text/x-component`);
+    assert.equal(fails(status, "text/html; charset=utf-8", "<!doctype html>"), true, `${status} html`);
+  }
+  // An HTML page is not a payload even with 200, and neither is a response without a type or body.
+  assert.equal(fails(200, "text/html; charset=utf-8", "<!doctype html><title>404</title>"), true);
+  assert.equal(fails(200, null), true);
+  assert.equal(fails(204, "application/octet-stream"), true);
+  // A vinext without the ok check stops the build.
+  const source = fs.readFileSync(browserEntry, "utf8");
+  assert.throws(() => exportNavigation(source.replace("!navResponse.ok || ", "")), /could not find/u);
+});
