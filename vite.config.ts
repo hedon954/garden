@@ -5,6 +5,7 @@ import vinext from "vinext";
 import { defineConfig } from "vite";
 import hostingConfig from "./.openai/hosting.json";
 import { sites } from "./build/sites-vite-plugin";
+import staticRscPath from "./build/static-rsc-path-plugin.mjs";
 import { gardenPackageRoot, gardenSiteRoot } from "./scripts/garden-paths.mjs";
 
 const SITE_CREATOR_PLACEHOLDER_DATABASE_ID =
@@ -121,6 +122,7 @@ export default defineConfig(async () => {
     plugins: [
       gardenContent(),
       vinext(),
+      staticRscPath(),
       sites(),
       cloudflare({
         viteEnvironment: { name: "rsc", childEnvironments: ["ssr"] },
