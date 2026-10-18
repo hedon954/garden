@@ -477,7 +477,7 @@ export function SiteHeader() {
                     aria-selected={activeResult === index}
                     className={`search-result${activeResult === index ? " active" : ""}`}
                   >
-                    <span>
+                    <span className="search-chip">
                       {result.item.section}
                     </span>
                     <strong>
@@ -500,7 +500,7 @@ export function SiteHeader() {
             </div>
             <footer className="search-footer">
               <span>支持模糊匹配</span>
-              <span>ESC 关闭</span>
+              <span><kbd>ESC</kbd> 关闭</span>
             </footer>
           </section>
         </div>
