@@ -64,6 +64,9 @@ cover: https://images.unsplash.com/photo-1761414500824-e280de5a1b37?auto=format&
 > [!TIP]
 > 推荐做法会显示为「建议」。
 
+> [!IMPORTANT]
+> 读者不能漏掉的要点会显示为「重要」。
+
 > [!WARNING]
 > 需要关注的风险会显示为「警告」。
 

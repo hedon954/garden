@@ -697,3 +697,30 @@ test("references render as a numbered list in one warm card, with the source sit
   assert.match(globals, /\.article-references a \{[^}]*text-decoration-color: color-mix\(in srgb, var\(--ink\) 35%, transparent\);/);
   assert.doesNotMatch(globals, /\.article-references (table|td|tr)\b/);
 });
+
+test("the IMPORTANT callout is ink, with a dark bar and a bold title; no purple is left", async () => {
+  const [a2, response] = await Promise.all([
+    readFile(new URL("../app/styles/a2.css", import.meta.url), "utf8"),
+    render("/blog/markdown-lab"),
+  ]);
+  assert.match(a2, /--al-important: #30302e;\s*--al-important-bg: #f0eee6;/);
+  assert.match(a2, /--al-important: #eeece7;\s*--al-important-bg: #30302e;/);
+  assert.match(a2, /\.markdown-body \.markdown-alert-important \{[^}]*border-left: 3px solid var\(--al-important\);/);
+  assert.match(a2, /\.markdown-body \.markdown-alert-important \.markdown-alert-title \{[^}]*font-weight: 700;/);
+  // the other four keep their own colours
+  for (const kind of ["note", "tip", "warning", "caution"]) assert.match(a2, new RegExp(`--al-${kind}: #`));
+  // no purple anywhere in the callouts
+  const alerts = a2.slice(a2.indexOf(".markdown-body.prose {"), a2.indexOf(".markdown-body .markdown-alert > :last-child"));
+  assert.ok(alerts.length > 0);
+  assert.doesNotMatch(alerts, /6a3fb5|f3effa|bfa5f0|106,\s*63,\s*181|191,\s*165,\s*240/i);
+  const purple = (hex) => {
+    const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
+    return b > g + 30 && r > g + 15;
+  };
+  for (const hex of alerts.match(/#[0-9a-f]{6}\b/gi) ?? []) assert.equal(purple(hex), false, hex);
+
+  const html = await response.text();
+  for (const kind of ["note", "tip", "important", "warning", "caution"]) {
+    assert.match(html, new RegExp(`markdown-alert markdown-alert-${kind}`));
+  }
+});

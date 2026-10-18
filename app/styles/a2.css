@@ -444,9 +444,9 @@ html[data-theme="dark"] .markdown-body a.ext {
   --al-tip: #2d6a3e;
   --al-tip-bg: #edf5ef;
   --al-tip-line: rgba(45, 106, 62, 0.22);
-  --al-important: #6a3fb5;
-  --al-important-bg: #f3effa;
-  --al-important-line: rgba(106, 63, 181, 0.22);
+  --al-important: #30302e;
+  --al-important-bg: #f0eee6;
+  --al-important-line: rgba(20, 20, 19, 0.14);
   --al-warning: #8a5300;
   --al-warning-bg: #fbf3e5;
   --al-warning-line: rgba(176, 108, 0, 0.26);
@@ -465,9 +465,9 @@ html[data-theme="dark"] .prose {
   --al-tip: #8fcb9f;
   --al-tip-bg: rgba(143, 203, 159, 0.08);
   --al-tip-line: rgba(143, 203, 159, 0.26);
-  --al-important: #bfa5f0;
-  --al-important-bg: rgba(191, 165, 240, 0.09);
-  --al-important-line: rgba(191, 165, 240, 0.28);
+  --al-important: #eeece7;
+  --al-important-bg: #30302e;
+  --al-important-line: rgba(238, 236, 231, 0.14);
   --al-warning: #e6b566;
   --al-warning-bg: rgba(230, 181, 102, 0.08);
   --al-warning-line: rgba(230, 181, 102, 0.28);
@@ -507,10 +507,17 @@ html[data-theme="dark"] .prose {
   --al-line: var(--al-tip-line);
 }
 
+/* IMPORTANT reads in ink: a dark bar on the left and a bold title. */
 .markdown-body .markdown-alert-important {
   --al: var(--al-important);
   --al-bg: var(--al-important-bg);
   --al-line: var(--al-important-line);
+  border-left: 3px solid var(--al-important);
+  padding-left: 18px;
+}
+
+.markdown-body .markdown-alert-important .markdown-alert-title {
+  font-weight: 700;
 }
 
 .markdown-body .markdown-alert-warning {
