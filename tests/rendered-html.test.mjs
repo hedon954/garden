@@ -127,6 +127,13 @@ test("renders complex Markdown, article covers, and mixed thought media", async 
   assert.equal(articleResponse.status, 200);
   const article = await articleResponse.text();
   assert.match(article, /Markdown 复杂语法实验场/);
+  // A one-line compare cell renders its whole 「X：Y」 text, colon included.
+  const compare = article.match(/<div class="g-compare"[\s\S]*?<\/div>/u)?.[0] ?? "";
+  assert.match(compare, /<span class="g-cmp-t"><strong>程序化<\/strong>：<\/span>结构化、强状态、可以穷举的场景。/u);
+  assert.match(compare, /<span class="g-cmp-t">大模型(?:<!-- -->)?: <\/span>非结构化、需要理解语境的场景。/u);
+  const compareText = compare.replace(/<!-- -->|<[^>]+>/gu, "");
+  assert.match(compareText, /程序化：结构化、强状态、可以穷举的场景。/u);
+  assert.match(compareText, /大模型: 非结构化、需要理解语境的场景。/u);
   assert.match(article, /class="katex-display"/);
   assert.match(article, /language-mermaid/);
   assert.match(article, /data-mermaid-theme="a2"/);

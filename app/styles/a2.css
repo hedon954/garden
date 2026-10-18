@@ -959,6 +959,14 @@ html[data-theme="dark"] .markdown-body .markdown-alert code {
   color: var(--ink);
 }
 
+/* One-line cell 「X：Y」: X sits on its own line like a title, colon kept. */
+.g-cmp .g-cmp-t {
+  display: block;
+  margin: 0 0 8px;
+  font: 600 16px / 1.4 var(--sans);
+  color: var(--ink);
+}
+
 .g-cmp p,
 .g-card p,
 .g-tl-x {

@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 import { checkGardenMarkdown } from "../ui/garden/check.mjs";
+import { splitCompareLine } from "../ui/garden/compare-line.mjs";
 import { diffToNewCode, figureBreakout, figureImageWidth, imageDisplayWidth, protectMathIdentifiers, tableBreakout, tocShift } from "../ui/garden/enhance.mjs";
 import { parseGardenBlock, scanFences } from "../ui/garden/parse.mjs";
 import { gardenBlocksMarkdown, textReplacementPlist, vscodeSnippets } from "../ui/garden/snippets.mjs";
@@ -51,6 +52,26 @@ test("garden fences parse to one node and legacy fences stay errors", () => {
   const legacy = checkGardenMarkdown(markdown);
   assert.equal(legacy.some((item) => item.code === "legacy-fence"), true);
   assert.match(legacy.find((item) => item.code === "legacy-fence").suggestion, /garden interactive/);
+});
+
+test("a one-line compare cell keeps its colon", () => {
+  for (const line of ["Workflow：步骤明确的常规任务。", "**程序化**：结构化、强状态。", "大模型: 非结构化的场景。", "甲：  乙"]) {
+    const split = splitCompareLine(line);
+    assert.ok(split, line);
+    // Nothing is dropped: title, separator and text join back to the line.
+    assert.equal(split.title + split.separator + split.text, line);
+    assert.match(split.separator, /^(：|:)/u);
+  }
+  assert.deepEqual(splitCompareLine("Workflow：步骤明确的常规任务。"), { title: "Workflow", separator: "：", text: "步骤明确的常规任务。" });
+  // Only the first colon splits; a URL's colon is not a separator.
+  assert.equal(splitCompareLine("链接：https://example.com/a:b").text, "https://example.com/a:b");
+  assert.equal(splitCompareLine("https://example.com"), null);
+  assert.equal(splitCompareLine("没有冒号"), null);
+  // Length checks count only the text after the colon.
+  const long = ["```garden compare", "items:", `  - "标题：${"字".repeat(61)}"`, "```"].join("\n");
+  assert.ok(checkGardenMarkdown(long).some((item) => item.code === "compare-long"));
+  const short = ["```garden compare", "items:", `  - "${"题".repeat(20)}：${"字".repeat(50)}"`, "```"].join("\n");
+  assert.ok(!checkGardenMarkdown(short).some((item) => item.code === "compare-long"));
 });
 
 test("check reports long compare cells, trivial interactive, orphan diffs and bad names", () => {
