@@ -8,6 +8,16 @@ function translatedX(element: Element) {
   return Number.isFinite(value) ? value : 0;
 }
 
+// The table is width:100% and wraps its cells, so scrollWidth never exceeds
+// the column. Measure the unwrapped width instead.
+function naturalWidth(table: HTMLTableElement) {
+  const previous = table.style.width;
+  table.style.width = "max-content";
+  const width = table.scrollWidth;
+  table.style.width = previous;
+  return width;
+}
+
 export function ArticleMeasure() {
   useEffect(() => {
     const article = document.querySelector("article");
@@ -17,7 +27,8 @@ export function ArticleMeasure() {
     let frame = 0;
 
     const layout = () => {
-      const articleBox = article.getBoundingClientRect();
+      // Measure the text column, not the whole article grid (which includes the TOC rail).
+      const articleBox = (article.querySelector(".markdown-body") ?? article).getBoundingClientRect();
       const viewport = root.clientWidth;
       article.querySelectorAll<HTMLElement>(".table-wrap").forEach((wrap) => {
         const table = wrap.querySelector("table");
@@ -30,7 +41,7 @@ export function ArticleMeasure() {
           articleLeft: articleBox.left,
           articleRight: articleBox.right,
           tableClient: wrap.clientWidth,
-          tableScroll: table.scrollWidth,
+          tableScroll: naturalWidth(table),
         });
         if (margin.left > 0) {
           wrap.style.setProperty("--wl", `${margin.left}px`);

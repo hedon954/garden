@@ -2186,25 +2186,6 @@ button {
   color: var(--accent);
 }
 
-.markdown-body table {
-  width: 100%;
-  margin: 34px 0;
-  border-collapse: collapse;
-  font-size: 12px;
-}
-
-.markdown-body th,
-.markdown-body td {
-  padding: 11px 13px;
-  border: 1px solid var(--line);
-  text-align: left;
-}
-
-.markdown-body th {
-  background: var(--paper-deep);
-  color: var(--ink);
-}
-
 .markdown-body pre {
   position: relative;
   margin: 32px 0;
@@ -4272,11 +4253,6 @@ button {
 
   .markdown-body h5 {
     font-size: 17px;
-  }
-
-  .markdown-body table {
-    display: block;
-    overflow-x: auto;
   }
 
   .markdown-body .external-embed-card,
