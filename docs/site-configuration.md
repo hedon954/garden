@@ -2,7 +2,7 @@
 
 根目录的 `site.config.yaml` 用于配置站点身份，以及一级页面的主标题和副标题。
 
-页头标志写在 `logo`。内置三种：`monogram`（站点名的首字）、`leaf`、`plot`。也可以填图片路径，例如 `/images/logo.svg`。不写时用 `monogram`。
+页头标志和浏览器标签用同一张图。不写 `logo` 时用 `/favicon.svg`。换成自己的图时写路径，例如 `logo: /images/logo.svg`。
 
 ```yaml
 pages:
