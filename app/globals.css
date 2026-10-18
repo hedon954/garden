@@ -126,15 +126,6 @@ button {
   width: max-content;
 }
 
-.brand-mark {
-  width: 43px;
-  height: 50px;
-  display: grid;
-  place-items: center;
-  color: var(--faint);
-  border-right: 1px solid var(--line-strong);
-}
-
 .brand strong {
   display: block;
   font-size: 20px;
@@ -4113,11 +4104,6 @@ html[data-theme="dark"] .article-references {
   .brand small,
   .key-hint {
     display: none;
-  }
-
-  .brand-mark {
-    width: 36px;
-    height: 44px;
   }
 
   .brand strong {

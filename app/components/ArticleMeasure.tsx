@@ -101,23 +101,32 @@ export function ArticleMeasure() {
       article.querySelectorAll<HTMLElement>(".fig").forEach((figure) => {
         const image = figure.querySelector("img");
         resetWide(figure);
+        // From here on the browser decides; the build-time breakout CSS steps aside.
+        figure.classList.remove("fig-wide");
         if (!image) return;
-        // Back to CSS sizing: natural size, capped at the column.
-        image.style.removeProperty("width");
-        if (!image.naturalWidth) return;
-        const attrWidth = Number(image.getAttribute("width")) || 0;
+        // Back to the unwidened size: the build-time width when the size is known
+        // (so an image that has not loaded keeps its box), else CSS sizing.
+        const baseWidth = Number(image.dataset.bw) || 0;
+        if (baseWidth) image.style.width = `${baseWidth}px`;
+        else image.style.removeProperty("width");
+        // Sizes read at build time let this run before the file arrives; otherwise wait for load.
+        const known = Number(image.dataset.nw) || 0;
+        const pixels = image.naturalWidth || known;
+        if (!pixels) return;
+        // width="" written by the build is the pixel size, not an author's choice.
+        const attrWidth = known ? Number(image.dataset.aw) || 0 : Number(image.getAttribute("width")) || 0;
         const breakout = figureBreakout({
           viewport,
           articleLeft: articleBox.left,
           articleRight: articleBox.right,
           figureClient: figure.clientWidth,
           imageClient: image.clientWidth,
-          naturalWidth: image.naturalWidth,
+          naturalWidth: pixels,
           attrWidth,
         });
         widen(figure, breakout);
         // Only a widened image, or one with a width attribute, gets an inline width.
-        const width = figureImageWidth({ naturalWidth: image.naturalWidth, attrWidth, widened: breakout.left > 0 });
+        const width = figureImageWidth({ naturalWidth: pixels, attrWidth, widened: breakout.left > 0 });
         if (width) image.style.width = `${width}px`;
       });
       placeToc();

@@ -111,7 +111,7 @@ export default async function PostPage({
           <ArticleTags tags={post.tags} />
           {post.cover && (
             <figure className="article-hero article-cover cover-card cover-img">
-              <CoverImage className="u-photo" src={post.cover} image={post.coverImage} alt={`${post.title} 封面`} sizes="(max-width: 920px) calc(100vw - 40px), 880px" priority />
+              <CoverImage className="u-photo" src={post.cover} image={post.coverImage} alt={`${post.title} 封面`} sizes="(max-width: 852px) calc(100vw - 40px), 812px" priority />
             </figure>
           )}
         </header>

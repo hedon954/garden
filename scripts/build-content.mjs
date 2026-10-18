@@ -11,6 +11,8 @@ import { referenceDomain } from "../ui/garden/references.mjs";
 import { linkAssetsForRender } from "./link-assets.mjs";
 import { cardUrls } from "../ui/garden/markdown-links.mjs";
 import { configuredSiteAddress, sameSiteMatcher } from "../ui/garden/same-site.mjs";
+import { resolveBrand } from "./brand.mjs";
+import { imageSources, readImageCache, sizeFromBytes } from "./image-sizes.mjs";
 import { buildFullIndex, buildSearchIndex } from "../ui/garden/search-index.mjs";
 import { coverImageSet, loadSharp } from "./cover-images.mjs";
 
@@ -531,6 +533,40 @@ const thoughts = readMarkdownTree(path.join(contentRoot, "thoughts"), "thought")
   (a, b) => Date.parse(b.date) - Date.parse(a.date),
 );
 
+// Intrinsic image sizes for width/height on <img>: local files are read now,
+// remote ones come from image-sizes.json (written by scripts/image-sizes.mjs).
+function localImageFile(src) {
+  const clean = src.split(/[?#]/u, 1)[0];
+  const copied = assetFiles.get(clean)?.destination;
+  if (copied) return copied;
+  if (!clean.startsWith("/") || clean.startsWith("//")) return null;
+  let pathname;
+  try {
+    pathname = decodeURIComponent(basePath && clean.startsWith(`${basePath}/`) ? clean.slice(basePath.length) : clean);
+  } catch {
+    return null;
+  }
+  const publicDir = path.join(root, "public");
+  const file = path.resolve(publicDir, `.${pathname}`);
+  return file.startsWith(publicDir + path.sep) && fs.existsSync(file) && fs.statSync(file).isFile() ? file : null;
+}
+const remoteImageSizes = readImageCache(root).images;
+const imageSizes = {};
+for (const entry of [...posts, ...columns, ...thoughts]) {
+  for (const src of imageSources(entry.content)) {
+    if (imageSizes[src]) continue;
+    if (/^https?:\/\//iu.test(src)) {
+      const size = remoteImageSizes[src];
+      if (size?.width > 0 && size?.height > 0) imageSizes[src] = { width: size.width, height: size.height };
+      continue;
+    }
+    const file = localImageFile(src);
+    const size = file ? sizeFromBytes(fs.readFileSync(file)) : null;
+    if (size) imageSizes[src] = size;
+    else if (file) console.warn(`警告：读不到图片尺寸，这张图不带宽高：${src}`);
+  }
+}
+
 assertUnique(posts, (item) => item.path, "博文路径");
 assertUnique(columns, (item) => `${item.column}/${item.path}`, "专栏路径");
 assertUnique(
@@ -620,6 +656,7 @@ export const columns = ${JSON.stringify(columns, null, 2)} as ContentEntry[];
 export const thoughts = ${JSON.stringify(thoughts, null, 2)} as ContentEntry[];
 export const a2WordCounts = ${JSON.stringify(a2WordCounts, null, 2)} as Record<string, number>;
 export const linkAssets = ${JSON.stringify(linkAssetsForRender(root, basePath), null, 2)} as LinkAssets;
+export const imageSizes: Record<string, { width: number; height: number }> = ${JSON.stringify(imageSizes)};
 `;
 
 fs.mkdirSync(path.dirname(output), { recursive: true });
@@ -634,6 +671,8 @@ export const githubUrl = ${JSON.stringify(`https://github.com/${siteConfig.autho
 export const searchIndexUrl = ${JSON.stringify(`${basePath}/search-index.json?v=${contentHash}`)};
 // Every body as plain text, fetched in the background after load; the name changes with the text.
 export const searchFull = ${JSON.stringify({ url: `${basePath}/${fullIndex.fileName}`, hash: fullIndex.hash })};
+// Header logo (inlined SVG) and icon URLs, from brand in site.config.yaml.
+export const brand = ${JSON.stringify(resolveBrand(root, siteConfig, basePath, (line) => console.warn(line)))};
 // Full URLs to this address render as internal links.
 export const siteLinks = ${JSON.stringify({ address: siteAddress, basePath })};
 `,

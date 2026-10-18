@@ -1,3 +1,4 @@
+import { figureLayout } from "../../ui/garden/enhance.mjs";
 import { toString } from "mdast-util-to-string";
 
 const ALERT_TITLE = {
@@ -168,7 +169,7 @@ function figureCaption(image) {
   return "";
 }
 
-function asFigure(node) {
+function asFigure(node, imageSize) {
   if (node?.type !== "paragraph" || node.data?.hName) return null;
   const children = meaningfulChildren(node);
   if (children.length !== 1 || children[0].type !== "image") return null;
@@ -186,23 +187,30 @@ function asFigure(node) {
       children: [{ type: "text", value: caption }],
     }]
     : [card];
+  // A known size decides the breakout now, so the figure does not jump when the image loads.
+  const size = imageSize(image.url);
+  const side = size ? figureLayout({ naturalWidth: size.width }).side : 0;
+  const hProperties = side > 0
+    ? { className: ["fig", "fig-wide"], style: `--wl:${side}px;--wr:${side}px` }
+    : { className: ["fig"] };
   return {
     type: "paragraph",
-    data: { hName: "figure", hProperties: { className: ["fig"] } },
+    data: { hName: "figure", hProperties },
     children: figureChildren,
   };
 }
 
-function walk(node) {
+function walk(node, imageSize) {
   if (!node || typeof node !== "object" || !Array.isArray(node.children)) return;
   if (node.type === "blockquote") rewriteAlert(node);
-  node.children = node.children.map((child) => asFigure(child) ?? child);
-  for (const child of node.children) walk(child);
+  node.children = node.children.map((child) => asFigure(child, imageSize) ?? child);
+  for (const child of node.children) walk(child, imageSize);
 }
 
 /** Demo alert cards and captioned figures. Article rendering only. */
-export function remarkA2() {
+export function remarkA2(options = {}) {
+  const imageSize = typeof options?.imageSize === "function" ? options.imageSize : () => null;
   return (tree) => {
-    walk(tree);
+    walk(tree, imageSize);
   };
 }

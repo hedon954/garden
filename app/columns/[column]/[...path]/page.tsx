@@ -131,7 +131,7 @@ export default async function ColumnEntryPage({
           <ArticleTags tags={entry.tags} />
           {entry.cover && (
             <figure className="article-hero article-cover cover-img">
-              <CoverImage className="u-photo" src={entry.cover} image={entry.coverImage} alt={`${entry.title} 封面`} sizes="(max-width: 920px) calc(100vw - 40px), 880px" priority />
+              <CoverImage className="u-photo" src={entry.cover} image={entry.coverImage} alt={`${entry.title} 封面`} sizes="(max-width: 852px) calc(100vw - 40px), 812px" priority />
             </figure>
           )}
         </header>

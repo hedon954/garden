@@ -94,14 +94,14 @@ export async function assertPublicDns(hostname) {
   }
 }
 
-function guardedFetch(fetcher) {
+export function guardedFetch(fetcher) {
   return async (url, init) => {
     await assertPublicDns(new URL(url).hostname);
     return fetcher(url, init);
   };
 }
 
-async function pool(items, size, worker) {
+export async function pool(items, size, worker) {
   const queue = [...items];
   const runners = Array.from({ length: Math.min(size, queue.length) }, async () => {
     while (queue.length) await worker(queue.shift());
