@@ -25,7 +25,7 @@ const escapeHtml = (value) => String(value).replace(/&/gu, "&amp;").replace(/"/g
 
 // Shared with the article renderer, which rewrites links to old addresses (ui/garden/internal-links.mjs).
 export { columnRedirects, readRedirects } from "../ui/garden/internal-links.mjs";
-import { readRedirects } from "../ui/garden/internal-links.mjs";
+import { columnRedirects, readRedirects } from "../ui/garden/internal-links.mjs";
 
 /** The file an old path is served from: `/a/b/` and `/a/b` → a/b/index.html, `/a/b.html` → a/b.html. */
 export function redirectFile(from) {
