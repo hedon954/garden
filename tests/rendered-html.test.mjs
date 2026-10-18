@@ -560,3 +560,23 @@ test("/blog filters by several tags through the URL, and /tags is only an index"
   assert.match(shell, /\.sh-tagmore\{[^}]*border:0;background:none;color:var\(--blue\)[^}]*text-decoration:underline/);
   assert.match(shell, /\.sh-tagchip::after,\.sh-tagmore::after\{[^}]*height:44px/);
 });
+
+test("/blog renders the full list on the server, before any script runs", async () => {
+  const [response, page, generated] = await Promise.all([
+    render("/blog"),
+    readFile(new URL("../app/blog/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../.garden/generated-content.ts", import.meta.url), "utf8"),
+  ]);
+  assert.equal(response.status, 200);
+  const html = await response.text();
+  // Anything React streams in later sits in a hidden block; the list must come before it.
+  const hiddenAt = html.search(/<div hidden id="S:/);
+  const visible = hiddenAt >= 0 ? html.slice(0, hiddenAt) : html;
+  const posts = JSON.parse(generated.match(/export const posts = (\[[\s\S]*?\]) as ContentEntry\[\];/)[1]);
+  assert.ok(posts.length >= 9);
+  for (const post of posts) {
+    assert.ok(visible.includes(`href="/blog/${post.path}"`), `${post.path} is in the server-rendered list`);
+    assert.ok(visible.includes(post.title.replace(/&/g, "&amp;")), `${post.title} is in the server-rendered list`);
+  }
+  assert.match(page, /<Suspense fallback=\{<BlogArchiveFallback \/>\}>/);
+});

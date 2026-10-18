@@ -32,17 +32,31 @@ function ColumnLabel({ path }: { path: string }) {
   return column ? <Link className="cat" href={columnIndexHref(column.slug)}>{column.title}</Link> : null;
 }
 
+const NO_TAGS: string[] = [];
+
+/** Reads the selected tags from the URL; needs a Suspense boundary. */
 export function BlogArchive() {
   const router = useRouter();
   const pathname = usePathname() || "/blog";
   const searchParams = useSearchParams();
-  const [compact, setCompact] = useState(false);
-  const [expanded, setExpanded] = useState(false);
   const paramKey = searchParams.getAll(TAG_PARAM).join("\u0000");
   const selected = useMemo(() => selectedTags(paramKey ? paramKey.split("\u0000") : []), [paramKey]);
+  return <ArchiveView selected={selected} go={(next) => router.push(tagFilterHref(next, pathname), { scroll: false })} />;
+}
+
+/**
+ * The full, unfiltered list. Rendered into the static page as the Suspense
+ * fallback, so the list is there before scripts run (or without them).
+ */
+export function BlogArchiveFallback() {
+  return <ArchiveView selected={NO_TAGS} go={(next) => window.location.assign(tagFilterHref(next))} />;
+}
+
+function ArchiveView({ selected, go }: { selected: string[]; go: (next: string[]) => void }) {
+  const [compact, setCompact] = useState(false);
+  const [expanded, setExpanded] = useState(false);
   const options = useMemo(() => tagOptions(posts, selected), [selected]);
   const { shown, hidden } = visibleTagOptions(options, expanded);
-  const go = (next: string[]) => router.push(tagFilterHref(next, pathname), { scroll: false });
   const filtered = filterByTags(posts, selected)
     .slice()
     .sort((left, right) => Date.parse(right.date) - Date.parse(left.date));
