@@ -61,8 +61,9 @@ export function redirectPage({ href, canonical, icon = "" }) {
  * A malformed entry (not a site path, a bad target, the same old path twice)
  * is left out with a warning and does not count. A valid entry is skipped,
  * also with a warning, when a real page already lives at the old path or when
- * the site path it points to was not built; the build step then fails,
- * because `written` falls short of `expected`.
+ * the site path it points to was not built. Both are problems with that one
+ * entry, so they do not stop the build: `written` plus `skipped` makes up
+ * `expected`.
  */
 export function generateRedirects({ outDir, config = {}, env = {}, basePath = "", log = () => {}, extra = [], icon = "" }) {
   const base = String(basePath ?? "").replace(/\/+$/u, "");
@@ -129,10 +130,12 @@ export function writeRedirects(options) {
 }
 
 /**
- * The build step. Exit code 1 when it throws or when fewer pages were written
- * than the valid entries call for; a malformed entry only prints a warning.
+ * The build step. A bad entry, a missing target and a page already at the old
+ * path only print a warning. Exit code 1 when the step throws, or when the
+ * pages written are not the valid entries minus the ones skipped with a
+ * warning (a page went missing without a reason).
  */
-export function runRedirectStep({ siteRoot, env = process.env, out = process.stdout, err = process.stderr }) {
+export function runRedirectStep({ siteRoot, env = process.env, out = process.stdout, err = process.stderr, generate = generateRedirects }) {
   const outDir = path.join(siteRoot, "dist", "client");
   try {
     const config = parseYaml(fs.readFileSync(path.join(siteRoot, "site.config.yaml"), "utf8")) ?? {};
@@ -141,7 +144,7 @@ export function runRedirectStep({ siteRoot, env = process.env, out = process.std
     if (!config.redirects && !extra.length) return 0;
     if (!fs.existsSync(outDir)) throw new Error(`找不到构建产物 ${path.relative(siteRoot, outDir)}`);
     const basePath = env.NEXT_PUBLIC_BASE_PATH ?? "";
-    const { written, expected, skipped } = generateRedirects({
+    const { written, expected, skipped } = generate({
       outDir,
       config,
       env,
@@ -150,10 +153,10 @@ export function runRedirectStep({ siteRoot, env = process.env, out = process.std
       log: (line) => out.write(`警告：${line}\n`),
       extra,
     });
-    out.write(`旧地址跳转页：${written.length} 个。\n`);
-    if (written.length !== expected) {
-      const list = skipped.map(({ from, to }) => `  ${from} → ${to}`).join("\n");
-      err.write(`错误：旧地址跳转页应有 ${expected} 个，只生成了 ${written.length} 个。没有生成的：\n${list}\n改好 site.config.yaml 的 redirects（或补上目标页面）后重新构建。\n`);
+    out.write(`旧地址跳转页：${written.length} 个${skipped.length ? `，跳过 ${skipped.length} 个（见上面的警告）` : ""}。\n`);
+    const due = expected - skipped.length;
+    if (written.length !== due) {
+      err.write(`错误：旧地址跳转页应生成 ${due} 个（${expected} 条有效配置，跳过 ${skipped.length} 条），实际生成了 ${written.length} 个，构建中止。\n`);
       return 1;
     }
     return 0;

@@ -3,7 +3,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
-import { columnRedirects, readRedirects, redirectFile, redirectPage, writeRedirects } from "../scripts/redirects.mjs";
+import { columnRedirects, generateRedirects, readRedirects, redirectFile, redirectPage, runRedirectStep, writeRedirects } from "../scripts/redirects.mjs";
 
 function builtSite() {
   const out = fs.mkdtempSync(path.join(os.tmpdir(), "garden-redirects-"));
@@ -185,18 +185,56 @@ test("the build step fails when writing a redirect page throws", async () => {
   }
 });
 
-test("the build step fails when fewer pages are written than redirects configured", async () => {
+test("a missing target and a page already at the old path only warn; the step still succeeds", async () => {
   const { site, out } = cliSite({
-    config: "redirects:\n  /old/kept/: /blog/kept/\n  /old/gone/: /blog/never-built/\n",
-    pages: ["blog/kept"],
+    config: "redirects:\n  /old/kept/: /blog/kept/\n  /old/gone/: /blog/never-built/\n  /blog/other/: /blog/kept/\n",
+    pages: ["blog/kept", "blog/other"],
   });
   try {
     const result = await runStep(site);
-    assert.equal(result.status, 1, result.stdout + result.stderr);
-    assert.match(result.stdout, /旧地址跳转页：1 个/u);
-    assert.match(result.stderr, /应有 2 个，只生成了 1 个/u);
-    assert.match(result.stderr, /\/old\/gone\/ → \/blog\/never-built\//u);
+    assert.equal(result.status, 0, result.stdout + result.stderr);
+    assert.equal(result.stderr, "");
+    assert.match(result.stdout, /警告：redirects：\/old\/gone\/ 指向的 \/blog\/never-built\/ 不存在，已跳过。/u);
+    assert.match(result.stdout, /警告：redirects：\/blog\/other\/ 已经有页面，没有覆盖。/u);
+    assert.match(result.stdout, /旧地址跳转页：1 个，跳过 2 个（见上面的警告）。/u);
     assert.ok(fs.existsSync(path.join(out, "old/kept/index.html")));
+    assert.ok(!fs.existsSync(path.join(out, "old/gone")));
+    assert.equal(fs.readFileSync(path.join(out, "blog/other/index.html"), "utf8"), "<p>page</p>");
+  } finally {
+    fs.rmSync(site, { recursive: true, force: true });
+  }
+});
+
+test("the build step fails when the pages written are not the valid entries minus the skipped ones", () => {
+  const { site } = cliSite({
+    config: "redirects:\n  /old/a/: /blog/a/\n  /old/b/: /blog/b/\n  /old/c/: /blog/missing/\n",
+    pages: ["blog/a", "blog/b"],
+  });
+  const capture = () => {
+    const sink = { text: "", write: (chunk) => { sink.text += chunk; return true; } };
+    return sink;
+  };
+  try {
+    // Three valid entries, one skipped with a warning, but only one page: a page went missing without a reason.
+    const out = capture();
+    const err = capture();
+    const status = runRedirectStep({
+      siteRoot: site,
+      env: {},
+      out,
+      err,
+      generate: (options) => {
+        const result = generateRedirects(options);
+        return { ...result, written: result.written.slice(0, 1) };
+      },
+    });
+    assert.equal(status, 1, out.text + err.text);
+    assert.match(err.text, /应生成 2 个（3 条有效配置，跳过 1 条），实际生成了 1 个，构建中止/u);
+    // The real generator adds up: same site, fresh output, exit 0.
+    fs.rmSync(path.join(site, "dist/client/old"), { recursive: true, force: true });
+    const again = capture();
+    assert.equal(runRedirectStep({ siteRoot: site, env: {}, out: again, err: capture() }), 0);
+    assert.match(again.text, /旧地址跳转页：2 个，跳过 1 个/u);
   } finally {
     fs.rmSync(site, { recursive: true, force: true });
   }
