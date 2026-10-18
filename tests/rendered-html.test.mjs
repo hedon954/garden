@@ -254,6 +254,7 @@ test("collapses the reading table of contents per heading and keeps its active i
   assert.ok(noScript.length > 50, "missing the scripting: none block");
   assert.match(noScript, /\.toc-mobile-trigger,\n  \.toc-mobile-close \{\n    display: none;/);
   assert.match(noScript, /\.toc-nojs-trigger \{\n    display: inline-flex;/);
+  assert.match(styles, /@media \(scripting: none\) \{\n  \.toc-section-toggle \{\n    display: none;/);
   assert.match(noScript, /\.post-reading-page \.article-reading-layout \.toc:target[\s\S]*transform: translateY\(0\)/);
   assert.match(styles, /\.markdown-body h2,[\s\S]*scroll-margin-top: 0/);
   assert.match(styles, /\.markdown-body h3[\s\S]*font-size: clamp\(20px/);

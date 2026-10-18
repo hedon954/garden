@@ -5496,6 +5496,14 @@ html[data-theme="dark"] .article-references {
   }
 }
 
+/* Without JavaScript every sub-list stays open and the collapse toggles do
+   nothing, so hide them at every width. */
+@media (scripting: none) {
+  .toc-section-toggle {
+    display: none;
+  }
+}
+
 /* No JavaScript: the drawer button cannot open anything, so swap in plain
    links that open the drawer through :target. A TOC link moves the target to
    the heading, which closes the drawer and jumps there natively. */
@@ -5514,11 +5522,6 @@ html[data-theme="dark"] .article-references {
   .toc-nojs-close {
     display: grid;
     text-decoration: none;
-  }
-
-  /* Sub-lists are all open without JS, so the collapse toggles have no job. */
-  .toc-section-toggle {
-    display: none;
   }
 
   /* Same dim as the JS drawer; taps pass through to the page behind. */
