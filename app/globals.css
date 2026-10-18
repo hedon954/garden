@@ -3718,6 +3718,13 @@ html[data-theme="dark"] .search-panel {
   -webkit-box-decoration-break: clone;
 }
 
+/* The excerpt is one line cut by text-overflow. Inside it a highlight is
+   atomic: it shows whole, or the line's 「…」 replaces it whole and is drawn
+   with the excerpt's colours, never inside the highlight. */
+.search-result small .search-match {
+  display: inline-block;
+}
+
 .empty-state {
   padding: 32px 12px;
   color: var(--muted);

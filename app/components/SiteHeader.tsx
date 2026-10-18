@@ -14,6 +14,7 @@ import type Fuse from "fuse.js";
 import { MagnifyingGlass, X } from "@phosphor-icons/react";
 import { brand, searchFull, searchIndexUrl } from "@garden/site-config";
 import { createSearch } from "../../ui/garden/search-match.mjs";
+import { cropMatchedText, highlightParts } from "../../ui/garden/search-preview.mjs";
 import { createIdbStore, loadFullIndex, saveDataOn, whenIdleAfterLoad } from "../../ui/garden/search-full.mjs";
 import { siteConfig } from "../site.config";
 
@@ -106,38 +107,9 @@ function HighlightedText({
   ranges: readonly MatchRange[];
 }) {
   if (!ranges.length) return text;
-
-  const merged = [...ranges]
-    .sort((left, right) => left[0] - right[0])
-    .reduce<MatchRange[]>((result, range) => {
-      const previous = result.at(-1);
-      if (previous && range[0] <= previous[1] + 1) {
-        result[result.length - 1] = [
-          previous[0],
-          Math.max(previous[1], range[1]),
-        ];
-      } else {
-        result.push(range);
-      }
-      return result;
-    }, []);
-
-  const parts: Array<{ text: string; matched: boolean }> = [];
-  let cursor = 0;
-  merged.forEach(([start, end]) => {
-    if (start > cursor) {
-      parts.push({ text: text.slice(cursor, start), matched: false });
-    }
-    parts.push({ text: text.slice(start, end + 1), matched: true });
-    cursor = end + 1;
-  });
-  if (cursor < text.length) {
-    parts.push({ text: text.slice(cursor), matched: false });
-  }
-
   return (
     <>
-      {parts.map((part, index) =>
+      {highlightParts(text, ranges).map((part, index) =>
         part.matched ? (
           <mark className="search-match" key={`${part.text}-${index}`}>
             {part.text}
@@ -150,55 +122,23 @@ function HighlightedText({
   );
 }
 
-function cropMatchedText(text: string, ranges: readonly MatchRange[]) {
-  if (!ranges.length) return { text, ranges };
-
-  const [focusStart, focusEnd] = ranges[0];
-  let start = Math.max(0, focusStart - 42);
-  let end = Math.min(text.length, Math.max(focusEnd + 52, start + 112));
-
-  if (start > 0) {
-    const nextSpace = text.indexOf(" ", start);
-    if (nextSpace !== -1 && nextSpace < focusStart) start = nextSpace + 1;
-  }
-  if (end < text.length) {
-    const previousSpace = text.lastIndexOf(" ", end);
-    if (previousSpace > focusEnd) end = previousSpace;
-  }
-
-  const prefix = start > 0 ? "…" : "";
-  const suffix = end < text.length ? "…" : "";
-  const visibleRanges = ranges
-    .filter(([rangeStart, rangeEnd]) => rangeEnd >= start && rangeStart < end)
-    .map(
-      ([rangeStart, rangeEnd]) =>
-        [
-          Math.max(rangeStart, start) - start + prefix.length,
-          Math.min(rangeEnd, end - 1) - start + prefix.length,
-        ] as MatchRange,
-    );
-
-  return {
-    text: `${prefix}${text.slice(start, end)}${suffix}`,
-    ranges: visibleRanges,
-  };
-}
+type SearchPreview = { prefix: string; text: string; suffix: string; ranges: readonly MatchRange[] };
 
 function searchPreview(
   item: SearchRecord,
   matches: readonly SearchMatch[] | undefined,
-): { text: string; ranges: readonly MatchRange[] } {
+): SearchPreview {
   const descriptionRanges = rangesFor(matches, "description");
   if (descriptionRanges.length) {
-    return cropMatchedText(item.description, descriptionRanges);
+    return cropMatchedText(item.description, descriptionRanges) as SearchPreview;
   }
 
   const contentRanges = rangesFor(matches, "content");
   if (contentRanges.length) {
-    return cropMatchedText(item.content, contentRanges);
+    return cropMatchedText(item.content, contentRanges) as SearchPreview;
   }
 
-  return { text: item.description, ranges: [] };
+  return { prefix: "", text: item.description, suffix: "", ranges: [] };
 }
 
 export function SiteHeader() {
@@ -495,7 +435,10 @@ export function SiteHeader() {
                       />
                     </strong>
                     <small>
+                      {/* The 「…」 sit outside the highlight. */}
+                      {preview.prefix}
                       <HighlightedText text={preview.text} ranges={preview.ranges} />
+                      {preview.suffix}
                     </small>
                   </Link>
                 );
