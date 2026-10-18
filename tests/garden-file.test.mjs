@@ -25,7 +25,7 @@ import {
   previewBody,
 } from "../ui/garden/file-block.mjs";
 import { checkFileSources, resolveRepoFile } from "../ui/garden/file-paths.mjs";
-import { PREVIEW_TOKENS, previewDocument, previewFileName, renderFilePreview } from "../scripts/file-preview.mjs";
+import { PREVIEW_TOKENS, highlightRules, previewDocument, previewFileName, renderFilePreview } from "../scripts/file-preview.mjs";
 import { probeFileSize, readFileSizeCache, refreshFileSizes, remoteFileSources } from "../scripts/file-sizes.mjs";
 import { contentForDistribution, contentForFeed, contentToSearchText } from "../ui/core/transform.mjs";
 import { countDemoWords } from "../ui/garden/word-count.mjs";
@@ -433,17 +433,40 @@ test("preview code blocks look like the article's: same code type and background
     assert.equal(PREVIEW_TOKENS.light[name], token(light, name), `light --${name}`);
     assert.equal(PREVIEW_TOKENS.dark[name], token(dark, name), `dark --${name}`);
   }
-  for (const [kind, selector] of [["keyword", ".hljs-keyword"], ["string", ".hljs-string"], ["comment", ".hljs-comment"], ["number", ".hljs-number"], ["title", ".hljs-title"], ["attr", ".hljs-attr"]]) {
-    const lightRule = articleCss.slice(articleCss.indexOf(`\n${selector}`)).split("}")[0];
-    const darkRule = articleCss.slice(articleCss.indexOf(`html[data-theme="dark"] ${selector}`)).split("}")[0];
-    assert.equal(PREVIEW_TOKENS.hljs.light[kind], lightRule.match(/color: (#[0-9a-f]+)/u)?.[1], `light ${selector}`);
-    assert.equal(PREVIEW_TOKENS.hljs.dark[kind], darkRule.match(/color: (#[0-9a-f]+)/u)?.[1], `dark ${selector}`);
-  }
-  const page = previewDocument("<pre><code>x</code></pre>");
-  assert.ok(page.includes(`pre,code{font-family:${PREVIEW_TOKENS.mono}}`));
-  assert.ok(page.includes(`pre{background:${PREVIEW_TOKENS.light.well}}`));
-  assert.ok(page.includes(`@media (prefers-color-scheme:dark){body{background:${PREVIEW_TOKENS.dark.paper};color:${PREVIEW_TOKENS.dark.ink}}pre{background:${PREVIEW_TOKENS.dark.well}}`));
-  assert.match(page, /pre\{margin:28px 0;padding:18px 22px;border-radius:8px;overflow-x:auto\}pre code\{display:block;font-size:14px;line-height:1\.6\}/u);
+  // The block itself (.markdown-body pre in globals.css) and inline code (a2.css), value by value.
+  const globalsCss = await readFile(new URL("../app/globals.css", import.meta.url), "utf8");
+  const rule = (css, selector) => css.slice(css.indexOf(`\n${selector} {`)).split("}")[0];
+  const legacyPre = rule(globalsCss, ".markdown-body pre");
+  assert.match(legacyPre, new RegExp(`font-size: ${PREVIEW_TOKENS.pre.fontSize};`, "u"));
+  assert.match(legacyPre, new RegExp(`line-height: ${PREVIEW_TOKENS.pre.lineHeight};`, "u"));
+  assert.match(legacyPre, new RegExp(`color: ${PREVIEW_TOKENS.pre.color};`, "u"));
+  const inline = rule(articleCss, ".markdown-body :not(pre) > code");
+  assert.match(inline, /font: 400 var\(--fs-small\) \/ 1 var\(--mono\);[\s\S]*background: var\(--tint\);[\s\S]*padding: 3px 6px;[\s\S]*border-radius: 5px;/u);
+  assert.equal(token(light, "fs-small"), "14px");
+  const page = previewDocument("<pre><code>x</code></pre><p><code>y</code></p>");
+  const style = page.match(/<style>([\s\S]*)<\/style>/u)[1];
+  assert.ok(style.includes(`pre,code{font-family:${PREVIEW_TOKENS.mono}}`));
+  assert.ok(style.includes(`pre{margin:28px 0;padding:18px 22px;border-radius:8px;overflow-x:auto;font-size:12px;line-height:1.7;color:#e6e6e2}`));
+  assert.ok(style.includes("pre code{display:block;background:none;padding:0;font-size:14px;line-height:1.6}"));
+  assert.ok(style.includes(`:not(pre)>code{font:400 14px/1 ${PREVIEW_TOKENS.mono};padding:3px 6px;border-radius:5px}`));
+  assert.ok(style.includes(`pre{background:${PREVIEW_TOKENS.light.well}}pre code{color:${PREVIEW_TOKENS.light.ink}}:not(pre)>code{background:${PREVIEW_TOKENS.light.tint};color:${PREVIEW_TOKENS.light.ink}}`));
+  assert.ok(style.includes(`@media (prefers-color-scheme:dark){body{background:${PREVIEW_TOKENS.dark.paper};color:${PREVIEW_TOKENS.dark.ink}}pre{background:${PREVIEW_TOKENS.dark.well}}pre code{color:${PREVIEW_TOKENS.dark.ink}}:not(pre)>code{background:${PREVIEW_TOKENS.dark.tint};color:${PREVIEW_TOKENS.dark.ink}}`));
+  // Highlight colours: every .hljs-* rule of globals.css then a2.css, in that order; the dark ones under prefers-color-scheme.
+  const sheets = [highlightRules(globalsCss), highlightRules(articleCss)];
+  const lightRules = sheets.flatMap((sheet) => sheet.light);
+  const darkRules = sheets.flatMap((sheet) => sheet.dark);
+  assert.ok(lightRules.length >= 15 && darkRules.length >= 6, `${lightRules.length} light, ${darkRules.length} dark`);
+  const [outside, inside] = style.split("@media (prefers-color-scheme:dark){");
+  assert.ok(outside.includes(lightRules.join("")), "light highlight rules, in order");
+  assert.ok(inside.includes(darkRules.join("")), "dark highlight rules, in order");
+  // Spot checks against the article: decorators, keywords, strings, comments.
+  assert.ok(lightRules.includes(".hljs-meta,.hljs-symbol,.hljs-bullet{color:#c7a0e8}"));
+  assert.ok(lightRules.includes(".hljs-keyword,.hljs-built_in,.hljs-type,.hljs-meta .hljs-keyword{color:#30302e;font-weight:600}"));
+  assert.ok(lightRules.includes(".hljs-comment,.hljs-quote{color:#6e6b64;font-style:normal}"));
+  assert.ok(darkRules.includes("html:root .hljs-string{color:#8fd1a0}"), "dark rules keep the weight of html[data-theme=dark]");
+  // Highlighted at build time; nothing on the page runs.
+  assert.match(previewDocument(renderFilePreview("```python\n@dataclass\ndef f(): return 1\n```")), /<span class="hljs-meta">@dataclass<\/span>/u);
+  assert.doesNotMatch(page, /<script|\son[a-z]+=/iu);
 });
 
 test("an html or pdf preview keeps focus in the drawer: sentinels around the iframe, and a quiet Esc hint", async () => {
