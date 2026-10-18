@@ -910,7 +910,7 @@ test("/tags links point at the filtered list, shaped by trailingSlash (/blog?t=�
   assert.match(redirect, /siteHref\(tagFilterHref\(tags, ARTICLE_TAG_LIST\)\)/u);
 });
 
-test("garden file renders cards on the server and ships the Markdown preview already rendered", async () => {
+test("garden file renders cards on the server; the Markdown preview stays out of the page and is fetched on demand", async () => {
   const response = await render("/blog/windowsill-herbs-kit");
   assert.equal(response.status, 200);
   const html = await response.text();
@@ -923,11 +923,13 @@ test("garden file renders cards on the server and ships the Markdown preview alr
   assert.equal(visible.match(/class="gf-btn gf-preview"/gu)?.length, 3);
   // The OSS row: open in a new tab and download, no preview.
   assert.match(visible, /<a class="gf-btn icon" href="https:\/\/upload\.wikimedia\.org\/[^"]+" target="_blank" rel="noopener noreferrer"/u);
-  // The previewed document is not in the visible page, and neither is the build data.
-  assert.doesNotMatch(visible, /窗台香草浇水记录|resolved/u);
-  // It travels with the page already rendered (heading ids carry the block prefix), never as Markdown source.
-  assert.match(html, /gf2-0-窗台香草浇水记录/u);
-  assert.doesNotMatch(html, /\| 第 1 周 \||## 怎么记/u);
+  // The previewed document is nowhere in the page: not in the HTML, not in the RSC payload, not as source.
+  assert.doesNotMatch(visible, /resolved/u);
+  assert.doesNotMatch(html, /窗台香草浇水记录|土面下两指还湿就不浇|第 1 周|怎么记/u);
+  // The page only links to the prerendered preview: the 预览 link (what a reader without JavaScript follows).
+  assert.match(visible, /<a href="\/media\/posts\/windowsill-herbs-kit\/watering-log\.md\.preview\.html" target="_blank" rel="noopener noreferrer" class="gf-btn gf-preview"/u);
+  const preview = await readFile(new URL("../public/media/posts/windowsill-herbs-kit/watering-log.md.preview.html", import.meta.url), "utf8");
+  assert.match(preview, /<h1 id="gf-窗台香草浇水记录">窗台香草浇水记录<\/h1>/u);
 });
 
 test("a server build without trailingSlash links every page without the slash (no 308 per click)", async () => {

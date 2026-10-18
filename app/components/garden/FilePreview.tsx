@@ -1,8 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useId, useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useId, useRef, useState, type MouseEvent } from "react";
 import { createPortal } from "react-dom";
-import { previewFrameProps } from "../../../ui/garden/file-block.mjs";
+import { previewBody, previewFrameProps } from "../../../ui/garden/file-block.mjs";
 import { ActionGlyph, FileGlyph } from "./file-icons";
 
 export type PreviewFile = {
@@ -12,25 +12,56 @@ export type PreviewFile = {
   icon: string;
   url: string;
   preview: "md" | "html" | "pdf";
+  /** Markdown only: the preview rendered at build time, in its own file. */
+  src?: string;
 };
 
+type Loaded = { state: "idle" | "loading" | "error" } | { state: "ready"; html: string };
+
 /**
- * The 预览 button and its drawer. Markdown arrives already rendered on the
- * server as `children`; HTML runs in a sandbox without the site's origin; PDF
- * uses the browser's own viewer. Without scripts the button is hidden by CSS
- * and the card's download link still works.
+ * The 预览 control and its drawer. Markdown is fetched from its prerendered
+ * file the first time the drawer opens (the page does not carry it); HTML runs
+ * in a sandbox without the site's origin; PDF uses the browser's own viewer.
+ * The control is a link: without JavaScript it opens the same preview (or the
+ * file) in a new tab, next to the card's download link.
  */
-export function FilePreview({ file, compact, children }: { file: PreviewFile; compact: boolean; children?: ReactNode }) {
+export function FilePreview({ file, compact }: { file: PreviewFile; compact: boolean }) {
   const [open, setOpen] = useState(false);
-  const trigger = useRef<HTMLButtonElement>(null);
+  const [loaded, setLoaded] = useState<Loaded>({ state: "idle" });
+  const trigger = useRef<HTMLAnchorElement>(null);
+  const request = useRef<AbortController | null>(null);
   const panel = useRef<HTMLElement>(null);
   const closeButton = useRef<HTMLButtonElement>(null);
   const titleId = useId();
 
   const close = useCallback(() => {
+    request.current?.abort();
     setOpen(false);
     trigger.current?.focus();
   }, []);
+
+  const load = useCallback(() => {
+    if (!file.src) return;
+    request.current?.abort();
+    const controller = new AbortController();
+    request.current = controller;
+    setLoaded({ state: "loading" });
+    fetch(file.src, { signal: controller.signal })
+      .then((response) => {
+        if (!response.ok) throw new Error(String(response.status));
+        return response.text();
+      })
+      .then((text) => {
+        if (request.current !== controller) return;
+        const html = previewBody(text);
+        setLoaded(html ? { state: "ready", html } : { state: "error" });
+      })
+      .catch(() => {
+        if (request.current !== controller) return;
+        // Closed before it arrived: the next open starts again.
+        setLoaded(controller.signal.aborted ? { state: "idle" } : { state: "error" });
+      });
+  }, [file.src]);
 
   useEffect(() => {
     if (!open) return;
@@ -63,6 +94,15 @@ export function FilePreview({ file, compact, children }: { file: PreviewFile; co
     };
   }, [open, close]);
 
+  // A plain click opens the drawer; a modified click (new tab, new window) keeps the link.
+  const openDrawer = (event: MouseEvent<HTMLAnchorElement>) => {
+    if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    event.preventDefault();
+    setOpen(true);
+    // Fetched on first open and kept; a failed or interrupted load starts again.
+    if (file.preview === "md" && loaded.state !== "ready" && loaded.state !== "loading") load();
+  };
+
   const frame = previewFrameProps(file) as { src: string; title: string; referrerPolicy: "no-referrer"; sandbox?: string } | null;
   const drawer = open
     ? createPortal(
@@ -88,7 +128,21 @@ export function FilePreview({ file, compact, children }: { file: PreviewFile; co
               </div>
             </div>
             {!frame ? (
-              <div className="gf-db">{children}</div>
+              <div className="gf-db" aria-busy={loaded.state === "loading" ? "true" : undefined}>
+                {loaded.state === "ready" ? (
+                  <div className="markdown-body prose gf-doc" dangerouslySetInnerHTML={{ __html: loaded.html }} />
+                ) : loaded.state === "error" ? (
+                  <div className="gf-state" role="alert">
+                    <p>预览没能载入。</p>
+                    <div className="gf-state-act">
+                      <button type="button" className="gf-btn" onClick={() => load()}>重试</button>
+                      <a className="gf-btn" href={file.url} download={file.name}>下载文件</a>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="gf-state" role="status">正在载入预览…</div>
+                )}
+              </div>
             ) : (
               <div className="gf-db gf-db-frame">
                 <iframe className="gf-frame" {...frame} />
@@ -102,18 +156,20 @@ export function FilePreview({ file, compact, children }: { file: PreviewFile; co
 
   return (
     <>
-      <button
+      <a
         ref={trigger}
-        type="button"
+        href={file.preview === "md" && file.src ? file.src : file.url}
+        target="_blank"
+        rel="noopener noreferrer"
         className="gf-btn gf-preview"
         data-compact={compact ? "true" : undefined}
-        onClick={() => setOpen(true)}
+        onClick={openDrawer}
         aria-haspopup="dialog"
         aria-label={`预览 ${file.name}`}
       >
         <ActionGlyph name="eye" />
         <span className="gf-lb">预览</span>
-      </button>
+      </a>
       {drawer}
     </>
   );

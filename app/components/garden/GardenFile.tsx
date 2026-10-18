@@ -1,5 +1,4 @@
-// Server component: the card for `garden file`. Only the 预览 button is a client island.
-import type { ReactNode } from "react";
+// Server component: the card for `garden file`. Only the 预览 control is a client island.
 import { blockFiles, fileMeta } from "../../../ui/garden/file-block.mjs";
 import { ActionGlyph, FileGlyph, safeFileHref } from "./file-icons";
 import { FilePreview, type PreviewFile } from "./FilePreview";
@@ -14,21 +13,13 @@ type FileEntry = {
   icon?: string;
   remote?: boolean;
   preview?: string;
-  markdown?: string;
+  /** Markdown: the prerendered preview's address (fetched when the preview opens). */
+  previewSrc?: string;
 };
 
 const PREVIEWS = new Set(["md", "html", "pdf"]);
 
-export function GardenFile({
-  props,
-  renderMarkdown,
-  blockKey = "file",
-}: {
-  props: Record<string, unknown>;
-  /** Renders a Markdown preview with the post's own pipeline, on the server. */
-  renderMarkdown?: (markdown: string, idPrefix: string) => ReactNode;
-  blockKey?: string;
-}) {
+export function GardenFile({ props }: { props: Record<string, unknown> }) {
   const block = blockFiles(props) as { layout?: string; title?: string; files: FileEntry[] };
   const files = block.files.filter((file) => safeFileHref(file.url));
   if (!files.length) return null;
@@ -41,9 +32,9 @@ export function GardenFile({
         const name = file.name || file.title || "文件";
         const title = file.title || name;
         const meta = fileMeta(file);
-        const preview = !file.remote && PREVIEWS.has(file.preview ?? "") ? (file.preview as PreviewFile["preview"]) : null;
-        const previewFile: PreviewFile | null = preview ? { title, name, meta, icon: file.icon ?? "file", url: href, preview } : null;
-        const body = preview === "md" && file.markdown && renderMarkdown ? renderMarkdown(file.markdown, `${blockKey}-${index}-`) : null;
+        const previewSrc = file.preview === "md" ? safeFileHref(file.previewSrc) : "";
+        const preview = !file.remote && PREVIEWS.has(file.preview ?? "") && (file.preview !== "md" || previewSrc) ? (file.preview as PreviewFile["preview"]) : null;
+        const previewFile: PreviewFile | null = preview ? { title, name, meta, icon: file.icon ?? "file", url: href, preview, ...(previewSrc ? { src: previewSrc } : {}) } : null;
         return (
           <div className="gf-row" key={`${href}-${index}`} data-remote={file.remote ? "true" : undefined}>
             <span className="gf-ico" aria-hidden="true"><FileGlyph kind={file.icon} /></span>
@@ -53,7 +44,7 @@ export function GardenFile({
               {meta ? <div className="gf-meta">{meta}</div> : null}
             </div>
             <div className="gf-act">
-              {previewFile ? <FilePreview file={previewFile} compact={group}>{body}</FilePreview> : null}
+              {previewFile ? <FilePreview file={previewFile} compact={group} /> : null}
               {file.remote ? (
                 <a className="gf-btn icon" href={href} target="_blank" rel="noopener noreferrer" aria-label={`在新标签页打开 ${name}`} title="在新标签页打开">
                   <ActionGlyph name="external" />

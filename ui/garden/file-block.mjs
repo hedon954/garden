@@ -224,3 +224,9 @@ export function fileFeedMarkdown(props, { siteUrl = "" } = {}) {
   });
   return [block.title ? `**${mdText(block.title)}**\n` : "", ...lines].filter(Boolean).join("\n");
 }
+
+/** The HTML inside a published preview's <main> (what the drawer shows; see scripts/file-preview.mjs). */
+export function previewBody(documentHtml) {
+  const match = /<main class="gf-preview-doc">\n?([\s\S]*?)\n?<\/main>/u.exec(String(documentHtml));
+  return match ? match[1] : "";
+}

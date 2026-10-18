@@ -68,7 +68,8 @@ const exported = fs.existsSync(path.join(outDir, "index.html"));
 
 // Runs on a static export (STATIC_EXPORT=1 npm run build, as CI's verify job does after npm test).
 test("every internal link in the static export ends with a slash", { skip: exported ? false : "needs a static export in dist/client" }, () => {
-  const pages = fs.readdirSync(outDir, { recursive: true }).filter((name) => name.endsWith(".html"));
+  // media/ holds files posts offer (an HTML download, a Markdown preview page), not pages of the site.
+  const pages = fs.readdirSync(outDir, { recursive: true }).filter((name) => name.endsWith(".html") && !name.split(path.sep).includes("media"));
   assert.ok(pages.length > 5, `only ${pages.length} pages`);
   const offenders = [];
   for (const page of pages) {

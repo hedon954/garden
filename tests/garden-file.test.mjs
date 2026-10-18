@@ -22,8 +22,10 @@ import {
   previewKind,
   readFileProps,
   safeFileHref,
+  previewBody,
 } from "../ui/garden/file-block.mjs";
 import { checkFileSources, resolveRepoFile } from "../ui/garden/file-paths.mjs";
+import { previewDocument, previewFileName, renderFilePreview } from "../scripts/file-preview.mjs";
 import { probeFileSize, readFileSizeCache, refreshFileSizes, remoteFileSources } from "../scripts/file-sizes.mjs";
 import { contentForDistribution, contentForFeed, contentToSearchText } from "../ui/core/transform.mjs";
 import { countDemoWords } from "../ui/garden/word-count.mjs";
@@ -113,6 +115,58 @@ test("an HTML preview is sandboxed without the site's origin; PDF uses the nativ
   assert.doesNotMatch(drawer, /allow-same-origin/u);
   // No Markdown parser in the drawer: Markdown arrives rendered.
   assert.doesNotMatch(drawer, /react-markdown|from "marked"|remark|rehype/u);
+});
+
+test("a Markdown preview is rendered at build time with the posts' syntax, and nothing in it can run", () => {
+  const html = renderFilePreview([
+    "# 记录",
+    "第一行",
+    "第二行",
+    "",
+    "| a | b |",
+    "| --- | --- |",
+    "| 1 | 2 |",
+    "",
+    "$x^2$ 和 ~~删除~~",
+    "",
+    "```js",
+    "let a = 1",
+    "```",
+    "",
+    '<img src="x.png" onerror="alert(1)"> <script>alert(2)</script> <iframe src="https://e.org"></iframe>',
+    "",
+    '[坏](javascript:alert(3)) <a href="JaVa\tscript:alert(4)">也坏</a> [站外](https://example.org) [同目录](./guide.pdf) <img src="data:image/png;base64,AAAA">',
+  ].join("\n"));
+  assert.match(html, /<h1 id="gf-记录">记录<\/h1>/u, "heading ids are prefixed, apart from the article's");
+  assert.match(html, /第一行<br>\n第二行/u, "line breaks as in posts");
+  assert.match(html, /<div class="table-wrap" role="region" aria-label="表格，可横向滚动" tabindex="0"><table>/u, "tables wrapped like the article's, so its styles apply");
+  assert.match(html, /class="katex"/u);
+  assert.match(html, /<del>删除<\/del>/u);
+  assert.match(html, /<pre class="code" data-language="JS"><code class="hljs language-js">/u);
+  assert.doesNotMatch(html, /onerror|<script|<iframe|javascript:|script:alert/iu);
+  assert.match(html, /<a href="https:\/\/example\.org" target="_blank" rel="noopener noreferrer" class="ext">站外<\/a>/u);
+  assert.match(html, /<a href="\.\/guide\.pdf">同目录<\/a>/u);
+  assert.match(html, /<img src="data:image\/png;base64,AAAA">/u);
+  assert.equal(previewFileName("/media/posts/a/log.md"), "/media/posts/a/log.md.preview.html");
+  const page = previewDocument(html, { title: "<记录>" });
+  assert.match(page, /<title>&lt;记录&gt;<\/title>/u);
+  assert.equal(previewBody(page), html);
+  assert.equal(previewBody("<html>no main</html>"), "");
+});
+
+test("the drawer fetches the Markdown preview only when opened, with loading, error and retry", async () => {
+  const drawer = await readFile(new URL("../app/components/garden/FilePreview.tsx", import.meta.url), "utf8");
+  assert.match(drawer, /fetch\(file\.src, \{ signal: controller\.signal \}\)/u);
+  assert.match(drawer, /if \(file\.preview === "md" && loaded\.state !== "ready" && loaded\.state !== "loading"\) load\(\);/u, "loaded on the first open, kept afterwards");
+  assert.match(drawer, /正在载入预览…/u);
+  assert.match(drawer, /预览没能载入。/u);
+  assert.match(drawer, />重试<\/button>/u);
+  assert.match(drawer, />下载文件<\/a>/u);
+  assert.match(drawer, /request\.current\?\.abort\(\);\n    setOpen\(false\);/u, "closing stops a pending load");
+  // Without JavaScript the control is a link to the same preview (or the file) in a new tab.
+  assert.match(drawer, /href=\{file\.preview === "md" && file\.src \? file\.src : file\.url\}\n\s+target="_blank"/u);
+  const css = await readFile(new URL("../app/styles/a2.css", import.meta.url), "utf8");
+  assert.doesNotMatch(css, /\.gf-preview \{ display: none; \}/u, "the 预览 link stays without scripts");
 });
 
 test("src resolves next to the Markdown file and must stay inside content/", () => {
@@ -234,19 +288,19 @@ test("search, word count, RSS and distribution see titles and notes, not the pre
     layout: "group",
     title: "种植资料",
     files: [
-      { name: "log.md", title: "浇水记录", note: "前四周", url: "/media/posts/a/log.md", format: "Markdown", size: 654, preview: "md", markdown: "# 秘密正文不该出现" },
+      { name: "log.md", title: "浇水记录", note: "前四周", url: "/media/posts/a/log.md", format: "Markdown", size: 654, preview: "md", previewSrc: "/media/posts/a/log.md.preview.html" },
       { name: "kit.zip", title: "资料包", url: "https://oss.example.com/kit.zip", format: "ZIP", remote: true },
     ],
   };
   const built = `开头\n\n\`\`\`garden file\nresolved: ${JSON.stringify(props)}\n\`\`\`\n\n结尾`;
   const search = contentToSearchText(built);
   assert.match(search, /种植资料 浇水记录 前四周 资料包/u);
-  assert.doesNotMatch(search, /秘密正文|resolved|media/u);
+  assert.doesNotMatch(search, /preview\.html|resolved|media/u);
   assert.doesNotMatch(countDemoWords ? String(countDemoWords(built)) : "", /NaN/u);
   const feed = contentForFeed(built, { siteUrl: "https://blog.example.org" });
   assert.match(feed, /\[浇水记录\]\(<https:\/\/blog\.example\.org\/media\/posts\/a\/log\.md>\)（Markdown · 654 B）：前四周/u);
   assert.match(feed, /\[资料包\]\(<https:\/\/oss\.example\.com\/kit\.zip>\)（ZIP）/u);
-  assert.doesNotMatch(feed, /秘密正文/u);
+  assert.doesNotMatch(feed, /preview\.html/u);
   assert.match(contentForDistribution(built, { siteUrl: "https://blog.example.org" }), /\[资料包\]/u);
   assert.equal(fileSearchText({ src: "./a/kit.zip", note: "说明" }), "kit.zip 说明");
 });
@@ -287,7 +341,7 @@ async function buildContent(site) {
   });
 }
 
-test("the build copies repo files, embeds the Markdown to render, and takes remote sizes from the cache", async () => {
+test("the build copies repo files, writes the Markdown preview to its own file, and takes remote sizes from the cache", async () => {
   const site = await fileSite();
   try {
     await writeFile(
@@ -316,8 +370,15 @@ test("the build copies repo files, embeds the Markdown to render, and takes remo
     assert.equal(guide.preview, "md");
     assert.equal(guide.url, "/media/posts/notes/kit/guide.md");
     assert.equal(guide.note, "先读");
-    // Front matter dropped, images next to the file copied and rewritten.
-    assert.equal(guide.markdown, "# 指南\n\n![图](/media/posts/notes/kit/pic.png)\n\n正文。");
+    // The preview is its own file next to the copy; the page data only points at it.
+    assert.equal(guide.markdown, undefined);
+    assert.equal(guide.previewSrc, "/media/posts/notes/kit/guide.md.preview.html");
+    const published = await readFile(path.join(site, "public", "media", "posts", "notes", "kit", "guide.md.preview.html"), "utf8");
+    // Front matter dropped, images next to the file copied and rewritten, a standalone page for readers without JavaScript.
+    assert.match(published, /^<!doctype html>/u);
+    assert.match(published, /<meta name="robots" content="noindex">/u);
+    assert.equal(previewBody(published), '<h1 id="gf-指南">指南</h1>\n<p><img src="/media/posts/notes/kit/pic.png" alt="图"></p>\n<p>正文。</p>');
+    assert.doesNotMatch(generated, /正文。/u, "the Markdown file's text is not in the page data");
     assert.equal(demo.preview, "html");
     assert.deepEqual([big.remote, big.size, big.preview], [true, 52428800, ""]);
     assert.equal(unknown.size, undefined);

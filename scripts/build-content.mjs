@@ -16,6 +16,7 @@ import { imageSources, readImageCache, sizeFromBytes } from "./image-sizes.mjs";
 import { buildFullIndex, buildSearchIndex } from "../ui/garden/search-index.mjs";
 import { coverImageSet, loadSharp } from "./cover-images.mjs";
 import { readFileSizeCache } from "./file-sizes.mjs";
+import { previewDocument, previewFileName, renderFilePreview } from "./file-preview.mjs";
 import { parseGardenBlock, parseGardenInfo, scanFences } from "../ui/garden/parse.mjs";
 import {
   fileIcon,
@@ -310,9 +311,13 @@ function resolveFileEntry(file, markdownPath, sourcePath) {
   const preview = previewKind(src, { remote: false });
   const next = { ...entry, url, size: fs.statSync(resolved.path).size, remote: false, preview };
   if (preview === "md") {
-    // Rendered on the server with the post's own pipeline; images next to the file are copied too.
+    // Rendered now into its own file next to the copy; the page only links to it and the
+    // preview fetches it on demand. Images next to the Markdown file are copied too.
     const { content } = matter(fs.readFileSync(resolved.path, "utf8"));
-    next.markdown = rewriteMarkdownAssets(content.trim(), resolved.path, sourcePath);
+    const html = renderFilePreview(rewriteMarkdownAssets(content.trim(), resolved.path, sourcePath));
+    const { destination } = assetFiles.get(url.split(/[?#]/u, 1)[0]);
+    fs.writeFileSync(previewFileName(destination), previewDocument(html, { title: entry.title }));
+    next.previewSrc = previewFileName(url.split(/[?#]/u, 1)[0]);
   }
   return next;
 }
