@@ -48,3 +48,11 @@ test("the dialog renders the ellipsis outside the mark", () => {
   assert.match(header, /\{preview\.prefix\}\s*<HighlightedText text=\{preview\.text\} ranges=\{preview\.ranges\} \/>\s*\{preview\.suffix\}/);
   assert.doesNotMatch(header, /`\$\{prefix\}\$\{text\.slice/);
 });
+
+test("the one-line excerpt never cuts a highlight in half", () => {
+  // text-overflow draws its 「…」 inside whatever inline box it cuts; an atomic
+  // highlight is shown whole or replaced whole by the excerpt's own 「…」.
+  const css = fs.readFileSync(new URL("../app/globals.css", import.meta.url), "utf8");
+  assert.match(css, /\.search-result small \{[^}]*text-overflow: ellipsis;[^}]*white-space: nowrap;/);
+  assert.match(css, /\.search-result small \.search-match \{\s*display: inline-block;\s*\}/);
+});
