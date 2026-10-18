@@ -146,7 +146,8 @@ html[data-theme="dark"] .sh-rail{color:var(--muted)}
 .sh-feature p{margin:14px 0 0;font-size:var(--fs-body);color:var(--soft)}
 .sh-feature .tags{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:16px;font-size:var(--fs-meta);color:var(--muted)}
 .sh-home-grid{display:grid;grid-template-columns:minmax(0,var(--list)) minmax(0,320px);gap:0 72px;justify-content:space-between;align-items:start}
-.sh-home-grid .sh-row{grid-template-columns:11em minmax(0,1fr) auto}
+.sh-home-grid .sh-row{grid-template-columns:minmax(6em,max-content) minmax(0,1fr) auto}
+.sh-home-grid .sh-row time{min-width:6em;font-variant-numeric:tabular-nums}
 .sh-side-list{list-style:none;margin:0;padding:0}
 .sh-side-list li{position:relative;padding:16px 0;border-bottom:1px solid var(--rule)}
 .sh-side-list a{font:600 15px/1.6 var(--sans);color:var(--ink);text-decoration:none}

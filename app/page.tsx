@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { homeListDate } from "./lib/a2-meta";
 import { columns, formatDate, postHref, posts } from "./lib/content";
 import { githubUrl, siteConfig } from "./site.config";
 
@@ -76,7 +77,7 @@ export default function Home() {
           <ol className="sh-rows">
             {recent.slice(0, 6).map((post) => (
               <li className="sh-row" key={post.path}>
-                <time className="num" dateTime={day(post.date)}>{formatDate(post.date)}</time>
+                <time className="num" dateTime={day(post.date)}>{homeListDate(post.date)}</time>
                 <h3><Link href={postHref(post)}>{post.title}</Link></h3>
                 {post.description ? <p>{post.description}</p> : null}
                 {post.topic ? <Link className="cat" href={`/blog?topic=${encodeURIComponent(post.topic)}`}>{post.topic}</Link> : null}
