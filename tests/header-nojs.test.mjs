@@ -76,3 +76,12 @@ test("with JavaScript off the phone search button is hidden; with it on it shows
   assert.equal(value(["sh-icon", "sh-search-m"], "display", at390on), "inline-grid");
   assert.equal(value(["sh-icon", "sh-search-m"], "display", { width: 1440, scripting: "none" }), "none", "phone button never shows on desktop");
 });
+
+test("with JavaScript off the desktop search button is hidden too; with it on it shows (built CSS)", () => {
+  for (const width of [1440, 1024]) {
+    const win = winning(css, ["sh-search"], "display", { width, scripting: "none" });
+    assert.equal(win?.value, "none", `.sh-search at ${width} with JS off is ${win?.value} from ${win?.media} ${win?.selector}`);
+  }
+  assert.equal(value(["sh-search"], "display", { width: 1440, scripting: "enabled" }), "inline-flex");
+  assert.equal(value(["sh-search"], "display", at390on), "none", "the phone uses its own button");
+});
