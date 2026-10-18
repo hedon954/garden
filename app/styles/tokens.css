@@ -90,7 +90,7 @@ html[data-theme="dark"] {
   --accent: var(--blue);
   --accent-soft: var(--blue-tint);
   --selection: rgb(238 236 231 / 18%);
-  --hl: #6b5a2a;
+  --hl: #5e4e17;
   --red: #f29aab;
   --red-text: #f29aab;
   --red-tint: rgb(242 154 171 / 12%);
