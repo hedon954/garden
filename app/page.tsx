@@ -18,7 +18,106 @@ function day(value: string) {
   }).format(date);
 }
 
-export default function Home() {
+type PinPost = (typeof posts)[number];
+type PinStyle = "surface" | "accent" | "row";
+
+function pinStyleOf(value: string | string[] | undefined): PinStyle | null {
+  const raw = Array.isArray(value) ? value[0] : value;
+  return raw === "surface" || raw === "accent" || raw === "row" ? raw : null;
+}
+
+function PinMark() {
+  return (
+    <svg className="pin" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M9 4.5h6l-.7 5.4 3.2 2.4v1.6h-4.2V19L12 20.2 10.7 19v-5.1H6.5v-1.6l3.2-2.4L9 4.5Z" />
+    </svg>
+  );
+}
+
+function PinMeta({ post, dot = false }: { post: PinPost; dot?: boolean }) {
+  return (
+    <span className="meta">
+      <time className="num" dateTime={day(post.date)}>{day(post.date)}</time>
+      {post.topic ? `${dot ? " · " : "　"}${post.topic}` : ""}
+    </span>
+  );
+}
+
+function PinnedSide({ items, style }: { items: PinPost[]; style: Exclude<PinStyle, "row"> | "plain" }) {
+  if (style === "plain") {
+    return (
+      <section className="sh-section" aria-labelledby="h-pin">
+        <div className="sh-sec-head section-heading accent-heading"><h2 id="h-pin">置顶</h2></div>
+        <ul className="sh-side-list">
+          {items.map((post) => (
+            <li key={post.path}>
+              <Link href={postHref(post)}>{post.title}</Link>
+              <PinMeta post={post} />
+            </li>
+          ))}
+        </ul>
+      </section>
+    );
+  }
+  if (style === "accent") {
+    return (
+      <section className="sh-section sh-pin sh-pin-accent" data-pinned="accent" aria-labelledby="h-pin">
+        <div className="sh-sec-head"><h2 id="h-pin">置顶</h2></div>
+        <ol>
+          {items.map((post, index) => (
+            <li key={post.path}>
+              <span className="n" aria-hidden="true">{String(index + 1).padStart(2, "0")}</span>
+              <div>
+                <h3><Link href={postHref(post)}>{post.title}</Link></h3>
+                <PinMeta post={post} />
+              </div>
+            </li>
+          ))}
+        </ol>
+      </section>
+    );
+  }
+  return (
+    <section className="sh-section sh-pin sh-pin-surface" data-pinned="surface" aria-labelledby="h-pin">
+      <div className="sh-sec-head"><h2 id="h-pin"><PinMark />置顶</h2></div>
+      <ul>
+        {items.map((post) => (
+          <li key={post.path}>
+            <h3><Link href={postHref(post)}>{post.title}</Link></h3>
+            {post.description ? <p className="excerpt">{post.description}</p> : null}
+            <PinMeta post={post} />
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
+function PinnedRow({ items }: { items: PinPost[] }) {
+  return (
+    <section className="sh-section sh-pin sh-pin-row" data-pinned="row" aria-labelledby="h-pin">
+      <div className="sh-sec-head"><h2 id="h-pin">置顶</h2></div>
+      <div className="sh-pin-cards">
+        {items.map((post) => (
+          <article key={post.path}>
+            <h3><Link href={postHref(post)}>{post.title}</Link></h3>
+            {post.description ? <p className="excerpt">{post.description}</p> : null}
+            <PinMeta post={post} dot />
+          </article>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+export default async function Home({
+  searchParams,
+}: {
+  searchParams?: Promise<{ pinned?: string | string[] }>;
+}) {
+  // ?pinned=surface|accent|row previews the pin layouts. Remove after one is chosen.
+  const query = (await searchParams) ?? {};
+  const pinnedStyle = pinStyleOf(query.pinned);
   const recent = [...posts].sort((left, right) => Date.parse(right.date) - Date.parse(left.date));
   const feature = recent[0];
   const pinned = posts.filter((post) => post.pinned);
@@ -66,7 +165,9 @@ export default function Home() {
         </article>
       ) : null}
 
-      <div className="sh-home-grid">
+      {pinnedStyle === "row" && pinned.length > 0 ? <PinnedRow items={pinned} /> : null}
+
+      <div className={`sh-home-grid${pinnedStyle === "row" ? " is-solo" : ""}`}>
         <section className="sh-section" aria-labelledby="h-recent">
           <div className="sh-sec-head">
             <h2 id="h-recent">最近更新</h2>
@@ -83,18 +184,8 @@ export default function Home() {
             ))}
           </ol>
         </section>
-        {pinned.length > 0 ? (
-          <section className="sh-section" aria-labelledby="h-pin">
-            <div className="sh-sec-head section-heading accent-heading"><h2 id="h-pin">置顶</h2></div>
-            <ul className="sh-side-list">
-              {pinned.map((post) => (
-                <li key={post.path}>
-                  <Link href={postHref(post)}>{post.title}</Link>
-                  <span><time className="num" dateTime={day(post.date)}>{day(post.date)}</time>{post.topic ? `　${post.topic}` : ""}</span>
-                </li>
-              ))}
-            </ul>
-          </section>
+        {pinned.length > 0 && pinnedStyle !== "row" ? (
+          <PinnedSide items={pinned} style={pinnedStyle ?? "plain"} />
         ) : null}
       </div>
 
