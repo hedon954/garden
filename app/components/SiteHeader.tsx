@@ -14,6 +14,7 @@ import Fuse, { type FuseResultMatch } from "fuse.js";
 import { MagnifyingGlass, X } from "@phosphor-icons/react";
 import { searchRecords } from "../lib/content";
 import { siteConfig } from "../site.config";
+import { SiteMark } from "./SiteMark";
 
 const nav = [
   { href: "/blog", label: "文章" },
@@ -141,6 +142,9 @@ export function SiteHeader() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [dark, setDark] = useState(false);
+  const [shortcut, setShortcut] = useState("⌘K");
+  const [logo, setLogo] = useState(siteConfig.logo || "monogram");
+  const [searchKind, setSearchKind] = useState<"ghost" | "icon">("ghost");
   const [activeResult, setActiveResult] = useState(-1);
   const searchTriggerRef = useRef<HTMLButtonElement>(null);
   const searchPanelRef = useRef<HTMLElement>(null);
@@ -176,6 +180,20 @@ export function SiteHeader() {
   useEffect(() => {
     const isMac = /Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent);
     document.documentElement.dataset.mod = isMac ? "mac" : "other";
+    const frame = window.requestAnimationFrame(() => setShortcut(isMac ? "⌘K" : "Ctrl K"));
+    return () => window.cancelAnimationFrame(frame);
+  }, []);
+
+  // ?logo= and ?search= switch the header options for review. Remove after one of each is chosen.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const nextLogo = params.get("logo");
+    const nextSearch = params.get("search");
+    const frame = window.requestAnimationFrame(() => {
+      if (nextLogo) setLogo(nextLogo);
+      if (nextSearch === "icon" || nextSearch === "ghost") setSearchKind(nextSearch);
+    });
+    return () => window.cancelAnimationFrame(frame);
   }, []);
 
   useEffect(() => {
@@ -285,7 +303,10 @@ export function SiteHeader() {
     <>
       <header className="sh-header">
         <div className="sh-bar">
-          <Link href="/" className="sh-word">{siteConfig.name}</Link>
+          <Link href="/" className="sh-word" data-mark={logo}>
+            <SiteMark name={siteConfig.name} logo={logo} />
+            {siteConfig.name}
+          </Link>
           <nav className="sh-nav" aria-label="站点导航">
             {nav.map((item) => (
               <Link key={item.href} href={item.href} aria-current={current(item.href) ? "page" : undefined}>
@@ -294,15 +315,33 @@ export function SiteHeader() {
             ))}
           </nav>
           <div className="sh-tools">
-            <button ref={searchTriggerRef} className="sh-search" type="button" onClick={openSearch} aria-label="搜索文章" aria-expanded={searchOpen} aria-controls="site-search-dialog">
+            <button
+              ref={searchTriggerRef}
+              className={`sh-search${searchKind === "icon" ? " is-icon" : ""}`}
+              type="button"
+              data-search={searchKind}
+              onClick={openSearch}
+              aria-label={searchKind === "icon" ? `搜索文章（${shortcut}）` : "搜索文章"}
+              title={searchKind === "icon" ? `搜索文章（${shortcut}）` : undefined}
+              aria-expanded={searchOpen}
+              aria-controls="site-search-dialog"
+            >
               <svg viewBox="0 0 20 20" aria-hidden="true">
                 <circle cx="9" cy="9" r="5.8" />
                 <path d="M13.3 13.3 17 17" />
               </svg>
-              <span className="lbl">搜索文章</span>
-              <kbd><span className="kbd-mod kbd-mac">⌘</span><span className="kbd-mod kbd-other">Ctrl</span>{" "}K</kbd>
+              {searchKind === "ghost" ? (
+                <>
+                  <span className="lbl">搜索</span>
+                  <kbd aria-hidden="true">
+                    <span className="kbd-mod kbd-mac">⌘</span>
+                    <span className="kbd-mod kbd-other">Ctrl </span>
+                    K
+                  </kbd>
+                </>
+              ) : null}
             </button>
-            <button className="sh-icon sh-search-m" type="button" onClick={openSearch} aria-label="搜索文章">
+            <button className="sh-icon sh-search-m" type="button" onClick={openSearch} aria-label={`搜索文章（${shortcut}）`} title={`搜索文章（${shortcut}）`}>
               <svg viewBox="0 0 20 20" aria-hidden="true">
                 <circle cx="9" cy="9" r="5.8" />
                 <path d="M13.3 13.3 17 17" />

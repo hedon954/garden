@@ -56,6 +56,7 @@ declare module "@garden/site-config" {
     tagline: string;
     description: string;
     locale: string;
+    logo?: string;
     author: { name: string; github: string; githubBio: string; githubPinned?: string[] };
     pages: Record<string, Record<string, unknown>>;
     footer: string;

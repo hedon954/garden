@@ -33,6 +33,9 @@ test("server-renders the finished blog home", async () => {
   const html = await response.text();
   assert.match(html, /<title>[^<]+<\/title>/i);
   assert.match(html, /记一些正在做的事/);
+  assert.match(html, /data-mark="monogram"/);
+  assert.match(html, /class="sh-mark"/);
+  assert.match(html, /data-search="ghost"/);
   assert.doesNotMatch(html, /class="sh-feature"[\s\S]{0,400}style="background:var\(--cover\)"/);
   assert.match(html, /<time class="num" dateTime="2026-10-16">2026-10-16<\/time>/);
   assert.match(html, /<time class="num" dateTime="2026-10-10">2026-10-10<\/time>/);
