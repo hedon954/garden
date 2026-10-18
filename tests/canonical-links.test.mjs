@@ -28,6 +28,22 @@ test("section pages declare their canonical address and keep the feed link", () 
   assert.match(layout, /alternates: \{ types: FEED_ALTERNATES \}/u);
 });
 
+test("every page that sets its own alternates keeps the feed link (a page's alternates replace the layout's)", () => {
+  const files = fs.readdirSync(new URL("../app/", import.meta.url), { recursive: true }).filter((name) => /page\.tsx$/u.test(name));
+  const setting = [];
+  for (const file of files) {
+    const source = fs.readFileSync(new URL(`../app/${file}`, import.meta.url), "utf8");
+    for (const [line] of source.matchAll(/alternates:[^\n]*/gu)) {
+      setting.push(file);
+      assert.ok(/pageAlternates\(|types: FEED_ALTERNATES/u.test(line), `${file}: ${line.trim()} drops the RSS link`);
+    }
+  }
+  // Articles, column articles and thoughts included.
+  for (const page of ["blog/[...path]/page.tsx", "columns/[column]/[...path]/page.tsx", "thoughts/[slug]/page.tsx"]) {
+    assert.ok(setting.includes(page.split("/").join(path.sep)), `${page} should set alternates`);
+  }
+});
+
 const outDir = new URL("../dist/client/", import.meta.url).pathname;
 const exported = fs.existsSync(path.join(outDir, "index.html"));
 
@@ -38,11 +54,12 @@ function pageAddress(file) {
 }
 
 // Runs on a static export (STATIC_EXPORT=1 npm run build, as CI's verify job does after npm test).
-test("every page in the static export names itself as canonical, with the trailing slash", { skip: exported ? false : "needs a static export in dist/client" }, () => {
+test("every page in the static export names itself as canonical, with the trailing slash, and links the feed", { skip: exported ? false : "needs a static export in dist/client" }, () => {
   // media/ holds files posts offer, not pages of the site.
   const files = fs.readdirSync(outDir, { recursive: true }).filter((name) => name.endsWith(".html") && !name.split(path.sep).includes("media"));
   const missing = [];
   const wrong = [];
+  const noFeed = [];
   let checked = 0;
   for (const file of files) {
     const html = fs.readFileSync(path.join(outDir, file), "utf8");
@@ -56,6 +73,7 @@ test("every page in the static export names itself as canonical, with the traili
       missing.push(`${file}: ${links.length} canonical links`);
       continue;
     }
+    if ((html.match(/<link rel="alternate" type="application\/rss\+xml" href="[^"]*\/rss\.xml"/gu) ?? []).length !== 1) noFeed.push(file);
     const href = new URL(links[0]);
     if (href.pathname !== pageAddress(file) || href.search || href.hash) wrong.push(`${file}: ${links[0]}`);
   }
@@ -69,4 +87,5 @@ test("every page in the static export names itself as canonical, with the traili
   }
   assert.deepEqual(missing, [], `${missing.length} pages without exactly one canonical link`);
   assert.deepEqual(wrong, [], `${wrong.length} canonical links that do not point at the page itself`);
+  assert.deepEqual(noFeed, [], `${noFeed.length} pages without exactly one RSS link in <head>`);
 });

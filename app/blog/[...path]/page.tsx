@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { CoverImage } from "../../components/CoverImage";
 import type { Metadata } from "next";
+import { FEED_ALTERNATES } from "../../lib/page-alternates";
 import { notFound } from "next/navigation";
 import {
   extractHeadings,
@@ -42,7 +43,7 @@ export async function generateMetadata({
   return {
     title: post.title,
     description: post.description,
-    alternates: { canonical: pathname },
+    alternates: { canonical: pathname, types: FEED_ALTERNATES },
     openGraph: {
       type: "article",
       url: absoluteUrl(pathname, baseUrl),

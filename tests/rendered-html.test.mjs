@@ -960,3 +960,12 @@ test("the article code block labels its language through the shared mapping, nex
   assert.match(html, /<div class="ux-cb"><pre class="code" data-language="PYTHON">/u);
   assert.doesNotMatch(html, /data-language="PY"/u);
 });
+
+test("article, column article and thought pages link the RSS feed in <head> next to their canonical", async () => {
+  for (const pathname of ["/blog/markdown-lab", "/columns/building-in-public/ship-with-evidence", "/thoughts/rainy-night"]) {
+    const html = await (await render(pathname)).text();
+    const head = html.slice(0, html.indexOf("</head>"));
+    assert.equal(head.match(/<link rel="alternate" type="application\/rss\+xml" href="[^"]*\/rss\.xml"\/>/gu)?.length, 1, `${pathname} should link the feed once`);
+    assert.match(head, /<link rel="canonical" href="[^"]+"\/>/u, `${pathname} keeps its canonical`);
+  }
+});
