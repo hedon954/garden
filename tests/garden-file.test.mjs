@@ -79,8 +79,10 @@ test("garden check flags a broken file block and a hand-written resolved", () =>
 });
 
 test("format, size and preview kind come from the file name", () => {
-  assert.equal(formatLabel("./a/01-prd.md"), "Markdown");
-  assert.equal(formatLabel("./a/demo.HTM"), "HTML");
+  assert.equal(formatLabel("./a/01-prd.md"), "MD");
+  assert.equal(formatLabel("./a/notes.markdown"), "MARKDOWN");
+  assert.equal(formatLabel("./a/demo.HTM"), "HTM");
+  assert.equal(formatLabel("./a/demo.html"), "HTML");
   assert.equal(formatLabel("./a/guide.pdf?v=2#p3"), "PDF");
   assert.equal(formatLabel("./a/kit.zip"), "ZIP");
   assert.equal(formatLabel("./a/data.csv"), "CSV");
@@ -288,7 +290,7 @@ test("search, word count, RSS and distribution see titles and notes, not the pre
     layout: "group",
     title: "种植资料",
     files: [
-      { name: "log.md", title: "浇水记录", note: "前四周", url: "/media/posts/a/log.md", format: "Markdown", size: 654, preview: "md", previewSrc: "/media/posts/a/log.md.preview.html" },
+      { name: "log.md", title: "浇水记录", note: "前四周", url: "/media/posts/a/log.md", format: "MD", size: 654, preview: "md", previewSrc: "/media/posts/a/log.md.preview.html" },
       { name: "kit.zip", title: "资料包", url: "https://oss.example.com/kit.zip", format: "ZIP", remote: true },
     ],
   };
@@ -298,7 +300,7 @@ test("search, word count, RSS and distribution see titles and notes, not the pre
   assert.doesNotMatch(search, /preview\.html|resolved|media/u);
   assert.doesNotMatch(countDemoWords ? String(countDemoWords(built)) : "", /NaN/u);
   const feed = contentForFeed(built, { siteUrl: "https://blog.example.org" });
-  assert.match(feed, /\[浇水记录\]\(<https:\/\/blog\.example\.org\/media\/posts\/a\/log\.md>\)（Markdown · 654 B）：前四周/u);
+  assert.match(feed, /\[浇水记录\]\(<https:\/\/blog\.example\.org\/media\/posts\/a\/log\.md>\)（MD · 654 B）：前四周/u);
   assert.match(feed, /\[资料包\]\(<https:\/\/oss\.example\.com\/kit\.zip>\)（ZIP）/u);
   assert.doesNotMatch(feed, /preview\.html/u);
   assert.match(contentForDistribution(built, { siteUrl: "https://blog.example.org" }), /\[资料包\]/u);

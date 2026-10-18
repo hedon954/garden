@@ -920,6 +920,9 @@ test("garden file renders cards on the server; the Markdown preview stays out of
   assert.match(visible, /<a class="gf-btn pri" href="\/media\/posts\/windowsill-herbs-kit\/herb-kit\.zip" download="herb-kit\.zip"/u);
   assert.match(visible, /ZIP · 1\.8 KB/u);
   assert.match(visible, /JPG · 4\.3 MB/u);
+  // Every format label is the extension in capitals.
+  assert.match(visible, /class="gf-meta">MD · /u);
+  assert.doesNotMatch(visible, /Markdown · /u);
   assert.equal(visible.match(/class="gf-btn gf-preview"/gu)?.length, 3);
   // The OSS row: open in a new tab and download, no preview.
   assert.match(visible, /<a class="gf-btn icon" href="https:\/\/upload\.wikimedia\.org\/[^"]+" target="_blank" rel="noopener noreferrer"/u);

@@ -29,17 +29,17 @@ export const FILE_KEYS = ["src", "title", "note", "files"];
 export const FILE_ITEM_KEYS = ["src", "title", "note"];
 
 const FORMATS = {
-  md: { label: "Markdown", preview: "md", icon: "doc" },
-  markdown: { label: "Markdown", preview: "md", icon: "doc" },
-  html: { label: "HTML", preview: "html", icon: "code" },
-  htm: { label: "HTML", preview: "html", icon: "code" },
-  pdf: { label: "PDF", preview: "pdf", icon: "doc" },
-  zip: { label: "ZIP", preview: "", icon: "archive" },
-  gz: { label: "GZ", preview: "", icon: "archive" },
-  tgz: { label: "TGZ", preview: "", icon: "archive" },
-  "7z": { label: "7Z", preview: "", icon: "archive" },
-  rar: { label: "RAR", preview: "", icon: "archive" },
-  tar: { label: "TAR", preview: "", icon: "archive" },
+  md: { preview: "md", icon: "doc" },
+  markdown: { preview: "md", icon: "doc" },
+  html: { preview: "html", icon: "code" },
+  htm: { preview: "html", icon: "code" },
+  pdf: { preview: "pdf", icon: "doc" },
+  zip: { preview: "", icon: "archive" },
+  gz: { preview: "", icon: "archive" },
+  tgz: { preview: "", icon: "archive" },
+  "7z": { preview: "", icon: "archive" },
+  rar: { preview: "", icon: "archive" },
+  tar: { preview: "", icon: "archive" },
 };
 
 /**
@@ -69,10 +69,10 @@ export function fileName(src) {
   }
 }
 
-/** Format label: Markdown, HTML, PDF, ZIP, or the extension in capitals. */
+/** Format label: the extension in capitals (MD, HTML, PDF, ZIP, CSV …), or 文件 when there is none. */
 export function formatLabel(src) {
   const ext = fileExtension(src);
-  return FORMATS[ext]?.label ?? (ext ? ext.toUpperCase() : "文件");
+  return ext ? ext.toUpperCase() : "文件";
 }
 
 /** Icon family for the card: doc, code, archive or file. */
@@ -133,7 +133,7 @@ export function formatSize(bytes) {
   return `${text} ${units[unit]}`;
 }
 
-/** 「Markdown · 12 KB」, or just the format when the size is unknown. */
+/** 「MD · 12 KB」, or just the format when the size is unknown. */
 export function fileMeta(file) {
   const size = formatSize(file?.size);
   return [file?.format, size].filter(Boolean).join(" · ");
