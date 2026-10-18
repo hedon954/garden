@@ -3,8 +3,8 @@
 @import "./admin-ui.css";
 
 :root {
-  --paper: #f8f8f6;
-  --paper-deep: #eeeeeb;
+  --paper: #faf9f5;
+  --paper-deep: #f0eee6;
   --card: #ffffff;
   --ink: #202124;
   --ink-soft: #34383d;
@@ -12,9 +12,9 @@
   --faint: #a1a6ad;
   --line: #deded9;
   --line-strong: #c9c9c2;
-  --accent: #d82d48;
-  --accent-soft: #f9e8eb;
-  --selection: #f3c9d1;
+  --accent: #30302e;
+  --accent-soft: #f0eee6;
+  --selection: #e8e5db;
   --font-mono: var(--font-geist-mono), "SFMono-Regular", Consolas,
     "Liberation Mono", "Noto Sans Mono CJK SC", monospace;
   --content: 740px;
@@ -22,18 +22,18 @@
 }
 
 :root[data-theme="dark"] {
-  --paper: #171819;
-  --paper-deep: #202224;
-  --card: #1e2022;
+  --paper: #1f1e1d;
+  --paper-deep: #262624;
+  --card: #262624;
   --ink: #ededeb;
   --ink-soft: #d8d8d4;
   --muted: #a6adb6;
   --faint: #747b84;
   --line: #35383b;
   --line-strong: #4b4f54;
-  --accent: #ff5d76;
-  --accent-soft: #3b242a;
-  --selection: #68333e;
+  --accent: #eeece7;
+  --accent-soft: #30302e;
+  --selection: rgb(238 236 231 / 18%);
 }
 
 * {

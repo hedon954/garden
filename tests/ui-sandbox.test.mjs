@@ -12,13 +12,13 @@ test("sandbox document stays offline and only prompts when the host allows it", 
   });
   assert.match(doc, /default-src 'none'/u);
   assert.match(doc, /canPrompt: false/u);
-  assert.match(doc, /--blue: #2C55B4/u);
+  assert.match(doc, /--blue: #30302E/u);
   assert.match(doc, /--ink: #1B1A18/u);
   assert.match(doc, /getBoundingClientRect\(\)\.bottom/u);
   assert.equal(doc.includes("https://"), false);
   const dark = buildSrcdoc({ theme: "dark", css: "</style><script>1</script>" });
   assert.match(dark, /--ink: #EEECE7/u);
-  assert.match(dark, /--blue: #93B2F4/u);
+  assert.match(dark, /--blue: #EEECE7/u);
   assert.equal(dark.includes("</style><script>"), false);
   assert.equal(sandboxRemote("<script src=\"https://cdn.example/a.js\"></script>"), "不能加载远程脚本");
 });

@@ -466,14 +466,15 @@ test("0.4.3: wider reading column, transparent column cards, and tag chips under
   assert.match(card, /border:1px solid var\(--rule\)/);
   assert.match(card, /border-radius:var\(--r\)/);
   assert.doesNotMatch(card, /var\(--card\)/);
-  assert.match(shell, /\.sh-col:hover\{border-color:var\(--blue-line\)\}/);
+  assert.match(shell, /\.sh-col:hover\{background:var\(--card-hover\);box-shadow:var\(--card-shadow\)\}/);
+  assert.doesNotMatch(shell, /\.sh-col:hover\{[^}]*(border|transform)/);
   assert.match(shell, /\.sh-col \.cover\{[^}]*margin:0/);
   assert.match(shell, /\.sh-col \.body\{padding:16px 18px 18px\}/);
   assert.match(shell, /\.sh-col:hover h3 a\{color:var\(--blue\)\}/);
 
   // J. tag chips
   assert.match(a2, /\.article-tagrow \{[^}]*flex-wrap: wrap;[^}]*gap: 8px;/);
-  assert.match(a2, /\.article-tagrow \.tag-chip \{[^}]*padding: 2px 10px;[^}]*border-radius: 999px;[^}]*color-mix\(in srgb, var\(--blue\) 8%, transparent\);[^}]*color: var\(--blue\);/);
+  assert.match(a2, /\.article-tagrow \.tag-chip \{[^}]*padding: 2px 10px;[^}]*border-radius: 999px;[^}]*background: var\(--chip\);[^}]*color: var\(--soft\);/);
   assert.match(a2, /\.article-tagrow \.tag-chip::after \{[^}]*height: 44px;/);
   assert.doesNotMatch(globals + a2, /\.article-tags\b/);
 
@@ -554,7 +555,7 @@ test("/blog filters by several tags through the URL, and /tags is only an index"
   assert.match(redirect, /router\.replace\(target\)/);
 
   assert.match(shell, /\.sh-tagchips\{display:flex;flex-wrap:wrap;gap:12px 8px/);
-  assert.match(shell, /\.sh-tagchip\[aria-pressed="true"\]\{background:var\(--blue\);color:var\(--paper\)/);
+  assert.match(shell, /\.sh-tagchip\[aria-pressed="true"\]\{background:var\(--chip-on\);color:var\(--chip-on-text\)/);
   assert.match(shell, /\.sh-tagchip:disabled\{/);
   // the expand control is a text button, not a chip
   assert.match(shell, /\.sh-tagmore\{[^}]*border:0;background:none;color:var\(--blue\)[^}]*text-decoration:underline/);
@@ -579,4 +580,54 @@ test("/blog renders the full list on the server, before any script runs", async 
     assert.ok(visible.includes(post.title.replace(/&/g, "&amp;")), `${post.title} is in the server-rendered list`);
   }
   assert.match(page, /<Suspense fallback=\{<BlogArchiveFallback \/>\}>/);
+});
+
+test("palette: warm paper, ink accent, no blue, readable chips in both themes", async () => {
+  const [tokens, shell, globals, a2, ui] = await Promise.all([
+    readFile(new URL("../app/styles/tokens.css", import.meta.url), "utf8"),
+    readFile(new URL("../app/styles/shell.css", import.meta.url), "utf8"),
+    readFile(new URL("../app/globals.css", import.meta.url), "utf8"),
+    readFile(new URL("../app/styles/a2.css", import.meta.url), "utf8"),
+    readFile(new URL("../ui/react/ui.css", import.meta.url), "utf8"),
+  ]);
+  const block = (css, start) => css.slice(css.indexOf(start), css.indexOf("}", css.indexOf(start)));
+  const light = block(tokens, ":root,\n:root[data-theme=\"light\"] {");
+  const dark = block(tokens, ":root[data-theme=\"dark\"],\nhtml[data-theme=\"dark\"] {");
+  const token = (css, name) => css.match(new RegExp(`--${name}:\\s*(#[0-9a-fA-F]{6})`))?.[1];
+
+  assert.equal(token(light, "paper"), "#faf9f5");
+  for (const name of ["paper-deep", "well", "blue-tint", "chip", "card-hover"]) assert.equal(token(light, name), "#f0eee6", name);
+  assert.equal(token(light, "chip-hover"), "#e8e5db");
+  assert.equal(token(light, "blue"), "#30302e");
+  assert.equal(token(light, "chip-on"), "#30302e");
+  assert.equal(token(light, "chip-on-text"), "#faf9f5");
+  assert.match(light, /--card-shadow: 0 1px 2px rgb\(20 20 19 \/ 4%\), 0 4px 14px rgb\(20 20 19 \/ 5%\);/);
+  assert.equal(token(dark, "paper"), "#1f1e1d");
+  assert.equal(token(dark, "blue"), "#eeece7");
+  assert.equal(token(dark, "chip-on"), "#eeece7");
+  assert.match(shell, /:root\{\s*--paper:#FAF9F5;/);
+  assert.match(globals, /:root \{\s*--paper: #faf9f5;\s*--paper-deep: #f0eee6;/);
+
+  // no blue left in the site styles
+  const blues = /2c55b4|93b2f4|5e86e0|4c72c9|eaf0fc|eef3fc|44,\s*85,\s*180|44 85 180|147,\s*178,\s*244|147 178 244/i;
+  for (const [name, css] of Object.entries({ tokens, shell, globals, a2, ui })) assert.doesNotMatch(css, blues, name);
+
+  // WCAG AA (4.5:1) for chip text, selected chips and muted text
+  const lum = (hex) => {
+    const c = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255).map((v) => (v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4));
+    return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+  };
+  const ratio = (a, b) => { const [x, y] = [lum(a), lum(b)].sort((m, n) => n - m); return (x + 0.05) / (y + 0.05); };
+  for (const [theme, css] of [["light", light], ["dark", dark]]) {
+    const pairs = [["soft", "chip"], ["soft", "chip-hover"], ["ink", "chip-hover"], ["chip-on-text", "chip-on"], ["muted", "paper"], ["muted", "chip"], ["muted", "card-hover"], ["blue", "paper"]];
+    for (const [fg, bg] of pairs) {
+      const r = ratio(token(css, fg), token(css, bg));
+      assert.ok(r >= 4.5, `${theme} ${fg} on ${bg}: ${r.toFixed(2)}`);
+    }
+  }
+
+  // card hover: fill and faint shadow, no movement, quiet for reduced motion
+  assert.match(shell, /\.sh-col\{[^}]*transition:background-color \.15s ease,box-shadow \.15s ease\}/);
+  assert.match(shell, /@media \(prefers-reduced-motion:reduce\)\{\s*\.sh-col,[^{]*\{transition:none\}/);
+  assert.match(shell, /\.sh-tagchip\{[^}]*background:var\(--chip\);color:var\(--soft\)/);
 });

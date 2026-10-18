@@ -1,9 +1,11 @@
 
 /* ===== Hedon Garden shell (A2). Tokens shared with the A2 article. ===== */
 :root{
-  --paper:#F8F7F3; --card:#FFFFFF; --ink:#1B1A18; --text:#2D2C29; --soft:#4A4844; --muted:#6E6B64;
-  --rule:#E6E3DC; --rule-strong:#D6D2C9; --well:#F0EEE8; --tint:rgba(27,26,24,.055);
-  --blue:#2C55B4; --blue-tint:#EAF0FC; --blue-line:rgba(44,85,180,.28); --cover:#5E86E0;
+  --paper:#FAF9F5; --card:#FFFFFF; --ink:#1B1A18; --text:#2D2C29; --soft:#4A4844; --muted:#6E6B64;
+  --rule:#E6E3DC; --rule-strong:#D6D2C9; --well:#F0EEE6; --tint:rgba(27,26,24,.055);
+  --blue:#30302E; --blue-tint:#F0EEE6; --blue-line:rgba(20,20,19,.22); --cover:#C2C0B6;
+  --chip:#F0EEE6; --chip-hover:#E8E5DB; --chip-on:#30302E; --chip-on-text:#FAF9F5;
+  --card-hover:#F0EEE6; --card-shadow:0 1px 2px rgba(20,20,19,.04),0 4px 14px rgba(20,20,19,.05);
   --sans:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Noto Sans SC","Noto Sans CJK SC","Microsoft YaHei","Segoe UI",system-ui,sans-serif;
   --serif:"Source Han Serif SC","Noto Serif SC","Noto Serif CJK SC","Songti SC","STSong","Source Serif 4",Georgia,serif;
   --fs-display:46px; --fs-h2:26px; --fs-lead:20px; --fs-body:17px; --fs-small:14px; --fs-meta:13px;
@@ -12,9 +14,11 @@
   color-scheme:light;
 }
 html[data-theme="dark"]{
-  --paper:#161513; --card:#1E1D1A; --ink:#EEECE7; --text:#DCD9D2; --soft:#BDB9B0; --muted:#A09B91;
-  --rule:#2F2D29; --rule-strong:#45423C; --well:#22211D; --tint:rgba(238,236,231,.07);
-  --blue:#93B2F4; --blue-tint:rgba(147,178,244,.13); --blue-line:rgba(147,178,244,.35); --cover:#4C72C9;
+  --paper:#1F1E1D; --card:#262624; --ink:#EEECE7; --text:#DCD9D2; --soft:#BDB9B0; --muted:#A09B91;
+  --rule:#3D3D3A; --rule-strong:#4D4C48; --well:#262624; --tint:rgba(238,236,231,.07);
+  --blue:#EEECE7; --blue-tint:#30302E; --blue-line:rgba(238,236,231,.25); --cover:#4D4C48;
+  --chip:#30302E; --chip-hover:#3D3D3A; --chip-on:#EEECE7; --chip-on-text:#1F1E1D;
+  --card-hover:#30302E; --card-shadow:0 1px 2px rgba(0,0,0,.18);
   color-scheme:dark;
 }
 *,*::before,*::after{box-sizing:border-box}
@@ -85,12 +89,12 @@ html[data-theme="dark"] .sh-rail{color:var(--muted)}
 /* ---------- tag filter (/blog) and tag index (/tags) ---------- */
 .sh-tagfilter{margin:0 0 8px}
 .sh-tagchips{display:flex;flex-wrap:wrap;gap:12px 8px;list-style:none;margin:0;padding:0}
-.sh-tagchip{position:relative;display:inline-flex;align-items:center;gap:6px;min-height:32px;padding:4px 12px;border:0;border-radius:999px;background:color-mix(in srgb,var(--blue) 8%,transparent);color:var(--blue);font:400 var(--fs-small)/1.4 var(--sans);text-decoration:none;cursor:pointer;white-space:nowrap;transition:background-color .15s ease,color .15s ease}
+.sh-tagchip{position:relative;display:inline-flex;align-items:center;gap:6px;min-height:32px;padding:4px 12px;border:0;border-radius:999px;background:var(--chip);color:var(--soft);font:400 var(--fs-small)/1.4 var(--sans);text-decoration:none;cursor:pointer;white-space:nowrap;transition:background-color .15s ease,color .15s ease}
 .sh-tagchip::after,.sh-tagmore::after{content:"";position:absolute;left:0;right:0;top:50%;height:44px;transform:translateY(-50%)}
 .sh-tagchip .n{font-size:var(--fs-meta);color:inherit;opacity:.72;font-variant-numeric:tabular-nums}
-@media (hover:hover){.sh-tagchip:hover:not(:disabled){background:color-mix(in srgb,var(--blue) 15%,transparent)}}
-.sh-tagchip[aria-pressed="true"]{background:var(--blue);color:var(--paper);font-weight:600}
-@media (hover:hover){.sh-tagchip[aria-pressed="true"]:hover{background:var(--blue)}}
+@media (hover:hover){.sh-tagchip:hover:not(:disabled){background:var(--chip-hover);color:var(--ink)}}
+.sh-tagchip[aria-pressed="true"]{background:var(--chip-on);color:var(--chip-on-text);font-weight:600}
+@media (hover:hover){.sh-tagchip[aria-pressed="true"]:hover{background:var(--chip-on);color:var(--chip-on-text)}}
 .sh-tagchip[aria-pressed="true"] .n{opacity:.85}
 .sh-tagchip .x{font-size:15px;line-height:1;margin-left:-1px}
 .sh-tagchip:disabled{background:var(--tint);color:var(--muted);cursor:default;opacity:.55}
@@ -126,7 +130,7 @@ html[data-theme="dark"] .sh-rail{color:var(--muted)}
 .sh-row .cat:hover{color:var(--blue);text-decoration:underline;text-underline-offset:3px}
 .sh-row .pin{font:400 12px/1 var(--sans);color:var(--blue);background:var(--blue-tint);border-radius:6px;padding:3px 6px;margin-left:8px;vertical-align:2px;white-space:nowrap}
 .sh-row .series{font-weight:400;color:var(--muted);font-size:var(--fs-meta);margin-left:8px;white-space:nowrap}
-.sh-row:hover h3 a{color:var(--blue)}
+.sh-row:hover h3 a{color:var(--blue);text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:4px}
 .sh-row h3 a{transition:color .15s ease}
 .is-compact .sh-row{padding:11px 0 12px}
 .is-compact .sh-row p{display:none}
@@ -148,7 +152,7 @@ html[data-theme="dark"] .sh-rail{color:var(--muted)}
 .sh-feature h2{font:700 30px/1.35 var(--sans);color:var(--ink);margin:0;text-wrap:balance}
 .sh-feature h2 a{text-decoration:none}
 .sh-feature h2 a::after{content:"";position:absolute;inset:0;border-radius:var(--r-lg)}
-.sh-feature:hover h2 a{color:var(--blue)}
+.sh-feature:hover h2 a{color:var(--blue);text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:4px}
 .sh-feature:has(h2 a:focus-visible){outline:2px solid var(--blue);outline-offset:8px;border-radius:var(--r-lg)}
 .sh-feature h2 a:focus-visible{outline:none}
 .sh-feature p{margin:14px 0 0;font-size:var(--fs-body);color:var(--soft)}
@@ -160,13 +164,13 @@ html[data-theme="dark"] .sh-rail{color:var(--muted)}
 .sh-side-list li{position:relative;padding:16px 0;border-bottom:1px solid var(--rule)}
 .sh-side-list a{font:600 15px/1.6 var(--sans);color:var(--ink);text-decoration:none}
 .sh-side-list a::after{content:"";position:absolute;inset:0}
-.sh-side-list li:hover a{color:var(--blue)}
+.sh-side-list li:hover a{color:var(--blue);text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:4px}
 .sh-side-list span{display:block;margin-top:4px;font-size:var(--fs-meta);color:var(--muted)}
 
 /* ---------- column (series) cards ---------- */
 .sh-cols{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px;margin-top:24px}
-.sh-col{position:relative;display:flex;flex-direction:column;background:transparent;border:1px solid var(--rule);border-radius:var(--r);overflow:hidden;transition:border-color .15s ease}
-.sh-col:hover{border-color:var(--blue-line)}
+.sh-col{position:relative;display:flex;flex-direction:column;background:transparent;border:1px solid var(--rule);border-radius:var(--r);overflow:hidden;transition:background-color .15s ease,box-shadow .15s ease}
+@media (hover:hover){.sh-col:hover{background:var(--card-hover);box-shadow:var(--card-shadow)}}
 .sh-col .cover{aspect-ratio:16/9;display:flex;align-items:center;justify-content:center;border-radius:0;margin:0;overflow:hidden}
 .sh-col .body{padding:16px 18px 18px}
 .sh-col h3{margin:0;font:700 var(--fs-lead)/1.4 var(--sans);color:var(--ink)}
@@ -328,8 +332,8 @@ html[data-theme="dark"] .sh-pal-scrim{background:rgba(0,0,0,.55)}
 .sh-note-audio{margin:16px 0 0;padding:12px 14px;border:1px solid var(--rule);border-radius:var(--r);background:var(--card)}
 .sh-note-audio figcaption{font-size:var(--fs-meta);color:var(--muted);margin:0 0 8px}
 .sh-note-audio audio{display:block;width:100%;height:36px}
-.sh-note-link{display:grid;gap:2px;margin:16px 0 0;padding:14px 16px;border:1px solid var(--rule);border-radius:var(--r);background:var(--card);text-decoration:none;transition:border-color .15s ease}
-@media (hover:hover){.sh-note-link:hover{border-color:var(--rule-strong)}.sh-note-link:hover .t{color:var(--blue)}}
+.sh-note-link{display:grid;gap:2px;margin:16px 0 0;padding:14px 16px;border:1px solid var(--rule);border-radius:var(--r);background:var(--card);text-decoration:none;transition:background-color .15s ease,box-shadow .15s ease}
+@media (hover:hover){.sh-note-link:hover{background:var(--card-hover);box-shadow:var(--card-shadow)}}
 .sh-note-link .h{font-size:var(--fs-meta);color:var(--muted)}
 .sh-note-link .t{font:600 15px/1.5 var(--sans);color:var(--ink)}
 .sh-note-link .t::after{content:" ↗";color:var(--muted);font-weight:400}
@@ -351,7 +355,7 @@ html[data-theme="dark"] .sh-note-imgs img,html[data-theme="dark"] .sh-note-video
 /* ===== About: GitHub project cards (live) ===== */
 .sh-repos{list-style:none;margin:0;padding:0!important;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
 .sh-repos > li{position:relative;margin:0;display:grid;grid-template-rows:24px 48px 20px;row-gap:6px;padding:16px 18px;
-  border:1px solid var(--rule-strong);border-radius:var(--r);background:transparent;transition:border-color .15s ease}
+  border:1px solid var(--rule-strong);border-radius:var(--r);background:transparent;transition:background-color .15s ease,box-shadow .15s ease}
 .sh-repos h3{margin:0;display:flex;align-items:center;gap:8px;min-width:0;font:600 16px/24px var(--sans)}
 .sh-repos h3 a{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ink);text-decoration:none}
 .sh-repos h3 a::after{content:"";position:absolute;inset:0;border-radius:inherit}
@@ -366,9 +370,8 @@ html[data-theme="dark"] .sh-note-imgs img,html[data-theme="dark"] .sh-note-video
 .sh-repos .meta svg{width:14px;height:14px;fill:currentColor}
 .sh-repos .meta time{margin-left:auto}
 @media (hover:hover){
-  .sh-repos > li:not(.sk):hover{border-color:var(--muted)}
-  .sh-repos > li:not(.sk):hover h3 a{color:var(--blue)}
-  .sh-repos > li:not(.sk):hover .arr{color:var(--blue);transform:translate(2px,-2px)}
+  .sh-repos > li:not(.sk):hover{background:var(--card-hover);box-shadow:var(--card-shadow)}
+  .sh-repos > li:not(.sk):hover .arr{color:var(--ink)}
 }
 /* skeleton card: same box, same rows */
 .sh-repos > li.sk{overflow:hidden;border-color:var(--rule)}
@@ -424,4 +427,7 @@ html[data-theme="dark"] .sh-repos > li.sk::after{background:linear-gradient(90de
 .is-compact .sh-row .incol{display:none}
 @media (max-width:820px){.sh-row .incol{grid-column:1 / -1}}
 
-
+/* Cards answer hover with a warm fill and a faint shadow; nothing moves. */
+@media (prefers-reduced-motion:reduce){
+  .sh-col,.sh-note-link,.sh-repos > li,.sh-tagchip{transition:none}
+}
