@@ -15,7 +15,7 @@
   --accent: #30302e;
   --accent-soft: #f0eee6;
   --selection: #e8e5db;
-  --font-mono: var(--font-geist-mono), "SFMono-Regular", Consolas,
+  --font-mono: "SFMono-Regular", Consolas,
     "Liberation Mono", "Noto Sans Mono CJK SC", monospace;
   --content: 740px;
   --wide: 1040px;

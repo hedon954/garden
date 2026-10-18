@@ -764,3 +764,8 @@ test("list pages: images below the fold are lazy, at most one cover loads early"
     }
   }
 });
+
+test("no web font is preloaded: the page never uses one outside KaTeX", async () => {
+  const html = await (await render("/")).text();
+  assert.doesNotMatch(html, /rel="preload"[^>]*as="font"/u);
+});

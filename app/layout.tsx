@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { Geist_Mono } from "next/font/google";
 import "katex/dist/katex.min.css";
 import "./globals.css";
 import "./styles/tokens.css";
@@ -12,11 +11,6 @@ import {
   webmentionEndpoint,
 } from "./lib/site";
 import { githubUrl, siteConfig } from "./site.config";
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
 
 export async function generateMetadata(): Promise<Metadata> {
   const siteUrl = await getSiteUrl();
@@ -100,7 +94,7 @@ export default function RootLayout({
           />
         )}
       </head>
-      <body className={geistMono.variable}>
+      <body>
         <a className="skip-link" href="#main-content">
           跳到正文
         </a>
