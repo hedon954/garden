@@ -111,7 +111,7 @@ test("an HTML preview is sandboxed without the site's origin; PDF uses the nativ
   assert.equal(pdf.sandbox, undefined);
   assert.equal(previewFrameProps({ preview: "md" }), null);
   const drawer = await readFile(new URL("../app/components/garden/FilePreview.tsx", import.meta.url), "utf8");
-  assert.match(drawer, /<iframe className="gf-frame" \{\.\.\.frame\} \/>/u);
+  assert.match(drawer, /<iframe ref=\{frameRef\} className="gf-frame" \{\.\.\.frame\} \/>/u);
   assert.doesNotMatch(drawer, /allow-same-origin/u);
   // No Markdown parser in the drawer: Markdown arrives rendered.
   assert.doesNotMatch(drawer, /react-markdown|from "marked"|remark|rehype/u);
@@ -444,4 +444,21 @@ test("preview code blocks look like the article's: same code type and background
   assert.ok(page.includes(`pre{background:${PREVIEW_TOKENS.light.well}}`));
   assert.ok(page.includes(`@media (prefers-color-scheme:dark){body{background:${PREVIEW_TOKENS.dark.paper};color:${PREVIEW_TOKENS.dark.ink}}pre{background:${PREVIEW_TOKENS.dark.well}}`));
   assert.match(page, /pre\{margin:28px 0;padding:18px 22px;border-radius:8px;overflow-x:auto\}pre code\{display:block;font-size:14px;line-height:1\.6\}/u);
+});
+
+test("an html or pdf preview keeps focus in the drawer: sentinels around the iframe, and a quiet Esc hint", async () => {
+  const [drawer, css] = await Promise.all([
+    readFile(new URL("../app/components/garden/FilePreview.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/styles/a2.css", import.meta.url), "utf8"),
+  ]);
+  // Keys inside the iframe never reach the page: Tab out of it lands on a sentinel, which sends focus back into the drawer.
+  assert.match(drawer, /<span tabIndex=\{0\} className="gf-sentinel" data-gf-sentinel="before" onFocus=\{fromBefore\} \/>\s*<iframe ref=\{frameRef\} className="gf-frame" \{\.\.\.frame\} \/>\s*<span tabIndex=\{0\} className="gf-sentinel" data-gf-sentinel="after" onFocus=\{fromAfter\} \/>/u);
+  assert.match(drawer, /const fromAfter = \(\) => \{\s*panel\.current\?\.querySelector<HTMLElement>\("\.gf-dh a\[href\], \.gf-dh button"\)\?\.focus\(\);/u, "after the iframe: round to the first control");
+  assert.match(drawer, /if \(from && panel\.current\?\.querySelector\("\.gf-dh"\)\?\.contains\(from\)\) frameRef\.current\?\.focus\(\);\s*else closeButton\.current\?\.focus\(\);/u, "before the iframe: on into it, or back to 关闭");
+  assert.match(drawer, /\.filter\(\(element\) => !element\.hasAttribute\("data-gf-sentinel"\)\)/u, "the Tab handler skips the sentinels");
+  assert.match(css, /\.gf-sentinel \{ position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset\(50%\);/u);
+  // The hint: one quiet line at the bottom, muted, hidden where there is no keyboard.
+  assert.match(drawer, /<p className="gf-hint">Esc 关闭<\/p>\s*<\/aside>/u);
+  assert.match(css, /\.gf-hint \{[^}]*font-size: 12px;[^}]*color: var\(--muted\);/u);
+  assert.match(css, /@media \(hover: none\) and \(pointer: coarse\) \{ \.gf-hint \{ display: none; \} \}/u);
 });

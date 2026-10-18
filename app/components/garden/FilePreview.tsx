@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useId, useRef, useState, type MouseEvent } from "react";
+import { useCallback, useEffect, useId, useRef, useState, type FocusEvent, type MouseEvent } from "react";
 import { createPortal } from "react-dom";
 import { previewBody, previewFrameProps } from "../../../ui/garden/file-block.mjs";
 import { ActionGlyph, FileGlyph } from "./file-icons";
@@ -32,6 +32,7 @@ export function FilePreview({ file, compact }: { file: PreviewFile; compact: boo
   const request = useRef<AbortController | null>(null);
   const panel = useRef<HTMLElement>(null);
   const closeButton = useRef<HTMLButtonElement>(null);
+  const frameRef = useRef<HTMLIFrameElement>(null);
   const titleId = useId();
 
   const close = useCallback(() => {
@@ -75,7 +76,7 @@ export function FilePreview({ file, compact }: { file: PreviewFile; compact: boo
         return;
       }
       if (event.key !== "Tab" || !panel.current) return;
-      const focusable = [...panel.current.querySelectorAll<HTMLElement>("a[href], button, iframe, [tabindex]:not([tabindex='-1'])")];
+      const focusable = [...panel.current.querySelectorAll<HTMLElement>("a[href], button, iframe, [tabindex]:not([tabindex='-1'])")].filter((element) => !element.hasAttribute("data-gf-sentinel"));
       if (!focusable.length) return;
       const first = focusable[0];
       const last = focusable[focusable.length - 1];
@@ -93,6 +94,19 @@ export function FilePreview({ file, compact }: { file: PreviewFile; compact: boo
       document.removeEventListener("keydown", onKey);
     };
   }, [open, close]);
+
+  // Focus loops inside the drawer even when it starts in the iframe.
+  // After the iframe: Tab left it, so go round to the drawer's first control.
+  const fromAfter = () => {
+    panel.current?.querySelector<HTMLElement>(".gf-dh a[href], .gf-dh button")?.focus();
+  };
+  // Before the iframe: coming forward from the header, go on into the iframe;
+  // coming back out of it (Shift+Tab, or from outside), go to the close button.
+  const fromBefore = (event: FocusEvent<HTMLSpanElement>) => {
+    const from = event.relatedTarget as Node | null;
+    if (from && panel.current?.querySelector(".gf-dh")?.contains(from)) frameRef.current?.focus();
+    else closeButton.current?.focus();
+  };
 
   // A plain click opens the drawer; a modified click (new tab, new window) keeps the link.
   const openDrawer = (event: MouseEvent<HTMLAnchorElement>) => {
@@ -145,9 +159,13 @@ export function FilePreview({ file, compact }: { file: PreviewFile; compact: boo
               </div>
             ) : (
               <div className="gf-db gf-db-frame">
-                <iframe className="gf-frame" {...frame} />
+                {/* Keys pressed inside the iframe never reach this page, so Tab out of it is caught here and kept in the drawer. */}
+                <span tabIndex={0} className="gf-sentinel" data-gf-sentinel="before" onFocus={fromBefore} />
+                <iframe ref={frameRef} className="gf-frame" {...frame} />
+                <span tabIndex={0} className="gf-sentinel" data-gf-sentinel="after" onFocus={fromAfter} />
               </div>
             )}
+            <p className="gf-hint">Esc 关闭</p>
           </aside>
         </div>,
         document.body,

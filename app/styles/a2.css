@@ -1599,6 +1599,11 @@ html[data-theme="dark"] .gf-scrim { background: rgb(0 0 0 / 45%); }
 .gf-db-frame { padding: 0; overflow: hidden; background: var(--card); }
 .gf-frame { display: block; width: 100%; height: 100%; border: 0; background: #fff; }
 .gf-drawer[data-preview="pdf"] .gf-frame { background: var(--paper-deep); }
+/* Focus catchers around the iframe: reachable by Tab, never seen. */
+.gf-sentinel { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+/* A quiet reminder; Esc pressed inside an iframe cannot reach the page. Phones have no Esc. */
+.gf-hint { flex: none; margin: 0; padding: 6px 20px 8px; font-size: 12px; line-height: 1.5; color: var(--muted); }
+@media (hover: none) and (pointer: coarse) { .gf-hint { display: none; } }
 .gf-db .gf-doc { max-width: none; margin: 0; font-size: 15px; line-height: 1.75; }
 .gf-db .gf-doc > :first-child { margin-top: 0; }
 @keyframes gf-fade { from { opacity: 0; } }
