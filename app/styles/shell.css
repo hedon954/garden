@@ -67,8 +67,6 @@ html[data-mod="other"] .sh-search .kbd-other{display:inline}
 .sh-menu-btn,.sh-search-m{display:none}
 .i-sun,html[data-theme="dark"] .i-moon{display:none}
 html[data-theme="dark"] .i-sun{display:inline}
-/* No JavaScript: the theme cannot be switched, the page follows the system (build/dark-fallback-postcss.mjs). */
-@media (scripting:none){.sh-theme,.sh-menu-theme{display:none}}
 .sh-menu{display:none}
 
 /* ---------- page frame ---------- */
@@ -304,6 +302,10 @@ html[data-theme="dark"] .sh-pal-scrim{background:rgba(0,0,0,.55)}
   .sh-pal-foot{display:none}
   .sh-pal-input{font-size:17px;height:56px}
 }
+/* No JavaScript: the theme cannot be switched, the page follows the system (build/dark-fallback-postcss.mjs).
+   Keep this after every rule that shows the toggles (the 820px block above sets .sh-menu-theme to flex);
+   tests/header-nojs.test.mjs checks the order in the built CSS. */
+@media (scripting:none){.sh-theme,.sh-menu-theme{display:none}}
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation:none!important;transition:none!important}
   html{scroll-behavior:auto!important}
