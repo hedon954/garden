@@ -35,7 +35,7 @@ export async function generateMetadata(): Promise<Metadata> {
       },
     },
     icons: {
-      icon: siteConfig.logo,
+      icon: "/favicon.svg",
     },
     robots: {
       index: true,

@@ -33,8 +33,9 @@ test("server-renders the finished blog home", async () => {
   const html = await response.text();
   assert.match(html, /<title>[^<]+<\/title>/i);
   assert.match(html, /记一些正在做的事/);
-  assert.match(html, /class="sh-mark"[^>]*src="\/favicon\.svg"/);
-  assert.match(html, /<link rel="icon" href="[^"]*\/favicon\.svg"/);
+  assert.match(html, /data-mark="monogram"/);
+  assert.match(html, /class="sh-mark"/);
+  assert.match(html, /data-search="ghost"/);
   assert.doesNotMatch(html, /class="sh-feature"[\s\S]{0,400}style="background:var\(--cover\)"/);
   assert.match(html, /<time class="num" dateTime="2026-10-16">2026-10-16<\/time>/);
   assert.match(html, /<time class="num" dateTime="2026-10-10">2026-10-10<\/time>/);
@@ -47,9 +48,6 @@ test("server-renders the finished blog home", async () => {
   assert.match(shell, /\.sh-foot-links\{display:flex;align-items:center;gap:20px\}/);
   assert.match(shell, /\.sh-foot a\{display:inline-flex;align-items:center;gap:6px;min-height:44px/);
   assert.match(shell, /\.sh-foot-links a svg\{display:block;flex:none;width:16px;height:16px\}/);
-  assert.match(shell, /@media \(pointer: fine\)\{\.sh-search kbd\{display:inline\}/);
-  assert.match(shell, /\.sh-search\{width:44px;height:44px;min-height:44px/);
-  assert.match(shell, /\.sh-search \.lbl,\.sh-search kbd\{display:none\}/);
   const footer = html.match(/<footer class="sh-footer"[\s\S]*?<\/footer>/)?.[0] ?? "";
   assert.match(footer, /class="sh-foot-links"/);
   assert.match(footer, /GitHub/);

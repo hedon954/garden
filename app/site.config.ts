@@ -31,19 +31,10 @@ export type SiteConfig = {
   footer: string;
 };
 
-const DEFAULT_MARK = "/favicon.svg";
-
-/** A site logo path, or the shared default mark. */
-export function siteMark(logo?: string) {
-  const value = logo?.trim() ?? "";
-  if (value.startsWith("/") || value.startsWith(".") || /^https?:/i.test(value)) return value;
-  return DEFAULT_MARK;
-}
-
 /** 站点身份来自根目录 site.config.yaml，由 garden sync 生成。 */
 export const siteConfig = {
   ...raw,
-  logo: siteMark(raw.logo),
+  logo: raw.logo || "monogram",
 } as SiteConfig;
 export { githubUrl };
 

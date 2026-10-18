@@ -3,6 +3,7 @@ export const siteConfig = {
   tagline: "写作 · 记录 · 保持好奇",
   description: "文章、随想和专栏。",
   locale: "zh_CN",
+  logo: "monogram",
   author: {
     name: "Your Name",
     github: "your-github-id",
