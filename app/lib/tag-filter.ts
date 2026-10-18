@@ -146,7 +146,7 @@ export function tagFilterHref(selected: readonly string[], pathname = "/blog") {
 }
 
 /**
- * Where a tag on an article points: the list page at its exported address
+ * Where a tag link points (tags on an article, the /tags page): the list page at its exported address
  * (`/blog/`, with the slash, so the static host does not answer /blog?t=… with
  * a 301 first), filtered to that one tag. The tag is URL-encoded.
  */

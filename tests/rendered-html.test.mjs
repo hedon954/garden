@@ -609,7 +609,7 @@ test("/blog filters by several tags through the URL, and /tags is only an index"
   assert.doesNotMatch(source, /topic|按分类筛选/);
 
   assert.match(tagsPage, /<ul class="sh-tagchips sh-tagindex" aria-label="全部标签">/);
-  assert.match(tagsPage, /<a href="\/blog\?t=Markdown" class="sh-tagchip">#<!-- -->Markdown<span class="n num">/);
+  assert.match(tagsPage, /<a href="\/blog\/\?t=Markdown" class="sh-tagchip">#<!-- -->Markdown<span class="n num">/);
   assert.doesNotMatch(tagsPage, /aria-pressed|sh-tagresult|分类/);
   assert.match(redirect, /router\.replace\(target\)/);
 
@@ -890,4 +890,21 @@ test("0.5.14: header nav links end with a slash and still mark the current secti
     const menu = html.match(/<nav class="sh-menu" id="sh-menu"[\s\S]*?<\/nav>/)?.[0] ?? "";
     assert.equal((menu.match(/href="\/(blog|thoughts|columns|tags|about)\/"/g) ?? []).length, 5, `mobile menu on ${pathname}`);
   }
+});
+
+test("0.5.14: /tags links point at /blog/?t=… with the slash, URL-encoded", async () => {
+  const html = await (await render("/tags")).text();
+  const list = html.match(/<ul class="sh-tagchips sh-tagindex"[\s\S]*?<\/ul>/)?.[0] ?? "";
+  const hrefs = [...list.matchAll(/<a [^>]*href="([^"]+)"[^>]*class="sh-tagchip"|<a class="sh-tagchip" href="([^"]+)"/g)].map((m) => m[1] ?? m[2]);
+  assert.ok(hrefs.length > 3, `found ${hrefs.length} tag links`);
+  for (const href of hrefs) {
+    const decoded = href.replace(/&amp;/g, "&");
+    assert.match(decoded, /^\/blog\/\?t=[^&]+$/u, href);
+    const tag = new URL(decoded, "https://example.com").searchParams.get("t");
+    assert.equal(decoded, `/blog/?${new URLSearchParams({ t: tag })}`, "URL-encoded the same way the list reads it");
+  }
+  const source = await readFile(new URL("../app/tags/page.tsx", import.meta.url), "utf8");
+  assert.match(source, /<Link className="sh-tagchip" href=\{articleTagHref\(tag\)\}>/u);
+  const redirect = await readFile(new URL("../app/components/TagRedirect.tsx", import.meta.url), "utf8");
+  assert.match(redirect, /tagFilterHref\(tags, ARTICLE_TAG_LIST\)/u);
 });
