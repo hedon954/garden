@@ -15,24 +15,26 @@ import remarkParse from "remark-parse";
 import { unified } from "unified";
 import { visit } from "unist-util-visit";
 import { splitHeadingNumber } from "./heading-number";
+import { siteHref } from "./site-href";
 
 export { columns, posts, thoughts };
 export type { ContentEntry, MediaItem };
 
-export const postHref = (post: Pick<ContentEntry, "path">) => `/blog/${post.path}`;
+export const postHref = (post: Pick<ContentEntry, "path">) => siteHref(`/blog/${post.path}`);
 export const columnEntryPath = (entry: Pick<ContentEntry, "column" | "path">) => {
   const prefix = entry.column ? `${entry.column}/` : "";
   return prefix && entry.path.startsWith(prefix) ? entry.path.slice(prefix.length) : entry.path;
 };
 export const columnHref = (entry: Pick<ContentEntry, "column" | "path">) =>
-  `/columns/${entry.column}/${columnEntryPath(entry)}`;
+  siteHref(`/columns/${entry.column}/${columnEntryPath(entry)}`);
 
 /** The column a post belongs to (the first one, if it is listed in several). */
 export const columnOfPost = (post: Pick<ContentEntry, "path">) => {
   const entry = columns.find((item) => item.path === post.path && item.column);
   return entry?.column ? { slug: entry.column, title: entry.columnTitle ?? entry.column } : undefined;
 };
-export const columnIndexHref = (slug: string) => `/columns/#${slug}`;
+export const columnIndexHref = (slug: string) => siteHref(`/columns/#${slug}`);
+export const thoughtHref = (slug: string) => siteHref(`/thoughts/${slug}`);
 
 export const formatDate = (value: string, withTime = false) => {
   if (!withTime) return demoDateLabel(value);

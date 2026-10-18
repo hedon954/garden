@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { siteHref } from "../lib/site-href";
 import { a2Slugs, readA2Article } from "../lib/a2-preview";
 
 export const metadata = {
@@ -17,7 +18,7 @@ export default function A2Index() {
       <ul className="sh-rows">
         {articles.map((article) => (
           <li className="sh-row" key={article.slug}>
-            <h3><Link href={`/a2/${article.slug}`}>{article.title}</Link></h3>
+            <h3><Link href={siteHref(`/a2/${article.slug}`)}>{article.title}</Link></h3>
             <p>{article.description}</p>
           </li>
         ))}

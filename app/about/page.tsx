@@ -3,6 +3,7 @@ import { ArrowRight } from "@phosphor-icons/react/ssr";
 import { GithubProfile } from "../components/GithubProfile";
 import { PageIntro } from "../components/PageIntro";
 import { siteConfig } from "../site.config";
+import { siteHref } from "../lib/site-href";
 
 const about = siteConfig.pages.about;
 const heading = about.heading ?? "关于";
@@ -43,7 +44,7 @@ export default function AboutPage() {
               <li key={item}>{item}</li>
             ))}
           </ul>
-          <Link href={cta.href}>
+          <Link href={siteHref(cta.href)}>
             {cta.label}
             <ArrowRight size={16} />
           </Link>

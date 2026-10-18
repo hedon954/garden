@@ -1,7 +1,8 @@
 import type { MetadataRoute } from "next";
-import { columnHref, columns, postHref, posts } from "./lib/content";
+import { columnHref, columns, postHref, posts, thoughtHref } from "./lib/content";
 import { absoluteUrl, getSiteUrl } from "./lib/site";
 import { getPublishedThoughts } from "./lib/public-thoughts";
+import { siteHref } from "./lib/site-href";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = await getSiteUrl();
@@ -14,7 +15,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { path: "/about", priority: 0.5, changeFrequency: "monthly" as const },
     { path: "/garden", priority: 0.4, changeFrequency: "monthly" as const },
   ].map((route) => ({
-    url: absoluteUrl(route.path, baseUrl),
+    url: absoluteUrl(siteHref(route.path), baseUrl),
     changeFrequency: route.changeFrequency,
     priority: route.priority,
   }));
@@ -37,7 +38,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.75,
     })),
     ...thoughts.map((thought) => ({
-      url: absoluteUrl(`/thoughts/${thought.slug}`, baseUrl),
+      url: absoluteUrl(thoughtHref(thought.slug), baseUrl),
       lastModified: new Date(thought.updated ?? thought.date),
       changeFrequency: "monthly" as const,
       priority: 0.6,

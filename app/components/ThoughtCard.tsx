@@ -14,6 +14,7 @@ import {
 } from "../lib/content";
 import { githubUrl, siteConfig } from "../site.config";
 import { MarkdownArticle } from "./MarkdownArticle";
+import { siteHref } from "../lib/site-href";
 
 const icons = {
   image: ImageSquare,
@@ -68,7 +69,7 @@ export function ThoughtCard({
 
   return (
     <article id={thought.slug} className="thought-card h-entry">
-      <Link className="u-url sr-only" href={`/thoughts/${thought.slug}`}>
+      <Link className="u-url sr-only" href={siteHref(`/thoughts/${thought.slug}`)}>
         {thought.title} 永久链接
       </Link>
       <a
@@ -232,7 +233,7 @@ export function ThoughtCard({
       )}
 
       {showPermalink && (
-        <Link className="thought-permalink" href={`/thoughts/${thought.slug}`}>
+        <Link className="thought-permalink" href={siteHref(`/thoughts/${thought.slug}`)}>
           永久链接
           <ArrowUpRight size={15} />
         </Link>

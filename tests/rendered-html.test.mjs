@@ -193,7 +193,7 @@ test("renders complex Markdown, article covers, and mixed thought media", async 
   assert.match(thoughts, /<audio/);
   assert.match(thoughts, /<video/);
   assert.match(thoughts, /class="link-embed u-bookmark-of"/);
-  assert.match(thoughts, /href="\/thoughts\/rainy-night"/);
+  assert.match(thoughts, /href="\/thoughts\/rainy-night\/"/);
 
   const kv = await render("/a2/kv-cache");
   assert.equal(kv.status, 200);
@@ -635,7 +635,7 @@ test("/blog renders the full list on the server, before any script runs", async 
   const posts = JSON.parse(generated.match(/export const posts = (\[[\s\S]*?\]) as ContentEntry\[\];/)[1]);
   assert.ok(posts.length >= 9);
   for (const post of posts) {
-    assert.ok(visible.includes(`href="/blog/${post.path}"`), `${post.path} is in the server-rendered list`);
+    assert.ok(visible.includes(`href="/blog/${post.path}/"`), `${post.path} is in the server-rendered list`);
     assert.ok(visible.includes(post.title.replace(/&/g, "&amp;")), `${post.title} is in the server-rendered list`);
   }
   assert.match(page, /<Suspense fallback=\{<BlogArchiveFallback posts=\{list\} series=\{series\} \/>\}>/);

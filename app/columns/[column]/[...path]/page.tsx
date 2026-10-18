@@ -25,6 +25,7 @@ import {
   webmentionApiEndpoint,
 } from "../../../lib/site";
 import { githubUrl, siteConfig } from "../../../site.config";
+import { siteHref } from "../../../lib/site-href";
 
 export function generateStaticParams() {
   return columns.map((entry) => ({
@@ -88,7 +89,7 @@ export default async function ColumnEntryPage({
   return (
     <main className="column-reading-page">
       <aside className="series-nav">
-        <Link href="/columns" className="back-link">
+        <Link href={siteHref("/columns")} className="back-link">
           <ArrowLeft size={15} />
           所有专栏
         </Link>

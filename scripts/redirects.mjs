@@ -20,6 +20,7 @@ import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { parse as parseYaml } from "yaml";
 import { configuredSiteAddress } from "../ui/garden/same-site.mjs";
+import { withTrailingSlash } from "../ui/garden/site-href.mjs";
 
 const escapeHtml = (value) => String(value).replace(/&/gu, "&amp;").replace(/"/gu, "&quot;").replace(/</gu, "&lt;").replace(/>/gu, "&gt;");
 
@@ -109,7 +110,8 @@ export function generateRedirects({ outDir, config = {}, env = {}, basePath = ""
         continue;
       }
     }
-    const href = external ? to : `${base}${to}`;
+    // A static export serves pages as folders: the target keeps the trailing slash like every site link.
+    const href = external ? to : withTrailingSlash(`${base}${to}`);
     const canonical = external || !origin ? href : `${origin}${href}`;
     fs.mkdirSync(path.dirname(file), { recursive: true });
     fs.writeFileSync(file, redirectPage({ href, canonical }));

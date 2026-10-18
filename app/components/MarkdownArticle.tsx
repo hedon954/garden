@@ -32,6 +32,7 @@ import { columnHref, columns, postHref, posts, thoughts } from "../lib/content";
 import { LinkCardRefresh } from "./LinkCardRefresh";
 import { linkHost } from "../../scripts/link-meta-core.mjs";
 import { cardDate } from "../../ui/garden/card-refresh.mjs";
+import { siteHref } from "../lib/site-href";
 
 // Full URLs back to this site are internal links, written as root-relative paths.
 const sameSite = sameSiteMatcher(siteLinks?.address ?? "", siteLinks?.basePath ?? "");
@@ -50,6 +51,8 @@ const internalRoute = internalLinkResolver({
     ...thoughts.map((thought) => `/thoughts/${thought.slug}`),
   ],
   basePath: siteLinks?.basePath ?? "",
+  // Same shape as every other address in the site: ends with a slash.
+  format: siteHref,
 });
 
 /** The site's favicon, downloaded at build time; nothing when there is none. */

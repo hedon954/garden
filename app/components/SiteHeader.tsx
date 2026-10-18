@@ -19,6 +19,7 @@ import { resolveDark, themeSwitchProps } from "../../ui/garden/theme.mjs";
 import { SITE_NAV, isCurrentNav } from "../../ui/garden/site-nav.mjs";
 import { createIdbStore, loadFullIndex, saveDataOn, whenIdleAfterLoad } from "../../ui/garden/search-full.mjs";
 import { siteConfig } from "../site.config";
+import { siteHref } from "../lib/site-href";
 
 /** One entry of /search-index.json: titles, tags, dates and a short excerpt, never the full body. */
 type SearchRecord = {
@@ -433,7 +434,7 @@ export function SiteHeader() {
                     ref={(node) => {
                       resultRefs.current[index] = node;
                     }}
-                    href={result.item.path}
+                    href={siteHref(result.item.path)}
                     onClick={closeSearch}
                     onFocus={() => setActiveResult(index)}
                     role="option"

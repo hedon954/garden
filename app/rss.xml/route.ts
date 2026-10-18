@@ -1,5 +1,5 @@
 import { marked } from "marked";
-import { columnHref, columns, postHref, posts } from "../lib/content";
+import { columnHref, columns, postHref, posts, thoughtHref } from "../lib/content";
 import { getPublishedThoughts } from "../lib/public-thoughts";
 import { configuredSiteUrl, siteDescription, siteName } from "../lib/site";
 import { contentForFeed } from "../../ui/core/transform.mjs";
@@ -27,7 +27,7 @@ export async function GET() {
     ...thoughts.map((thought) => ({
       ...thought,
       description: stripCardMarkers(thought.content).replace(/\s+/gu, " ").slice(0, 180),
-      path: `/thoughts/${thought.slug}`,
+      path: thoughtHref(thought.slug),
     })),
   ].sort((a, b) => Date.parse(b.date) - Date.parse(a.date));
 

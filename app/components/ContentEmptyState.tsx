@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { ArrowRight, Article, Books, Quotes } from "@phosphor-icons/react/ssr";
+import { siteHref } from "../lib/site-href";
 
 const emptyContent = {
   posts: {
@@ -44,7 +45,7 @@ export function ContentEmptyState({ kind }: { kind: keyof typeof emptyContent })
         <h2 id={`${kind}-empty-title`}>{content.title}</h2>
         <p>{content.description}</p>
       </div>
-      <Link href={content.actionHref}>
+      <Link href={siteHref(content.actionHref)}>
         {content.actionLabel}
         <ArrowRight size={17} />
       </Link>
