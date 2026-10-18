@@ -6,6 +6,7 @@ import { canonicalSiteDate } from "./site-date.mjs";
 import { gardenSiteRoot } from "./garden-paths.mjs";
 import { checkUiBlock } from "../ui/core/validate.mjs";
 import { checkGardenMarkdown } from "../ui/garden/check.mjs";
+import { checkFileSources } from "../ui/garden/file-paths.mjs";
 
 const siteRoot = gardenSiteRoot();
 const calloutTypes = new Set([
@@ -297,6 +298,10 @@ const checkFile = (filePath) => {
     title: typeof data.title === "string" ? data.title : "",
     titleLine,
   })) {
+    const target = item.severity === "warning" ? warnings : errors;
+    target.push({ code: item.code, line: item.line, message: `${sourcePath}: ${item.message} 建议：${item.suggestion}` });
+  }
+  for (const item of checkFileSources(raw, absolute, path.join(siteRoot, "content"))) {
     const target = item.severity === "warning" ? warnings : errors;
     target.push({ code: item.code, line: item.line, message: `${sourcePath}: ${item.message} 建议：${item.suggestion}` });
   }

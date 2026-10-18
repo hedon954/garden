@@ -356,6 +356,7 @@ function help() {
   garden embed            拉取外链摘要
   garden links            重新拉取外链图标（build 时会自动做）
   garden images           读取新的远程图片尺寸，写入 image-sizes.json（build 时会自动做）
+  garden files            读取 garden file 里远程文件的大小，写入 file-sizes.json（build 时会自动做）
   garden init [目录]      创建只含稿和配置的新站点
   garden check <文章.md>  检查一篇博文的硬性结构
   garden ui <子命令>      Intelligent UI：scan、check、apply、prompt、schema、catalog
@@ -385,6 +386,8 @@ switch (command) {
     if (process.env.GARDEN_OFFLINE !== "1") runNode("scripts/link-assets.mjs");
     // Remote image sizes: only new images are probed; the rest come from image-sizes.json.
     if (process.env.GARDEN_OFFLINE !== "1") runNode("scripts/image-sizes.mjs");
+    // Sizes of remote files in garden file blocks; failures fall back to file-sizes.json.
+    if (process.env.GARDEN_OFFLINE !== "1") runNode("scripts/file-sizes.mjs");
     runVinext(["build", ...rest], { copyDist: true });
     // Pages for old addresses listed under redirects in site.config.yaml (static export only).
     if (process.env.STATIC_EXPORT === "1") runNode("scripts/redirects.mjs");
@@ -394,6 +397,9 @@ switch (command) {
     break;
   case "images":
     runNode("scripts/image-sizes.mjs");
+    break;
+  case "files":
+    runNode("scripts/file-sizes.mjs");
     break;
   case "start":
     runVinext(["start", ...rest]);
