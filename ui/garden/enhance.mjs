@@ -132,6 +132,36 @@ export function figureBreakout({
 }
 
 /**
+ * The same decision made at build time, when the image's pixel size is known:
+ * a figure in a full-width article column (`column` wide, the image card
+ * `inset` narrower) with room to spare on both sides. Returns how far the
+ * figure steps out on each side (`side`, 0 when it stays in the column) and
+ * the inline width the image gets, so its box is the right size before the
+ * file loads. The browser repeats the calculation after hydration and keeps
+ * it as the fallback for images without a known size.
+ */
+export function figureLayout({ naturalWidth = 0, attrWidth = 0, column = 740, inset = 26, density = 2, maxWidth = 1040 }) {
+  if (!(naturalWidth > 0)) return { side: 0, width: attrWidth > 0 ? attrWidth : 0 };
+  // Before any widening the image shows at its own pixels (or its width attribute), capped at the card.
+  const base = attrWidth > 0 ? Math.min(attrWidth, naturalWidth) : naturalWidth;
+  const viewport = 100000;
+  const articleLeft = (viewport - column) / 2;
+  const { left } = figureBreakout({
+    viewport,
+    articleLeft,
+    articleRight: articleLeft + column,
+    figureClient: column,
+    imageClient: Math.min(base, column - inset),
+    naturalWidth,
+    attrWidth,
+    density,
+    maxWidth,
+  });
+  const widened = figureImageWidth({ naturalWidth, attrWidth, widened: left > 0, density });
+  return { side: left, width: widened || base };
+}
+
+/**
  * Slide the TOC right of a wide element measured against the TOC's original
  * position. Hide it when the shifted TOC would not fit on screen.
  */

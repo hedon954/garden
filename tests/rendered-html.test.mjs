@@ -305,7 +305,7 @@ test("the example post keeps a wide local image, and tags create a release", asy
   assert.match(figImg, /max-width: 100%;/);
   assert.doesNotMatch(figImg, /(^|[\s;{])width: 100%/);
   assert.match(measure, /image\.style\.removeProperty\("width"\)/);
-  assert.match(measure, /figureImageWidth\(\{ naturalWidth: image\.naturalWidth, attrWidth, widened: breakout\.left > 0 \}\)/);
+  assert.match(measure, /figureImageWidth\(\{ naturalWidth: pixels, attrWidth, widened: breakout\.left > 0 \}\)/);
   assert.doesNotMatch(measure, /imageDisplayWidth/);
   assert.match(measure, /naturalWidth/);
   assert.match(publish, /if: github\.event_name == 'push' && startsWith\(github\.ref, 'refs\/tags\/v'\)/);
@@ -315,7 +315,9 @@ test("the example post keeps a wide local image, and tags create a release", asy
   assert.equal(response.status, 200);
   const html = await response.text();
   assert.match(html, /\/media\/posts\/windowsill-herbs\/sill\.svg/);
-  assert.match(html, /class="fig"/);
+  // Its size is read at build time: the 1040px breakout and the image box are there before it loads.
+  assert.match(html, /<figure class="fig fig-wide" style="--wl:150px;--wr:150px">/);
+  assert.match(html, /<img[^>]*width="2560" height="840" data-nw="2560" data-bw="1280" style="width:1280px"/);
   assert.match(html, /朝北的窗台，从左到右是罗勒、薄荷和一只空盆。/);
   assert.doesNotMatch(html, /oss-|aliyuncs|myqcloud/i);
   // the markdown syntax tree never leaks onto the image as an attribute

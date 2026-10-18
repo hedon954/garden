@@ -6,7 +6,7 @@ import { useEffect, useState, type ComponentPropsWithoutRef } from "react";
 type MarkdownImageProps = ComponentPropsWithoutRef<"img"> & { node?: unknown };
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export function MarkdownImage({ alt = "", src, node, ...props }: MarkdownImageProps) {
+export function MarkdownImage({ alt = "", src, node, style, ...props }: MarkdownImageProps) {
   const [open, setOpen] = useState(false);
   const description = alt || "查看原图";
 
@@ -37,7 +37,7 @@ export function MarkdownImage({ alt = "", src, node, ...props }: MarkdownImagePr
       >
         {/* Native images preserve Typora-authored relative paths. */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img loading="lazy" alt={alt} src={src} {...props} />
+        <img loading="lazy" alt={alt} src={src} {...props} style={style} />
       </button>
 
       {open ? (
@@ -49,8 +49,9 @@ export function MarkdownImage({ alt = "", src, node, ...props }: MarkdownImagePr
           onClick={() => setOpen(false)}
         >
           <div className="markdown-image-lightbox-content" onClick={(event) => event.stopPropagation()}>
+            {/* The preview sizes itself; the article's inline width stays on the article image. */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={src} alt={alt} {...props} />
+            <img src={src} alt={alt} width={props.width} height={props.height} />
             <button
               type="button"
               className="markdown-image-lightbox-close"

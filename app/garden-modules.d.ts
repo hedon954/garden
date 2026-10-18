@@ -59,6 +59,8 @@ declare module "@garden/generated-content" {
   };
   export type LinkAssets = { favicons: Record<string, string>; cards: Record<string, LinkCardMeta> };
   export const linkAssets: LinkAssets;
+  /** Intrinsic sizes of body images by src, read at build time. */
+  export const imageSizes: Record<string, { width: number; height: number }>;
 }
 
 declare module "@garden/site-config" {

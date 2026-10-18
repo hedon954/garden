@@ -730,6 +730,19 @@ html[data-theme="dark"] .markdown-body .markdown-alert code {
   }
 }
 
+/* A breakout decided at build time from the image's known size. It holds the
+   figure at its final width before the image loads and before the script
+   measures; the script then takes over (and removes .fig-wide). Only where the
+   article column is a full 740px with room on both sides. */
+@media (min-width: 1348px) {
+  .post-reading-page .markdown-body .fig-wide {
+    margin-left: calc(-1 * var(--wl, 0px));
+    margin-right: calc(-1 * var(--wr, 0px));
+    max-width: none;
+    width: auto;
+  }
+}
+
 .toc {
   font-size: var(--fs-small);
   line-height: 1.5;

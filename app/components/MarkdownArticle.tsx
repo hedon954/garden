@@ -20,7 +20,8 @@ import { MarkdownImage } from "./MarkdownImage";
 import { CodeCopy } from "./garden/chrome";
 import { CodeDiff } from "./garden/chrome";
 import { GardenBlock } from "./garden/GardenBlock";
-import { linkAssets } from "@garden/generated-content";
+import { imageSizes, linkAssets } from "@garden/generated-content";
+import { imageDimensions, lookupImageSize } from "../../ui/garden/image-dims.mjs";
 import { siteConfig, siteLinks } from "@garden/site-config";
 import { articleLink, sameSiteMatcher } from "../../ui/garden/same-site.mjs";
 import { LinkCardRefresh } from "./LinkCardRefresh";
@@ -225,7 +226,7 @@ export function MarkdownArticle({ content }: { content: string }) {
   return (
     <div className="markdown-body prose">
       <ReactMarkdown
-        remarkPlugins={[...markdownPlugins, [remarkLinkCard, { sameSite }], remarkA2]}
+        remarkPlugins={[...markdownPlugins, [remarkLinkCard, { sameSite }], [remarkA2, { imageSize: (src: string) => lookupImageSize(imageSizes, src) }]]}
         rehypePlugins={[
           rehypeRaw,
           rehypeKatex,
@@ -260,7 +261,11 @@ export function MarkdownArticle({ content }: { content: string }) {
               </a>
             );
           },
-          img: MarkdownImage,
+          img: (props) => {
+            const size = lookupImageSize(imageSizes, typeof props.src === "string" ? props.src : undefined);
+            const dims = imageDimensions(props, size);
+            return <MarkdownImage {...props} {...dims} style={{ ...props.style, ...dims.style }} />;
+          },
           table: ({ children, ...props }) => (
             <div className="table-wrap" role="region" aria-label="表格，可横向滚动" tabIndex={0}>
               <table {...props}>{children}</table>

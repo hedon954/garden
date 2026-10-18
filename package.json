@@ -82,6 +82,7 @@
     "fuse.js": "^7.5.0",
     "github-slugger": "^2.0.0",
     "gray-matter": "^4.0.3",
+    "image-size": "^2.0.4",
     "katex": "^0.16.47",
     "marked": "^16.4.2",
     "mdast-util-from-markdown": "^2.1.0",
