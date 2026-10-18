@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { columns, postHref, posts } from "./lib/content";
+import { columns, formatDate, postHref, posts } from "./lib/content";
 import { githubUrl, siteConfig } from "./site.config";
 
 export const metadata = {
@@ -38,7 +38,7 @@ function PinMark() {
 function Meta({ post }: { post: Post }) {
   return (
     <span className="meta">
-      <time className="num" dateTime={day(post.date)}>{day(post.date)}</time>
+      <time className="num" dateTime={day(post.date)}>{formatDate(post.date)}</time>
       {post.topic ? ` · ${post.topic}` : ""}
     </span>
   );
@@ -70,7 +70,7 @@ function Feature({ post, labelledBy = "ft" }: { post: Post; labelledBy?: string 
       <div className="copy">
         <p className="kicker">
           <span>最新文章</span>
-          <time className="num" dateTime={day(post.date)}>{day(post.date)}</time>
+          <time className="num" dateTime={day(post.date)}>{formatDate(post.date)}</time>
           {post.topic ? <span>{post.topic}</span> : null}
         </p>
         <h2 id={labelledBy}><Link href={postHref(post)}>{post.title}</Link></h2>
@@ -93,7 +93,7 @@ function Recent({ items }: { items: Post[] }) {
       <ol className="sh-rows">
         {items.map((post) => (
           <li className="sh-row" key={post.path}>
-            <time className="num" dateTime={day(post.date)}>{day(post.date)}</time>
+            <time className="num" dateTime={day(post.date)}>{formatDate(post.date)}</time>
             <h3><Link href={postHref(post)}>{post.title}</Link></h3>
             {post.description ? <p>{post.description}</p> : null}
             {post.topic ? <Link className="cat" href={`/blog?topic=${encodeURIComponent(post.topic)}`}>{post.topic}</Link> : null}
@@ -168,18 +168,20 @@ function HomeA({ feature, pinned, recent, series }: { feature: Post; pinned: Pos
       {pinned.length > 0 ? (
         <section className="sh-section sh-pin sh-pin-a" aria-labelledby="h-pin">
           <div className="sh-sec-head section-heading accent-heading"><h2 id="h-pin">置顶</h2></div>
-          <ol>
+          <div className="sh-pin-cards">
             {pinned.map((post) => (
-              <li key={post.path}>
+              <article key={post.path}>
                 <h3><Link href={postHref(post)}>{post.title}</Link></h3>
                 {post.description ? <p className="excerpt">{post.description}</p> : null}
                 <Meta post={post} />
-              </li>
+              </article>
             ))}
-          </ol>
+          </div>
         </section>
       ) : null}
-      <Recent items={recent} />
+      <div className="sh-read">
+        <Recent items={recent} />
+      </div>
       {columns[0] && series.length ? <Columns series={series} variant="a" /> : null}
     </main>
   );

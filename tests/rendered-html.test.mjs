@@ -34,8 +34,10 @@ test("server-renders the finished blog home", async () => {
   assert.match(html, /<title>[^<]+<\/title>/i);
   assert.match(html, /记一些正在做的事/);
   assert.doesNotMatch(html, /class="sh-feature"[\s\S]{0,400}style="background:var\(--cover\)"/);
-  assert.match(html, /<time class="num" dateTime="2026-10-16">2026-10-16<\/time>/);
-  assert.match(html, /<time class="num" dateTime="2026-10-10">2026-10-10<\/time>/);
+  assert.match(html, /<time class="num" dateTime="2026-10-16">2026 年 10 月 16 日<\/time>/);
+  assert.match(html, /<time class="num" dateTime="2026-10-10">2026 年 10 月 10 日<\/time>/);
+  const rows = html.match(/<ol class="sh-rows"[\s\S]*?<\/ol>/)?.[0] ?? "";
+  assert.doesNotMatch(rows, /2026-10-16|2026 年 10 月 16 日/);
   const [shell, articleCss] = await Promise.all([
     readFile(new URL("../app/styles/shell.css", import.meta.url), "utf8"),
     readFile(new URL("../app/styles/a2.css", import.meta.url), "utf8"),
@@ -69,7 +71,9 @@ test("server-renders the finished blog home", async () => {
   assert.match(shell, /\.sh-intro p\{[^}]*text-wrap:balance/);
   assert.match(html, /class="sh-mark"[^>]*src="\/favicon\.svg"/);
   assert.match(html, /class="sh-main home-a"/);
-  assert.match(shell, /\.home-a \.sh-pin-a li\{[^}]*border-left:2px solid var\(--blue\)/);
+  assert.match(shell, /\.home-a \.sh-pin-cards\{display:grid;grid-template-columns:repeat\(3,minmax\(0,1fr\)\)/);
+  assert.match(shell, /\.home-a \.sh-read\{max-width:var\(--col\)/);
+  assert.match(shell, /\.home-a \.sh-intro h1\{font:500 var\(--fs-meta\)\/1\.6 var\(--sans\)/);
   assert.match(shell, /\.home-b \.sh-pin-b\{background:var\(--paper-2\);border-radius:var\(--r-lg\)/);
   assert.match(shell, /\.home-b \.sh-split \.sh-pin-b\{order:-1\}/);
   assert.match(shell, /\.home-c \.sh-feature h2\{font:600 56px\/1\.15 var\(--serif\)/);
