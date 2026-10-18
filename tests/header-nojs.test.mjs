@@ -67,3 +67,12 @@ test("with JavaScript on the menu works as before and the no-JS links stay out o
   assert.equal(value("sh-menu", "visibility", { ...at390on, state: [".is-open"] }), "visible");
   assert.match(header, /<button className="sh-icon sh-menu-btn" type="button" aria-expanded=\{menuOpen\} aria-controls="sh-menu" aria-label=\{menuOpen \? "关闭菜单" : "打开菜单"\} onClick=\{\(\) => setMenuOpen\(\(open\) => !open\)\}>/u);
 });
+
+test("with JavaScript off the phone search button is hidden; with it on it shows (built CSS)", () => {
+  for (const width of [390, 820]) {
+    const win = winning(css, ["sh-icon", "sh-search-m"], "display", { width, scripting: "none" });
+    assert.equal(win?.value, "none", `.sh-search-m at ${width} with JS off is ${win?.value} from ${win?.media} ${win?.selector}`);
+  }
+  assert.equal(value(["sh-icon", "sh-search-m"], "display", at390on), "inline-grid");
+  assert.equal(value(["sh-icon", "sh-search-m"], "display", { width: 1440, scripting: "none" }), "none", "phone button never shows on desktop");
+});
