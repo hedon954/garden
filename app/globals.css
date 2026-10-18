@@ -3821,7 +3821,7 @@ html[data-theme="dark"] .article-references {
     max-height: min(72vh, 560px);
     max-height: min(72dvh, 560px);
     margin: 0;
-    padding: 0 24px calc(18px + env(safe-area-inset-bottom));
+    padding: 0 0 calc(18px + env(safe-area-inset-bottom));
     display: flex;
     border: 0;
     border-top: 1px solid var(--line);
@@ -3886,6 +3886,15 @@ html[data-theme="dark"] .article-references {
 
   .toc .toc-list {
     padding: 7px 4px 4px 0;
+  }
+
+  /* Keep the drawer's title and rows off the screen edge, in line with the
+     body text. The inset lives on the header and the list rather than the
+     panel, because the post layout's desktop rule overrides the panel's
+     padding on post pages but not on column pages. */
+  .toc .toc-header,
+  .toc .toc-list {
+    padding-inline: 20px;
   }
 
   .toc li {

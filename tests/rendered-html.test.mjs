@@ -245,6 +245,7 @@ test("collapses the reading table of contents per heading and keeps its active i
   assert.match(styles, /\.toc-mobile-trigger[\s\S]*position: fixed/);
   assert.match(styles, /\.toc-mobile-backdrop\[data-mobile-open="true"\]/);
   assert.match(styles, /\.toc\[data-mobile-open="true"\][\s\S]*transform: translateY\(0\)/);
+  assert.match(styles, /\.toc \.toc-header,\n  \.toc \.toc-list \{\n    padding-inline: 20px;/);
   // Without JavaScript the drawer opens through :target, and only then.
   assert.match(toc, /className="toc-nojs-trigger" id=\{`\$\{panelId\}-open`\} href=\{`#\$\{panelId\}`\}/);
   assert.match(toc, /className="toc-nojs-close" href=\{`#\$\{panelId\}-open`\}/);
