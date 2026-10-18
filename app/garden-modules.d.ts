@@ -63,6 +63,8 @@ declare module "@garden/generated-content" {
 
 declare module "@garden/site-config" {
   export const searchIndexUrl: string;
+  /** The full-text index file and the hash its contents are cached under. */
+  export const searchFull: { url: string; hash: string };
   export const siteConfig: {
     name: string;
     tagline: string;

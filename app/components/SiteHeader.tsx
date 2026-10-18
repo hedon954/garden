@@ -5,14 +5,16 @@ import { usePathname } from "next/navigation";
 import {
   useCallback,
   useEffect,
+  useMemo,
   useRef,
   useState,
   type KeyboardEvent,
 } from "react";
 import type Fuse from "fuse.js";
-import type { FuseResultMatch } from "fuse.js";
 import { MagnifyingGlass, X } from "@phosphor-icons/react";
-import { searchIndexUrl } from "@garden/site-config";
+import { searchFull, searchIndexUrl } from "@garden/site-config";
+import { createSearch } from "../../ui/garden/search-match.mjs";
+import { createIdbStore, loadFullIndex, saveDataOn, whenIdleAfterLoad } from "../../ui/garden/search-full.mjs";
 import { siteConfig } from "../site.config";
 
 /** One entry of /search-index.json: titles, tags, dates and a short excerpt, never the full body. */
@@ -28,6 +30,28 @@ type SearchRecord = {
 
 type SearchEngine = { records: SearchRecord[]; fuse: Fuse<SearchRecord> };
 let engineLoad: Promise<SearchEngine> | null = null;
+
+type MatchRange = readonly [number, number];
+type SearchMatch = { key?: string; indices: readonly MatchRange[] };
+type SearchHit = { item: SearchRecord; matches?: readonly SearchMatch[] };
+
+let fullLoad: Promise<Map<string, string>> | null = null;
+
+/**
+ * Every body as plain text. Started in the background after the page has
+ * loaded, or when search opens first; read from IndexedDB when this version
+ * was fetched before.
+ */
+function loadFullText() {
+  const scope = searchFull.url.slice(0, searchFull.url.lastIndexOf("/"));
+  fullLoad ??= loadFullIndex({ url: searchFull.url, hash: searchFull.hash, store: createIdbStore(scope) })
+    .then((docs) => new Map(docs))
+    .catch((error: unknown) => {
+      fullLoad = null;
+      throw error;
+    });
+  return fullLoad;
+}
 
 /** Index and Fuse are fetched together, the first time search is about to open. */
 function loadSearchEngine() {
@@ -67,10 +91,8 @@ const nav = [
   { href: "/about", label: "关于" },
 ];
 
-type MatchRange = readonly [number, number];
-
 function rangesFor(
-  matches: readonly FuseResultMatch[] | undefined,
+  matches: readonly SearchMatch[] | undefined,
   key: string,
 ): readonly MatchRange[] {
   return matches?.find((match) => match.key === key)?.indices ?? [];
@@ -164,7 +186,7 @@ function cropMatchedText(text: string, ranges: readonly MatchRange[]) {
 
 function searchPreview(
   item: SearchRecord,
-  matches: readonly FuseResultMatch[] | undefined,
+  matches: readonly SearchMatch[] | undefined,
 ): { text: string; ranges: readonly MatchRange[] } {
   const descriptionRanges = rangesFor(matches, "description");
   if (descriptionRanges.length) {
@@ -193,13 +215,23 @@ export function SiteHeader() {
 
   const [engine, setEngine] = useState<SearchEngine | null>(null);
   const [engineFailed, setEngineFailed] = useState(false);
+  const [fullText, setFullText] = useState<Map<string, string> | null>(null);
   const prefetchSearch = useCallback(() => {
     loadSearchEngine().then(setEngine, () => setEngineFailed(true));
+  }, []);
+
+  // Full text arrives quietly once the page is done; search upgrades when it lands.
+  useEffect(() => {
+    if (saveDataOn()) return;
+    return whenIdleAfterLoad(() => {
+      loadFullText().then(setFullText, () => {});
+    });
   }, []);
 
   const openSearch = useCallback(() => {
     setEngineFailed(false);
     loadSearchEngine().then(setEngine, () => setEngineFailed(true));
+    loadFullText().then(setFullText, () => {});
     previousFocusRef.current =
       document.activeElement instanceof HTMLElement
         ? document.activeElement
@@ -242,11 +274,14 @@ export function SiteHeader() {
     return () => window.removeEventListener("keydown", onKey);
   }, [closeSearch, openSearch, searchOpen]);
 
-  const results = !engine
-    ? []
-    : query.trim()
-      ? engine.fuse.search(query).slice(0, 6)
-      : engine.records.slice(0, 5).map((item) => ({ item, matches: [] as readonly FuseResultMatch[] }));
+  // Excerpts first, full text once it is here. Typos fall back to Fuse's fuzzy match.
+  const matcher = useMemo(() => (engine ? createSearch(engine.records, fullText) : null), [engine, fullText]);
+  const results: SearchHit[] = useMemo(() => {
+    if (!engine || !matcher) return [];
+    if (!query.trim()) return engine.records.slice(0, 5).map((item) => ({ item, matches: [] }));
+    const exact = matcher.search(query, 6) as unknown as SearchHit[];
+    return exact.length ? exact : engine.fuse.search(query).slice(0, 6);
+  }, [engine, matcher, query]);
 
   useEffect(() => {
     if (!searchOpen) return;

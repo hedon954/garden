@@ -71,7 +71,12 @@ rehype-highlight 代码高亮
 
 `remarkA2` 在 Markdown 解析后把 `[!NOTE]`、`[!TIP]`、`[!IMPORTANT]`、`[!WARNING]`、`[!CAUTION]` 渲染成带图标和默认标签（提醒、建议、重要、警告、注意）的 alert 卡片，并兼容旧文里的 `garden-callout-marker`。自定义标题仍来自原文，不改写文章句子。同一插件把带说明的图片收成 `figure.fig`。
 
-搜索索引不依赖第三方服务。`content.ts` 将 Markdown 去掉标记形成标题、摘要、正文文本，客户端用 Fuse.js 模糊匹配，再根据 Fuse 的匹配范围包装高亮片段。
+搜索索引不依赖第三方服务，也不进页面脚本。构建时写出两个文件：
+
+- `public/search-index.json`：标题、简介、标签、日期和 240 字摘要。搜索框将要打开时才加载。
+- `public/search-full.<hash>.json`：每篇正文的纯文本，去掉 Markdown、HTML、公式块和超过 4 行的代码块。文件名里的哈希随正文变化，当前地址写在 `@garden/site-config` 的 `searchFull` 里。页面加载完、浏览器空闲时在后台获取（开了省流量就等到打开搜索时再取），解析后按哈希存进 IndexedDB，之后的页面直接从那里读，不再发请求；哈希变了就替换旧条目。
+
+匹配在 `ui/garden/search-match.mjs`：查询按空格拆成词，每个词都要在标题、简介、标签或正文里出现（子串匹配，中文同样适用），标题和标签命中排在前面。全文到达前先用摘要匹配，到达后结果自动刷新；完全匹配不到时退回 Fuse.js 的模糊匹配。结果里的片段截取自命中位置附近并高亮。
 
 ## 4. GitHub Pages 静态发布
 
@@ -151,7 +156,7 @@ sequenceDiagram
 | 内容格式、媒体校验、生成 RSS | `scripts/build-content.mjs` |
 | Markdown 语法、Mermaid 或 widget 图表 | `app/components/MarkdownArticle.tsx`、`MermaidDiagram.tsx`、`WidgetChart.tsx` |
 | 文章布局与目录 | 对应的 `app/blog`、`app/columns`、`TableOfContents.tsx` |
-| 搜索权重或高亮 | `app/lib/content.ts`、搜索组件 |
+| 搜索权重或高亮 | `ui/garden/search-match.mjs`、`ui/garden/search-index.mjs`、`app/components/SiteHeader.tsx` |
 | 后台随想 Git 写入 | `app/lib/github-content.ts` 与 `app/api/admin/thoughts/*` |
 | 后台媒体上传 | `app/api/admin/uploads` 与 `app/lib/oss.ts` |
 | 登录、会话、后台权限 | `app/lib/admin-auth.ts` 与 `app/api/auth/github/*` |
