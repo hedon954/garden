@@ -5,7 +5,6 @@ description: >-
   进行主题性分析”，解剖这个 AI Coding CLI 脱颖而出的原因。我们将聚焦 Prompt 结构与撰写原则、ReAct
   循环的具体实现、灵活的内置工具体系以及代码修改的具体流程这几个核心点，为您提供独家深度解剖，助您不再只是“让 AI 重新认识一遍自己”。
 date: '2026-04-05T11:17:20.000Z'
-topic: AI
 tags:
   - Claude Code
   - AI

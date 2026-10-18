@@ -128,29 +128,25 @@ export const searchRecords = [
   ...posts.map((item) => ({
     title: item.title,
     description: item.description ?? "",
-    topic: item.topic ?? "博文",
+    section: "文章",
     path: postHref(item),
     content: toSearchableText(item.content),
   })),
   ...columns.map((item) => ({
     title: item.title,
     description: item.description ?? "",
-    topic: item.columnTitle ?? "专栏",
+    section: item.columnTitle ?? "专栏",
     path: columnHref(item),
     content: toSearchableText(item.content),
   })),
   ...thoughts.map((item) => ({
     title: item.title,
     description: toSearchableText(item.content),
-    topic: "随想",
+    section: "随想",
     path: `/thoughts/${item.slug}`,
     content: toSearchableText(item.content),
   })),
 ];
-
-export const topics = Array.from(
-  new Set(posts.map((post) => post.topic).filter(Boolean)),
-) as string[];
 
 export const findPost = (path: string): ContentEntry | undefined =>
   posts.find((post) => post.path === path);

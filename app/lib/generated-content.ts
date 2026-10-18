@@ -18,7 +18,6 @@ export type ContentEntry = {
   updated?: string;
   publishAt?: string;
   draft?: boolean;
-  topic?: string;
   tags?: string[];
   references?: { title: string; url?: string }[];
   pinned?: boolean;
@@ -48,7 +47,6 @@ export const posts = [
     "title": "窗台香草丨01丨播种到第一次采摘",
     "description": "一盆罗勒从播种、间苗到第一次剪叶，按周记下高度和浇水量。",
     "date": "2026-10-16T00:00:00+08:00",
-    "topic": "生活",
     "tags": [
       "香草",
       "窗台"
@@ -66,7 +64,6 @@ export const posts = [
     "title": "Intelligent UI 实验室",
     "description": "用一段自然语言写下想法，让 AI 编译成可以拖、点、翻的交互块。",
     "date": "2026-10-10T00:00:00+08:00",
-    "topic": "写作",
     "tags": [
       "Garden",
       "Intelligent UI"
@@ -82,7 +79,6 @@ export const posts = [
     "title": "Markdown 复杂语法实验场",
     "description": "用一篇真实文章验证 Typora 常用语法、数学公式、Mermaid、脚注、表格与原生 HTML。",
     "date": "2026-07-25T00:00:00+08:00",
-    "topic": "写作系统",
     "tags": [
       "Markdown",
       "Typora",
@@ -104,7 +100,6 @@ export const posts = [
     "description": "当工具越来越聪明，真正稀缺的不是功能，而是我们把注意力放在哪里。",
     "date": "2026-07-21T00:00:00+08:00",
     "updated": "2026-07-23T00:00:00+08:00",
-    "topic": "产品与思考",
     "tags": [
       "产品设计",
       "注意力"
@@ -123,7 +118,6 @@ export const posts = [
     "title": "03 · 带着证据发布",
     "description": "“我改完了”不是完成，“用户可以确认它好了”才是。",
     "date": "2026-07-18T00:00:00+08:00",
-    "topic": "独立开发",
     "tags": [
       "验证",
       "发布"
@@ -140,7 +134,6 @@ export const posts = [
     "title": "我为什么重新选择本地写作",
     "description": "Markdown 文件、可迁移的媒体资源，以及不被平台锁住的长期写作。",
     "date": "2026-07-12T00:00:00+08:00",
-    "topic": "写作系统",
     "tags": [
       "Markdown",
       "Local-first"
@@ -159,7 +152,6 @@ export const posts = [
     "title": "02 · 让状态变得可靠",
     "description": "状态设计的关键，是明确谁拥有事实。",
     "date": "2026-07-10T00:00:00+08:00",
-    "topic": "独立开发",
     "tags": [
       "状态管理"
     ],
@@ -175,7 +167,6 @@ export const posts = [
     "title": "01 · 从最小闭环开始",
     "description": "先让最重要的一条路径真正跑通。",
     "date": "2026-07-04T00:00:00+08:00",
-    "topic": "独立开发",
     "tags": [
       "产品",
       "工程"
@@ -192,7 +183,6 @@ export const posts = [
     "title": "做一个 PDF 阅读器之后，我重新理解了「位置」",
     "description": "阅读位置不是页码，而是一段连续体验的锚点。",
     "date": "2026-06-28T00:00:00+08:00",
-    "topic": "构建手记",
     "tags": [
       "SwiftUI",
       "阅读体验"
@@ -213,7 +203,6 @@ export const columns = [
     "title": "01 · 从最小闭环开始",
     "description": "先让最重要的一条路径真正跑通。",
     "date": "2026-07-04T00:00:00+08:00",
-    "topic": "独立开发",
     "tags": [
       "产品",
       "工程"
@@ -235,7 +224,6 @@ export const columns = [
     "title": "02 · 让状态变得可靠",
     "description": "状态设计的关键，是明确谁拥有事实。",
     "date": "2026-07-10T00:00:00+08:00",
-    "topic": "独立开发",
     "tags": [
       "状态管理"
     ],
@@ -256,7 +244,6 @@ export const columns = [
     "title": "03 · 带着证据发布",
     "description": "“我改完了”不是完成，“用户可以确认它好了”才是。",
     "date": "2026-07-18T00:00:00+08:00",
-    "topic": "独立开发",
     "tags": [
       "验证",
       "发布"

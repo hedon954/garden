@@ -13,7 +13,6 @@ async function main() {
   const titleSlug = title.toLowerCase().replace(/[^a-z0-9]+/gu, "-").replace(/^-|-$/gu, "");
   const slug = option("SLUG") || titleSlug || `post-${date.slice(0, 10)}-${randomUUID().slice(0, 8)}`;
   const directory = option("DIR");
-  const topic = option("TOPIC") || "未分类";
 
   if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/u.test(slug)) {
     throw new Error("SLUG 只能包含小写字母、数字和连字符，不含 .md 后缀。");
@@ -43,7 +42,6 @@ async function main() {
     `title: ${JSON.stringify(title)}`,
     `date: ${date}`,
     `description: ${JSON.stringify("请填写一句话摘要。")}`,
-    `topic: ${JSON.stringify(topic)}`,
     "tags: []",
     "draft: true",
     "---",
@@ -67,7 +65,7 @@ async function main() {
   console.log(`已创建草稿：${path.relative(root, destination)}`);
   console.log(`文章路径：/blog/${[...segments, slug].join("/")}/`);
   console.log("预览：CONTENT_INCLUDE_DRAFTS=1 make dev");
-  console.log("发布前请完善摘要、分类与正文，并将 draft 改为 false，再运行 make update。");
+  console.log("发布前请完善摘要、标签与正文，并将 draft 改为 false，再运行 make update。");
 }
 
 main().catch((error) => {

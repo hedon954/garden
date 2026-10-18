@@ -1,17 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
 import { useState } from "react";
-import { columns, postHref, posts, topics } from "../lib/content";
+import { columns, postHref, posts } from "../lib/content";
 import { ContentEmptyState } from "./ContentEmptyState";
-
-export const archiveHref = (topic?: string) => {
-  const params = new URLSearchParams();
-  if (topic) params.set("topic", topic);
-  const query = params.toString();
-  return query ? `/blog?${query}` : "/blog";
-};
 
 function day(value: string) {
   const date = new Date(value);
@@ -25,11 +17,8 @@ function day(value: string) {
 }
 
 export function BlogArchive() {
-  const searchParams = useSearchParams();
   const [compact, setCompact] = useState(false);
-  const requestedTopic = searchParams.get("topic") ?? "";
-  const selectedTopic = topics.includes(requestedTopic) ? requestedTopic : undefined;
-  const filtered = (selectedTopic ? posts.filter((post) => post.topic === selectedTopic) : posts)
+  const filtered = posts
     .slice()
     .sort((left, right) => Date.parse(right.date) - Date.parse(left.date));
   const years = new Map<string, typeof filtered>();
@@ -53,23 +42,8 @@ export function BlogArchive() {
   return (
     <div className="sh-listgrid">
       <div>
-        <ul className="sh-filters" aria-label="按分类筛选">
-          <li>
-            <Link className="sh-chip" href="/blog" aria-current={selectedTopic ? undefined : "true"}>
-              全部<span className="n">{posts.length}</span>
-            </Link>
-          </li>
-          {topics.map((topic) => (
-            <li key={topic}>
-              <Link className="sh-chip" href={archiveHref(topic)} aria-current={selectedTopic === topic ? "true" : undefined}>
-                {topic}<span className="n">{posts.filter((post) => post.topic === topic).length}</span>
-              </Link>
-            </li>
-          ))}
-        </ul>
         <div className="sh-status">
-          <span aria-live="polite">{selectedTopic ? `${selectedTopic} ${filtered.length} 篇` : `全部 ${posts.length} 篇`}</span>
-          {selectedTopic ? <Link href="/blog">清除筛选</Link> : null}
+          <span>共 {posts.length} 篇</span>
           <div className="sh-view" role="group" aria-label="列表密度">
             <button type="button" aria-pressed={!compact} onClick={() => setCompact(false)}>摘要</button>
             <button type="button" aria-pressed={compact} onClick={() => setCompact(true)}>紧凑</button>
@@ -94,7 +68,6 @@ export function BlogArchive() {
                       </h3>
                       {post.description ? <p>{post.description}</p> : null}
                     </div>
-                    {post.topic ? <Link className="cat" href={archiveHref(post.topic)}>{post.topic}</Link> : null}
                   </li>
                 ))}
               </ol>

@@ -201,7 +201,7 @@ test("renders complex Markdown, article covers, and mixed thought media", async 
   assert.match(archive, /class="archive-cover"/);
   assert.match(archive, /class="archive-copy"/);
   assert.match(archive, /class="archive-meta" dateTime="2026-07-25">07-25</);
-  assert.match(archive, /href="\/blog\?topic=/);
+  assert.doesNotMatch(archive, /\?topic=|class="sh-filters" aria-label="按分类筛选"/);
 });
 
 test("collapses the reading table of contents per heading and keeps its active item visible", async () => {
@@ -494,5 +494,20 @@ test("0.4.3: wider reading column, transparent column cards, and tag chips under
     }
     assert.doesNotMatch(header, /class="cat"|\/blog\?topic=/);
     assert.doesNotMatch(html, /class="article-tags"/);
+  }
+});
+
+test("posts have no topic: no field, no filter, no label", async () => {
+  const files = [
+    "scripts/build-content.mjs", "scripts/check-post.mjs", "scripts/new-post.mjs",
+    "app/lib/content.ts", "app/garden-modules.d.ts", "app/page.tsx",
+    "app/components/SiteHeader.tsx", "app/components/BlogArchive.tsx", "app/components/TagIndex.tsx",
+    "app/components/AdminDashboard.tsx", "app/admin/page.tsx", "app/a2/[slug]/page.tsx", "app/lib/a2-preview.ts",
+    "app/globals.css", "Makefile", "templates/site/Makefile", "docs/content-authoring.md", "docs/quick-start.md",
+  ];
+  for (const file of files) {
+    const source = await readFile(new URL(`../${file}`, import.meta.url), "utf8");
+    const meaningful = source.replace(/\/\/ Older posts may still carry `topic:`; it is no longer used\.\n\s*delete data\.topic;/, "");
+    assert.doesNotMatch(meaningful, /\btopics?\b|TOPIC/, `${file} still mentions topic`);
   }
 });

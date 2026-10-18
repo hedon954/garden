@@ -23,7 +23,6 @@ const postSource = `---
 title: 我的第一篇文章
 date: 2026-08-03 09:00:00
 description: 这篇文章记录我为什么重新开始写博客。
-topic: 写作
 tags: [Markdown, 博客]
 pinned: false
 cover: writing/first-post.jpg

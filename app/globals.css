@@ -1418,32 +1418,6 @@ button {
   color: var(--accent);
 }
 
-.topic-strip {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin: 8px 0 38px;
-}
-
-.topic-strip a {
-  padding: 6px 10px;
-  background: var(--paper-deep);
-  color: var(--muted);
-  font-size: 11px;
-  border: 1px solid transparent;
-}
-
-.topic-strip a:hover,
-.topic-strip a:focus-visible {
-  color: var(--ink);
-  border-color: var(--line-strong);
-}
-
-.topic-strip a.active {
-  background: var(--ink);
-  color: var(--paper);
-}
-
 .archive-list {
   border-top: 1px solid var(--line-strong);
 }
@@ -1489,13 +1463,6 @@ button {
   height: auto;
   display: block;
   border: 1px solid var(--line);
-}
-
-.archive-topic {
-  color: var(--accent);
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.05em;
 }
 
 .pinned-badge {
@@ -4157,8 +4124,7 @@ button {
     gap: 4px 9px;
   }
 
-  .archive-meta time,
-  .archive-topic {
+  .archive-meta time {
     font-size: 9px;
   }
 

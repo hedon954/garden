@@ -5,7 +5,7 @@ import { siteDocumentTitle } from "../site.config";
 
 export const metadata = {
   title: siteDocumentTitle,
-  description: "按标签浏览文章。标签不是专栏，也不是分类。",
+  description: "按标签浏览文章。",
 };
 
 export default function TagsPage() {

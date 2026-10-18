@@ -12,7 +12,6 @@ const block = (component) => [
   "title: 钩子",
   "date: 2026-07-25",
   "description: 提交前检查",
-  "topic: 测试",
   "---",
   "",
   "```ui",

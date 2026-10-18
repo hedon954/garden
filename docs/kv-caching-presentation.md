@@ -15,12 +15,12 @@ The page is a Next.js App Router essay, not a Markdown blog with a few extras. P
 - **Dark-only portfolio frame.** `html` is `dark min-h-screen bg-background font-sans overflow-x-hidden`. A full-viewport `grain` overlay sits behind the page.
 - **Narrow column, not a docs layout.** Content is `max-w-2xl mx-auto` (~672px). There is no article table of contents and no extra sidebar next to the prose.
 - **Site nav, not post TOC.** A compact `home / work / projects / blog` row sits above the article; on large screens it is `lg:sticky lg:top-20`. The current item (`blog`) gets a faint pill.
-- **Title block is typographic, not metadata-heavy.** Uppercase date eyebrow (`Mar 26, 2026`), Lora serif H1, then a Lora muted deck that restates the subtitle. No topic chip, reading time, word count, or tags on the page.
+- **Title block is typographic, not metadata-heavy.** Uppercase date eyebrow (`Mar 26, 2026`), Lora serif H1, then a Lora muted deck that restates the subtitle. No category chip, reading time, word count, or tags on the page.
 - **Hero is a 16:9 cover, not an inline figure.** `/blog/kv-caching/cover.jpg` is a `relative aspect-video` image with `rounded-xl shadow-2xl`, Next `<Image>` srcset, and `fetchPriority="high"`.
 - **Body uses Tailwind Typography.** `article.prose mt-8`. Headings get empty permalink anchors (`<a class="anchor">`) before the title text.
 - **SEO is first-class.** JSON-LD `BlogPosting`, Open Graph, Twitter `summary_large_image`, canonical URL, robots meta.
 
-Garden-blog already has a stronger *reading system* (cover, topic, deck, dates, reading time, word count, sticky TOC, tags). Christy’s page is a *presentation system*: one column, dark, cinematic, and then widgets.
+Garden-blog already has a stronger *reading system* (cover, deck, dates, reading time, word count, sticky TOC, tags). Christy’s page is a *presentation system*: one column, dark, cinematic, and then widgets.
 
 ### Three custom teaching widgets
 
@@ -76,7 +76,7 @@ garden-blog is a Typora-first, `content/*.md` pipeline: `react-markdown` + remar
 
 | Technique on Christy’s page | Garden-blog today |
 | --- | --- |
-| Cover + title + deck | Yes. Front matter `cover`, `description`; also topic, dates, reading time, word count, tags. |
+| Cover + title + deck | Yes. Front matter `cover`, `description`; also dates, reading time, word count, tags. |
 | Heading permalinks | Yes. `rehype-slug` + `rehype-autolink-headings` (`behavior: "wrap"`). |
 | Inline + display KaTeX | Yes. `remark-math` + `rehype-katex`, including CJK-adjacent bold and display-math scroll. |
 | Syntax-highlighted code + language label | Yes. `rehype-highlight`; `pre[data-language]` badge, top-right. Always-dark code theme. |
@@ -153,7 +153,7 @@ Copy-to-clipboard is not on Christy’s page. If Garden adds chrome, copy is mor
 
 Gap: narrow dark essay, grain, Lora, no TOC, 16:9 rounded hero.
 
-Garden should **not** copy that chrome site-wide. The TOC, topic row, and light paper are the product. If a post wants “essay mode”, a front-matter flag (`layout: essay` or `chrome: cinematic`) is enough: hide TOC, tighten measure, optionally invert the article well. That is CSS, not Markdown.
+Garden should **not** copy that chrome site-wide. The TOC, meta row, and light paper are the product. If a post wants “essay mode”, a front-matter flag (`layout: essay` or `chrome: cinematic`) is enough: hide TOC, tighten measure, optionally invert the article well. That is CSS, not Markdown.
 
 Hero treatment (aspect-ratio + radius) is also CSS on `.article-hero`.
 

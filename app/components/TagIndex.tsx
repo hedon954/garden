@@ -82,7 +82,6 @@ export function TagIndex({ posts }: { posts: ContentEntry[] }) {
                 <time className="num" dateTime={day(post.date)}>{day(post.date)}</time>
                 <h3><Link href={postHref(post)}>{post.title}</Link></h3>
                 {post.description ? <p>{post.description}</p> : null}
-                {post.topic ? <span className="cat">{post.topic}</span> : null}
               </li>
             ))}
           </ol>

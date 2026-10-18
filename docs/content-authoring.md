@@ -9,21 +9,20 @@
 ```bash
 make new
 make new TITLE="我的第一篇文章" SLUG=my-first-post
-make new TITLE="Go 垃圾回收笔记" SLUG=gc DIR=go/runtime TOPIC="Go"
+make new TITLE="Go 垃圾回收笔记" SLUG=gc DIR=go/runtime
 ```
 
-命令直接创建 `content/posts/<DIR>/<SLUG>.md`，默认 `draft: true`，填好当前日期、标题、摘要占位、分类和空标签列表。`make new` 调用已安装的 Garden 引擎；还没有 `node_modules` 时会先安装依赖。写稿脚本在引擎里，不放进站点仓库。
+命令直接创建 `content/posts/<DIR>/<SLUG>.md`，默认 `draft: true`，填好当前日期、标题、摘要占位和空标签列表。`make new` 调用已安装的 Garden 引擎；还没有 `node_modules` 时会先安装依赖。写稿脚本在引擎里，不放进站点仓库。
 
 | 参数 | 作用 | 省略时 |
 | --- | --- | --- |
 | `TITLE` | 文章标题 | 新文章 |
 | `SLUG` | 文件名，不含 `.md`；小写字母、数字和连字符 | 从标题中的英文字母和数字生成；纯中文标题使用 `post-日期-随机标识` |
-| `DIR` | 相对 `content/posts/` 的分类目录，支持多级 | 直接放在 `content/posts/` |
-| `TOPIC` | 文章主题分类 | 未分类 |
+| `DIR` | 相对 `content/posts/` 的目录，支持多级 | 直接放在 `content/posts/` |
 
 目录各级可使用文字、数字、下划线和连字符，例如 `go/runtime`。不存在的目录会自动创建；同名文件会报错并保留原文。文章 URL 跟随文件路径，例如第三条命令对应 `/blog/go/runtime/gc/`。
 
-打开生成的 Markdown，完善摘要、分类、标签和正文。预览草稿：
+打开生成的 Markdown，完善摘要、标签和正文。预览草稿：
 
 ```bash
 CONTENT_INCLUDE_DRAFTS=1 make dev
@@ -40,7 +39,6 @@ CONTENT_INCLUDE_DRAFTS=1 make dev
 title: 我的文章标题
 date: 2026-07-28 09:00:00
 description: 用一句话说明文章讲什么。
-topic: 写作
 tags: [Markdown, 写作]
 ---
 

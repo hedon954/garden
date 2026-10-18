@@ -92,7 +92,7 @@ export default async function AdminPage({
       slug: post.slug,
       path: post.path,
       title: post.title,
-      topic: post.topic ?? "博文",
+      section: "文章",
       pinned: Boolean(post.pinned),
     })),
     ...columns.map((entry) => ({
@@ -101,7 +101,7 @@ export default async function AdminPage({
       slug: entry.slug,
       path: entry.path,
       title: entry.title,
-      topic: entry.columnTitle ?? "专栏",
+      section: entry.columnTitle ?? "专栏",
     })),
   ];
 

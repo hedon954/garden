@@ -145,8 +145,14 @@ test("renders the lab sample and the authoring examples as alert cards", async (
     readFile(new URL("../content/posts/markdown-lab.md", import.meta.url), "utf8"),
     readFile(new URL("../docs/content-authoring.md", import.meta.url), "utf8"),
   ]);
-  const labSample = lab.split("\n").slice(49, 60).join("\n");
-  const authoringSample = authoring.split("\n").slice(169, 177).join("\n");
+  const block = (source, start, end) => {
+    const lines = source.split("\n");
+    const from = lines.findIndex((line) => line === start);
+    const to = lines.findIndex((line, index) => index > from && line.startsWith(end));
+    return lines.slice(from, to).join("\n");
+  };
+  const labSample = block(lab, "> [!NOTE]", "## ");
+  const authoringSample = block(authoring, "> [!NOTE]", "```");
   const labHtml = render(labSample);
   const authoringHtml = render(authoringSample);
   for (const kind of ["note", "tip", "warning", "caution"]) {

@@ -25,7 +25,7 @@ type CatalogEntry = {
   slug: string;
   path: string;
   title: string;
-  topic: string;
+  section: string;
   pinned?: boolean;
 };
 
@@ -327,7 +327,7 @@ export function AdminDashboard({
 
   async function copyPackage(entry: CatalogEntry) {
     const path = entry.kind === "post" ? `/blog/${entry.path}` : `/columns/${entry.column}/${entry.path}`;
-    await navigator.clipboard.writeText(`${entry.title}\n${entry.topic}\n${publicSiteUrl}${path}`);
+    await navigator.clipboard.writeText(`${entry.title}\n${entry.section}\n${publicSiteUrl}${path}`);
     setNotice("标题、栏目与公开链接已复制，可直接粘贴到任意发布平台。"
     );
   }
@@ -431,7 +431,7 @@ export function AdminDashboard({
         <div className="admin-catalog">
           {catalogEntries.map((entry) => (
             <article key={`${entry.kind}-${entry.column ?? ""}-${entry.path}`}>
-              <div><span>{entry.kind === "post" ? `博文${entry.pinned ? " · 已置顶" : ""}` : "专栏"} · {entry.topic}</span><h3>{entry.title}</h3></div>
+              <div><span>{entry.kind === "post" ? `博文${entry.pinned ? " · 已置顶" : ""}` : "专栏"} · {entry.section}</span><h3>{entry.title}</h3></div>
               <div className="admin-distribution-actions">
                 {entry.kind === "post" && (
                   <button type="button" disabled={pinningPath === entry.path} onClick={() => updatePinned(entry)}>

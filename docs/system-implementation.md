@@ -15,7 +15,7 @@ content/**/assets/*                与 Markdown 同目录的正文媒体
 content/posts/**/<slug>/*.html     与 <slug>.md 同名的图表目录
 ```
 
-每个文件由 YAML front matter 和 Markdown 正文组成。以博文为例，`title`、`date`、`description`、`topic` 是构建时校验字段；文件名就是标识，不另写 `slug`。`pinned`、`cover`、`tags`、`draft`、`publishAt` 等字段决定列表、封面和可见性。
+每个文件由 YAML front matter 和 Markdown 正文组成。以博文为例，`title`、`date`、`description` 是构建时校验字段；文件名就是标识，不另写 `slug`。`pinned`、`cover`、`tags`、`draft`、`publishAt` 等字段决定列表、封面和可见性。
 
 这意味着“置顶”不是后台状态，而是 `pinned: true` 的一次 Git 变更；“发布”则是把内容提交到 `main`。因此回滚、比较、多人协作与备份都复用 Git 本身。内容索引中的 `sourcePath` 相对 `content/` 保存；后台写 GitHub 前会把 `posts/...md` 映射为仓库根路径 `content/posts/...md`，并拒绝空路径、目录穿越和非 Markdown 文件。
 

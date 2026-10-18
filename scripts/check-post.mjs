@@ -272,9 +272,6 @@ const checkFile = (filePath) => {
   if (typeof data.description !== "string" || !data.description.trim()) {
     error(errors, "missing-description", 1, `${sourcePath}: front matter 缺少有效的 description`);
   }
-  if (typeof data.topic !== "string" || !data.topic.trim()) {
-    error(errors, "missing-topic", 1, `${sourcePath}: front matter 缺少有效的 topic`);
-  }
   if (data.slug !== undefined) {
     error(errors, "unexpected-slug", 1, `${sourcePath}: 不要写 slug，文件名就是标识`);
   }

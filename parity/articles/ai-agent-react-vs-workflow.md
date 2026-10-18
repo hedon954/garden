@@ -2,7 +2,6 @@
 title: ReAct 是更好的故事，Workflow 是更好的系统
 description: 从一次电商 AI Agent 实践出发，聊聊 ReAct Agent、Workflow Agent，以及为什么业务生产系统最终还是要回到确定性。
 date: '2026-06-15T21:58:37.000Z'
-topic: AI Agent
 tags:
   - AI Agent
 cover: ai-agent-react-vs-workflow.jpg

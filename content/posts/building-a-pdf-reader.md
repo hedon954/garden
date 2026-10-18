@@ -2,7 +2,6 @@
 title: 做一个 PDF 阅读器之后，我重新理解了「位置」
 description: 阅读位置不是页码，而是一段连续体验的锚点。
 date: 2026-06-28
-topic: 构建手记
 tags:
   - SwiftUI
   - 阅读体验

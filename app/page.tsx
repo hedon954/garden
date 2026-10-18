@@ -57,7 +57,6 @@ export default function Home() {
             <p className="kicker">
               <span>最新文章</span>
               <time className="num" dateTime={day(feature.date)}>{formatDate(feature.date)}</time>
-              {feature.topic ? <span>{feature.topic}</span> : null}
             </p>
             <h2 id="ft"><Link href={postHref(feature)}>{feature.title}</Link></h2>
             {feature.description ? <p>{feature.description}</p> : null}
@@ -80,7 +79,6 @@ export default function Home() {
                 <time className="num" dateTime={day(post.date)}>{homeListDate(post.date)}</time>
                 <h3><Link href={postHref(post)}>{post.title}</Link></h3>
                 {post.description ? <p>{post.description}</p> : null}
-                {post.topic ? <Link className="cat" href={`/blog?topic=${encodeURIComponent(post.topic)}`}>{post.topic}</Link> : null}
               </li>
             ))}
           </ol>
@@ -92,7 +90,7 @@ export default function Home() {
               {pinned.map((post) => (
                 <li key={post.path}>
                   <Link href={postHref(post)}>{post.title}</Link>
-                  <span><time className="num" dateTime={day(post.date)}>{formatDate(post.date)}</time>{post.topic ? `　${post.topic}` : ""}</span>
+                  <span><time className="num" dateTime={day(post.date)}>{formatDate(post.date)}</time></span>
                 </li>
               ))}
             </ul>

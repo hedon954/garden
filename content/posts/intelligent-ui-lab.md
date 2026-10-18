@@ -2,7 +2,6 @@
 title: Intelligent UI 实验室
 description: 用一段自然语言写下想法，让 AI 编译成可以拖、点、翻的交互块。
 date: 2026-10-10
-topic: 写作
 tags:
   - Garden
   - Intelligent UI
