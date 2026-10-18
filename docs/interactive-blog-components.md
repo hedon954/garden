@@ -18,7 +18,7 @@ Christy Jacob 的 [KV Caching](https://www.christyjacob.dev/blog/kv-caching) 证
 
 Prefill → Decode、反向传播的「从后往前分锅」、Raft 选举、Go GPM 调度循环、GC 三色标记、Mutex 获取/释放，都是 **随时间变的状态**。现有手段是一张 Mermaid、一张 OSS 截图，或一段「第一步 / 第二步」散文。读者不能停在第 3 步，也不能问「再走一格，哪一行是新算的」。
 
-`understand-kv-cache` 里的 `Prompt → Prefill → KV Cache ⇄ Decode` 把拓扑讲清了，但讲不清「这一步 Q 缩成 1 行、K/V 只追加一行」。`back-propagation` 用流水线比喻把四步说全了，读者仍无法按步看见误差从哪一层传回。七百行的 Raft 译文尤其明显：目录能跳到「领导选举」，不能让选举发生。
+一张 `Prompt → Prefill → KV Cache` 的流程图能把拓扑讲清，但讲不清「这一步 Q 缩成 1 行、K/V 只追加一行」。`back-propagation` 用流水线比喻把四步说全了，读者仍无法按步看见误差从哪一层传回。七百行的 Raft 译文尤其明显：目录能跳到「领导选举」，不能让选举发生。
 
 ### 1.2 参数是死例子
 
@@ -88,14 +88,12 @@ CBC「坏一块，后面全坏」、Raft leader 宕、间隙锁下的幻读，�
 
 可交互图表太密，不该摊在 Markdown 里。一篇稿对应一个 **同名目录**，目录里每一份 `.html` 是一张可单独打开的图表；正文只用一段短围栏把它嵌进去。
 
-以 `content/posts/understand-kv-cache.md` 为例：
+以一篇稿和它的同名目录为例：
 
 ```text
-content/posts/understand-kv-cache.md
-content/posts/understand-kv-cache/
-  waste.html
-  stepper.html
-  memory.html
+content/posts/<slug>.md
+content/posts/<slug>/
+  diagram.html
 ```
 
 三种围栏仍然平级：
@@ -116,8 +114,8 @@ content/posts/understand-kv-cache/
 
 ````md
 ```widget
-src: ./understand-kv-cache/stepper.html
-caption: Prefill 一次写满 K/V；Decode 每步只追加一行；末步 21 次投影变成 7 次。
+src: ./<slug>/diagram.html
+caption: 读者从这一张图里该读到的那句判断。
 ```
 ````
 
@@ -200,7 +198,7 @@ MDX 能嵌三个现成 React 组件，但会拆开现在这条作者链路：
 
 1. **`widget` 围栏 + 同名目录**：构建校验 `src`/`caption`、复制 HTML、搜索保留说明、沙箱 iframe、主题查询参数。视觉跟 `embed` 的 figure，不跟参考文的暗色卡片走。
 2. **skill**：五种原语的 HTML 写法、Garden 纸面 token、高度回报、减少动态。
-3. **第一篇演示**用 `understand-kv-cache`：保留现有 Mermaid 总览，用三份 HTML 复现那三个效果。**不要**再登记 `autoregressive-waste` 这种文章私有类型。
+3. **第一篇演示**放在同名目录里：保留 Mermaid 总览，用 HTML 复现需要读者动手的那几处。**不要**再登记文章私有类型。
 
 ### 紧接着（平台稳定、第一篇演示能读之后）
 

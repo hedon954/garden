@@ -2,7 +2,6 @@
 title: 大模型推理：KV Cache 的底层原理、挑战与应对（互动版）
 description: 本文从第一性原理出发，深入剖析了 KV Cache 的底层原理、挑战与应对，并给出了业内的常见解决方案。
 date: 2026-09-18T14:39:00+08:00
-topic: 大模型
 tags:
   - 大模型
   - Transformer

@@ -7,7 +7,7 @@ import { siteConfig } from "../site.config";
 
 export const metadata = {
   title: "Garden",
-  description: "用 Markdown 写文章。推送到 GitHub 之后，页面、搜索和 RSS 一起生成。",
+  description: "用 Markdown 写文章。推送之后，页面、搜索和 RSS 一起更新。",
 };
 
 const jumps = [
@@ -45,7 +45,7 @@ const setupSteps = [
   {
     title: "发布",
     command: "make update",
-    body: "先检查，再提交并推送。main 更新后，网站、搜索和 RSS 会重新生成。",
+    body: "先检查，再提交并推送。main 更新后，网站、搜索和 RSS 会一起更新。",
   },
 ];
 
@@ -54,7 +54,7 @@ export default function GardenPage() {
     <main className="page-shell garden-page">
       <PageIntro title={siteConfig.pages.garden.title} subtitle={siteConfig.pages.garden.subtitle}>
         <p className="garden-lede">
-          文章放在你自己的仓库里。你改文件，GitHub 构建网站。
+          文章放在你自己的仓库里。你改文件，网站跟着更新。
         </p>
         <div className="garden-actions">
           <a
@@ -133,10 +133,10 @@ export default function GardenPage() {
         <header className="garden-section-heading">
           <h2 id="garden-after-title">推送之后</h2>
         </header>
-        <p className="garden-after-lead">你的仓库，到 GitHub 构建，再到公开网站。</p>
+        <p className="garden-after-lead">推送之后，网站公开更新。</p>
         <div className="garden-after-copy">
-          <p>框架画页面。你的文章不放在框架仓库里，而在你自己的内容仓库。读者打开的是生成出来的静态页。</p>
-          <p>同一次构建会带上正文、目录、前后篇、搜索、RSS 和 sitemap。后台和评论都可以以后再加，不接也能发布。</p>
+          <p>文章在你自己的仓库里。读者打开的是已经发布的页面。</p>
+          <p>一次更新会带上正文、目录、前后篇、搜索、RSS 和 sitemap。后台和评论都可以以后再加。</p>
         </div>
       </section>
 

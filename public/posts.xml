@@ -4,9 +4,243 @@
     <title>Hedon Garden</title>
     <link>https://example.com</link>
     <atom:link href="https://example.com/posts.xml" rel="self" type="application/rss+xml" />
-    <description>一个可 fork、可长期维护的 Markdown 个人博客系统。</description>
+    <description>文章、随想和专栏。</description>
     <language>zh-CN</language>
-    <lastBuildDate>Fri, 09 Oct 2026 16:00:00 GMT</lastBuildDate>
+    <lastBuildDate>Thu, 15 Oct 2026 16:00:00 GMT</lastBuildDate>
+    <item>
+      <title>窗台香草丨01丨播种到第一次采摘</title>
+      <link>https://example.com/blog/windowsill-herbs/</link>
+      <guid isPermaLink="true">https://example.com/blog/windowsill-herbs/</guid>
+      <pubDate>Thu, 15 Oct 2026 16:00:00 GMT</pubDate>
+      <description>一盆罗勒从播种、间苗到第一次剪叶，按周记下高度和浇水量。</description>
+      <category>香草</category><category>窗台</category>
+      <content:encoded><![CDATA[<p>北向窗台上有三只盆。这季种了罗勒和薄荷，第三只空着，留给秋天的香菜。</p>
+<h2>两种香草</h2>
+<p>罗勒要见光，薄荷更耐阴。浇法也不一样。</p>
+<pre><code class="language-garden">items:
+  - title: 罗勒
+    text: 土面发白再浇透，托盘里的水倒掉。
+  - title: 薄荷
+    text: 土保持微湿，避开正午的直射光。
+</code></pre>
+<h2>这季记下的数</h2>
+<p>种子是三月中旬播的。盆不深，第一次剪叶等到第六周。</p>
+<pre><code class="language-garden">items:
+  - label: 发芽
+    value: 7
+    unit: 天
+  - label: 盆深
+    value: 15
+    unit: 厘米
+  - label: 第一次剪叶
+    value: 6
+    unit: 周
+</code></pre>
+<h2>从播种到剪叶</h2>
+<pre><code class="language-garden">items:
+  - date: 3月12日
+    title: 播种
+    text: 罗勒和薄荷各一盆，覆土不超过半厘米。
+  - date: 3月19日
+    title: 出苗
+    text: 罗勒先露头，薄荷晚了两天。
+  - date: 4月2日
+    title: 间苗
+    text: 每盆留下最壮的两株。
+  - date: 5月1日
+    title: 第一次剪叶
+    text: 只剪顶端，留下至少四片叶。
+</code></pre>
+<blockquote>
+<p>[!NOTE]
+北向窗冬天光照不够，罗勒会徒长。把盆移到能见到上午光的那一格。</p>
+</blockquote>
+<h2>每周的株高</h2>
+<p>从第二周起，每周一量一次最高的那片叶。</p>
+<pre><code class="language-garden">type: bar
+title: 罗勒株高
+x: [&quot;第2周&quot;, &quot;第3周&quot;, &quot;第4周&quot;, &quot;第5周&quot;, &quot;第6周&quot;]
+series:
+  - name: 株高
+    data: [4, 8, 13, 18, 22]
+unit: cm
+caption: 第六周剪叶前，罗勒大约 22 厘米。
+</code></pre>
+<h2>窗台怎么摆</h2>
+<p>靠左的那格上午有光，罗勒放那里。薄荷在中间。右边的空盆先不浇。</p>
+<p><img src="/media/posts/windowsill-herbs/sill.svg" alt="朝北的窗台，从左到右是罗勒、薄荷和一只空盆。"></p>
+<pre><code class="language-garden">caption: 朝北的窗台，从左到右是罗勒、薄荷和一只空盆。
+parts:
+  - name: 全部
+    text: 三只盆并排，靠左的光照最好。
+  - name: 罗勒
+    text: 靠左，每天都够到上午的光。
+  - name: 薄荷
+    text: 中间，土干得慢一些。
+  - name: 空盆
+    text: 右边空着，留给秋天的香菜。
+---
+&lt;svg xmlns=&quot;http://www.w3.org/2000/svg&quot; viewBox=&quot;0 0 640 220&quot;&gt;
+  &lt;rect data-p=&quot;全部&quot; x=&quot;20&quot; y=&quot;16&quot; width=&quot;600&quot; height=&quot;150&quot; rx=&quot;10&quot; fill=&quot;#d5e3ea&quot;/&gt;
+  &lt;rect data-p=&quot;罗勒&quot; x=&quot;70&quot; y=&quot;96&quot; width=&quot;90&quot; height=&quot;58&quot; rx=&quot;8&quot; fill=&quot;#c4a574&quot;/&gt;
+  &lt;circle data-p=&quot;罗勒&quot; cx=&quot;115&quot; cy=&quot;78&quot; r=&quot;30&quot; fill=&quot;#3f7d4e&quot;/&gt;
+  &lt;rect data-p=&quot;薄荷&quot; x=&quot;270&quot; y=&quot;104&quot; width=&quot;90&quot; height=&quot;50&quot; rx=&quot;8&quot; fill=&quot;#c4a574&quot;/&gt;
+  &lt;circle data-p=&quot;薄荷&quot; cx=&quot;315&quot; cy=&quot;88&quot; r=&quot;26&quot; fill=&quot;#6aa87a&quot;/&gt;
+  &lt;rect data-p=&quot;空盆&quot; x=&quot;470&quot; y=&quot;118&quot; width=&quot;90&quot; height=&quot;36&quot; rx=&quot;8&quot; fill=&quot;#e4d3b8&quot;/&gt;
+&lt;/svg&gt;
+</code></pre>
+<h2>今天浇不浇</h2>
+<p>土面还湿就先不动。干了再浇，浇到盆底出水，然后把托盘倒掉。</p>
+<pre><code class="language-mermaid">flowchart TD
+  A[看土面] --&gt; B{还湿吗}
+  B --&gt;|湿| C[今天不浇]
+  B --&gt;|干| D[浇到盆底出水]
+  D --&gt; E[倒掉托盘]
+</code></pre>
+<blockquote>
+<p>[!WARNING]
+霜前把盆搬进屋。罗勒叶子一碰霜就发黑，回不来。</p>
+</blockquote>
+<h2>盆口和浇水量</h2>
+<p>盆口越大，一次浇得越多。12 厘米的盆大约是 70 毫升。</p>
+<pre><code class="language-garden">caption: 盆口越大，一次浇得越多。12 厘米大约是 70 毫升。
+intent: |
+  让读者拧盆口直径，看这一次该浇多少毫升。
+---
+&lt;State diameter={12} /&gt;
+&lt;Slider bind=&quot;diameter&quot; label=&quot;盆口直径&quot; min={8} max={24} unit=&quot;cm&quot; /&gt;
+&lt;Let water={round(diameter * diameter * 0.35 + 20)} /&gt;
+&lt;Stat label=&quot;这一次&quot; value={water} unit=&quot;ml&quot; /&gt;
+</code></pre>
+<h2>水怎么往下走</h2>
+<p>浇下去的水不会停在表面。它慢慢渗过土层，最后从排水孔滴出来。</p>
+<pre><code class="language-garden">title: 水从土面渗到排水孔，大约要一分钟。
+code: |
+  &lt;style&gt;
+    html, body { margin: 0; background: transparent; color: #3c342c; font: 15px/1.5 ui-sans-serif, sans-serif; }
+    svg { display: block; width: 100%; height: auto; }
+  &lt;/style&gt;
+  &lt;svg viewBox=&quot;0 0 640 280&quot; role=&quot;img&quot; aria-label=&quot;水从土面渗到盆底&quot;&gt;
+    &lt;rect x=&quot;180&quot; y=&quot;36&quot; width=&quot;280&quot; height=&quot;200&quot; rx=&quot;18&quot; fill=&quot;#efe6d6&quot; stroke=&quot;#cbbfa8&quot;/&gt;
+    &lt;rect id=&quot;water&quot; x=&quot;196&quot; y=&quot;48&quot; width=&quot;248&quot; height=&quot;16&quot; fill=&quot;#7ea4c4&quot; opacity=&quot;0.85&quot;/&gt;
+    &lt;rect x=&quot;196&quot; y=&quot;150&quot; width=&quot;248&quot; height=&quot;70&quot; fill=&quot;#8b6a45&quot;/&gt;
+    &lt;circle cx=&quot;320&quot; cy=&quot;214&quot; r=&quot;8&quot; fill=&quot;#5c4632&quot;/&gt;
+    &lt;text x=&quot;320&quot; y=&quot;268&quot; text-anchor=&quot;middle&quot; font-size=&quot;14&quot; fill=&quot;#3c342c&quot;&gt;排水孔&lt;/text&gt;
+  &lt;/svg&gt;
+  &lt;script&gt;
+    var water = document.getElementById(&quot;water&quot;);
+    var y = 48;
+    var reduce = window.matchMedia(&quot;(prefers-reduced-motion: reduce)&quot;).matches;
+    if (reduce) {
+      water.setAttribute(&quot;y&quot;, &quot;168&quot;);
+      water.setAttribute(&quot;height&quot;, &quot;36&quot;);
+    } else {
+      (function tick() {
+        y += 0.45;
+        if (y &gt; 168) y = 48;
+        water.setAttribute(&quot;y&quot;, String(y));
+        water.setAttribute(&quot;height&quot;, String(Math.max(16, 204 - y)));
+        requestAnimationFrame(tick);
+      })();
+    }
+  &lt;/script&gt;
+</code></pre>
+<h2>浇水纸条</h2>
+<p>纸条上先记下这一周。周四那次少了，周日又给薄荷补了一次。</p>
+<pre><code class="language-text">周一  罗勒  80 ml
+周四  罗勒  80 ml
+</code></pre>
+<pre><code class="language-diff"> 周一  罗勒  80 ml
+-周四  罗勒  80 ml
++周四  罗勒  120 ml
++周日  薄荷  60 ml
+</code></pre>
+<h2>六周记录</h2>
+<table>
+<thead>
+<tr>
+<th>周</th>
+<th>株高</th>
+<th>新叶</th>
+<th>浇水</th>
+<th>土面</th>
+<th>气温</th>
+<th>日照</th>
+<th>备注</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>第1周</td>
+<td>未见</td>
+<td>无</td>
+<td>每天喷湿</td>
+<td>湿</td>
+<td>16°C</td>
+<td>上午</td>
+<td>覆土很薄</td>
+</tr>
+<tr>
+<td>第2周</td>
+<td>4 cm</td>
+<td>2 片</td>
+<td>80 ml</td>
+<td>干</td>
+<td>18°C</td>
+<td>上午</td>
+<td>罗勒先出</td>
+</tr>
+<tr>
+<td>第3周</td>
+<td>8 cm</td>
+<td>4 片</td>
+<td>80 ml</td>
+<td>干</td>
+<td>19°C</td>
+<td>上午</td>
+<td>薄荷跟上</td>
+</tr>
+<tr>
+<td>第4周</td>
+<td>13 cm</td>
+<td>6 片</td>
+<td>100 ml</td>
+<td>干</td>
+<td>21°C</td>
+<td>上午</td>
+<td>间苗，留两株</td>
+</tr>
+<tr>
+<td>第5周</td>
+<td>18 cm</td>
+<td>8 片</td>
+<td>120 ml</td>
+<td>干</td>
+<td>22°C</td>
+<td>上午</td>
+<td>叶色转深</td>
+</tr>
+<tr>
+<td>第6周</td>
+<td>22 cm</td>
+<td>10 片</td>
+<td>120 ml</td>
+<td>干</td>
+<td>23°C</td>
+<td>上午</td>
+<td>剪了顶端</td>
+</tr>
+</tbody></table>
+<p>想核对叶子是不是对生、花是不是穗状时，看这一页。</p>
+<pre><code class="language-garden">url: https://zh.wikipedia.org/wiki/%E7%BD%97%E5%8B%92
+title: 罗勒
+description: 叶子对生，花排成穗。窗台上的那盆对得上。
+</code></pre>
+<blockquote>
+<p>[!TIP]
+剪叶之后把盆转半圈，让另一面也能见到上午的光。</p>
+</blockquote>
+]]></content:encoded>
+    </item>
     <item>
       <title>Intelligent UI 实验室</title>
       <link>https://example.com/blog/intelligent-ui-lab/</link>
@@ -413,38 +647,6 @@ const shouldRemove = (friction: Friction) =&gt;
 <p>布局变化之前，保存视口中心所对应的文档坐标；布局完成以后，再把这个坐标映射回新的视口。</p>
 <h2>两条交互路径</h2>
 <p>侧栏开关是离散变化，分隔线拖拽是连续变化。它们应该共享“保持锚点”的原则，但不应该共享完全相同的更新频率。</p>
-]]></content:encoded>
-    </item>
-    <item>
-      <title>从逐词生成理解 KV Cache</title>
-      <link>https://example.com/blog/understand-kv-cache/</link>
-      <guid isPermaLink="true">https://example.com/blog/understand-kv-cache/</guid>
-      <pubDate>Mon, 08 Jun 2026 16:00:00 GMT</pubDate>
-      <description>不从公式开始，而是从模型下一次到底重复算了什么开始。</description>
-      <category>Transformer</category><category>推理</category>
-      <content:encoded><![CDATA[<p>理解 KV Cache 最直观的方式，是先看自回归生成里那些被重复计算的部分。</p>
-<p>朴素 decode 每步都会把过去 token 再投影一遍。6 个 token 共 21 次计算，其中 15 次是浪费：</p>
-<p>朴素 decode 每步重算全部过去 token；6 个 token 共 21 次计算，其中 15 次是浪费。（<a href="https://example.com/media/posts/understand-kv-cache/waste.html">打开图表</a>）</p>
-<h2>Prefill 与 Decode</h2>
-<p>Prefill 一次处理完整提示词，Decode 则每次只生成一个新 token。拓扑用 Mermaid 一次说清；要停在某一拍看 Q/K/V 怎么变，用旁边的步进图。</p>
-<pre><code class="language-mermaid">flowchart LR
-  A[Prompt] --&gt; B[Prefill]
-  B --&gt; C[KV Cache]
-  C --&gt; D[Decode one token]
-  D --&gt; C
-</code></pre>
-<p>Prefill 一次写满 K/V；Decode 每步只追加一行；末步 21 次投影变成 7 次。（<a href="https://example.com/media/posts/understand-kv-cache/stepper.html">打开图表</a>）</p>
-<h2>缓存的是什么</h2>
-<p>过去 token 对应的 Key 和 Value 不会因为新 token 到来而变化，所以可以保存下来，只计算新位置的投影。</p>
-<h2>空间换时间</h2>
-<p>缓存减少计算，却增加显存占用。批量、序列长度与层数共同决定了这笔开销。把 batch 拧到 8、序列看到 32K，消费卡会先被 KV 撑满。</p>
-<p>$$
-\text{KV memory} \propto 2 \times L \times H \times T
-$$</p>
-<p>70B 在长上下文下，KV 显存会先于权重撑满一张卡；batch 8 × 32K 时连 7B 也超过消费卡。（<a href="https://example.com/media/posts/understand-kv-cache/memory.html">打开图表</a>）</p>
-<p>同一组数量级也可以收成一页附件。页面和 PDF 默认只显示入口，需要时再展开：</p>
-<p>KV 显存与层数、头维、序列和 batch 成正比；70B 长上下文会先于权重量满一张卡。（<a href="https://example.com/media/posts/understand-kv-cache/sheet.html">打开图表</a>）</p>
-<p>同一页公式的 PDF；适合下载或打印，不必在正文里摊开整页阅读器。（<a href="https://example.com/media/posts/understand-kv-cache/notes.pdf">打开图表</a>）</p>
 ]]></content:encoded>
     </item>
   </channel>

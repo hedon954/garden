@@ -18,7 +18,6 @@ declare module "@garden/generated-content" {
     updated?: string;
     publishAt?: string;
     draft?: boolean;
-    topic?: string;
     tags?: string[];
     references?: { title: string; url?: string }[];
     pinned?: boolean;

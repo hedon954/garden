@@ -75,6 +75,63 @@ export function tableBreakout({
 }
 
 /**
+ * The width used to decide whether an image widens past the column: its width
+ * attribute when it has one, otherwise half its pixels (screenshots are
+ * usually 2x). 0 while the image has not loaded. Never more than the image
+ * itself, so nothing is enlarged.
+ */
+export function imageDisplayWidth({ naturalWidth = 0, attrWidth = 0, density = 2 }) {
+  if (attrWidth > 0) return naturalWidth > 0 ? Math.min(attrWidth, naturalWidth) : attrWidth;
+  if (!(naturalWidth > 0)) return 0;
+  return Math.round(naturalWidth / density);
+}
+
+/**
+ * The inline width an article image gets, or 0 to leave it to CSS
+ * (width:auto; max-width:100%), which shows it at its natural size and caps
+ * it at the column, never stretched and never halved. A widened image takes
+ * its display width; an image in the column only follows its width attribute,
+ * never past its own pixels.
+ */
+export function figureImageWidth({ naturalWidth = 0, attrWidth = 0, widened = false, density = 2 }) {
+  if (widened) return imageDisplayWidth({ naturalWidth, attrWidth, density });
+  if (attrWidth > 0) return naturalWidth > 0 ? Math.min(attrWidth, naturalWidth) : attrWidth;
+  return 0;
+}
+
+/**
+ * How far a figure steps out on each side. Screenshots are usually 2x, so an
+ * image displays at naturalWidth / density unless it states its own width.
+ * A figure widens only when that display width is wider than the column, and
+ * never past the display width, maxWidth in total, or the room on screen.
+ */
+export function figureBreakout({
+  viewport,
+  articleLeft,
+  articleRight,
+  figureClient,
+  imageClient = figureClient,
+  naturalWidth = 0,
+  attrWidth = 0,
+  density = 2,
+  maxWidth = 1040,
+  minViewport = 900,
+  edge = 24,
+}) {
+  if (viewport < minViewport) return { left: 0, right: 0 };
+  const display = imageDisplayWidth({ naturalWidth, attrWidth, density });
+  // Wider than the text column, or it stays in the column.
+  if (!(display > figureClient)) return { left: 0, right: 0 };
+  const need = Math.floor(display - imageClient);
+  if (!(need > 1)) return { left: 0, right: 0 };
+  const target = Math.min(figureClient + need, Math.max(maxWidth, figureClient));
+  const room = Math.max(0, Math.min(articleLeft - edge, viewport - edge - articleRight));
+  const side = Math.min(room, Math.floor((target - figureClient) / 2));
+  if (side <= 0) return { left: 0, right: 0 };
+  return { left: side, right: side };
+}
+
+/**
  * Slide the TOC right of a wide element measured against the TOC's original
  * position. Hide it when the shifted TOC would not fit on screen.
  */

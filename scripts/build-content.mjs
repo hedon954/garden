@@ -184,7 +184,7 @@ function assertWidgetSidecar(src, markdownPath, sourcePath) {
   ) {
     fail(
       sourcePath,
-      `widget src 必须位于同名目录 ${stem}/ 内的 .html 或 .pdf，例如 ./${stem}/notes.pdf`,
+      `widget src 必须位于同名目录 ${stem}/ 内的 .html 或 .pdf，例如 ./${stem}/diagram.html`,
     );
   }
   return absoluteSource;
@@ -337,7 +337,6 @@ function validateAndNormalize(data, content, markdownPath, kind, sourcePath, lin
 
   if (kind === "post") {
     requireString(data, "description", sourcePath);
-    requireString(data, "topic", sourcePath);
   }
   if (kind === "thought" && data.mediaType) {
     if (!["image", "audio", "video", "link", "text"].includes(data.mediaType)) {
@@ -348,6 +347,8 @@ function validateAndNormalize(data, content, markdownPath, kind, sourcePath, lin
   const publishTime = Date.parse(publishAt ?? date);
   if (!includeDrafts && (data.draft === true || publishTime > now)) return null;
   delete data.coverAlt;
+  // Older posts may still carry `topic:`; it is no longer used.
+  delete data.topic;
   const references = normalizeReferences(data.references, sourcePath);
   delete data.references;
 
@@ -562,7 +563,6 @@ export type ContentEntry = {
   updated?: string;
   publishAt?: string;
   draft?: boolean;
-  topic?: string;
   tags?: string[];
   references?: { title: string; url?: string }[];
   pinned?: boolean;

@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 import { checkGardenMarkdown } from "../ui/garden/check.mjs";
-import { diffToNewCode, protectMathIdentifiers, tableBreakout, tocShift } from "../ui/garden/enhance.mjs";
+import { diffToNewCode, figureBreakout, figureImageWidth, imageDisplayWidth, protectMathIdentifiers, tableBreakout, tocShift } from "../ui/garden/enhance.mjs";
 import { parseGardenBlock, scanFences } from "../ui/garden/parse.mjs";
 import { gardenBlocksMarkdown, textReplacementPlist, vscodeSnippets } from "../ui/garden/snippets.mjs";
 import { splitTitle, titleLineScale, titleWidthUnits } from "../ui/garden/title.mjs";
@@ -13,16 +13,21 @@ test("a title splits into two equal lines at one separator", () => {
   assert.deepEqual(split.lines, ["Rust 实战", "手写一个 SpinLock"]);
   assert.equal(split.separator, "丨");
   assert.equal(splitTitle("没有分隔").split, false);
-  assert.equal(splitTitle("甲丨乙｜丙").issue, "multiple");
   assert.equal(splitTitle("只有左边丨").issue, "empty");
+  assert.equal(splitTitle("丨只有右边").issue, "empty");
   assert.equal(splitTitle("Full | width title").separator, " | ");
+  const several = splitTitle("FOSA丨01丨xxx");
+  assert.equal(several.split, true);
+  assert.equal(several.issue, null);
+  assert.deepEqual(several.lines, ["FOSA", "01丨xxx"]);
+  assert.deepEqual(splitTitle("甲丨乙｜丙").lines, ["甲", "乙｜丙"]);
 });
 
-test("a title that cannot split warns and still stays one line", () => {
-  const multiple = checkGardenMarkdown("", { title: "甲丨乙｜丙", titleLine: 2 });
-  assert.deepEqual(multiple.map((item) => [item.code, item.severity, item.line]), [["title-split", "warning", 2]]);
+test("a title with an empty side warns and stays one line", () => {
+  const several = checkGardenMarkdown("", { title: "FOSA丨01丨xxx", titleLine: 2 });
+  assert.equal(several.some((item) => item.code === "title-split"), false);
   const empty = checkGardenMarkdown("", { title: "只有左边丨", titleLine: 3 });
-  assert.deepEqual(empty.map((item) => [item.code, item.severity]), [["title-split", "warning"]]);
+  assert.deepEqual(empty.map((item) => [item.code, item.severity, item.line]), [["title-split", "warning", 3]]);
   const clean = checkGardenMarkdown("", { title: "Rust 实战丨手写一个 SpinLock" });
   assert.equal(clean.some((item) => item.code === "title-split"), false);
 });
@@ -111,6 +116,117 @@ test("tables break out only as far as they need, and the TOC slides or hides", (
   assert.equal(hidden.hide, true);
 });
 
+test("tableBreakout widens symmetrically by half the overflow plus a little", () => {
+  const base = { viewport: 1440, articleLeft: 350, articleRight: 1090, tableClient: 740 };
+  assert.deepEqual(tableBreakout({ ...base, tableScroll: 900 }), { left: 84, right: 84 });
+});
+
+test("tableBreakout leaves content that already fits alone", () => {
+  const base = { viewport: 1440, articleLeft: 350, articleRight: 1090, tableClient: 740 };
+  assert.deepEqual(tableBreakout({ ...base, tableScroll: 740 }), { left: 0, right: 0 });
+  assert.deepEqual(tableBreakout({ ...base, tableScroll: 741 }), { left: 0, right: 0 });
+});
+
+test("tableBreakout does nothing without room at the screen edge", () => {
+  assert.deepEqual(tableBreakout({ viewport: 1000, articleLeft: 24, articleRight: 976, tableClient: 952, tableScroll: 1400 }), { left: 0, right: 0 });
+  // The narrower side decides, so the element stays centred on the text.
+  assert.deepEqual(tableBreakout({ viewport: 1440, articleLeft: 350, articleRight: 1300, tableClient: 950, tableScroll: 2000 }), { left: 116, right: 116 });
+});
+
+test("tableBreakout is off under 900px wide", () => {
+  const base = { articleLeft: 100, articleRight: 840, tableClient: 740, tableScroll: 1200 };
+  assert.deepEqual(tableBreakout({ ...base, viewport: 899 }), { left: 0, right: 0 });
+  assert.ok(tableBreakout({ ...base, viewport: 1100 }).left > 0);
+  assert.deepEqual(tableBreakout({ ...base, viewport: 1100, minViewport: 1200 }), { left: 0, right: 0 });
+});
+
+test("tableBreakout never goes past the cap", () => {
+  const base = { viewport: 2400, articleLeft: 830, articleRight: 1570, tableClient: 740, tableScroll: 3000 };
+  assert.deepEqual(tableBreakout(base), { left: 300, right: 300 });
+  assert.deepEqual(tableBreakout({ ...base, cap: 120 }), { left: 120, right: 120 });
+});
+
+// 1440 wide, 740px text column centred at 350..1090; the figure card adds 26px around the image.
+const figureAt1440 = { viewport: 1440, articleLeft: 350, articleRight: 1090, figureClient: 740, imageClient: 714 };
+
+test("imageDisplayWidth: half the pixels, or the width attribute, never enlarged", () => {
+  assert.equal(imageDisplayWidth({ naturalWidth: 1448 }), 724);
+  assert.equal(imageDisplayWidth({ naturalWidth: 1672 }), 836);
+  assert.equal(imageDisplayWidth({ naturalWidth: 2560, attrWidth: 800 }), 800);
+  assert.equal(imageDisplayWidth({ naturalWidth: 400, attrWidth: 900 }), 400);
+  assert.equal(imageDisplayWidth({ naturalWidth: 0, attrWidth: 320 }), 320);
+  assert.equal(imageDisplayWidth({ naturalWidth: 0 }), 0);
+});
+
+// What the browser shows: the inline width when there is one, otherwise the
+// natural size (width:auto), and max-width:100% caps either at the space in the card.
+function shownWidth({ naturalWidth, attrWidth = 0, figure = figureAt1440 }) {
+  const breakout = figureBreakout({ ...figure, imageClient: Math.min(naturalWidth, figure.imageClient), naturalWidth, attrWidth });
+  const widened = breakout.left > 0;
+  const room = figure.imageClient + breakout.left + breakout.right;
+  const inline = figureImageWidth({ naturalWidth, attrWidth, widened });
+  return { widened, inline, shown: Math.min(inline || naturalWidth, room) };
+}
+
+test("article images: natural size in the column, display size when widened", () => {
+  // a 600px image stays 600 inside the 740 column: not halved, not stretched
+  assert.deepEqual(shownWidth({ naturalWidth: 600 }), { widened: false, inline: 0, shown: 600 });
+  // a 776px diagram fills the column (714 inside the card), not halved to 388
+  assert.deepEqual(shownWidth({ naturalWidth: 776 }), { widened: false, inline: 0, shown: figureAt1440.imageClient });
+  // an ordinary 1448px 2x screenshot (724 display) stays in the column and fills it
+  assert.deepEqual(shownWidth({ naturalWidth: 1448 }), { widened: false, inline: 0, shown: figureAt1440.imageClient });
+  // a 1672px 2x screenshot widens and shows at 836
+  assert.deepEqual(shownWidth({ naturalWidth: 1672 }), { widened: true, inline: 836, shown: 836 });
+  // the width attribute is respected, never past the image's own pixels
+  assert.deepEqual(shownWidth({ naturalWidth: 1200, attrWidth: 480 }), { widened: false, inline: 480, shown: 480 });
+  assert.deepEqual(shownWidth({ naturalWidth: 300, attrWidth: 480 }), { widened: false, inline: 300, shown: 300 });
+  assert.deepEqual(shownWidth({ naturalWidth: 2560, attrWidth: 800 }), { widened: true, inline: 800, shown: 800 });
+  // nothing loaded yet: leave it to CSS
+  assert.equal(figureImageWidth({ naturalWidth: 0 }), 0);
+});
+
+test("figureBreakout: a 2x screenshot narrower than the column does not widen", () => {
+  assert.deepEqual(figureBreakout({ ...figureAt1440, naturalWidth: 1400 }), { left: 0, right: 0 });
+  assert.deepEqual(figureBreakout({ ...figureAt1440, naturalWidth: 1428 }), { left: 0, right: 0 });
+  // 724px on screen is wider than the image box (714) but not than the column (740): it stays.
+  assert.deepEqual(figureBreakout({ ...figureAt1440, naturalWidth: 1448 }), { left: 0, right: 0 });
+  assert.deepEqual(figureBreakout({ ...figureAt1440, naturalWidth: 1480 }), { left: 0, right: 0 });
+  // 742px on screen: just past the column, the image grows to 742.
+  assert.deepEqual(figureBreakout({ ...figureAt1440, naturalWidth: 1484 }), { left: 14, right: 14 });
+  // A 1x image the same pixel width would have widened under the old rule; it is 700px on screen now.
+  assert.deepEqual(figureBreakout({ ...figureAt1440, naturalWidth: 1400, density: 2 }), { left: 0, right: 0 });
+});
+
+test("figureBreakout: a wide 2x screenshot widens to its display width, never beyond", () => {
+  // 1800px 2x -> 900px on screen; the image grows by 186px, 93 a side.
+  assert.deepEqual(figureBreakout({ ...figureAt1440, naturalWidth: 1800 }), { left: 93, right: 93 });
+  // An explicit width attribute wins over the pixel count.
+  assert.deepEqual(figureBreakout({ ...figureAt1440, naturalWidth: 4000, attrWidth: 800 }), { left: 43, right: 43 });
+  assert.deepEqual(figureBreakout({ ...figureAt1440, naturalWidth: 4000, attrWidth: 600 }), { left: 0, right: 0 });
+});
+
+test("figureBreakout: a very wide image stops at 1040px in total", () => {
+  assert.deepEqual(figureBreakout({ ...figureAt1440, naturalWidth: 5000 }), { left: 150, right: 150 });
+  assert.deepEqual(figureBreakout({ ...figureAt1440, naturalWidth: 2560 }), { left: 150, right: 150 });
+  // Tables keep their own, wider allowance.
+  assert.deepEqual(tableBreakout({ viewport: 1440, articleLeft: 350, articleRight: 1090, tableClient: 740, tableScroll: 3000 }), { left: 300, right: 300 });
+});
+
+test("figureBreakout: under 900px wide or with no room, nothing widens", () => {
+  assert.deepEqual(figureBreakout({ ...figureAt1440, viewport: 899, naturalWidth: 5000 }), { left: 0, right: 0 });
+  assert.deepEqual(figureBreakout({ viewport: 1000, articleLeft: 24, articleRight: 976, figureClient: 952, imageClient: 926, naturalWidth: 5000 }), { left: 0, right: 0 });
+  assert.deepEqual(figureBreakout({ viewport: 1100, articleLeft: 130, articleRight: 870, figureClient: 740, imageClient: 714, naturalWidth: 5000 }), { left: 106, right: 106 });
+  assert.deepEqual(figureBreakout({ ...figureAt1440, naturalWidth: 0 }), { left: 0, right: 0 });
+});
+
+test("tocShift stays put without overlap, slides past the widest overlap, and hides when it would leave the screen", () => {
+  assert.deepEqual(tocShift({ tocLeft: 1162, tocWidth: 200, viewport: 1440, overlapRights: [] }), { shift: 0, hide: false });
+  assert.deepEqual(tocShift({ tocLeft: 1162, tocWidth: 200, viewport: 1440, overlapRights: undefined }), { shift: 0, hide: false });
+  assert.deepEqual(tocShift({ tocLeft: 40, tocWidth: 200, viewport: 1440, overlapRights: [80, 120] }), { shift: 96, hide: false });
+  assert.deepEqual(tocShift({ tocLeft: 1162, tocWidth: 200, viewport: 1440, overlapRights: [1390] }), { shift: 286, hide: true });
+  assert.deepEqual(tocShift({ tocLeft: 100, tocWidth: 100, viewport: 1000, overlapRights: [20] }), { shift: 0, hide: false });
+});
+
 test("editor snippets, Typora templates and text replacements come from one catalog", () => {
   const snippets = vscodeSnippets();
   assert.equal(snippets["Garden 块"].prefix, "garden");
@@ -126,7 +242,7 @@ test("editor snippets, Typora templates and text replacements come from one cata
   const template = readFileSync(new URL("../templates/garden-blocks.md", import.meta.url), "utf8");
   assert.equal(template, markdown);
   const chartSkill = readFileSync(new URL("../.agents/skills/garden-interactive-chart/SKILL.md", import.meta.url), "utf8");
-  assert.match(chartSkill, /```garden html\nsrc: \.\/understand-kv-cache\/waste\.html/);
+  assert.match(chartSkill, /```garden html\nsrc: \.\/windowsill-herbs\/layers\.html/);
   assert.doesNotMatch(chartSkill, /```widget/);
   const shipped = ["../.agents/skills/garden-interactive-chart/SKILL.md", "../.agents/skills/garden-post-review/SKILL.md", "../.agents/skills/garden-ui/SKILL.md", "../templates/garden-blocks.md"]
     .map((file) => readFileSync(new URL(file, import.meta.url), "utf8"))

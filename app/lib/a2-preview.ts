@@ -17,7 +17,6 @@ export type A2Article = {
   title: string;
   description: string;
   date: string;
-  topic: string;
   cover: string;
   original: string;
   content: string;
@@ -42,7 +41,6 @@ export function readA2Article(slug: string): A2Article | null {
     title: String(data.title ?? slug),
     description: String(data.description ?? ""),
     date,
-    topic: String(data.topic ?? ""),
     cover: cover && !/^https?:/iu.test(cover) ? `https://hedon.top/media/covers/${cover}` : cover,
     original: originals[slug] ?? "",
     content: parsed.content,

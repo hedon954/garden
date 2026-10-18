@@ -1,17 +1,14 @@
 const SEPARATOR = /丨|｜| \| /gu;
 
 /**
- * A title splits into exactly two lines when it contains one 丨, ｜ or " | ".
- * Anything else stays one line. The separator stays in the accessible name.
+ * A title splits into two lines at the first 丨, ｜ or " | ".
+ * Later separators stay on the second line. An empty side stays one line.
+ * The separator stays in the accessible name.
  */
 export function splitTitle(title) {
   const text = String(title ?? "");
-  const matches = [...text.matchAll(SEPARATOR)];
-  if (matches.length === 0) return { split: false, title: text, lines: [text], separator: null, issue: null };
-  if (matches.length > 1) {
-    return { split: false, title: text, lines: [text], separator: null, issue: "multiple" };
-  }
-  const match = matches[0];
+  const match = [...text.matchAll(SEPARATOR)][0];
+  if (!match) return { split: false, title: text, lines: [text], separator: null, issue: null };
   const before = text.slice(0, match.index).trim();
   const after = text.slice(match.index + match[0].length).trim();
   const separator = match[0] === " | " ? " | " : match[0];

@@ -6,7 +6,7 @@ import { siteConfig, siteDocumentTitle } from "../site.config";
 
 export const metadata = {
   title: siteDocumentTitle,
-  description: "专栏是按主题整理的阅读清单，与文章分类相互独立；清单内按发布时间从新到旧排列。",
+  description: siteConfig.pages.columns.subtitle || siteConfig.description,
 };
 
 function day(value: string) {
@@ -38,7 +38,7 @@ export default function ColumnsPage() {
     <main className="sh-main" id="content">
       <div className="sh-head">
         <h1>{siteConfig.pages.columns.title || "专栏"}</h1>
-        <p className="sh-deck">专栏是按主题整理的阅读清单，与文章分类相互独立；清单内按发布时间从新到旧排列。</p>
+        {siteConfig.pages.columns.subtitle ? <p className="sh-deck">{siteConfig.pages.columns.subtitle}</p> : null}
       </div>
       {grouped.length ? grouped.map(({ slug, first, entries }) => (
         <section className="sh-series" aria-labelledby={slug} key={slug}>

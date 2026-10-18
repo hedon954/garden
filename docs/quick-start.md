@@ -76,7 +76,7 @@ make dev
 把自己的仓库克隆到本地，在根目录运行：
 
 ```bash
-make new TITLE="你好，世界" SLUG=hello TOPIC="随笔"
+make new TITLE="你好，世界" SLUG=hello
 ```
 
 这会生成 `content/posts/hello.md` 草稿，不需要先安装 npm 依赖或配置站点身份。直接运行 `make new` 也能自动命名；更多参数见[新建文章](content-authoring.md#新建一篇博文)。
@@ -90,7 +90,6 @@ make new TITLE="你好，世界" SLUG=hello TOPIC="随笔"
 title: 你好，世界
 date: 2026-07-28 09:00:00
 description: 我的第一篇文章。
-topic: 随笔
 tags: [开始]
 ---
 

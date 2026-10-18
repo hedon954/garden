@@ -1,11 +1,27 @@
 "use client";
 
 import { useEffect } from "react";
-import { tableBreakout, tocShift } from "../../ui/garden/enhance.mjs";
+import { figureBreakout, figureImageWidth, tableBreakout, tocShift } from "../../ui/garden/enhance.mjs";
 
 function translatedX(element: Element) {
   const value = new DOMMatrix(getComputedStyle(element).transform).m41;
   return Number.isFinite(value) ? value : 0;
+}
+
+// The table is width:100% and wraps its cells, so scrollWidth never exceeds
+// the column. Measure the unwrapped width instead.
+function naturalWidth(table: HTMLTableElement) {
+  const previous = table.style.width;
+  table.style.width = "max-content";
+  const width = table.scrollWidth;
+  table.style.width = previous;
+  return width;
+}
+
+function resetWide(element: HTMLElement) {
+  element.classList.remove("ux-wide");
+  element.style.removeProperty("--wl");
+  element.style.removeProperty("--wr");
 }
 
 export function ArticleMeasure() {
@@ -14,38 +30,28 @@ export function ArticleMeasure() {
     const toc = document.querySelector<HTMLElement>(".toc");
     if (!article) return undefined;
     const root = document.documentElement;
-    let frame = 0;
+    // Natural content widths are expensive (a max-content relayout per table),
+    // so they are cached and only refreshed on resize and load.
+    const natural = new WeakMap<HTMLElement, number>();
+    let measureFrame = 0;
+    let tocFrame = 0;
+    let refreshPending = false;
 
-    const layout = () => {
-      const articleBox = article.getBoundingClientRect();
-      const viewport = root.clientWidth;
-      article.querySelectorAll<HTMLElement>(".table-wrap").forEach((wrap) => {
-        const table = wrap.querySelector("table");
-        wrap.classList.remove("ux-wide");
-        wrap.style.removeProperty("--wl");
-        wrap.style.removeProperty("--wr");
-        if (!table) return;
-        const margin = tableBreakout({
-          viewport,
-          articleLeft: articleBox.left,
-          articleRight: articleBox.right,
-          tableClient: wrap.clientWidth,
-          tableScroll: table.scrollWidth,
-        });
-        if (margin.left > 0) {
-          wrap.style.setProperty("--wl", `${margin.left}px`);
-          wrap.style.setProperty("--wr", `${margin.right}px`);
-          wrap.classList.add("ux-wide");
-        }
-      });
+    const tableWidth = (wrap: HTMLElement, refresh: boolean) => {
+      if (!refresh && natural.has(wrap)) return natural.get(wrap) ?? 0;
+      const table = wrap.querySelector("table");
+      const width = table ? naturalWidth(table) : 0;
+      natural.set(wrap, width);
+      return width;
+    };
 
+    const placeToc = () => {
       if (!toc) {
         root.removeAttribute("data-toc-yield");
         return;
       }
       const box = toc.getBoundingClientRect();
-      const dx = translatedX(toc);
-      const originalLeft = box.left - dx;
+      const originalLeft = box.left - translatedX(toc);
       const overlapRights: number[] = [];
       article.querySelectorAll<HTMLElement>(".ux-wide").forEach((element) => {
         const wide = element.getBoundingClientRect();
@@ -55,7 +61,7 @@ export function ArticleMeasure() {
       const shift = tocShift({
         tocLeft: originalLeft,
         tocWidth: box.width,
-        viewport,
+        viewport: root.clientWidth,
         overlapRights,
       });
       if (shift.shift > 0) {
@@ -68,27 +74,93 @@ export function ArticleMeasure() {
       }
     };
 
-    const schedule = () => {
-      if (frame) return;
-      frame = window.requestAnimationFrame(() => {
-        frame = 0;
-        layout();
+    const measure = (refresh: boolean) => {
+      // Measure the text column, not the whole article grid (which includes the TOC rail).
+      const articleBox = (article.querySelector(".markdown-body") ?? article).getBoundingClientRect();
+      const viewport = root.clientWidth;
+      const widen = (element: HTMLElement, margin: { left: number; right: number }) => {
+        if (margin.left <= 0) return;
+        element.style.setProperty("--wl", `${margin.left}px`);
+        element.style.setProperty("--wr", `${margin.right}px`);
+        element.classList.add("ux-wide");
+      };
+      // Tables: as wide as their unwrapped content, up to 300px a side.
+      article.querySelectorAll<HTMLElement>(".table-wrap").forEach((wrap) => {
+        const width = tableWidth(wrap, refresh);
+        resetWide(wrap);
+        if (!width) return;
+        widen(wrap, tableBreakout({
+          viewport,
+          articleLeft: articleBox.left,
+          articleRight: articleBox.right,
+          tableClient: wrap.clientWidth,
+          tableScroll: width,
+        }));
+      });
+      // Images: as wide as they display (2x screenshots at half their pixels), up to 1040px in total.
+      article.querySelectorAll<HTMLElement>(".fig").forEach((figure) => {
+        const image = figure.querySelector("img");
+        resetWide(figure);
+        if (!image) return;
+        // Back to CSS sizing: natural size, capped at the column.
+        image.style.removeProperty("width");
+        if (!image.naturalWidth) return;
+        const attrWidth = Number(image.getAttribute("width")) || 0;
+        const breakout = figureBreakout({
+          viewport,
+          articleLeft: articleBox.left,
+          articleRight: articleBox.right,
+          figureClient: figure.clientWidth,
+          imageClient: image.clientWidth,
+          naturalWidth: image.naturalWidth,
+          attrWidth,
+        });
+        widen(figure, breakout);
+        // Only a widened image, or one with a width attribute, gets an inline width.
+        const width = figureImageWidth({ naturalWidth: image.naturalWidth, attrWidth, widened: breakout.left > 0 });
+        if (width) image.style.width = `${width}px`;
+      });
+      placeToc();
+    };
+
+    // Resize and load refresh the cached widths; the ResizeObserver reuses them.
+    const scheduleMeasure = (refresh: boolean) => {
+      refreshPending ||= refresh;
+      if (measureFrame) return;
+      measureFrame = window.requestAnimationFrame(() => {
+        measureFrame = 0;
+        const shouldRefresh = refreshPending;
+        refreshPending = false;
+        measure(shouldRefresh);
+      });
+    };
+    const refresh = () => scheduleMeasure(true);
+    const reuse = () => scheduleMeasure(false);
+    // Scrolling only moves wide elements past the TOC; no width is measured.
+    const onScroll = () => {
+      if (tocFrame) return;
+      tocFrame = window.requestAnimationFrame(() => {
+        tocFrame = 0;
+        placeToc();
       });
     };
 
-    layout();
-    window.addEventListener("resize", schedule);
-    window.addEventListener("scroll", schedule, { passive: true });
-    window.addEventListener("load", schedule);
-    const observer = new ResizeObserver(schedule);
+    measure(true);
+    window.addEventListener("resize", refresh);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("load", refresh);
+    const observer = new ResizeObserver(reuse);
     observer.observe(article);
-    article.querySelectorAll("img").forEach((image) => image.addEventListener("load", schedule));
+    const images = [...article.querySelectorAll("img")];
+    images.forEach((image) => image.addEventListener("load", refresh));
     return () => {
-      window.removeEventListener("resize", schedule);
-      window.removeEventListener("scroll", schedule);
-      window.removeEventListener("load", schedule);
+      window.removeEventListener("resize", refresh);
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("load", refresh);
+      images.forEach((image) => image.removeEventListener("load", refresh));
       observer.disconnect();
-      if (frame) window.cancelAnimationFrame(frame);
+      if (measureFrame) window.cancelAnimationFrame(measureFrame);
+      if (tocFrame) window.cancelAnimationFrame(tocFrame);
     };
   }, []);
   return null;

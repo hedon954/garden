@@ -5,7 +5,6 @@ description: >-
   内存顺序、UnsafeCell 内部可变性、Send/Sync 并发标记，以及 Drop/Deref
   零成本抽象，帮助读者理解自旋锁适用场景与潜在陷阱，并掌握将并发安全问题前移到编译期的工程思维。
 date: '2025-05-13T12:58:25.000Z'
-topic: Rust 实战集合
 tags:
   - rust
   - 并发编程

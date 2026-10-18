@@ -41,7 +41,7 @@ test("the engine creates drafts repeatedly without a site copy of the script", a
     const { data } = matter(source);
     assert.equal(data.title, "新文章");
     assert.equal(data.draft, true);
-    assert.equal(data.topic, "未分类");
+    assert.equal("topic" in data, false);
     assert.ok(data.description);
     assert.match(source, /^date: \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/m);
     assert.equal(data.slug, undefined);
@@ -54,13 +54,13 @@ test("make passes title literally and creates nested, valid front matter", async
   const root = await fork(t);
   const title = 'SFT: "笔记" #1\n$(shell touch injected) `touch injected` $HOME';
   const { stdout } = await run(root, [
-    `TITLE=${title}`, "SLUG=sft-notes", "DIR=ai/学习", "TOPIC=AI: 学习",
+    `TITLE=${title}`, "SLUG=sft-notes", "DIR=ai/学习",
   ]);
   const filename = path.join(root, "content/posts/ai/学习/sft-notes.md");
   const content = await readFile(filename, "utf8");
   const { data } = matter(content);
   assert.equal(data.title, title);
-  assert.equal(data.topic, "AI: 学习");
+  assert.equal("topic" in data, false);
   assert.match(stdout, /\/blog\/ai\/学习\/sft-notes\//u);
   assert.ok(!(await readdir(root)).includes("injected"));
   await assert.rejects(run(root, ["SLUG=sft-notes", "DIR=ai/学习"]), /文章已存在/u);

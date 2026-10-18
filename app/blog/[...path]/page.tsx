@@ -16,6 +16,7 @@ import { MarkdownArticle } from "../../components/MarkdownArticle";
 import { TableOfContents } from "../../components/TableOfContents";
 import { Comments } from "../../components/Comments";
 import { Webmentions } from "../../components/Webmentions";
+import { ArticleTags } from "../../components/ArticleTags";
 import {
   absoluteUrl,
   getSiteUrl,
@@ -100,17 +101,13 @@ export default async function PostPage({
             </li>
             {post.updated ? <li>更新于 {formatDate(post.updated)}</li> : null}
             <li>约 {wordCount.toLocaleString("en-US")} 字</li>
-            {post.topic ? (
-              <li>
-                <a className="cat" href={`/blog?topic=${encodeURIComponent(post.topic)}`}>{post.topic}</a>
-              </li>
-            ) : null}
             {originalUrl(post) ? (
               <li>
                 <a className="orig ext" href={originalUrl(post)} target="_blank" rel="noopener noreferrer">原文 ↗</a>
               </li>
             ) : null}
           </ul>
+          <ArticleTags tags={post.tags} />
           {post.cover && (
             <figure className="article-hero article-cover cover-card cover-img">
               {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -126,13 +123,6 @@ export default async function PostPage({
               <MarkdownArticle content={post.content} />
             </div>
             <ArticleReferences references={post.references} />
-            <div className="article-tags">
-              {post.tags?.map((tag) => (
-                <span className="p-category" key={tag}>
-                  #{tag}
-                </span>
-              ))}
-            </div>
             <Webmentions
               target={canonicalUrl}
               endpoint={webmentionApiEndpoint()}

@@ -2,7 +2,6 @@
 title: 我为什么重新选择本地写作
 description: Markdown 文件、可迁移的媒体资源，以及不被平台锁住的长期写作。
 date: 2026-07-12
-topic: 写作系统
 tags:
   - Markdown
   - Local-first

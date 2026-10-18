@@ -1,7 +1,6 @@
 import Link from "next/link";
-import { columns, postHref, posts } from "./lib/content";
-import { ThoughtCard } from "./components/ThoughtCard";
-import { getPublishedThoughts } from "./lib/public-thoughts";
+import { homeListDate } from "./lib/a2-meta";
+import { columns, formatDate, postHref, posts } from "./lib/content";
 import { githubUrl, siteConfig } from "./site.config";
 
 export const metadata = {
@@ -21,10 +20,10 @@ function day(value: string) {
 }
 
 export default function Home() {
-  const recent = [...posts].sort((left, right) => Date.parse(right.date) - Date.parse(left.date));
-  const feature = recent[0];
+  const recentAll = [...posts].sort((left, right) => Date.parse(right.date) - Date.parse(left.date));
+  const feature = recentAll[0];
+  const recent = recentAll.filter((post) => post.path !== feature?.path);
   const pinned = posts.filter((post) => post.pinned);
-  const thoughts = getPublishedThoughts();
   const series = Array.from(
     columns.reduce((result, entry) => {
       const existing = result.get(entry.column ?? "");
@@ -57,8 +56,7 @@ export default function Home() {
           <div>
             <p className="kicker">
               <span>最新文章</span>
-              <time className="num" dateTime={day(feature.date)}>{day(feature.date)}</time>
-              {feature.topic ? <span>{feature.topic}</span> : null}
+              <time className="num" dateTime={day(feature.date)}>{formatDate(feature.date)}</time>
             </p>
             <h2 id="ft"><Link href={postHref(feature)}>{feature.title}</Link></h2>
             {feature.description ? <p>{feature.description}</p> : null}
@@ -76,12 +74,11 @@ export default function Home() {
             <Link className="sh-more" href="/blog">全部 {posts.length} 篇</Link>
           </div>
           <ol className="sh-rows">
-            {recent.slice(0, 7).map((post) => (
+            {recent.slice(0, 6).map((post) => (
               <li className="sh-row" key={post.path}>
-                <time className="num" dateTime={day(post.date)}>{day(post.date)}</time>
+                <time className="num" dateTime={day(post.date)}>{homeListDate(post.date)}</time>
                 <h3><Link href={postHref(post)}>{post.title}</Link></h3>
                 {post.description ? <p>{post.description}</p> : null}
-                {post.topic ? <Link className="cat" href={`/blog?topic=${encodeURIComponent(post.topic)}`}>{post.topic}</Link> : null}
               </li>
             ))}
           </ol>
@@ -93,7 +90,7 @@ export default function Home() {
               {pinned.map((post) => (
                 <li key={post.path}>
                   <Link href={postHref(post)}>{post.title}</Link>
-                  <span><time className="num" dateTime={day(post.date)}>{day(post.date)}</time>{post.topic ? `　${post.topic}` : ""}</span>
+                  <span><time className="num" dateTime={day(post.date)}>{formatDate(post.date)}</time></span>
                 </li>
               ))}
             </ul>
@@ -126,20 +123,6 @@ export default function Home() {
                 </article>
               );
             })}
-          </div>
-        </section>
-      ) : null}
-
-      {thoughts.length > 0 ? (
-        <section className="sh-section" aria-labelledby="h-thoughts">
-          <div className="sh-sec-head">
-            <h2 id="h-thoughts">最近随想</h2>
-            <Link className="sh-more" href="/thoughts">全部随想</Link>
-          </div>
-          <div className="home-thought-list">
-            {thoughts.slice(0, 5).map((thought) => (
-              <ThoughtCard key={thought.slug} thought={thought} />
-            ))}
           </div>
         </section>
       ) : null}

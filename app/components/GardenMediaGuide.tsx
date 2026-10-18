@@ -5,7 +5,7 @@ const embedTypes = [
   },
   {
     title: "X / Twitter",
-    description: "显示成一张带出处的卡片，不依赖对方的脚本。",
+    description: "显示成一张带出处的卡片。",
   },
   {
     title: "微信公众号",
@@ -13,7 +13,7 @@ const embedTypes = [
   },
   {
     title: "其他网站",
-    description: "自己写标题、摘要和封面。不在构建时去抓那个网址。",
+    description: "自己写标题、摘要和封面。",
   },
 ];
 
@@ -53,7 +53,7 @@ export function GardenMediaGuide() {
       </ul>
 
       <p className="garden-media-boundary">
-        摘要写在文章里。构建时不去抓任意网址。原站打不开，文章还在。需要时用 <code>make embed URL=...</code> 拉一次，看过再贴进去。
+        摘要写在文章里。原站打不开，文章还在。需要时用 <code>make embed URL=...</code> 拉一次，看过再贴进去。
       </p>
     </section>
   );

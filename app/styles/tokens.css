@@ -2,8 +2,8 @@
 
 :root,
 :root[data-theme="light"] {
-  --paper: #f8f7f3;
-  --paper-deep: #f0eee8;
+  --paper: #faf9f5;
+  --paper-deep: #f0eee6;
   --card: #ffffff;
   --ink: #1b1a18;
   --ink-soft: #2d2c29;
@@ -16,15 +16,22 @@
   --rule-strong: #d6d2c9;
   --line: #e6e3dc;
   --line-strong: #d6d2c9;
-  --well: #f0eee8;
+  --well: #f0eee6;
   --tint: rgb(27 26 24 / 5.5%);
-  --blue: #2c55b4;
-  --blue-tint: #eaf0fc;
-  --blue-line: rgb(44 85 180 / 28%);
-  --cover: #5e86e0;
+  /* "blue" is the accent slot; the accent is now ink, there is no blue. */
+  --blue: #30302e;
+  --blue-tint: #f0eee6;
+  --blue-line: rgb(20 20 19 / 22%);
+  --cover: #c2c0b6;
+  --chip: #f0eee6;
+  --chip-hover: #e8e5db;
+  --chip-on: #30302e;
+  --chip-on-text: #faf9f5;
+  --card-hover: #f5f4ed;
+  --card-shadow: 0 1px 2px rgb(20 20 19 / 4%), 0 4px 14px rgb(20 20 19 / 5%);
   --accent: var(--blue);
   --accent-soft: var(--blue-tint);
-  --selection: #eaf0fc;
+  --selection: #e8e5db;
   --hl: #ffe58f;
   --red: #d82d48;
   --red-text: #c2263f;
@@ -42,7 +49,7 @@
   --fs-meta: 13px;
   --r: 12px;
   --r-lg: 24px;
-  --col: 700px;
+  --col: 740px;
   --rail: 232px;
   --gap: 48px;
   --content: var(--col);
@@ -54,9 +61,9 @@
 
 :root[data-theme="dark"],
 html[data-theme="dark"] {
-  --paper: #161513;
-  --paper-deep: #22211d;
-  --card: #1e1d1a;
+  --paper: #1f1e1d;
+  --paper-deep: #262624;
+  --card: #262624;
   --ink: #eeece7;
   --ink-soft: #dcd9d2;
   --text: #dcd9d2;
@@ -64,19 +71,25 @@ html[data-theme="dark"] {
   --muted: #a09b91;
   --grey: #a09b91;
   --faint: #a09b91;
-  --rule: #2f2d29;
-  --rule-strong: #45423c;
-  --line: #2f2d29;
-  --line-strong: #45423c;
-  --well: #22211d;
+  --rule: #3d3d3a;
+  --rule-strong: #4d4c48;
+  --line: #3d3d3a;
+  --line-strong: #4d4c48;
+  --well: #262624;
   --tint: rgb(238 236 231 / 7%);
-  --blue: #93b2f4;
-  --blue-tint: rgb(147 178 244 / 13%);
-  --blue-line: rgb(147 178 244 / 35%);
-  --cover: #4c72c9;
+  --blue: #eeece7;
+  --blue-tint: #30302e;
+  --blue-line: rgb(238 236 231 / 25%);
+  --cover: #4d4c48;
+  --chip: #30302e;
+  --chip-hover: #3d3d3a;
+  --chip-on: #eeece7;
+  --chip-on-text: #1f1e1d;
+  --card-hover: #30302e;
+  --card-shadow: 0 1px 2px rgb(0 0 0 / 18%);
   --accent: var(--blue);
   --accent-soft: var(--blue-tint);
-  --selection: rgb(147 178 244 / 22%);
+  --selection: rgb(238 236 231 / 18%);
   --hl: #6b5a2a;
   --red: #f29aab;
   --red-text: #f29aab;

@@ -1,28 +1,39 @@
+import Link from "next/link";
 import { Suspense } from "react";
 import { posts } from "../lib/content";
-import { TagIndex } from "../components/TagIndex";
+import { tagCounts, tagFilterHref } from "../lib/tag-filter";
+import { TagRedirect } from "../components/TagRedirect";
 import { siteDocumentTitle } from "../site.config";
 
 export const metadata = {
   title: siteDocumentTitle,
-  description: "按标签浏览文章。标签不是专栏，也不是分类。",
+  description: "全部标签。",
 };
 
 export default function TagsPage() {
-  const counts = new Map<string, number>();
-  for (const post of posts) {
-    for (const tag of post.tags ?? []) counts.set(tag, (counts.get(tag) ?? 0) + 1);
-  }
-  const once = [...counts.values()].filter((count) => count === 1).length;
+  const tags = tagCounts(posts);
   return (
     <main className="sh-main" id="content">
       <div className="sh-head">
         <h1>标签</h1>
-        <p className="sh-deck">{counts.size} 个标签，按使用次数排序；只用过一次的 {once} 个收在下面。点选一个标签，下方列出对应文章。</p>
+        <p className="sh-deck">{tags.length} 个标签，按文章数排序。点一个标签，查看带这个标签的文章。</p>
       </div>
       <Suspense>
-        <TagIndex posts={posts} />
+        <TagRedirect />
       </Suspense>
+      {tags.length ? (
+        <ul className="sh-tagchips sh-tagindex" aria-label="全部标签">
+          {tags.map(([tag, count]) => (
+            <li key={tag}>
+              <Link className="sh-tagchip" href={tagFilterHref([tag])}>
+                #{tag}<span className="n num">{count}</span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="sh-deck">还没有标签。</p>
+      )}
     </main>
   );
 }

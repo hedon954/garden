@@ -23,7 +23,6 @@ const postSource = `---
 title: 我的第一篇文章
 date: 2026-08-03 09:00:00
 description: 这篇文章记录我为什么重新开始写博客。
-topic: 写作
 tags: [Markdown, 博客]
 pinned: false
 cover: writing/first-post.jpg
@@ -100,7 +99,7 @@ const guides: Guide[] = [
       <>文件名就是地址。标题和日期写在开头。先存着就标成草稿。</>,
       <>图片、音频、视频和链接按顺序放进 <code>media</code>。</>,
     ],
-    result: "它会出现在随想页和首页，并且有自己的链接。",
+    result: "它会出现在随想页，并且有自己的链接。",
     path: "content/thoughts/walk-after-rain.md",
     source: thoughtSource,
     language: "markdown",

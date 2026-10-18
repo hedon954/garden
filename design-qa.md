@@ -67,8 +67,8 @@ No actionable P0, P1, or P2 mismatch remains for the requested "similar style" t
 - Revised browser capture: `/Users/hedon/Documents/blog/implementation-home-reference-state.png`
 - Combined comparison: `/Users/hedon/Documents/blog/design-comparison-home-v2.png`
 - The comparison uses the same 1065 × 837 viewport and the same scrolled home-list state.
-- The `01`–`04` labels are absent. “置顶博文”“最近博文”“最近随想”“主题专栏” now share the same crimson heading treatment.
-- Pinned and recent article rows now share the same 67 px row height, date/title/topic hierarchy, divider treatment, and arrow alignment.
+- The `01`–`04` labels are absent. “置顶”“最近更新”“专栏” share the same heading treatment. The home page no longer has a “最近随想” section.
+- Pinned and recent article rows now share the same 67 px row height, date/title hierarchy, divider treatment, and arrow alignment.
 - Supporting browser checks passed for: full-color GitHub avatar (`filter: none`), 12 px article TOC, four covered posts, two KaTeX display blocks, two rendered Mermaid SVGs, one mixed thought containing three images plus audio/video/link, and a 390 px layout without horizontal overflow.
 - No browser console errors were recorded in the revised routes.
 - No remaining P0, P1, or P2 issue was found.
@@ -79,7 +79,7 @@ No actionable P0, P1, or P2 mismatch remains for the requested "similar style" t
 - Revised browser capture: `/Users/hedon/Documents/blog/implementation-blog-compact-state.png`
 - Combined comparison: `/Users/hedon/Documents/blog/design-comparison-blog-compact.png`
 - The comparison normalizes the source's 1288 × 862 screenshot to its 644 × 431 CSS viewport and captures the same filtered-list state.
-- The old stacked card exposed roughly one article per viewport. The revised 92 px mobile rows expose four article entries in the same viewport while retaining a readable thumbnail, date, topic, title, summary, pin state, and navigation arrow.
+- The old stacked card exposed roughly one article per viewport. The revised 92 px mobile rows expose four article entries in the same viewport while retaining a readable thumbnail, date, title, summary, pin state, and navigation arrow.
 - All five sample posts now have covers. At the narrow breakpoint thumbnails render at 96 × 68 px; at desktop they render at 128 × 84 px.
 - Browser checks confirm that titles remain to the right of covers, all five rows have equal height, no horizontal overflow occurs at 644 px or 1200 px, and no console errors are present.
 - No remaining P0, P1, or P2 issue was found.
@@ -104,7 +104,7 @@ No actionable P0, P1, or P2 mismatch remains for the requested "similar style" t
   - `/Users/hedon/Documents/blog/implementation-mermaid-themes.png`
   - `/Users/hedon/Documents/blog/implementation-code-highlights.png`
 - The 724 × 331 source was normalized to the implementation's 723 × 330 CSS viewport at device scale factor 1. Both sides show the light-theme search dialog with the query “文章” and two results.
-- Full-view comparison confirms the 640 px panel width, 33 px top inset, restrained border and shadow, compact result density, topic/title/summary hierarchy, and dimmed backdrop remain consistent with the source.
+- Full-view comparison confirms the 640 px panel width, 33 px top inset, restrained border and shadow, compact result density, section/title/summary hierarchy, and dimmed backdrop remain consistent with the source.
 - Focused search evidence confirms exactly two visible `mark` elements for the two actual “文章” matches. A body-only match now replaces the generic description with a contextual excerpt so the reason for the result is visible.
 - Typography, spacing, colors, iconography, and copy retain the Garden design tokens. The match treatment uses the existing selection token rather than introducing a competing accent.
 - Mermaid now renders two live SVG diagrams. Each diagram independently switches among classic, neutral, forest, and dark themes; the verified forest-theme selection re-rendered without losing the second diagram.

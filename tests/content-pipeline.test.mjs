@@ -61,7 +61,7 @@ test("content pipeline validates metadata, excludes drafts, and publishes Typora
 title: 已发布文章
 description: 验证内容发布管线
 date: 2026-07-25
-topic: 测试
+topic: 旧字段
 cover: cover.jpg
 ---
 
@@ -74,7 +74,6 @@ cover: cover.jpg
 title: 草稿文章
 description: 不应出现在正式构建
 date: 2026-07-25
-topic: 测试
 draft: true
 ---
 
@@ -87,7 +86,6 @@ draft: true
 title: 子目录文章
 description: 验证多级目录中的博文。
 date: 2026-07-25
-topic: 测试
 ---
 
 这篇文章放在多级目录中。
@@ -104,7 +102,7 @@ topic: 测试
 `,
     );
 
-    await execFileAsync(
+    const build = await execFileAsync(
       process.execPath,
       [path.join(fixture, "scripts", "build-content.mjs")],
       {
@@ -112,6 +110,8 @@ topic: 测试
         env: { ...process.env, CONTENT_INCLUDE_DRAFTS: "0" },
       },
     );
+    // A leftover `topic:` line is ignored without an error or a warning.
+    assert.doesNotMatch(build.stdout + build.stderr, /topic/i);
 
     const generated = await readFile(
       path.join(fixture, ".garden", "generated-content.ts"),
@@ -125,6 +125,7 @@ topic: 测试
     assert.match(generated, /"slug": "published"/);
     assert.match(generated, /"sourcePath": "posts\/writing\/nested\.md"/);
     assert.doesNotMatch(generated, /"slug": "draft"/);
+    assert.doesNotMatch(generated, /topic|旧字段/);
     assert.match(generated, /"column": "writing"/);
     assert.match(generated, /\/media\/covers\/cover\.jpg/);
     assert.match(generated, /\/media\/posts\/assets\/cover\.jpg/);
@@ -155,7 +156,6 @@ test("GARDEN_SITE writes generated files into the site, not the process cwd", as
 title: Isolated
 date: 2026-07-25
 description: 站点隔离
-topic: 测试
 draft: false
 ---
 

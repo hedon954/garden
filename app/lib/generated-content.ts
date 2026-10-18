@@ -18,8 +18,8 @@ export type ContentEntry = {
   updated?: string;
   publishAt?: string;
   draft?: boolean;
-  topic?: string;
   tags?: string[];
+  references?: { title: string; url?: string }[];
   pinned?: boolean;
   readingTime?: string;
   kind: "post" | "column" | "thought";
@@ -41,13 +41,44 @@ export type ContentEntry = {
   linkDescription?: string;
 };
 
-export const contentHash = "86dad25b6dba";
+export const contentHash = "d5d6e2ed16c6";
 export const posts = [
+  {
+    "title": "窗台香草丨01丨播种到第一次采摘",
+    "description": "一盆罗勒从播种、间苗到第一次剪叶，按周记下高度和浇水量。",
+    "date": "2026-10-16T00:00:00+08:00",
+    "tags": [
+      "香草",
+      "窗台"
+    ],
+    "pinned": false,
+    "cover": "/media/covers/windowsill-herbs.svg",
+    "slug": "windowsill-herbs",
+    "path": "windowsill-herbs",
+    "kind": "post",
+    "draft": false,
+    "sourcePath": "posts/windowsill-herbs.md",
+    "content": "北向窗台上有三只盆。这季种了罗勒和薄荷，第三只空着，留给秋天的香菜。\n\n## 两种香草\n\n罗勒要见光，薄荷更耐阴。浇法也不一样。\n\n```garden compare\nitems:\n  - title: 罗勒\n    text: 土面发白再浇透，托盘里的水倒掉。\n  - title: 薄荷\n    text: 土保持微湿，避开正午的直射光。\n```\n\n## 这季记下的数\n\n种子是三月中旬播的。盆不深，第一次剪叶等到第六周。\n\n```garden stat\nitems:\n  - label: 发芽\n    value: 7\n    unit: 天\n  - label: 盆深\n    value: 15\n    unit: 厘米\n  - label: 第一次剪叶\n    value: 6\n    unit: 周\n```\n\n## 从播种到剪叶\n\n```garden timeline\nitems:\n  - date: 3月12日\n    title: 播种\n    text: 罗勒和薄荷各一盆，覆土不超过半厘米。\n  - date: 3月19日\n    title: 出苗\n    text: 罗勒先露头，薄荷晚了两天。\n  - date: 4月2日\n    title: 间苗\n    text: 每盆留下最壮的两株。\n  - date: 5月1日\n    title: 第一次剪叶\n    text: 只剪顶端，留下至少四片叶。\n```\n\n> [!NOTE]\n> 北向窗冬天光照不够，罗勒会徒长。把盆移到能见到上午光的那一格。\n\n## 每周的株高\n\n从第二周起，每周一量一次最高的那片叶。\n\n```garden chart\ntype: bar\ntitle: 罗勒株高\nx: [\"第2周\", \"第3周\", \"第4周\", \"第5周\", \"第6周\"]\nseries:\n  - name: 株高\n    data: [4, 8, 13, 18, 22]\nunit: cm\ncaption: 第六周剪叶前，罗勒大约 22 厘米。\n```\n\n## 窗台怎么摆\n\n靠左的那格上午有光，罗勒放那里。薄荷在中间。右边的空盆先不浇。\n\n```garden figure\ncaption: 朝北的窗台，从左到右是罗勒、薄荷和一只空盆。\nparts:\n  - name: 全部\n    text: 三只盆并排，靠左的光照最好。\n  - name: 罗勒\n    text: 靠左，每天都够到上午的光。\n  - name: 薄荷\n    text: 中间，土干得慢一些。\n  - name: 空盆\n    text: 右边空着，留给秋天的香菜。\n---\n<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 640 220\">\n  <rect data-p=\"全部\" x=\"20\" y=\"16\" width=\"600\" height=\"150\" rx=\"10\" fill=\"#d5e3ea\"/>\n  <rect data-p=\"罗勒\" x=\"70\" y=\"96\" width=\"90\" height=\"58\" rx=\"8\" fill=\"#c4a574\"/>\n  <circle data-p=\"罗勒\" cx=\"115\" cy=\"78\" r=\"30\" fill=\"#3f7d4e\"/>\n  <rect data-p=\"薄荷\" x=\"270\" y=\"104\" width=\"90\" height=\"50\" rx=\"8\" fill=\"#c4a574\"/>\n  <circle data-p=\"薄荷\" cx=\"315\" cy=\"88\" r=\"26\" fill=\"#6aa87a\"/>\n  <rect data-p=\"空盆\" x=\"470\" y=\"118\" width=\"90\" height=\"36\" rx=\"8\" fill=\"#e4d3b8\"/>\n</svg>\n```\n\n## 今天浇不浇\n\n土面还湿就先不动。干了再浇，浇到盆底出水，然后把托盘倒掉。\n\n```mermaid\nflowchart TD\n  A[看土面] --> B{还湿吗}\n  B -->|湿| C[今天不浇]\n  B -->|干| D[浇到盆底出水]\n  D --> E[倒掉托盘]\n```\n\n> [!WARNING]\n> 霜前把盆搬进屋。罗勒叶子一碰霜就发黑，回不来。\n\n## 盆口和浇水量\n\n盆口越大，一次浇得越多。12 厘米的盆大约是 70 毫升。\n\n```garden interactive #pot-water\ncaption: 盆口越大，一次浇得越多。12 厘米大约是 70 毫升。\nintent: |\n  让读者拧盆口直径，看这一次该浇多少毫升。\n---\n<State diameter={12} />\n<Slider bind=\"diameter\" label=\"盆口直径\" min={8} max={24} unit=\"cm\" />\n<Let water={round(diameter * diameter * 0.35 + 20)} />\n<Stat label=\"这一次\" value={water} unit=\"ml\" />\n```\n\n## 水怎么往下走\n\n浇下去的水不会停在表面。它慢慢渗过土层，最后从排水孔滴出来。\n\n```garden html\ntitle: 水从土面渗到排水孔，大约要一分钟。\ncode: |\n  <style>\n    html, body { margin: 0; background: transparent; color: #3c342c; font: 15px/1.5 ui-sans-serif, sans-serif; }\n    svg { display: block; width: 100%; height: auto; }\n  </style>\n  <svg viewBox=\"0 0 640 280\" role=\"img\" aria-label=\"水从土面渗到盆底\">\n    <rect x=\"180\" y=\"36\" width=\"280\" height=\"200\" rx=\"18\" fill=\"#efe6d6\" stroke=\"#cbbfa8\"/>\n    <rect id=\"water\" x=\"196\" y=\"48\" width=\"248\" height=\"16\" fill=\"#7ea4c4\" opacity=\"0.85\"/>\n    <rect x=\"196\" y=\"150\" width=\"248\" height=\"70\" fill=\"#8b6a45\"/>\n    <circle cx=\"320\" cy=\"214\" r=\"8\" fill=\"#5c4632\"/>\n    <text x=\"320\" y=\"268\" text-anchor=\"middle\" font-size=\"14\" fill=\"#3c342c\">排水孔</text>\n  </svg>\n  <script>\n    var water = document.getElementById(\"water\");\n    var y = 48;\n    var reduce = window.matchMedia(\"(prefers-reduced-motion: reduce)\").matches;\n    if (reduce) {\n      water.setAttribute(\"y\", \"168\");\n      water.setAttribute(\"height\", \"36\");\n    } else {\n      (function tick() {\n        y += 0.45;\n        if (y > 168) y = 48;\n        water.setAttribute(\"y\", String(y));\n        water.setAttribute(\"height\", String(Math.max(16, 204 - y)));\n        requestAnimationFrame(tick);\n      })();\n    }\n  </script>\n```\n\n## 浇水纸条\n\n纸条上先记下这一周。周四那次少了，周日又给薄荷补了一次。\n\n```text\n周一  罗勒  80 ml\n周四  罗勒  80 ml\n```\n```diff\n 周一  罗勒  80 ml\n-周四  罗勒  80 ml\n+周四  罗勒  120 ml\n+周日  薄荷  60 ml\n```\n\n## 六周记录\n\n| 周 | 株高 | 新叶 | 浇水 | 土面 | 气温 | 日照 | 备注 |\n| --- | --- | --- | --- | --- | --- | --- | --- |\n| 第1周 | 未见 | 无 | 每天喷湿 | 湿 | 16°C | 上午 | 覆土很薄 |\n| 第2周 | 4 cm | 2 片 | 80 ml | 干 | 18°C | 上午 | 罗勒先出 |\n| 第3周 | 8 cm | 4 片 | 80 ml | 干 | 19°C | 上午 | 薄荷跟上 |\n| 第4周 | 13 cm | 6 片 | 100 ml | 干 | 21°C | 上午 | 间苗，留两株 |\n| 第5周 | 18 cm | 8 片 | 120 ml | 干 | 22°C | 上午 | 叶色转深 |\n| 第6周 | 22 cm | 10 片 | 120 ml | 干 | 23°C | 上午 | 剪了顶端 |\n\n想核对叶子是不是对生、花是不是穗状时，看这一页。\n\n```garden card\nurl: https://zh.wikipedia.org/wiki/%E7%BD%97%E5%8B%92\ntitle: 罗勒\ndescription: 叶子对生，花排成穗。窗台上的那盆对得上。\n```\n\n> [!TIP]\n> 剪叶之后把盆转半圈，让另一面也能见到上午的光。"
+  },
+  {
+    "title": "Intelligent UI 实验室",
+    "description": "用一段自然语言写下想法，让 AI 编译成可以拖、点、翻的交互块。",
+    "date": "2026-10-10T00:00:00+08:00",
+    "tags": [
+      "Garden",
+      "Intelligent UI"
+    ],
+    "slug": "intelligent-ui-lab",
+    "path": "intelligent-ui-lab",
+    "kind": "post",
+    "draft": false,
+    "sourcePath": "posts/intelligent-ui-lab.md",
+    "content": "这篇文章演示 Garden 的 Intelligent UI：作者在稿里写一段 `intent`，AI 把它编译成 `ui` 块，站点画成可交互的组件。下面每一块都写在它要讲的那一段旁边。\n\n## KV cache 到底占多少显存\n\n每个 token 在每一层都要存一份 K 和一份 V。以 32 层、8 个 KV 头、每头 128 维、fp16 的模型为例：\n\n```ui\n{\"v\":1,\"id\":\"kv-memory\",\"caption\":\"显存与 batch、序列长度都成正比；batch 8、序列 32K 就要 32 GiB。\",\"root\":{\"t\":\"root\",\"c\":[{\"t\":\"el\",\"n\":\"State\",\"p\":{\"batch\":{\"k\":\"lit\",\"v\":1},\"seq\":{\"k\":\"lit\",\"v\":4096}},\"c\":[]},{\"t\":\"el\",\"n\":\"Let\",\"p\":{\"mem\":{\"k\":\"expr\",\"e\":{\"type\":\"BinaryExpression\",\"left\":{\"type\":\"BinaryExpression\",\"left\":{\"type\":\"BinaryExpression\",\"left\":{\"type\":\"BinaryExpression\",\"left\":{\"type\":\"BinaryExpression\",\"left\":{\"type\":\"BinaryExpression\",\"left\":{\"type\":\"Literal\",\"value\":2,\"raw\":\"2\"},\"operator\":\"*\",\"right\":{\"type\":\"Literal\",\"value\":32,\"raw\":\"32\"}},\"operator\":\"*\",\"right\":{\"type\":\"Literal\",\"value\":8,\"raw\":\"8\"}},\"operator\":\"*\",\"right\":{\"type\":\"Literal\",\"value\":128,\"raw\":\"128\"}},\"operator\":\"*\",\"right\":{\"type\":\"Identifier\",\"name\":\"seq\"}},\"operator\":\"*\",\"right\":{\"type\":\"Identifier\",\"name\":\"batch\"}},\"operator\":\"*\",\"right\":{\"type\":\"Literal\",\"value\":2,\"raw\":\"2\"}}}},\"c\":[]},{\"t\":\"el\",\"n\":\"Columns\",\"p\":{},\"c\":[{\"t\":\"el\",\"n\":\"Slider\",\"p\":{\"bind\":{\"k\":\"lit\",\"v\":\"batch\"},\"label\":{\"k\":\"lit\",\"v\":\"batch\"},\"min\":{\"k\":\"lit\",\"v\":1},\"max\":{\"k\":\"lit\",\"v\":32}},\"c\":[]},{\"t\":\"el\",\"n\":\"Slider\",\"p\":{\"bind\":{\"k\":\"lit\",\"v\":\"seq\"},\"label\":{\"k\":\"lit\",\"v\":\"序列长度\"},\"min\":{\"k\":\"lit\",\"v\":1024},\"max\":{\"k\":\"lit\",\"v\":32768},\"scale\":{\"k\":\"lit\",\"v\":\"log\"},\"format\":{\"k\":\"lit\",\"v\":\"thousands\"}},\"c\":[]}]},{\"t\":\"p\",\"c\":[{\"t\":\"text\",\"v\":\"batch 为 \"},{\"t\":\"x\",\"e\":{\"type\":\"Identifier\",\"name\":\"batch\"}},{\"t\":\"text\",\"v\":\"、序列 \"},{\"t\":\"x\",\"e\":{\"type\":\"CallExpression\",\"callee\":{\"type\":\"Identifier\",\"name\":\"thousands\"},\"arguments\":[{\"type\":\"Identifier\",\"name\":\"seq\"}],\"optional\":false}},{\"t\":\"text\",\"v\":\" 时，KV cache 要 \"},{\"t\":\"strong\",\"c\":[{\"t\":\"x\",\"e\":{\"type\":\"CallExpression\",\"callee\":{\"type\":\"Identifier\",\"name\":\"bytes\"},\"arguments\":[{\"type\":\"Identifier\",\"name\":\"mem\"}],\"optional\":false}}]},{\"t\":\"text\",\"v\":\"。\"}]},{\"t\":\"el\",\"n\":\"Chart\",\"p\":{\"sweep\":{\"k\":\"lit\",\"v\":\"seq\"},\"yLabel\":{\"k\":\"lit\",\"v\":\"KV 显存\"}},\"c\":[{\"t\":\"el\",\"n\":\"Line\",\"p\":{\"y\":{\"k\":\"expr\",\"e\":{\"type\":\"Identifier\",\"name\":\"mem\"}},\"label\":{\"k\":\"lit\",\"v\":\"KV 显存\"},\"format\":{\"k\":\"lit\",\"v\":\"bytes\"}},\"c\":[]}]}]},\"data\":{}}\n```\n\n所以长上下文推理的瓶颈往往不是算力，而是显存。\n\n## Prefill 和 Decode 有什么不同\n\nPrefill 阶段一次处理整段 prompt；之后每生成一个 token，都只为这个新 token 算 K/V。\n\n```ui\n{\"v\":1,\"id\":\"prefill-decode\",\"caption\":\"Prefill 一次写满 3 行 K/V；之后每步只新算 1 行，其余读缓存。\",\"root\":{\"t\":\"root\",\"c\":[{\"t\":\"el\",\"n\":\"State\",\"p\":{\"step\":{\"k\":\"lit\",\"v\":0}},\"c\":[]},{\"t\":\"el\",\"n\":\"Let\",\"p\":{\"rows\":{\"k\":\"expr\",\"e\":{\"type\":\"BinaryExpression\",\"left\":{\"type\":\"Identifier\",\"name\":\"step\"},\"operator\":\"+\",\"right\":{\"type\":\"Literal\",\"value\":3,\"raw\":\"3\"}}}},\"c\":[]},{\"t\":\"el\",\"n\":\"Steps\",\"p\":{\"bind\":{\"k\":\"lit\",\"v\":\"step\"}},\"c\":[{\"t\":\"el\",\"n\":\"Step\",\"p\":{\"title\":{\"k\":\"lit\",\"v\":\"Prefill\"}},\"c\":[{\"t\":\"p\",\"c\":[{\"t\":\"text\",\"v\":\"一次算完 3 个 prompt token 的 K/V，全部写进缓存。\"}]}]},{\"t\":\"el\",\"n\":\"Step\",\"p\":{\"title\":{\"k\":\"lit\",\"v\":\"Decode 1\"}},\"c\":[{\"t\":\"p\",\"c\":[{\"t\":\"text\",\"v\":\"新 token 只算自己的 K/V，追加第 4 行；前 3 行直接读缓存。\"}]}]},{\"t\":\"el\",\"n\":\"Step\",\"p\":{\"title\":{\"k\":\"lit\",\"v\":\"Decode 2\"}},\"c\":[{\"t\":\"p\",\"c\":[{\"t\":\"text\",\"v\":\"再追加一行。缓存里已有 \"},{\"t\":\"x\",\"e\":{\"type\":\"Identifier\",\"name\":\"rows\"}},{\"t\":\"text\",\"v\":\" 行，本步新算 1 行。\"}]}]}]},{\"t\":\"el\",\"n\":\"Grid\",\"p\":{\"cols\":{\"k\":\"expr\",\"e\":{\"type\":\"ArrayExpression\",\"elements\":[{\"type\":\"Literal\",\"value\":\"K\",\"raw\":\"\\\"K\\\"\"},{\"type\":\"Literal\",\"value\":\"V\",\"raw\":\"\\\"V\\\"\"}]}},\"legend\":{\"k\":\"expr\",\"e\":{\"type\":\"ObjectExpression\",\"properties\":[{\"type\":\"Property\",\"method\":false,\"shorthand\":false,\"computed\":false,\"key\":{\"type\":\"Identifier\",\"name\":\"new\"},\"value\":{\"type\":\"Literal\",\"value\":\"本步新算\",\"raw\":\"\\\"本步新算\\\"\"},\"kind\":\"init\"},{\"type\":\"Property\",\"method\":false,\"shorthand\":false,\"computed\":false,\"key\":{\"type\":\"Identifier\",\"name\":\"cached\"},\"value\":{\"type\":\"Literal\",\"value\":\"读缓存\",\"raw\":\"\\\"读缓存\\\"\"},\"kind\":\"init\"}]}}},\"c\":[{\"t\":\"el\",\"n\":\"Each\",\"p\":{\"of\":{\"k\":\"expr\",\"e\":{\"type\":\"CallExpression\",\"callee\":{\"type\":\"Identifier\",\"name\":\"range\"},\"arguments\":[{\"type\":\"Literal\",\"value\":0,\"raw\":\"0\"},{\"type\":\"Identifier\",\"name\":\"rows\"}],\"optional\":false}},\"as\":{\"k\":\"lit\",\"v\":\"i\"}},\"c\":[{\"t\":\"el\",\"n\":\"Row\",\"p\":{\"label\":{\"k\":\"expr\",\"e\":{\"type\":\"BinaryExpression\",\"left\":{\"type\":\"Literal\",\"value\":\"t\",\"raw\":\"\\\"t\\\"\"},\"operator\":\"+\",\"right\":{\"type\":\"BinaryExpression\",\"left\":{\"type\":\"Identifier\",\"name\":\"i\"},\"operator\":\"+\",\"right\":{\"type\":\"Literal\",\"value\":1,\"raw\":\"1\"}}}},\"cells\":{\"k\":\"expr\",\"e\":{\"type\":\"ArrayExpression\",\"elements\":[{\"type\":\"BinaryExpression\",\"left\":{\"type\":\"Literal\",\"value\":\"k\",\"raw\":\"\\\"k\\\"\"},\"operator\":\"+\",\"right\":{\"type\":\"BinaryExpression\",\"left\":{\"type\":\"Identifier\",\"name\":\"i\"},\"operator\":\"+\",\"right\":{\"type\":\"Literal\",\"value\":1,\"raw\":\"1\"}}},{\"type\":\"BinaryExpression\",\"left\":{\"type\":\"Literal\",\"value\":\"v\",\"raw\":\"\\\"v\\\"\"},\"operator\":\"+\",\"right\":{\"type\":\"BinaryExpression\",\"left\":{\"type\":\"Identifier\",\"name\":\"i\"},\"operator\":\"+\",\"right\":{\"type\":\"Literal\",\"value\":1,\"raw\":\"1\"}}}]}},\"tones\":{\"k\":\"expr\",\"e\":{\"type\":\"ConditionalExpression\",\"test\":{\"type\":\"LogicalExpression\",\"left\":{\"type\":\"BinaryExpression\",\"left\":{\"type\":\"Identifier\",\"name\":\"step\"},\"operator\":\"==\",\"right\":{\"type\":\"Literal\",\"value\":0,\"raw\":\"0\"}},\"operator\":\"||\",\"right\":{\"type\":\"BinaryExpression\",\"left\":{\"type\":\"Identifier\",\"name\":\"i\"},\"operator\":\"==\",\"right\":{\"type\":\"BinaryExpression\",\"left\":{\"type\":\"Identifier\",\"name\":\"rows\"},\"operator\":\"-\",\"right\":{\"type\":\"Literal\",\"value\":1,\"raw\":\"1\"}}}},\"consequent\":{\"type\":\"Literal\",\"value\":\"new\",\"raw\":\"\\\"new\\\"\"},\"alternate\":{\"type\":\"Literal\",\"value\":\"cached\",\"raw\":\"\\\"cached\\\"\"}}}},\"c\":[]}]}]}]},\"data\":{}}\n```\n\n这就是 decode 阶段每步计算量和序列长度无关的原因。\n\n## 读多写少时选哪把锁\n\n假设每次读和写都要 10 ms，几个读者和一个写者同时到达。\n\n```ui\n{\"v\":1,\"id\":\"mutex-vs-rwlock\",\"caption\":\"读者越多，Mutex 越慢；RwLock 让读者并行，总耗时不变。\",\"root\":{\"t\":\"root\",\"c\":[{\"t\":\"el\",\"n\":\"State\",\"p\":{\"readers\":{\"k\":\"lit\",\"v\":3}},\"c\":[]},{\"t\":\"el\",\"n\":\"Let\",\"p\":{\"mutexMs\":{\"k\":\"expr\",\"e\":{\"type\":\"BinaryExpression\",\"left\":{\"type\":\"BinaryExpression\",\"left\":{\"type\":\"Identifier\",\"name\":\"readers\"},\"operator\":\"+\",\"right\":{\"type\":\"Literal\",\"value\":1,\"raw\":\"1\"}},\"operator\":\"*\",\"right\":{\"type\":\"Literal\",\"value\":10,\"raw\":\"10\"}}},\"rwMs\":{\"k\":\"lit\",\"v\":20}},\"c\":[]},{\"t\":\"el\",\"n\":\"Slider\",\"p\":{\"bind\":{\"k\":\"lit\",\"v\":\"readers\"},\"label\":{\"k\":\"lit\",\"v\":\"同时到达的读者\"},\"min\":{\"k\":\"lit\",\"v\":1},\"max\":{\"k\":\"lit\",\"v\":8},\"unit\":{\"k\":\"lit\",\"v\":\"个\"}},\"c\":[]},{\"t\":\"el\",\"n\":\"Columns\",\"p\":{},\"c\":[{\"t\":\"el\",\"n\":\"Card\",\"p\":{\"title\":{\"k\":\"lit\",\"v\":\"Mutex\"}},\"c\":[{\"t\":\"p\",\"c\":[{\"t\":\"text\",\"v\":\"读者和写者一个接一个，共 \"},{\"t\":\"strong\",\"c\":[{\"t\":\"x\",\"e\":{\"type\":\"Identifier\",\"name\":\"mutexMs\"}},{\"t\":\"text\",\"v\":\" ms\"}]},{\"t\":\"text\",\"v\":\"。\"}]}]},{\"t\":\"el\",\"n\":\"Card\",\"p\":{\"title\":{\"k\":\"lit\",\"v\":\"RwLock\"},\"tone\":{\"k\":\"lit\",\"v\":\"accent\"}},\"c\":[{\"t\":\"p\",\"c\":[{\"t\":\"x\",\"e\":{\"type\":\"Identifier\",\"name\":\"readers\"}},{\"t\":\"text\",\"v\":\" 个读者一起读，写者再独占，共 \"},{\"t\":\"strong\",\"c\":[{\"t\":\"x\",\"e\":{\"type\":\"Identifier\",\"name\":\"rwMs\"}},{\"t\":\"text\",\"v\":\" ms\"}]},{\"t\":\"text\",\"v\":\"。\"}]}]}]}]},\"data\":{}}\n```\n\n代价是 RwLock 自身更重，写多的场景反而更慢。\n\n## 为什么 ECB 会泄露图案\n\n```ui\n{\"v\":1,\"id\":\"ecb-vs-cbc\",\"caption\":\"ECB 下相同的明文块得到相同的密文块；CBC 把上一块的密文混进来，重复就消失了。\",\"root\":{\"t\":\"root\",\"c\":[{\"t\":\"el\",\"n\":\"State\",\"p\":{\"mode\":{\"k\":\"lit\",\"v\":\"ecb\"}},\"c\":[]},{\"t\":\"el\",\"n\":\"Choice\",\"p\":{\"bind\":{\"k\":\"lit\",\"v\":\"mode\"},\"label\":{\"k\":\"lit\",\"v\":\"模式\"},\"options\":{\"k\":\"expr\",\"e\":{\"type\":\"ArrayExpression\",\"elements\":[{\"type\":\"ObjectExpression\",\"properties\":[{\"type\":\"Property\",\"method\":false,\"shorthand\":false,\"computed\":false,\"key\":{\"type\":\"Identifier\",\"name\":\"value\"},\"value\":{\"type\":\"Literal\",\"value\":\"ecb\",\"raw\":\"\\\"ecb\\\"\"},\"kind\":\"init\"},{\"type\":\"Property\",\"method\":false,\"shorthand\":false,\"computed\":false,\"key\":{\"type\":\"Identifier\",\"name\":\"label\"},\"value\":{\"type\":\"Literal\",\"value\":\"ECB\",\"raw\":\"\\\"ECB\\\"\"},\"kind\":\"init\"}]},{\"type\":\"ObjectExpression\",\"properties\":[{\"type\":\"Property\",\"method\":false,\"shorthand\":false,\"computed\":false,\"key\":{\"type\":\"Identifier\",\"name\":\"value\"},\"value\":{\"type\":\"Literal\",\"value\":\"cbc\",\"raw\":\"\\\"cbc\\\"\"},\"kind\":\"init\"},{\"type\":\"Property\",\"method\":false,\"shorthand\":false,\"computed\":false,\"key\":{\"type\":\"Identifier\",\"name\":\"label\"},\"value\":{\"type\":\"Literal\",\"value\":\"CBC\",\"raw\":\"\\\"CBC\\\"\"},\"kind\":\"init\"}]}]}}},\"c\":[]},{\"t\":\"el\",\"n\":\"Grid\",\"p\":{\"cols\":{\"k\":\"expr\",\"e\":{\"type\":\"ArrayExpression\",\"elements\":[{\"type\":\"Literal\",\"value\":\"块1\",\"raw\":\"\\\"块1\\\"\"},{\"type\":\"Literal\",\"value\":\"块2\",\"raw\":\"\\\"块2\\\"\"},{\"type\":\"Literal\",\"value\":\"块3\",\"raw\":\"\\\"块3\\\"\"},{\"type\":\"Literal\",\"value\":\"块4\",\"raw\":\"\\\"块4\\\"\"}]}},\"legend\":{\"k\":\"expr\",\"e\":{\"type\":\"ObjectExpression\",\"properties\":[{\"type\":\"Property\",\"method\":false,\"shorthand\":false,\"computed\":false,\"key\":{\"type\":\"Identifier\",\"name\":\"same\"},\"value\":{\"type\":\"Literal\",\"value\":\"密文与别的块相同\",\"raw\":\"\\\"密文与别的块相同\\\"\"},\"kind\":\"init\"}]}}},\"c\":[{\"t\":\"el\",\"n\":\"Row\",\"p\":{\"label\":{\"k\":\"lit\",\"v\":\"明文\"},\"cells\":{\"k\":\"expr\",\"e\":{\"type\":\"ArrayExpression\",\"elements\":[{\"type\":\"Literal\",\"value\":\"A\",\"raw\":\"\\\"A\\\"\"},{\"type\":\"Literal\",\"value\":\"B\",\"raw\":\"\\\"B\\\"\"},{\"type\":\"Literal\",\"value\":\"A\",\"raw\":\"\\\"A\\\"\"},{\"type\":\"Literal\",\"value\":\"A\",\"raw\":\"\\\"A\\\"\"}]}}},\"c\":[]},{\"t\":\"el\",\"n\":\"Row\",\"p\":{\"label\":{\"k\":\"lit\",\"v\":\"密文\"},\"cells\":{\"k\":\"expr\",\"e\":{\"type\":\"ConditionalExpression\",\"test\":{\"type\":\"BinaryExpression\",\"left\":{\"type\":\"Identifier\",\"name\":\"mode\"},\"operator\":\"==\",\"right\":{\"type\":\"Literal\",\"value\":\"ecb\",\"raw\":\"\\\"ecb\\\"\"}},\"consequent\":{\"type\":\"ArrayExpression\",\"elements\":[{\"type\":\"Literal\",\"value\":\"X\",\"raw\":\"\\\"X\\\"\"},{\"type\":\"Literal\",\"value\":\"Y\",\"raw\":\"\\\"Y\\\"\"},{\"type\":\"Literal\",\"value\":\"X\",\"raw\":\"\\\"X\\\"\"},{\"type\":\"Literal\",\"value\":\"X\",\"raw\":\"\\\"X\\\"\"}]},\"alternate\":{\"type\":\"ArrayExpression\",\"elements\":[{\"type\":\"Literal\",\"value\":\"P\",\"raw\":\"\\\"P\\\"\"},{\"type\":\"Literal\",\"value\":\"Q\",\"raw\":\"\\\"Q\\\"\"},{\"type\":\"Literal\",\"value\":\"R\",\"raw\":\"\\\"R\\\"\"},{\"type\":\"Literal\",\"value\":\"S\",\"raw\":\"\\\"S\\\"\"}]}}},\"tones\":{\"k\":\"expr\",\"e\":{\"type\":\"ConditionalExpression\",\"test\":{\"type\":\"BinaryExpression\",\"left\":{\"type\":\"Identifier\",\"name\":\"mode\"},\"operator\":\"==\",\"right\":{\"type\":\"Literal\",\"value\":\"ecb\",\"raw\":\"\\\"ecb\\\"\"}},\"consequent\":{\"type\":\"ArrayExpression\",\"elements\":[{\"type\":\"Literal\",\"value\":\"same\",\"raw\":\"\\\"same\\\"\"},{\"type\":\"Literal\",\"value\":\"plain\",\"raw\":\"\\\"plain\\\"\"},{\"type\":\"Literal\",\"value\":\"same\",\"raw\":\"\\\"same\\\"\"},{\"type\":\"Literal\",\"value\":\"same\",\"raw\":\"\\\"same\\\"\"}]},\"alternate\":{\"type\":\"Literal\",\"value\":\"plain\",\"raw\":\"\\\"plain\\\"\"}}},\"notes\":{\"k\":\"expr\",\"e\":{\"type\":\"ConditionalExpression\",\"test\":{\"type\":\"BinaryExpression\",\"left\":{\"type\":\"Identifier\",\"name\":\"mode\"},\"operator\":\"==\",\"right\":{\"type\":\"Literal\",\"value\":\"ecb\",\"raw\":\"\\\"ecb\\\"\"}},\"consequent\":{\"type\":\"ArrayExpression\",\"elements\":[{\"type\":\"Literal\",\"value\":\"和块3、块4相同\",\"raw\":\"\\\"和块3、块4相同\\\"\"},{\"type\":\"Literal\",\"value\":\"\",\"raw\":\"\\\"\\\"\"},{\"type\":\"Literal\",\"value\":\"和块1相同\",\"raw\":\"\\\"和块1相同\\\"\"},{\"type\":\"Literal\",\"value\":\"和块1相同\",\"raw\":\"\\\"和块1相同\\\"\"}]},\"alternate\":{\"type\":\"ArrayExpression\",\"elements\":[{\"type\":\"Literal\",\"value\":\"\",\"raw\":\"\\\"\\\"\"},{\"type\":\"Literal\",\"value\":\"\",\"raw\":\"\\\"\\\"\"},{\"type\":\"Literal\",\"value\":\"\",\"raw\":\"\\\"\\\"\"},{\"type\":\"Literal\",\"value\":\"\",\"raw\":\"\\\"\\\"\"}]}}}},\"c\":[]}]}]},\"data\":{}}\n```\n\n相同的明文块在 ECB 下总是得到相同的密文块，图案就这样漏了出来。\n\n## 人数一变，采购量跟着变\n\n```ui\n{\"v\":1,\"id\":\"sunday-shop\",\"caption\":\"人数用加减号调，羊腿重量和圆环占比一起变。\",\"root\":{\"t\":\"root\",\"c\":[{\"t\":\"el\",\"n\":\"State\",\"p\":{\"guests\":{\"k\":\"lit\",\"v\":5}},\"c\":[]},{\"t\":\"el\",\"n\":\"Let\",\"p\":{\"lamb\":{\"k\":\"expr\",\"e\":{\"type\":\"BinaryExpression\",\"left\":{\"type\":\"Identifier\",\"name\":\"guests\"},\"operator\":\"*\",\"right\":{\"type\":\"Literal\",\"value\":0.4,\"raw\":\"0.4\"}}}},\"c\":[]},{\"t\":\"el\",\"n\":\"Stepper\",\"p\":{\"bind\":{\"k\":\"lit\",\"v\":\"guests\"},\"label\":{\"k\":\"lit\",\"v\":\"人数\"},\"min\":{\"k\":\"lit\",\"v\":1},\"max\":{\"k\":\"lit\",\"v\":12},\"unit\":{\"k\":\"lit\",\"v\":\"人\"}},\"c\":[]},{\"t\":\"el\",\"n\":\"Caption\",\"p\":{},\"c\":[{\"t\":\"x\",\"e\":{\"type\":\"Identifier\",\"name\":\"guests\"}},{\"t\":\"text\",\"v\":\" 人，带骨羊腿大约 \"},{\"t\":\"x\",\"e\":{\"type\":\"CallExpression\",\"callee\":{\"type\":\"Identifier\",\"name\":\"fixed\"},\"arguments\":[{\"type\":\"Identifier\",\"name\":\"lamb\"},{\"type\":\"Literal\",\"value\":1,\"raw\":\"1\"}],\"optional\":false}},{\"t\":\"text\",\"v\":\" kg。\"}]},{\"t\":\"p\",\"c\":[{\"t\":\"text\",\"v\":\"来源 \"},{\"t\":\"el\",\"n\":\"Cite\",\"p\":{\"label\":{\"k\":\"lit\",\"v\":\"USDA\"},\"href\":{\"k\":\"lit\",\"v\":\"https://www.usda.gov\"}},\"c\":[]}]},{\"t\":\"el\",\"n\":\"Divider\",\"p\":{},\"c\":[]},{\"t\":\"el\",\"n\":\"Pie\",\"p\":{\"title\":{\"k\":\"lit\",\"v\":\"这一桌的构成\"}},\"c\":[{\"t\":\"el\",\"n\":\"Slice\",\"p\":{\"label\":{\"k\":\"lit\",\"v\":\"羊腿\"},\"value\":{\"k\":\"expr\",\"e\":{\"type\":\"Identifier\",\"name\":\"lamb\"}}},\"c\":[]},{\"t\":\"el\",\"n\":\"Slice\",\"p\":{\"label\":{\"k\":\"lit\",\"v\":\"土豆\"},\"value\":{\"k\":\"expr\",\"e\":{\"type\":\"BinaryExpression\",\"left\":{\"type\":\"Identifier\",\"name\":\"guests\"},\"operator\":\"*\",\"right\":{\"type\":\"Literal\",\"value\":0.25,\"raw\":\"0.25\"}}}},\"c\":[]},{\"t\":\"el\",\"n\":\"Slice\",\"p\":{\"label\":{\"k\":\"lit\",\"v\":\"蔬菜\"},\"value\":{\"k\":\"expr\",\"e\":{\"type\":\"BinaryExpression\",\"left\":{\"type\":\"Identifier\",\"name\":\"guests\"},\"operator\":\"*\",\"right\":{\"type\":\"Literal\",\"value\":0.15,\"raw\":\"0.15\"}}}},\"c\":[]}]},{\"t\":\"el\",\"n\":\"Checklist\",\"p\":{\"title\":{\"k\":\"lit\",\"v\":\"周日时间表\"},\"items\":{\"k\":\"expr\",\"e\":{\"type\":\"ArrayExpression\",\"elements\":[{\"type\":\"ObjectExpression\",\"properties\":[{\"type\":\"Property\",\"method\":false,\"shorthand\":false,\"computed\":false,\"key\":{\"type\":\"Identifier\",\"name\":\"time\"},\"value\":{\"type\":\"Literal\",\"value\":\"12:30\",\"raw\":\"\\\"12:30\\\"\"},\"kind\":\"init\"},{\"type\":\"Property\",\"method\":false,\"shorthand\":false,\"computed\":false,\"key\":{\"type\":\"Identifier\",\"name\":\"title\"},\"value\":{\"type\":\"Literal\",\"value\":\"处理羊腿\",\"raw\":\"\\\"处理羊腿\\\"\"},\"kind\":\"init\"},{\"type\":\"Property\",\"method\":false,\"shorthand\":false,\"computed\":false,\"key\":{\"type\":\"Identifier\",\"name\":\"note\"},\"value\":{\"type\":\"Literal\",\"value\":\"蒜、迷迭香、柠檬\",\"raw\":\"\\\"蒜、迷迭香、柠檬\\\"\"},\"kind\":\"init\"}]},{\"type\":\"ObjectExpression\",\"properties\":[{\"type\":\"Property\",\"method\":false,\"shorthand\":false,\"computed\":false,\"key\":{\"type\":\"Identifier\",\"name\":\"time\"},\"value\":{\"type\":\"Literal\",\"value\":\"15:00\",\"raw\":\"\\\"15:00\\\"\"},\"kind\":\"init\"},{\"type\":\"Property\",\"method\":false,\"shorthand\":false,\"computed\":false,\"key\":{\"type\":\"Identifier\",\"name\":\"title\"},\"value\":{\"type\":\"Literal\",\"value\":\"入烤箱\",\"raw\":\"\\\"入烤箱\\\"\"},\"kind\":\"init\"},{\"type\":\"Property\",\"method\":false,\"shorthand\":false,\"computed\":false,\"key\":{\"type\":\"Identifier\",\"name\":\"note\"},\"value\":{\"type\":\"Literal\",\"value\":\"用温度计，不单看时间\",\"raw\":\"\\\"用温度计，不单看时间\\\"\"},\"kind\":\"init\"}]},{\"type\":\"ObjectExpression\",\"properties\":[{\"type\":\"Property\",\"method\":false,\"shorthand\":false,\"computed\":false,\"key\":{\"type\":\"Identifier\",\"name\":\"time\"},\"value\":{\"type\":\"Literal\",\"value\":\"17:00\",\"raw\":\"\\\"17:00\\\"\"},\"kind\":\"init\"},{\"type\":\"Property\",\"method\":false,\"shorthand\":false,\"computed\":false,\"key\":{\"type\":\"Identifier\",\"name\":\"title\"},\"value\":{\"type\":\"Literal\",\"value\":\"上桌\",\"raw\":\"\\\"上桌\\\"\"},\"kind\":\"init\"}]}]}}},\"c\":[]}]},\"data\":{}}\n```"
+  },
   {
     "title": "Markdown 复杂语法实验场",
     "description": "用一篇真实文章验证 Typora 常用语法、数学公式、Mermaid、脚注、表格与原生 HTML。",
-    "date": "2026-07-25T00:00:00.000Z",
-    "topic": "写作系统",
+    "date": "2026-07-25T00:00:00+08:00",
     "tags": [
       "Markdown",
       "Typora",
@@ -62,14 +93,13 @@ export const posts = [
     "kind": "post",
     "draft": false,
     "sourcePath": "posts/markdown-lab.md",
-    "content": "这篇文章不是功能清单，而是一份可以长期保留的**渲染验收样本**。我会在 Typora 中常用的语法和网页输出之间建立一条可重复验证的路径。\n\n> 写作格式的价值，不在于语法多，而在于文件离开编辑器之后仍能完整表达。\n\n## 基础排版与 GFM\n\n实现**掩码（Masking）**操作，引入**多头注意力（Multi-Head Attention）**机制；前**（中文括号）**后也能正常加粗。\n\n<u>新的向量知道前面有 `Your journey`，后面有 `with one step`，下划线应连续。</u>\n\n一段文字可以同时包含**粗体**、*斜体*、~~删除线~~、`inline code` 和 [外部链接](https://typora.io/)。\n\n- 第一层列表\n  - 第二层列表\n    - 第三层列表\n- 列表之后仍然保持稳定的段落节奏\n\n1. 写作\n2. 本地预览\n3. 发布与验证\n\n- [x] 标题、引用、列表和代码\n- [x] 表格、删除线与任务列表\n- [x] 数学公式与 Mermaid\n- [ ] 用新的真实文章继续回归测试\n\n| 能力 | 写法 | 网页表现 |\n| --- | :---: | ---: |\n| GFM | `remark-gfm` | 已验证 |\n| 数学公式 | `$...$` / `$$...$$` | KaTeX |\n| 图表 | Mermaid fenced code | SVG |\n\n## 语义警告框\n\n> [!NOTE]\n> 普通补充信息会显示为「提示」。\n\n> [!TIP]\n> 推荐做法会显示为「建议」。\n\n> [!WARNING]\n> 需要关注的风险会显示为「告警」。\n\n> [!CAUTION]\n> 可能造成严重后果的操作会显示为「警示」。\n\n## 数学公式\n\n**求和部分：$\\sum_{j=1}^{N}$（上下限）**。\n\n$$\nC_i = \\sum_{j=1}^N w_{ij} \\cdot V_j\n$$\n\n行内公式会和文字一起流动，例如注意力的缩放项 $\\frac{QK^\\top}{\\sqrt{d_k}}$。\n\n块级公式支持多行对齐：\n\n$$\n\\begin{aligned}\n\\operatorname{Attention}(Q,K,V)\n  &= \\operatorname{softmax}\\left(\\frac{QK^\\top}{\\sqrt{d_k}}\\right)V \\\\\nK_{\\text{cache}}^{(t)}\n  &= [K_{\\text{cache}}^{(t-1)}; K_t] \\\\\nV_{\\text{cache}}^{(t)}\n  &= [V_{\\text{cache}}^{(t-1)}; V_t]\n\\end{aligned}\n$$\n\n矩阵也能正常显示：\n\n$$\nX =\n\\begin{bmatrix}\n1 & 0 & 1 \\\\\n0 & 1 & 0 \\\\\n1 & 1 & 1\n\\end{bmatrix}\n$$\n\n## Mermaid 流程与时序\n\n所有 Mermaid 图表固定使用「中性」主题。每张图都可以在「图表」与「Code」之间切换：前者用于阅读，后者用于检查或复制原始 Mermaid 语法。\n\n下面的流程图描述本地写作到发布的闭环：\n\n```mermaid\nflowchart LR\n  A[Typora 写作] --> B{本地验证}\n  B -->|通过| C[生成内容索引]\n  B -->|失败| A\n  C --> D[构建网站]\n  D --> E[浏览器验收]\n  E --> F[发布]\n```\n\n同一篇文章里可以继续放更复杂的时序图：\n\n```mermaid\nsequenceDiagram\n  autonumber\n  participant W as Writer\n  participant M as Markdown\n  participant S as Site\n  participant R as Reader\n  W->>M: 保存 .md 与媒体\n  M->>S: 构建内容与目录\n  S-->>W: 返回预览\n  W->>S: 发布已验证版本\n  R->>S: 阅读文章\n  S-->>R: HTML + KaTeX + Mermaid\n```\n\n## 多语言代码高亮\n\n同一种内容结构，在不同语言里应该保留各自可辨识的关键字、类型、字符串、注释与数字层级。\n\n### TypeScript\n\n```typescript\ntype Post<TMeta extends Record<string, unknown>> = {\n  slug: string;\n  meta: TMeta;\n};\n\nasync function publish<TMeta extends Record<string, unknown>>(\n  post: Post<TMeta>,\n): Promise<string> {\n  const response = await fetch(`/api/posts/${post.slug}`, {\n    method: \"POST\",\n    body: JSON.stringify(post.meta),\n  });\n  return response.ok ? \"published\" : \"failed\";\n}\n```\n\n### Python\n\n```python\nfrom dataclasses import dataclass\nfrom pathlib import Path\n\n@dataclass(frozen=True)\nclass Article:\n    \"\"\"选中这行文字时，深浅主题都应保持清晰。\"\"\"\n    title: str\n    source: Path\n\ndef published_titles(articles: list[Article]) -> list[str]:\n    return [article.title for article in articles if article.source.exists()]\n```\n\n### Rust\n\n```rust\n#[derive(Debug)]\nstruct Entry<'a> {\n    title: &'a str,\n    pinned: bool,\n}\n\nfn pinned_titles(entries: &[Entry<'_>]) -> Vec<&str> {\n    entries.iter()\n        .filter(|entry| entry.pinned)\n        .map(|entry| entry.title)\n        .collect()\n}\n```\n\n### Go\n\n```go\nfunc renderAll(ctx context.Context, slugs []string) <-chan Result {\n\tresults := make(chan Result)\n\tgo func() {\n\t\tdefer close(results)\n\t\tfor _, slug := range slugs {\n\t\t\tresults <- render(ctx, slug)\n\t\t}\n\t}()\n\treturn results\n}\n```\n\n### SQL\n\n```sql\nWITH ranked_posts AS (\n  SELECT\n    title,\n    topic,\n    ROW_NUMBER() OVER (PARTITION BY topic ORDER BY published_at DESC) AS rank\n  FROM posts\n  WHERE status = 'published'\n)\nSELECT title, topic\nFROM ranked_posts\nWHERE rank <= 3;\n```\n\n### Swift\n\n```swift\nactor ReadingProgress {\n    private var offsets: [URL: Double] = [:]\n\n    func save(_ offset: Double, for article: URL) {\n        offsets[article] = max(0, offset)\n    }\n\n    func restore(for article: URL) -> Double {\n        offsets[article, default: 0]\n    }\n}\n```\n\n## Diff、图片与原生 HTML\n\n```diff\n- const publishing = \"copy and paste\";\n+ const publishing = \"content as source\";\n```\n\n![木桌上的笔记本与钢笔](https://images.unsplash.com/photo-1501525771695-688643efeea4?auto=format&fit=crop&w=1400&q=82)\n\n<details>\n  <summary>展开原生 HTML 内容</summary>\n  <p>Typora 文件中的 details / summary 会保留为可交互的折叠区域。</p>\n</details>\n\n---\n\n最后用一个脚注说明这篇文章的角色：它既是示例，也是未来升级 Markdown 依赖时的回归测试。[^regression]\n\n[^regression]: 页面构建测试会检查公式与示例内容，浏览器验收会检查 Mermaid 是否被转换为 SVG。"
+    "content": "这篇文章不是功能清单，而是一份可以长期保留的**渲染验收样本**。我会在 Typora 中常用的语法和网页输出之间建立一条可重复验证的路径。\n\n> 写作格式的价值，不在于语法多，而在于文件离开编辑器之后仍能完整表达。\n\n## 基础排版与 GFM\n\n实现**掩码（Masking）**操作，引入**多头注意力（Multi-Head Attention）**机制；前**（中文括号）**后也能正常加粗。\n\n<u>新的向量知道前面有 `Your journey`，后面有 `with one step`，下划线应连续。</u>\n\n一段文字可以同时包含**粗体**、*斜体*、~~删除线~~、`inline code` 和 [外部链接](https://typora.io/)。\n\n- 第一层列表\n  - 第二层列表\n    - 第三层列表\n- 列表之后仍然保持稳定的段落节奏\n\n1. 写作\n2. 本地预览\n3. 发布与验证\n\n- [x] 标题、引用、列表和代码\n- [x] 表格、删除线与任务列表\n- [x] 数学公式与 Mermaid\n- [ ] 用新的真实文章继续回归测试\n\n| 能力 | 写法 | 网页表现 |\n| --- | :---: | ---: |\n| GFM | `remark-gfm` | 已验证 |\n| 数学公式 | `$...$` / `$$...$$` | KaTeX |\n| 图表 | Mermaid fenced code | SVG |\n\n## 语义警告框\n\n> [!NOTE]\n> 普通补充信息会显示为「提醒」。\n\n> [!TIP]\n> 推荐做法会显示为「建议」。\n\n> [!WARNING]\n> 需要关注的风险会显示为「警告」。\n\n> [!CAUTION]\n> 可能造成严重后果的操作会显示为「注意」。\n\n## 数学公式\n\n**求和部分：$\\sum_{j=1}^{N}$（上下限）**。\n\n$$\nC_i = \\sum_{j=1}^N w_{ij} \\cdot V_j\n$$\n\n行内公式会和文字一起流动，例如注意力的缩放项 $\\frac{QK^\\top}{\\sqrt{d_k}}$。\n\n块级公式支持多行对齐：\n\n$$\n\\begin{aligned}\n\\operatorname{Attention}(Q,K,V)\n  &= \\operatorname{softmax}\\left(\\frac{QK^\\top}{\\sqrt{d_k}}\\right)V \\\\\nK_{\\text{cache}}^{(t)}\n  &= [K_{\\text{cache}}^{(t-1)}; K_t] \\\\\nV_{\\text{cache}}^{(t)}\n  &= [V_{\\text{cache}}^{(t-1)}; V_t]\n\\end{aligned}\n$$\n\n矩阵也能正常显示：\n\n$$\nX =\n\\begin{bmatrix}\n1 & 0 & 1 \\\\\n0 & 1 & 0 \\\\\n1 & 1 & 1\n\\end{bmatrix}\n$$\n\n## Mermaid 流程与时序\n\n所有 Mermaid 图表固定使用「中性」主题。每张图都可以在「图表」与「Code」之间切换：前者用于阅读，后者用于检查或复制原始 Mermaid 语法。\n\n下面的流程图描述本地写作到发布的闭环：\n\n```mermaid\nflowchart LR\n  A[Typora 写作] --> B{本地验证}\n  B -->|通过| C[生成内容索引]\n  B -->|失败| A\n  C --> D[构建网站]\n  D --> E[浏览器验收]\n  E --> F[发布]\n```\n\n同一篇文章里可以继续放更复杂的时序图：\n\n```mermaid\nsequenceDiagram\n  autonumber\n  participant W as Writer\n  participant M as Markdown\n  participant S as Site\n  participant R as Reader\n  W->>M: 保存 .md 与媒体\n  M->>S: 构建内容与目录\n  S-->>W: 返回预览\n  W->>S: 发布已验证版本\n  R->>S: 阅读文章\n  S-->>R: HTML + KaTeX + Mermaid\n```\n\n## 多语言代码高亮\n\n同一种内容结构，在不同语言里应该保留各自可辨识的关键字、类型、字符串、注释与数字层级。\n\n### TypeScript\n\n```typescript\ntype Post<TMeta extends Record<string, unknown>> = {\n  slug: string;\n  meta: TMeta;\n};\n\nasync function publish<TMeta extends Record<string, unknown>>(\n  post: Post<TMeta>,\n): Promise<string> {\n  const response = await fetch(`/api/posts/${post.slug}`, {\n    method: \"POST\",\n    body: JSON.stringify(post.meta),\n  });\n  return response.ok ? \"published\" : \"failed\";\n}\n```\n\n### Python\n\n```python\nfrom dataclasses import dataclass\nfrom pathlib import Path\n\n@dataclass(frozen=True)\nclass Article:\n    \"\"\"选中这行文字时，深浅主题都应保持清晰。\"\"\"\n    title: str\n    source: Path\n\ndef published_titles(articles: list[Article]) -> list[str]:\n    return [article.title for article in articles if article.source.exists()]\n```\n\n### Rust\n\n```rust\n#[derive(Debug)]\nstruct Entry<'a> {\n    title: &'a str,\n    pinned: bool,\n}\n\nfn pinned_titles(entries: &[Entry<'_>]) -> Vec<&str> {\n    entries.iter()\n        .filter(|entry| entry.pinned)\n        .map(|entry| entry.title)\n        .collect()\n}\n```\n\n### Go\n\n```go\nfunc renderAll(ctx context.Context, slugs []string) <-chan Result {\n\tresults := make(chan Result)\n\tgo func() {\n\t\tdefer close(results)\n\t\tfor _, slug := range slugs {\n\t\t\tresults <- render(ctx, slug)\n\t\t}\n\t}()\n\treturn results\n}\n```\n\n### SQL\n\n```sql\nWITH ranked_posts AS (\n  SELECT\n    title,\n    topic,\n    ROW_NUMBER() OVER (PARTITION BY topic ORDER BY published_at DESC) AS rank\n  FROM posts\n  WHERE status = 'published'\n)\nSELECT title, topic\nFROM ranked_posts\nWHERE rank <= 3;\n```\n\n### Swift\n\n```swift\nactor ReadingProgress {\n    private var offsets: [URL: Double] = [:]\n\n    func save(_ offset: Double, for article: URL) {\n        offsets[article] = max(0, offset)\n    }\n\n    func restore(for article: URL) -> Double {\n        offsets[article, default: 0]\n    }\n}\n```\n\n## Diff、图片与原生 HTML\n\n```diff\n- const publishing = \"copy and paste\";\n+ const publishing = \"content as source\";\n```\n\n![木桌上的笔记本与钢笔](https://images.unsplash.com/photo-1501525771695-688643efeea4?auto=format&fit=crop&w=1400&q=82)\n\n<details>\n  <summary>展开原生 HTML 内容</summary>\n  <p>Typora 文件中的 details / summary 会保留为可交互的折叠区域。</p>\n</details>\n\n```garden html\ncode: |\n  <p class=\"garden-html-probe\">静态 HTML 块</p>\n```\n\n---\n\n最后用一个脚注说明这篇文章的角色：它既是示例，也是未来升级 Markdown 依赖时的回归测试。[^regression]\n\n[^regression]: 页面构建测试会检查公式与示例内容，浏览器验收会检查 Mermaid 是否被转换为 SVG。"
   },
   {
     "title": "注意力也是一种界面",
     "description": "当工具越来越聪明，真正稀缺的不是功能，而是我们把注意力放在哪里。",
-    "date": "2026-07-21T00:00:00.000Z",
-    "updated": "2026-07-23T00:00:00.000Z",
-    "topic": "产品与思考",
+    "date": "2026-07-21T00:00:00+08:00",
+    "updated": "2026-07-23T00:00:00+08:00",
     "tags": [
       "产品设计",
       "注意力"
@@ -87,8 +117,7 @@ export const posts = [
   {
     "title": "03 · 带着证据发布",
     "description": "“我改完了”不是完成，“用户可以确认它好了”才是。",
-    "date": "2026-07-18T00:00:00.000Z",
-    "topic": "独立开发",
+    "date": "2026-07-18T00:00:00+08:00",
     "tags": [
       "验证",
       "发布"
@@ -104,8 +133,7 @@ export const posts = [
   {
     "title": "我为什么重新选择本地写作",
     "description": "Markdown 文件、可迁移的媒体资源，以及不被平台锁住的长期写作。",
-    "date": "2026-07-12T00:00:00.000Z",
-    "topic": "写作系统",
+    "date": "2026-07-12T00:00:00+08:00",
     "tags": [
       "Markdown",
       "Local-first"
@@ -123,8 +151,7 @@ export const posts = [
   {
     "title": "02 · 让状态变得可靠",
     "description": "状态设计的关键，是明确谁拥有事实。",
-    "date": "2026-07-10T00:00:00.000Z",
-    "topic": "独立开发",
+    "date": "2026-07-10T00:00:00+08:00",
     "tags": [
       "状态管理"
     ],
@@ -139,8 +166,7 @@ export const posts = [
   {
     "title": "01 · 从最小闭环开始",
     "description": "先让最重要的一条路径真正跑通。",
-    "date": "2026-07-04T00:00:00.000Z",
-    "topic": "独立开发",
+    "date": "2026-07-04T00:00:00+08:00",
     "tags": [
       "产品",
       "工程"
@@ -156,8 +182,7 @@ export const posts = [
   {
     "title": "做一个 PDF 阅读器之后，我重新理解了「位置」",
     "description": "阅读位置不是页码，而是一段连续体验的锚点。",
-    "date": "2026-06-28T00:00:00.000Z",
-    "topic": "构建手记",
+    "date": "2026-06-28T00:00:00+08:00",
     "tags": [
       "SwiftUI",
       "阅读体验"
@@ -171,33 +196,13 @@ export const posts = [
     "draft": false,
     "sourcePath": "posts/building-a-pdf-reader.md",
     "content": "“打开侧栏不能让正文跳一下”看起来是一条微小的要求，真正实现时却牵动了布局、缩放、滚动和状态恢复。\n\n## 页码不等于位置\n\n同一页里也有阅读进度。只记录页码，恢复后仍然可能让人失去上下文。\n\n## 变化前先保存锚点\n\n布局变化之前，保存视口中心所对应的文档坐标；布局完成以后，再把这个坐标映射回新的视口。\n\n## 两条交互路径\n\n侧栏开关是离散变化，分隔线拖拽是连续变化。它们应该共享“保持锚点”的原则，但不应该共享完全相同的更新频率。"
-  },
-  {
-    "title": "从逐词生成理解 KV Cache",
-    "description": "不从公式开始，而是从模型下一次到底重复算了什么开始。",
-    "date": "2026-06-09T00:00:00.000Z",
-    "topic": "AI 学习",
-    "tags": [
-      "Transformer",
-      "推理"
-    ],
-    "pinned": false,
-    "readingTime": "9 分钟",
-    "cover": "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1600&q=84",
-    "slug": "understand-kv-cache",
-    "path": "understand-kv-cache",
-    "kind": "post",
-    "draft": false,
-    "sourcePath": "posts/understand-kv-cache.md",
-    "content": "理解 KV Cache 最直观的方式，是先看自回归生成里那些被重复计算的部分。\n\n朴素 decode 每步都会把过去 token 再投影一遍。6 个 token 共 21 次计算，其中 15 次是浪费：\n\n```widget\nsrc: /media/posts/understand-kv-cache/waste.html\ncaption: 朴素 decode 每步重算全部过去 token；6 个 token 共 21 次计算，其中 15 次是浪费。\nkind: chart\n```\n\n## Prefill 与 Decode\n\nPrefill 一次处理完整提示词，Decode 则每次只生成一个新 token。拓扑用 Mermaid 一次说清；要停在某一拍看 Q/K/V 怎么变，用旁边的步进图。\n\n```mermaid\nflowchart LR\n  A[Prompt] --> B[Prefill]\n  B --> C[KV Cache]\n  C --> D[Decode one token]\n  D --> C\n```\n\n```widget\nsrc: /media/posts/understand-kv-cache/stepper.html\ncaption: Prefill 一次写满 K/V；Decode 每步只追加一行；末步 21 次投影变成 7 次。\nkind: chart\n```\n\n## 缓存的是什么\n\n过去 token 对应的 Key 和 Value 不会因为新 token 到来而变化，所以可以保存下来，只计算新位置的投影。\n\n## 空间换时间\n\n缓存减少计算，却增加显存占用。批量、序列长度与层数共同决定了这笔开销。把 batch 拧到 8、序列看到 32K，消费卡会先被 KV 撑满。\n\n$$\n\\text{KV memory} \\propto 2 \\times L \\times H \\times T\n$$\n\n```widget\nsrc: /media/posts/understand-kv-cache/memory.html\ncaption: 70B 在长上下文下，KV 显存会先于权重撑满一张卡；batch 8 × 32K 时连 7B 也超过消费卡。\nkind: chart\n```\n\n同一组数量级也可以收成一页附件。页面和 PDF 默认只显示入口，需要时再展开：\n\n```widget\nsrc: /media/posts/understand-kv-cache/sheet.html\ncaption: KV 显存与层数、头维、序列和 batch 成正比；70B 长上下文会先于权重量满一张卡。\nkind: html\n```\n\n```widget\nsrc: /media/posts/understand-kv-cache/notes.pdf\ncaption: 同一页公式的 PDF；适合下载或打印，不必在正文里摊开整页阅读器。\nkind: pdf\n```"
   }
 ] as ContentEntry[];
 export const columns = [
   {
     "title": "01 · 从最小闭环开始",
     "description": "先让最重要的一条路径真正跑通。",
-    "date": "2026-07-04T00:00:00.000Z",
-    "topic": "独立开发",
+    "date": "2026-07-04T00:00:00+08:00",
     "tags": [
       "产品",
       "工程"
@@ -218,8 +223,7 @@ export const columns = [
   {
     "title": "02 · 让状态变得可靠",
     "description": "状态设计的关键，是明确谁拥有事实。",
-    "date": "2026-07-10T00:00:00.000Z",
-    "topic": "独立开发",
+    "date": "2026-07-10T00:00:00+08:00",
     "tags": [
       "状态管理"
     ],
@@ -239,8 +243,7 @@ export const columns = [
   {
     "title": "03 · 带着证据发布",
     "description": "“我改完了”不是完成，“用户可以确认它好了”才是。",
-    "date": "2026-07-18T00:00:00.000Z",
-    "topic": "独立开发",
+    "date": "2026-07-18T00:00:00+08:00",
     "tags": [
       "验证",
       "发布"
@@ -262,7 +265,7 @@ export const columns = [
 export const thoughts = [
   {
     "title": "雨后的城市",
-    "date": "2026-07-24T14:36:00.000Z",
+    "date": "2026-07-24T22:36:00+08:00",
     "tags": [
       "摄影"
     ],
@@ -309,7 +312,7 @@ export const thoughts = [
   },
   {
     "title": "今天的声音",
-    "date": "2026-07-22T10:10:00.000Z",
+    "date": "2026-07-22T18:10:00+08:00",
     "tags": [
       "声音"
     ],
@@ -330,7 +333,7 @@ export const thoughts = [
   },
   {
     "title": "慢一点看",
-    "date": "2026-07-19T01:20:00.000Z",
+    "date": "2026-07-19T09:20:00+08:00",
     "tags": [
       "影像"
     ],
@@ -351,7 +354,7 @@ export const thoughts = [
   },
   {
     "title": "链接不是收藏，是路径",
-    "date": "2026-07-16T04:05:00.000Z",
+    "date": "2026-07-16T12:05:00+08:00",
     "tags": [
       "阅读"
     ],
@@ -372,3 +375,11 @@ export const thoughts = [
     "content": "想把最近读到的好东西放回来。收藏夹很容易变成仓库，链接出现在上下文里，才重新变成一条路。"
   }
 ] as ContentEntry[];
+export const a2WordCounts = {
+  "ai-agent-react-vs-workflow": 7883,
+  "claude-code-source": 27116,
+  "go-gc-tri-color-marking": 35105,
+  "kv-cache-interactive": 12611,
+  "kv-cache": 11172,
+  "rust-action-spinlock": 10559
+} as Record<string, number>;

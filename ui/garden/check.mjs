@@ -34,10 +34,8 @@ export function checkGardenMarkdown(markdown, { draft = false, title = "", title
 
   if (title) {
     const split = splitTitle(title);
-    // Titles stay exactly as written. splitTitle already keeps one line when it cannot split.
-    if (split.issue === "multiple") {
-      push(titleLine, "title-split", "标题里有不止一个分隔符，无法分成正好两行。", "只留一个 丨、｜ 或 \" | \"。", "warning");
-    } else if (split.issue === "empty") {
+    // More than one separator still splits at the first. Only an empty side stays one line.
+    if (split.issue === "empty") {
       push(titleLine, "title-split", "分隔符两侧都要有文字。", "写成「主题丨副题」。", "warning");
     }
   }

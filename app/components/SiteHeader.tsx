@@ -197,7 +197,6 @@ export function SiteHeader() {
           { name: "title", weight: 0.5 },
           { name: "description", weight: 0.3 },
           { name: "content", weight: 0.15 },
-          { name: "topic", weight: 0.05 },
         ],
         threshold: 0.36,
         ignoreLocation: true,
@@ -401,10 +400,7 @@ export function SiteHeader() {
                     className={`search-result${activeResult === index ? " active" : ""}`}
                   >
                     <span>
-                      <HighlightedText
-                        text={result.item.topic}
-                        ranges={rangesFor(result.matches, "topic")}
-                      />
+                      {result.item.section}
                     </span>
                     <strong>
                       <HighlightedText

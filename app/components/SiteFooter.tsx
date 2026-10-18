@@ -9,13 +9,13 @@ export function SiteFooter() {
           © {new Date().getFullYear()} {siteConfig.author.name} · {siteConfig.footer}
           <span className="footer-framework"> · 基于 <a href="https://github.com/hedon954/garden" target="_blank" rel="noreferrer">Garden</a> 构建</span>
         </p>
-        <div>
-          <a href={githubUrl} aria-label="GitHub" rel="me">
-            <GithubLogo size={19} />
+        <div className="sh-foot-links">
+          <a href={githubUrl} rel="me">
+            <GithubLogo size={16} aria-hidden="true" />
             GitHub
           </a>
-          <a href="/rss.xml" aria-label="RSS 订阅">
-            <Rss size={18} />
+          <a href="/rss.xml">
+            <Rss size={16} aria-hidden="true" />
             RSS
           </a>
         </div>

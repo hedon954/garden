@@ -23,7 +23,6 @@ function post(body) {
 title: 测试
 description: 一篇用来检查结构的文章。
 date: 2026-09-18 14:39:00
-topic: 测试
 ${body}`;
 }
 
@@ -50,13 +49,24 @@ test("an older ISO timestamp still passes", async (t) => {
 title: 测试
 description: 一篇用来检查结构的文章。
 date: 2026-09-18T14:39:00+08:00
-topic: 测试
 ---
 
 ## 正文
 `);
   assert.equal(result.ok, true);
   assert.deepEqual(codes(result), []);
+});
+
+test("a leftover topic line is ignored without an error or a warning", async (t) => {
+  const root = await site(t);
+  const result = await check(root, post(`topic: 旧字段
+---
+
+## 正文
+`));
+  assert.equal(result.ok, true);
+  assert.deepEqual(codes(result), []);
+  assert.deepEqual(warnings(result), []);
 });
 
 test("a post with a matched external link passes", async (t) => {
@@ -80,7 +90,6 @@ test("structure errors use stable codes and leave translated bibliographies alon
 title: 测试
 description: 一篇用来检查结构的文章。
 date: not-a-date
-topic: 测试
 slug: sample
 references:
   - title: KCP repo
@@ -118,21 +127,20 @@ references:
   assert.equal(translated.ok, true);
 });
 
-test("a title that cannot split warns without failing the check", async (t) => {
+test("a title splits at the first separator and warns only for an empty side", async (t) => {
   const root = await site(t);
   const article = (title) => `---
 title: ${title}
 description: 一篇用来检查结构的文章。
 date: 2026-09-18 14:39:00
-topic: 测试
 ---
 
 ## 正文
 `;
-  const multiple = await check(root, article("甲丨乙｜丙"));
-  assert.equal(multiple.ok, true);
-  assert.deepEqual(codes(multiple), []);
-  assert.deepEqual(warnings(multiple), ["title-split"]);
+  const several = await check(root, article("FOSA丨01丨xxx"));
+  assert.equal(several.ok, true);
+  assert.deepEqual(codes(several), []);
+  assert.deepEqual(warnings(several), []);
 
   const empty = await check(root, article("只有左边丨"));
   assert.equal(empty.ok, true);

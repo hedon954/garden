@@ -97,8 +97,8 @@ let mermaidQueue: Promise<unknown> = Promise.resolve();
 
 const MERMAID_FONT = 'ui-sans-serif, -apple-system, system-ui, "Segoe UI", Helvetica, Arial, "PingFang SC", sans-serif';
 const MERMAID_THEMES = {
-  light: { background: "#F8F7F3", primaryColor: "#FFFFFF", primaryBorderColor: "#D6D2C9", primaryTextColor: "#1B1A18", lineColor: "#6E6B64", secondaryColor: "#F0EEE8", tertiaryColor: "#F0EEE8", fontSize: "14px" },
-  dark: { background: "#161513", primaryColor: "#1E1D1A", primaryBorderColor: "#45423C", primaryTextColor: "#EEECE7", lineColor: "#A09B91", secondaryColor: "#22211D", tertiaryColor: "#22211D", fontSize: "14px" },
+  light: { background: "#FAF9F5", primaryColor: "#FFFFFF", primaryBorderColor: "#D6D2C9", primaryTextColor: "#1B1A18", lineColor: "#6E6B64", secondaryColor: "#F0EEE6", tertiaryColor: "#F0EEE6", fontSize: "14px" },
+  dark: { background: "#1F1E1D", primaryColor: "#262624", primaryBorderColor: "#45423C", primaryTextColor: "#EEECE7", lineColor: "#A09B91", secondaryColor: "#30302E", tertiaryColor: "#30302E", fontSize: "14px" },
 };
 
 function renderMermaid(source: string, id: string, dark: boolean) {

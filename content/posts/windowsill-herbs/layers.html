@@ -1,0 +1,29 @@
+<style>
+  html, body { margin: 0; background: transparent; color: #3c342c; font: 15px/1.5 ui-sans-serif, sans-serif; }
+  svg { display: block; width: 100%; height: auto; }
+  p { margin: 8px 4px 0; }
+</style>
+<svg viewBox="0 0 640 280" role="img" aria-label="水从土面渗到盆底">
+  <rect x="180" y="36" width="280" height="200" rx="18" fill="#efe6d6" stroke="#cbbfa8"/>
+  <rect id="water" x="196" y="48" width="248" height="16" fill="#7ea4c4" opacity="0.85"/>
+  <rect x="196" y="150" width="248" height="70" fill="#8b6a45"/>
+  <circle cx="320" cy="214" r="8" fill="#5c4632"/>
+  <text x="320" y="268" text-anchor="middle" font-size="14" fill="#3c342c">排水孔</text>
+</svg>
+<script>
+  var water = document.getElementById("water");
+  var y = 48;
+  var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (reduce) {
+    water.setAttribute("y", "168");
+    water.setAttribute("height", "36");
+  } else {
+    (function tick() {
+      y += 0.45;
+      if (y > 168) y = 48;
+      water.setAttribute("y", String(y));
+      water.setAttribute("height", String(Math.max(16, 204 - y)));
+      requestAnimationFrame(tick);
+    })();
+  }
+</script>

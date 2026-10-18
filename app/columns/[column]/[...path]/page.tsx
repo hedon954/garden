@@ -17,6 +17,7 @@ import { MarkdownArticle } from "../../../components/MarkdownArticle";
 import { TableOfContents } from "../../../components/TableOfContents";
 import { Comments } from "../../../components/Comments";
 import { Webmentions } from "../../../components/Webmentions";
+import { ArticleTags } from "../../../components/ArticleTags";
 import {
   absoluteUrl,
   getSiteUrl,
@@ -122,13 +123,11 @@ export default async function ColumnEntryPage({
                 {formatDate(entry.date)}
               </time>
             </li>
-            {entry.topic && entry.topic !== entry.columnTitle ? (
-              <li><a className="cat" href={`/blog?topic=${encodeURIComponent(entry.topic)}`}>{entry.topic}</a></li>
-            ) : null}
             {originalUrl(entry) ? (
               <li><a className="orig ext" href={originalUrl(entry)} target="_blank" rel="noopener noreferrer">原文 ↗</a></li>
             ) : null}
           </ul>
+          <ArticleTags tags={entry.tags} />
           {entry.cover && (
             <figure className="article-hero article-cover cover-img">
               {/* eslint-disable-next-line @next/next/no-img-element */}

@@ -26,6 +26,13 @@ export const columnEntryPath = (entry: Pick<ContentEntry, "column" | "path">) =>
 export const columnHref = (entry: Pick<ContentEntry, "column" | "path">) =>
   `/columns/${entry.column}/${columnEntryPath(entry)}`;
 
+/** The column a post belongs to (the first one, if it is listed in several). */
+export const columnOfPost = (post: Pick<ContentEntry, "path">) => {
+  const entry = columns.find((item) => item.path === post.path && item.column);
+  return entry?.column ? { slug: entry.column, title: entry.columnTitle ?? entry.column } : undefined;
+};
+export const columnIndexHref = (slug: string) => `/columns#${slug}`;
+
 export const formatDate = (value: string, withTime = false) => {
   if (!withTime) return demoDateLabel(value);
   const canonical = canonicalSiteDate(value) ?? value;
@@ -128,29 +135,25 @@ export const searchRecords = [
   ...posts.map((item) => ({
     title: item.title,
     description: item.description ?? "",
-    topic: item.topic ?? "博文",
+    section: "文章",
     path: postHref(item),
     content: toSearchableText(item.content),
   })),
   ...columns.map((item) => ({
     title: item.title,
     description: item.description ?? "",
-    topic: item.columnTitle ?? "专栏",
+    section: item.columnTitle ?? "专栏",
     path: columnHref(item),
     content: toSearchableText(item.content),
   })),
   ...thoughts.map((item) => ({
     title: item.title,
     description: toSearchableText(item.content),
-    topic: "随想",
+    section: "随想",
     path: `/thoughts/${item.slug}`,
     content: toSearchableText(item.content),
   })),
 ];
-
-export const topics = Array.from(
-  new Set(posts.map((post) => post.topic).filter(Boolean)),
-) as string[];
 
 export const findPost = (path: string): ContentEntry | undefined =>
   posts.find((post) => post.path === path);

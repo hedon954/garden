@@ -3,8 +3,8 @@
 @import "./admin-ui.css";
 
 :root {
-  --paper: #f8f8f6;
-  --paper-deep: #eeeeeb;
+  --paper: #faf9f5;
+  --paper-deep: #f0eee6;
   --card: #ffffff;
   --ink: #202124;
   --ink-soft: #34383d;
@@ -12,28 +12,28 @@
   --faint: #a1a6ad;
   --line: #deded9;
   --line-strong: #c9c9c2;
-  --accent: #d82d48;
-  --accent-soft: #f9e8eb;
-  --selection: #f3c9d1;
+  --accent: #30302e;
+  --accent-soft: #f0eee6;
+  --selection: #e8e5db;
   --font-mono: var(--font-geist-mono), "SFMono-Regular", Consolas,
     "Liberation Mono", "Noto Sans Mono CJK SC", monospace;
-  --content: 700px;
+  --content: 740px;
   --wide: 1040px;
 }
 
 :root[data-theme="dark"] {
-  --paper: #171819;
-  --paper-deep: #202224;
-  --card: #1e2022;
+  --paper: #1f1e1d;
+  --paper-deep: #262624;
+  --card: #262624;
   --ink: #ededeb;
   --ink-soft: #d8d8d4;
   --muted: #a6adb6;
   --faint: #747b84;
   --line: #35383b;
   --line-strong: #4b4f54;
-  --accent: #ff5d76;
-  --accent-soft: #3b242a;
-  --selection: #68333e;
+  --accent: #eeece7;
+  --accent-soft: #30302e;
+  --selection: rgb(238 236 231 / 18%);
 }
 
 * {
@@ -250,11 +250,6 @@ button {
 
 .home-section {
   margin-top: 72px;
-}
-
-.home-thought-list {
-  display: grid;
-  gap: 24px;
 }
 
 .section-heading {
@@ -1423,32 +1418,6 @@ button {
   color: var(--accent);
 }
 
-.topic-strip {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin: 8px 0 38px;
-}
-
-.topic-strip a {
-  padding: 6px 10px;
-  background: var(--paper-deep);
-  color: var(--muted);
-  font-size: 11px;
-  border: 1px solid transparent;
-}
-
-.topic-strip a:hover,
-.topic-strip a:focus-visible {
-  color: var(--ink);
-  border-color: var(--line-strong);
-}
-
-.topic-strip a.active {
-  background: var(--ink);
-  color: var(--paper);
-}
-
 .archive-list {
   border-top: 1px solid var(--line-strong);
 }
@@ -1494,13 +1463,6 @@ button {
   height: auto;
   display: block;
   border: 1px solid var(--line);
-}
-
-.archive-topic {
-  color: var(--accent);
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.05em;
 }
 
 .pinned-badge {
@@ -2089,12 +2051,14 @@ button {
 
 .markdown-body a {
   text-decoration: underline;
-  text-decoration-color: var(--accent);
+  text-decoration-color: color-mix(in srgb, var(--ink) 35%, transparent);
   text-underline-offset: 4px;
 }
 
+/* Links stay ink; hover darkens and thickens the underline instead. */
 .markdown-body a:hover {
-  color: var(--accent);
+  text-decoration-color: var(--ink);
+  text-decoration-thickness: 2px;
 }
 
 /* A per-line border stays continuous across inline code and descenders. */
@@ -2184,25 +2148,6 @@ button {
 
 .markdown-body li::marker {
   color: var(--accent);
-}
-
-.markdown-body table {
-  width: 100%;
-  margin: 34px 0;
-  border-collapse: collapse;
-  font-size: 12px;
-}
-
-.markdown-body th,
-.markdown-body td {
-  padding: 11px 13px;
-  border: 1px solid var(--line);
-  text-align: left;
-}
-
-.markdown-body th {
-  background: var(--paper-deep);
-  color: var(--ink);
 }
 
 .markdown-body pre {
@@ -2879,23 +2824,8 @@ button {
   color: var(--accent);
 }
 
-.article-references + .article-tags,
 .article-references + .next-entry {
   margin-top: 36px;
-}
-
-.article-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin: 68px 0 24px;
-}
-
-.article-tags span {
-  padding: 4px 8px;
-  background: var(--paper-deep);
-  color: var(--muted);
-  font-size: 10px;
 }
 
 .webmentions,
@@ -3078,7 +3008,7 @@ button {
   margin: 0 auto;
   padding: 58px 0 120px;
   display: grid;
-  grid-template-columns: var(--column-sidebar-width) minmax(0, 700px) var(--column-sidebar-width);
+  grid-template-columns: var(--column-sidebar-width) minmax(0, var(--content)) var(--column-sidebar-width);
   gap: 54px;
   justify-content: center;
 }
@@ -3697,12 +3627,6 @@ button {
   color: var(--accent);
 }
 
-.footer-framework a {
-  text-decoration: underline;
-  text-decoration-color: var(--line-strong);
-  text-underline-offset: 3px;
-}
-
 @media (max-width: 1080px) {
   .post-reading-page {
     --toc-width: 210px;
@@ -3917,7 +3841,7 @@ button {
   }
 
   .column-reading-page {
-    grid-template-columns: minmax(0, 700px);
+    grid-template-columns: minmax(0, var(--content));
   }
 
   .series-nav {
@@ -4202,8 +4126,7 @@ button {
     gap: 4px 9px;
   }
 
-  .archive-meta time,
-  .archive-topic {
+  .archive-meta time {
     font-size: 9px;
   }
 
@@ -4272,11 +4195,6 @@ button {
 
   .markdown-body h5 {
     font-size: 17px;
-  }
-
-  .markdown-body table {
-    display: block;
-    overflow-x: auto;
   }
 
   .markdown-body .external-embed-card,

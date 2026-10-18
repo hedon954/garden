@@ -2,7 +2,6 @@
 title: 01 · 从最小闭环开始
 description: 先让最重要的一条路径真正跑通。
 date: 2026-07-04
-topic: 独立开发
 tags:
   - 产品
   - 工程

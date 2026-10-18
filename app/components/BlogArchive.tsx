@@ -1,17 +1,20 @@
 "use client";
 
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
-import { useState } from "react";
-import { columns, postHref, posts, topics } from "../lib/content";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useMemo, useState } from "react";
+import { columnIndexHref, columnOfPost, columns, postHref, posts } from "../lib/content";
+import {
+  TAG_PARAM,
+  filterByTags,
+  selectedTags,
+  tagFilterHref,
+  tagOptions,
+  tagSummary,
+  toggleTag,
+  visibleTagOptions,
+} from "../lib/tag-filter";
 import { ContentEmptyState } from "./ContentEmptyState";
-
-export const archiveHref = (topic?: string) => {
-  const params = new URLSearchParams();
-  if (topic) params.set("topic", topic);
-  const query = params.toString();
-  return query ? `/blog?${query}` : "/blog";
-};
 
 function day(value: string) {
   const date = new Date(value);
@@ -24,12 +27,37 @@ function day(value: string) {
   }).format(date);
 }
 
+function ColumnLabel({ path }: { path: string }) {
+  const column = columnOfPost({ path });
+  return column ? <Link className="cat" href={columnIndexHref(column.slug)}>{column.title}</Link> : null;
+}
+
+const NO_TAGS: string[] = [];
+
+/** Reads the selected tags from the URL; needs a Suspense boundary. */
 export function BlogArchive() {
+  const router = useRouter();
+  const pathname = usePathname() || "/blog";
   const searchParams = useSearchParams();
+  const paramKey = searchParams.getAll(TAG_PARAM).join("\u0000");
+  const selected = useMemo(() => selectedTags(paramKey ? paramKey.split("\u0000") : []), [paramKey]);
+  return <ArchiveView selected={selected} go={(next) => router.push(tagFilterHref(next, pathname), { scroll: false })} />;
+}
+
+/**
+ * The full, unfiltered list. Rendered into the static page as the Suspense
+ * fallback, so the list is there before scripts run (or without them).
+ */
+export function BlogArchiveFallback() {
+  return <ArchiveView selected={NO_TAGS} go={(next) => window.location.assign(tagFilterHref(next))} />;
+}
+
+function ArchiveView({ selected, go }: { selected: string[]; go: (next: string[]) => void }) {
   const [compact, setCompact] = useState(false);
-  const requestedTopic = searchParams.get("topic") ?? "";
-  const selectedTopic = topics.includes(requestedTopic) ? requestedTopic : undefined;
-  const filtered = (selectedTopic ? posts.filter((post) => post.topic === selectedTopic) : posts)
+  const [expanded, setExpanded] = useState(false);
+  const options = useMemo(() => tagOptions(posts, selected), [selected]);
+  const { shown, hidden } = visibleTagOptions(options, expanded);
+  const filtered = filterByTags(posts, selected)
     .slice()
     .sort((left, right) => Date.parse(right.date) - Date.parse(left.date));
   const years = new Map<string, typeof filtered>();
@@ -53,23 +81,37 @@ export function BlogArchive() {
   return (
     <div className="sh-listgrid">
       <div>
-        <ul className="sh-filters" aria-label="按分类筛选">
-          <li>
-            <Link className="sh-chip" href="/blog" aria-current={selectedTopic ? undefined : "true"}>
-              全部<span className="n">{posts.length}</span>
-            </Link>
-          </li>
-          {topics.map((topic) => (
-            <li key={topic}>
-              <Link className="sh-chip" href={archiveHref(topic)} aria-current={selectedTopic === topic ? "true" : undefined}>
-                {topic}<span className="n">{posts.filter((post) => post.topic === topic).length}</span>
-              </Link>
-            </li>
-          ))}
-        </ul>
+        {options.length ? (
+          <div className="sh-tagfilter">
+            <ul className="sh-tagchips" aria-label="按标签筛选">
+              {shown.map((option) => (
+                <li key={option.tag}>
+                  <button
+                    type="button"
+                    className="sh-tagchip"
+                    aria-pressed={option.selected}
+                    disabled={option.disabled}
+                    onClick={() => go(toggleTag(selected, option.tag))}
+                  >
+                    <span className="label">#{option.tag}</span>
+                    <span className="n num">{option.next}</span>
+                    {option.selected ? <span className="x" aria-hidden="true">×</span> : null}
+                  </button>
+                </li>
+              ))}
+              {hidden > 0 || expanded ? (
+                <li>
+                  <button type="button" className="sh-tagmore" aria-expanded={expanded} onClick={() => setExpanded(!expanded)}>
+                    {expanded ? "收起" : `展开全部 ${options.length} 个标签`}
+                  </button>
+                </li>
+              ) : null}
+            </ul>
+          </div>
+        ) : null}
         <div className="sh-status">
-          <span aria-live="polite">{selectedTopic ? `${selectedTopic} ${filtered.length} 篇` : `全部 ${posts.length} 篇`}</span>
-          {selectedTopic ? <Link href="/blog">清除筛选</Link> : null}
+          <span aria-live="polite">{tagSummary(selected.length, filtered.length)}</span>
+          {selected.length ? <button type="button" onClick={() => go([])}>清除</button> : null}
           <div className="sh-view" role="group" aria-label="列表密度">
             <button type="button" aria-pressed={!compact} onClick={() => setCompact(false)}>摘要</button>
             <button type="button" aria-pressed={compact} onClick={() => setCompact(true)}>紧凑</button>
@@ -94,16 +136,26 @@ export function BlogArchive() {
                       </h3>
                       {post.description ? <p>{post.description}</p> : null}
                     </div>
-                    {post.topic ? <Link className="cat" href={archiveHref(post.topic)}>{post.topic}</Link> : null}
+                    <ColumnLabel path={post.path} />
                   </li>
                 ))}
               </ol>
             </section>
-          )) : <ContentEmptyState kind="posts" />}
+          )) : selected.length ? (
+            <div className="sh-tagempty">
+              <p>没有同时带这些标签的文章。</p>
+              <div className="acts">
+                {selected.length > 1 ? (
+                  <button type="button" onClick={() => go(selected.slice(0, -1))}>去掉「{selected[selected.length - 1]}」</button>
+                ) : null}
+                <button type="button" onClick={() => go([])}>看全部文章</button>
+              </div>
+            </div>
+          ) : <ContentEmptyState kind="posts" />}
         </div>
       </div>
       <aside className="sh-rail" aria-label="按年份跳转">
-        <h2>按年份</h2>
+        {years.size ? <h2>按年份</h2> : null}
         <ol>
           {[...years.keys()].map((year) => (
             <li key={year}>
@@ -117,7 +169,7 @@ export function BlogArchive() {
             <ol>
               {series.map(([slug, entries]) => (
                 <li key={slug}>
-                  <Link href={`/columns#${slug}`}><span>{entries[0]?.columnTitle ?? slug}</span><span className="n num">{entries.length}</span></Link>
+                  <Link href={columnIndexHref(slug)}><span>{entries[0]?.columnTitle ?? slug}</span><span className="n num">{entries.length}</span></Link>
                 </li>
               ))}
             </ol>

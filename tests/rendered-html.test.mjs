@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { access, readFile } from "node:fs/promises";
 import test from "node:test";
+import { homeListDate } from "../app/lib/a2-meta.ts";
 
 const templateRoot = new URL("../", import.meta.url);
 
@@ -34,15 +35,38 @@ test("server-renders the finished blog home", async () => {
   assert.match(html, /<title>[^<]+<\/title>/i);
   assert.match(html, /记一些正在做的事/);
   assert.doesNotMatch(html, /class="sh-feature"[\s\S]{0,400}style="background:var\(--cover\)"/);
-  assert.match(html, /<time class="num" dateTime="2026-10-10">2026-10-10<\/time>/);
-  const shell = await readFile(new URL("../app/styles/shell.css", import.meta.url), "utf8");
+  assert.match(html, /<time class="num" dateTime="2026-10-16">2026 年 10 月 16 日<\/time>/);
+  assert.match(html, new RegExp(`<time class="num" dateTime="2026-10-10">${homeListDate("2026-10-10")}</time>`));
+  const rows = html.match(/<ol class="sh-rows"[\s\S]*?<\/ol>/)?.[0] ?? "";
+  assert.doesNotMatch(rows, /2026-10-16|2026 年 10 月 16 日/);
+  assert.equal(homeListDate("2026-09-22", new Date("2026-06-01T04:00:00Z")), "9 月 22 日");
+  assert.equal(homeListDate("2025-09-22", new Date("2026-06-01T04:00:00Z")), "2025 年 9 月 22 日");
+  assert.match(rows, new RegExp(`dateTime="2026-10-10">${homeListDate("2026-10-10")}`));
+  const [shell, articleCss] = await Promise.all([
+    readFile(new URL("../app/styles/shell.css", import.meta.url), "utf8"),
+    readFile(new URL("../app/styles/a2.css", import.meta.url), "utf8"),
+  ]);
+  assert.match(articleCss, /\.article-hero\.article-cover \{[^}]*border-radius: var\(--r-lg\)/);
+  assert.doesNotMatch(articleCss, /article-hero\.article-cover \{\s*border-radius:\s*16px/);
+  assert.match(shell, /\.sh-foot-links\{display:flex;align-items:center;gap:20px\}/);
+  assert.match(shell, /\.sh-foot a\{display:inline-flex;align-items:center;gap:6px;min-height:44px/);
+  assert.match(shell, /\.sh-foot-links a svg\{display:block;flex:none;width:16px;height:16px\}/);
+  assert.match(shell, /\.sh-home-grid \.sh-row time\{min-width:6em;font-variant-numeric:tabular-nums\}/);
+  const footer = html.match(/<footer class="sh-footer"[\s\S]*?<\/footer>/)?.[0] ?? "";
+  assert.match(footer, /class="sh-foot-links"/);
+  assert.match(footer, /GitHub/);
+  assert.match(footer, /RSS\s*<\/a>/);
+  assert.match(footer, /基于 <a [^>]*href="https:\/\/github\.com\/hedon954\/garden"[^>]*>Garden<\/a> 构建/);
+  assert.doesNotMatch(footer, /aria-label/);
   assert.match(shell, /\.sh-feature \.cover\{[^}]*aspect-ratio:auto;display:block/);
   assert.match(shell, /\.sh-feature \.cover\{[^}]*background:none/);
   assert.match(shell, /\.sh-feature \.cover img\{display:block;width:100%;height:auto\}/);
   assert.doesNotMatch(shell, /\.sh-feature \.cover\{[^}]*aspect-ratio:16\/9/);
   assert.doesNotMatch(shell, /\.sh-feature \.cover\{border-radius:16px\}/);
   const feature = html.match(/<article class="sh-feature"[\s\S]*?<\/article>/)?.[0] ?? "";
-  assert.doesNotMatch(feature, /class="cover"/);
+  assert.match(feature, /class="cover"/);
+  assert.match(feature, /\/media\/covers\/windowsill-herbs\.svg/);
+  assert.doesNotMatch(feature, /style="background/);
   const [blogPage, columnPage] = await Promise.all([
     readFile(new URL("../app/blog/[...path]/page.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/columns/[column]/[...path]/page.tsx", import.meta.url), "utf8"),
@@ -52,7 +76,8 @@ test("server-renders the finished blog home", async () => {
   assert.match(shell, /\.sh-intro h1\{[^}]*max-width:var\(--list\);text-wrap:balance/);
   assert.match(shell, /\.sh-intro p\{[^}]*text-wrap:balance/);
   assert.match(html, /id="h-pin">置顶</);
-  assert.match(html, /最近随想/);
+  assert.doesNotMatch(html, /最近随想/);
+  assert.doesNotMatch(html, /home-thought-list/);
   assert.match(html, /id="h-cols">专栏</);
   assert.match(html, /rel="me(?: [^"]*)?"/);
   assert.doesNotMatch(html, /section-index|pinned-list/);
@@ -135,7 +160,7 @@ test("renders complex Markdown, article covers, and mixed thought media", async 
   assert.doesNotMatch(article, /2026\/07\/25/);
   const meta = article.match(/<ul class="meta article-meta">[\s\S]*?<\/ul>/)?.[0] ?? "";
   const metaText = meta.replace(/<!-- -->/g, "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
-  assert.match(metaText, /^Your Name 2026 年 7 月 25 日 约 [\d,]+ 字 写作系统$/);
+  assert.match(metaText, /^Your Name 2026 年 7 月 25 日 约 [\d,]+ 字$/);
   assert.doesNotMatch(meta, /<li>\s*<\/li>/);
   assert.doesNotMatch(meta, /分钟/);
   assert.match(article, /约 <!-- -->[\d,]+<!-- --> 字/);
@@ -176,7 +201,7 @@ test("renders complex Markdown, article covers, and mixed thought media", async 
   assert.match(archive, /class="archive-cover"/);
   assert.match(archive, /class="archive-copy"/);
   assert.match(archive, /class="archive-meta" dateTime="2026-07-25">07-25</);
-  assert.match(archive, /href="\/blog\?topic=/);
+  assert.doesNotMatch(archive, /\?topic=|class="sh-filters" aria-label="按分类筛选"/);
 });
 
 test("collapses the reading table of contents per heading and keeps its active item visible", async () => {
@@ -248,13 +273,62 @@ test("hides empty home sections and gives every content index an intentional emp
 
   assert.match(home, /pinned\.length > 0/);
   assert.match(home, /posts\.length > 0/);
-  assert.match(home, /thoughts\.length > 0/);
+  assert.doesNotMatch(home, /最近随想|ThoughtCard|getPublishedThoughts/);
   assert.match(home, /columns\[0\]/);
   assert.match(archive, /ContentEmptyState kind="posts"/);
   assert.match(thoughts, /ContentEmptyState kind="thoughts"/);
   assert.match(columns, /ContentEmptyState kind="columns"/);
   assert.match(columns, /column-feature-cover/);
+  assert.match(columns, /siteConfig\.pages\.columns\.subtitle/);
+  assert.doesNotMatch(columns, /与文章分类相互独立/);
   assert.match(emptyState, /content-empty-state/);
+});
+
+test("the example post keeps a wide local image, and tags create a release", async () => {
+  const [post, image, measure, publish, a2] = await Promise.all([
+    readFile(new URL("../content/posts/windowsill-herbs.md", import.meta.url), "utf8"),
+    readFile(new URL("../content/posts/windowsill-herbs/sill.svg", import.meta.url), "utf8"),
+    readFile(new URL("../app/components/ArticleMeasure.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../.github/workflows/publish.yml", import.meta.url), "utf8"),
+    readFile(new URL("../app/styles/a2.css", import.meta.url), "utf8"),
+  ]);
+  assert.match(post, /!\[朝北的窗台，从左到右是罗勒、薄荷和一只空盆。\]\(\.\/windowsill-herbs\/sill\.svg\)/);
+  assert.doesNotMatch(post, /oss-|aliyuncs|myqcloud/i);
+  // a 2x asset: 2560 pixels wide, displayed at 1280, so it widens to the 1040px cap
+  assert.match(image, /width="2560" height="840" viewBox="0 0 1280 420"/);
+  assert.match(measure, /querySelectorAll<HTMLElement>\("\.fig"\)/);
+  assert.match(measure, /figureBreakout\(\{/);
+  // images show at their natural size, capped at the column; only widened ones get an inline width
+  const figImg = a2.match(/\.markdown-body \.fig-card img \{[^}]*\}/)?.[0] ?? "";
+  assert.match(figImg, /width: auto;/);
+  assert.match(figImg, /max-width: 100%;/);
+  assert.doesNotMatch(figImg, /(^|[\s;{])width: 100%/);
+  assert.match(measure, /image\.style\.removeProperty\("width"\)/);
+  assert.match(measure, /figureImageWidth\(\{ naturalWidth: image\.naturalWidth, attrWidth, widened: breakout\.left > 0 \}\)/);
+  assert.doesNotMatch(measure, /imageDisplayWidth/);
+  assert.match(measure, /naturalWidth/);
+  assert.match(publish, /if: github\.event_name == 'push' && startsWith\(github\.ref, 'refs\/tags\/v'\)/);
+  assert.match(publish, /gh release create "\$tag" --generate-notes/);
+
+  const response = await render("/blog/windowsill-herbs");
+  assert.equal(response.status, 200);
+  const html = await response.text();
+  assert.match(html, /\/media\/posts\/windowsill-herbs\/sill\.svg/);
+  assert.match(html, /class="fig"/);
+  assert.match(html, /朝北的窗台，从左到右是罗勒、薄荷和一只空盆。/);
+  assert.doesNotMatch(html, /oss-|aliyuncs|myqcloud/i);
+  // the markdown syntax tree never leaks onto the image as an attribute
+  const images = html.match(/<img\b[^>]*>/g) ?? [];
+  assert.ok(images.some((tag) => tag.includes("sill.svg")));
+  for (const tag of images) assert.doesNotMatch(tag, /\snode=/);
+});
+
+test("columns index shows the configured subtitle", async () => {
+  const response = await render("/columns");
+  assert.equal(response.status, 200);
+  const html = await response.text();
+  assert.match(html, /class="sh-deck">按顺序读的一组文章。<\/p>/);
+  assert.doesNotMatch(html, /与文章分类相互独立/);
 });
 
 test("renders safe external embeds and the complete GitHub profile experience", async () => {
@@ -381,4 +455,212 @@ test("keeps the admin studio protected and writes content through GitHub", async
   assert.match(workflow, /prepare-pages-output\.mjs/);
   assert.match(workflow, /STATIC_EXPORT=1/);
   assert.match(verifyWorkflow, /pages:validate/);
+});
+
+test("0.4.3: wider reading column, transparent column cards, and tag chips under the meta row", async () => {
+  const [tokens, globals, shell, a2, measure] = await Promise.all([
+    readFile(new URL("../app/styles/tokens.css", import.meta.url), "utf8"),
+    readFile(new URL("../app/globals.css", import.meta.url), "utf8"),
+    readFile(new URL("../app/styles/shell.css", import.meta.url), "utf8"),
+    readFile(new URL("../app/styles/a2.css", import.meta.url), "utf8"),
+    readFile(new URL("../app/components/ArticleMeasure.tsx", import.meta.url), "utf8"),
+  ]);
+
+  // H. body width
+  assert.match(tokens, /--col: 740px;/);
+  assert.match(globals, /--content: 740px;/);
+  assert.doesNotMatch(tokens + globals + a2 + shell, /minmax\(0, 700px\)|--col: 700px|--content: 700px/);
+  // figures and tables break out from the text column, not the article grid
+  assert.match(measure, /querySelector\("\.markdown-body"\)/);
+
+  // I. column cards: transparent, with a border
+  const card = shell.match(/\.sh-col\{[^}]*\}/)?.[0] ?? "";
+  assert.match(card, /background:transparent/);
+  assert.match(card, /border:1px solid var\(--rule\)/);
+  assert.match(card, /border-radius:var\(--r\)/);
+  assert.doesNotMatch(card, /var\(--card\)/);
+  assert.match(shell, /\.sh-col:hover\{background:var\(--card-hover\);box-shadow:var\(--card-shadow\)\}/);
+  assert.doesNotMatch(shell, /\.sh-col:hover\{[^}]*(border|transform)/);
+  assert.match(shell, /\.sh-col \.cover\{[^}]*margin:0/);
+  assert.match(shell, /\.sh-col \.body\{padding:16px 18px 18px\}/);
+  assert.match(shell, /\.sh-col:hover h3 a\{color:var\(--blue\)\}/);
+
+  // J. tag chips
+  assert.match(a2, /\.article-tagrow \{[^}]*flex-wrap: wrap;[^}]*gap: 8px;/);
+  assert.match(a2, /\.article-tagrow \.tag-chip \{[^}]*padding: 2px 10px;[^}]*border-radius: 999px;[^}]*background: var\(--chip\);[^}]*color: var\(--soft\);/);
+  assert.match(a2, /\.article-tagrow \.tag-chip::after \{[^}]*height: 44px;/);
+  assert.doesNotMatch(globals + a2, /\.article-tags\b/);
+
+  const [postResponse, columnResponse] = await Promise.all([
+    render("/blog/markdown-lab"),
+    render("/columns/building-in-public/ship-with-evidence"),
+  ]);
+  for (const [response, tags] of [
+    [postResponse, ["Markdown", "Typora", "Mermaid", "KaTeX"]],
+    [columnResponse, ["验证", "发布"]],
+  ]) {
+    assert.equal(response.status, 200);
+    const html = await response.text();
+    const header = html.match(/<header class="article-header[\s\S]*?<\/header>/)?.[0] ?? "";
+    assert.ok(header, "article header renders");
+    const meta = header.indexOf('class="meta article-meta"');
+    const row = header.indexOf('class="article-tagrow"');
+    assert.ok(meta >= 0 && row > meta, "tag row sits right after the meta row");
+    for (const tag of tags) {
+      assert.match(header, new RegExp(`<a class="tag-chip p-category" href="/blog\\?t=${encodeURIComponent(tag)}">#(<!-- -->)?${tag}</a>`));
+    }
+    assert.doesNotMatch(header, /class="cat"|\/blog\?topic=/);
+    assert.doesNotMatch(html, /class="article-tags"/);
+  }
+});
+
+test("posts have no topic: no field, no filter, no label", async () => {
+  const files = [
+    "scripts/build-content.mjs", "scripts/check-post.mjs", "scripts/new-post.mjs",
+    "app/lib/content.ts", "app/garden-modules.d.ts", "app/page.tsx",
+    "app/components/SiteHeader.tsx", "app/components/BlogArchive.tsx", "app/tags/page.tsx",
+    "app/components/AdminDashboard.tsx", "app/admin/page.tsx", "app/a2/[slug]/page.tsx", "app/lib/a2-preview.ts",
+    "app/globals.css", "Makefile", "templates/site/Makefile", "docs/content-authoring.md", "docs/quick-start.md",
+  ];
+  for (const file of files) {
+    const source = await readFile(new URL(`../${file}`, import.meta.url), "utf8");
+    const meaningful = source.replace(/\/\/ Older posts may still carry `topic:`; it is no longer used\.\n\s*delete data\.topic;/, "");
+    assert.doesNotMatch(meaningful, /\btopics?\b|TOPIC/, `${file} still mentions topic`);
+  }
+});
+
+test("/blog rows show the post's column, linked to that column; other posts show nothing there", async () => {
+  const response = await render("/blog");
+  assert.equal(response.status, 200);
+  const html = await response.text();
+  const rows = [...html.matchAll(/<li class="sh-row">[\s\S]*?<\/li>/g)].map((match) => match[0]);
+  assert.ok(rows.length >= 9);
+  const inColumn = rows.find((row) => row.includes("/blog/building-in-public/ship-with-evidence"));
+  assert.match(inColumn ?? "", /<a (?=[^>]*class="cat")(?=[^>]*href="\/columns#building-in-public")[^>]*>一个人造产品<\/a>/);
+  const standalone = rows.find((row) => row.includes("/blog/markdown-lab"));
+  assert.ok(standalone);
+  assert.doesNotMatch(standalone, /class="cat"/);
+});
+
+test("/blog filters by several tags through the URL, and /tags is only an index", async () => {
+  const [archive, source, tagsPage, redirect, shell] = await Promise.all([
+    render("/blog").then((response) => response.text()),
+    readFile(new URL("../app/components/BlogArchive.tsx", import.meta.url), "utf8"),
+    render("/tags").then((response) => response.text()),
+    readFile(new URL("../app/components/TagRedirect.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/styles/shell.css", import.meta.url), "utf8"),
+  ]);
+  const chips = archive.match(/<ul class="sh-tagchips" aria-label="按标签筛选">[\s\S]*?<\/ul>/)?.[0] ?? "";
+  assert.match(chips, /<button type="button" class="sh-tagchip" aria-pressed="false">/);
+  assert.match(archive, /<span aria-live="polite">共 <!-- -->?9<!-- -->? 篇<\/span>|<span aria-live="polite">共 9 篇<\/span>/);
+  assert.match(source, /searchParams\.getAll\(TAG_PARAM\)/);
+  assert.match(source, /filterByTags\(posts, selected\)/);
+  assert.match(source, /router\.push\(tagFilterHref/);
+  assert.match(source, /没有同时带这些标签的文章。/);
+  assert.match(source, /清除/);
+  assert.match(source, /`展开全部 \$\{options\.length\} 个标签`/);
+  assert.match(source, /expanded \? "收起"/);
+  assert.doesNotMatch(source, /topic|按分类筛选/);
+
+  assert.match(tagsPage, /<ul class="sh-tagchips sh-tagindex" aria-label="全部标签">/);
+  assert.match(tagsPage, /<a href="\/blog\?t=Markdown" class="sh-tagchip">#<!-- -->Markdown<span class="n num">/);
+  assert.doesNotMatch(tagsPage, /aria-pressed|sh-tagresult|分类/);
+  assert.match(redirect, /router\.replace\(target\)/);
+
+  assert.match(shell, /\.sh-tagchips\{display:flex;flex-wrap:wrap;gap:12px 8px/);
+  assert.match(shell, /\.sh-tagchip\[aria-pressed="true"\]\{background:var\(--chip-on\);color:var\(--chip-on-text\)/);
+  assert.match(shell, /\.sh-tagchip:disabled\{/);
+  // the expand control is a text button, not a chip
+  assert.match(shell, /\.sh-tagmore\{[^}]*border:0;background:none;color:var\(--blue\)[^}]*text-decoration:underline/);
+  assert.match(shell, /\.sh-tagchip::after,\.sh-tagmore::after\{[^}]*height:44px/);
+});
+
+test("/blog renders the full list on the server, before any script runs", async () => {
+  const [response, page, generated] = await Promise.all([
+    render("/blog"),
+    readFile(new URL("../app/blog/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../.garden/generated-content.ts", import.meta.url), "utf8"),
+  ]);
+  assert.equal(response.status, 200);
+  const html = await response.text();
+  // Anything React streams in later sits in a hidden block; the list must come before it.
+  const hiddenAt = html.search(/<div hidden id="S:/);
+  const visible = hiddenAt >= 0 ? html.slice(0, hiddenAt) : html;
+  const posts = JSON.parse(generated.match(/export const posts = (\[[\s\S]*?\]) as ContentEntry\[\];/)[1]);
+  assert.ok(posts.length >= 9);
+  for (const post of posts) {
+    assert.ok(visible.includes(`href="/blog/${post.path}"`), `${post.path} is in the server-rendered list`);
+    assert.ok(visible.includes(post.title.replace(/&/g, "&amp;")), `${post.title} is in the server-rendered list`);
+  }
+  assert.match(page, /<Suspense fallback=\{<BlogArchiveFallback \/>\}>/);
+});
+
+test("palette: warm paper, ink accent, no blue, readable chips in both themes", async () => {
+  const [tokens, shell, globals, a2, ui] = await Promise.all([
+    readFile(new URL("../app/styles/tokens.css", import.meta.url), "utf8"),
+    readFile(new URL("../app/styles/shell.css", import.meta.url), "utf8"),
+    readFile(new URL("../app/globals.css", import.meta.url), "utf8"),
+    readFile(new URL("../app/styles/a2.css", import.meta.url), "utf8"),
+    readFile(new URL("../ui/react/ui.css", import.meta.url), "utf8"),
+  ]);
+  const block = (css, start) => css.slice(css.indexOf(start), css.indexOf("}", css.indexOf(start)));
+  const light = block(tokens, ":root,\n:root[data-theme=\"light\"] {");
+  const dark = block(tokens, ":root[data-theme=\"dark\"],\nhtml[data-theme=\"dark\"] {");
+  const token = (css, name) => css.match(new RegExp(`--${name}:\\s*(#[0-9a-fA-F]{6})`))?.[1];
+
+  assert.equal(token(light, "paper"), "#faf9f5");
+  for (const name of ["paper-deep", "well", "blue-tint", "chip"]) assert.equal(token(light, name), "#f0eee6", name);
+  assert.equal(token(light, "card-hover"), "#f5f4ed");
+  assert.equal(token(light, "chip-hover"), "#e8e5db");
+  assert.equal(token(light, "blue"), "#30302e");
+  assert.equal(token(light, "chip-on"), "#30302e");
+  assert.equal(token(light, "chip-on-text"), "#faf9f5");
+  assert.match(light, /--card-shadow: 0 1px 2px rgb\(20 20 19 \/ 4%\), 0 4px 14px rgb\(20 20 19 \/ 5%\);/);
+  assert.equal(token(dark, "paper"), "#1f1e1d");
+  assert.equal(token(dark, "blue"), "#eeece7");
+  assert.equal(token(dark, "chip-on"), "#eeece7");
+  assert.match(shell, /:root\{\s*--paper:#FAF9F5;/);
+  assert.match(globals, /:root \{\s*--paper: #faf9f5;\s*--paper-deep: #f0eee6;/);
+
+  // no blue left in the site styles
+  const blues = /2c55b4|93b2f4|5e86e0|4c72c9|eaf0fc|eef3fc|44,\s*85,\s*180|44 85 180|147,\s*178,\s*244|147 178 244/i;
+  for (const [name, css] of Object.entries({ tokens, shell, globals, a2, ui })) assert.doesNotMatch(css, blues, name);
+
+  // WCAG AA (4.5:1) for chip text, selected chips and muted text
+  const lum = (hex) => {
+    const c = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255).map((v) => (v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4));
+    return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+  };
+  const ratio = (a, b) => { const [x, y] = [lum(a), lum(b)].sort((m, n) => n - m); return (x + 0.05) / (y + 0.05); };
+  for (const [theme, css] of [["light", light], ["dark", dark]]) {
+    const pairs = [["soft", "chip"], ["soft", "chip-hover"], ["ink", "chip-hover"], ["chip-on-text", "chip-on"], ["muted", "paper"], ["muted", "chip"], ["muted", "card-hover"], ["blue", "paper"]];
+    for (const [fg, bg] of pairs) {
+      const r = ratio(token(css, fg), token(css, bg));
+      assert.ok(r >= 4.5, `${theme} ${fg} on ${bg}: ${r.toFixed(2)}`);
+    }
+  }
+
+  // card hover: fill and faint shadow, no movement, quiet for reduced motion
+  assert.match(shell, /\.sh-col\{[^}]*transition:background-color \.15s ease,box-shadow \.15s ease\}/);
+  assert.match(shell, /@media \(prefers-reduced-motion:reduce\)\{\s*\.sh-col,[^{]*\{transition:none\}/);
+  assert.match(shell, /\.sh-tagchip\{[^}]*background:var\(--chip\);color:var\(--soft\)/);
+});
+
+test("body links answer hover with a darker underline, and the current TOC item is marked", async () => {
+  const [a2, globals] = await Promise.all([
+    readFile(new URL("../app/styles/a2.css", import.meta.url), "utf8"),
+    readFile(new URL("../app/globals.css", import.meta.url), "utf8"),
+  ]);
+  for (const css of [a2, globals]) {
+    const rest = css.match(/\.markdown-body a \{[^}]*\}/)?.[0] ?? "";
+    const hover = css.match(/\.markdown-body a:hover \{[^}]*\}/)?.[0] ?? "";
+    assert.match(rest, /text-decoration-color: color-mix\(in srgb, var\(--ink\) 35%, transparent\);/);
+    assert.match(hover, /text-decoration-color: var\(--ink\);/);
+    assert.match(hover, /text-decoration-thickness: 2px;/);
+    // the colour itself does not change on hover
+    assert.doesNotMatch(hover, /(^|[\s;{])color:/);
+  }
+  assert.match(a2, /\.markdown-body a\.ext:hover \{[^}]*text-decoration-color: var\(--ink\);[^}]*text-decoration-thickness: 2px;/);
+  assert.match(a2, /\.toc li\.active > \.toc-item-row > a \{[^}]*font-weight: 600;/);
+  assert.match(a2, /\.toc li\.active > \.toc-item-row::before \{[^}]*width: 2px;[^}]*background: var\(--ink\);/);
 });

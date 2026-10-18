@@ -2,7 +2,6 @@
 title: Markdown 复杂语法实验场
 description: 用一篇真实文章验证 Typora 常用语法、数学公式、Mermaid、脚注、表格与原生 HTML。
 date: 2026-07-25
-topic: 写作系统
 tags:
   - Markdown
   - Typora
