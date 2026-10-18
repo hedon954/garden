@@ -65,7 +65,10 @@ html[data-mod="other"] .sh-search .kbd-other{display:inline}
 .sh-icon{display:inline-grid;place-items:center;width:40px;height:40px;border:0;background:transparent;color:var(--soft);border-radius:var(--r);cursor:pointer;transition:background-color .15s ease,color .15s ease}
 @media (hover:hover){.sh-icon:hover{background:var(--tint);color:var(--ink)}}
 .sh-menu-btn,.sh-search-m{display:none}
-html[data-theme="dark"] .i-moon,html:not([data-theme="dark"]) .i-sun{display:none}
+.i-sun,html[data-theme="dark"] .i-moon{display:none}
+html[data-theme="dark"] .i-sun{display:inline}
+/* No JavaScript: the theme cannot be switched, the page follows the system (build/dark-fallback-postcss.mjs). */
+@media (scripting:none){.sh-theme{display:none}}
 .sh-menu{display:none}
 
 /* ---------- page frame ---------- */
