@@ -640,3 +640,22 @@ test("palette: warm paper, ink accent, no blue, readable chips in both themes", 
   assert.match(shell, /@media \(prefers-reduced-motion:reduce\)\{\s*\.sh-col,[^{]*\{transition:none\}/);
   assert.match(shell, /\.sh-tagchip\{[^}]*background:var\(--chip\);color:var\(--soft\)/);
 });
+
+test("body links answer hover with a darker underline, and the current TOC item is marked", async () => {
+  const [a2, globals] = await Promise.all([
+    readFile(new URL("../app/styles/a2.css", import.meta.url), "utf8"),
+    readFile(new URL("../app/globals.css", import.meta.url), "utf8"),
+  ]);
+  for (const css of [a2, globals]) {
+    const rest = css.match(/\.markdown-body a \{[^}]*\}/)?.[0] ?? "";
+    const hover = css.match(/\.markdown-body a:hover \{[^}]*\}/)?.[0] ?? "";
+    assert.match(rest, /text-decoration-color: color-mix\(in srgb, var\(--ink\) 35%, transparent\);/);
+    assert.match(hover, /text-decoration-color: var\(--ink\);/);
+    assert.match(hover, /text-decoration-thickness: 2px;/);
+    // the colour itself does not change on hover
+    assert.doesNotMatch(hover, /(^|[\s;{])color:/);
+  }
+  assert.match(a2, /\.markdown-body a\.ext:hover \{[^}]*text-decoration-color: var\(--ink\);[^}]*text-decoration-thickness: 2px;/);
+  assert.match(a2, /\.toc li\.active > \.toc-item-row > a \{[^}]*font-weight: 600;/);
+  assert.match(a2, /\.toc li\.active > \.toc-item-row::before \{[^}]*width: 2px;[^}]*background: var\(--ink\);/);
+});

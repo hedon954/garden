@@ -381,7 +381,13 @@ html[data-theme="dark"] .column-reading-page .e-content {
   text-decoration: underline;
   text-decoration-thickness: 1px;
   text-underline-offset: 4px;
-  text-decoration-color: rgb(27 26 24 / 28%);
+  text-decoration-color: color-mix(in srgb, var(--ink) 35%, transparent);
+  transition: text-decoration-color 0.15s ease;
+}
+
+.markdown-body a:hover {
+  text-decoration-color: var(--ink);
+  text-decoration-thickness: 2px;
 }
 
 .markdown-body a.ext {
@@ -399,6 +405,7 @@ html[data-theme="dark"] .markdown-body a.ext {
 .markdown-body a.ext:hover {
   text-decoration-style: solid;
   text-decoration-color: var(--ink);
+  text-decoration-thickness: 2px;
 }
 
 .markdown-body :not(pre) > code {
@@ -706,10 +713,27 @@ html[data-theme="dark"] .markdown-body .markdown-alert code {
   color: var(--grey);
 }
 
+.toc .toc-item-row {
+  position: relative;
+  padding-left: 10px;
+}
+
 .toc a[aria-current="location"],
 .toc li.active > .toc-item-row > a {
   color: var(--ink);
-  font-weight: 500;
+  font-weight: 600;
+}
+
+/* The current section carries an ink bar, so it reads without colour. */
+.toc li.active > .toc-item-row::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.2em;
+  bottom: 0.2em;
+  width: 2px;
+  border-radius: 1px;
+  background: var(--ink);
 }
 
 @media (min-width: 1200px) {
@@ -725,6 +749,7 @@ html[data-theme="dark"] .markdown-body .markdown-alert code {
 
 @media (prefers-reduced-motion: reduce) {
   .toc,
+  .markdown-body a,
   .h1-line,
   .ux-btn {
     transition: none;
