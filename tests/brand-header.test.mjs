@@ -88,3 +88,15 @@ test("article cover leaves half a gutter before the TOC rail", () => {
   const css = read("app/styles/a2.css");
   assert.match(css, /\.article-hero\.article-cover \{\s*width: 100%;\s*\/\*[^*]*\*\/\s*max-width: calc\(var\(--col\) \+ 72px\);\s*margin: 48px auto 0;/u);
 });
+
+test("article titles wrap instead of running off the page, on /blog/ and /columns/ alike", () => {
+  const css = read("app/styles/a2.css");
+  const title = css.match(/\.hero h1,\n\.article-header h1 \{[^}]*\}/u)[0];
+  assert.match(title, /overflow-wrap: break-word;/u, "break an English word only when it alone cannot fit");
+  assert.doesNotMatch(title, /overflow-wrap: anywhere/u);
+  // No nowrap left on the title or its split lines.
+  for (const rule of css.match(/(?:\.hero h1|\.article-header h1|\.h1-line)[^{]*\{[^}]*\}/gu)) {
+    assert.doesNotMatch(rule, /white-space: nowrap/u, rule);
+    assert.doesNotMatch(rule, /word-break: keep-all/u, "CJK wraps between characters");
+  }
+});

@@ -132,12 +132,13 @@ body {
   max-width: 1200px;
   margin: 0 auto;
   text-wrap: balance;
+  /* Titles wrap; an English word only breaks if it alone cannot fit. */
+  overflow-wrap: break-word;
 }
 
 @media (min-width: 1240px) {
   .hero h1:not(.h1-br),
   .article-header h1:not(.h1-br) {
-    white-space: nowrap;
     max-width: none;
   }
 }
@@ -150,7 +151,6 @@ body {
 .h1-line {
   display: block;
   text-wrap: balance;
-  word-break: keep-all;
   overflow-wrap: break-word;
 }
 
@@ -167,10 +167,6 @@ body {
   .hero h1.h1-br {
     max-width: none;
     font-size: min(var(--fs-hero), calc(min(100vw - 80px, 1276px) / var(--l)));
-  }
-
-  .h1-line {
-    white-space: nowrap;
   }
 }
 
