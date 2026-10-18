@@ -70,15 +70,63 @@ test("a selection the posts cannot satisfy stays selected and removable", () => 
   assert.ok(options.filter((option) => !option.selected).every((option) => option.disabled));
 });
 
-test("only the top tags show by default, but selected tags always show", () => {
+test("with nothing selected, the top tags by count show and the rest expand", () => {
+  const many = Array.from({ length: 20 }, (_, index) => ({ tags: Array.from({ length: 20 - index }, (__, n) => `t${n}`) }));
+  const options = tagOptions(many, []);
+  const collapsed = visibleTagOptions(options, false, 14);
+  assert.deepEqual(collapsed.shown.map((option) => option.tag), options.slice(0, 14).map((option) => option.tag));
+  assert.equal(collapsed.hidden, 6);
+  assert.deepEqual(visibleTagOptions(options, true, 14), { shown: options, hidden: 0 });
+});
+
+test("with a selection, selected tags come first, then tags that still combine, most results first", () => {
+  const library = [
+    { tags: ["rust", "并发编程", "锁", "Rust 实战"] },
+    { tags: ["rust", "并发编程", "锁", "Rust 实战"] },
+    { tags: ["rust", "并发编程", "原子操作"] },
+    { tags: ["rust", "所有权"] },
+    { tags: ["Go", "并发编程"] },
+    { tags: ["Go", "GC"] },
+    { tags: ["Go", "GC"] },
+    { tags: ["MySQL", "数据库"] },
+    { tags: ["MySQL", "数据库"] },
+    { tags: ["MySQL", "数据库"] },
+  ];
+  const options = tagOptions(library, ["rust", "并发编程"]);
+  const collapsed = visibleTagOptions(options, false, 4);
+  // 锁 and Rust 实战 keep 2 posts each, 原子操作 keeps 1; only the limit cuts it.
+  const tags = (list) => list.map((option) => option.tag);
+  assert.deepEqual(tags(collapsed.shown.slice(0, 2)).sort(), ["rust", "并发编程"].sort());
+  assert.deepEqual(tags(collapsed.shown.slice(2)).sort(), ["锁", "Rust 实战"].sort());
+  assert.ok(collapsed.shown.every((option) => !option.disabled));
+  assert.equal(collapsed.hidden, options.length - 4);
+
+  const roomy = visibleTagOptions(options, false, 14);
+  assert.deepEqual(tags(roomy.shown.slice(0, 4)), tags(collapsed.shown));
+  assert.equal(roomy.shown[4].tag, "原子操作");
+  assert.equal(roomy.shown.length, 5);
+  assert.ok(roomy.shown.every((option) => !option.disabled), "tags with no results wait for 「全部标签」");
+
+  const expanded = visibleTagOptions(options, true, 14);
+  assert.equal(expanded.hidden, 0);
+  assert.equal(expanded.shown.length, options.length);
+  const firstDisabled = expanded.shown.findIndex((option) => option.disabled);
+  assert.deepEqual(expanded.shown.slice(0, firstDisabled).map((option) => option.tag), roomy.shown.map((option) => option.tag));
+  assert.ok(expanded.shown.slice(firstDisabled).every((option) => option.disabled), "greyed tags come last");
+  // Greyed tags keep the by-count order.
+  const greyed = expanded.shown.slice(firstDisabled);
+  assert.deepEqual(tags(greyed.slice(0, 3)).sort(), ["Go", "MySQL", "数据库"].sort());
+  assert.ok(greyed.every((option, index) => index === 0 || greyed[index - 1].total >= option.total));
+});
+
+test("selected tags always show, even past the limit or with no results", () => {
   const many = Array.from({ length: 20 }, (_, index) => ({ tags: Array.from({ length: 20 - index }, (__, n) => `t${n}`) }));
   const options = tagOptions(many, ["t19"]);
   const collapsed = visibleTagOptions(options, false, 14);
-  assert.equal(collapsed.shown.length, 15);
-  assert.ok(collapsed.shown.some((option) => option.tag === "t19"));
-  assert.equal(collapsed.hidden, 5);
-  assert.deepEqual(visibleTagOptions(options, true, 14), { shown: options, hidden: 0 });
-  assert.equal(visibleTagOptions(tagOptions(many, []), false, 14).shown.length, 14);
+  assert.equal(collapsed.shown[0].tag, "t19");
+  assert.equal(collapsed.shown.length, 14);
+  const impossible = visibleTagOptions(tagOptions(many, ["t19", "不存在"]), false, 1);
+  assert.deepEqual(impossible.shown.map((option) => option.tag), ["t19", "不存在"]);
 });
 
 test("toggling, links and the summary line", () => {

@@ -541,7 +541,8 @@ test("/blog filters by several tags through the URL, and /tags is only an index"
   assert.match(source, /router\.push\(tagFilterHref/);
   assert.match(source, /没有同时带这些标签的文章。/);
   assert.match(source, /清除/);
-  assert.match(source, /全部标签/);
+  assert.match(source, /`展开全部 \$\{options\.length\} 个标签`/);
+  assert.match(source, /expanded \? "收起"/);
   assert.doesNotMatch(source, /topic|按分类筛选/);
 
   assert.match(tagsPage, /<ul class="sh-tagchips sh-tagindex" aria-label="全部标签">/);
@@ -552,5 +553,7 @@ test("/blog filters by several tags through the URL, and /tags is only an index"
   assert.match(shell, /\.sh-tagchips\{display:flex;flex-wrap:wrap;gap:12px 8px/);
   assert.match(shell, /\.sh-tagchip\[aria-pressed="true"\]\{background:var\(--blue\);color:var\(--paper\)/);
   assert.match(shell, /\.sh-tagchip:disabled\{/);
+  // the expand control is a text button, not a chip
+  assert.match(shell, /\.sh-tagmore\{[^}]*border:0;background:none;color:var\(--blue\)[^}]*text-decoration:underline/);
   assert.match(shell, /\.sh-tagchip::after,\.sh-tagmore::after\{[^}]*height:44px/);
 });

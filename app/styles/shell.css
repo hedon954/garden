@@ -95,9 +95,8 @@ html[data-theme="dark"] .sh-rail{color:var(--muted)}
 .sh-tagchip .x{font-size:15px;line-height:1;margin-left:-1px}
 .sh-tagchip:disabled{background:var(--tint);color:var(--muted);cursor:default;opacity:.55}
 .sh-tagchip:focus-visible,.sh-tagmore:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
-.sh-tagmore{position:relative;display:inline-flex;align-items:center;gap:6px;min-height:32px;padding:4px 12px;border:1px solid var(--rule);border-radius:999px;background:transparent;color:var(--soft);font:400 var(--fs-small)/1.4 var(--sans);cursor:pointer;white-space:nowrap}
-@media (hover:hover){.sh-tagmore:hover{border-color:var(--rule-strong);color:var(--ink)}}
-.sh-tagmore .n{font-size:var(--fs-meta);color:var(--muted);font-variant-numeric:tabular-nums}
+.sh-tagmore{position:relative;display:inline-flex;align-items:center;min-height:32px;padding:4px 2px;border:0;background:none;color:var(--blue);font:400 var(--fs-small)/1.4 var(--sans);cursor:pointer;white-space:nowrap;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:3px}
+@media (hover:hover){.sh-tagmore:hover{text-decoration-thickness:2px}}
 .sh-tagempty{margin-top:16px;padding:40px 0;border-top:1px solid var(--rule-strong)}
 .sh-tagempty p{margin:0 0 4px;color:var(--soft);font-size:var(--fs-body);line-height:1.7}
 .sh-tagempty .acts{display:flex;flex-wrap:wrap;gap:0 24px}

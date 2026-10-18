@@ -88,7 +88,7 @@ export function BlogArchive() {
               {hidden > 0 || expanded ? (
                 <li>
                   <button type="button" className="sh-tagmore" aria-expanded={expanded} onClick={() => setExpanded(!expanded)}>
-                    {expanded ? "收起" : <>全部标签<span className="n num">{hidden}</span></>}
+                    {expanded ? "收起" : `展开全部 ${options.length} 个标签`}
                   </button>
                 </li>
               ) : null}

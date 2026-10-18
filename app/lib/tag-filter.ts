@@ -68,10 +68,30 @@ export function tagOptions(posts: readonly Tagged[], selected: readonly string[]
   return options;
 }
 
-/** The top tags by count, plus every selected tag even when it falls outside the top group. */
+/**
+ * Tags shown before 「全部标签」 is expanded.
+ *
+ * - No selection: the top tags by count.
+ * - With a selection: the selected tags, then the tags that still have results,
+ *   most remaining posts first, up to the same limit. Tags that would leave
+ *   nothing come last and only when expanded.
+ */
 export function visibleTagOptions(options: readonly TagOption[], expanded: boolean, limit = DEFAULT_VISIBLE_TAGS) {
-  if (expanded) return { shown: options.slice(), hidden: 0 };
-  const shown = options.filter((option, index) => index < limit || option.selected);
+  const anySelected = options.some((option) => option.selected);
+  if (!anySelected) {
+    if (expanded) return { shown: options.slice(), hidden: 0 };
+    const shown = options.slice(0, limit);
+    return { shown, hidden: options.length - shown.length };
+  }
+  const selected = options.filter((option) => option.selected);
+  // Array.prototype.sort is stable, so equal counts keep the by-total order.
+  const open = options
+    .filter((option) => !option.selected && !option.disabled)
+    .sort((left, right) => right.next - left.next);
+  const closed = options.filter((option) => !option.selected && option.disabled);
+  const ordered = [...selected, ...open, ...closed];
+  if (expanded) return { shown: ordered, hidden: 0 };
+  const shown = [...selected, ...open.slice(0, Math.max(0, limit - selected.length))];
   return { shown, hidden: options.length - shown.length };
 }
 
