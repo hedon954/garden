@@ -419,6 +419,10 @@ html[data-theme="dark"] .markdown-body a.ext {
   object-fit: contain;
 }
 
+.markdown-body a.ext .fav-keep {
+  white-space: nowrap;
+}
+
 /* Many icons are black on transparent; give them a light backing in dark mode. */
 html[data-theme="dark"] .markdown-body img.fav {
   padding: 1px;

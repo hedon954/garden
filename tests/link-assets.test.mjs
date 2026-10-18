@@ -211,10 +211,11 @@ test("external links show the local favicon before the text", () => {
   const source = fs.readFileSync(new URL("../app/components/MarkdownArticle.tsx", import.meta.url), "utf8");
   assert.match(source, /linkAssets\?\.favicons\?\.\[linkHost\(href\)\]/u);
   assert.match(source, /if \(!src\) return null;/u);
-  assert.match(source, /<img className="fav"[^>]*\/>\s*\{"\\u2060"\}/u);
-  assert.match(source, /\{external && href \? <Favicon href=\{href\} \/> : null\}\s*\{children\}/u);
+  assert.match(source, /<span className="fav-keep">\{icon\}\{first\}<\/span>/u);
+  assert.match(source, /\{external && href \? <WithFavicon href=\{href\}>\{children\}<\/WithFavicon> : children\}/u);
   const css = fs.readFileSync(new URL("../app/styles/a2.css", import.meta.url), "utf8");
   assert.match(css, /\.markdown-body a\.ext img\.fav \{[^}]*width: 14px;[^}]*height: 14px;/u);
+  assert.match(css, /\.markdown-body a\.ext \.fav-keep \{\s*white-space: nowrap;/u);
   const bin = fs.readFileSync(new URL("../bin/garden.mjs", import.meta.url), "utf8");
   assert.match(bin, /case "build":\s*\/\/[^\n]*\n\s*if \(process\.env\.GARDEN_OFFLINE !== "1"\) runNode\("scripts\/link-assets\.mjs"\);/u);
 });

@@ -30,12 +30,29 @@ import { cardDate } from "../../ui/garden/card-refresh.mjs";
 function Favicon({ href }: { href: string }) {
   const src = linkAssets?.favicons?.[linkHost(href)];
   if (!src) return null;
-  // The word joiner keeps the icon on the same line as the first word of the link.
+  // eslint-disable-next-line @next/next/no-img-element -- a 14px local icon, no optimisation needed
+  return <img className="fav" src={src} alt="" width={14} height={14} loading="lazy" decoding="async" aria-hidden="true" />;
+}
+
+/** The first word of a link (or its first CJK character) and the rest. */
+const firstWord = (text: string) => {
+  const match = /^(\s*(?:[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Hangul}]|[^\s\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Hangul}]+))([\s\S]*)$/u.exec(text);
+  return match ? [match[1], match[2]] : [text, ""];
+};
+
+/** Icon plus the link's first word on one line, so the icon never ends a line alone. */
+function WithFavicon({ href, children }: { href: string; children: ReactNode }) {
+  const icon = <Favicon href={href} />;
+  if (!linkAssets?.favicons?.[linkHost(href)]) return <>{children}</>;
+  const nodes = Children.toArray(children);
+  const head = nodes[0];
+  if (typeof head !== "string") return <><span className="fav-keep">{icon}</span>{children}</>;
+  const [first, rest] = firstWord(head);
   return (
     <>
-      {/* eslint-disable-next-line @next/next/no-img-element -- a 14px local icon, no optimisation needed */}
-      <img className="fav" src={src} alt="" width={14} height={14} loading="lazy" decoding="async" aria-hidden="true" />
-      {"\u2060"}
+      <span className="fav-keep">{icon}{first}</span>
+      {rest}
+      {nodes.slice(1)}
     </>
   );
 }
@@ -235,8 +252,7 @@ export function MarkdownArticle({ content }: { content: string }) {
                   ? { className: "ext", target: "_blank", rel: "noopener noreferrer" }
                   : {})}
               >
-                {external && href ? <Favicon href={href} /> : null}
-                {children}
+                {external && href ? <WithFavicon href={href}>{children}</WithFavicon> : children}
               </a>
             );
           },
