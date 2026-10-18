@@ -109,3 +109,8 @@ test("column, archive-year and thought anchors land at the page's scroll padding
   assert.match(shell, /\.sh-note:target\{background:/u, "the targeted thought keeps its highlight");
   assert.doesNotMatch(read("app/globals.css").match(/\.thought-card \{[^}]*\}/u)[0], /scroll-margin/u);
 });
+
+test("the archive jumps to a #year link again after its list replaces the static fallback", () => {
+  const archive = read("app/components/BlogArchive.tsx");
+  assert.match(archive, /useEffect\(\(\) => \{[\s\S]*?window\.location\.hash[\s\S]*?scrollIntoView\(\{ block: "start" \}\)[\s\S]*?\}, \[\]\);/u);
+});
