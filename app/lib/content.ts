@@ -14,6 +14,7 @@ import { toString } from "mdast-util-to-string";
 import remarkParse from "remark-parse";
 import { unified } from "unified";
 import { visit } from "unist-util-visit";
+import { splitHeadingNumber } from "./heading-number";
 
 export { columns, posts, thoughts };
 export type { ContentEntry, MediaItem };
@@ -65,11 +66,8 @@ export const displayHeadingLevel = (depth: number, base: number) => {
   return level > 3 ? 4 : level;
 };
 
-/** Pull a leading `2.1` into the section marker and leave the heading sentence. */
-export const splitHeadingNumber = (text: string) => {
-  const match = /^(\d+(?:\.\d+)*)\.?[ \t]+([\s\S]+)$/u.exec(text.trim());
-  return match ? { no: match[1], text: match[2] } : null;
-};
+/** Kept exactly as the author wrote it; see heading-number.ts. */
+export { splitHeadingNumber };
 
 /**
  * Parses the same Markdown heading text that ReactMarkdown sends to
