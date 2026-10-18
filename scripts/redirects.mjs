@@ -61,7 +61,6 @@ export function redirectPage({ href, canonical }) {
 <head>
 <meta charset="utf-8">
 <title>页面已移动</title>
-<meta name="robots" content="noindex">
 <link rel="canonical" href="${escapeHtml(canonical)}">
 <meta http-equiv="refresh" content="0; url=${escapeHtml(href)}">
 <script>location.replace(${JSON.stringify(href).replace(/</gu, "\\u003c")} + location.hash)</script>

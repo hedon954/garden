@@ -37,7 +37,7 @@ test("malformed entries are skipped with a warning, never thrown", () => {
   assert.deepEqual(readRedirects({ redirects: ["/a"] }, () => {}), []);
 });
 
-test("each old path gets a page: meta refresh, canonical, the #anchor kept, noindex", () => {
+test("each old path gets a page: meta refresh, canonical, the #anchor kept, no noindex", () => {
   const out = builtSite();
   try {
     const log = [];
@@ -57,7 +57,7 @@ test("each old path gets a page: meta refresh, canonical, the #anchor kept, noin
     assert.match(page, /<link rel="canonical" href="https:\/\/blog\.example\.org\/blog\/go\/go-gpm\/">/u);
     assert.match(page, /<meta http-equiv="refresh" content="0; url=\/blog\/go\/go-gpm\/">/u);
     assert.match(page, /location\.replace\("\/blog\/go\/go-gpm\/" \+ location\.hash\)/u);
-    assert.match(page, /<meta name="robots" content="noindex">/u);
+    assert.doesNotMatch(page, /noindex|name="robots"/u);
     assert.ok(fs.existsSync(path.join(out, "wiki/rust/04-action/rust-action-httpie.html")));
     // A missing target and an existing page at the old path are reported, not written.
     assert.ok(log.some((line) => line.includes("/2025/11/17/go/go-gc/") && line.includes("不存在")));
