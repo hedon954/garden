@@ -66,6 +66,8 @@ html[data-mod="other"] .sh-search .kbd-other{display:inline}
 @media (hover:hover){.sh-icon:hover{background:var(--tint);color:var(--ink)}}
 .sh-menu-btn,.sh-search-m{display:none}
 html[data-theme="dark"] .i-moon,html:not([data-theme="dark"]) .i-sun{display:none}
+/* No JavaScript: the theme cannot be switched, the page follows the system (build/dark-fallback-postcss.mjs). */
+@media (scripting:none){.sh-theme{display:none}}
 .sh-menu{display:none}
 
 /* ---------- page frame ---------- */
