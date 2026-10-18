@@ -552,7 +552,8 @@ test("0.4.3: wider reading column, transparent column cards, and tag chips under
     const row = header.indexOf('class="article-tagrow"');
     assert.ok(meta >= 0 && row > meta, "tag row sits right after the meta row");
     for (const tag of tags) {
-      assert.match(header, new RegExp(`<a class="tag-chip p-category" href="/blog\\?t=${encodeURIComponent(tag)}">#(<!-- -->)?${tag}</a>`));
+      // Link, straight at the exported list address (/blog/, no 301 first).
+      assert.match(header, new RegExp(`<a href="/blog/\\?t=${encodeURIComponent(tag)}" class="tag-chip p-category">#(<!-- -->)?${tag}</a>`));
     }
     assert.doesNotMatch(header, /class="cat"|\/blog\?topic=/);
     assert.doesNotMatch(html, /class="article-tags"/);
