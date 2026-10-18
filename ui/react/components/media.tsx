@@ -3,6 +3,7 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { asNumber, asString, expandChildren, propValue, registerComponents, RenderNodes, useRuntime } from "../runtime";
 import type { Env, UiNode } from "../types";
+import { codeLanguageLabel } from "../../garden/code-language.mjs";
 
 function Image({ node, env }: { node: UiNode; env: Env }) {
   const runtime = useRuntime();
@@ -79,7 +80,7 @@ function Code({ node, env }: { node: UiNode; env: Env }) {
   const code = asString(propValue(runtime, node, "code", env)).replace(/^\n/u, "");
   const highlight = parseHighlight(propValue(runtime, node, "highlight", env));
   return (
-    <pre className="garden-ui-code" data-language={lang.toUpperCase()}>
+    <pre className="garden-ui-code" data-language={codeLanguageLabel(lang) || undefined}>
       <code>
         {code.split("\n").map((line, index) => (
           <span key={index} className="garden-ui-code-line" data-highlight={highlight.has(index + 1) ? "true" : undefined}>

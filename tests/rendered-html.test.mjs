@@ -946,3 +946,11 @@ test("a server build without trailingSlash links every page without the slash (n
   }
   assert.deepEqual(found, []);
 });
+
+test("the article code block labels its language through the shared mapping, next to the copy button", async () => {
+  const response = await render("/blog/markdown-lab");
+  assert.equal(response.status, 200);
+  const html = await response.text();
+  assert.match(html, /<div class="ux-cb"><pre class="code" data-language="PYTHON">/u);
+  assert.doesNotMatch(html, /data-language="PY"/u);
+});

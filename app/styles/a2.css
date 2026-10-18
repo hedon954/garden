@@ -1233,6 +1233,18 @@ html[data-theme="dark"] .markdown-body .markdown-alert code {
   transform: translateY(-50%);
 }
 
+/* The language label sits left of the copy button, 8px apart, centred on it. */
+.markdown-body .ux-cb > pre[data-language]::before {
+  top: 8px;
+  right: 48px;
+  line-height: 32px;
+}
+
+/* 「已复制」 widens the button over the label; the label steps aside meanwhile. */
+.markdown-body .ux-cb:has(> .ux-done) > pre[data-language]::before {
+  visibility: hidden;
+}
+
 @media (hover: hover) {
   .ux-copy {
     opacity: 0;

@@ -144,7 +144,7 @@ test("a Markdown preview is rendered at build time with the posts' syntax, and n
   assert.match(html, /<div class="table-wrap" role="region" aria-label="表格，可横向滚动" tabindex="0"><table>/u, "tables wrapped like the article's, so its styles apply");
   assert.match(html, /class="katex"/u);
   assert.match(html, /<del>删除<\/del>/u);
-  assert.match(html, /<pre class="code" data-language="JS"><code class="hljs language-js">/u);
+  assert.match(html, /<pre class="code" data-language="JAVASCRIPT"><code class="hljs language-js">/u);
   assert.doesNotMatch(html, /onerror|<script|<iframe|javascript:|script:alert/iu);
   assert.match(html, /<a href="https:\/\/example\.org" target="_blank" rel="noopener noreferrer" class="ext">站外<\/a>/u);
   assert.match(html, /<a href="\.\/guide\.pdf">同目录<\/a>/u);
@@ -419,7 +419,7 @@ test("preview code blocks look like the article's: same code type and background
     readFile(new URL("../app/components/garden/FilePreview.tsx", import.meta.url), "utf8"),
   ]);
   // In the drawer: the preview's pre.code sits in .markdown-body.prose, so the article's own rules style it ...
-  assert.match(renderFilePreview("```js\nlet a\n```"), /^<pre class="code" data-language="JS">/u);
+  assert.match(renderFilePreview("```js\nlet a\n```"), /^<pre class="code" data-language="JAVASCRIPT">/u);
   assert.match(drawer, /className="markdown-body prose gf-doc"/u);
   assert.match(articleCss, /\.markdown-body pre\.code,\n\.prose pre\.code \{[^}]*background: var\(--well\)/u);
   // ... and nothing scoped to the drawer overrides them.

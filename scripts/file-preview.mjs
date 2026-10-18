@@ -23,6 +23,7 @@ import remarkRehype from "remark-rehype";
 import { unified } from "unified";
 import { visit } from "unist-util-visit";
 import { markdownSyntaxPlugins } from "../ui/garden/markdown-syntax.mjs";
+import { codeLanguageLabel } from "../ui/garden/code-language.mjs";
 
 const DROPPED_ELEMENTS = new Set(["script", "noscript", "iframe", "frame", "frameset", "object", "embed", "applet", "base", "link", "meta", "form", "template"]);
 const URL_PROPERTIES = new Set(["href", "src", "action", "formAction", "poster", "cite", "background", "xLinkHref"]);
@@ -83,7 +84,7 @@ export function rehypePreviewShape() {
         const code = node.children.find((child) => child.type === "element" && child.tagName === "code");
         const language = [].concat(code?.properties?.className ?? []).map(String).find((name) => name.startsWith("language-"))?.slice(9);
         node.properties.className = [...[].concat(node.properties.className ?? []), "code"];
-        if (language) node.properties.dataLanguage = language.toUpperCase();
+        if (codeLanguageLabel(language)) node.properties.dataLanguage = codeLanguageLabel(language);
       }
       if (node.tagName === "a" && node.properties?.target === "_blank") {
         node.properties.className = [...[].concat(node.properties.className ?? []), "ext"];

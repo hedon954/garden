@@ -1,0 +1,50 @@
+import assert from "node:assert/strict";
+import fs from "node:fs";
+import test from "node:test";
+import { codeLanguageLabel } from "../ui/garden/code-language.mjs";
+import { renderFilePreview } from "../scripts/file-preview.mjs";
+
+test("one label per language, whatever alias the fence uses", () => {
+  assert.equal(codeLanguageLabel("py"), "PYTHON");
+  assert.equal(codeLanguageLabel("python"), "PYTHON");
+  assert.equal(codeLanguageLabel("Python"), "PYTHON");
+  assert.equal(codeLanguageLabel("js"), "JAVASCRIPT");
+  assert.equal(codeLanguageLabel("ts"), "TYPESCRIPT");
+  assert.equal(codeLanguageLabel("sh"), "SHELL");
+  assert.equal(codeLanguageLabel("yml"), "YAML");
+  assert.equal(codeLanguageLabel("golang"), "GO");
+  assert.equal(codeLanguageLabel("c++"), "C++");
+  assert.equal(codeLanguageLabel("go"), "GO");
+  assert.equal(codeLanguageLabel("sql"), "SQL");
+  assert.equal(codeLanguageLabel(""), "");
+  assert.equal(codeLanguageLabel(undefined), "");
+});
+
+test("the article, the preview drawer and the standalone page all label through the shared mapping", () => {
+  const article = fs.readFileSync(new URL("../app/components/MarkdownArticle.tsx", import.meta.url), "utf8");
+  assert.match(article, /data-language=\{codeLanguageLabel\(language\) \|\| undefined\}/u);
+  const ui = fs.readFileSync(new URL("../ui/react/components/media.tsx", import.meta.url), "utf8");
+  assert.match(ui, /data-language=\{codeLanguageLabel\(lang\) \|\| undefined\}/u);
+  // The drawer and the .preview.html page share one rendering.
+  assert.match(renderFilePreview("```py\nx = 1\n```"), /^<pre class="code" data-language="PYTHON">/u);
+  assert.match(renderFilePreview("```python\nx = 1\n```"), /^<pre class="code" data-language="PYTHON">/u);
+  for (const file of ["../app/components/MarkdownArticle.tsx", "../scripts/file-preview.mjs", "../ui/react/components/media.tsx"]) {
+    assert.doesNotMatch(fs.readFileSync(new URL(file, import.meta.url), "utf8"), /language\?*\.toUpperCase\(\)|lang\.toUpperCase\(\)/u, `${file} uppercases on its own`);
+  }
+});
+
+test("in the article the label sits left of the copy button, 8px apart, centred on it", () => {
+  const css = fs.readFileSync(new URL("../app/styles/a2.css", import.meta.url), "utf8");
+  const copy = css.match(/\.ux-cb > \.ux-copy,[^{]*\{([^}]*)\}/u)?.[1] ?? "";
+  assert.match(copy, /top: 8px;/u);
+  assert.match(copy, /right: 8px;/u);
+  const button = css.match(/\n\.ux-btn \{([^}]*)\}/u)?.[1] ?? "";
+  assert.match(button, /width: 32px;/u);
+  assert.match(button, /height: 32px;/u);
+  const label = css.match(/\.markdown-body \.ux-cb > pre\[data-language\]::before \{([^}]*)\}/u)?.[1] ?? "";
+  // 8px button inset + 32px button + 8px gap.
+  assert.match(label, /right: 48px;/u);
+  assert.match(label, /top: 8px;/u);
+  assert.match(label, /line-height: 32px;/u);
+  assert.match(css, /\.markdown-body \.ux-cb:has\(> \.ux-done\) > pre\[data-language\]::before \{\s*visibility: hidden;/u);
+});

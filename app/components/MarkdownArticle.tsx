@@ -33,6 +33,7 @@ import { LinkCardRefresh } from "./LinkCardRefresh";
 import { linkHost } from "../../scripts/link-meta-core.mjs";
 import { cardDate } from "../../ui/garden/card-refresh.mjs";
 import { siteHref } from "../lib/site-href";
+import { codeLanguageLabel } from "../../ui/garden/code-language.mjs";
 
 // Full URLs back to this site are internal links, written as root-relative paths.
 const sameSite = sameSiteMatcher(siteLinks?.address ?? "", siteLinks?.basePath ?? "");
@@ -342,7 +343,7 @@ export function MarkdownArticle({ content }: { content: string }) {
 
             return (
               <CodeCopy>
-                <pre className="code" {...preProps} data-language={language?.toUpperCase()}>
+                <pre className="code" {...preProps} data-language={codeLanguageLabel(language) || undefined}>
                   {children}
                 </pre>
               </CodeCopy>
