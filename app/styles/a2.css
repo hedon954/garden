@@ -997,8 +997,9 @@ html[data-theme="dark"] .markdown-body .markdown-alert code {
   margin-bottom: 0;
 }
 
-/* One-line cell 「X：Y」: X sits on its own line like a title, colon kept. */
-.g-cmp .g-cmp-t {
+/* One-line cell 「X：Y」: X sits on its own line like a title, colon kept.
+   .g-cmp-t holds the title only; the colon and its spaces are .g-cmp-sep. */
+.g-cmp .g-cmp-h {
   display: block;
   margin: 0 0 8px;
   font: 600 16px / 1.4 var(--sans);

@@ -111,7 +111,7 @@ function CompareLine({ line }: { line: string }) {
   if (!split) return <p><Rich text={line} /></p>;
   return (
     <p className="g-cmp-line">
-      <span className="g-cmp-t"><Rich text={split.title} />{split.separator}</span>
+      <span className="g-cmp-h"><span className="g-cmp-t"><Rich text={split.title} /></span><span className="g-cmp-sep">{split.separator}</span></span>
       <Rich text={split.text} />
     </p>
   );
