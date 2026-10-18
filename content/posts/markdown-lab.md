@@ -272,6 +272,12 @@ code: |
   <p class="garden-html-probe">静态 HTML 块</p>
 ```
 
+```garden compare
+items:
+  - "**程序化**：结构化、强状态、可以穷举的场景。"
+  - "大模型: 非结构化、需要理解语境的场景。"
+```
+
 ---
 
 最后用一个脚注说明这篇文章的角色：它既是示例，也是未来升级 Markdown 依赖时的回归测试。[^regression]

@@ -5,6 +5,7 @@ import ReactMarkdown from "react-markdown";
 import { stringify } from "yaml";
 import { markdownPlugins } from "../../lib/markdown-plugins";
 import { compileUiBlock } from "../../../ui/core/compile.mjs";
+import { splitCompareLine } from "../../../ui/garden/compare-line.mjs";
 import { UiErrorCard, UiFigure, type Diagnostic, type UiPayload } from "../../../ui/react";
 import { FullscreenFrame, SandboxFrame } from "./chrome";
 
@@ -105,11 +106,27 @@ export function GardenStat({ props }: { props: Record<string, unknown> }) {
   );
 }
 
+function CompareLine({ line }: { line: string }) {
+  const split = splitCompareLine(line);
+  if (!split) return <p><Rich text={line} /></p>;
+  return (
+    <p className="g-cmp-line">
+      <span className="g-cmp-t"><Rich text={split.title} />{split.separator}</span>
+      <Rich text={split.text} />
+    </p>
+  );
+}
+
 export function GardenCompare({ props }: { props: Record<string, unknown> }) {
+  const items = Array.isArray(props.items) ? props.items as unknown[] : [];
   return (
     <div className="g-compare" role="group">
-      {itemsOf(props).map((item, index) => {
-        const { title, text, ...rest } = item;
+      {items.map((entry, index) => {
+        if (typeof entry === "string" || typeof entry === "number") {
+          return <section className="g-cmp" key={index}><CompareLine line={String(entry)} /></section>;
+        }
+        if (!entry || typeof entry !== "object") return null;
+        const { title, text, ...rest } = entry as Record<string, unknown>;
         const texts = text == null ? [] : Array.isArray(text) ? text : [text];
         return (
           <section className="g-cmp" key={index}>

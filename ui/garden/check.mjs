@@ -2,10 +2,13 @@ import { CATALOG, suggestName } from "./catalog.mjs";
 import { isProseSteps, isTrivialInteractive } from "./enhance.mjs";
 import { blanksBetween, classifyFence, isFullCodeFence, scanFences } from "./parse.mjs";
 import { splitTitle } from "./title.mjs";
+import { splitCompareLine } from "./compare-line.mjs";
 
 const COMPARE_LIMIT = 60;
 
 function cellText(item) {
+  // A one-line cell 「X：Y」: X is the title, only Y counts toward the length.
+  if (typeof item === "string") return splitCompareLine(item)?.text ?? item;
   if (!item || typeof item !== "object") return "";
   const parts = [];
   if (typeof item.text === "string") parts.push(item.text);
