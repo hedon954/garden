@@ -458,14 +458,15 @@ test("0.4.3: wider reading column, transparent column cards, and tag chips under
   // figures and tables break out from the text column, not the article grid
   assert.match(measure, /querySelector\("\.markdown-body"\)/);
 
-  // I. transparent column cards
+  // I. column cards: transparent, with a border
   const card = shell.match(/\.sh-col\{[^}]*\}/)?.[0] ?? "";
   assert.match(card, /background:transparent/);
-  assert.match(card, /border:0/);
-  assert.doesNotMatch(card, /var\(--card\)|1px solid/);
-  assert.doesNotMatch(shell, /\.sh-col:hover\{border-color/);
-  assert.match(shell, /\.sh-col \.cover\{[^}]*border-radius:var\(--r\);margin:0/);
-  assert.match(shell, /\.sh-col \.body\{padding:16px 0 0\}/);
+  assert.match(card, /border:1px solid var\(--rule\)/);
+  assert.match(card, /border-radius:var\(--r\)/);
+  assert.doesNotMatch(card, /var\(--card\)/);
+  assert.match(shell, /\.sh-col:hover\{border-color:var\(--blue-line\)\}/);
+  assert.match(shell, /\.sh-col \.cover\{[^}]*margin:0/);
+  assert.match(shell, /\.sh-col \.body\{padding:16px 18px 18px\}/);
   assert.match(shell, /\.sh-col:hover h3 a\{color:var\(--blue\)\}/);
 
   // J. tag chips
