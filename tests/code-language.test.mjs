@@ -47,4 +47,7 @@ test("in the article the label sits left of the copy button, 8px apart, centred 
   assert.match(label, /top: 8px;/u);
   assert.match(label, /line-height: 32px;/u);
   assert.match(css, /\.markdown-body \.ux-cb:has\(> \.ux-done\) > pre\[data-language\]::before \{\s*visibility: hidden;/u);
+  // Below 640px the article shows only the copy button; nothing else about the block changes.
+  const narrow = css.match(/@media \(max-width: 639\.98px\) \{\s*\.markdown-body \.ux-cb > pre\[data-language\]::before \{([^}]*)\}\s*\}/u)?.[1] ?? "";
+  assert.equal(narrow.trim(), "display: none;");
 });

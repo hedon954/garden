@@ -1267,6 +1267,13 @@ html[data-theme="dark"] .markdown-body .markdown-alert code {
   visibility: hidden;
 }
 
+/* Narrow screens: only the copy button; the code block layout stays as it is. */
+@media (max-width: 639.98px) {
+  .markdown-body .ux-cb > pre[data-language]::before {
+    display: none;
+  }
+}
+
 @media (hover: hover) {
   .ux-copy {
     opacity: 0;
