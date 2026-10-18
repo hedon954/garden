@@ -311,7 +311,7 @@ export function SiteHeader() {
 
   return (
     <>
-      <header className="sh-header">
+      <header className="sh-header" id="site-header">
         <div className="sh-bar">
           <Link href="/" className="sh-word">
             {/* Build-time SVG from brand.logo, cleaned of scripts and handlers. */}
@@ -352,6 +352,14 @@ export function SiteHeader() {
             <button className="sh-icon sh-menu-btn" type="button" aria-expanded={menuOpen} aria-controls="sh-menu" aria-label={menuOpen ? "关闭菜单" : "打开菜单"} onClick={() => setMenuOpen((open) => !open)}>
               {menuOpen ? <X size={18} /> : <span aria-hidden="true">☰</span>}
             </button>
+            {/* Without JavaScript the button above cannot open anything: these two links take its place
+                and open or close the menu through :target, like the TOC drawer (shell.css). */}
+            <a className="sh-icon sh-menu-nojs" id="sh-menu-open" href="#sh-menu" aria-label="打开菜单">
+              <span aria-hidden="true">☰</span>
+            </a>
+            <a className="sh-icon sh-menu-nojs-close" href="#site-header" aria-label="关闭菜单">
+              <X size={18} />
+            </a>
           </div>
         </div>
         <nav className={`sh-menu${menuOpen ? " is-open" : ""}`} id="sh-menu" aria-label="站点导航（移动端）">
