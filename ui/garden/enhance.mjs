@@ -75,15 +75,28 @@ export function tableBreakout({
 }
 
 /**
- * The width an article image displays at: its width attribute when it has
- * one, otherwise half its pixels (screenshots are usually 2x). 0 while the
- * image has not loaded. Never more than the image itself, so nothing is
- * enlarged; the column still caps it through max-width.
+ * The width used to decide whether an image widens past the column: its width
+ * attribute when it has one, otherwise half its pixels (screenshots are
+ * usually 2x). 0 while the image has not loaded. Never more than the image
+ * itself, so nothing is enlarged.
  */
 export function imageDisplayWidth({ naturalWidth = 0, attrWidth = 0, density = 2 }) {
   if (attrWidth > 0) return naturalWidth > 0 ? Math.min(attrWidth, naturalWidth) : attrWidth;
   if (!(naturalWidth > 0)) return 0;
   return Math.round(naturalWidth / density);
+}
+
+/**
+ * The inline width an article image gets, or 0 to leave it to CSS
+ * (width:auto; max-width:100%), which shows it at its natural size and caps
+ * it at the column, never stretched and never halved. A widened image takes
+ * its display width; an image in the column only follows its width attribute,
+ * never past its own pixels.
+ */
+export function figureImageWidth({ naturalWidth = 0, attrWidth = 0, widened = false, density = 2 }) {
+  if (widened) return imageDisplayWidth({ naturalWidth, attrWidth, density });
+  if (attrWidth > 0) return naturalWidth > 0 ? Math.min(attrWidth, naturalWidth) : attrWidth;
+  return 0;
 }
 
 /**

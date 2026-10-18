@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 import { checkGardenMarkdown } from "../ui/garden/check.mjs";
-import { diffToNewCode, figureBreakout, imageDisplayWidth, protectMathIdentifiers, tableBreakout, tocShift } from "../ui/garden/enhance.mjs";
+import { diffToNewCode, figureBreakout, figureImageWidth, imageDisplayWidth, protectMathIdentifiers, tableBreakout, tocShift } from "../ui/garden/enhance.mjs";
 import { parseGardenBlock, scanFences } from "../ui/garden/parse.mjs";
 import { gardenBlocksMarkdown, textReplacementPlist, vscodeSnippets } from "../ui/garden/snippets.mjs";
 import { splitTitle, titleLineScale, titleWidthUnits } from "../ui/garden/title.mjs";
@@ -150,19 +150,39 @@ test("tableBreakout never goes past the cap", () => {
 const figureAt1440 = { viewport: 1440, articleLeft: 350, articleRight: 1090, figureClient: 740, imageClient: 714 };
 
 test("imageDisplayWidth: half the pixels, or the width attribute, never enlarged", () => {
-  // a small 2x screenshot: 600 pixels shows at 300, well inside a 714px column
-  assert.equal(imageDisplayWidth({ naturalWidth: 600 }), 300);
   assert.equal(imageDisplayWidth({ naturalWidth: 1448 }), 724);
   assert.equal(imageDisplayWidth({ naturalWidth: 1672 }), 836);
-  // the width attribute wins, but never past the image's own pixels
   assert.equal(imageDisplayWidth({ naturalWidth: 2560, attrWidth: 800 }), 800);
   assert.equal(imageDisplayWidth({ naturalWidth: 400, attrWidth: 900 }), 400);
   assert.equal(imageDisplayWidth({ naturalWidth: 0, attrWidth: 320 }), 320);
-  // not loaded yet
   assert.equal(imageDisplayWidth({ naturalWidth: 0 }), 0);
-  // a small image is never stretched to the column and never steps out of it
-  assert.ok(imageDisplayWidth({ naturalWidth: 600 }) < figureAt1440.imageClient);
-  assert.deepEqual(figureBreakout({ ...figureAt1440, imageClient: 300, naturalWidth: 600 }), { left: 0, right: 0 });
+});
+
+// What the browser shows: the inline width when there is one, otherwise the
+// natural size (width:auto), and max-width:100% caps either at the space in the card.
+function shownWidth({ naturalWidth, attrWidth = 0, figure = figureAt1440 }) {
+  const breakout = figureBreakout({ ...figure, imageClient: Math.min(naturalWidth, figure.imageClient), naturalWidth, attrWidth });
+  const widened = breakout.left > 0;
+  const room = figure.imageClient + breakout.left + breakout.right;
+  const inline = figureImageWidth({ naturalWidth, attrWidth, widened });
+  return { widened, inline, shown: Math.min(inline || naturalWidth, room) };
+}
+
+test("article images: natural size in the column, display size when widened", () => {
+  // a 600px image stays 600 inside the 740 column: not halved, not stretched
+  assert.deepEqual(shownWidth({ naturalWidth: 600 }), { widened: false, inline: 0, shown: 600 });
+  // a 776px diagram fills the column (714 inside the card), not halved to 388
+  assert.deepEqual(shownWidth({ naturalWidth: 776 }), { widened: false, inline: 0, shown: figureAt1440.imageClient });
+  // an ordinary 1448px 2x screenshot (724 display) stays in the column and fills it
+  assert.deepEqual(shownWidth({ naturalWidth: 1448 }), { widened: false, inline: 0, shown: figureAt1440.imageClient });
+  // a 1672px 2x screenshot widens and shows at 836
+  assert.deepEqual(shownWidth({ naturalWidth: 1672 }), { widened: true, inline: 836, shown: 836 });
+  // the width attribute is respected, never past the image's own pixels
+  assert.deepEqual(shownWidth({ naturalWidth: 1200, attrWidth: 480 }), { widened: false, inline: 480, shown: 480 });
+  assert.deepEqual(shownWidth({ naturalWidth: 300, attrWidth: 480 }), { widened: false, inline: 300, shown: 300 });
+  assert.deepEqual(shownWidth({ naturalWidth: 2560, attrWidth: 800 }), { widened: true, inline: 800, shown: 800 });
+  // nothing loaded yet: leave it to CSS
+  assert.equal(figureImageWidth({ naturalWidth: 0 }), 0);
 });
 
 test("figureBreakout: a 2x screenshot narrower than the column does not widen", () => {

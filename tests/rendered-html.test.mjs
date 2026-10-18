@@ -298,13 +298,14 @@ test("the example post keeps a wide local image, and tags create a release", asy
   assert.match(image, /width="2560" height="840" viewBox="0 0 1280 420"/);
   assert.match(measure, /querySelectorAll<HTMLElement>\("\.fig"\)/);
   assert.match(measure, /figureBreakout\(\{/);
-  // images show at their display size; small ones are not stretched to the column
+  // images show at their natural size, capped at the column; only widened ones get an inline width
   const figImg = a2.match(/\.markdown-body \.fig-card img \{[^}]*\}/)?.[0] ?? "";
   assert.match(figImg, /width: auto;/);
   assert.match(figImg, /max-width: 100%;/);
   assert.doesNotMatch(figImg, /(^|[\s;{])width: 100%/);
-  assert.match(measure, /imageDisplayWidth\(\{ naturalWidth: image\.naturalWidth, attrWidth \}\)/);
-  assert.match(measure, /image\.style\.width = `\$\{display\}px`/);
+  assert.match(measure, /image\.style\.removeProperty\("width"\)/);
+  assert.match(measure, /figureImageWidth\(\{ naturalWidth: image\.naturalWidth, attrWidth, widened: breakout\.left > 0 \}\)/);
+  assert.doesNotMatch(measure, /imageDisplayWidth/);
   assert.match(measure, /naturalWidth/);
   assert.match(publish, /if: github\.event_name == 'push' && startsWith\(github\.ref, 'refs\/tags\/v'\)/);
   assert.match(publish, /gh release create "\$tag" --generate-notes/);
@@ -316,6 +317,10 @@ test("the example post keeps a wide local image, and tags create a release", asy
   assert.match(html, /class="fig"/);
   assert.match(html, /朝北的窗台，从左到右是罗勒、薄荷和一只空盆。/);
   assert.doesNotMatch(html, /oss-|aliyuncs|myqcloud/i);
+  // the markdown syntax tree never leaks onto the image as an attribute
+  const images = html.match(/<img\b[^>]*>/g) ?? [];
+  assert.ok(images.some((tag) => tag.includes("sill.svg")));
+  for (const tag of images) assert.doesNotMatch(tag, /\snode=/);
 });
 
 test("columns index shows the configured subtitle", async () => {

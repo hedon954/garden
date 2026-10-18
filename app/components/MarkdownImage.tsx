@@ -2,9 +2,11 @@
 
 import { useEffect, useState, type ComponentPropsWithoutRef } from "react";
 
-type MarkdownImageProps = ComponentPropsWithoutRef<"img">;
+// react-markdown also hands over its syntax-tree `node`; it must not reach the DOM.
+type MarkdownImageProps = ComponentPropsWithoutRef<"img"> & { node?: unknown };
 
-export function MarkdownImage({ alt = "", src, ...props }: MarkdownImageProps) {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function MarkdownImage({ alt = "", src, node, ...props }: MarkdownImageProps) {
   const [open, setOpen] = useState(false);
   const description = alt || "查看原图";
 
