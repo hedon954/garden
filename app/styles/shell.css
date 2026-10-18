@@ -68,7 +68,7 @@ html[data-mod="other"] .sh-search .kbd-other{display:inline}
 .i-sun,html[data-theme="dark"] .i-moon{display:none}
 html[data-theme="dark"] .i-sun{display:inline}
 /* No JavaScript: the theme cannot be switched, the page follows the system (build/dark-fallback-postcss.mjs). */
-@media (scripting:none){.sh-theme{display:none}}
+@media (scripting:none){.sh-theme,.sh-menu-theme{display:none}}
 .sh-menu{display:none}
 
 /* ---------- page frame ---------- */
@@ -272,8 +272,13 @@ html[data-theme="dark"] .sh-pal-scrim{background:rgba(0,0,0,.55)}
   .sh-menu.is-open{opacity:1;transform:none;visibility:visible;transition:opacity .18s ease,transform .18s var(--ease)}
   .sh-menu a{display:flex;align-items:center;min-height:52px;font-size:var(--fs-lead);color:var(--text);text-decoration:none;border-bottom:1px solid var(--rule)}
   .sh-menu a[aria-current="page"],.sh-menu a[aria-current="true"]{color:var(--blue);font-weight:600}
-  .sh-menu .theme-row{display:flex;align-items:center;justify-content:space-between;min-height:56px;font-size:15px;color:var(--soft)}
-  .sh-menu .theme-row button{font:400 15px/1 var(--sans);color:var(--ink);background:var(--card);border:1px solid var(--rule);border-radius:var(--r);padding:0 14px;min-height:40px;cursor:pointer}
+  /* Theme switch at the bottom of the menu: the same toggle as the desktop button. */
+  .sh-menu a:last-of-type{border-bottom:0}
+  .sh-menu-theme{display:flex;align-items:center;justify-content:space-between;width:100%;min-height:44px;margin-top:8px;padding:0;border:0;border-top:1px solid var(--rule);background:none;font:400 var(--fs-body)/1 var(--sans);color:var(--text);cursor:pointer;text-align:left}
+  .sh-switch{position:relative;flex:none;width:40px;height:24px;border-radius:12px;background:var(--rule-strong);transition:background-color .18s ease}
+  .sh-switch::after{content:"";position:absolute;top:2px;left:2px;width:20px;height:20px;border-radius:50%;background:var(--card);box-shadow:0 1px 2px rgb(20 20 19 / 18%);transition:transform .18s var(--ease)}
+  .sh-menu-theme[aria-checked="true"] .sh-switch{background:var(--ink)}
+  .sh-menu-theme[aria-checked="true"] .sh-switch::after{transform:translateX(16px);background:var(--paper)}
   .sh-theme{display:none}
   .sh-main{padding:0 20px}
   .sh-head{padding:40px 0 24px}

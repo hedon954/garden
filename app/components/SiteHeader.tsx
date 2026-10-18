@@ -187,14 +187,22 @@ export function SiteHeader() {
     });
   }, []);
 
+  // One theme for the desktop button and the mobile menu switch. Until the
+  // reader picks one, it follows the system, also when the system changes.
   useEffect(() => {
-    const stored = window.localStorage.getItem("theme");
-    const useDark =
-      stored === "dark" ||
-      (!stored && window.matchMedia("(prefers-color-scheme: dark)").matches);
-    document.documentElement.dataset.theme = useDark ? "dark" : "light";
-    const frame = window.requestAnimationFrame(() => setDark(useDark));
-    return () => window.cancelAnimationFrame(frame);
+    const system = window.matchMedia("(prefers-color-scheme: dark)");
+    const apply = () => {
+      const stored = window.localStorage.getItem("theme");
+      const useDark = stored === "dark" || (!stored && system.matches);
+      document.documentElement.dataset.theme = useDark ? "dark" : "light";
+      setDark(useDark);
+    };
+    const frame = window.requestAnimationFrame(apply);
+    system.addEventListener("change", apply);
+    return () => {
+      window.cancelAnimationFrame(frame);
+      system.removeEventListener("change", apply);
+    };
   }, []);
 
   useEffect(() => {
@@ -351,6 +359,10 @@ export function SiteHeader() {
               {item.label}
             </Link>
           ))}
+          <button className="sh-menu-theme" type="button" role="switch" aria-checked={dark} onClick={toggleTheme}>
+            <span>深色模式</span>
+            <span className="sh-switch" aria-hidden="true" />
+          </button>
         </nav>
       </header>
 
