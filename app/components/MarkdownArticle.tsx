@@ -21,6 +21,8 @@ import { MarkdownImage } from "./MarkdownImage";
 import { CodeCopy } from "./garden/chrome";
 import { CodeDiff } from "./garden/chrome";
 import { GardenBlock } from "./garden/GardenBlock";
+import { GardenFile } from "./garden/GardenFile";
+import { readGardenPayload } from "../lib/remark-garden.mjs";
 import { imageSizes, linkAssets } from "@garden/generated-content";
 import { imageDimensions, lookupImageSize } from "../../ui/garden/image-dims.mjs";
 import { siteConfig, siteLinks } from "@garden/site-config";
@@ -201,7 +203,11 @@ const headingText = (children: ReactNode) => {
   return parts.join("");
 };
 
-export function MarkdownArticle({ content }: { content: string }) {
+/**
+ * A post body. `idPrefix` keeps heading ids of an embedded document (a
+ * Markdown file preview) apart from the post's own; `nested` marks that case.
+ */
+export function MarkdownArticle({ content, idPrefix = "", nested = false }: { content: string; idPrefix?: string; nested?: boolean }) {
   // Optional layer 2: a Worker that refreshes card text. Without it, cards stay as built.
   const cardWorker = content.includes("{card}") ? siteConfig.linkPreview?.worker : undefined;
   const numbers = { h2: 0, h3: 0 };
@@ -222,6 +228,13 @@ export function MarkdownArticle({ content }: { content: string }) {
     return { no: numbers.h2 ? `${numbers.h2}.${numbers.h3}` : String(numbers.h3), children };
   };
   const heading = (source: 2 | 3 | 4, children: ReactNode, props: HTMLAttributes<HTMLHeadingElement> & { node?: unknown }) => {
+    if (nested) {
+      // A previewed document keeps its own heading levels and numbers; the post's section numbers are not added.
+      const Tag = source === 2 ? "h2" : source === 3 ? "h3" : "h4";
+      const domProps = { ...props };
+      Reflect.deleteProperty(domProps, "node");
+      return <Tag {...domProps}>{children}</Tag>;
+    }
     const level = displayHeadingLevel(source, headingBase);
     const Tag = level === 2 ? "h2" : level === 3 ? "h3" : "h4";
     const domProps = { ...props };
@@ -230,6 +243,7 @@ export function MarkdownArticle({ content }: { content: string }) {
     const sectioned = section(level as 2 | 3, children);
     return <Tag {...domProps}>{sectioned.no ? <span className="sec-no">{sectioned.no}</span> : null}{sectioned.children}</Tag>;
   };
+  const fileBlocks = { count: 0 };
   const gardenComponents = {
     "garden-linkcard": (props: Record<string, string | undefined>) => (
       <LinkCard
@@ -238,9 +252,22 @@ export function MarkdownArticle({ content }: { content: string }) {
         standalone={(props.dataStandalone ?? props["data-standalone"]) === "true"}
       />
     ),
-    "garden-block": (props: { dataPayload?: string; "data-payload"?: string }) => (
-      <GardenBlock dataPayload={props.dataPayload ?? props["data-payload"]} />
-    ),
+    "garden-block": (props: { dataPayload?: string; "data-payload"?: string }) => {
+      const payload = props.dataPayload ?? props["data-payload"];
+      const block = readGardenPayload(payload);
+      if (block?.name === "file" && !block.error) {
+        fileBlocks.count += 1;
+        return (
+          <GardenFile
+            props={(block.props ?? {}) as Record<string, unknown>}
+            blockKey={`${idPrefix}gf${fileBlocks.count}`}
+            // A preview inside a preview only gets download links.
+            renderMarkdown={nested ? undefined : (markdown, prefix) => <MarkdownArticle content={markdown} idPrefix={prefix} nested />}
+          />
+        );
+      }
+      return <GardenBlock dataPayload={payload} />;
+    },
     "garden-codediff": (props: {
       children?: ReactNode;
       dataDiff?: string;
@@ -256,13 +283,13 @@ export function MarkdownArticle({ content }: { content: string }) {
     ),
   };
   return (
-    <div className="markdown-body prose">
+    <div className={nested ? "markdown-body prose gf-doc" : "markdown-body prose"}>
       <ReactMarkdown
         remarkPlugins={[...markdownPlugins, [remarkLinkCard, { sameSite }], [remarkA2, { imageSize: (src: string) => lookupImageSize(imageSizes, src) }]]}
         rehypePlugins={[
           rehypeRaw,
           rehypeKatex,
-          rehypeSlug,
+          [rehypeSlug, { prefix: idPrefix }],
           [rehypeAutolinkHeadings, { behavior: "wrap", properties: { className: ["h-anchor"] } }],
           rehypeHighlight,
         ]}

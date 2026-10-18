@@ -1567,3 +1567,74 @@ html[data-theme="dark"] .g-quiz-out.no { color: #f29aab; }
 @media (max-width: 640px) {
   .g-range { grid-template-columns: 84px minmax(0, 1fr) 54px; gap: 8px; }
 }
+
+/* ---- garden file: a download card, a group of rows, a preview drawer ---- */
+.gf { margin: 24px 0; border: 1px solid var(--rule); border-radius: 12px; background: var(--card); font-family: var(--sans); }
+.gf-title { padding: 14px 16px 0; font-size: 14px; font-weight: 600; line-height: 1.4; color: var(--muted); }
+.gf-row { display: flex; align-items: center; gap: 14px; padding: 14px 16px; }
+.gf-row + .gf-row { border-top: 1px solid var(--rule); }
+.gf-ico { display: grid; place-items: center; flex: none; width: 36px; height: 36px; border-radius: 8px; background: var(--chip); color: var(--soft); }
+.gf-i { flex: none; width: 18px; height: 18px; }
+.gf-main { flex: 1; min-width: 0; }
+.gf-name { overflow: hidden; font-size: 15px; font-weight: 600; line-height: 1.45; color: var(--ink); text-overflow: ellipsis; white-space: nowrap; }
+.gf-desc { margin-top: 2px; font-size: 14px; line-height: 1.55; color: var(--soft); }
+.gf-meta { margin-top: 2px; font-size: 13px; line-height: 1.4; color: var(--muted); font-variant-numeric: tabular-nums; }
+.gf-act { display: flex; flex: none; gap: 6px; }
+.gf-btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 34px; padding: 0 12px; border: 0; border-radius: 999px; background: transparent; color: var(--soft); font: 500 14px/1 var(--sans); white-space: nowrap; cursor: pointer; transition: background-color .15s ease, color .15s ease; }
+.markdown-body a.gf-btn, a.gf-btn { color: var(--soft); text-decoration: none; }
+.gf-btn:hover, .markdown-body a.gf-btn:hover { background: var(--tint); color: var(--ink); text-decoration: none; }
+.gf-btn:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+.gf-btn.icon { width: 34px; padding: 0; }
+.gf-btn.pri, .markdown-body a.gf-btn.pri { background: var(--ink); color: var(--paper); }
+.gf-btn.pri:hover, .markdown-body a.gf-btn.pri:hover { background: var(--ink-soft); color: var(--paper); }
+
+/* The drawer: right side on wide screens, the whole screen on phones. */
+.gf-layer { position: fixed; inset: 0; z-index: 95; }
+.gf-scrim { position: absolute; inset: 0; background: rgb(20 20 19 / 22%); animation: gf-fade .16s ease-out; }
+html[data-theme="dark"] .gf-scrim { background: rgb(0 0 0 / 45%); }
+.gf-drawer { position: absolute; top: 0; right: 0; bottom: 0; display: flex; flex-direction: column; width: min(600px, 46vw); border-left: 1px solid var(--rule); background: var(--paper); box-shadow: -12px 0 32px rgb(0 0 0 / 8%); font-family: var(--sans); animation: gf-slide .2s ease-out; }
+.gf-dh { display: flex; align-items: center; gap: 12px; min-height: 64px; padding: 12px 12px 12px 20px; border-bottom: 1px solid var(--rule); }
+.gf-dh .gf-act { gap: 2px; }
+.gf-db { flex: 1; min-height: 0; overflow: auto; padding: 28px 32px 40px; font-size: 15px; line-height: 1.75; overscroll-behavior: contain; }
+.gf-db-frame { padding: 0; overflow: hidden; background: var(--card); }
+.gf-frame { display: block; width: 100%; height: 100%; border: 0; background: #fff; }
+.gf-drawer[data-preview="pdf"] .gf-frame { background: var(--paper-deep); }
+.gf-db .gf-doc { max-width: none; margin: 0; font-size: 15px; line-height: 1.75; }
+.gf-db .gf-doc > :first-child { margin-top: 0; }
+@keyframes gf-fade { from { opacity: 0; } }
+@keyframes gf-slide { from { transform: translateX(24px); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .gf-scrim, .gf-drawer { animation: none; }
+  .gf-btn { transition: none; }
+}
+
+@media (max-width: 600px) {
+  .gf-row { flex-wrap: wrap; align-items: flex-start; gap: 12px; padding: 14px; }
+  .gf-main { flex: 1 1 calc(100% - 50px); }
+  .gf-act { width: 100%; padding-left: 48px; }
+  .gf-btn { height: 44px; padding: 0 14px; }
+  .gf-btn.icon { width: 44px; padding: 0; }
+  .gf.group .gf-row { flex-wrap: nowrap; align-items: center; }
+  .gf.group .gf-main { flex: 1 1 auto; }
+  .gf.group .gf-act { width: auto; gap: 0; padding: 0; }
+  .gf.group .gf-btn { width: 44px; padding: 0; }
+  .gf.group .gf-lb { display: none; }
+  .gf-drawer { width: 100%; border: 0; box-shadow: none; }
+  .gf-dh { min-height: 56px; padding: 6px 6px 6px 16px; }
+  .gf-dh .gf-act { width: auto; padding: 0; gap: 0; }
+  .gf-db { padding: 20px 20px 40px; }
+  .gf-db-frame { padding: 0; }
+}
+
+/* Without scripts there is no drawer: the 预览 button goes, download stays. */
+@media (scripting: none) {
+  .gf-preview { display: none; }
+}
+/* A previewed Markdown file reads as a document: its own title, a smaller scale than the post. */
+.gf-db .gf-doc h1 { margin: 0 0 12px; font-size: 22px; font-weight: 600; line-height: 1.4; color: var(--ink); }
+.gf-db .gf-doc h2 { margin: 28px 0 10px; font-size: 19px; line-height: 1.4; }
+.gf-db .gf-doc h3 { margin: 24px 0 8px; font-size: 17px; line-height: 1.4; }
+.gf-db .gf-doc h4 { margin: 20px 0 6px; font-size: 15px; line-height: 1.5; }
+.gf-db .gf-doc p, .gf-db .gf-doc li { font-size: 15px; line-height: 1.75; }
+.gf-db .gf-doc p { margin: 0 0 14px; }
+.gf-db .gf-doc ul, .gf-db .gf-doc ol { margin: 0 0 14px; }
