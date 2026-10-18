@@ -70,6 +70,30 @@ test("maps a legacy callout marker onto the demo alert kind", () => {
   assert.doesNotMatch(html, /garden-callout-marker/);
 });
 
+test("a legacy callout's bold line is the title only when body text follows", () => {
+  const marker = "> <span class=\"garden-callout-marker garden-callout-marker--info\" aria-hidden=\"true\"></span>";
+  // Title + body.
+  const titled = render([marker, ">", "> **一句话核心**", ">", "> ReAct 是更好的故事。"].join("\n"));
+  assert.match(titled, /markdown-alert-title"><svg[^>]*>.*?<\/svg>一句话核心<\/p>\s*<p>ReAct 是更好的故事。<\/p>/u);
+  // Bold only: stays the body under the default label.
+  const boldOnly = render([marker, ">", "> **🙋🏻‍♀️ Genuine abstractions are discovered, not invented.**", ">", ">"].join("\n"));
+  assert.match(boldOnly, /class="markdown-alert markdown-alert-note"/u);
+  assert.match(boldOnly, /markdown-alert-title"><svg[^>]*>.*?<\/svg>提醒<\/p>\s*<p><strong>🙋🏻‍♀️ Genuine abstractions are discovered, not invented\.<\/strong><\/p>/u);
+  assert.doesNotMatch(boldOnly, /markdown-alert-title"><svg[^>]*>.*?<\/svg>🙋/u);
+  // No bold: default label, body unchanged.
+  const plain = render([marker.replace("--info", "--success"), ">", "> 拉链表是一种数据结构。"].join("\n"));
+  assert.match(plain, /class="markdown-alert markdown-alert-tip"/u);
+  assert.match(plain, /markdown-alert-title"><svg[^>]*>.*?<\/svg>建议<\/p>\s*<p>拉链表是一种数据结构。<\/p>/u);
+  assert.doesNotMatch(titled + boldOnly + plain, /garden-callout-marker/u);
+});
+
+test("a new-syntax callout follows the same bold-line rule", () => {
+  const titled = render(["> [!NOTE]", ">", "> **一言以蔽之**", ">", "> 存不下、读太慢、难管理。"].join("\n"));
+  assert.match(titled, /markdown-alert-title"><svg[^>]*>.*?<\/svg>一言以蔽之<\/p>\s*<p>存不下、读太慢、难管理。<\/p>/u);
+  const boldOnly = render(["> [!IMPORTANT]", ">", "> **一般原则：优先使用同步通信。**"].join("\n"));
+  assert.match(boldOnly, /markdown-alert-title"><svg[^>]*>.*?<\/svg>重要<\/p>\s*<p><strong>一般原则：优先使用同步通信。<\/strong><\/p>/u);
+});
+
 test("keeps a compact alert body that starts on the next line of the same paragraph", () => {
   const html = render([
     "> [!NOTE]",

@@ -92,6 +92,19 @@ test("a one-line compare cell keeps its colon", () => {
   const css = readFileSync(new URL("../app/styles/a2.css", import.meta.url), "utf8");
   assert.match(css, /\.g-compare > \.g-cmp \{\s*margin: 0;\s*\}/u);
   assert.match(css, /\.g-cmp > :last-child \{\s*margin-bottom: 0;\s*\}/u);
+  // Spaces around the colon belong to the separator, not to the title or text.
+  for (const [line, title, separator, text] of [
+    ["`intra-system communication`: 应用程序内部的交互。", "`intra-system communication`", ": ", "应用程序内部的交互。"],
+    ["甲 ： 乙", "甲", " ： ", "乙"],
+    ["Workflow  :  步骤", "Workflow", "  :  ", "步骤"],
+    ["标题：正文", "标题", "：", "正文"],
+  ]) {
+    const split = splitCompareLine(line);
+    assert.deepEqual(split, { title, separator, text }, line);
+    assert.equal(split.title + split.separator + split.text, line);
+    assert.doesNotMatch(split.title, /\s$/u);
+    assert.doesNotMatch(split.text, /^\s/u);
+  }
   // Brackets that are not a link do not hide a colon.
   assert.equal(splitCompareLine("[注]：说明").title, "[注]");
   // Length checks count only the text after the colon.

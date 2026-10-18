@@ -1,7 +1,7 @@
 // A compare cell written as one line, 「X：Y」 or "X: Y". X is the title and Y
 // the text. The split is at the first full-width colon, or a colon followed by
 // a space, that is not inside inline code, link text or a link URL. The
-// separator and any space after it are returned as written, so
+// separator, with the spaces on either side of it, is returned as written, so
 // title + separator + text always equals the original line.
 
 // End of a backtick code span starting at `start`, or -1 when it never closes.
@@ -72,11 +72,15 @@ export function splitCompareLine(line) {
       if (end > 0 && /^<[a-z][a-z0-9+.-]*:[^\s<>]*>$/iu.test(line.slice(at, end + 1))) { at = end; continue; }
     }
     const isSeparator = char === "：" || (char === ":" && line[at + 1] === " ");
-    if (!isSeparator || at === 0) continue;
+    if (!isSeparator) continue;
+    // Spaces on either side of the colon belong to the separator.
+    let start = at;
+    while (start > 0 && /\s/u.test(line[start - 1])) start -= 1;
+    if (start === 0) continue;
     let end = at + 1;
     while (end < line.length && /\s/u.test(line[end])) end += 1;
     if (end >= line.length) return null;
-    return { title: line.slice(0, at), separator: line.slice(at, end), text: line.slice(end) };
+    return { title: line.slice(0, start), separator: line.slice(start, end), text: line.slice(end) };
   }
   return null;
 }

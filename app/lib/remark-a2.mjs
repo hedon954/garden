@@ -145,10 +145,13 @@ function rewriteAlert(node) {
   let label = gfm ? gfm.label : "";
   let rest = gfm?.body ? [gfm.body, ...children.slice(1)] : children.slice(1);
   if (!label) {
-    const custom = strongOnlyText(rest.find((child) => !isBlankParagraph(child)));
-    if (custom) {
+    // A leading bold-only line is the title only when body text follows it.
+    // On its own it stays the body, under the default label.
+    const index = rest.findIndex((child) => !isBlankParagraph(child));
+    const custom = strongOnlyText(rest[index]);
+    const hasBody = rest.slice(index + 1).some((child) => !isBlankParagraph(child));
+    if (custom && hasBody) {
       label = custom;
-      const index = rest.findIndex((child) => !isBlankParagraph(child));
       rest = rest.filter((_, childIndex) => childIndex !== index);
     }
   }

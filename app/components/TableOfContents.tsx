@@ -404,6 +404,13 @@ export function TableOfContents({
         <List size={17} weight="bold" aria-hidden="true" />
         <span>目录</span>
       </button>
+      {/* Without JavaScript the button above does nothing. This link opens the
+          drawer through :target instead; CSS shows it only when scripting is
+          off, so with JavaScript nothing here is visible. */}
+      <a className="toc-nojs-trigger" id={`${panelId}-open`} href={`#${panelId}`} aria-label={`打开${label}`}>
+        <List size={17} weight="bold" aria-hidden="true" />
+        <span>目录</span>
+      </a>
       <button
         className="toc-mobile-backdrop"
         type="button"
@@ -429,6 +436,9 @@ export function TableOfContents({
           >
             <X size={18} aria-hidden="true" />
           </button>
+          <a className="toc-nojs-close" href={`#${panelId}-open`} aria-label={`关闭${label}`}>
+            <X size={18} aria-hidden="true" />
+          </a>
         </div>
         <ol id={listId} ref={listRef} className="toc-list">
           {tree.map((node, index) => renderNode(node, [index]))}
