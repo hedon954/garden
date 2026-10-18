@@ -17,7 +17,7 @@
   --selection: #f3c9d1;
   --font-mono: var(--font-geist-mono), "SFMono-Regular", Consolas,
     "Liberation Mono", "Noto Sans Mono CJK SC", monospace;
-  --content: 700px;
+  --content: 740px;
   --wide: 1040px;
 }
 
@@ -2855,23 +2855,8 @@ button {
   color: var(--accent);
 }
 
-.article-references + .article-tags,
 .article-references + .next-entry {
   margin-top: 36px;
-}
-
-.article-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin: 68px 0 24px;
-}
-
-.article-tags span {
-  padding: 4px 8px;
-  background: var(--paper-deep);
-  color: var(--muted);
-  font-size: 10px;
 }
 
 .webmentions,
@@ -3054,7 +3039,7 @@ button {
   margin: 0 auto;
   padding: 58px 0 120px;
   display: grid;
-  grid-template-columns: var(--column-sidebar-width) minmax(0, 700px) var(--column-sidebar-width);
+  grid-template-columns: var(--column-sidebar-width) minmax(0, var(--content)) var(--column-sidebar-width);
   gap: 54px;
   justify-content: center;
 }
@@ -3887,7 +3872,7 @@ button {
   }
 
   .column-reading-page {
-    grid-template-columns: minmax(0, 700px);
+    grid-template-columns: minmax(0, var(--content));
   }
 
   .series-nav {

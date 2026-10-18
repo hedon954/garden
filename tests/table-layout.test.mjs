@@ -14,7 +14,7 @@ test("article tables add no space of their own inside the table frame", async ()
 test("wide tables are measured at their unwrapped width", async () => {
   const measure = await read("app/components/ArticleMeasure.tsx");
   assert.match(measure, /style\.width = "max-content"/);
-  assert.match(measure, /tableScroll: naturalWidth\(table\)/);
+  assert.match(measure, /widen\(wrap, naturalWidth\(table\)\)|tableScroll: naturalWidth\(table\)/);
 });
 
 test("table cells never break words mid-word, and breakout room is measured from the text column", async () => {

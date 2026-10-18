@@ -160,7 +160,7 @@ test("renders complex Markdown, article covers, and mixed thought media", async 
   assert.doesNotMatch(article, /2026\/07\/25/);
   const meta = article.match(/<ul class="meta article-meta">[\s\S]*?<\/ul>/)?.[0] ?? "";
   const metaText = meta.replace(/<!-- -->/g, "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
-  assert.match(metaText, /^Your Name 2026 年 7 月 25 日 约 [\d,]+ 字 写作系统$/);
+  assert.match(metaText, /^Your Name 2026 年 7 月 25 日 约 [\d,]+ 字$/);
   assert.doesNotMatch(meta, /<li>\s*<\/li>/);
   assert.doesNotMatch(meta, /分钟/);
   assert.match(article, /约 <!-- -->[\d,]+<!-- --> 字/);
@@ -440,4 +440,59 @@ test("keeps the admin studio protected and writes content through GitHub", async
   assert.match(workflow, /prepare-pages-output\.mjs/);
   assert.match(workflow, /STATIC_EXPORT=1/);
   assert.match(verifyWorkflow, /pages:validate/);
+});
+
+test("0.4.3: wider reading column, transparent column cards, and tag chips under the meta row", async () => {
+  const [tokens, globals, shell, a2, measure] = await Promise.all([
+    readFile(new URL("../app/styles/tokens.css", import.meta.url), "utf8"),
+    readFile(new URL("../app/globals.css", import.meta.url), "utf8"),
+    readFile(new URL("../app/styles/shell.css", import.meta.url), "utf8"),
+    readFile(new URL("../app/styles/a2.css", import.meta.url), "utf8"),
+    readFile(new URL("../app/components/ArticleMeasure.tsx", import.meta.url), "utf8"),
+  ]);
+
+  // H. body width
+  assert.match(tokens, /--col: 740px;/);
+  assert.match(globals, /--content: 740px;/);
+  assert.doesNotMatch(tokens + globals + a2 + shell, /minmax\(0, 700px\)|--col: 700px|--content: 700px/);
+  // figures and tables break out from the text column, not the article grid
+  assert.match(measure, /querySelector\("\.markdown-body"\)/);
+
+  // I. transparent column cards
+  const card = shell.match(/\.sh-col\{[^}]*\}/)?.[0] ?? "";
+  assert.match(card, /background:transparent/);
+  assert.match(card, /border:0/);
+  assert.doesNotMatch(card, /var\(--card\)|1px solid/);
+  assert.doesNotMatch(shell, /\.sh-col:hover\{border-color/);
+  assert.match(shell, /\.sh-col \.cover\{[^}]*border-radius:var\(--r\);margin:0/);
+  assert.match(shell, /\.sh-col \.body\{padding:16px 0 0\}/);
+  assert.match(shell, /\.sh-col:hover h3 a\{color:var\(--blue\)\}/);
+
+  // J. tag chips
+  assert.match(a2, /\.article-tagrow \{[^}]*flex-wrap: wrap;[^}]*gap: 8px;/);
+  assert.match(a2, /\.article-tagrow \.tag-chip \{[^}]*padding: 2px 10px;[^}]*border-radius: 999px;[^}]*color-mix\(in srgb, var\(--blue\) 8%, transparent\);[^}]*color: var\(--blue\);/);
+  assert.match(a2, /\.article-tagrow \.tag-chip::after \{[^}]*height: 44px;/);
+  assert.doesNotMatch(globals + a2, /\.article-tags\b/);
+
+  const [postResponse, columnResponse] = await Promise.all([
+    render("/blog/markdown-lab"),
+    render("/columns/building-in-public/ship-with-evidence"),
+  ]);
+  for (const [response, tags] of [
+    [postResponse, ["Markdown", "Typora", "Mermaid", "KaTeX"]],
+    [columnResponse, ["验证", "发布"]],
+  ]) {
+    assert.equal(response.status, 200);
+    const html = await response.text();
+    const header = html.match(/<header class="article-header[\s\S]*?<\/header>/)?.[0] ?? "";
+    assert.ok(header, "article header renders");
+    const meta = header.indexOf('class="meta article-meta"');
+    const row = header.indexOf('class="article-tagrow"');
+    assert.ok(meta >= 0 && row > meta, "tag row sits right after the meta row");
+    for (const tag of tags) {
+      assert.match(header, new RegExp(`<a class="tag-chip p-category" href="/tags\\?t=${encodeURIComponent(tag)}">#(<!-- -->)?${tag}</a>`));
+    }
+    assert.doesNotMatch(header, /class="cat"|\/blog\?topic=/);
+    assert.doesNotMatch(html, /class="article-tags"/);
+  }
 });
