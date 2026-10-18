@@ -18,7 +18,6 @@ export type SiteConfig = {
   tagline: string;
   description: string;
   locale: string;
-  logo: string;
   author: { name: string; github: string; githubBio: string; githubPinned?: string[] };
   pages: {
     home: PageCopy;
@@ -32,10 +31,7 @@ export type SiteConfig = {
 };
 
 /** 站点身份来自根目录 site.config.yaml，由 garden sync 生成。 */
-export const siteConfig = {
-  ...raw,
-  logo: raw.logo || "monogram",
-} as SiteConfig;
+export const siteConfig = raw as SiteConfig;
 export { githubUrl };
 
 /** 列表页浏览器标题用站点名；页面大标题仍用 pages.*.title。 */
