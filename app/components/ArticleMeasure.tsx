@@ -18,65 +18,45 @@ function naturalWidth(table: HTMLTableElement) {
   return width;
 }
 
+function resetWide(element: HTMLElement) {
+  element.classList.remove("ux-wide");
+  element.style.removeProperty("--wl");
+  element.style.removeProperty("--wr");
+}
+
 export function ArticleMeasure() {
   useEffect(() => {
     const article = document.querySelector("article");
     const toc = document.querySelector<HTMLElement>(".toc");
     if (!article) return undefined;
     const root = document.documentElement;
-    let frame = 0;
+    // Natural content widths are expensive (a max-content relayout per table),
+    // so they are cached and only refreshed on resize and load.
+    const natural = new WeakMap<HTMLElement, number>();
+    let measureFrame = 0;
+    let tocFrame = 0;
+    let refreshPending = false;
 
-    const layout = () => {
-      // Measure the text column, not the whole article grid (which includes the TOC rail).
-      const articleBox = (article.querySelector(".markdown-body") ?? article).getBoundingClientRect();
-      const viewport = root.clientWidth;
-      const widen = (element: HTMLElement, contentWidth: number) => {
-        element.classList.remove("ux-wide");
-        element.style.removeProperty("--wl");
-        element.style.removeProperty("--wr");
-        const margin = tableBreakout({
-          viewport,
-          articleLeft: articleBox.left,
-          articleRight: articleBox.right,
-          tableClient: element.clientWidth,
-          tableScroll: contentWidth,
-        });
-        if (margin.left > 0) {
-          element.style.setProperty("--wl", `${margin.left}px`);
-          element.style.setProperty("--wr", `${margin.right}px`);
-          element.classList.add("ux-wide");
-        }
-      };
+    const contentWidth = (element: HTMLElement, refresh: boolean) => {
+      if (!refresh && natural.has(element)) return natural.get(element) ?? 0;
+      let width = 0;
+      if (element.classList.contains("table-wrap")) {
+        const table = element.querySelector("table");
+        width = table ? naturalWidth(table) : 0;
+      } else {
+        width = element.querySelector("img")?.naturalWidth ?? 0;
+      }
+      natural.set(element, width);
+      return width;
+    };
 
-      article.querySelectorAll<HTMLElement>(".table-wrap").forEach((wrap) => {
-        const table = wrap.querySelector("table");
-        if (!table) {
-          wrap.classList.remove("ux-wide");
-          wrap.style.removeProperty("--wl");
-          wrap.style.removeProperty("--wr");
-          return;
-        }
-        widen(wrap, naturalWidth(table));
-      });
-
-      article.querySelectorAll<HTMLElement>(".fig").forEach((figure) => {
-        const image = figure.querySelector("img");
-        if (!image?.naturalWidth) {
-          figure.classList.remove("ux-wide");
-          figure.style.removeProperty("--wl");
-          figure.style.removeProperty("--wr");
-          return;
-        }
-        widen(figure, image.naturalWidth);
-      });
-
+    const placeToc = () => {
       if (!toc) {
         root.removeAttribute("data-toc-yield");
         return;
       }
       const box = toc.getBoundingClientRect();
-      const dx = translatedX(toc);
-      const originalLeft = box.left - dx;
+      const originalLeft = box.left - translatedX(toc);
       const overlapRights: number[] = [];
       article.querySelectorAll<HTMLElement>(".ux-wide").forEach((element) => {
         const wide = element.getBoundingClientRect();
@@ -86,7 +66,7 @@ export function ArticleMeasure() {
       const shift = tocShift({
         tocLeft: originalLeft,
         tocWidth: box.width,
-        viewport,
+        viewport: root.clientWidth,
         overlapRights,
       });
       if (shift.shift > 0) {
@@ -99,27 +79,68 @@ export function ArticleMeasure() {
       }
     };
 
-    const schedule = () => {
-      if (frame) return;
-      frame = window.requestAnimationFrame(() => {
-        frame = 0;
-        layout();
+    const measure = (refresh: boolean) => {
+      // Measure the text column, not the whole article grid (which includes the TOC rail).
+      const articleBox = (article.querySelector(".markdown-body") ?? article).getBoundingClientRect();
+      const viewport = root.clientWidth;
+      article.querySelectorAll<HTMLElement>(".table-wrap, .fig").forEach((element) => {
+        const width = contentWidth(element, refresh);
+        resetWide(element);
+        if (!width) return;
+        const margin = tableBreakout({
+          viewport,
+          articleLeft: articleBox.left,
+          articleRight: articleBox.right,
+          tableClient: element.clientWidth,
+          tableScroll: width,
+        });
+        if (margin.left > 0) {
+          element.style.setProperty("--wl", `${margin.left}px`);
+          element.style.setProperty("--wr", `${margin.right}px`);
+          element.classList.add("ux-wide");
+        }
+      });
+      placeToc();
+    };
+
+    // Resize and load refresh the cached widths; the ResizeObserver reuses them.
+    const scheduleMeasure = (refresh: boolean) => {
+      refreshPending ||= refresh;
+      if (measureFrame) return;
+      measureFrame = window.requestAnimationFrame(() => {
+        measureFrame = 0;
+        const shouldRefresh = refreshPending;
+        refreshPending = false;
+        measure(shouldRefresh);
+      });
+    };
+    const refresh = () => scheduleMeasure(true);
+    const reuse = () => scheduleMeasure(false);
+    // Scrolling only moves wide elements past the TOC; no width is measured.
+    const onScroll = () => {
+      if (tocFrame) return;
+      tocFrame = window.requestAnimationFrame(() => {
+        tocFrame = 0;
+        placeToc();
       });
     };
 
-    layout();
-    window.addEventListener("resize", schedule);
-    window.addEventListener("scroll", schedule, { passive: true });
-    window.addEventListener("load", schedule);
-    const observer = new ResizeObserver(schedule);
+    measure(true);
+    window.addEventListener("resize", refresh);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("load", refresh);
+    const observer = new ResizeObserver(reuse);
     observer.observe(article);
-    article.querySelectorAll("img").forEach((image) => image.addEventListener("load", schedule));
+    const images = [...article.querySelectorAll("img")];
+    images.forEach((image) => image.addEventListener("load", refresh));
     return () => {
-      window.removeEventListener("resize", schedule);
-      window.removeEventListener("scroll", schedule);
-      window.removeEventListener("load", schedule);
+      window.removeEventListener("resize", refresh);
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("load", refresh);
+      images.forEach((image) => image.removeEventListener("load", refresh));
       observer.disconnect();
-      if (frame) window.cancelAnimationFrame(frame);
+      if (measureFrame) window.cancelAnimationFrame(measureFrame);
+      if (tocFrame) window.cancelAnimationFrame(tocFrame);
     };
   }, []);
   return null;

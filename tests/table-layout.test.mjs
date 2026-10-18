@@ -14,7 +14,7 @@ test("article tables add no space of their own inside the table frame", async ()
 test("wide tables are measured at their unwrapped width", async () => {
   const measure = await read("app/components/ArticleMeasure.tsx");
   assert.match(measure, /style\.width = "max-content"/);
-  assert.match(measure, /widen\(wrap, naturalWidth\(table\)\)|tableScroll: naturalWidth\(table\)/);
+  assert.match(measure, /naturalWidth\(table\)/);
 });
 
 test("table cells never break words mid-word, and breakout room is measured from the text column", async () => {
@@ -22,4 +22,16 @@ test("table cells never break words mid-word, and breakout room is measured from
   assert.match(a2, /\.table-wrap td \{[^}]*overflow-wrap: normal;[^}]*word-break: normal;/);
   const measure = await read("app/components/ArticleMeasure.tsx");
   assert.match(measure, /querySelector\("\.markdown-body"\)/);
+});
+
+test("scrolling only re-places the TOC; widths are measured on resize and load and cached", async () => {
+  const measure = await read("app/components/ArticleMeasure.tsx");
+  assert.match(measure, /addEventListener\("scroll", onScroll, \{ passive: true \}\)/);
+  const onScroll = measure.match(/const onScroll = \(\) => \{[\s\S]*?\n    \};/)?.[0] ?? "";
+  assert.match(onScroll, /placeToc\(\)/);
+  assert.doesNotMatch(onScroll, /measure|naturalWidth|max-content/);
+  assert.match(measure, /new WeakMap<HTMLElement, number>\(\)/);
+  assert.match(measure, /addEventListener\("resize", refresh\)/);
+  assert.match(measure, /addEventListener\("load", refresh\)/);
+  assert.match(measure, /new ResizeObserver\(reuse\)/);
 });

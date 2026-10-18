@@ -294,7 +294,7 @@ test("the example post keeps a wide local image, and tags create a release", asy
   assert.match(post, /!\[朝北的窗台，从左到右是罗勒、薄荷和一只空盆。\]\(\.\/windowsill-herbs\/sill\.svg\)/);
   assert.doesNotMatch(post, /oss-|aliyuncs|myqcloud/i);
   assert.match(image, /width="1280"/);
-  assert.match(measure, /querySelectorAll<HTMLElement>\("\.fig"\)/);
+  assert.match(measure, /querySelectorAll<HTMLElement>\("\.table-wrap, \.fig"\)/);
   assert.match(measure, /naturalWidth/);
   assert.match(publish, /if: github\.event_name == 'push' && startsWith\(github\.ref, 'refs\/tags\/v'\)/);
   assert.match(publish, /gh release create "\$tag" --generate-notes/);

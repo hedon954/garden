@@ -116,6 +116,44 @@ test("tables break out only as far as they need, and the TOC slides or hides", (
   assert.equal(hidden.hide, true);
 });
 
+test("tableBreakout widens symmetrically by half the overflow plus a little", () => {
+  const base = { viewport: 1440, articleLeft: 350, articleRight: 1090, tableClient: 740 };
+  assert.deepEqual(tableBreakout({ ...base, tableScroll: 900 }), { left: 84, right: 84 });
+});
+
+test("tableBreakout leaves content that already fits alone", () => {
+  const base = { viewport: 1440, articleLeft: 350, articleRight: 1090, tableClient: 740 };
+  assert.deepEqual(tableBreakout({ ...base, tableScroll: 740 }), { left: 0, right: 0 });
+  assert.deepEqual(tableBreakout({ ...base, tableScroll: 741 }), { left: 0, right: 0 });
+});
+
+test("tableBreakout does nothing without room at the screen edge", () => {
+  assert.deepEqual(tableBreakout({ viewport: 1000, articleLeft: 24, articleRight: 976, tableClient: 952, tableScroll: 1400 }), { left: 0, right: 0 });
+  // The narrower side decides, so the element stays centred on the text.
+  assert.deepEqual(tableBreakout({ viewport: 1440, articleLeft: 350, articleRight: 1300, tableClient: 950, tableScroll: 2000 }), { left: 116, right: 116 });
+});
+
+test("tableBreakout is off under 900px wide", () => {
+  const base = { articleLeft: 100, articleRight: 840, tableClient: 740, tableScroll: 1200 };
+  assert.deepEqual(tableBreakout({ ...base, viewport: 899 }), { left: 0, right: 0 });
+  assert.ok(tableBreakout({ ...base, viewport: 1100 }).left > 0);
+  assert.deepEqual(tableBreakout({ ...base, viewport: 1100, minViewport: 1200 }), { left: 0, right: 0 });
+});
+
+test("tableBreakout never goes past the cap", () => {
+  const base = { viewport: 2400, articleLeft: 830, articleRight: 1570, tableClient: 740, tableScroll: 3000 };
+  assert.deepEqual(tableBreakout(base), { left: 300, right: 300 });
+  assert.deepEqual(tableBreakout({ ...base, cap: 120 }), { left: 120, right: 120 });
+});
+
+test("tocShift stays put without overlap, slides past the widest overlap, and hides when it would leave the screen", () => {
+  assert.deepEqual(tocShift({ tocLeft: 1162, tocWidth: 200, viewport: 1440, overlapRights: [] }), { shift: 0, hide: false });
+  assert.deepEqual(tocShift({ tocLeft: 1162, tocWidth: 200, viewport: 1440, overlapRights: undefined }), { shift: 0, hide: false });
+  assert.deepEqual(tocShift({ tocLeft: 40, tocWidth: 200, viewport: 1440, overlapRights: [80, 120] }), { shift: 96, hide: false });
+  assert.deepEqual(tocShift({ tocLeft: 1162, tocWidth: 200, viewport: 1440, overlapRights: [1390] }), { shift: 286, hide: true });
+  assert.deepEqual(tocShift({ tocLeft: 100, tocWidth: 100, viewport: 1000, overlapRights: [20] }), { shift: 0, hide: false });
+});
+
 test("editor snippets, Typora templates and text replacements come from one catalog", () => {
   const snippets = vscodeSnippets();
   assert.equal(snippets["Garden 块"].prefix, "garden");
