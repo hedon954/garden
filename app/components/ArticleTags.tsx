@@ -1,5 +1,7 @@
-import { tagFilterHref } from "../lib/tag-filter";
+import Link from "next/link";
+import { articleTagHref } from "../lib/tag-filter";
 
+/** Tags under an article title. Link, so following one is a client navigation like the rest of the site. */
 export function ArticleTags({ tags }: { tags?: string[] }) {
   const list = (tags ?? []).filter(Boolean);
   if (!list.length) return null;
@@ -7,9 +9,9 @@ export function ArticleTags({ tags }: { tags?: string[] }) {
     <ul className="article-tagrow" aria-label="标签">
       {list.map((tag) => (
         <li key={tag}>
-          <a className="tag-chip p-category" href={tagFilterHref([tag])}>
+          <Link className="tag-chip p-category" href={articleTagHref(tag)}>
             #{tag}
-          </a>
+          </Link>
         </li>
       ))}
     </ul>
