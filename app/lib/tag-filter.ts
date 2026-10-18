@@ -22,28 +22,61 @@ export const DEFAULT_VISIBLE_TAGS = 14;
 const byCount = (left: [string, number], right: [string, number]) =>
   right[1] - left[1] || left[0].localeCompare(right[0], "zh");
 
-/** Every tag with its post count, most used first. */
+/** Tags match regardless of case: `Rust`, `rust` and `RUST` are one tag. */
+export const tagKey = (tag: string) => tag.trim().toLocaleLowerCase();
+
+const postKeys = (post: Tagged) => new Set((post.tags ?? []).map(tagKey).filter(Boolean));
+
+/**
+ * Every tag with its post count, most used first. Spellings that differ only
+ * in case count as one tag, shown in its most common spelling.
+ */
 export function tagCounts(posts: readonly Tagged[]): [string, number][] {
   const counts = new Map<string, number>();
+  const spellings = new Map<string, Map<string, number>>();
   for (const post of posts) {
-    for (const tag of new Set(post.tags ?? [])) counts.set(tag, (counts.get(tag) ?? 0) + 1);
+    const seen = new Set<string>();
+    for (const raw of post.tags ?? []) {
+      const tag = raw.trim();
+      const key = tagKey(tag);
+      if (!key) continue;
+      const forms = spellings.get(key) ?? new Map<string, number>();
+      forms.set(tag, (forms.get(tag) ?? 0) + 1);
+      spellings.set(key, forms);
+      if (seen.has(key)) continue;
+      seen.add(key);
+      counts.set(key, (counts.get(key) ?? 0) + 1);
+    }
   }
-  return [...counts.entries()].sort(byCount);
+  return [...counts.entries()]
+    .map(([key, count]): [string, number] => {
+      // Map keeps insertion order, so ties go to the first spelling seen.
+      const [label] = [...(spellings.get(key) ?? new Map([[key, 0]])).entries()].reduce((best, form) => (form[1] > best[1] ? form : best));
+      return [label, count];
+    })
+    .sort(byCount);
 }
 
-/** Selected tags from the repeated URL param, trimmed and de-duplicated, in URL order. */
+/** Selected tags from the repeated URL param, trimmed and de-duplicated (ignoring case), in URL order. */
 export function selectedTags(values: readonly string[]): string[] {
-  const seen = new Set<string>();
+  const seen = new Map<string, string>();
   for (const value of values) {
     const tag = value.trim();
-    if (tag) seen.add(tag);
+    const key = tagKey(tag);
+    if (key && !seen.has(key)) seen.set(key, tag);
   }
-  return [...seen];
+  return [...seen.values()];
+}
+
+/** Selected tags written the way the posts write them (`?t=Rust` becomes `rust`); unknown tags stay as given. */
+export function canonicalTags(posts: readonly Tagged[], selected: readonly string[]): string[] {
+  const labels = new Map(tagCounts(posts).map(([tag]) => [tagKey(tag), tag]));
+  return selected.map((tag) => labels.get(tagKey(tag)) ?? tag);
 }
 
 const hasAll = (post: Tagged, tags: readonly string[]) => {
-  const own = new Set(post.tags ?? []);
-  return tags.every((tag) => own.has(tag));
+  const own = postKeys(post);
+  return tags.every((tag) => own.has(tagKey(tag)));
 };
 
 /** Posts carrying every selected tag (intersection). No selection keeps everything. */
@@ -54,14 +87,15 @@ export function filterByTags<T extends Tagged>(posts: readonly T[], selected: re
 /** One option per known tag plus any selected tag the posts do not use. */
 export function tagOptions(posts: readonly Tagged[], selected: readonly string[]): TagOption[] {
   const current = filterByTags(posts, selected);
-  const chosen = new Set(selected);
+  const chosen = new Set(selected.map(tagKey));
   const options = tagCounts(posts).map(([tag, total]) => {
-    const isSelected = chosen.has(tag);
-    const next = isSelected ? current.length : current.filter((post) => (post.tags ?? []).includes(tag)).length;
+    const key = tagKey(tag);
+    const isSelected = chosen.has(key);
+    const next = isSelected ? current.length : current.filter((post) => postKeys(post).has(key)).length;
     return { tag, total, next, selected: isSelected, disabled: !isSelected && next === 0 };
   });
   for (const tag of selected) {
-    if (!options.some((option) => option.tag === tag)) {
+    if (!options.some((option) => tagKey(option.tag) === tagKey(tag))) {
       options.push({ tag, total: 0, next: 0, selected: true, disabled: false });
     }
   }
@@ -95,9 +129,12 @@ export function visibleTagOptions(options: readonly TagOption[], expanded: boole
   return { shown, hidden: options.length - shown.length };
 }
 
-/** Add the tag if absent, remove it if present. */
+/** Add the tag if absent, remove it if present (in any spelling). */
 export function toggleTag(selected: readonly string[], tag: string): string[] {
-  return selected.includes(tag) ? selected.filter((item) => item !== tag) : [...selected, tag];
+  const key = tagKey(tag);
+  return selected.some((item) => tagKey(item) === key)
+    ? selected.filter((item) => tagKey(item) !== key)
+    : [...selected, tag];
 }
 
 /** `/blog?t=A&t=B`, or `/blog` with no selection. */

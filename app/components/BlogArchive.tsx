@@ -6,6 +6,7 @@ import { useMemo, useState } from "react";
 import { columnIndexHref, columnOfPost, columns, postHref, posts } from "../lib/content";
 import {
   TAG_PARAM,
+  canonicalTags,
   filterByTags,
   selectedTags,
   tagFilterHref,
@@ -40,7 +41,7 @@ export function BlogArchive() {
   const pathname = usePathname() || "/blog";
   const searchParams = useSearchParams();
   const paramKey = searchParams.getAll(TAG_PARAM).join("\u0000");
-  const selected = useMemo(() => selectedTags(paramKey ? paramKey.split("\u0000") : []), [paramKey]);
+  const selected = useMemo(() => canonicalTags(posts, selectedTags(paramKey ? paramKey.split("\u0000") : [])), [paramKey]);
   return <ArchiveView selected={selected} go={(next) => router.push(tagFilterHref(next, pathname), { scroll: false })} />;
 }
 
