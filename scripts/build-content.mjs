@@ -11,6 +11,7 @@ import { referenceDomain } from "../ui/garden/references.mjs";
 import { linkAssetsForRender } from "./link-assets.mjs";
 import { cardUrls } from "../ui/garden/markdown-links.mjs";
 import { configuredSiteAddress, sameSiteMatcher } from "../ui/garden/same-site.mjs";
+import { resolveBrand } from "./brand.mjs";
 import { buildFullIndex, buildSearchIndex } from "../ui/garden/search-index.mjs";
 import { coverImageSet, loadSharp } from "./cover-images.mjs";
 
@@ -634,6 +635,8 @@ export const githubUrl = ${JSON.stringify(`https://github.com/${siteConfig.autho
 export const searchIndexUrl = ${JSON.stringify(`${basePath}/search-index.json?v=${contentHash}`)};
 // Every body as plain text, fetched in the background after load; the name changes with the text.
 export const searchFull = ${JSON.stringify({ url: `${basePath}/${fullIndex.fileName}`, hash: fullIndex.hash })};
+// Header logo (inlined SVG) and icon URLs, from brand in site.config.yaml.
+export const brand = ${JSON.stringify(resolveBrand(root, siteConfig, basePath, (line) => console.warn(line)))};
 // Full URLs to this address render as internal links.
 export const siteLinks = ${JSON.stringify({ address: siteAddress, basePath })};
 `,

@@ -12,7 +12,7 @@ import {
 } from "react";
 import type Fuse from "fuse.js";
 import { MagnifyingGlass, X } from "@phosphor-icons/react";
-import { searchFull, searchIndexUrl } from "@garden/site-config";
+import { brand, searchFull, searchIndexUrl } from "@garden/site-config";
 import { createSearch } from "../../ui/garden/search-match.mjs";
 import { createIdbStore, loadFullIndex, saveDataOn, whenIdleAfterLoad } from "../../ui/garden/search-full.mjs";
 import { siteConfig } from "../site.config";
@@ -358,7 +358,11 @@ export function SiteHeader() {
     <>
       <header className="sh-header">
         <div className="sh-bar">
-          <Link href="/" className="sh-word">{siteConfig.name}</Link>
+          <Link href="/" className="sh-word">
+            {/* Build-time SVG from brand.logo, cleaned of scripts and handlers. */}
+            {brand.logo ? <span className="sh-mark" aria-hidden="true" dangerouslySetInnerHTML={{ __html: brand.logo }} /> : null}
+            {siteConfig.name}
+          </Link>
           <nav className="sh-nav" aria-label="站点导航">
             {nav.map((item) => (
               <Link key={item.href} href={item.href} aria-current={current(item.href) ? "page" : undefined}>

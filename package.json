@@ -27,6 +27,7 @@
     "bin",
     "build",
     "public/favicon.svg",
+    "public/apple-touch-icon.png",
     "public/og.png",
     "public/images",
     "scripts",

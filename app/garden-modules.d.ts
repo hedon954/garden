@@ -67,6 +67,8 @@ declare module "@garden/site-config" {
   export const searchFull: { url: string; hash: string };
   /** The site address (site.config.yaml `url`, else SITE_URL) and base path, for spotting links back to the site. */
   export const siteLinks: { address: string; basePath: string };
+  /** Header logo as inline SVG ("" when hidden) and icon URLs, from brand in site.config.yaml. */
+  export const brand: { logo: string; favicon: string; appleTouchIcon: string };
   export const siteConfig: {
     name: string;
     tagline: string;
@@ -77,6 +79,7 @@ declare module "@garden/site-config" {
     footer: string;
     linkPreview?: { worker?: string };
     url?: string;
+    brand?: { logo?: string | false; favicon?: string; appleTouchIcon?: string | false };
   };
   export const githubUrl: string;
 }

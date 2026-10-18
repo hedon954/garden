@@ -4,6 +4,11 @@ description: 文章、随想和专栏。
 locale: zh_CN
 # 站点的公开地址。文章里指向这个地址的完整网址会按站内链接显示。
 # url: https://blog.example.com
+# 站点图标，不写时使用 Garden 自带的图标。
+# brand:
+#   logo: brand/logo.svg
+#   favicon: /favicon.svg
+#   appleTouchIcon: /apple-touch-icon.png
 
 author:
   name: Your Name

@@ -11,6 +11,7 @@ import {
   webmentionEndpoint,
 } from "./lib/site";
 import { githubUrl, siteConfig } from "./site.config";
+import { brand } from "@garden/site-config";
 
 export async function generateMetadata(): Promise<Metadata> {
   const siteUrl = await getSiteUrl();
@@ -29,7 +30,8 @@ export async function generateMetadata(): Promise<Metadata> {
       },
     },
     icons: {
-      icon: "/favicon.svg",
+      icon: [{ url: brand.favicon, type: brand.favicon.endsWith(".svg") ? "image/svg+xml" : undefined }],
+      ...(brand.appleTouchIcon ? { apple: [{ url: brand.appleTouchIcon, sizes: "180x180" }] } : {}),
     },
     robots: {
       index: true,

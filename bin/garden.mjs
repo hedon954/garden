@@ -77,7 +77,7 @@ function ensureLink(from, to) {
 function ensurePublic() {
   const dest = path.join(siteRoot, "public");
   fs.mkdirSync(dest, { recursive: true });
-  for (const name of ["favicon.svg", "og.png"]) {
+  for (const name of ["favicon.svg", "apple-touch-icon.png", "og.png"]) {
     const from = path.join(gardenPackageRoot, "public", name);
     const to = path.join(dest, name);
     if (fs.existsSync(from) && !fs.existsSync(to)) fs.copyFileSync(from, to);

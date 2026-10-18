@@ -815,3 +815,10 @@ test("no web font is preloaded: the page never uses one outside KaTeX", async ()
   const html = await (await render("/")).text();
   assert.doesNotMatch(html, /rel="preload"[^>]*as="font"/u);
 });
+
+test("the header carries the brand logo, and the page links the configured icons", async () => {
+  const html = await (await render("/")).text();
+  assert.match(html, /<a href="\/" class="sh-word"><span class="sh-mark" aria-hidden="true"><svg [^>]*viewBox="6 2 18 27"[^>]*stroke="currentColor"/u);
+  assert.match(html, /<link rel="icon" href="[^"]*\/favicon\.svg" type="image\/svg\+xml"\/>/u);
+  assert.match(html, /<link rel="apple-touch-icon" href="[^"]*\/apple-touch-icon\.png" sizes="180x180"\/>/u);
+});

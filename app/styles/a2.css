@@ -27,7 +27,6 @@ body {
   color: var(--ink);
 }
 
-.brand-mark,
 .brand small {
   display: none;
 }
