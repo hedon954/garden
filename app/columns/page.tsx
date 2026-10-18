@@ -3,10 +3,12 @@ import Link from "next/link";
 import { columnHref, columns } from "../lib/content";
 import { ContentEmptyState } from "../components/ContentEmptyState";
 import { siteConfig, siteDocumentTitle } from "../site.config";
+import { pageAlternates } from "../lib/page-alternates";
 
 export const metadata = {
   title: siteDocumentTitle,
   description: siteConfig.pages.columns.subtitle || siteConfig.description,
+  alternates: pageAlternates("/columns"),
 };
 
 function day(value: string) {

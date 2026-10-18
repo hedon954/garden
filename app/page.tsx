@@ -4,10 +4,12 @@ import { homeListDate } from "./lib/a2-meta";
 import { columns, formatDate, postHref, posts } from "./lib/content";
 import { githubUrl, siteConfig } from "./site.config";
 import { siteHref } from "./lib/site-href";
+import { pageAlternates } from "./lib/page-alternates";
 
 export const metadata = {
   title: { absolute: siteConfig.name },
   description: siteConfig.description,
+  alternates: pageAlternates("/"),
 };
 
 function day(value: string) {

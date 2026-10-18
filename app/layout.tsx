@@ -13,6 +13,7 @@ import {
 import { githubUrl, siteConfig } from "./site.config";
 import { brand } from "@garden/site-config";
 import { HASH_JUMP_SCRIPT } from "../ui/garden/hash-jump.mjs";
+import { FEED_ALTERNATES } from "./lib/page-alternates";
 
 export async function generateMetadata(): Promise<Metadata> {
   const siteUrl = await getSiteUrl();
@@ -25,11 +26,7 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     description: siteDescription,
     authors: [{ name: siteConfig.author.name, url: githubUrl }],
-    alternates: {
-      types: {
-        "application/rss+xml": "/rss.xml",
-      },
-    },
+    alternates: { types: FEED_ALTERNATES },
     icons: {
       icon: [{ url: brand.favicon, type: brand.favicon.endsWith(".svg") ? "image/svg+xml" : undefined }],
       ...(brand.appleTouchIcon ? { apple: [{ url: brand.appleTouchIcon, sizes: "180x180" }] } : {}),

@@ -3,10 +3,12 @@ import { siteConfig, siteDocumentTitle } from "../site.config";
 import { BlogArchive, BlogArchiveFallback } from "../components/BlogArchive";
 import { posts } from "../lib/content";
 import { archivePosts, archiveSeries } from "../lib/archive";
+import { pageAlternates } from "../lib/page-alternates";
 
 export const metadata = {
   title: siteDocumentTitle,
   description: siteConfig.pages.blog.subtitle || siteConfig.description,
+  alternates: pageAlternates("/blog"),
 };
 
 export default function BlogIndex() {

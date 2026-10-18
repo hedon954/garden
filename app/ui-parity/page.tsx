@@ -1,5 +1,8 @@
 import Image from "next/image";
 import { ParityInteractions } from "../../ui/react/parity";
+import { pageAlternates } from "../lib/page-alternates";
+
+export const metadata = { alternates: pageAlternates("/ui-parity") };
 
 const slices = [
   { label: "商品销售", value: 78.2, color: "#539af8" },

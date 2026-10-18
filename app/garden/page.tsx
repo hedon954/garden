@@ -4,10 +4,12 @@ import { GardenContentGuide } from "../components/GardenContentGuide";
 import { GardenMediaGuide } from "../components/GardenMediaGuide";
 import { PageIntro } from "../components/PageIntro";
 import { siteConfig } from "../site.config";
+import { pageAlternates } from "../lib/page-alternates";
 
 export const metadata = {
   title: "Garden",
   description: "用 Markdown 写文章。推送之后，页面、搜索和 RSS 一起更新。",
+  alternates: pageAlternates("/garden"),
 };
 
 const jumps = [
