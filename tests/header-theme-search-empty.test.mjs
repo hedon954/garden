@@ -4,18 +4,19 @@ import test from "node:test";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { noResultsText } from "../ui/garden/search-preview.mjs";
+import { resolveDark, themeSwitchProps } from "../ui/garden/theme.mjs";
 
 const header = fs.readFileSync(new URL("../app/components/SiteHeader.tsx", import.meta.url), "utf8");
 const shell = fs.readFileSync(new URL("../app/styles/shell.css", import.meta.url), "utf8");
 const globals = fs.readFileSync(new URL("../app/globals.css", import.meta.url), "utf8");
 
 test("the mobile menu ends with a dark mode switch that shares the desktop toggle", () => {
-  assert.match(header, /<button className="sh-menu-theme" type="button" role="switch" aria-checked=\{dark\} onClick=\{toggleTheme\}>\s*<span>深色模式<\/span>/);
+  assert.match(header, /<button className="sh-menu-theme" \{\.\.\.themeSwitchProps\(dark, toggleTheme\)\}>\s*<span>深色模式<\/span>/);
   assert.match(header, /className="sh-icon sh-theme" type="button" onClick=\{toggleTheme\}/);
   assert.equal(header.match(/const toggleTheme = /g)?.length, 1, "one implementation");
   // Without a stored choice the theme follows the system, also when it changes.
   assert.match(header, /system\.addEventListener\("change", apply\)/);
-  assert.match(header, /stored === "dark" \|\| \(!stored && system\.matches\)/);
+  assert.match(header, /const useDark = resolveDark\(stored, system\.matches\);/);
   // The row comes after the nav links, inside the menu.
   assert.ok(header.indexOf('className="sh-menu-theme"') > header.indexOf("{nav.map((item) => ("));
   assert.match(shell, /\.sh-menu-theme\{[^}]*min-height:44px;[^}]*border-top:1px solid var\(--rule\)/);
@@ -34,4 +35,27 @@ test("a search with no results shows one line naming the query, escaped", () => 
   assert.doesNotMatch(header, /dangerouslySetInnerHTML=\{\{ __html: [^}]*query/);
   assert.match(globals, /\.empty-state \{[^}]*color: var\(--muted\);[^}]*text-align: center;/);
   assert.match(globals, /\.search-results:has\(> \.empty-state:only-child\) \{\s*align-content: center;/);
+});
+
+test("the menu theme row is a keyboard-operable switch that stays in sync", () => {
+  const toggle = () => {};
+  // A native <button>: the whole row is the control, and Space and Enter press it.
+  const render = (dark) => renderToStaticMarkup(createElement("button", { className: "sh-menu-theme", ...themeSwitchProps(dark, toggle) }, createElement("span", null, "深色模式"), createElement("span", { className: "sh-switch", "aria-hidden": "true" })));
+  assert.equal(render(false), '<button class="sh-menu-theme" type="button" role="switch" aria-checked="false"><span>深色模式</span><span class="sh-switch" aria-hidden="true"></span></button>');
+  assert.match(render(true), /role="switch" aria-checked="true"/);
+  assert.equal(themeSwitchProps(true, toggle).onClick, toggle);
+  // Nothing in the header takes over its keys or removes it from the tab order.
+  const row = header.slice(header.indexOf('className="sh-menu-theme"'), header.indexOf("</button>", header.indexOf('className="sh-menu-theme"')));
+  assert.doesNotMatch(row, /onKey(Down|Up|Press)|tabIndex|disabled/);
+  // aria-checked comes from the same state the desktop button reads, and both call one toggle.
+  assert.match(header, /aria-label=\{dark \? "切换到浅色模式" : "切换到深色模式"\}/);
+  assert.equal(header.match(/onClick=\{toggleTheme\}/g)?.length, 1, "desktop button");
+  assert.equal(header.match(/themeSwitchProps\(dark, toggleTheme\)/g)?.length, 1, "menu row");
+  // The shared rule: a stored choice wins, otherwise the system.
+  assert.equal(resolveDark("dark", false), true);
+  assert.equal(resolveDark("light", true), false);
+  assert.equal(resolveDark(null, true), true);
+  assert.equal(resolveDark(null, false), false);
+  // Keyboard focus is visible on the row.
+  assert.match(shell, /:focus-visible\{outline:2px solid var\(--blue\)/);
 });

@@ -15,6 +15,7 @@ import { MagnifyingGlass, X } from "@phosphor-icons/react";
 import { brand, searchFull, searchIndexUrl } from "@garden/site-config";
 import { createSearch } from "../../ui/garden/search-match.mjs";
 import { cropMatchedText, highlightParts, noResultsText } from "../../ui/garden/search-preview.mjs";
+import { resolveDark, themeSwitchProps } from "../../ui/garden/theme.mjs";
 import { createIdbStore, loadFullIndex, saveDataOn, whenIdleAfterLoad } from "../../ui/garden/search-full.mjs";
 import { siteConfig } from "../site.config";
 
@@ -193,7 +194,7 @@ export function SiteHeader() {
     const system = window.matchMedia("(prefers-color-scheme: dark)");
     const apply = () => {
       const stored = window.localStorage.getItem("theme");
-      const useDark = stored === "dark" || (!stored && system.matches);
+      const useDark = resolveDark(stored, system.matches);
       document.documentElement.dataset.theme = useDark ? "dark" : "light";
       setDark(useDark);
     };
@@ -359,7 +360,7 @@ export function SiteHeader() {
               {item.label}
             </Link>
           ))}
-          <button className="sh-menu-theme" type="button" role="switch" aria-checked={dark} onClick={toggleTheme}>
+          <button className="sh-menu-theme" {...themeSwitchProps(dark, toggleTheme)}>
             <span>深色模式</span>
             <span className="sh-switch" aria-hidden="true" />
           </button>
