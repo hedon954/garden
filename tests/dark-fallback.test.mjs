@@ -33,7 +33,7 @@ test("the PostCSS config runs the dark fallback", () => {
 
 test("the theme button is hidden when scripting is off", () => {
   const css = fs.readFileSync(new URL("../app/styles/shell.css", import.meta.url), "utf8");
-  assert.match(css, /@media \(scripting:none\)\{\.sh-theme\{display:none\}\}/);
+  assert.match(css, /@media \(scripting:none\)\{\.sh-theme,\.sh-menu-theme\{display:none\}\}/);
 });
 
 const fails = (css) => assert.throws(() => run(css), (error) => error.name === "CssSyntaxError" && /garden dark fallback/.test(error.message));

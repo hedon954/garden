@@ -67,3 +67,9 @@ export function highlightParts(text, ranges) {
   if (cursor < text.length) parts.push({ text: text.slice(cursor), matched: false });
   return parts;
 }
+
+/** The one line shown when a search finds nothing. Render it as text (React escapes it). */
+export function noResultsText(query) {
+  const value = String(query ?? "").trim();
+  return value ? `没有找到和「${value}」相关的文章` : "还没有可以搜索的内容";
+}

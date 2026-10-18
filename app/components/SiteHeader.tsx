@@ -14,7 +14,8 @@ import type Fuse from "fuse.js";
 import { MagnifyingGlass, X } from "@phosphor-icons/react";
 import { brand, searchFull, searchIndexUrl } from "@garden/site-config";
 import { createSearch } from "../../ui/garden/search-match.mjs";
-import { cropMatchedText, highlightParts } from "../../ui/garden/search-preview.mjs";
+import { cropMatchedText, highlightParts, noResultsText } from "../../ui/garden/search-preview.mjs";
+import { resolveDark, themeSwitchProps } from "../../ui/garden/theme.mjs";
 import { createIdbStore, loadFullIndex, saveDataOn, whenIdleAfterLoad } from "../../ui/garden/search-full.mjs";
 import { siteConfig } from "../site.config";
 
@@ -187,14 +188,22 @@ export function SiteHeader() {
     });
   }, []);
 
+  // One theme for the desktop button and the mobile menu switch. Until the
+  // reader picks one, it follows the system, also when the system changes.
   useEffect(() => {
-    const stored = window.localStorage.getItem("theme");
-    const useDark =
-      stored === "dark" ||
-      (!stored && window.matchMedia("(prefers-color-scheme: dark)").matches);
-    document.documentElement.dataset.theme = useDark ? "dark" : "light";
-    const frame = window.requestAnimationFrame(() => setDark(useDark));
-    return () => window.cancelAnimationFrame(frame);
+    const system = window.matchMedia("(prefers-color-scheme: dark)");
+    const apply = () => {
+      const stored = window.localStorage.getItem("theme");
+      const useDark = resolveDark(stored, system.matches);
+      document.documentElement.dataset.theme = useDark ? "dark" : "light";
+      setDark(useDark);
+    };
+    const frame = window.requestAnimationFrame(apply);
+    system.addEventListener("change", apply);
+    return () => {
+      window.cancelAnimationFrame(frame);
+      system.removeEventListener("change", apply);
+    };
   }, []);
 
   useEffect(() => {
@@ -351,6 +360,10 @@ export function SiteHeader() {
               {item.label}
             </Link>
           ))}
+          <button className="sh-menu-theme" {...themeSwitchProps(dark, toggleTheme)}>
+            <span>深色模式</span>
+            <span className="sh-switch" aria-hidden="true" />
+          </button>
         </nav>
       </header>
 
@@ -404,9 +417,11 @@ export function SiteHeader() {
               role="listbox"
               aria-label="搜索结果"
             >
-              <p className="search-label">
-                {query ? `${resultTotal} 篇相关文章` : "最近内容"}
-              </p>
+              {query && engine && resultTotal === 0 ? null : (
+                <p className="search-label">
+                  {query ? `${resultTotal} 篇相关文章` : "最近内容"}
+                </p>
+              )}
               {results.map((result, index) => {
                 const preview = searchPreview(result.item, result.matches);
                 return (
@@ -445,7 +460,8 @@ export function SiteHeader() {
               })}
               {results.length === 0 && (
                 <p className="empty-state">
-                  {engine ? "没有找到，换个更宽松的关键词试试。" : engineFailed ? "搜索暂时打不开，请稍后再试。" : "正在载入…"}
+                  {/* The query is a React text child, so it is escaped. */}
+                  {engine ? noResultsText(query) : engineFailed ? "搜索暂时打不开，请稍后再试。" : "正在载入…"}
                 </p>
               )}
             </div>
