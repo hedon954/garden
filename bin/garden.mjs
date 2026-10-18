@@ -386,6 +386,8 @@ switch (command) {
     // Remote image sizes: only new images are probed; the rest come from image-sizes.json.
     if (process.env.GARDEN_OFFLINE !== "1") runNode("scripts/image-sizes.mjs");
     runVinext(["build", ...rest], { copyDist: true });
+    // Pages for old addresses listed under redirects in site.config.yaml (static export only).
+    if (process.env.STATIC_EXPORT === "1") runNode("scripts/redirects.mjs");
     break;
   case "links":
     runNode("scripts/link-assets.mjs");

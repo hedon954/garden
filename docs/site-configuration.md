@@ -54,6 +54,16 @@ brand:
 
 都不写时使用 Garden 自带的图标。`logo` 会直接嵌进页面，高 26px，颜色跟随站名：画图标时用 `stroke="currentColor"` 或 `fill="currentColor"`。文件里的脚本和事件属性会被去掉。favicon 可以在 SVG 里用 `@media (prefers-color-scheme: dark)` 为深色标签栏换颜色。`appleTouchIcon` 是 180×180 的 PNG，写 false 不输出。
 
+文章换过地址时，可以在 `redirects` 里列出旧路径和现在的地址，旧链接仍然能打开：
+
+```yaml
+redirects:
+  /2024/01/20/go/go-gpm/: /blog/go/go-gpm/
+  /wiki/rust/04-action/rust-action-httpie.html: /blog/rust-action-httpie/
+```
+
+静态导出（例如 GitHub Pages）没有服务器返回 301，构建时会为每个旧路径生成一个小页面：立即跳到新地址，保留链接里的 `#` 锚点，并用 `rel="canonical"` 告诉搜索引擎新地址。新地址指向的页面不存在、或旧路径上已经有页面时，这一条会跳过并在构建日志里提醒。
+
 作者资料还可以配置 GitHub 降级数据：
 
 ```yaml
