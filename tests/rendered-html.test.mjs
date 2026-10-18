@@ -285,11 +285,12 @@ test("hides empty home sections and gives every content index an intentional emp
 });
 
 test("the example post keeps a wide local image, and tags create a release", async () => {
-  const [post, image, measure, publish] = await Promise.all([
+  const [post, image, measure, publish, a2] = await Promise.all([
     readFile(new URL("../content/posts/windowsill-herbs.md", import.meta.url), "utf8"),
     readFile(new URL("../content/posts/windowsill-herbs/sill.svg", import.meta.url), "utf8"),
     readFile(new URL("../app/components/ArticleMeasure.tsx", import.meta.url), "utf8"),
     readFile(new URL("../.github/workflows/publish.yml", import.meta.url), "utf8"),
+    readFile(new URL("../app/styles/a2.css", import.meta.url), "utf8"),
   ]);
   assert.match(post, /!\[朝北的窗台，从左到右是罗勒、薄荷和一只空盆。\]\(\.\/windowsill-herbs\/sill\.svg\)/);
   assert.doesNotMatch(post, /oss-|aliyuncs|myqcloud/i);
@@ -297,6 +298,13 @@ test("the example post keeps a wide local image, and tags create a release", asy
   assert.match(image, /width="2560" height="840" viewBox="0 0 1280 420"/);
   assert.match(measure, /querySelectorAll<HTMLElement>\("\.fig"\)/);
   assert.match(measure, /figureBreakout\(\{/);
+  // images show at their display size; small ones are not stretched to the column
+  const figImg = a2.match(/\.markdown-body \.fig-card img \{[^}]*\}/)?.[0] ?? "";
+  assert.match(figImg, /width: auto;/);
+  assert.match(figImg, /max-width: 100%;/);
+  assert.doesNotMatch(figImg, /(^|[\s;{])width: 100%/);
+  assert.match(measure, /imageDisplayWidth\(\{ naturalWidth: image\.naturalWidth, attrWidth \}\)/);
+  assert.match(measure, /image\.style\.width = `\$\{display\}px`/);
   assert.match(measure, /naturalWidth/);
   assert.match(publish, /if: github\.event_name == 'push' && startsWith\(github\.ref, 'refs\/tags\/v'\)/);
   assert.match(publish, /gh release create "\$tag" --generate-notes/);

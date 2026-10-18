@@ -75,6 +75,18 @@ export function tableBreakout({
 }
 
 /**
+ * The width an article image displays at: its width attribute when it has
+ * one, otherwise half its pixels (screenshots are usually 2x). 0 while the
+ * image has not loaded. Never more than the image itself, so nothing is
+ * enlarged; the column still caps it through max-width.
+ */
+export function imageDisplayWidth({ naturalWidth = 0, attrWidth = 0, density = 2 }) {
+  if (attrWidth > 0) return naturalWidth > 0 ? Math.min(attrWidth, naturalWidth) : attrWidth;
+  if (!(naturalWidth > 0)) return 0;
+  return Math.round(naturalWidth / density);
+}
+
+/**
  * How far a figure steps out on each side. Screenshots are usually 2x, so an
  * image displays at naturalWidth / density unless it states its own width.
  * A figure widens only when that display width is wider than the column, and
@@ -94,7 +106,7 @@ export function figureBreakout({
   edge = 24,
 }) {
   if (viewport < minViewport) return { left: 0, right: 0 };
-  const display = attrWidth > 0 ? attrWidth : naturalWidth / density;
+  const display = imageDisplayWidth({ naturalWidth, attrWidth, density });
   // Wider than the text column, or it stays in the column.
   if (!(display > figureClient)) return { left: 0, right: 0 };
   const need = Math.floor(display - imageClient);

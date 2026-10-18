@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { figureBreakout, tableBreakout, tocShift } from "../../ui/garden/enhance.mjs";
+import { figureBreakout, imageDisplayWidth, tableBreakout, tocShift } from "../../ui/garden/enhance.mjs";
 
 function translatedX(element: Element) {
   const value = new DOMMatrix(getComputedStyle(element).transform).m41;
@@ -102,6 +102,11 @@ export function ArticleMeasure() {
         const image = figure.querySelector("img");
         resetWide(figure);
         if (!image?.naturalWidth) return;
+        const attrWidth = Number(image.getAttribute("width")) || 0;
+        // Show the image at its display size; max-width keeps it inside the card.
+        const display = imageDisplayWidth({ naturalWidth: image.naturalWidth, attrWidth });
+        if (display) image.style.width = `${display}px`;
+        else image.style.removeProperty("width");
         widen(figure, figureBreakout({
           viewport,
           articleLeft: articleBox.left,
@@ -109,7 +114,7 @@ export function ArticleMeasure() {
           figureClient: figure.clientWidth,
           imageClient: image.clientWidth,
           naturalWidth: image.naturalWidth,
-          attrWidth: Number(image.getAttribute("width")) || 0,
+          attrWidth,
         }));
       });
       placeToc();

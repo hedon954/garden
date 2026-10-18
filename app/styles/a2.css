@@ -628,7 +628,9 @@ html[data-theme="dark"] .markdown-body .markdown-alert code {
 }
 
 .markdown-body .fig-card img {
-  width: 100%;
+  width: auto;
+  max-width: 100%;
+  margin: 0 auto;
   border-radius: 8px;
 }
 
