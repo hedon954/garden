@@ -511,3 +511,16 @@ test("posts have no topic: no field, no filter, no label", async () => {
     assert.doesNotMatch(meaningful, /\btopics?\b|TOPIC/, `${file} still mentions topic`);
   }
 });
+
+test("/blog rows show the post's column, linked to that column; other posts show nothing there", async () => {
+  const response = await render("/blog");
+  assert.equal(response.status, 200);
+  const html = await response.text();
+  const rows = [...html.matchAll(/<li class="sh-row">[\s\S]*?<\/li>/g)].map((match) => match[0]);
+  assert.ok(rows.length >= 9);
+  const inColumn = rows.find((row) => row.includes("/blog/building-in-public/ship-with-evidence"));
+  assert.match(inColumn ?? "", /<a (?=[^>]*class="cat")(?=[^>]*href="\/columns#building-in-public")[^>]*>一个人造产品<\/a>/);
+  const standalone = rows.find((row) => row.includes("/blog/markdown-lab"));
+  assert.ok(standalone);
+  assert.doesNotMatch(standalone, /class="cat"/);
+});

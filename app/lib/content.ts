@@ -26,6 +26,13 @@ export const columnEntryPath = (entry: Pick<ContentEntry, "column" | "path">) =>
 export const columnHref = (entry: Pick<ContentEntry, "column" | "path">) =>
   `/columns/${entry.column}/${columnEntryPath(entry)}`;
 
+/** The column a post belongs to (the first one, if it is listed in several). */
+export const columnOfPost = (post: Pick<ContentEntry, "path">) => {
+  const entry = columns.find((item) => item.path === post.path && item.column);
+  return entry?.column ? { slug: entry.column, title: entry.columnTitle ?? entry.column } : undefined;
+};
+export const columnIndexHref = (slug: string) => `/columns#${slug}`;
+
 export const formatDate = (value: string, withTime = false) => {
   if (!withTime) return demoDateLabel(value);
   const canonical = canonicalSiteDate(value) ?? value;

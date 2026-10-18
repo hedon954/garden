@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { columns, postHref, posts } from "../lib/content";
+import { columnIndexHref, columnOfPost, columns, postHref, posts } from "../lib/content";
 import { ContentEmptyState } from "./ContentEmptyState";
 
 function day(value: string) {
@@ -14,6 +14,11 @@ function day(value: string) {
     month: "2-digit",
     day: "2-digit",
   }).format(date);
+}
+
+function ColumnLabel({ path }: { path: string }) {
+  const column = columnOfPost({ path });
+  return column ? <Link className="cat" href={columnIndexHref(column.slug)}>{column.title}</Link> : null;
 }
 
 export function BlogArchive() {
@@ -68,6 +73,7 @@ export function BlogArchive() {
                       </h3>
                       {post.description ? <p>{post.description}</p> : null}
                     </div>
+                    <ColumnLabel path={post.path} />
                   </li>
                 ))}
               </ol>
@@ -90,7 +96,7 @@ export function BlogArchive() {
             <ol>
               {series.map(([slug, entries]) => (
                 <li key={slug}>
-                  <Link href={`/columns#${slug}`}><span>{entries[0]?.columnTitle ?? slug}</span><span className="n num">{entries.length}</span></Link>
+                  <Link href={columnIndexHref(slug)}><span>{entries[0]?.columnTitle ?? slug}</span><span className="n num">{entries.length}</span></Link>
                 </li>
               ))}
             </ol>
