@@ -198,7 +198,8 @@ test("renders complex Markdown, article covers, and mixed thought media", async 
 
   assert.equal(archiveResponse.status, 200);
   const archive = await archiveResponse.text();
-  assert.match(archive, /class="archive-cover"/);
+  // The row cover was always clipped to 1px; it is no longer downloaded at all.
+  assert.doesNotMatch(archive, /class="archive-cover"/);
   assert.match(archive, /class="archive-copy"/);
   assert.match(archive, /class="archive-meta" dateTime="2026-07-25">07-25</);
   assert.doesNotMatch(archive, /\?topic=|class="sh-filters" aria-label="按分类筛选"/);
@@ -749,4 +750,17 @@ test("link cards: inline links keep the text and get a preview card, standalone 
   const css = await readFile(new URL("../app/styles/a2.css", import.meta.url), "utf8");
   assert.match(css, /\.markdown-body img\.lc-thumb \{[^}]*aspect-ratio: 1\.91 \/ 1;/u);
   assert.match(css, /\.link-card:focus-visible \{/u);
+});
+
+test("list pages: images below the fold are lazy, at most one cover loads early", async () => {
+  for (const pathname of ["/", "/blog", "/columns"]) {
+    const html = await (await render(pathname)).text();
+    const images = html.match(/<img\b[^>]*>/gu) ?? [];
+    const early = images.filter((tag) => /fetchPriority="high"|fetchpriority="high"/u.test(tag));
+    assert.ok(early.length <= 1, `${pathname}: ${early.length} early images`);
+    for (const tag of images) {
+      if (early.includes(tag)) continue;
+      assert.match(tag, /loading="lazy"/u, `${pathname}: ${tag}`);
+    }
+  }
 });

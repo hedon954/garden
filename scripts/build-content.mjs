@@ -11,6 +11,7 @@ import { referenceDomain } from "../ui/garden/references.mjs";
 import { linkAssetsForRender } from "./link-assets.mjs";
 import { cardUrls } from "../ui/garden/markdown-links.mjs";
 import { buildSearchIndex } from "../ui/garden/search-index.mjs";
+import { coverImageSet, loadSharp } from "./cover-images.mjs";
 
 function resolveSiteRoot() {
   if (process.env.GARDEN_SITE) return path.resolve(process.env.GARDEN_SITE);
@@ -112,6 +113,8 @@ const isExternalAsset = (value) =>
   value.startsWith("#");
 
 const assetCache = new Map();
+/** Published URL → original file and its copy, for making resized covers later. */
+const assetFiles = new Map();
 
 function copyLocalAsset(value, markdownPath, sourcePath, options = {}) {
   if (!value || isExternalAsset(value)) return value;
@@ -141,10 +144,9 @@ function copyLocalAsset(value, markdownPath, sourcePath, options = {}) {
     const destination = path.join(generatedMediaRoot, safeRelative);
     fs.mkdirSync(path.dirname(destination), { recursive: true });
     fs.copyFileSync(absoluteSource, destination);
-    assetCache.set(
-      absoluteSource,
-      `${basePath}/media/${safeRelative.split(path.sep).map(encodeURIComponent).join("/")}`,
-    );
+    const url = `${basePath}/media/${safeRelative.split(path.sep).map(encodeURIComponent).join("/")}`;
+    assetCache.set(absoluteSource, url);
+    assetFiles.set(url, { source: absoluteSource, destination });
   }
 
   return `${assetCache.get(absoluteSource)}${suffix}`;
@@ -542,6 +544,19 @@ const a2WordCounts = fs.existsSync(parityDir)
     }))
   : {};
 
+// Resized WebP covers for lists and article heroes; skipped quietly without sharp.
+const sharp = await loadSharp();
+if (sharp) {
+  const sets = new Map();
+  for (const entry of [...posts, ...columns]) {
+    const files = entry.cover ? assetFiles.get(entry.cover) : undefined;
+    if (!files) continue;
+    if (!sets.has(entry.cover)) sets.set(entry.cover, await coverImageSet({ sharp, ...files, url: entry.cover }));
+    const set = sets.get(entry.cover);
+    if (set) entry.coverImage = set;
+  }
+}
+
 const contentHash = crypto
   .createHash("sha256")
   .update(JSON.stringify({ posts, columns, thoughts, a2WordCounts }))
@@ -583,6 +598,7 @@ export type ContentEntry = {
   columnCoverAlt?: string;
   order?: number;
   cover?: string;
+  coverImage?: { src: string; srcset: string; width: number; height: number };
   mediaType?: "image" | "audio" | "video" | "link" | "text";
   media?: string | MediaItem[];
   mediaAlt?: string;

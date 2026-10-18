@@ -122,10 +122,6 @@ function ArchiveView({ posts, series, selected, go }: ArchiveData & { selected: 
                   <li className="sh-row" key={post.path}>
                     <time className="archive-meta" dateTime={day(post.date)}>{day(post.date).slice(5)}</time>
                     <div className="archive-copy">
-                      {post.cover ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img className="archive-cover" src={post.cover} alt="" />
-                      ) : null}
                       <h3>
                         <Link href={postHref(post)}>{post.title}</Link>
                         {post.pinned ? <span className="pin">置顶</span> : null}

@@ -33,6 +33,8 @@ declare module "@garden/generated-content" {
     columnCoverAlt?: string;
     order?: number;
     cover?: string;
+    /** Resized WebP copies of a local cover, when the build had sharp. */
+    coverImage?: { src: string; srcset: string; width: number; height: number };
     original?: string;
     mediaType?: "image" | "audio" | "video" | "link" | "text";
     media?: string | MediaItem[];

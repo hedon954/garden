@@ -10,7 +10,6 @@ export type ArchivePost = {
   date: string;
   tags?: string[];
   description?: string;
-  cover?: string;
   pinned?: boolean;
   column?: { slug: string; title: string };
 };
@@ -26,7 +25,6 @@ export function archivePosts(): ArchivePost[] {
       date: post.date,
       ...(post.tags?.length ? { tags: post.tags } : {}),
       ...(post.description ? { description: post.description } : {}),
-      ...(post.cover ? { cover: post.cover } : {}),
       ...(post.pinned ? { pinned: true } : {}),
       ...(column ? { column } : {}),
     };
