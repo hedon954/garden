@@ -490,7 +490,7 @@ test("0.4.3: wider reading column, transparent column cards, and tag chips under
     const row = header.indexOf('class="article-tagrow"');
     assert.ok(meta >= 0 && row > meta, "tag row sits right after the meta row");
     for (const tag of tags) {
-      assert.match(header, new RegExp(`<a class="tag-chip p-category" href="/tags\\?t=${encodeURIComponent(tag)}">#(<!-- -->)?${tag}</a>`));
+      assert.match(header, new RegExp(`<a class="tag-chip p-category" href="/blog\\?t=${encodeURIComponent(tag)}">#(<!-- -->)?${tag}</a>`));
     }
     assert.doesNotMatch(header, /class="cat"|\/blog\?topic=/);
     assert.doesNotMatch(html, /class="article-tags"/);
@@ -501,7 +501,7 @@ test("posts have no topic: no field, no filter, no label", async () => {
   const files = [
     "scripts/build-content.mjs", "scripts/check-post.mjs", "scripts/new-post.mjs",
     "app/lib/content.ts", "app/garden-modules.d.ts", "app/page.tsx",
-    "app/components/SiteHeader.tsx", "app/components/BlogArchive.tsx", "app/components/TagIndex.tsx",
+    "app/components/SiteHeader.tsx", "app/components/BlogArchive.tsx", "app/tags/page.tsx",
     "app/components/AdminDashboard.tsx", "app/admin/page.tsx", "app/a2/[slug]/page.tsx", "app/lib/a2-preview.ts",
     "app/globals.css", "Makefile", "templates/site/Makefile", "docs/content-authoring.md", "docs/quick-start.md",
   ];
@@ -523,4 +523,34 @@ test("/blog rows show the post's column, linked to that column; other posts show
   const standalone = rows.find((row) => row.includes("/blog/markdown-lab"));
   assert.ok(standalone);
   assert.doesNotMatch(standalone, /class="cat"/);
+});
+
+test("/blog filters by several tags through the URL, and /tags is only an index", async () => {
+  const [archive, source, tagsPage, redirect, shell] = await Promise.all([
+    render("/blog").then((response) => response.text()),
+    readFile(new URL("../app/components/BlogArchive.tsx", import.meta.url), "utf8"),
+    render("/tags").then((response) => response.text()),
+    readFile(new URL("../app/components/TagRedirect.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/styles/shell.css", import.meta.url), "utf8"),
+  ]);
+  const chips = archive.match(/<ul class="sh-tagchips" aria-label="按标签筛选">[\s\S]*?<\/ul>/)?.[0] ?? "";
+  assert.match(chips, /<button type="button" class="sh-tagchip" aria-pressed="false">/);
+  assert.match(archive, /<span aria-live="polite">共 <!-- -->?9<!-- -->? 篇<\/span>|<span aria-live="polite">共 9 篇<\/span>/);
+  assert.match(source, /searchParams\.getAll\(TAG_PARAM\)/);
+  assert.match(source, /filterByTags\(posts, selected\)/);
+  assert.match(source, /router\.push\(tagFilterHref/);
+  assert.match(source, /没有同时带这些标签的文章。/);
+  assert.match(source, /清除/);
+  assert.match(source, /全部标签/);
+  assert.doesNotMatch(source, /topic|按分类筛选/);
+
+  assert.match(tagsPage, /<ul class="sh-tagchips sh-tagindex" aria-label="全部标签">/);
+  assert.match(tagsPage, /<a href="\/blog\?t=Markdown" class="sh-tagchip">#<!-- -->Markdown<span class="n num">/);
+  assert.doesNotMatch(tagsPage, /aria-pressed|sh-tagresult|分类/);
+  assert.match(redirect, /router\.replace\(target\)/);
+
+  assert.match(shell, /\.sh-tagchips\{display:flex;flex-wrap:wrap;gap:12px 8px/);
+  assert.match(shell, /\.sh-tagchip\[aria-pressed="true"\]\{background:var\(--blue\);color:var\(--paper\)/);
+  assert.match(shell, /\.sh-tagchip:disabled\{/);
+  assert.match(shell, /\.sh-tagchip::after,\.sh-tagmore::after\{[^}]*height:44px/);
 });

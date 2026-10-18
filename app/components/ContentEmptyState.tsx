@@ -8,7 +8,7 @@ const emptyContent = {
     icon: Article,
     eyebrow: "暂无博文",
     title: "暂无博文。",
-    description: "文章会按主题和时间排在这里。",
+    description: "文章会按时间排在这里。",
     actionHref: "/",
     actionLabel: "返回首页",
   },
