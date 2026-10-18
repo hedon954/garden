@@ -78,3 +78,8 @@ test("search entry: magnifier and 搜索 like a nav link, ⌘K only with a fine 
   assert.match(shell, /\.sh-menu-btn,\.sh-search-m\{display:inline-grid;width:44px;height:44px\}/u);
   assert.match(read("app/components/SiteHeader.tsx"), /<span className="lbl">搜索<\/span>/u);
 });
+
+test("article cover leaves half a gutter before the TOC rail", () => {
+  const css = read("app/styles/a2.css");
+  assert.match(css, /\.article-hero\.article-cover \{\s*width: 100%;\s*\/\*[^*]*\*\/\s*max-width: calc\(var\(--col\) \+ 72px\);\s*margin: 48px auto 0;/u);
+});

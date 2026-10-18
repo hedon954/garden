@@ -243,7 +243,8 @@ body {
 .cover-card.cover-img,
 .article-hero.article-cover {
   width: 100%;
-  max-width: 880px;
+  /* Column plus half a gutter each side: centred, and clear of the TOC rail. */
+  max-width: calc(var(--col) + 72px);
   margin: 48px auto 0;
   aspect-ratio: auto;
   background: none;
