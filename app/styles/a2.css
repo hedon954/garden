@@ -806,8 +806,10 @@ html[data-theme="dark"] .markdown-body .markdown-alert code {
   }
 
   /* A hidden TOC slides just past the right edge; clip it there so it does not
-     widen the page. clip (unlike hidden) keeps the sticky TOC working. */
-  html[data-toc-yield] #main-content {
+     widen the page. clip (unlike hidden) keeps the sticky TOC working. Not tied
+     to data-toc-yield: the attribute goes as the TOC starts sliding back, and
+     the page would widen for that 0.3s. */
+  #main-content:has(.toc) {
     overflow-x: clip;
   }
 }
