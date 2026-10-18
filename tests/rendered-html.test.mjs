@@ -72,6 +72,10 @@ test("server-renders the finished blog home", async () => {
   assert.doesNotMatch(columnPage, /readingTime/);
   assert.match(shell, /\.sh-intro h1\{[^}]*max-width:var\(--list\);text-wrap:balance/);
   assert.match(shell, /\.sh-intro p\{[^}]*text-wrap:balance/);
+  assert.match(shell, /\.sh-pin-surface\{background:var\(--paper-2\);border-radius:var\(--r-lg\)/);
+  assert.match(shell, /\.sh-pin-surface h3\{margin:0;font:600 var\(--fs-body\)\/1\.55 var\(--sans\)/);
+  assert.match(shell, /\.sh-row h3\{grid-column:2;margin:0;font:600 var\(--fs-body\)\/1\.55 var\(--sans\)/);
+  assert.match(shell, /\.sh-home-grid>\.sh-pin\{order:-1\}/);
   assert.match(html, /id="h-pin">置顶</);
   assert.doesNotMatch(html, /最近随想/);
   assert.doesNotMatch(html, /home-thought-list/);

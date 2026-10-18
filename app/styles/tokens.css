@@ -3,6 +3,7 @@
 :root,
 :root[data-theme="light"] {
   --paper: #f8f7f3;
+  --paper-2: #f0eee8;
   --paper-deep: #f0eee8;
   --card: #ffffff;
   --ink: #1b1a18;
@@ -55,6 +56,7 @@
 :root[data-theme="dark"],
 html[data-theme="dark"] {
   --paper: #161513;
+  --paper-2: #22211d;
   --paper-deep: #22211d;
   --card: #1e1d1a;
   --ink: #eeece7;
