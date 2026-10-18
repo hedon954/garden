@@ -70,3 +70,16 @@ test("/blog gets its list as props, not from the content module", () => {
   const page = read("app/blog/page.tsx");
   assert.match(page, /<BlogArchive posts=\{list\} series=\{series\} \/>/u);
 });
+
+test("client JS has no Markdown parser and no previewed file text", () => {
+  const scripts = files("dist/client/assets/", /\.js$/u);
+  assert.ok(scripts.length, "run the build first");
+  for (const file of scripts) {
+    const source = fs.readFileSync(file, "utf8");
+    // A sentence from content/posts/windowsill-herbs-kit/watering-log.md.
+    assert.ok(!source.includes("土面下两指还湿就不浇"), `${path.basename(file)} carries the previewed Markdown`);
+  }
+  const drawer = read("app/components/garden/FilePreview.tsx");
+  assert.match(drawer, /^"use client";/u);
+  assert.doesNotMatch(drawer, /react-markdown|marked|remark|rehype|MarkdownArticle/u);
+});

@@ -598,7 +598,7 @@ test("/blog filters by several tags through the URL, and /tags is only an index"
   ]);
   const chips = archive.match(/<ul class="sh-tagchips" aria-label="按标签筛选">[\s\S]*?<\/ul>/)?.[0] ?? "";
   assert.match(chips, /<button type="button" class="sh-tagchip" aria-pressed="false">/);
-  assert.match(archive, /<span aria-live="polite">共 <!-- -->?9<!-- -->? 篇<\/span>|<span aria-live="polite">共 9 篇<\/span>/);
+  assert.match(archive, /<span aria-live="polite">共 <!-- -->?10<!-- -->? 篇<\/span>|<span aria-live="polite">共 10 篇<\/span>/);
   assert.match(source, /searchParams\.getAll\(TAG_PARAM\)/);
   assert.match(source, /filterByTags\(posts, selected\)/);
   assert.match(source, /router\.push\(tagFilterHref/);
@@ -907,4 +907,24 @@ test("0.5.14: /tags links point at /blog/?t=… with the slash, URL-encoded", as
   assert.match(source, /<Link className="sh-tagchip" href=\{articleTagHref\(tag\)\}>/u);
   const redirect = await readFile(new URL("../app/components/TagRedirect.tsx", import.meta.url), "utf8");
   assert.match(redirect, /tagFilterHref\(tags, ARTICLE_TAG_LIST\)/u);
+});
+
+test("garden file renders cards on the server and ships the Markdown preview already rendered", async () => {
+  const response = await render("/blog/windowsill-herbs-kit");
+  assert.equal(response.status, 200);
+  const html = await response.text();
+  const visible = html.replace(/<script[\s\S]*?<\/script>/gu, "");
+  assert.equal(visible.match(/class="gf single"/gu)?.length, 2);
+  assert.equal(visible.match(/class="gf group"/gu)?.length, 1);
+  assert.match(visible, /<a class="gf-btn pri" href="\/media\/posts\/windowsill-herbs-kit\/herb-kit\.zip" download="herb-kit\.zip"/u);
+  assert.match(visible, /ZIP · 1\.8 KB/u);
+  assert.match(visible, /JPG · 4\.3 MB/u);
+  assert.equal(visible.match(/class="gf-btn gf-preview"/gu)?.length, 3);
+  // The OSS row: open in a new tab and download, no preview.
+  assert.match(visible, /<a class="gf-btn icon" href="https:\/\/upload\.wikimedia\.org\/[^"]+" target="_blank" rel="noopener noreferrer"/u);
+  // The previewed document is not in the visible page, and neither is the build data.
+  assert.doesNotMatch(visible, /窗台香草浇水记录|resolved/u);
+  // It travels with the page already rendered (heading ids carry the block prefix), never as Markdown source.
+  assert.match(html, /gf2-0-窗台香草浇水记录/u);
+  assert.doesNotMatch(html, /\| 第 1 周 \||## 怎么记/u);
 });
