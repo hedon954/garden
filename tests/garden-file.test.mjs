@@ -25,7 +25,7 @@ import {
   previewBody,
 } from "../ui/garden/file-block.mjs";
 import { checkFileSources, resolveRepoFile } from "../ui/garden/file-paths.mjs";
-import { previewDocument, previewFileName, renderFilePreview } from "../scripts/file-preview.mjs";
+import { PREVIEW_TOKENS, previewDocument, previewFileName, renderFilePreview } from "../scripts/file-preview.mjs";
 import { probeFileSize, readFileSizeCache, refreshFileSizes, remoteFileSources } from "../scripts/file-sizes.mjs";
 import { contentForDistribution, contentForFeed, contentToSearchText } from "../ui/core/transform.mjs";
 import { countDemoWords } from "../ui/garden/word-count.mjs";
@@ -408,4 +408,40 @@ test("the build fails on a missing file or a file outside content/", async () =>
       await rm(site, { recursive: true, force: true });
     }
   }
+});
+
+test("preview code blocks look like the article's: same code type and backgrounds, light and dark", async () => {
+  const [tokens, articleCss, drawer] = await Promise.all([
+    readFile(new URL("../app/styles/tokens.css", import.meta.url), "utf8"),
+    readFile(new URL("../app/styles/a2.css", import.meta.url), "utf8"),
+    readFile(new URL("../app/components/garden/FilePreview.tsx", import.meta.url), "utf8"),
+  ]);
+  // In the drawer: the preview's pre.code sits in .markdown-body.prose, so the article's own rules style it ...
+  assert.match(renderFilePreview("```js\nlet a\n```"), /^<pre class="code" data-language="JS">/u);
+  assert.match(drawer, /className="markdown-body prose gf-doc"/u);
+  assert.match(articleCss, /\.markdown-body pre\.code,\n\.prose pre\.code \{[^}]*background: var\(--well\)/u);
+  // ... and nothing scoped to the drawer overrides them.
+  assert.doesNotMatch(articleCss, /\.gf-(?:doc|db|drawer)[^{]*\b(?:pre|code)\b[^{]*\{/u);
+  // On the standalone page (no JavaScript): the article's tokens, light and dark.
+  const block = (selector) => tokens.slice(tokens.indexOf(selector)).split("}")[0];
+  const token = (css, name) => css.match(new RegExp(`--${name}:\\s*([^;]+);`, "u"))?.[1].trim();
+  const light = block(':root[data-theme="light"] {');
+  const dark = block(':root[data-theme="dark"]');
+  assert.equal(PREVIEW_TOKENS.mono, token(light, "mono"));
+  assert.equal(PREVIEW_TOKENS.sans, token(light, "sans"));
+  for (const name of ["paper", "ink", "well", "tint", "rule"]) {
+    assert.equal(PREVIEW_TOKENS.light[name], token(light, name), `light --${name}`);
+    assert.equal(PREVIEW_TOKENS.dark[name], token(dark, name), `dark --${name}`);
+  }
+  for (const [kind, selector] of [["keyword", ".hljs-keyword"], ["string", ".hljs-string"], ["comment", ".hljs-comment"], ["number", ".hljs-number"], ["title", ".hljs-title"], ["attr", ".hljs-attr"]]) {
+    const lightRule = articleCss.slice(articleCss.indexOf(`\n${selector}`)).split("}")[0];
+    const darkRule = articleCss.slice(articleCss.indexOf(`html[data-theme="dark"] ${selector}`)).split("}")[0];
+    assert.equal(PREVIEW_TOKENS.hljs.light[kind], lightRule.match(/color: (#[0-9a-f]+)/u)?.[1], `light ${selector}`);
+    assert.equal(PREVIEW_TOKENS.hljs.dark[kind], darkRule.match(/color: (#[0-9a-f]+)/u)?.[1], `dark ${selector}`);
+  }
+  const page = previewDocument("<pre><code>x</code></pre>");
+  assert.ok(page.includes(`pre,code{font-family:${PREVIEW_TOKENS.mono}}`));
+  assert.ok(page.includes(`pre{background:${PREVIEW_TOKENS.light.well}}`));
+  assert.ok(page.includes(`@media (prefers-color-scheme:dark){body{background:${PREVIEW_TOKENS.dark.paper};color:${PREVIEW_TOKENS.dark.ink}}pre{background:${PREVIEW_TOKENS.dark.well}}`));
+  assert.match(page, /pre\{margin:28px 0;padding:18px 22px;border-radius:8px;overflow-x:auto\}pre code\{display:block;font-size:14px;line-height:1\.6\}/u);
 });
