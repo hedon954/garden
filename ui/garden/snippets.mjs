@@ -15,8 +15,8 @@ export function vscodeSnippets() {
   const snippets = {
     "Garden 块": {
       prefix: "garden",
-      body: ["```garden ${1|idea,card,stat,compare,timeline,chart,figure,html,interactive|}", "$0", "```"],
-      description: "选择 Garden 块：想法 / card / stat / compare / timeline / chart / figure / html / interactive",
+      body: [`\`\`\`garden \${1|${["idea", ...GARDEN_NAMES].join(",")}|}`, "$0", "```"],
+      description: `选择 Garden 块：想法 / ${GARDEN_NAMES.join(" / ")}`,
     },
   };
   for (const trigger of IDEA.triggers) {

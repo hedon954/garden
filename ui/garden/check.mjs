@@ -3,6 +3,7 @@ import { isProseSteps, isTrivialInteractive } from "./enhance.mjs";
 import { blanksBetween, classifyFence, isFullCodeFence, scanFences } from "./parse.mjs";
 import { splitTitle } from "./title.mjs";
 import { splitCompareLine } from "./compare-line.mjs";
+import { readFileProps } from "./file-block.mjs";
 
 const COMPARE_LIMIT = 60;
 
@@ -80,6 +81,17 @@ export function checkGardenMarkdown(markdown, { draft = false, title = "", title
     if (block.error?.code === "garden-yaml") {
       const allowed = block.error.allowed ?? CATALOG[block.name]?.keys ?? [];
       push(fence.line, "garden-yaml", block.error.message, allowed.length ? `可用的键：${allowed.join("、")}` : "检查缩进和冒号。");
+      return;
+    }
+    if (block.name === "file") {
+      if (block.props.resolved !== undefined) {
+        push(fence.line, "garden-file", "resolved 由构建生成，不要手写。", "删掉 resolved，只写 src、title、note 或 files。");
+        return;
+      }
+      const { errors } = readFileProps(block.props);
+      if (errors.length) {
+        push(fence.line, "garden-file", errors.join("；"), "单个文件写 src（可加 title、note）；一组文件写 files 列表，每项一个 src。");
+      }
       return;
     }
     if (block.name === "compare" && compareTooLong(block.props)) {
