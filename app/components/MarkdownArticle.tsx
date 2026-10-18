@@ -21,7 +21,10 @@ import { CodeCopy } from "./garden/chrome";
 import { CodeDiff } from "./garden/chrome";
 import { GardenBlock } from "./garden/GardenBlock";
 import { linkAssets } from "@garden/generated-content";
+import { siteConfig } from "@garden/site-config";
+import { LinkCardRefresh } from "./LinkCardRefresh";
 import { linkHost } from "../../scripts/link-meta-core.mjs";
+import { cardDate } from "../../ui/garden/card-refresh.mjs";
 
 /** The site's favicon, downloaded at build time; nothing when there is none. */
 function Favicon({ href }: { href: string }) {
@@ -87,10 +90,6 @@ function stripPrefix(children: ReactNode, prefix: string): ReactNode {
   return walk(children);
 }
 
-const cardDate = (value?: string) => {
-  const match = /^(\d{4})-(\d{2})-(\d{2})/u.exec(value ?? "");
-  return match ? `${match[1]} 年 ${Number(match[2])} 月 ${Number(match[3])} 日` : "";
-};
 
 /**
  * A link card. Standalone (the author's paragraph was just the link), it is the
@@ -143,6 +142,8 @@ const headingText = (children: ReactNode) => {
 };
 
 export function MarkdownArticle({ content }: { content: string }) {
+  // Optional layer 2: a Worker that refreshes card text. Without it, cards stay as built.
+  const cardWorker = content.includes("{card}") ? siteConfig.linkPreview?.worker : undefined;
   const numbers = { h2: 0, h3: 0 };
   const numberedArticle = articleUsesHeadingNumbers(content);
   const headingBase = articleHeadingBase(content);
@@ -269,6 +270,7 @@ export function MarkdownArticle({ content }: { content: string }) {
       >
         {content}
       </ReactMarkdown>
+      {cardWorker ? <LinkCardRefresh endpoint={cardWorker} /> : null}
     </div>
   );
 }

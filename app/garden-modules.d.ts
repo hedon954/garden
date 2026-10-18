@@ -68,6 +68,7 @@ declare module "@garden/site-config" {
     author: { name: string; github: string; githubBio: string; githubPinned?: string[] };
     pages: Record<string, Record<string, unknown>>;
     footer: string;
+    linkPreview?: { worker?: string };
   };
   export const githubUrl: string;
 }

@@ -9,6 +9,7 @@ import { contentForFeed, contentToSearchText, transformUiContent } from "../ui/c
 import { countDemoWords } from "../ui/garden/word-count.mjs";
 import { referenceDomain } from "../ui/garden/references.mjs";
 import { linkAssetsForRender } from "./link-assets.mjs";
+import { cardUrls } from "../ui/garden/markdown-links.mjs";
 
 function resolveSiteRoot() {
   if (process.env.GARDEN_SITE) return path.resolve(process.env.GARDEN_SITE);
@@ -669,6 +670,11 @@ const sitemapEntries = [
   ...columns.map((entry) => `/columns/${entry.column}/${columnEntryPath(entry)}/`),
   ...thoughts.map((entry) => `/thoughts/${entry.slug}/`),
 ];
+// Card URLs in published entries: the only pages the link-card Worker may read.
+fs.writeFileSync(
+  path.join(publicRoot, "link-allowlist.json"),
+  `${JSON.stringify({ urls: [...new Set([...posts, ...columns, ...thoughts].flatMap((entry) => cardUrls(entry.content)))].sort() }, null, 2)}\n`,
+);
 fs.writeFileSync(path.join(publicRoot, "sitemap.xml"), `<?xml version="1.0" encoding="UTF-8" ?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${sitemapEntries.map((entry) => `
   <url><loc>${escapeXml(`${publicBaseUrl}${entry}`)}</loc></url>`).join("")}

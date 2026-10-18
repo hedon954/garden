@@ -52,3 +52,12 @@ About 页打开后会直接从 GitHub REST API 同步头像、姓名、bio、位
 GitHub 个性状态、近 30 天 commits、真正的 pinned repositories 与过去一年的 contributions 热点图来自需要 Token 的 GraphQL API，因此仍在发布时使用工作流的只读 `github.token` 生成，Token 不会暴露到浏览器。本地没有 `GITHUB_TOKEN` 时，`githubPinned` 是置顶仓库的可靠降级来源。
 
 专栏与界面配置分开：专栏标题、描述、封面和文章顺序都在 `content/columns.yaml`；博文正文始终只在 `content/posts/` 维护一份。`posts` 使用相对 `content/posts/` 的多级路径，文章 URL 也与该路径一致。详见[内容编写](content-authoring.md)。
+
+链接卡片在构建时就已完整。想让读者打开文章时顺便拿到对方页面最新的标题和简介，可以部署仓库里的 `worker/og`（见 [worker/og/README.md](../worker/og/README.md)），再在 `site.config.yaml` 里写上它的地址：
+
+```yaml
+linkPreview:
+  worker: https://garden-og.<你的子域>.workers.dev
+```
+
+不写就不会有这一步，页面也不会多出任何请求。
