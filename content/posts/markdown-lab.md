@@ -32,7 +32,7 @@ cover: https://images.unsplash.com/photo-1761414500824-e280de5a1b37?auto=format&
 
 实现**掩码（Masking）**操作，引入**多头注意力（Multi-Head Attention）**机制；前**（中文括号）**后也能正常加粗。
 
-<u>新的向量知道前面有 `Your journey`，后面有 `with one step`，下划线应连续。</u>
+<u>新的向量知道前面有 `Your journey`，后面有 `with one step`，高亮应连续。</u>
 
 一段文字可以同时包含**粗体**、*斜体*、~~删除线~~、`inline code` 和 [外部链接](https://typora.io/)。
 
