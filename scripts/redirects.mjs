@@ -21,6 +21,7 @@ import { pathToFileURL } from "node:url";
 import { parse as parseYaml } from "yaml";
 import { configuredSiteAddress } from "../ui/garden/same-site.mjs";
 import { withTrailingSlash } from "../ui/garden/site-href.mjs";
+import { resolveBrand } from "./brand.mjs";
 
 const escapeHtml = (value) => String(value).replace(/&/gu, "&amp;").replace(/"/gu, "&quot;").replace(/</gu, "&lt;").replace(/>/gu, "&gt;");
 
@@ -34,13 +35,15 @@ export function redirectFile(from) {
   return /\.html?$/iu.test(clean) ? clean : path.posix.join(clean.replace(/\/+$/u, ""), "index.html");
 }
 
-export function redirectPage({ href, canonical }) {
+export function redirectPage({ href, canonical, icon = "" }) {
+  // The site's own icon, so the browser does not go looking for /favicon.ico.
+  const iconLink = icon ? `\n<link rel="icon" href="${escapeHtml(icon)}"${/\.svg(?:[?#]|$)/iu.test(icon) ? ' type="image/svg+xml"' : ""}>` : "";
   return `<!doctype html>
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
 <title>页面已移动</title>
-<link rel="canonical" href="${escapeHtml(canonical)}">
+<link rel="canonical" href="${escapeHtml(canonical)}">${iconLink}
 <meta http-equiv="refresh" content="0; url=${escapeHtml(href)}">
 <script>location.replace(${JSON.stringify(href).replace(/</gu, "\\u003c")}${href.includes("#") ? "" : " + location.hash"})</script>
 </head>
@@ -61,7 +64,7 @@ export function redirectPage({ href, canonical }) {
  * the site path it points to was not built; the build step then fails,
  * because `written` falls short of `expected`.
  */
-export function generateRedirects({ outDir, config = {}, env = {}, basePath = "", log = () => {}, extra = [] }) {
+export function generateRedirects({ outDir, config = {}, env = {}, basePath = "", log = () => {}, extra = [], icon = "" }) {
   const base = String(basePath ?? "").replace(/\/+$/u, "");
   let origin = "";
   try {
@@ -114,7 +117,7 @@ export function generateRedirects({ outDir, config = {}, env = {}, basePath = ""
     const href = external ? to : withTrailingSlash(`${base}${to}`);
     const canonical = external || !origin ? href : `${origin}${href}`;
     fs.mkdirSync(path.dirname(file), { recursive: true });
-    fs.writeFileSync(file, redirectPage({ href, canonical }));
+    fs.writeFileSync(file, redirectPage({ href, canonical, icon }));
     written.push({ from, to: href, file });
   }
   return { written, expected: pairs.length, skipped };
@@ -143,6 +146,7 @@ export function runRedirectStep({ siteRoot, env = process.env, out = process.std
       config,
       env,
       basePath,
+      icon: resolveBrand(siteRoot, config, basePath.replace(/\/+$/u, "")).favicon,
       log: (line) => out.write(`警告：${line}\n`),
       extra,
     });

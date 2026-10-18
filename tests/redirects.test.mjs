@@ -240,3 +240,26 @@ test("the build step is quiet and succeeds when no redirects are configured", as
     fs.rmSync(site, { recursive: true, force: true });
   }
 });
+
+test("redirect pages carry the site's icon, so there is no /favicon.ico request", async () => {
+  const { site, out } = cliSite({
+    config: "redirects:\n  /old/post/: /blog/post\n",
+    pages: ["blog/post"],
+  });
+  try {
+    const { spawnSync } = await import("node:child_process");
+    const result = spawnSync(process.execPath, [new URL("../scripts/redirects.mjs", import.meta.url).pathname], {
+      env: { ...process.env, GARDEN_SITE: site, NEXT_PUBLIC_BASE_PATH: "/notes" },
+      encoding: "utf8",
+    });
+    assert.equal(result.status, 0, result.stdout + result.stderr);
+    const page = fs.readFileSync(path.join(out, "old/post/index.html"), "utf8");
+    assert.match(page, /<link rel="icon" href="\/notes\/favicon\.svg" type="image\/svg\+xml">/u);
+    // The target is a site address like any other: trailing slash, base path in front.
+    assert.match(page, /url=\/notes\/blog\/post\//u);
+  } finally {
+    fs.rmSync(site, { recursive: true, force: true });
+  }
+  assert.match(redirectPage({ href: "/a/", canonical: "/a/", icon: "/brand/icon.png" }), /<link rel="icon" href="\/brand\/icon\.png">/u);
+  assert.doesNotMatch(redirectPage({ href: "/a/", canonical: "/a/" }), /rel="icon"/u);
+});
