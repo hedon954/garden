@@ -664,3 +664,36 @@ test("body links answer hover with a darker underline, and the current TOC item 
   assert.match(a2, /\.toc li\.active > \.toc-item-row > a \{[^}]*font-weight: 600;/);
   assert.match(a2, /\.toc li\.active > \.toc-item-row::before \{[^}]*width: 2px;[^}]*background: var\(--ink\);/);
 });
+
+test("references render as a numbered list in one warm card, with the source site after each title", async () => {
+  const [response, generated, globals] = await Promise.all([
+    render("/blog/markdown-lab"),
+    readFile(new URL("../.garden/generated-content.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/globals.css", import.meta.url), "utf8"),
+  ]);
+  assert.equal(response.status, 200);
+  const html = await response.text();
+  const section = html.match(/<section class="article-references[^"]*"[\s\S]*?<\/section>/)?.[0] ?? "";
+  assert.ok(section, "references section");
+  // six entries: two columns on wide screens
+  assert.match(section, /class="article-references is-split"/);
+  assert.match(section, /<h2 id="article-references-heading">参考<\/h2>/);
+  assert.match(section, /<ol>/);
+  assert.doesNotMatch(section, /<table|<td|<tr/);
+  assert.equal((section.match(/<li>/g) ?? []).length, 6);
+  // the domain is worked out at build time and shown after the title
+  assert.match(generated, /"domain":\s*"spec\.commonmark\.org"/);
+  assert.match(section, /<a href="https:\/\/spec\.commonmark\.org\/" rel="noreferrer">CommonMark Spec<\/a> <span class="ref-domain">spec\.commonmark\.org<\/span>/);
+  assert.match(section, /<span class="ref-domain">github\.github\.com<\/span>/);
+  // an entry without a link shows the title only
+  assert.match(section, /<li><span class="ref-title">《The Elements of Typographic Style》<\/span><\/li>/);
+
+  const card = globals.match(/\.article-references \{[^}]*\}/)?.[0] ?? "";
+  assert.match(card, /background: var\(--card-hover\);/);
+  assert.match(card, /border: 1px solid var\(--rule\);/);
+  assert.match(card, /border-radius: var\(--r\);/);
+  assert.match(globals, /\.article-references > h2 \{[^}]*font: 600 17px \/ 1\.4 var\(--sans\);/);
+  assert.match(globals, /@media \(min-width: 900px\) \{\s*\.article-references\.is-split ol \{\s*columns: 2;/);
+  assert.match(globals, /\.article-references a \{[^}]*text-decoration-color: color-mix\(in srgb, var\(--ink\) 35%, transparent\);/);
+  assert.doesNotMatch(globals, /\.article-references (table|td|tr)\b/);
+});

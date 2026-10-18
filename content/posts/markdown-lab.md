@@ -9,6 +9,18 @@ tags:
   - KaTeX
 pinned: false
 readingTime: 10 分钟
+references:
+  - title: CommonMark Spec
+    url: https://spec.commonmark.org/
+  - title: GitHub Flavored Markdown Spec
+    url: https://github.github.com/gfm/
+  - title: Typora 支持的 Markdown 语法
+    url: https://support.typora.io/Markdown-Reference/
+  - title: KaTeX 支持的函数
+    url: https://katex.org/docs/supported.html
+  - title: Mermaid 文档
+    url: https://mermaid.js.org/intro/
+  - title: 《The Elements of Typographic Style》
 cover: https://images.unsplash.com/photo-1761414500824-e280de5a1b37?auto=format&fit=crop&w=1600&q=84
 ---
 

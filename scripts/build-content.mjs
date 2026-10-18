@@ -7,6 +7,7 @@ import { parse as parseYaml, stringify as stringifyYaml } from "yaml";
 import { canonicalSiteDate } from "./site-date.mjs";
 import { contentForFeed, contentToSearchText, transformUiContent } from "../ui/core/transform.mjs";
 import { countDemoWords } from "../ui/garden/word-count.mjs";
+import { referenceDomain } from "../ui/garden/references.mjs";
 
 function resolveSiteRoot() {
   if (process.env.GARDEN_SITE) return path.resolve(process.env.GARDEN_SITE);
@@ -95,7 +96,8 @@ const normalizeReferences = (value, sourcePath) => {
     if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
       fail(sourcePath, `${where}.url 必须是 http 或 https 链接`);
     }
-    return { title, url };
+    const domain = referenceDomain(url);
+    return domain ? { title, url, domain } : { title, url };
   });
   return references.length ? references : undefined;
 };
@@ -564,7 +566,7 @@ export type ContentEntry = {
   publishAt?: string;
   draft?: boolean;
   tags?: string[];
-  references?: { title: string; url?: string }[];
+  references?: { title: string; url?: string; domain?: string }[];
   pinned?: boolean;
   readingTime?: string;
   kind: "post" | "column" | "thought";

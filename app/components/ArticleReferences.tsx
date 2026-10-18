@@ -1,6 +1,9 @@
+import { referenceColumns, referenceDomain } from "../../ui/garden/references.mjs";
+
 type ReferenceItem = {
   title: string;
   url?: string;
+  domain?: string;
 };
 
 export function ArticleReferences({
@@ -9,39 +12,36 @@ export function ArticleReferences({
   references?: ReferenceItem[];
 }) {
   if (!references?.length) return null;
+  const split = referenceColumns(references.length) === 2;
 
   return (
-    <section className="article-references" aria-labelledby="article-references-heading">
-      <p id="article-references-heading">参考</p>
-      <table>
-        <tbody>
-          {references.map((item, index) => {
-            const number = index + 1;
-            return (
-              <tr key={index}>
-                <td>
-                  {item.url ? (
-                    <a href={item.url} tabIndex={-1} aria-hidden="true">
-                      {number}
-                    </a>
-                  ) : (
-                    <span>{number}</span>
-                  )}
-                </td>
-                <td>
-                  {item.url ? (
-                    <a href={item.url} rel="noreferrer">
-                      <span>{item.title}</span>
-                    </a>
-                  ) : (
-                    <span>{item.title}</span>
-                  )}
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+    <section
+      className={split ? "article-references is-split" : "article-references"}
+      aria-labelledby="article-references-heading"
+    >
+      <h2 id="article-references-heading">参考</h2>
+      <ol>
+        {references.map((item, index) => {
+          const domain = item.domain ?? referenceDomain(item.url);
+          return (
+            <li key={index}>
+              {item.url ? (
+                <a href={item.url} rel="noreferrer">
+                  {item.title}
+                </a>
+              ) : (
+                <span className="ref-title">{item.title}</span>
+              )}
+              {domain ? (
+                <>
+                  {" "}
+                  <span className="ref-domain">{domain}</span>
+                </>
+              ) : null}
+            </li>
+          );
+        })}
+      </ol>
     </section>
   );
 }
