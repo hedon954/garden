@@ -431,6 +431,12 @@ html[data-theme="dark"] .markdown-body a.ext {
   object-fit: contain;
 }
 
+/* Only the icon and the first word stay together; the rest of a long link,
+   a bare URL included, wraps when the line runs out. */
+.markdown-body a.ext {
+  overflow-wrap: break-word;
+}
+
 .markdown-body a.ext .fav-keep {
   white-space: nowrap;
 }
