@@ -47,6 +47,8 @@ declare module "@garden/generated-content" {
   export const columns: ContentEntry[];
   export const thoughts: ContentEntry[];
   export const a2WordCounts: Record<string, number>;
+  export type LinkAssets = { favicons: Record<string, string> };
+  export const linkAssets: LinkAssets;
 }
 
 declare module "@garden/site-config" {

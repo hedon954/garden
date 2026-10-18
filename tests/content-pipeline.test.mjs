@@ -33,10 +33,9 @@ test("content pipeline validates metadata, excludes drafts, and publishes Typora
       path.join(projectRoot, "scripts", "build-content.mjs"),
       path.join(fixture, "scripts", "build-content.mjs"),
     );
-    await cp(
-      path.join(projectRoot, "scripts", "site-date.mjs"),
-      path.join(fixture, "scripts", "site-date.mjs"),
-    );
+    for (const script of ["site-date.mjs", "link-assets.mjs", "link-meta-core.mjs"]) {
+      await cp(path.join(projectRoot, "scripts", script), path.join(fixture, "scripts", script));
+    }
     await cp(
       path.join(projectRoot, "site.config.yaml"),
       path.join(fixture, "site.config.yaml"),

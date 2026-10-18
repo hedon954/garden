@@ -8,6 +8,7 @@ import { canonicalSiteDate } from "./site-date.mjs";
 import { contentForFeed, contentToSearchText, transformUiContent } from "../ui/core/transform.mjs";
 import { countDemoWords } from "../ui/garden/word-count.mjs";
 import { referenceDomain } from "../ui/garden/references.mjs";
+import { linkAssetsForRender } from "./link-assets.mjs";
 
 function resolveSiteRoot() {
   if (process.env.GARDEN_SITE) return path.resolve(process.env.GARDEN_SITE);
@@ -588,11 +589,14 @@ export type ContentEntry = {
   linkDescription?: string;
 };
 
+export type LinkAssets = { favicons: Record<string, string> };
+
 export const contentHash = "${contentHash}";
 export const posts = ${JSON.stringify(posts, null, 2)} as ContentEntry[];
 export const columns = ${JSON.stringify(columns, null, 2)} as ContentEntry[];
 export const thoughts = ${JSON.stringify(thoughts, null, 2)} as ContentEntry[];
 export const a2WordCounts = ${JSON.stringify(a2WordCounts, null, 2)} as Record<string, number>;
+export const linkAssets = ${JSON.stringify(linkAssetsForRender(root, basePath), null, 2)} as LinkAssets;
 `;
 
 fs.mkdirSync(path.dirname(output), { recursive: true });

@@ -408,6 +408,23 @@ html[data-theme="dark"] .markdown-body a.ext {
   text-decoration-thickness: 2px;
 }
 
+/* Site favicon before an external link, downloaded at build time. */
+.markdown-body a.ext img.fav {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  margin: 0 5px 0 0;
+  border-radius: 3px;
+  vertical-align: -2px;
+  object-fit: contain;
+}
+
+.markdown-body .table-wrap a.ext img.fav,
+.markdown-body h2 a.ext img.fav,
+.markdown-body h3 a.ext img.fav {
+  display: none;
+}
+
 .markdown-body :not(pre) > code {
   font: 400 var(--fs-small) / 1 var(--mono);
   color: var(--ink);

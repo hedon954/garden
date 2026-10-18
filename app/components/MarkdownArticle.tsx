@@ -19,6 +19,16 @@ import { MarkdownImage } from "./MarkdownImage";
 import { CodeCopy } from "./garden/chrome";
 import { CodeDiff } from "./garden/chrome";
 import { GardenBlock } from "./garden/GardenBlock";
+import { linkAssets } from "@garden/generated-content";
+import { linkHost } from "../../scripts/link-meta-core.mjs";
+
+/** The site's favicon, downloaded at build time; nothing when there is none. */
+function Favicon({ href }: { href: string }) {
+  const src = linkAssets?.favicons?.[linkHost(href)];
+  if (!src) return null;
+  // eslint-disable-next-line @next/next/no-img-element -- a 14px local icon, no optimisation needed
+  return <img className="fav" src={src} alt="" width={14} height={14} loading="lazy" decoding="async" aria-hidden="true" />;
+}
 
 const BLOCK_LANGUAGES = ["language-mermaid"];
 const isBlockLanguage = (className?: string) =>
@@ -177,14 +187,17 @@ export function MarkdownArticle({ content }: { content: string }) {
           },
           a: ({ href, children, ...props }) => {
             const external = Boolean(href && /^(https?:)?\/\//iu.test(href));
+            const domProps = { ...props };
+            Reflect.deleteProperty(domProps, "node");
             return (
               <a
                 href={href}
-                {...props}
+                {...domProps}
                 {...(external
                   ? { className: "ext", target: "_blank", rel: "noopener noreferrer" }
                   : {})}
               >
+                {external && href ? <Favicon href={href} /> : null}
                 {children}
               </a>
             );

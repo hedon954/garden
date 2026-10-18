@@ -354,6 +354,7 @@ function help() {
   garden sync             只从 Markdown 生成索引
   garden new              创建文章草稿
   garden embed            拉取外链摘要
+  garden links            重新拉取外链图标（build 时会自动做）
   garden init [目录]      创建只含稿和配置的新站点
   garden check <文章.md>  检查一篇博文的硬性结构
   garden ui <子命令>      Intelligent UI：scan、check、apply、prompt、schema、catalog
@@ -379,7 +380,12 @@ switch (command) {
     runVinext(["dev", ...rest]);
     break;
   case "build":
+    // Favicons are refetched on every build; failures fall back to link-assets.json.
+    if (process.env.GARDEN_OFFLINE !== "1") runNode("scripts/link-assets.mjs");
     runVinext(["build", ...rest], { copyDist: true });
+    break;
+  case "links":
+    runNode("scripts/link-assets.mjs");
     break;
   case "start":
     runVinext(["start", ...rest]);
