@@ -118,7 +118,7 @@ references:
   assert.equal(translated.ok, true);
 });
 
-test("a title that cannot split warns without failing the check", async (t) => {
+test("a title splits at the first separator and warns only for an empty side", async (t) => {
   const root = await site(t);
   const article = (title) => `---
 title: ${title}
@@ -129,10 +129,10 @@ topic: 测试
 
 ## 正文
 `;
-  const multiple = await check(root, article("甲丨乙｜丙"));
-  assert.equal(multiple.ok, true);
-  assert.deepEqual(codes(multiple), []);
-  assert.deepEqual(warnings(multiple), ["title-split"]);
+  const several = await check(root, article("FOSA丨01丨xxx"));
+  assert.equal(several.ok, true);
+  assert.deepEqual(codes(several), []);
+  assert.deepEqual(warnings(several), []);
 
   const empty = await check(root, article("只有左边丨"));
   assert.equal(empty.ok, true);

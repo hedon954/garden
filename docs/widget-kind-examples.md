@@ -201,7 +201,7 @@ caption: P 只从本地或全局队列取 G；G 必须绑在某个 P 上，P 必
 | B Prefill/Decode | [stepper.html](./widget-kind-examples/stepper.html) | 专用 QKV 类型 |
 | C KV 显存墙 | [param-bench.html](./widget-kind-examples/param-bench.html) | 只画一张死图 |
 
-博文演示在 `content/posts/understand-kv-cache.md`，图表在同名目录 `content/posts/understand-kv-cache/`。
+这些 HTML 留在本目录，给作者对照原语。
 
 ---
 

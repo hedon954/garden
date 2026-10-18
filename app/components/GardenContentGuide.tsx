@@ -100,7 +100,7 @@ const guides: Guide[] = [
       <>文件名就是地址。标题和日期写在开头。先存着就标成草稿。</>,
       <>图片、音频、视频和链接按顺序放进 <code>media</code>。</>,
     ],
-    result: "它会出现在随想页和首页，并且有自己的链接。",
+    result: "它会出现在随想页，并且有自己的链接。",
     path: "content/thoughts/walk-after-rain.md",
     source: thoughtSource,
     language: "markdown",

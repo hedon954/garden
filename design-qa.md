@@ -67,7 +67,7 @@ No actionable P0, P1, or P2 mismatch remains for the requested "similar style" t
 - Revised browser capture: `/Users/hedon/Documents/blog/implementation-home-reference-state.png`
 - Combined comparison: `/Users/hedon/Documents/blog/design-comparison-home-v2.png`
 - The comparison uses the same 1065 × 837 viewport and the same scrolled home-list state.
-- The `01`–`04` labels are absent. “置顶博文”“最近博文”“最近随想”“主题专栏” now share the same crimson heading treatment.
+- The `01`–`04` labels are absent. “置顶”“最近更新”“专栏” share the same heading treatment. The home page no longer has a “最近随想” section.
 - Pinned and recent article rows now share the same 67 px row height, date/title/topic hierarchy, divider treatment, and arrow alignment.
 - Supporting browser checks passed for: full-color GitHub avatar (`filter: none`), 12 px article TOC, four covered posts, two KaTeX display blocks, two rendered Mermaid SVGs, one mixed thought containing three images plus audio/video/link, and a 390 px layout without horizontal overflow.
 - No browser console errors were recorded in the revised routes.

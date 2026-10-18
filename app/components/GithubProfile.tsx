@@ -253,7 +253,7 @@ export async function GithubProfile() {
         <header>
           <div>
             <p className="eyebrow">PINNED / 置顶仓库</p>
-            <h3 id="github-pinned-title">正在持续构建的项目</h3>
+            <h3 id="github-pinned-title">正在做的项目</h3>
           </div>
           <PushPin size={20} aria-hidden="true" />
         </header>

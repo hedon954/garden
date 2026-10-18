@@ -252,11 +252,6 @@ button {
   margin-top: 72px;
 }
 
-.home-thought-list {
-  display: grid;
-  gap: 24px;
-}
-
 .section-heading {
   min-height: 40px;
   margin-bottom: 21px;
@@ -3695,12 +3690,6 @@ button {
 
 .footer-inner a:hover {
   color: var(--accent);
-}
-
-.footer-framework a {
-  text-decoration: underline;
-  text-decoration-color: var(--line-strong);
-  text-underline-offset: 3px;
 }
 
 @media (max-width: 1080px) {

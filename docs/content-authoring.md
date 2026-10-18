@@ -145,14 +145,14 @@ Mermaid 图表同时提供“图表”和“代码”查看方式。
 本地 HTML 页面或 PDF 不要摊进 Markdown。一篇稿对应一个同名目录，目录里每一份 `.html` / `.pdf` 是一份可单独打开的文件；正文只用 `widget` 围栏嵌入。外部网页不要放进 `widget`，继续用上面的 `embed` 卡片。
 
 ```text
-content/posts/understand-kv-cache.md
-content/posts/understand-kv-cache/waste.html
+content/posts/windowsill-herbs.md
+content/posts/windowsill-herbs/layers.html
 ```
 
 ````md
-```widget
-src: ./understand-kv-cache/waste.html
-caption: 朴素 decode 每步重算全部过去 token；6 个 token 共 21 次计算，其中 15 次是浪费。
+```garden html
+src: ./windowsill-herbs/layers.html
+title: 水从土面渗到排水孔，大约要一分钟。
 ```
 ````
 

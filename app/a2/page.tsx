@@ -12,7 +12,7 @@ export default function A2Index() {
     <main className="page-shell index-page">
       <header className="sh-head">
         <h1>A2 对照</h1>
-        <p className="sh-deck">用这套组件渲染参考文章，对照线上演示。正文没有改字。</p>
+        <p className="sh-deck">对照参考文章的版式。正文没有改字。</p>
       </header>
       <ul className="sh-rows">
         {articles.map((article) => (

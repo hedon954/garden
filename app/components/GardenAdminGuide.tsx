@@ -17,7 +17,7 @@ const adminJobs = [
   },
   {
     title: "改文章里的交互",
-    description: "写作台把一句话收成可交互的块。组件页能看到每一种块长什么样。",
+    description: "写作台把一句话收成可以动手试的一块。",
   },
 ];
 

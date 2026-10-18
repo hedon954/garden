@@ -13,16 +13,21 @@ test("a title splits into two equal lines at one separator", () => {
   assert.deepEqual(split.lines, ["Rust 实战", "手写一个 SpinLock"]);
   assert.equal(split.separator, "丨");
   assert.equal(splitTitle("没有分隔").split, false);
-  assert.equal(splitTitle("甲丨乙｜丙").issue, "multiple");
   assert.equal(splitTitle("只有左边丨").issue, "empty");
+  assert.equal(splitTitle("丨只有右边").issue, "empty");
   assert.equal(splitTitle("Full | width title").separator, " | ");
+  const several = splitTitle("FOSA丨01丨xxx");
+  assert.equal(several.split, true);
+  assert.equal(several.issue, null);
+  assert.deepEqual(several.lines, ["FOSA", "01丨xxx"]);
+  assert.deepEqual(splitTitle("甲丨乙｜丙").lines, ["甲", "乙｜丙"]);
 });
 
-test("a title that cannot split warns and still stays one line", () => {
-  const multiple = checkGardenMarkdown("", { title: "甲丨乙｜丙", titleLine: 2 });
-  assert.deepEqual(multiple.map((item) => [item.code, item.severity, item.line]), [["title-split", "warning", 2]]);
+test("a title with an empty side warns and stays one line", () => {
+  const several = checkGardenMarkdown("", { title: "FOSA丨01丨xxx", titleLine: 2 });
+  assert.equal(several.some((item) => item.code === "title-split"), false);
   const empty = checkGardenMarkdown("", { title: "只有左边丨", titleLine: 3 });
-  assert.deepEqual(empty.map((item) => [item.code, item.severity]), [["title-split", "warning"]]);
+  assert.deepEqual(empty.map((item) => [item.code, item.severity, item.line]), [["title-split", "warning", 3]]);
   const clean = checkGardenMarkdown("", { title: "Rust 实战丨手写一个 SpinLock" });
   assert.equal(clean.some((item) => item.code === "title-split"), false);
 });
@@ -126,7 +131,7 @@ test("editor snippets, Typora templates and text replacements come from one cata
   const template = readFileSync(new URL("../templates/garden-blocks.md", import.meta.url), "utf8");
   assert.equal(template, markdown);
   const chartSkill = readFileSync(new URL("../.agents/skills/garden-interactive-chart/SKILL.md", import.meta.url), "utf8");
-  assert.match(chartSkill, /```garden html\nsrc: \.\/understand-kv-cache\/waste\.html/);
+  assert.match(chartSkill, /```garden html\nsrc: \.\/windowsill-herbs\/layers\.html/);
   assert.doesNotMatch(chartSkill, /```widget/);
   const shipped = ["../.agents/skills/garden-interactive-chart/SKILL.md", "../.agents/skills/garden-post-review/SKILL.md", "../.agents/skills/garden-ui/SKILL.md", "../templates/garden-blocks.md"]
     .map((file) => readFileSync(new URL(file, import.meta.url), "utf8"))

@@ -5,18 +5,14 @@ import { PageIntro } from "../components/PageIntro";
 import { siteConfig } from "../site.config";
 
 const about = siteConfig.pages.about;
-const heading = about.heading ?? "这个网站为什么存在";
+const heading = about.heading ?? "关于";
 const paragraphs = about.paragraphs ?? [
-  "我需要一个不被信息流推着走的地方。长文可以慢慢展开，随想可以轻轻放下；同一个主题也可以沿着清晰的顺序持续生长。",
-  "所有文章都从本地 Markdown 文件开始。这意味着我可以继续在 Typora 里写作，也意味着内容不会被某个编辑器或平台锁住。",
+  "一名工程师。平时写代码，也把想清楚的问题记下来。",
+  "这里放文章、随想和专栏。",
 ];
-const quote = about.quote ?? "写作不是把已经想明白的东西记下来，而是在句子之间发现自己还没有想明白什么。";
-const focus = about.focus ?? [
-  "将自己的关注方向写在这里",
-  "用文章积累可迁移的知识",
-  "为长期写作留出稳定的空间",
-];
-const cta = about.cta ?? { href: "/blog", label: "从博文开始" };
+const quote = about.quote ?? "";
+const focus = about.focus ?? ["软件", "笔记", "日常"];
+const cta = about.cta ?? { href: "/blog", label: "浏览博文" };
 
 export const metadata = {
   title: { absolute: siteConfig.name },
@@ -27,7 +23,7 @@ export default function AboutPage() {
   return (
     <main className="page-shell about-page">
       <PageIntro
-        eyebrow="ABOUT / 关于"
+        eyebrow="关于"
         title={about.title}
         subtitle={about.subtitle}
       />
@@ -38,7 +34,7 @@ export default function AboutPage() {
           {paragraphs.map((paragraph) => (
             <p key={paragraph}>{paragraph}</p>
           ))}
-          <blockquote>{quote}</blockquote>
+          {quote ? <blockquote>{quote}</blockquote> : null}
         </section>
         <aside className="about-facts">
           <span>现在关注</span>

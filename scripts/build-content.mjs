@@ -184,7 +184,7 @@ function assertWidgetSidecar(src, markdownPath, sourcePath) {
   ) {
     fail(
       sourcePath,
-      `widget src 必须位于同名目录 ${stem}/ 内的 .html 或 .pdf，例如 ./${stem}/notes.pdf`,
+      `widget src 必须位于同名目录 ${stem}/ 内的 .html 或 .pdf，例如 ./${stem}/diagram.html`,
     );
   }
   return absoluteSource;

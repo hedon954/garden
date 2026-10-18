@@ -1,7 +1,5 @@
 import Link from "next/link";
 import { columns, postHref, posts } from "./lib/content";
-import { ThoughtCard } from "./components/ThoughtCard";
-import { getPublishedThoughts } from "./lib/public-thoughts";
 import { githubUrl, siteConfig } from "./site.config";
 
 export const metadata = {
@@ -24,7 +22,6 @@ export default function Home() {
   const recent = [...posts].sort((left, right) => Date.parse(right.date) - Date.parse(left.date));
   const feature = recent[0];
   const pinned = posts.filter((post) => post.pinned);
-  const thoughts = getPublishedThoughts();
   const series = Array.from(
     columns.reduce((result, entry) => {
       const existing = result.get(entry.column ?? "");
@@ -126,20 +123,6 @@ export default function Home() {
                 </article>
               );
             })}
-          </div>
-        </section>
-      ) : null}
-
-      {thoughts.length > 0 ? (
-        <section className="sh-section" aria-labelledby="h-thoughts">
-          <div className="sh-sec-head">
-            <h2 id="h-thoughts">最近随想</h2>
-            <Link className="sh-more" href="/thoughts">全部随想</Link>
-          </div>
-          <div className="home-thought-list">
-            {thoughts.slice(0, 5).map((thought) => (
-              <ThoughtCard key={thought.slug} thought={thought} />
-            ))}
           </div>
         </section>
       ) : null}

@@ -34,6 +34,7 @@ test("server-renders the finished blog home", async () => {
   assert.match(html, /<title>[^<]+<\/title>/i);
   assert.match(html, /记一些正在做的事/);
   assert.doesNotMatch(html, /class="sh-feature"[\s\S]{0,400}style="background:var\(--cover\)"/);
+  assert.match(html, /<time class="num" dateTime="2026-10-16">2026-10-16<\/time>/);
   assert.match(html, /<time class="num" dateTime="2026-10-10">2026-10-10<\/time>/);
   const shell = await readFile(new URL("../app/styles/shell.css", import.meta.url), "utf8");
   assert.match(shell, /\.sh-feature \.cover\{[^}]*aspect-ratio:auto;display:block/);
@@ -42,7 +43,9 @@ test("server-renders the finished blog home", async () => {
   assert.doesNotMatch(shell, /\.sh-feature \.cover\{[^}]*aspect-ratio:16\/9/);
   assert.doesNotMatch(shell, /\.sh-feature \.cover\{border-radius:16px\}/);
   const feature = html.match(/<article class="sh-feature"[\s\S]*?<\/article>/)?.[0] ?? "";
-  assert.doesNotMatch(feature, /class="cover"/);
+  assert.match(feature, /class="cover"/);
+  assert.match(feature, /\/media\/covers\/windowsill-herbs\.svg/);
+  assert.doesNotMatch(feature, /style="background/);
   const [blogPage, columnPage] = await Promise.all([
     readFile(new URL("../app/blog/[...path]/page.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/columns/[column]/[...path]/page.tsx", import.meta.url), "utf8"),
@@ -52,7 +55,8 @@ test("server-renders the finished blog home", async () => {
   assert.match(shell, /\.sh-intro h1\{[^}]*max-width:var\(--list\);text-wrap:balance/);
   assert.match(shell, /\.sh-intro p\{[^}]*text-wrap:balance/);
   assert.match(html, /id="h-pin">置顶</);
-  assert.match(html, /最近随想/);
+  assert.doesNotMatch(html, /最近随想/);
+  assert.doesNotMatch(html, /home-thought-list/);
   assert.match(html, /id="h-cols">专栏</);
   assert.match(html, /rel="me(?: [^"]*)?"/);
   assert.doesNotMatch(html, /section-index|pinned-list/);
@@ -248,7 +252,7 @@ test("hides empty home sections and gives every content index an intentional emp
 
   assert.match(home, /pinned\.length > 0/);
   assert.match(home, /posts\.length > 0/);
-  assert.match(home, /thoughts\.length > 0/);
+  assert.doesNotMatch(home, /最近随想|ThoughtCard|getPublishedThoughts/);
   assert.match(home, /columns\[0\]/);
   assert.match(archive, /ContentEmptyState kind="posts"/);
   assert.match(thoughts, /ContentEmptyState kind="thoughts"/);

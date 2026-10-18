@@ -4,7 +4,7 @@ This note is research only. It describes the presentation techniques on [Christy
 
 Evidence comes from the live HTML, the Next.js RSC payload, and the hydrated client bundle. The three teaching widgets are client-only (`next/dynamic` + `BAILOUT_TO_CLIENT_SIDE_RENDERING`), so a Markdown scrape of the page drops them. The widgets were reconstructed from their shipped JavaScript, not guessed from the prose.
 
-The [garden](https://github.com/hedon954/garden) template already has a short KV Cache note (`content/posts/understand-kv-cache.md`) that uses Mermaid plus one display formula. That is the current Garden fallback for this topic: static diagram and math, no interaction.
+Garden’s current fallback for a topic like this is a Markdown note: Mermaid plus one display formula. That is static diagram and math, no interaction.
 
 ## 1. What the article actually does
 
@@ -112,13 +112,13 @@ Christy’s three widgets are **bespoke React**, not generic Markdown. Garden sh
 **Recommended authoring (stays Typora-valid):** put each interactive chart in a sidecar directory named after the Markdown file, then embed a short fence.
 
 ```text
-content/posts/understand-kv-cache.md
-content/posts/understand-kv-cache/waste.html
+content/posts/<slug>.md
+content/posts/<slug>/diagram.html
 ```
 
 ````md
 ```widget
-src: ./understand-kv-cache/waste.html
+src: ./<slug>/diagram.html
 caption: Naive decode recomputes every past token at every step.
 ```
 ````
@@ -185,7 +185,7 @@ Christy’s widgets are empty in the raw HTML until hydration. Garden should do 
 
 ### Suggested first article to prove it
 
-The garden template post `understand-kv-cache.md` is the natural demo: keep the Mermaid overview, then add Widget A + B + C as sidecar HTML files next to the post. garden-blog’s longer LLM posts (`weight-typing`, `back-propagation`, …) can adopt the same convention later without leaving Typora.
+Prove it on one Markdown note: keep the Mermaid overview, then add Widget A + B + C as sidecar HTML files next to that note. Longer posts can adopt the same convention later without leaving Typora.
 
 ### What not to do
 

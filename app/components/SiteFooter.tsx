@@ -7,7 +7,6 @@ export function SiteFooter() {
       <div className="sh-foot">
         <p>
           © {new Date().getFullYear()} {siteConfig.author.name} · {siteConfig.footer}
-          <span className="footer-framework"> · 基于 <a href="https://github.com/hedon954/garden" target="_blank" rel="noreferrer">Garden</a> 构建</span>
         </p>
         <div>
           <a href={githubUrl} aria-label="GitHub" rel="me">

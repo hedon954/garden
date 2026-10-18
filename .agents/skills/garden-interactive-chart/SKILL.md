@@ -34,16 +34,16 @@ description: >-
 Markdown 在 `content/posts/<dir>/<slug>.md` 时，图表只能放在 `content/posts/<dir>/<slug>/`：
 
 ```text
-content/posts/understand-kv-cache.md
-content/posts/understand-kv-cache/waste.html
+content/posts/windowsill-herbs.md
+content/posts/windowsill-herbs/layers.html
 ```
 
 正文：
 
 ````md
 ```garden html
-src: ./understand-kv-cache/waste.html
-title: 朴素 decode 每步重算全部过去 token；6 个 token 共 21 次计算，其中 15 次是浪费。
+src: ./windowsill-herbs/layers.html
+title: 水从土面渗到排水孔，大约要一分钟。
 ```
 ````
 
@@ -52,7 +52,7 @@ title: 朴素 decode 每步重算全部过去 token；6 个 token 共 21 次计�
 - `src` 必须是该同名目录里的本地 `.html` 或 `.pdf`，不能指到 `assets/`、别的文章或 `https://`
 - 带 `garden-chart` 高度回报的 HTML 是图表，直接铺开；普通 HTML 和 PDF 默认收成示意入口，读者展开后再加载
 - `title` 必须是判断，不能是「见下图」
-- 一份 HTML 一张图；文件名用 `waste.html`、`stepper.html` 这种短 kebab
+- 一份 HTML 一张图；文件名用 `layers.html`、`diagram.html` 这种短 kebab
 - HTML 自包含：CSS、SVG、脚本都在这一个文件里
 - 先写 HTML，再写围栏；围栏里不要再摊步进数组或采样点
 
