@@ -596,7 +596,8 @@ test("palette: warm paper, ink accent, no blue, readable chips in both themes", 
   const token = (css, name) => css.match(new RegExp(`--${name}:\\s*(#[0-9a-fA-F]{6})`))?.[1];
 
   assert.equal(token(light, "paper"), "#faf9f5");
-  for (const name of ["paper-deep", "well", "blue-tint", "chip", "card-hover"]) assert.equal(token(light, name), "#f0eee6", name);
+  for (const name of ["paper-deep", "well", "blue-tint", "chip"]) assert.equal(token(light, name), "#f0eee6", name);
+  assert.equal(token(light, "card-hover"), "#f5f4ed");
   assert.equal(token(light, "chip-hover"), "#e8e5db");
   assert.equal(token(light, "blue"), "#30302e");
   assert.equal(token(light, "chip-on"), "#30302e");

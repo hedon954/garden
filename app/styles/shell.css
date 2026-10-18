@@ -5,7 +5,7 @@
   --rule:#E6E3DC; --rule-strong:#D6D2C9; --well:#F0EEE6; --tint:rgba(27,26,24,.055);
   --blue:#30302E; --blue-tint:#F0EEE6; --blue-line:rgba(20,20,19,.22); --cover:#C2C0B6;
   --chip:#F0EEE6; --chip-hover:#E8E5DB; --chip-on:#30302E; --chip-on-text:#FAF9F5;
-  --card-hover:#F0EEE6; --card-shadow:0 1px 2px rgba(20,20,19,.04),0 4px 14px rgba(20,20,19,.05);
+  --card-hover:#F5F4ED; --card-shadow:0 1px 2px rgba(20,20,19,.04),0 4px 14px rgba(20,20,19,.05);
   --sans:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Noto Sans SC","Noto Sans CJK SC","Microsoft YaHei","Segoe UI",system-ui,sans-serif;
   --serif:"Source Han Serif SC","Noto Serif SC","Noto Serif CJK SC","Songti SC","STSong","Source Serif 4",Georgia,serif;
   --fs-display:46px; --fs-h2:26px; --fs-lead:20px; --fs-body:17px; --fs-small:14px; --fs-meta:13px;
