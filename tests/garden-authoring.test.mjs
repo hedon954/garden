@@ -67,6 +67,33 @@ test("a one-line compare cell keeps its colon", () => {
   assert.equal(splitCompareLine("链接：https://example.com/a:b").text, "https://example.com/a:b");
   assert.equal(splitCompareLine("https://example.com"), null);
   assert.equal(splitCompareLine("没有冒号"), null);
+  // Colons inside link text, link URLs and inline code are not separators.
+  const cases = [
+    ["[甲：乙](https://example.com)：说明", "[甲：乙](https://example.com)", "说明"],
+    ["[文档](https://example.com/a：b)：链接地址里有冒号", "[文档](https://example.com/a：b)", "链接地址里有冒号"],
+    ["`key: value`：代码里有冒号", "`key: value`", "代码里有冒号"],
+    ["``a`：b``：双反引号代码", "``a`：b``", "双反引号代码"],
+    ["**[甲：乙][ref]**: 引用式链接", "**[甲：乙][ref]**", "引用式链接"],
+    ["![图：示意](a.png)：图片", "![图：示意](a.png)", "图片"],
+    ["<https://example.com/x：y>：自动链接", "<https://example.com/x：y>", "自动链接"],
+  ];
+  for (const [line, title, text] of cases) {
+    const split = splitCompareLine(line);
+    assert.ok(split, line);
+    assert.equal(split.title, title, line);
+    assert.equal(split.text, text, line);
+    assert.equal(split.title + split.separator + split.text, line);
+  }
+  // The only colon is inside a link or code: no split, the line stays one paragraph.
+  for (const line of ["[甲：乙](https://example.com)", "看 [文档：入门](https://example.com) 再说", "`key: value`", "执行 `a：b` 即可", "[文档](https://example.com/a：b)"]) {
+    assert.equal(splitCompareLine(line), null, line);
+  }
+  // Stacked cards are one group: no card margin on top of the 12px grid gap.
+  const css = readFileSync(new URL("../app/styles/a2.css", import.meta.url), "utf8");
+  assert.match(css, /\.g-compare > \.g-cmp \{\s*margin: 0;\s*\}/u);
+  assert.match(css, /\.g-cmp > :last-child \{\s*margin-bottom: 0;\s*\}/u);
+  // Brackets that are not a link do not hide a colon.
+  assert.equal(splitCompareLine("[注]：说明").title, "[注]");
   // Length checks count only the text after the colon.
   const long = ["```garden compare", "items:", `  - "标题：${"字".repeat(61)}"`, "```"].join("\n");
   assert.ok(checkGardenMarkdown(long).some((item) => item.code === "compare-long"));
