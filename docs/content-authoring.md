@@ -190,6 +190,8 @@ content/posts/go/go-lock/mutex-notes.pdf
 content/posts/go/go-lock/demo.zip
 ```
 
+同名目录里的 `.md` 是给读者的文件，不会作为文章发布。目录里有没被文章引用的 `.md` 时，`npx garden check` 会逐个点名提醒：要单独发布，就把它移出这个目录。
+
 一个文件：
 
 ````md

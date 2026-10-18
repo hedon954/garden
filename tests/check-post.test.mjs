@@ -151,3 +151,49 @@ date: 2026-09-18 14:39:00
   assert.equal(split.ok, true);
   assert.deepEqual(warnings(split), []);
 });
+
+test("Markdown in a post's same-name folder is named, unless the post offers it as a file", async (t) => {
+  const root = await site(t);
+  const folder = path.join(root, "content", "posts", "sample");
+  await mkdir(path.join(folder, "old"), { recursive: true });
+  await writeFile(path.join(folder, "notes.md"), "---\ntitle: 笔记\n---\n\n正文\n");
+  await writeFile(path.join(folder, "old", "former-post.md"), "---\ntitle: 以前的一篇\n---\n");
+  await writeFile(path.join(folder, "kit.zip"), "zip");
+  const result = await check(root, post(`---
+
+## 正文
+
+\`\`\`garden file
+src: ./sample/notes.md
+\`\`\`
+`));
+  assert.equal(result.ok, true, JSON.stringify(result));
+  const found = result.results[0].warnings.filter((item) => item.code === "folder-markdown");
+  assert.equal(found.length, 1, JSON.stringify(found));
+  assert.match(found[0].message, /^content\/posts\/sample\/old\/former-post\.md: 在 content\/posts\/sample\.md 的同名目录里，不会作为文章发布/u);
+  assert.match(found[0].message, /把它移出 content\/posts\/sample\//u);
+
+  // Checked on its own, the file in the folder says the same.
+  let direct;
+  try {
+    ({ stdout: direct } = await exec(process.execPath, [path.join(project, "scripts/check-post.mjs"), "content/posts/sample/old/former-post.md"], {
+      cwd: root,
+      env: { ...process.env, GARDEN_SITE: root },
+    }));
+  } catch (error) {
+    direct = error.stdout;
+  }
+  const own = JSON.parse(direct).results[0].warnings.filter((item) => item.code === "folder-markdown");
+  assert.equal(own.length, 1);
+  assert.match(own[0].message, /former-post\.md: 在 content\/posts\/sample\.md 的同名目录里/u);
+
+  // A post without a folder, or whose folder holds no stray Markdown, gets no such warning.
+  await rm(path.join(folder, "old"), { recursive: true });
+  const clean = await check(root, post(`---
+
+\`\`\`garden file
+src: ./sample/notes.md
+\`\`\`
+`));
+  assert.deepEqual(clean.results[0].warnings.filter((item) => item.code === "folder-markdown"), []);
+});
