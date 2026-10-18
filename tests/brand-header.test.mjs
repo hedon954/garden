@@ -66,3 +66,15 @@ test("header: 26px logo 10px from the name, no divider or fixed box", () => {
   const header = read("app/components/SiteHeader.tsx");
   assert.match(header, /brand\.logo \? <span className="sh-mark" aria-hidden="true"/u);
 });
+
+test("search entry: magnifier and 搜索 like a nav link, ⌘K only with a fine pointer, 44px button on phones", () => {
+  const shell = read("app/styles/shell.css");
+  const rule = shell.match(/\.sh-search\{[^}]*\}/u)[0];
+  assert.match(rule, /border:0;background:transparent;color:var\(--soft\)/u);
+  assert.match(rule, /font:400 15px\/1 var\(--sans\)/u);
+  assert.match(shell, /\.sh-nav a\{font-size:15px;color:var\(--soft\)/u, "same size and colour as the nav links");
+  assert.match(shell, /\.sh-search kbd\{display:none;/u);
+  assert.match(shell, /@media \(hover:hover\) and \(pointer:fine\)\{\.sh-search kbd\{display:inline\}\}/u);
+  assert.match(shell, /\.sh-menu-btn,\.sh-search-m\{display:inline-grid;width:44px;height:44px\}/u);
+  assert.match(read("app/components/SiteHeader.tsx"), /<span className="lbl">搜索<\/span>/u);
+});

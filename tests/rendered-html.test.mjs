@@ -821,4 +821,5 @@ test("the header carries the brand logo, and the page links the configured icons
   assert.match(html, /<a href="\/" class="sh-word"><span class="sh-mark" aria-hidden="true"><svg [^>]*viewBox="6 2 18 27"[^>]*stroke="currentColor"/u);
   assert.match(html, /<link rel="icon" href="[^"]*\/favicon\.svg" type="image\/svg\+xml"\/>/u);
   assert.match(html, /<link rel="apple-touch-icon" href="[^"]*\/apple-touch-icon\.png" sizes="180x180"\/>/u);
+  assert.match(html, /<span class="lbl">搜索<\/span>/u);
 });

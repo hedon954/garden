@@ -376,7 +376,7 @@ export function SiteHeader() {
                 <circle cx="9" cy="9" r="5.8" />
                 <path d="M13.3 13.3 17 17" />
               </svg>
-              <span className="lbl">搜索文章</span>
+              <span className="lbl">搜索</span>
               <kbd><span className="kbd-mod kbd-mac">⌘</span><span className="kbd-mod kbd-other">Ctrl</span>{" "}K</kbd>
             </button>
             <button className="sh-icon sh-search-m" type="button" onClick={openSearch} onPointerDown={prefetchSearch} aria-label="搜索文章">
