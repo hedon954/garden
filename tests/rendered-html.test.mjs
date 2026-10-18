@@ -36,7 +36,13 @@ test("server-renders the finished blog home", async () => {
   assert.doesNotMatch(html, /class="sh-feature"[\s\S]{0,400}style="background:var\(--cover\)"/);
   assert.match(html, /<time class="num" dateTime="2026-10-16">2026-10-16<\/time>/);
   assert.match(html, /<time class="num" dateTime="2026-10-10">2026-10-10<\/time>/);
-  const shell = await readFile(new URL("../app/styles/shell.css", import.meta.url), "utf8");
+  const [shell, articleCss] = await Promise.all([
+    readFile(new URL("../app/styles/shell.css", import.meta.url), "utf8"),
+    readFile(new URL("../app/styles/a2.css", import.meta.url), "utf8"),
+  ]);
+  assert.match(articleCss, /\.article-hero\.article-cover \{[^}]*border-radius: var\(--r-lg\)/);
+  assert.doesNotMatch(articleCss, /article-hero\.article-cover \{\s*border-radius:\s*16px/);
+  assert.match(shell, /\.sh-foot-links a\{display:inline-flex;align-items:center;gap:8px;min-height:44px/);
   assert.match(shell, /\.sh-feature \.cover\{[^}]*aspect-ratio:auto;display:block/);
   assert.match(shell, /\.sh-feature \.cover\{[^}]*background:none/);
   assert.match(shell, /\.sh-feature \.cover img\{display:block;width:100%;height:auto\}/);

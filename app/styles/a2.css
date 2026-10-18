@@ -1285,7 +1285,7 @@ html[data-theme="dark"] .hljs-params {
 
   .cover-card,
   .article-hero.article-cover {
-    border-radius: 16px;
+    border-radius: var(--r-lg);
     margin-top: 28px;
   }
 }

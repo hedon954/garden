@@ -213,6 +213,9 @@ html[data-theme="dark"] .sh-rail{color:var(--muted)}
 .sh-foot nav{display:flex;flex-wrap:wrap;gap:4px 20px}
 .sh-foot a{color:var(--soft);text-decoration:none;padding:4px 0}
 .sh-foot a:hover{color:var(--blue)}
+.sh-foot-links{display:flex;flex:none;flex-wrap:wrap;align-items:center;gap:4px 8px}
+.sh-foot-links a{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 8px;white-space:nowrap}
+.sh-foot-links a svg{display:block;flex:none;width:19px;height:19px}
 .sh-demo{width:100%;font-size:var(--fs-meta);color:var(--muted)}
 .sh-demo a{text-decoration:underline;text-underline-offset:3px}
 

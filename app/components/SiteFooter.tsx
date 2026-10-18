@@ -8,7 +8,7 @@ export function SiteFooter() {
         <p>
           © {new Date().getFullYear()} {siteConfig.author.name} · {siteConfig.footer}
         </p>
-        <div>
+        <div className="sh-foot-links">
           <a href={githubUrl} aria-label="GitHub" rel="me">
             <GithubLogo size={19} />
             GitHub
