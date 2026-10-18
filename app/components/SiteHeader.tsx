@@ -5,15 +5,59 @@ import { usePathname } from "next/navigation";
 import {
   useCallback,
   useEffect,
-  useMemo,
   useRef,
   useState,
   type KeyboardEvent,
 } from "react";
-import Fuse, { type FuseResultMatch } from "fuse.js";
+import type Fuse from "fuse.js";
+import type { FuseResultMatch } from "fuse.js";
 import { MagnifyingGlass, X } from "@phosphor-icons/react";
-import { searchRecords } from "../lib/content";
+import { searchIndexUrl } from "@garden/site-config";
 import { siteConfig } from "../site.config";
+
+/** One entry of /search-index.json: titles, tags, dates and a short excerpt, never the full body. */
+type SearchRecord = {
+  title: string;
+  description: string;
+  section: string;
+  path: string;
+  content: string;
+  tags?: string[];
+  date?: string;
+};
+
+type SearchEngine = { records: SearchRecord[]; fuse: Fuse<SearchRecord> };
+let engineLoad: Promise<SearchEngine> | null = null;
+
+/** Index and Fuse are fetched together, the first time search is about to open. */
+function loadSearchEngine() {
+  engineLoad ??= Promise.all([
+    fetch(searchIndexUrl).then((response) => {
+      if (!response.ok) throw new Error(`search index ${response.status}`);
+      return response.json() as Promise<SearchRecord[]>;
+    }),
+    import("fuse.js"),
+  ])
+    .then(([records, { default: FuseClass }]) => ({
+      records,
+      fuse: new FuseClass(records, {
+        keys: [
+          { name: "title", weight: 0.5 },
+          { name: "description", weight: 0.3 },
+          { name: "tags", weight: 0.2 },
+          { name: "content", weight: 0.15 },
+        ],
+        threshold: 0.36,
+        ignoreLocation: true,
+        includeMatches: true,
+      }),
+    }))
+    .catch((error) => {
+      engineLoad = null;
+      throw error;
+    });
+  return engineLoad;
+}
 
 const nav = [
   { href: "/blog", label: "文章" },
@@ -119,7 +163,7 @@ function cropMatchedText(text: string, ranges: readonly MatchRange[]) {
 }
 
 function searchPreview(
-  item: (typeof searchRecords)[number],
+  item: SearchRecord,
   matches: readonly FuseResultMatch[] | undefined,
 ): { text: string; ranges: readonly MatchRange[] } {
   const descriptionRanges = rangesFor(matches, "description");
@@ -147,7 +191,15 @@ export function SiteHeader() {
   const resultRefs = useRef<Array<HTMLAnchorElement | null>>([]);
   const previousFocusRef = useRef<HTMLElement | null>(null);
 
+  const [engine, setEngine] = useState<SearchEngine | null>(null);
+  const [engineFailed, setEngineFailed] = useState(false);
+  const prefetchSearch = useCallback(() => {
+    loadSearchEngine().then(setEngine, () => setEngineFailed(true));
+  }, []);
+
   const openSearch = useCallback(() => {
+    setEngineFailed(false);
+    loadSearchEngine().then(setEngine, () => setEngineFailed(true));
     previousFocusRef.current =
       document.activeElement instanceof HTMLElement
         ? document.activeElement
@@ -190,24 +242,11 @@ export function SiteHeader() {
     return () => window.removeEventListener("keydown", onKey);
   }, [closeSearch, openSearch, searchOpen]);
 
-  const fuse = useMemo(
-    () =>
-      new Fuse(searchRecords, {
-        keys: [
-          { name: "title", weight: 0.5 },
-          { name: "description", weight: 0.3 },
-          { name: "content", weight: 0.15 },
-        ],
-        threshold: 0.36,
-        ignoreLocation: true,
-        includeMatches: true,
-      }),
-    [],
-  );
-
-  const results = query.trim()
-    ? fuse.search(query).slice(0, 6)
-    : searchRecords.slice(0, 5).map((item) => ({ item, matches: [] }));
+  const results = !engine
+    ? []
+    : query.trim()
+      ? engine.fuse.search(query).slice(0, 6)
+      : engine.records.slice(0, 5).map((item) => ({ item, matches: [] as readonly FuseResultMatch[] }));
 
   useEffect(() => {
     if (!searchOpen) return;
@@ -293,7 +332,7 @@ export function SiteHeader() {
             ))}
           </nav>
           <div className="sh-tools">
-            <button ref={searchTriggerRef} className="sh-search" type="button" onClick={openSearch} aria-label="搜索文章" aria-expanded={searchOpen} aria-controls="site-search-dialog">
+            <button ref={searchTriggerRef} className="sh-search" type="button" onClick={openSearch} onPointerEnter={prefetchSearch} onFocus={prefetchSearch} aria-label="搜索文章" aria-expanded={searchOpen} aria-controls="site-search-dialog">
               <svg viewBox="0 0 20 20" aria-hidden="true">
                 <circle cx="9" cy="9" r="5.8" />
                 <path d="M13.3 13.3 17 17" />
@@ -301,7 +340,7 @@ export function SiteHeader() {
               <span className="lbl">搜索文章</span>
               <kbd><span className="kbd-mod kbd-mac">⌘</span><span className="kbd-mod kbd-other">Ctrl</span>{" "}K</kbd>
             </button>
-            <button className="sh-icon sh-search-m" type="button" onClick={openSearch} aria-label="搜索文章">
+            <button className="sh-icon sh-search-m" type="button" onClick={openSearch} onPointerDown={prefetchSearch} aria-label="搜索文章">
               <svg viewBox="0 0 20 20" aria-hidden="true">
                 <circle cx="9" cy="9" r="5.8" />
                 <path d="M13.3 13.3 17 17" />
@@ -415,7 +454,9 @@ export function SiteHeader() {
                 );
               })}
               {results.length === 0 && (
-                <p className="empty-state">没有找到，换个更宽松的关键词试试。</p>
+                <p className="empty-state">
+                  {engine ? "没有找到，换个更宽松的关键词试试。" : engineFailed ? "搜索暂时打不开，请稍后再试。" : "正在载入…"}
+                </p>
               )}
             </div>
             <footer className="search-footer">

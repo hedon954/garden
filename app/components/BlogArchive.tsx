@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
-import { columnIndexHref, columnOfPost, columns, postHref, posts } from "../lib/content";
+import type { ArchivePost, ArchiveSeries } from "../lib/archive";
 import {
   TAG_PARAM,
   canonicalTags,
@@ -28,35 +28,40 @@ function day(value: string) {
   }).format(date);
 }
 
-function ColumnLabel({ path }: { path: string }) {
-  const column = columnOfPost({ path });
+// Kept local: importing ../lib/content here would pull every post body into the client bundle.
+const postHref = (post: Pick<ArchivePost, "path">) => `/blog/${post.path}`;
+const columnIndexHref = (slug: string) => `/columns#${slug}`;
+
+function ColumnLabel({ column }: { column?: ArchivePost["column"] }) {
   return column ? <Link className="cat" href={columnIndexHref(column.slug)}>{column.title}</Link> : null;
 }
+
+type ArchiveData = { posts: ArchivePost[]; series: ArchiveSeries[] };
 
 const NO_TAGS: string[] = [];
 
 /** Reads the selected tags from the URL; needs a Suspense boundary. */
-export function BlogArchive() {
+export function BlogArchive({ posts, series }: ArchiveData) {
   const router = useRouter();
   const pathname = usePathname() || "/blog";
   const searchParams = useSearchParams();
   const paramKey = searchParams.getAll(TAG_PARAM).join("\u0000");
-  const selected = useMemo(() => canonicalTags(posts, selectedTags(paramKey ? paramKey.split("\u0000") : [])), [paramKey]);
-  return <ArchiveView selected={selected} go={(next) => router.push(tagFilterHref(next, pathname), { scroll: false })} />;
+  const selected = useMemo(() => canonicalTags(posts, selectedTags(paramKey ? paramKey.split("\u0000") : [])), [paramKey, posts]);
+  return <ArchiveView posts={posts} series={series} selected={selected} go={(next) => router.push(tagFilterHref(next, pathname), { scroll: false })} />;
 }
 
 /**
  * The full, unfiltered list. Rendered into the static page as the Suspense
  * fallback, so the list is there before scripts run (or without them).
  */
-export function BlogArchiveFallback() {
-  return <ArchiveView selected={NO_TAGS} go={(next) => window.location.assign(tagFilterHref(next))} />;
+export function BlogArchiveFallback({ posts, series }: ArchiveData) {
+  return <ArchiveView posts={posts} series={series} selected={NO_TAGS} go={(next) => window.location.assign(tagFilterHref(next))} />;
 }
 
-function ArchiveView({ selected, go }: { selected: string[]; go: (next: string[]) => void }) {
+function ArchiveView({ posts, series, selected, go }: ArchiveData & { selected: string[]; go: (next: string[]) => void }) {
   const [compact, setCompact] = useState(false);
   const [expanded, setExpanded] = useState(false);
-  const options = useMemo(() => tagOptions(posts, selected), [selected]);
+  const options = useMemo(() => tagOptions(posts, selected), [posts, selected]);
   const { shown, hidden } = visibleTagOptions(options, expanded);
   const filtered = filterByTags(posts, selected)
     .slice()
@@ -68,16 +73,6 @@ function ArchiveView({ selected, go }: { selected: string[]; go: (next: string[]
     if (list) list.push(post);
     else years.set(year, [post]);
   }
-
-  const series = Array.from(
-    columns.reduce((result, entry) => {
-      const key = entry.column ?? "";
-      const list = result.get(key);
-      if (list) list.push(entry);
-      else result.set(key, [entry]);
-      return result;
-    }, new Map<string, typeof columns>()),
-  );
 
   return (
     <div className="sh-listgrid">
@@ -137,7 +132,7 @@ function ArchiveView({ selected, go }: { selected: string[]; go: (next: string[]
                       </h3>
                       {post.description ? <p>{post.description}</p> : null}
                     </div>
-                    <ColumnLabel path={post.path} />
+                    <ColumnLabel column={post.column} />
                   </li>
                 ))}
               </ol>
@@ -168,9 +163,9 @@ function ArchiveView({ selected, go }: { selected: string[]; go: (next: string[]
           <>
             <h2>专栏</h2>
             <ol>
-              {series.map(([slug, entries]) => (
-                <li key={slug}>
-                  <Link href={columnIndexHref(slug)}><span>{entries[0]?.columnTitle ?? slug}</span><span className="n num">{entries.length}</span></Link>
+              {series.map((column) => (
+                <li key={column.slug}>
+                  <Link href={columnIndexHref(column.slug)}><span>{column.title}</span><span className="n num">{column.count}</span></Link>
                 </li>
               ))}
             </ol>

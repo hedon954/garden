@@ -592,7 +592,7 @@ test("/blog renders the full list on the server, before any script runs", async 
     assert.ok(visible.includes(`href="/blog/${post.path}"`), `${post.path} is in the server-rendered list`);
     assert.ok(visible.includes(post.title.replace(/&/g, "&amp;")), `${post.title} is in the server-rendered list`);
   }
-  assert.match(page, /<Suspense fallback=\{<BlogArchiveFallback \/>\}>/);
+  assert.match(page, /<Suspense fallback=\{<BlogArchiveFallback posts=\{list\} series=\{series\} \/>\}>/);
 });
 
 test("palette: warm paper, ink accent, no blue, readable chips in both themes", async () => {

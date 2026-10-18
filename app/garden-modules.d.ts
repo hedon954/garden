@@ -60,6 +60,7 @@ declare module "@garden/generated-content" {
 }
 
 declare module "@garden/site-config" {
+  export const searchIndexUrl: string;
   export const siteConfig: {
     name: string;
     tagline: string;
