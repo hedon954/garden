@@ -30,8 +30,14 @@ import { cardDate } from "../../ui/garden/card-refresh.mjs";
 function Favicon({ href }: { href: string }) {
   const src = linkAssets?.favicons?.[linkHost(href)];
   if (!src) return null;
-  // eslint-disable-next-line @next/next/no-img-element -- a 14px local icon, no optimisation needed
-  return <img className="fav" src={src} alt="" width={14} height={14} loading="lazy" decoding="async" aria-hidden="true" />;
+  // The word joiner keeps the icon on the same line as the first word of the link.
+  return (
+    <>
+      {/* eslint-disable-next-line @next/next/no-img-element -- a 14px local icon, no optimisation needed */}
+      <img className="fav" src={src} alt="" width={14} height={14} loading="lazy" decoding="async" aria-hidden="true" />
+      {"\u2060"}
+    </>
+  );
 }
 
 const BLOCK_LANGUAGES = ["language-mermaid"];

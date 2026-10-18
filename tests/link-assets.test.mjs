@@ -211,6 +211,7 @@ test("external links show the local favicon before the text", () => {
   const source = fs.readFileSync(new URL("../app/components/MarkdownArticle.tsx", import.meta.url), "utf8");
   assert.match(source, /linkAssets\?\.favicons\?\.\[linkHost\(href\)\]/u);
   assert.match(source, /if \(!src\) return null;/u);
+  assert.match(source, /<img className="fav"[^>]*\/>\s*\{"\\u2060"\}/u);
   assert.match(source, /\{external && href \? <Favicon href=\{href\} \/> : null\}\s*\{children\}/u);
   const css = fs.readFileSync(new URL("../app/styles/a2.css", import.meta.url), "utf8");
   assert.match(css, /\.markdown-body a\.ext img\.fav \{[^}]*width: 14px;[^}]*height: 14px;/u);

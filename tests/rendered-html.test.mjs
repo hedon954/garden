@@ -729,7 +729,7 @@ test("link cards: inline links keep the text and get a preview card, standalone 
   const html = await (await render("/blog/markdown-lab")).text();
   const section = html.slice(html.indexOf('id="链接卡片"'), html.indexOf('id="数学公式"'));
   // Inline: the link stays in the sentence, with its favicon, and the card follows the paragraph.
-  assert.match(section, /<p>[^]*?<a href="https:\/\/github\.com\/remarkjs\/remark-gfm" class="ext"[^>]*>(<img class="fav"[^>]*>)?remark-gfm<\/a>[^]*?<\/p>\s*<div class="link-cards" data-card-url="https:\/\/github\.com\/remarkjs\/remark-gfm">/u);
+  assert.match(section, /<p>[^]*?<a href="https:\/\/github\.com\/remarkjs\/remark-gfm" class="ext"[^>]*>(<img class="fav"[^>]*>\u2060(<!-- -->)?)?remark-gfm<\/a>[^]*?<\/p>\s*<div class="link-cards" data-card-url="https:\/\/github\.com\/remarkjs\/remark-gfm">/u);
   const preview = section.match(/<div class="link-cards" data-card-url="https:\/\/github\.com\/remarkjs\/remark-gfm">[^]*?<\/div>/u)?.[0] ?? "";
   assert.match(preview, /<a class="link-card"[^>]*tabindex="-1"[^>]*aria-hidden="true"/u);
   // Standalone: no paragraph and no inline link; the card itself is the link and stays focusable.
