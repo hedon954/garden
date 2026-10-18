@@ -1519,7 +1519,6 @@ button {
   padding: 24px 26px 26px;
   background: var(--card);
   border: 1px solid var(--line);
-  scroll-margin-top: 120px;
 }
 
 .thought-card > header {

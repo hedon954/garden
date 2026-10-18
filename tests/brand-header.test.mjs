@@ -101,8 +101,11 @@ test("article titles wrap instead of running off the page, on /blog/ and /column
   }
 });
 
-test("a column heading on /columns/ lands at the page's scroll padding, not twice it", () => {
+test("column, archive-year and thought anchors land at the page's scroll padding, not twice it", () => {
   const shell = read("app/styles/shell.css");
-  const rule = shell.match(/\.sh-series h2\{[^}]*\}/u)[0];
-  assert.doesNotMatch(rule, /scroll-margin/u);
+  for (const selector of [/\.sh-series h2\{[^}]*\}/u, /\.sh-year > h2\{[^}]*\}/u, /\.sh-note\{[^}]*\}/u]) {
+    assert.doesNotMatch(shell.match(selector)[0], /scroll-margin/u, String(selector));
+  }
+  assert.match(shell, /\.sh-note:target\{background:/u, "the targeted thought keeps its highlight");
+  assert.doesNotMatch(read("app/globals.css").match(/\.thought-card \{[^}]*\}/u)[0], /scroll-margin/u);
 });
