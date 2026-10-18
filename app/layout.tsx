@@ -12,6 +12,7 @@ import {
 } from "./lib/site";
 import { githubUrl, siteConfig } from "./site.config";
 import { brand } from "@garden/site-config";
+import { HASH_JUMP_SCRIPT } from "../ui/garden/hash-jump.mjs";
 
 export async function generateMetadata(): Promise<Metadata> {
   const siteUrl = await getSiteUrl();
@@ -87,6 +88,8 @@ export default function RootLayout({
               '(function(){try{var t=localStorage.getItem("theme");var d=t==="dark"||(!t&&matchMedia("(prefers-color-scheme: dark)").matches);document.documentElement.dataset.theme=d?"dark":"light";}catch(e){}})();',
           }}
         />
+        {/* Before the router's scripts: keeps #links in a post from refetching the page (ui/garden/hash-jump.mjs). */}
+        <script dangerouslySetInnerHTML={{ __html: HASH_JUMP_SCRIPT }} />
         {mentionEndpoint && <link rel="webmention" href={mentionEndpoint} />}
         {analyticsDomain && (
           <script
