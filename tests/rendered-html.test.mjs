@@ -878,3 +878,16 @@ test("0.5.14: the header carries the no-JS menu links next to the ☰ button", a
   assert.match(header, /<a class="sh-icon sh-menu-nojs-close" href="#site-header" aria-label="关闭菜单"><svg/);
   assert.match(header, /<nav class="sh-menu" id="sh-menu" aria-label="站点导航（移动端）">/);
 });
+
+test("0.5.14: header nav links end with a slash and still mark the current section", async () => {
+  for (const [pathname, label] of [["/", null], ["/blog", "文章"], ["/tags", "标签"], ["/columns", "专栏"]]) {
+    const html = await (await render(pathname)).text();
+    const bar = html.match(/<nav class="sh-nav"[\s\S]*?<\/nav>/)?.[0] ?? "";
+    assert.ok(bar, `desktop nav on ${pathname}`);
+    const links = [...bar.matchAll(/<a ([^>]*)>([^<]+)<\/a>/g)].map((m) => ({ attrs: m[1], text: m[2] }));
+    assert.deepEqual(links.map((link) => link.attrs.match(/href="([^"]+)"/)[1]), ["/blog/", "/thoughts/", "/columns/", "/tags/", "/about/"], pathname);
+    assert.deepEqual(links.filter((link) => /aria-current="page"/.test(link.attrs)).map((link) => link.text), label ? [label] : [], pathname);
+    const menu = html.match(/<nav class="sh-menu" id="sh-menu"[\s\S]*?<\/nav>/)?.[0] ?? "";
+    assert.equal((menu.match(/href="\/(blog|thoughts|columns|tags|about)\/"/g) ?? []).length, 5, `mobile menu on ${pathname}`);
+  }
+});

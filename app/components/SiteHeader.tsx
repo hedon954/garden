@@ -16,6 +16,7 @@ import { brand, searchFull, searchIndexUrl } from "@garden/site-config";
 import { createSearch } from "../../ui/garden/search-match.mjs";
 import { cropMatchedText, highlightParts, noResultsText } from "../../ui/garden/search-preview.mjs";
 import { resolveDark, themeSwitchProps } from "../../ui/garden/theme.mjs";
+import { SITE_NAV, isCurrentNav } from "../../ui/garden/site-nav.mjs";
 import { createIdbStore, loadFullIndex, saveDataOn, whenIdleAfterLoad } from "../../ui/garden/search-full.mjs";
 import { siteConfig } from "../site.config";
 
@@ -85,13 +86,7 @@ function loadSearchEngine() {
   return engineLoad;
 }
 
-const nav = [
-  { href: "/blog", label: "文章" },
-  { href: "/thoughts", label: "随想" },
-  { href: "/columns", label: "专栏" },
-  { href: "/tags", label: "标签" },
-  { href: "/about", label: "关于" },
-];
+const nav = SITE_NAV;
 
 function rangesFor(
   matches: readonly SearchMatch[] | undefined,
@@ -302,12 +297,7 @@ export function SiteHeader() {
     window.localStorage.setItem("theme", next ? "dark" : "light");
   };
 
-  const current = (href: string) => {
-    if (href === "/blog") {
-      return pathname === "/blog" || pathname.startsWith("/blog/") || pathname.startsWith("/a2/");
-    }
-    return pathname === href || pathname.startsWith(`${href}/`);
-  };
+  const current = (href: string) => isCurrentNav(pathname, href);
 
   return (
     <>
