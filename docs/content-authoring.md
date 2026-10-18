@@ -180,6 +180,62 @@ title: 水从土面渗到排水孔，大约要一分钟。
 
 想让读者动手、又不想记组件名时，用一段 `intent` 围栏写下想法，让 AI 编译成 `ui` 块。语法、组件目录、后台工作台和 Typora / VS Code / Obsidian 插件见 [Intelligent UI 写作层](intelligent-ui.md)。
 
+### 提供文件下载
+
+想让读者下载一份文件（规格包、PDF、示例代码），用 `garden file` 围栏。文件放在这篇稿的同名目录里，`src` 相对这篇 Markdown 写：
+
+```text
+content/posts/go/go-lock.md
+content/posts/go/go-lock/mutex-notes.pdf
+content/posts/go/go-lock/demo.zip
+```
+
+一个文件：
+
+````md
+```garden file
+src: ./go-lock/demo.zip
+title: 示例代码
+note: 三个可以直接运行的加锁例子
+```
+````
+
+一组文件：
+
+````md
+```garden file
+title: 参考资料
+files:
+  - src: ./go-lock/mutex-notes.pdf
+    note: 互斥锁的状态机，一页纸
+  - src: ./go-lock/readme.md
+  - src: https://oss.example.com/go-lock/trace.zip
+    title: 完整 trace
+```
+````
+
+| 键 | 说明 |
+| --- | --- |
+| `src` | 必填。本地文件写相对路径；放在对象存储里的写完整的 `https://` 地址 |
+| `title` | 可选，卡片上的名字，默认是文件名 |
+| `note` | 可选，一句话说明里面有什么 |
+| `files` | 一组文件时用，每项写 `src`，也可以写 `title`、`note` |
+
+格式和大小不用写，构建时会算出来，显示成「PDF · 204 KB」这样的一行。构建会把本地文件复制到公开目录并改写路径；找不到文件，构建会失败。
+
+本地的 Markdown、HTML 和 PDF 可以在页面里预览：点「预览」，文件在右侧打开，手机上占满全屏。
+
+- Markdown 在构建时用和正文相同的方式渲染，浏览器里不再解析。
+- HTML 在隔离的 iframe 里运行：脚本可以跑，但拿不到本站的 Cookie 和存储。
+- PDF 用浏览器自带的阅读器打开。
+- 其他格式（ZIP、CSV 等）只提供下载。
+
+`https://` 地址的文件只提供下载和「在新标签页打开」，不在页面里预览。它们的大小来自构建时的一次 HEAD 请求，结果记在站点根目录的 `file-sizes.json`，请一起提交：某次构建连不上时沿用上次的大小；从来没取到过的就不显示大小，构建不会因此失败。只想刷新大小时运行 `npx garden files`。
+
+超过 5 MB 的本地文件，`npx garden check` 会给出警告：Git 会永久保存每个版本，大文件请放到对象存储（如阿里云 OSS），`src` 写完整地址。警告不会挡住发布。
+
+关掉脚本的读者看不到「预览」按钮，下载和打开链接照常可用。
+
 ### 使用语义警告框
 
 使用 Typora / Obsidian 兼容的 `[!TYPE]` 写法。没有自定义标题时，网页会根据类型显示对应中文标签；需要更具体的标题时，可直接写在类型后面。

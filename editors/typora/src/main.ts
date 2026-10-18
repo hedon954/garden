@@ -165,6 +165,25 @@ export default class GardenTyporaPlugin extends core.Plugin {
       host.textContent = code.trim();
       return host;
     }
+    if (typeof data.src === "string" || Array.isArray(data.files)) {
+      // garden file: one line per file, the name (or title) and its note.
+      const files = Array.isArray(data.files) ? data.files : [data];
+      if (Array.isArray(data.files) && typeof data.title === "string") {
+        const heading = document.createElement("strong");
+        heading.textContent = data.title;
+        host.append(heading);
+      }
+      const list = document.createElement("ul");
+      for (const raw of files) {
+        const file = (typeof raw === "string" ? { src: raw } : raw ?? {}) as Record<string, unknown>;
+        const src = String(file.src ?? "");
+        const row = document.createElement("li");
+        row.textContent = [file.title ?? src.split(/[?#]/u, 1)[0].split("/").pop(), file.note].filter(Boolean).join(" — ");
+        list.append(row);
+      }
+      host.append(list);
+      return host;
+    }
     const items = Array.isArray(data.items) ? data.items : null;
     if (items?.every((item) => item && typeof item === "object" && "date" in item)) {
       const list = document.createElement("ol");

@@ -117,5 +117,14 @@ intent: |
     <key>shortcut</key>
     <string>;ginteractive</string>
   </dict>
+  <dict>
+    <key>phrase</key>
+    <string>```garden file
+src: ./post-name/spec.zip
+note: 一句话说明里面有什么
+```</string>
+    <key>shortcut</key>
+    <string>;gfile</string>
+  </dict>
 </array>
 </plist>

@@ -2,11 +2,11 @@
   "Garden 块": {
     "prefix": "garden",
     "body": [
-      "```garden ${1|idea,card,stat,compare,timeline,chart,figure,html,interactive|}",
+      "```garden ${1|idea,card,stat,compare,timeline,chart,figure,html,interactive,file|}",
       "$0",
       "```"
     ],
-    "description": "选择 Garden 块：想法 / card / stat / compare / timeline / chart / figure / html / interactive"
+    "description": "选择 Garden 块：想法 / card / stat / compare / timeline / chart / figure / html / interactive / file"
   },
   "Garden 想法 garden想法": {
     "prefix": "garden想法",
@@ -132,6 +132,16 @@
       "```"
     ],
     "description": "读者需要拧参数或翻状态才能看懂，由想法编译而来。 不该用：一次乘法、把散文切成步骤，都不要做成交互。"
+  },
+  "Garden 文件 gfile": {
+    "prefix": "gfile",
+    "body": [
+      "```garden file",
+      "src: ./post-name/spec.zip",
+      "note: 一句话说明里面有什么",
+      "```"
+    ],
+    "description": "给读者一份可以下载的文件：规格包、PDF、示例代码。Markdown、HTML、PDF 还能在页面里预览。 不该用：只是引用一个网页时用 card；要在正文里直接展示的图表或页面用 html。"
   },
   "Garden 代码与对比": {
     "prefix": "gdiff",
