@@ -3,7 +3,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
-import { readRedirects, redirectFile, redirectPage, writeRedirects } from "../scripts/redirects.mjs";
+import { columnRedirects, readRedirects, redirectFile, redirectPage, writeRedirects } from "../scripts/redirects.mjs";
 
 function builtSite() {
   const out = fs.mkdtempSync(path.join(os.tmpdir(), "garden-redirects-"));
@@ -90,4 +90,34 @@ test("redirect pages escape what they print", () => {
 test("the build writes redirect pages only for a static export", () => {
   const cli = fs.readFileSync(new URL("../bin/garden.mjs", import.meta.url), "utf8");
   assert.match(cli, /if \(process\.env\.STATIC_EXPORT === "1"\) runNode\("scripts\/redirects\.mjs"\);/u);
+});
+
+test("each column gets /columns/<slug>/ → /columns/#<slug>, with the column's anchor kept", () => {
+  assert.deepEqual(columnRedirects({ columns: [{ slug: "go-advance" }, { slug: "Bad Slug" }, {}, null, { slug: "book-note" }] }), [
+    { from: "/columns/go-advance/", to: "/columns/#go-advance" },
+    { from: "/columns/book-note/", to: "/columns/#book-note" },
+  ]);
+  assert.deepEqual(columnRedirects({}), []);
+
+  const out = builtSite();
+  fs.mkdirSync(path.join(out, "columns"), { recursive: true });
+  fs.writeFileSync(path.join(out, "columns", "index.html"), "<p>columns</p>");
+  const extra = columnRedirects({ columns: [{ slug: "go-advance" }, { slug: "book-note" }] });
+  const written = writeRedirects({
+    outDir: out,
+    config: { url: "https://blog.example.org", redirects: { "/columns/book-note/": "/blog/go/go-gpm/" } },
+    extra,
+  });
+  // A configured redirect wins over the generated one for the same path.
+  assert.deepEqual(written.map(({ from, to }) => [from, to]), [
+    ["/columns/book-note/", "/blog/go/go-gpm/"],
+    ["/columns/go-advance/", "/columns/#go-advance"],
+  ]);
+  const page = fs.readFileSync(path.join(out, "columns/go-advance/index.html"), "utf8");
+  assert.match(page, /content="0; url=\/columns\/#go-advance"/u);
+  // The target already carries an anchor, so the reader's own hash is not appended.
+  assert.match(page, /location\.replace\("\/columns\/#go-advance"\)/u);
+  assert.doesNotMatch(page, /#go-advance"\) \+ location\.hash|"\/columns\/#go-advance" \+ location\.hash/u);
+  // Ordinary redirects still keep the reader's hash.
+  assert.match(fs.readFileSync(path.join(out, "columns/book-note/index.html"), "utf8"), /"\/blog\/go\/go-gpm\/" \+ location\.hash/u);
 });

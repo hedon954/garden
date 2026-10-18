@@ -30,7 +30,7 @@ function day(value: string) {
 
 // Kept local: importing ../lib/content here would pull every post body into the client bundle.
 const postHref = (post: Pick<ArchivePost, "path">) => `/blog/${post.path}`;
-const columnIndexHref = (slug: string) => `/columns#${slug}`;
+const columnIndexHref = (slug: string) => `/columns/#${slug}`;
 
 function ColumnLabel({ column }: { column?: ArchivePost["column"] }) {
   return column ? <Link className="cat" href={columnIndexHref(column.slug)}>{column.title}</Link> : null;

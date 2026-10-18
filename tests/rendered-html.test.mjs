@@ -577,7 +577,7 @@ test("/blog rows show the post's column, linked to that column; other posts show
   const rows = [...html.matchAll(/<li class="sh-row">[\s\S]*?<\/li>/g)].map((match) => match[0]);
   assert.ok(rows.length >= 9);
   const inColumn = rows.find((row) => row.includes("/blog/building-in-public/ship-with-evidence"));
-  assert.match(inColumn ?? "", /<a (?=[^>]*class="cat")(?=[^>]*href="\/columns#building-in-public")[^>]*>一个人造产品<\/a>/);
+  assert.match(inColumn ?? "", /<a (?=[^>]*class="cat")(?=[^>]*href="\/columns\/#building-in-public")[^>]*>一个人造产品<\/a>/);
   const standalone = rows.find((row) => row.includes("/blog/markdown-lab"));
   assert.ok(standalone);
   assert.doesNotMatch(standalone, /class="cat"/);

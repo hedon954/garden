@@ -32,7 +32,7 @@ export const columnOfPost = (post: Pick<ContentEntry, "path">) => {
   const entry = columns.find((item) => item.path === post.path && item.column);
   return entry?.column ? { slug: entry.column, title: entry.columnTitle ?? entry.column } : undefined;
 };
-export const columnIndexHref = (slug: string) => `/columns#${slug}`;
+export const columnIndexHref = (slug: string) => `/columns/#${slug}`;
 
 export const formatDate = (value: string, withTime = false) => {
   if (!withTime) return demoDateLabel(value);
