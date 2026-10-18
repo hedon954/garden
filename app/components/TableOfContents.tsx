@@ -40,10 +40,17 @@ const getCssScrollPaddingTop = () => {
   return Number.isFinite(offset) ? offset : 0;
 };
 
-const getScrollPaddingTop = () => {
-  const header = document.querySelector(".site-header");
+// Where a heading should stop: its own scroll-margin-top when the stylesheet
+// sets one (article headings clear the sticky header), otherwise just below
+// the header.
+const getScrollPaddingTop = (target?: Element | null) => {
+  const margin = target
+    ? Number.parseFloat(window.getComputedStyle(target).scrollMarginTop)
+    : Number.NaN;
+  if (Number.isFinite(margin) && margin > 0) return margin;
+  const header = document.querySelector(".sh-header, .site-header");
   const headerBottom = header?.getBoundingClientRect().bottom ?? 0;
-  if (headerBottom > 8) return headerBottom + 8;
+  if (headerBottom > 8) return headerBottom + 16;
   return Math.min(24, getCssScrollPaddingTop());
 };
 
@@ -94,7 +101,7 @@ const scrollToHeading = (id: string) => {
 
   const top = Math.max(
     0,
-    window.scrollY + target.getBoundingClientRect().top - getScrollPaddingTop(),
+    window.scrollY + target.getBoundingClientRect().top - getScrollPaddingTop(target),
   );
   if (Math.abs(top - window.scrollY) <= 1) return;
 

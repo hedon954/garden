@@ -2008,6 +2008,13 @@ button {
   scroll-margin-top: 0;
 }
 
+/* Headings reached from the TOC or a #link stop below the sticky header. */
+.markdown-body h2,
+.markdown-body h3,
+.markdown-body h4 {
+  scroll-margin-top: calc(var(--hdr) + 16px);
+}
+
 .markdown-body h2 {
   margin: 66px 0 22px;
   padding-top: 6px;
@@ -3035,7 +3042,10 @@ html[data-theme="dark"] .article-references {
 }
 
 .giscus-container {
-  min-height: 180px;
+  /* giscus's empty state (reactions + sign-in box) is 372px tall at every
+     width; reserving it keeps the footer still when the frame loads. More
+     comments simply make it taller. */
+  min-height: 372px;
   margin-top: 24px;
 }
 
