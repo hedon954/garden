@@ -154,3 +154,10 @@ test("the build-time breakout only applies where the column is full width, and y
   const base = fs.readFileSync(new URL("../app/styles/a2.css", import.meta.url), "utf8");
   assert.match(base, /\.markdown-body img,\s*\.markdown-image-trigger img \{[^}]*height: auto;/u);
 });
+
+test("a TOC that slides aside past the right edge does not widen the page", () => {
+  const css = fs.readFileSync(new URL("../app/styles/a2.css", import.meta.url), "utf8");
+  // clip, not hidden: hidden would make #main-content a scroll container and break the sticky TOC.
+  assert.match(css, /html\[data-toc-yield\] #main-content \{\s*overflow-x: clip;\s*\}/u);
+  assert.match(css, /html\[data-toc-yield\] \.toc \{\s*transform: translateX\(var\(--tocshift, 0px\)\);/u, "the slide itself is unchanged");
+});

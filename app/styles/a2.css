@@ -804,6 +804,12 @@ html[data-theme="dark"] .markdown-body .markdown-alert code {
     visibility: hidden;
     transition: transform 0.3s ease, visibility 0s 0.3s;
   }
+
+  /* A hidden TOC slides just past the right edge; clip it there so it does not
+     widen the page. clip (unlike hidden) keeps the sticky TOC working. */
+  html[data-toc-yield] #main-content {
+    overflow-x: clip;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
