@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import fs from "node:fs";
 import path from "node:path";
 import test from "node:test";
 import {
@@ -6,6 +7,7 @@ import {
   checkFileFacts,
   deriveHandbookFacts,
 } from "../scripts/handbook-facts.mjs";
+import { checkUiBlock } from "../ui/core/validate.mjs";
 
 const root = path.resolve(import.meta.dirname, "..");
 
@@ -91,6 +93,118 @@ test("handbook-facts rejects invented flags, env vars, check codes, Makefile tar
   assert.match(messages, /docs\/handbook\/sample\.md:5 \[check-code\].*title-pipe/u);
   assert.match(messages, /docs\/handbook\/sample\.md:9 \[config-key\].*site\.inventedOption/u);
   assert.match(messages, /docs\/handbook\/sample\.md:14 \[css-color\].*--text.*#292826.*#2d2c29/u);
+});
+
+function issuesFor(lines) {
+  const facts = deriveHandbookFacts(root);
+  return checkFileFacts(path.join(root, "docs/handbook/sample.md"), lines.join("\n"), facts, root).map(
+    (i) => `${i.line} [${i.kind}] ${i.message}`,
+  );
+}
+
+test("handbook-facts derives argument counts for pages commands from bin/garden.mjs and the script", () => {
+  const facts = deriveHandbookFacts(root);
+  assert.deepEqual(facts.cli.commandArity.get("pages:validate"), { min: 0, max: 1 });
+  assert.deepEqual(facts.cli.commandArity.get("pages:prepare"), { min: 1, max: 2 });
+  assert.equal(facts.cli.npmScriptCommands.get("pages:validate"), "pages:validate");
+});
+
+test("handbook-facts checks commands in console and text fences", () => {
+  const issues = issuesFor(["```console", "$ npx garden ui check --fix", "```", "", "```text", "make upgrade", "```"]);
+  assert.ok(issues.some((m) => /^2 \[cli-flag\].*--fix/u.test(m)), issues.join("\n"));
+  assert.ok(issues.some((m) => /^6 \[make-target\].*upgrade/u.test(m)), issues.join("\n"));
+  assert.deepEqual(issuesFor(["```console", "$ npx garden ui check --staged", "```"]), []);
+});
+
+test("handbook-facts checks run: lines inside a workflow YAML fence", () => {
+  const workflow = [
+    "```yaml",
+    "jobs:",
+    "  publish:",
+    "    runs-on: ubuntu-latest",
+    "    steps:",
+    "      - run: npx garden pages:validate static-site pages-repository",
+    "      - name: Build",
+    "        run: |",
+    "          npm ci",
+    "          npm run nonexistent-script",
+    "```",
+  ];
+  const issues = issuesFor(workflow);
+  assert.ok(issues.some((m) => /^6 \[cli-arity\].*pages:validate.*got 2/u.test(m)), issues.join("\n"));
+  assert.ok(issues.some((m) => /^10 \[npm-script\].*nonexistent-script/u.test(m)), issues.join("\n"));
+  const fixed = workflow.map((l) => l.replace("pages:validate static-site", "pages:prepare static-site").replace("nonexistent-script", "build"));
+  assert.deepEqual(issuesFor(fixed), []);
+});
+
+test("handbook-facts checks the argument count of pages:prepare and pages:validate", () => {
+  const issues = issuesFor([
+    "Run `npx garden pages:prepare` first.",
+    "Then `npm run pages:validate -- dist/client extra`.",
+  ]);
+  assert.ok(issues.some((m) => /^1 \[cli-arity\].*pages:prepare.*got 0/u.test(m)), issues.join("\n"));
+  assert.ok(issues.some((m) => /^2 \[cli-arity\].*pages:validate.*got 2/u.test(m)), issues.join("\n"));
+  assert.deepEqual(issuesFor(["Run `npx garden pages:prepare dist/client out` and `npm run pages:validate`."]), []);
+});
+
+test("handbook-facts checks a --token: #hex pair written inside one code span", () => {
+  const issues = issuesFor(["正文颜色是 `--text: #123456`。"]);
+  assert.ok(issues.some((m) => /^1 \[css-color\].*--text.*#123456/u.test(m)), issues.join("\n"));
+  assert.ok(issuesFor(["`--nope: #2d2c29`"]).some((m) => /\[css-token\].*--nope/u.test(m)));
+  assert.deepEqual(issuesFor(["正文颜色是 `--text: #2d2c29`。"]), []);
+});
+
+test("handbook-facts matches site.config.yaml keys by their full dotted path", () => {
+  const issues = issuesFor(["```yaml", "brand:", "  title: Garden", "author:", "  logo: x.svg", "```"]);
+  assert.ok(issues.some((m) => /\[config-key\].*"brand\.title"/u.test(m)), issues.join("\n"));
+  assert.ok(issues.some((m) => /\[config-key\].*"author\.logo"/u.test(m)), issues.join("\n"));
+  assert.deepEqual(issuesFor(["```yaml", "brand:", "  logo: brand/logo.svg", "author:", "  name: A", "```"]), []);
+});
+
+/** Every ```garden interactive block in a Markdown text, including samples nested in ````markdown fences. */
+function interactiveBlocks(markdown) {
+  const lines = markdown.split(/\r?\n/u);
+  const blocks = [];
+  for (let i = 0; i < lines.length; i += 1) {
+    const open = /^(\s*)(`{3,})garden interactive(?:\s+#([\w-]+))?\s*$/u.exec(lines[i]);
+    if (!open) continue;
+    const end = lines.findIndex((line, j) => j > i && line.trim() === open[2]);
+    blocks.push({ line: i + 1, id: open[3] ?? "handbook-sample", body: lines.slice(i + 1, end).join("\n") });
+    i = end;
+  }
+  return blocks;
+}
+
+function uiErrors(block) {
+  return checkUiBlock(`---\nid: ${block.id}\n${block.body}`, { skipData: true }).diagnostics.filter((d) => d.severity === "error");
+}
+
+test("every garden interactive example in the handbook passes the ui validator", () => {
+  const files = fs.readdirSync(path.join(root, "docs/handbook"), { recursive: true }).filter((f) => String(f).endsWith(".md"));
+  let count = 0;
+  for (const rel of files) {
+    const markdown = fs.readFileSync(path.join(root, "docs/handbook", String(rel)), "utf8");
+    for (const block of interactiveBlocks(markdown)) {
+      count += 1;
+      const errors = uiErrors(block);
+      assert.deepEqual(errors, [], `docs/handbook/${rel}:${block.line}\n${errors.map((e) => `${e.code} ${e.message}`).join("\n")}`);
+    }
+  }
+  assert.ok(count >= 2, `expected the interactive page to show at least two examples, found ${count}`);
+});
+
+test("the ui validator rejects tags and props that are not in the catalog", () => {
+  const [block] = interactiveBlocks([
+    "```garden interactive",
+    "caption: 示例",
+    "---",
+    "<State n={2} />",
+    "<Controls><Slider label=\"n\" state=\"n\" min={1} max={9} /></Controls>",
+    "<Result label=\"结果\" value=\"{n}\" />",
+    "```",
+  ].join("\n"));
+  const codes = uiErrors(block).map((e) => e.code);
+  assert.ok(codes.includes("ui-component"), codes.join(","));
 });
 
 test("all docs/handbook/**/*.md and app/garden/** pass handbook fact-check", () => {

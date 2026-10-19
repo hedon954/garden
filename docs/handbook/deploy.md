@@ -6,14 +6,18 @@ section: getting-started
 order: 3
 ---
 
-`npx hd-garden init` 不会自动创建 `.github/workflows/pages.yml`。发布到 GitHub Pages 时，在站点仓库新建 `.github/workflows/pages.yml`，同一份工作流文件同时支持**单个公开仓库**和**私有源码仓库 + 公开页面仓库**两种模式（通过 `PAGES_REPOSITORY` 变量是否为空自动切换）。
+`npx hd-garden init` 不会自动创建 `.github/workflows/pages.yml`。发布到 GitHub Pages 时，在站点仓库新建这个文件。同一份工作流同时支持**单个公开仓库**和**私有源码仓库 + 公开页面仓库**两种模式，按 `PAGES_REPOSITORY` 变量是否为空自动切换。
+
+下面的工作流和 Garden 仓库自己的 `.github/workflows/pages.yml` 一致，改动只有两处：一是去掉只对 Garden 仓库有用的 `paths-ignore`、`npm run lint` 和 `npm test`；二是 `publish-repository` 任务先装依赖，再用 `npx garden pages:prepare static-site pages-repository` 写入公开仓库（Garden 仓库里直接调用的是同一个脚本 `scripts/prepare-pages-output.mjs`）。`npm ci` 需要仓库里有 `package-lock.json`，第一次 `npm install` 后记得一起提交。
+
+`build` 任务只在三种情况下运行：仓库名是 `<owner>.github.io`、配置了 `SITE_URL` 变量，或配置了 `PAGES_REPOSITORY` 变量。
 
 ## 1. 完整 `.github/workflows/pages.yml` 工作流
 
 在站点仓库新建 `.github/workflows/pages.yml`：
 
 ```yaml
-name: Deploy GitHub Pages
+name: Verify and publish blog
 
 on:
   push:
@@ -29,11 +33,12 @@ concurrency:
 
 jobs:
   build:
+    if: github.event.repository.name == format('{0}.github.io', github.repository_owner) || vars.SITE_URL != '' || vars.PAGES_REPOSITORY != ''
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
@@ -68,7 +73,12 @@ jobs:
               GISCUS_CATEGORY_ID=
               echo "GISCUS_DISABLED=1，本次构建不开放评论。"
             else
-              echo "评论还没有配置，构建已停止。确定不开放评论时，把 Actions Variable GISCUS_DISABLED 设为 1。"
+              echo "评论还没有配置，构建已停止。"
+              echo "1. 准备一个公开 GitHub 仓库，并开启 Discussions。"
+              echo "2. 打开 https://giscus.app/zh-CN ，安装 Giscus App，选中该仓库和分类。"
+              echo "3. 在 Settings → Secrets and variables → Actions → Variables 写入："
+              echo "   GISCUS_REPO、GISCUS_REPO_ID、GISCUS_CATEGORY、GISCUS_CATEGORY_ID"
+              echo "确定不开放评论时，把 GISCUS_DISABLED 设为 1。留空和示例值 owner/repository 都不会通过。"
               exit 1
             fi
           fi
@@ -93,24 +103,24 @@ jobs:
       - name: Build the public site
         env:
           GITHUB_TOKEN: ${{ github.token }}
-        run: npx garden build
+        run: npm run build
 
       - name: Validate the static output
-        run: npx garden pages:validate
+        run: npm run pages:validate
 
       - name: Configure GitHub Pages
         if: ${{ vars.PAGES_REPOSITORY == '' }}
-        uses: actions/configure-pages@v5
+        uses: actions/configure-pages@v6
 
       - name: Upload the GitHub Pages artifact
         if: ${{ vars.PAGES_REPOSITORY == '' }}
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v5
         with:
           path: dist/client
 
       - name: Upload the public-repository artifact
         if: ${{ vars.PAGES_REPOSITORY != '' }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: static-site
           path: dist/client
@@ -131,22 +141,40 @@ jobs:
     steps:
       - name: Deploy the GitHub Pages artifact
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
 
   publish-repository:
     if: ${{ vars.PAGES_REPOSITORY != '' }}
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/download-artifact@v4
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Check the split-repository configuration
+        env:
+          PAGES_DEPLOY_KEY: ${{ secrets.PAGES_DEPLOY_KEY }}
+          TARGET_REPOSITORY: ${{ vars.PAGES_REPOSITORY }}
+        run: |
+          test -n "$PAGES_DEPLOY_KEY" || { echo "缺少 PAGES_DEPLOY_KEY Secret"; exit 1; }
+          [[ "$TARGET_REPOSITORY" =~ ^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$ ]] || {
+            echo "PAGES_REPOSITORY 格式无效"
+            exit 1
+          }
+
+      - uses: actions/download-artifact@v8
         with:
           name: static-site
           path: static-site
 
       - name: Check out the public output repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: ${{ vars.PAGES_REPOSITORY }}
           ssh-key: ${{ secrets.PAGES_DEPLOY_KEY }}
@@ -155,13 +183,21 @@ jobs:
 
       - name: Start a clean rolling deployment
         working-directory: pages-repository
+        env:
+          TARGET_REPOSITORY: ${{ vars.PAGES_REPOSITORY }}
         run: |
+          expected_remote="git@github.com:$TARGET_REPOSITORY.git"
+          actual_remote="$(git remote get-url origin)"
+          test "$actual_remote" = "$expected_remote" || {
+            echo "拒绝发布到非目标仓库：$actual_remote"
+            exit 1
+          }
           echo "PAGES_PREVIOUS_TREE=$(git rev-parse 'HEAD^{tree}')" >> "$GITHUB_ENV"
           git checkout --orphan pages-deploy
           git rm -q -r -f .
 
       - name: Prepare generated-only repository contents
-        run: npx garden pages:validate static-site pages-repository
+        run: npx garden pages:prepare static-site pages-repository
 
       - name: Publish the rolling deployment commit
         working-directory: pages-repository
@@ -182,7 +218,7 @@ jobs:
 
 ### 模式一：单个公开仓库（`PAGES_REPOSITORY` 留空）
 
-如果源码仓库本身是公开的（推荐命名为 `<owner>.github.io`）：
+如果源码仓库本身是公开的，仓库名用 `<owner>.github.io`。用别的仓库名时，要给 Pages 配上自定义域名，并把 `SITE_URL` 变量设为这个域名，否则 `build` 任务不会运行（Garden 不支持部署在 `/仓库名/` 这样的子路径下）：
 
 1. 打开仓库 **Settings → Pages**，将 **Source** 设为 **GitHub Actions**。
 2. 在 **Settings → Secrets and variables → Actions → Variables** 中新建 `GISCUS_DISABLED=1`（或者填入下方 4 个 `GISCUS_*` 变量）。
@@ -201,7 +237,7 @@ jobs:
 4. **在私有仓库配置变量与密钥**：打开私有源码仓库的 **Settings → Secrets and variables → Actions**：
    - 在 **Variables** 中新建 `PAGES_REPOSITORY`，值为 `<owner>/<owner>.github.io`（同时配置 `GISCUS_DISABLED=1` 或 4 个 `GISCUS_*` 变量）。
    - 在 **Secrets** 中新建 `PAGES_DEPLOY_KEY`，值为私钥文件 `pages_deploy_key` 的完整内容。
-5. 推送到私有仓库后，工作流中的 `publish-repository` 任务会使用 `PAGES_DEPLOY_KEY` 检出公开仓库，运行 `npx garden pages:validate static-site pages-repository` 清理并写入静态产物与 `.nojekyll`，最后强制推送到公开仓库的 `main` 分支。
+5. 推送到私有仓库后，工作流中的 `publish-repository` 任务会使用 `PAGES_DEPLOY_KEY` 检出公开仓库，先检查 `PAGES_DEPLOY_KEY` 是否存在、`PAGES_REPOSITORY` 是否是 `owner/repo` 格式，再确认检出的远程地址就是目标仓库（不是就停止并提示「拒绝发布到非目标仓库」）。之后运行 `npx garden pages:prepare static-site pages-repository` 清空旧文件、写入静态产物、`.nojekyll` 和一份说明用的 `README.md`，最后强制推送到公开仓库的 `main` 分支。
 
 ## 3. Giscus 评论配置说明
 
@@ -211,7 +247,7 @@ jobs:
 - **开启评论**：在公开仓库启用 Discussions 并安装 Giscus App，把获取到的四个参数写入 GitHub Actions Variables。
 
 > [!NOTE]
-> `npx garden pages:validate` 负责检查 `dist/client` 静态产物目录（确认存在 `index.html`，且没有混入 `.git`、`node_modules`、`.env`、`.md` 或 `.map` 等源码文件），它本身不会检查 Giscus 变量。
+> `npx garden pages:validate` 负责检查 `dist/client` 静态产物目录（确认存在 `index.html`，且没有软链接、`.env` 文件、`node_modules`、`.git`、`app`、`content` 等源码目录，也没有 `.md`、`.map`、`.ts` 文件；`media/` 下作为附件发布的 `.md` 除外），它本身不会检查 Giscus 变量。
 
 ## 4. 环境变量一览
 

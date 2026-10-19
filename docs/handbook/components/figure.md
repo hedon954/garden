@@ -21,7 +21,7 @@ svg: |
     <path d="M444 55 H466" stroke="var(--muted)" stroke-width="1.5"/>
     <rect data-p="validate" x="472" y="18" width="196" height="74" rx="10" fill="var(--card)" stroke="var(--rule-strong)" stroke-width="1.5"/>
     <text data-p="validate" x="570" y="50" text-anchor="middle" font-size="14" font-weight="600" fill="var(--ink)">3. pages:validate</text>
-    <text data-p="validate" x="570" y="72" text-anchor="middle" font-size="12" fill="var(--muted)">检查导出路由与静态资源</text>
+    <text data-p="validate" x="570" y="72" text-anchor="middle" font-size="12" fill="var(--muted)">检查 index.html 与禁用文件</text>
   </svg>
 parts:
   - id: sync
@@ -32,7 +32,7 @@ parts:
     text: 根据 `STATIC_EXPORT=1` 预渲染所有页面路由，输出 RSS、sitemap 与全文搜索文件。
   - id: validate
     label: 3. 导出校验
-    text: 检查静态导出目录中的内部链接、资源路径和页面结构是否完整。
+    text: 运行 pages:validate，确认导出目录里有 `index.html`，且没有 `.env`、源码目录、`.map` 或 `.md` 文件和软链接。
 ```
 
 ````markdown
@@ -55,7 +55,7 @@ parts:
     text: 根据 `STATIC_EXPORT=1` 预渲染所有页面路由，输出 RSS、sitemap 与全文搜索文件。
   - id: validate
     label: 3. 导出校验
-    text: 检查静态导出目录中的内部链接、资源路径和页面结构是否完整。
+    text: 运行 pages:validate，确认导出目录里有 `index.html`，且没有 `.env`、源码目录、`.map` 或 `.md` 文件和软链接。
 ```
 ````
 

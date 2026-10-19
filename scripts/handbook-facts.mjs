@@ -12,7 +12,6 @@ import { pathToFileURL } from "node:url";
 import { parse as parseYaml } from "yaml";
 import { CATALOG } from "../ui/garden/catalog.mjs";
 import {
-  ALLOWED_EXTERNAL_BINARIES,
   ALLOWED_EXTERNAL_FLAGS,
   ALLOWED_NON_ENV_UPPER_SNAKE,
 } from "./handbook-allowlist.mjs";
@@ -79,15 +78,73 @@ function deriveCliFacts(root = ROOT) {
     uiFlags.add(`--${match[1]}`);
   }
 
+  const commandArity = deriveCommandArity(root, gardenBinSource);
+  const npmScriptCommands = deriveNpmScriptCommands(root, gardenCommands);
+
   return {
     binNames,
     npmScripts,
+    commandArity,
+    npmScriptCommands,
     gardenCommands,
     gardenFlags,
     uiSubcommands,
     uiFlags,
     allFlags: new Set([...gardenFlags, ...uiFlags, ...Object.keys(ALLOWED_EXTERNAL_FLAGS)]),
   };
+}
+
+/**
+ * Derive how many positional arguments each `garden <command>` accepts, from the
+ * `case "<command>": runNode("<script>", <args>)` blocks in bin/garden.mjs and,
+ * when every argument is forwarded (`rest`), from the script's own
+ * `const [, , a, b] = process.argv` destructuring and `if (!a ...)` guard.
+ */
+function deriveCommandArity(root, gardenBinSource) {
+  /** @type {Map<string, { min: number, max: number }>} */
+  const arity = new Map();
+  const caseRe = /\bcase\s+["']([a-z][a-z0-9:-]*)["']\s*:\s*runNode\(\s*["']([^"']+)["']\s*,\s*(rest|\[[\s\S]*?\])\s*\)/gu;
+  for (const match of gardenBinSource.matchAll(caseRe)) {
+    const [, command, script, args] = match;
+    if (args === "rest") {
+      const file = path.join(root, script);
+      if (!fs.existsSync(file)) continue;
+      const source = fs.readFileSync(file, "utf8");
+      const destructure = /const\s*\[\s*,\s*,\s*([^\]]+)\]\s*=\s*process\.argv/u.exec(source);
+      if (!destructure) continue;
+      const names = destructure[1].split(",").map((n) => n.trim()).filter(Boolean);
+      if (names.some((n) => n.startsWith("..."))) continue;
+      const required = names.filter((n) => new RegExp(`if\\s*\\(\\s*!${n}\\b`, "u").test(source));
+      arity.set(command, { min: required.length, max: names.length });
+    } else {
+      const indices = [...args.matchAll(/\brest\[(\d+)\](\s*\?\?)?/gu)];
+      if (/\.\.\.rest\b/u.test(args)) continue;
+      const max = indices.reduce((m, i) => Math.max(m, Number(i[1]) + 1), 0);
+      const min = indices.filter((i) => !i[2]).reduce((m, i) => Math.max(m, Number(i[1]) + 1), 0);
+      arity.set(command, { min, max });
+    }
+  }
+  return arity;
+}
+
+/**
+ * Map npm scripts in package.json and templates/site/package.json that call a
+ * garden command (`garden <cmd>` or `node bin/garden.mjs <cmd>`) to that command,
+ * so `npm run <script> -- <args>` gets the same argument checks.
+ */
+function deriveNpmScriptCommands(root, gardenCommands) {
+  /** @type {Map<string, string>} */
+  const map = new Map();
+  for (const rel of ["package.json", "templates/site/package.json"]) {
+    const file = path.join(root, rel);
+    if (!fs.existsSync(file)) continue;
+    const scripts = JSON.parse(fs.readFileSync(file, "utf8")).scripts ?? {};
+    for (const [name, command] of Object.entries(scripts)) {
+      const match = /^(?:garden|node\s+bin\/garden\.mjs)\s+([a-z][a-z0-9:-]*)\s*$/u.exec(String(command));
+      if (match && gardenCommands.has(match[1])) map.set(name, match[1]);
+    }
+  }
+  return map;
 }
 
 /**
@@ -218,8 +275,19 @@ function deriveSiteConfigKeys(root = ROOT) {
   for (const rel of ["templates/site/site.config.yaml", "site.config.yaml"]) {
     const file = path.join(root, rel);
     if (!fs.existsSync(file)) continue;
-    const parsed = parseYaml(fs.readFileSync(file, "utf8"));
-    walkYamlObject(parsed);
+    const text = fs.readFileSync(file, "utf8");
+    walkYamlObject(parseYaml(text));
+    // Optional keys the template documents as comments (`# url: ...`, `# brand:` + `#   logo: ...`).
+    const uncommented = text
+      .split(/\r?\n/u)
+      .filter((line) => /^#\s?(\s*)[a-zA-Z][a-zA-Z0-9_]*:/u.test(line))
+      .map((line) => line.replace(/^#\s?/u, ""))
+      .join("\n");
+    try {
+      walkYamlObject(parseYaml(uncommented));
+    } catch {
+      // Commented lines that do not form valid YAML on their own are skipped.
+    }
   }
 
   // Also parse TypeScript interfaces & property accesses in app/site.config.ts, scripts/brand.mjs, scripts/redirects.mjs
@@ -425,6 +493,24 @@ function extractInlineCodeSpans(line) {
 }
 
 /**
+ * Compare the positional arguments of a garden command with the derived arity.
+ */
+function checkArity(command, args, segment, file, lineNumber, facts, issues) {
+  const arity = facts.cli.commandArity.get(command);
+  if (!arity) return;
+  const positional = args.filter((arg) => !arg.startsWith("-") && !arg.startsWith("#") && !/^[<>|]/u.test(arg));
+  if (positional.length < arity.min || positional.length > arity.max) {
+    const range = arity.min === arity.max ? `${arity.max}` : `${arity.min}-${arity.max}`;
+    issues.push({
+      file,
+      line: lineNumber,
+      kind: "cli-arity",
+      message: `"garden ${command}" takes ${range} positional argument(s), got ${positional.length} in "${segment}"`,
+    });
+  }
+}
+
+/**
  * Validate a shell command string (from a bash/sh fence or an inline code span).
  */
 function checkCommandString(cmdText, file, lineNumber, facts, issues) {
@@ -480,7 +566,7 @@ function checkCommandString(cmdText, file, lineNumber, facts, issues) {
       // or a `<name>` placeholder and there are no extra args or only `#id`.
       if (
         head === "garden" &&
-        (facts.gardenComponents.has(sub) || /^<[^>]+>$/u.test(sub)) &&
+        (facts.gardenComponents.has(sub) || /^(?:<[^>]+>|\$\{[^}]+\})$/u.test(sub)) &&
         (gardenArgs.length === 1 || (gardenArgs.length === 2 && gardenArgs[1].startsWith("#")))
       ) {
         continue;
@@ -529,6 +615,7 @@ function checkCommandString(cmdText, file, lineNumber, facts, issues) {
           }
         }
       } else {
+        checkArity(sub, gardenArgs.slice(1), segment, file, lineNumber, facts, issues);
         for (const arg of gardenArgs.slice(1)) {
           if (arg === "--") break;
           if (arg.startsWith("-")) {
@@ -578,7 +665,13 @@ function checkCommandString(cmdText, file, lineNumber, facts, issues) {
     // Check `npm run <script>`
     if (head === "npm" && rest[0] === "run" && rest[1]) {
       const scriptName = rest[1];
-      if (!facts.cli.npmScripts.has(scriptName)) {
+      const gardenCommand = facts.cli.npmScriptCommands.get(scriptName);
+      if (gardenCommand) {
+        const dashIdx = rest.indexOf("--");
+        const extra = dashIdx === -1 ? [] : rest.slice(dashIdx + 1);
+        checkArity(gardenCommand, extra, segment, file, lineNumber, facts, issues);
+      }
+      if (!facts.cli.npmScripts.has(scriptName) && !gardenCommand) {
         issues.push({
           file,
           line: lineNumber,
@@ -586,6 +679,36 @@ function checkCommandString(cmdText, file, lineNumber, facts, issues) {
           message: `Unknown npm script "npm run ${scriptName}" in "${segment}"`,
         });
       }
+    }
+  }
+}
+
+const SHELL_FENCE_LANGS = new Set(["bash", "sh", "shell", "zsh", "console", "text", "txt", "plaintext", ""]);
+
+/**
+ * Check every shell line under a `run:` key in a GitHub Actions workflow fence.
+ */
+function checkWorkflowRunLines(fence, relFile, facts, issues) {
+  let runIndent = null;
+  for (const item of fence.bodyLines) {
+    const text = item.text;
+    const indent = /^\s*/u.exec(text)[0].length;
+    if (runIndent !== null) {
+      if (!text.trim()) continue;
+      if (indent > runIndent) {
+        const trimmed = text.trim();
+        if (!trimmed.startsWith("#")) checkCommandString(trimmed, relFile, item.lineNumber, facts, issues);
+        continue;
+      }
+      runIndent = null;
+    }
+    const run = /^(\s*)(?:-\s+)?run:\s*(.*)$/u.exec(text);
+    if (!run) continue;
+    const value = run[2].trim();
+    if (/^[|>][+-]?$/u.test(value)) {
+      runIndent = indent + (text.trimStart().startsWith("-") ? 2 : 0);
+    } else if (value && !value.startsWith("#")) {
+      checkCommandString(value.replace(/^(["'])(.*)\1$/u, "$2"), relFile, item.lineNumber, facts, issues);
     }
   }
 }
@@ -603,10 +726,10 @@ export function checkFileFacts(filePath, content, facts, root = ROOT) {
     const lang = fence.lang;
     const bodyText = fence.bodyLines.map((l) => l.text).join("\n");
 
-    // Shell fences: bash, sh, shell, zsh
-    if (["bash", "sh", "shell", "zsh"].includes(lang)) {
+    // Shell fences (bash, sh, shell, zsh) and terminal transcripts (console, text, plain fences)
+    if (SHELL_FENCE_LANGS.has(lang)) {
       for (const item of fence.bodyLines) {
-        const trimmed = item.text.trim();
+        const trimmed = item.text.trim().replace(/^[$>%]\s+/u, "");
         if (!trimmed || trimmed.startsWith("#")) continue;
         checkCommandString(trimmed, relFile, item.lineNumber, facts, issues);
       }
@@ -616,8 +739,12 @@ export function checkFileFacts(filePath, content, facts, root = ROOT) {
     if (lang === "yaml" || lang === "yml") {
       const isWorkflow =
         /\b(?:runs-on|steps|jobs|workflow_dispatch|actions\/checkout)\b/u.test(bodyText);
-      const isColumnsYaml = /^\s*-\s+slug:/mu.test(bodyText) && /\bsummary:/u.test(bodyText);
+      const isColumnsYaml = /^columns:\s*$/mu.test(bodyText) && /^\s*-\s+slug:/mu.test(bodyText);
       const isFrontmatter = /^\s*---\s*$/mu.test(bodyText) || (/\bdraft:/u.test(bodyText) && /\btags:/u.test(bodyText));
+
+      if (isWorkflow) {
+        checkWorkflowRunLines(fence, relFile, facts, issues);
+      }
 
       if (!isWorkflow && !isColumnsYaml && !isFrontmatter) {
         try {
@@ -627,7 +754,7 @@ export function checkFileFacts(filePath, content, facts, root = ROOT) {
               for (const [k, v] of Object.entries(obj)) {
                 if (prefix === "redirects" && k.startsWith("/")) continue;
                 const keyPath = prefix ? `${prefix}.${k}` : k;
-                if (!facts.siteConfig.keyPaths.has(keyPath) && !facts.siteConfig.leafKeys.has(k)) {
+                if (!facts.siteConfig.keyPaths.has(keyPath)) {
                   const keyLine =
                     fence.bodyLines.find((l) => new RegExp(`^\\s*${k}\\s*:`, "u").test(l.text))?.lineNumber ??
                     fence.startLine;
@@ -869,6 +996,24 @@ export function checkFileFacts(filePath, content, facts, root = ROOT) {
             }
           }
         }
+      }
+    }
+
+    // `--token: #hex` written inside a single code span
+    for (const span of spans) {
+      const pair = /^(--[a-zA-Z0-9-]+)\s*[:：=]\s*(#[0-9a-fA-F]{6})\b/u.exec(span);
+      if (!pair) continue;
+      const actual = facts.cssTokens.get(pair[1]);
+      const hex = pair[2].toLowerCase();
+      if (!actual) {
+        issues.push({ file: relFile, line: lineNumber, kind: "css-token", message: `Unknown CSS custom property "${pair[1]}"` });
+      } else if (![actual.light, actual.dark].filter(Boolean).map((v) => v.toLowerCase()).includes(hex)) {
+        issues.push({
+          file: relFile,
+          line: lineNumber,
+          kind: "css-color",
+          message: `CSS token "${pair[1]}" written as "${hex}", which matches neither light (${actual.light}) nor dark (${actual.dark}) in tokens.css`,
+        });
       }
     }
 

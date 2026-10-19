@@ -95,7 +95,7 @@ export default async function GardenDocPage({
             {componentBadge ? (
               <>
                 <span aria-hidden="true">·</span>
-                <code className="gdoc-eyebrow-fence">{`\`\`\`garden ${componentBadge}`}</code>
+                <code className="gdoc-eyebrow-fence">{`garden ${componentBadge}`}</code>
               </>
             ) : null}
           </div>

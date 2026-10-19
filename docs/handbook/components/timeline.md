@@ -18,7 +18,7 @@ items:
     text: 运行 `STATIC_EXPORT=1 npx garden build`，把全部路由预渲染到 `dist/client/`。
   - date: 步骤 3
     title: 校验静态页面并部署
-    text: 运行 `npm run pages:validate` 检查死链与资源路径，通过后推送到 GitHub Pages。
+    text: 运行 `npm run pages:validate` 确认有 `index.html`，且没有混入 `.env`、源码目录、`.map` 或 `.md` 文件和软链接，通过后发布到 GitHub Pages。
 ```
 
 ````markdown
@@ -33,7 +33,7 @@ items:
     text: 运行 `STATIC_EXPORT=1 npx garden build`，把全部路由预渲染到 `dist/client/`。
   - date: 步骤 3
     title: 校验静态页面并部署
-    text: 运行 `npm run pages:validate` 检查死链与资源路径，通过后推送到 GitHub Pages。
+    text: 运行 `npm run pages:validate` 确认有 `index.html`，且没有混入 `.env`、源码目录、`.map` 或 `.md` 文件和软链接，通过后发布到 GitHub Pages。
 ```
 ````
 

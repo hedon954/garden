@@ -1,12 +1,12 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="2080" height="560" viewBox="0 0 1040 280" fill="none" font-family="-apple-system, BlinkMacSystemFont, 'PingFang SC', 'Noto Sans SC', sans-serif">
   <!-- Outer 1340px wide-table boundary -->
   <rect x="20" y="20" width="1000" height="240" rx="14" stroke="#6e6b64" stroke-width="1.5" stroke-dasharray="6 5" />
-  <text x="44" y="48" fill="#4a4844" font-size="13" font-weight="600">多列表格外扩区 · 博客文章上限 1340px（单侧最多外扩 300px）</text>
+  <text x="44" y="48" fill="#4a4844" font-size="13" font-weight="600">多列表格外扩区 · 文章页上限 1340px（单侧最多外扩 300px）</text>
   <text x="996" y="48" text-anchor="end" fill="#6e6b64" font-size="12" font-family="ui-monospace, SFMono-Regular, Menlo, monospace">max 1340px</text>
 
   <!-- Middle 1040px wide-figure boundary -->
   <rect x="110" y="66" width="820" height="174" rx="12" stroke="#2d2c29" stroke-width="1.5" stroke-dasharray="4 4" />
-  <text x="132" y="92" fill="#2d2c29" font-size="13" font-weight="600">宽幅配图外扩区 · 博客文章上限 1040px（原始宽度 ≥ 1280px 时单侧最多外扩 150px）</text>
+  <text x="132" y="92" fill="#2d2c29" font-size="13" font-weight="600">宽幅配图外扩区 · 文章页上限 1040px（截图按像素宽度的一半显示，超过 740px 才外扩）</text>
   <text x="908" y="92" text-anchor="end" fill="#6e6b64" font-size="12" font-family="ui-monospace, SFMono-Regular, Menlo, monospace">max 1040px</text>
 
   <!-- Inner 740px reading column -->

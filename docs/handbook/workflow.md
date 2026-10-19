@@ -71,10 +71,10 @@ order: 40
 
 Garden 通过以下三种方式提供组件模板与智能辅助：
 
-1. **新建文章自动附带速查表**：运行 `make new SLUG=xxx TITLE="..."` 创建文章时，生成的 `.md` 文件底部会自动带有一段 `<!-- 组件速查 ... -->` HTML 注释，包含常用围栏写法与提示框模板，写完可直接保留（不会渲染到页面上）或删掉。
+1. **新建文章自动附带速查表**：运行 `make new SLUG=xxx TITLE="..."` 创建文章时，生成的 `.md` 文件底部会自动带有一段 `<!-- 组件速查 ... -->` HTML 注释，列出想法块和 9 个组件的示例写法，复制需要的那块即可。这段注释不会显示在页面上，写完可以删掉。
 2. **代码片段模板文件**：`hd-garden` 包内的 `templates/` 目录自带两份模板文件：
-   - `templates/garden-blocks.md`：包含 9 个内置组件、代码对比块与提示框的可复制 Markdown 模板。
-   - `templates/garden-snippets.plist`：macOS 系统文本替换词条（可拖入「系统设置 → 键盘 → 文本替换」），触发词包括 `;card`、`;stat`、`;cmp`、`;tl`、`;chart`、`;fig`、`;html`、`;play`、`;file`、`;diff`、`;idea` 等。
+   - `templates/garden-blocks.md`：想法块和 9 个内置组件的可复制 Markdown 模板。
+   - `templates/garden-snippets.plist`：macOS 系统文本替换词条（可拖入「系统设置 → 键盘 → 文本替换」），触发词是 `;gidea`（也可以输入 `;garden想法`）、`;gcard`、`;gstat`、`;gcompare`、`;gtimeline`、`;gchart`、`;gfigure`、`;ghtml`、`;ginteractive`、`;gfile`，每个展开成对应的 `garden` 围栏。
 3. **安装 AI Agent 技能（`npx garden skill`）**：在站点目录运行 `npx garden skill`（`npx hd-garden init` 时也会自动执行），会把三个技能复制到站点根目录下的 `.agents/skills/`：
    - `garden-ui`：把文章里的 `garden` 想法描述编译成具体的组件围栏。
    - `garden-interactive-chart`：根据文章数据编写 `interactive`、`chart`、`figure` 与 `html` 组件。

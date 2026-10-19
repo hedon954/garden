@@ -15,7 +15,7 @@ export type HandbookSectionMeta = {
 export const HANDBOOK_SECTIONS: HandbookSectionMeta[] = [
   { id: "getting-started", title: "快速上手", note: "建站、配置与发布" },
   { id: "writing-and-reading", title: "写作与排版", note: "Markdown 与阅读版面" },
-  { id: "components", title: "内置组件", note: "```garden <name>" },
+  { id: "components", title: "内置组件", note: "garden <name>" },
   { id: "workflow", title: "检查与补全", note: "语法检查与编辑器片段" },
 ];
 
