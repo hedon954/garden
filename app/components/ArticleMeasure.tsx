@@ -45,7 +45,14 @@ export function ArticleMeasure() {
       return width;
     };
 
+    const docPage = article.closest<HTMLElement>(".garden-doc-page");
+
     const placeToc = () => {
+      if (docPage) {
+        root.removeAttribute("data-toc-yield");
+        root.removeAttribute("data-toc-hide");
+        return;
+      }
       if (!toc) {
         root.removeAttribute("data-toc-yield");
         return;
@@ -74,10 +81,38 @@ export function ArticleMeasure() {
       }
     };
 
+    const clampMargin = (margin: { left: number; right: number }, maxRoom: number | null) => {
+      if (maxRoom === null) return margin;
+      const side = Math.max(0, Math.min(margin.left, maxRoom));
+      return { left: side, right: side };
+    };
+
     const measure = (refresh: boolean) => {
       // Measure the text column, not the whole article grid (which includes the TOC rail).
       const articleBox = (article.querySelector(".markdown-body") ?? article).getBoundingClientRect();
       const viewport = root.clientWidth;
+      let docMaxRoom: number | null = null;
+      if (docPage) {
+        const sidebar = docPage.querySelector<HTMLElement>(".gdoc-sidebar");
+        let leftLimit = 24;
+        if (sidebar && getComputedStyle(sidebar).position === "sticky") {
+          const sbBox = sidebar.getBoundingClientRect();
+          if (sbBox.width > 0 && sbBox.right <= articleBox.left + 1) {
+            leftLimit = sbBox.right + 16;
+          }
+        }
+        let rightLimit = viewport - 24;
+        if (toc && getComputedStyle(toc).display !== "none") {
+          const tocBox = toc.getBoundingClientRect();
+          if (tocBox.width > 0 && tocBox.left >= articleBox.right - 1) {
+            rightLimit = tocBox.left - translatedX(toc) - 16;
+          }
+        }
+        docMaxRoom = Math.max(
+          0,
+          Math.floor(Math.min(articleBox.left - leftLimit, rightLimit - articleBox.right)),
+        );
+      }
       const widen = (element: HTMLElement, margin: { left: number; right: number }) => {
         if (margin.left <= 0) return;
         element.style.setProperty("--wl", `${margin.left}px`);
@@ -89,13 +124,13 @@ export function ArticleMeasure() {
         const width = tableWidth(wrap, refresh);
         resetWide(wrap);
         if (!width) return;
-        widen(wrap, tableBreakout({
+        widen(wrap, clampMargin(tableBreakout({
           viewport,
           articleLeft: articleBox.left,
           articleRight: articleBox.right,
           tableClient: wrap.clientWidth,
           tableScroll: width,
-        }));
+        }), docMaxRoom));
       });
       // Images: as wide as they display (2x screenshots at half their pixels), up to 1040px in total.
       article.querySelectorAll<HTMLElement>(".fig").forEach((figure) => {
@@ -115,7 +150,7 @@ export function ArticleMeasure() {
         if (!pixels) return;
         // width="" written by the build is the pixel size, not an author's choice.
         const attrWidth = known ? Number(image.dataset.aw) || 0 : Number(image.getAttribute("width")) || 0;
-        const breakout = figureBreakout({
+        const breakout = clampMargin(figureBreakout({
           viewport,
           articleLeft: articleBox.left,
           articleRight: articleBox.right,
@@ -123,7 +158,7 @@ export function ArticleMeasure() {
           imageClient: image.clientWidth,
           naturalWidth: pixels,
           attrWidth,
-        });
+        }), docMaxRoom);
         widen(figure, breakout);
         // Only a widened image, or one with a width attribute, gets an inline width.
         const width = figureImageWidth({ naturalWidth: pixels, attrWidth, widened: breakout.left > 0 });

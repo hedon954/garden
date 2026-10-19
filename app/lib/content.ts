@@ -1,9 +1,12 @@
 import { markdownPlugins } from "./markdown-plugins";
 import {
   columns,
+  gardenDocs,
+  gardenIndexDoc,
   posts,
   thoughts,
   type ContentEntry,
+  type GardenDocEntry,
   type MediaItem,
 } from "@garden/generated-content";
 import GithubSlugger from "github-slugger";
@@ -17,10 +20,11 @@ import { visit } from "unist-util-visit";
 import { splitHeadingNumber } from "./heading-number";
 import { siteHref } from "./site-href";
 
-export { columns, posts, thoughts };
-export type { ContentEntry, MediaItem };
+export { columns, gardenDocs, gardenIndexDoc, posts, thoughts };
+export type { ContentEntry, GardenDocEntry, MediaItem };
 
 export const postHref = (post: Pick<ContentEntry, "path">) => siteHref(`/blog/${post.path}`);
+export const gardenDocHref = (doc: Pick<GardenDocEntry, "path">) => siteHref(`/garden/${doc.path}`);
 export const columnEntryPath = (entry: Pick<ContentEntry, "column" | "path">) => {
   const prefix = entry.column ? `${entry.column}/` : "";
   return prefix && entry.path.startsWith(prefix) ? entry.path.slice(prefix.length) : entry.path;
@@ -128,6 +132,9 @@ export const findPost = (path: string): ContentEntry | undefined =>
 
 export const findThought = (slug: string): ContentEntry | undefined =>
   thoughts.find((thought) => thought.slug === slug);
+
+export const findGardenDoc = (path: string): GardenDocEntry | undefined =>
+  gardenDocs.find((doc) => doc.path === path);
 
 export const findColumnEntry = (
   column: string,
