@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import test from "node:test";
+import { clientAssetFiles } from "./client-assets.mjs";
 import { buildSearchIndex, EXCERPT_LENGTH, searchableText } from "../ui/garden/search-index.mjs";
 
 const root = new URL("../", import.meta.url);
@@ -14,7 +15,7 @@ function files(dir, pattern) {
 }
 
 test("client JS never carries post bodies", () => {
-  const scripts = files("dist/client/assets/", /\.js$/u);
+  const scripts = clientAssetFiles(/\.js$/u);
   assert.ok(scripts.length, "run the build first");
   // Sentences from the middle of example posts: only the server and the static HTML may have them.
   const bodies = ["浇到盆底出水，然后把托盘倒掉", "罗勒要见光，薄荷更耐阴", "这篇文章不是功能清单"];
@@ -72,7 +73,7 @@ test("/blog gets its list as props, not from the content module", () => {
 });
 
 test("client JS has no Markdown parser and no previewed file text", () => {
-  const scripts = files("dist/client/assets/", /\.js$/u);
+  const scripts = clientAssetFiles(/\.js$/u);
   assert.ok(scripts.length, "run the build first");
   for (const file of scripts) {
     const source = fs.readFileSync(file, "utf8");

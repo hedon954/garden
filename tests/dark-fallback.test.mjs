@@ -3,6 +3,7 @@ import fs from "node:fs";
 import test from "node:test";
 import postcss from "postcss";
 import darkFallback, { fallbackSelector } from "../build/dark-fallback-postcss.mjs";
+import { clientAssetText } from "./client-assets.mjs";
 
 const run = (css) => postcss([darkFallback()]).process(css, { from: undefined }).css;
 
@@ -75,8 +76,8 @@ function sourceDarkSelectors() {
 }
 
 test("every dark rule in the source has its fallback in the built CSS", () => {
-  const assets = new URL("../dist/client/assets/", import.meta.url);
-  const built = fs.readdirSync(assets).filter((name) => name.endsWith(".css")).map((name) => fs.readFileSync(new URL(name, assets), "utf8")).join("\n");
+  const built = clientAssetText(/\.css$/u);
+  assert.ok(built, "run the build first");
   const norm = (selector) => selector.replace(/["']/gu, "").replace(/\s*([>+~])\s*/gu, "$1").replace(/\s+/gu, " ").replace(/::(before|after)/gu, ":$1").trim();
   const builtSelectors = [];
   postcss.parse(built).walkRules((rule) => builtSelectors.push(...rule.selectors.map(norm)));

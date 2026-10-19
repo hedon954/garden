@@ -25,9 +25,10 @@ import {
   webmentionApiEndpoint,
 } from "../../lib/site";
 import { githubUrl, siteConfig } from "../../site.config";
+import { isStaticPlaceholder, STATIC_PLACEHOLDER, staticParams } from "../../../ui/garden/static-params.mjs";
 
 export function generateStaticParams() {
-  return posts.map((post) => ({ path: post.path.split("/") }));
+  return staticParams(posts.map((post) => ({ path: post.path.split("/") })), { path: [STATIC_PLACEHOLDER] });
 }
 
 export async function generateMetadata({
@@ -72,7 +73,10 @@ export default async function PostPage({
 }) {
   const { path } = await params;
   const post = findPost(path.join("/"));
-  if (!post) notFound();
+  if (!post) {
+    if (isStaticPlaceholder(path)) return null;
+    notFound();
+  }
   const headings = extractHeadings(post.content);
   const baseUrl = await getSiteUrl();
   const pathname = postHref(post);

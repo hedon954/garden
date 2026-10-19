@@ -5,13 +5,15 @@ import postcss from "postcss";
 import darkFallback from "../build/dark-fallback-postcss.mjs";
 
 const a2 = fs.readFileSync(new URL("../app/styles/a2.css", import.meta.url), "utf8");
-const backing = () => {
+const tokens = fs.readFileSync(new URL("../app/styles/tokens.css", import.meta.url), "utf8");
+const backingRules = () => {
   const rules = [];
   postcss.parse(a2).walkRules((rule) => {
-    if (rule.nodes.some((decl) => decl.prop === "background" && decl.value === "#faf9f5")) rules.push(rule);
+    if (rule.nodes.some((decl) => decl.prop === "background" && decl.value === "var(--image-backing)")) rules.push(rule);
   });
   return rules;
 };
+const backing = () => backingRules().filter((rule) => !rule.selectors.some((selector) => selector.includes("img.fav")));
 
 test("dark mode puts article images on the light paper colour, nothing else", () => {
   const rules = backing();
@@ -32,7 +34,23 @@ test("dark mode puts article images on the light paper colour, nothing else", ()
 
 test("the backing also applies without JavaScript on a dark system", () => {
   const out = postcss([darkFallback()]).process(a2, { from: undefined }).css;
-  assert.match(out, /@media \(prefers-color-scheme: dark\) \{\s*html:not\(\[data-theme\]\) \.markdown-image-trigger img,\s*html:not\(\[data-theme\]\) \.markdown-image-lightbox-content img,\s*html:not\(\[data-theme\]\) \.markdown-body > img,\s*html:not\(\[data-theme\]\) \.markdown-body > p > img:not\(\[class\]\) \{\s*background: #faf9f5;/u);
+  assert.match(out, /@media \(prefers-color-scheme: dark\) \{\s*html:not\(\[data-theme\]\) \.markdown-image-trigger img,\s*html:not\(\[data-theme\]\) \.markdown-image-lightbox-content img,\s*html:not\(\[data-theme\]\) \.markdown-body > img,\s*html:not\(\[data-theme\]\) \.markdown-body > p > img:not\(\[class\]\) \{\s*background: var\(--image-backing\);/u);
+});
+
+test("article images and link icons share one dark backing colour, set once", () => {
+  // The token lives with the dark theme and is #faf9f5.
+  const defined = [];
+  postcss.parse(tokens).walkDecls("--image-backing", (decl) => defined.push([decl.parent.selectors, decl.value]));
+  assert.deepEqual(defined, [[[':root[data-theme="dark"]', 'html[data-theme="dark"]'], "#faf9f5"]]);
+  // The link icon backing reads the same token; no colour is written out in a2.css for either.
+  const fav = backingRules().filter((rule) => rule.selectors.some((selector) => selector.includes("img.fav")));
+  assert.equal(fav.length, 1);
+  assert.deepEqual(fav[0].selectors, ['html[data-theme="dark"] .markdown-body img.fav']);
+  assert.equal(backingRules().length, 2);
+  assert.doesNotMatch(a2, /#f5f4ed|background:\s*#faf9f5/iu);
+  // Without JavaScript on a dark system the token is set too.
+  const out = postcss([darkFallback()]).process(tokens, { from: undefined }).css;
+  assert.match(out, /@media \(prefers-color-scheme: dark\) \{[^}]*html:not\(\[data-theme\]\)[^{]*\{[^}]*--image-backing: #faf9f5;/u);
 });
 
 test("article images are rendered where the selector looks; favicons are not", () => {

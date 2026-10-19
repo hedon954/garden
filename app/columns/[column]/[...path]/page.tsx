@@ -27,12 +27,16 @@ import {
 } from "../../../lib/site";
 import { githubUrl, siteConfig } from "../../../site.config";
 import { siteHref } from "../../../lib/site-href";
+import { isStaticPlaceholder, STATIC_PLACEHOLDER, staticParams } from "../../../../ui/garden/static-params.mjs";
 
 export function generateStaticParams() {
-  return columns.map((entry) => ({
-    column: entry.column,
-    path: columnEntryPath(entry).split("/"),
-  }));
+  return staticParams(
+    columns.map((entry) => ({
+      column: entry.column,
+      path: columnEntryPath(entry).split("/"),
+    })),
+    { column: STATIC_PLACEHOLDER, path: [STATIC_PLACEHOLDER] },
+  );
 }
 
 export async function generateMetadata({
@@ -77,7 +81,10 @@ export default async function ColumnEntryPage({
 }) {
   const { column, path } = await params;
   const entry = findColumnEntry(column, path.join("/"));
-  if (!entry) notFound();
+  if (!entry) {
+    if (isStaticPlaceholder(column)) return null;
+    notFound();
+  }
   const series = columns.filter((item) => item.column === column);
   const listed = [...series].sort((left, right) => Date.parse(right.date) - Date.parse(left.date));
   const currentIndex = series.findIndex((item) => item.path === entry.path);

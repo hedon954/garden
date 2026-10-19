@@ -1,9 +1,13 @@
 import assert from "node:assert/strict";
 import { access, readFile } from "node:fs/promises";
 import test from "node:test";
+import "./workerd-modules.mjs";
 import { homeListDate } from "../app/lib/a2-meta.ts";
 
 const templateRoot = new URL("../", import.meta.url);
+// Requests come from a browser, as on the site. (Without a User-Agent, vinext, like
+// Next.js, streams page metadata into <body> whatever htmlLimitedBots says.)
+const BROWSER_UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36";
 
 async function render(pathname = "/") {
   const workerUrl = new URL("../dist/server/index.js", import.meta.url);
@@ -12,7 +16,7 @@ async function render(pathname = "/") {
 
   return worker.fetch(
     new Request(`http://localhost${pathname}`, {
-      headers: { accept: pathname === "/rss.xml" ? "application/rss+xml" : "text/html" },
+      headers: { accept: pathname === "/rss.xml" ? "application/rss+xml" : "text/html", "user-agent": BROWSER_UA },
     }),
     {
       ASSETS: {

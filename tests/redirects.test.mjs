@@ -89,7 +89,10 @@ test("redirect pages escape what they print", () => {
 
 test("the build writes redirect pages only for a static export", () => {
   const cli = fs.readFileSync(new URL("../bin/garden.mjs", import.meta.url), "utf8");
-  assert.match(cli, /if \(process\.env\.STATIC_EXPORT === "1"\) runNode\("scripts\/redirects\.mjs"\);/u);
+  const staticSteps = cli.match(/if \(process\.env\.STATIC_EXPORT === "1"\) \{([^}]*)\}/u)?.[1] ?? "";
+  // Placeholder pages of empty dynamic routes go first, then the redirect pages.
+  assert.match(staticSteps, /runNode\("scripts\/static-placeholders\.mjs"\);\s*runNode\("scripts\/redirects\.mjs"\);/u);
+  assert.equal(cli.match(/runNode\("scripts\/redirects\.mjs"\)/gu).length, 1, "nowhere else");
 });
 
 test("each column gets /columns/<slug>/ → /columns/#<slug>, with the column's anchor kept", () => {

@@ -104,3 +104,21 @@ test("normalizes Vinext deployment IDs so unchanged output has the same tree", a
   assert.equal(firstOutput, secondOutput);
   assert.doesNotMatch(firstOutput, /11111111|22222222/);
 });
+
+test("normalizes the deployment ID in exported Flight payloads (index.txt) to the page's own", async () => {
+  const runs = [];
+  for (const id of ["11111111-1111-4111-8111-111111111111", "22222222-2222-4222-8222-222222222222"]) {
+    const { source, destination } = await fixture();
+    await writeFile(path.join(source, "index.html"), `<script>self.__next_f.push([1,"{\\"deploymentVersion\\":\\"${id}\\"}"])</script>`);
+    await writeFile(path.join(source, "index.txt"), `0:{"deploymentVersion":"${id}"}\n`);
+    await preparePagesOutput(source, destination);
+    runs.push({
+      html: await readFile(path.join(destination, "index.html"), "utf8"),
+      txt: await readFile(path.join(destination, "index.txt"), "utf8"),
+    });
+  }
+  assert.equal(runs[0].txt, runs[1].txt);
+  assert.doesNotMatch(runs[0].txt, /11111111|22222222/);
+  const version = runs[0].txt.match(/"deploymentVersion":"([^"]+)"/u)[1];
+  assert.match(runs[0].html, new RegExp(`deploymentVersion\\\\":\\\\"${version}`, "u"), "page and payload carry the same version");
+});

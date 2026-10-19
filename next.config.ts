@@ -10,6 +10,11 @@ const nextConfig: NextConfig = {
     : {}),
   // Always on in a static export; a server build opts in with TRAILING_SLASH=1. Links follow it (siteHref).
   trailingSlash: trailingSlashEnabled(process.env),
+  // vinext 1.x, like Next.js, streams page metadata after the document shell to
+  // clients that run JavaScript: title, canonical, RSS and robots would sit at the
+  // end of <body> until a script moves them. Treating every user agent as
+  // HTML-limited keeps them in <head> for everyone, as with vinext 0.0.x.
+  htmlLimitedBots: /.*/,
 };
 
 export default nextConfig;

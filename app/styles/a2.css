@@ -466,7 +466,7 @@ html[data-theme="dark"] .markdown-body a.ext {
 html[data-theme="dark"] .markdown-body img.fav {
   padding: 1px;
   box-sizing: border-box;
-  background: #f5f4ed;
+  background: var(--image-backing);
 }
 
 .markdown-body .table-wrap a.ext img.fav,
@@ -694,7 +694,7 @@ html[data-theme="dark"] .markdown-image-trigger img,
 html[data-theme="dark"] .markdown-image-lightbox-content img,
 html[data-theme="dark"] .markdown-body > img,
 html[data-theme="dark"] .markdown-body > p > img:not([class]) {
-  background: #faf9f5;
+  background: var(--image-backing);
 }
 
 .markdown-body .fig {
