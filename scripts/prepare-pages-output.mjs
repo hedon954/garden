@@ -101,21 +101,44 @@ async function listFiles(root, directory = root) {
   return files;
 }
 
+// The deployment ID vinext writes into pages and payloads, and bakes into the
+// client bundle as CLIENT_DEPLOYMENT_VERSION (vinext 1.x compares the two on
+// every client navigation and loads the whole page when they differ).
+const DEPLOYMENT_ID_SOURCES = [".html", ".rsc", ".txt"];
+const DEPLOYMENT_ID_CARRIERS = [".html", ".rsc", ".txt", ".js", ".mjs", ".json"];
+
+function buildDeploymentVersions(text) {
+  const found = new Set();
+  for (const match of text.matchAll(/"deploymentVersion":"([^"]+)"/gu)) found.add(match[1]);
+  for (const match of text.matchAll(/\\["]deploymentVersion\\["]:\\["]([^"\\]+)\\["]/gu)) found.add(match[1]);
+  found.delete(deploymentVersionPlaceholder);
+  return found;
+}
+
 async function stabilizeDeploymentVersion(root) {
   const hash = crypto.createHash("sha256");
   const normalizedFiles = new Map();
+  const files = await listFiles(root);
 
-  for (const file of await listFiles(root)) {
+  // The build's own IDs, read from the pages and payloads.
+  const versions = new Set();
+  for (const file of files) {
+    if (!DEPLOYMENT_ID_SOURCES.includes(path.extname(file.relativePath))) continue;
+    for (const version of buildDeploymentVersions(await fs.readFile(file.absolutePath, "utf8"))) versions.add(version);
+  }
+
+  for (const file of files) {
     const original = await fs.readFile(file.absolutePath);
     let normalized = original;
+    const extension = path.extname(file.relativePath);
     // Flight payloads: .rsc from vinext 0.0.x, index.txt / <page>.txt from vinext 1.x static export.
-    if ([".html", ".rsc", ".txt"].includes(path.extname(file.relativePath))) {
-      const text = original.toString("utf8");
-      normalized = Buffer.from(
-        normalizeDeploymentVersion(text, deploymentVersionPlaceholder),
-        "utf8",
-      );
-      normalizedFiles.set(file.absolutePath, normalized);
+    // The same ID also sits in the client JavaScript, so every copy gets the same stable value.
+    if (DEPLOYMENT_ID_CARRIERS.includes(extension)) {
+      let text = original.toString("utf8");
+      if (DEPLOYMENT_ID_SOURCES.includes(extension)) text = normalizeDeploymentVersion(text, deploymentVersionPlaceholder);
+      for (const version of versions) text = text.replaceAll(version, deploymentVersionPlaceholder);
+      normalized = Buffer.from(text, "utf8");
+      if (DEPLOYMENT_ID_SOURCES.includes(extension) || !normalized.equals(original)) normalizedFiles.set(file.absolutePath, normalized);
     }
     hash.update(file.relativePath);
     hash.update("\0");
@@ -133,7 +156,7 @@ async function stabilizeDeploymentVersion(root) {
   ].join("-");
 
   for (const [filePath, content] of normalizedFiles) {
-    const stabilized = normalizeDeploymentVersion(content.toString("utf8"), version);
+    const stabilized = content.toString("utf8").replaceAll(deploymentVersionPlaceholder, version);
     await fs.writeFile(filePath, stabilized);
   }
 }
