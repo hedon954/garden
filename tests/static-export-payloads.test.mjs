@@ -21,8 +21,8 @@ test("every exported page has its payload next to it, the home page at /index.tx
   const all = files(out);
   assert.deepEqual(all.filter((name) => name.endsWith(".rsc")), []);
   const pages = all.filter((name) => name.endsWith("index.html"))
-    // Redirect pages for old addresses are plain HTML that sends the reader on; 404/ is vinext's copy of 404.html.
-    .filter((name) => !/http-equiv="refresh"/u.test(fs.readFileSync(path.join(out, name), "utf8")) && name !== "404/index.html");
+    // Redirect pages for old addresses are plain HTML that sends the reader on.
+    .filter((name) => !/http-equiv="refresh"/u.test(fs.readFileSync(path.join(out, name), "utf8")));
   assert.ok(pages.includes("index.html"));
   const missing = pages.filter((name) => !fs.existsSync(path.join(out, name.replace(/index\.html$/u, "index.txt"))));
   assert.deepEqual(missing, []);

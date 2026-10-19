@@ -4,7 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 import { isStaticPlaceholder, STATIC_PLACEHOLDER, staticParams } from "../ui/garden/static-params.mjs";
-import { removeStaticPlaceholders } from "../scripts/static-placeholders.mjs";
+import { removeNotFoundCopy, removeStaticPlaceholders } from "../scripts/static-placeholders.mjs";
 import { validateStaticOutput } from "../scripts/prepare-pages-output.mjs";
 
 const withStaticExport = (value, fn) => {
@@ -77,6 +77,22 @@ test("the build step deletes what the export wrote for the placeholder and nothi
   assert.deepEqual(removeStaticPlaceholders(path.join(root, "missing")), []);
 });
 
+test("the build step drops vinext's 404/index.html copy, so /404/ is not a page", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "garden-404-"));
+  fs.writeFileSync(path.join(root, "404.html"), "<p>not found</p>");
+  fs.mkdirSync(path.join(root, "404"));
+  fs.writeFileSync(path.join(root, "404", "index.html"), "<p>not found</p>");
+  assert.equal(removeNotFoundCopy(root), true);
+  assert.equal(fs.existsSync(path.join(root, "404")), false);
+  assert.ok(fs.existsSync(path.join(root, "404.html")));
+  // A real page at /404/ (different content) stays.
+  fs.mkdirSync(path.join(root, "404"));
+  fs.writeFileSync(path.join(root, "404", "index.html"), "<p>an article about 404</p>");
+  assert.equal(removeNotFoundCopy(root), false);
+  assert.ok(fs.existsSync(path.join(root, "404", "index.html")));
+  assert.equal(removeNotFoundCopy(path.join(root, "missing")), false);
+});
+
 test("Pages validation refuses output that still has a placeholder page", async () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "garden-placeholder-"));
   fs.writeFileSync(path.join(root, "index.html"), "<!doctype html>");
@@ -92,4 +108,10 @@ test("the static export has no placeholder pages", { skip: !staticExport && "dis
   const walk = (dir) => { for (const entry of fs.readdirSync(dir, { withFileTypes: true })) { if (entry.name.startsWith(STATIC_PLACEHOLDER)) found.push(entry.name); else if (entry.isDirectory()) walk(path.join(dir, entry.name)); } };
   walk(new URL("../dist/client", import.meta.url).pathname);
   assert.deepEqual(found, []);
+});
+
+test("the static export has 404.html and no 404/index.html copy", { skip: !staticExport && "dist is not a static export" }, () => {
+  const out = new URL("../dist/client/", import.meta.url).pathname;
+  assert.ok(fs.existsSync(path.join(out, "404.html")));
+  assert.equal(fs.existsSync(path.join(out, "404", "index.html")), false);
 });
