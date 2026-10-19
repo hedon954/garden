@@ -7,8 +7,14 @@ export function SiteFooter({ docs = false }: { docs?: boolean }) {
     <footer className="sh-footer">
       <div className="sh-foot">
         <p>
-          {docs ? null : `© ${new Date().getFullYear()} ${siteConfig.author.name} · ${siteConfig.footer}`}
-          <span className="footer-framework">{docs ? "" : " · "}基于 <a href="https://github.com/hedon954/garden" target="_blank" rel="noreferrer">Garden</a> 构建</span>
+          {docs ? (
+            <span className="footer-framework">基于 <a href="https://github.com/hedon954/garden" target="_blank" rel="noreferrer">Garden</a> 构建</span>
+          ) : (
+            <>
+              © {new Date().getFullYear()} {siteConfig.author.name} · {siteConfig.footer}
+              <span className="footer-framework"> · 基于 <a href="https://github.com/hedon954/garden" target="_blank" rel="noreferrer">Garden</a> 构建</span>
+            </>
+          )}
         </p>
         <div className="sh-foot-links">
           <a href={githubUrl} rel="me">
