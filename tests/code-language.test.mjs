@@ -83,3 +83,18 @@ test("in the article the label sits left of the copy button, 8px apart, centred 
   const narrow = css.match(/@media \(max-width: 639\.98px\) \{\s*\.markdown-body \.ux-cb > pre\[data-language\]::before \{([^}]*)\}\s*\}/u)?.[1] ?? "";
   assert.equal(narrow.trim(), "display: none;");
 });
+
+test("the label is the site's muted text colour, in both themes and in the drawer", () => {
+  const globals = fs.readFileSync(new URL("../app/globals.css", import.meta.url), "utf8");
+  const rule = globals.match(/\.markdown-body pre\[data-language\]::before \{([^}]*)\}/u)?.[1] ?? "";
+  assert.match(rule, /color: var\(--muted\);/u);
+  // No other rule recolours the label (the drawer and dark mode inherit --muted).
+  for (const file of ["../app/globals.css", "../app/styles/a2.css", "../app/styles/shell.css"]) {
+    const css = fs.readFileSync(new URL(file, import.meta.url), "utf8");
+    for (const [, body] of css.matchAll(/pre\[data-language\]::before \{([^}]*)\}/gu)) {
+      const color = body.match(/(?:^|;|\s)color: ([^;]+);/u)?.[1];
+      if (color) assert.equal(color, "var(--muted)", `${file}: ${color}`);
+    }
+  }
+});
+
