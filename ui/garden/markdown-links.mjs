@@ -2,6 +2,7 @@
  * External links written in a post body. Code (fenced blocks, indented blocks
  * and inline spans) is skipped, so a URL in a snippet is never a link.
  */
+import { INLINE_LINK_SOURCE } from "./markdown-destination.mjs";
 
 const FENCE = /^ {0,3}(`{3,}|~{3,})/u;
 
@@ -47,7 +48,12 @@ function mapInline(text, visit) {
   return result + visit(text.slice(index));
 }
 
-const LINK = /(!?)\[(?:[^\[\]]|\[[^\]]*\])*\]\(\s*<?(https?:\/\/[^\s)>]+)>?(?:\s+(?:"[^"]*"|'[^']*'))?\s*\)(\{card\})?/giu;
+// Inline links read as CommonMark reads them (ui/garden/markdown-destination.mjs):
+// `[t](<https://e.com/a (1)>)` and `[t](https://e.com/Trie_(x))` are whole addresses.
+// Groups: 1 `!`, 3 or 4 the address, 6 `{card}`.
+const LINK = new RegExp(`${INLINE_LINK_SOURCE}(\\{card\\})?`, "giu");
+const linkUrl = (match) => match[3] ?? match[4];
+const isWebUrl = (url) => /^https?:\/\//iu.test(url);
 const AUTOLINK = /<(https?:\/\/[^\s>]+)>/giu;
 const BARE = /(^|[\s(（：:，,。])(https?:\/\/[^\s<>()（）\]，。、]+[^\s<>()（）\].,;:!?，。、；：！？'"])/giu;
 
@@ -56,7 +62,7 @@ export function markdownLinks(markdown) {
   const links = [];
   mapOutsideCode(markdown, (text) => {
     for (const match of text.matchAll(LINK)) {
-      if (match[1] !== "!") links.push({ url: match[2], card: Boolean(match[3]) });
+      if (match[1] !== "!" && isWebUrl(linkUrl(match))) links.push({ url: linkUrl(match), card: Boolean(match[6]) });
     }
     const rest = text.replace(LINK, " ");
     for (const match of rest.matchAll(AUTOLINK)) links.push({ url: match[1], card: false });
@@ -75,7 +81,7 @@ export const CARD_MARKER = "{card}";
  */
 export function stripCardMarkers(markdown) {
   if (!String(markdown ?? "").includes(CARD_MARKER)) return markdown;
-  return mapOutsideCode(markdown, (text) => text.replace(LINK, (whole, bang, url, card) => (card ? whole.slice(0, -CARD_MARKER.length) : whole)));
+  return mapOutsideCode(markdown, (text) => text.replace(LINK, (...match) => (match[6] && isWebUrl(linkUrl(match)) ? match[0].slice(0, -CARD_MARKER.length) : match[0])));
 }
 
 /** URLs the author asked to show as cards, in order, without repeats. */
