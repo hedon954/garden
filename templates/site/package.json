@@ -13,7 +13,5 @@
     "pages:validate": "garden pages:validate",
     "pages:prepare": "garden pages:prepare"
   },
-  "dependencies": {
-    "hd-garden": "^0.3.3",
-  }
+  "dependencies": {}
 }

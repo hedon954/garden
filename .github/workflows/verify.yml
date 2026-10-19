@@ -20,6 +20,10 @@ jobs:
       - run: npm ci
       - run: npm run lint
       - run: npm test
+      - name: A new site from garden init installs the packed engine and builds
+        env:
+          GARDEN_INIT_BUILD: "1"
+        run: node --test --test-name-pattern="installs the packed" tests/garden-init.test.mjs
       - name: Verify GitHub Pages export
         env:
           STATIC_EXPORT: "1"

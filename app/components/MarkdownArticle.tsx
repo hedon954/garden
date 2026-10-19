@@ -8,7 +8,7 @@ import {
   type HTMLAttributes,
   type ReactNode,
 } from "react";
-import { articleHeadingBase, articleUsesHeadingNumbers, displayHeadingLevel, splitHeadingNumber } from "../lib/content";
+import { articleHeadingBase, autoNumbersHeadings, displayHeadingLevel, splitHeadingNumber } from "../lib/content";
 import Link from "next/link";
 import ReactMarkdown from "react-markdown";
 import rehypeRaw from "rehype-raw";
@@ -207,11 +207,11 @@ const headingText = (children: ReactNode) => {
   return parts.join("");
 };
 
-export function MarkdownArticle({ content }: { content: string }) {
+export function MarkdownArticle({ content, numbering }: { content: string; numbering?: boolean }) {
   // Optional layer 2: a Worker that refreshes card text. Without it, cards stay as built.
   const cardWorker = content.includes("{card}") ? siteConfig.linkPreview?.worker : undefined;
   const numbers = { h2: 0, h3: 0 };
-  const numberedArticle = articleUsesHeadingNumbers(content);
+  const autoNumber = autoNumbersHeadings(content, numbering);
   const headingBase = articleHeadingBase(content);
   const section = (depth: 2 | 3, children: ReactNode) => {
     const raw = headingText(children).trim();
@@ -222,7 +222,7 @@ export function MarkdownArticle({ content }: { content: string }) {
       const prefix = raw.slice(0, raw.length - split.text.length);
       return { no: split.no, children: stripPrefix(children, prefix) };
     }
-    if (numberedArticle) return { no: "", children };
+    if (!autoNumber) return { no: "", children };
     if (depth === 2) { numbers.h2 += 1; numbers.h3 = 0; return { no: String(numbers.h2), children }; }
     numbers.h3 += 1;
     return { no: numbers.h2 ? `${numbers.h2}.${numbers.h3}` : String(numbers.h3), children };

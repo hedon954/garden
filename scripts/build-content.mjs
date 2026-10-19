@@ -436,6 +436,9 @@ function validateAndNormalize(data, content, markdownPath, kind, sourcePath, lin
   if (data.draft !== undefined && typeof data.draft !== "boolean") {
     fail(sourcePath, "draft 必须是布尔值");
   }
+  if (data.numbering !== undefined && typeof data.numbering !== "boolean") {
+    fail(sourcePath, "numbering 必须是布尔值");
+  }
 
   if (kind === "post") {
     requireString(data, "description", sourcePath);
@@ -721,6 +724,7 @@ export type ContentEntry = {
   tags?: string[];
   references?: { title: string; url?: string; domain?: string }[];
   pinned?: boolean;
+  numbering?: boolean;
   readingTime?: string;
   kind: "post" | "column" | "thought";
   sourcePath: string;

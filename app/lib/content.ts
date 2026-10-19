@@ -14,7 +14,7 @@ import { toString } from "mdast-util-to-string";
 import remarkParse from "remark-parse";
 import { unified } from "unified";
 import { visit } from "unist-util-visit";
-import { splitHeadingNumber } from "./heading-number";
+import { articleUsesHeadingNumbers, autoNumbersHeadings, splitHeadingNumber } from "./heading-number";
 import { siteHref } from "./site-href";
 
 export { columns, posts, thoughts };
@@ -51,10 +51,8 @@ export const formatDate = (value: string, withTime = false) => {
   }).format(date);
 };
 
-const NUMBERED_ARTICLE = /^#{2,3}[ \t]+\d/m;
-
 /** An article that already writes its own heading numbers is not auto-numbered. */
-export const articleUsesHeadingNumbers = (markdown: string) => NUMBERED_ARTICLE.test(markdown);
+export { articleUsesHeadingNumbers, autoNumbersHeadings };
 
 /**
  * Prototype render: an article with no `##` treats `###` as the top section.
@@ -76,11 +74,12 @@ export { splitHeadingNumber };
  * rehype-slug. Every heading depth advances the slugger so headings outside
  * the H2-H5 TOC range cannot shift the IDs shown in the directory.
  * `no` follows the prototype: keep an author-written number, otherwise
- * auto-number h2/h3 only when the article has no numbered headings.
+ * auto-number h2/h3 only when the article has no numbered headings and its
+ * front matter does not say `numbering: false`.
  */
-export const extractHeadings = (markdown: string) => {
+export const extractHeadings = (markdown: string, { numbering }: { numbering?: boolean } = {}) => {
   const slugger = new GithubSlugger();
-  const numbered = articleUsesHeadingNumbers(markdown);
+  const autoNumber = autoNumbersHeadings(markdown, numbering);
   const base = articleHeadingBase(markdown);
   const headings: Array<{ depth: number; text: string; id: string; no?: string }> = [];
   const tree = unified().use(remarkParse).use(markdownPlugins).parse(markdown);
@@ -101,7 +100,7 @@ export const extractHeadings = (markdown: string) => {
         text = split.text;
         if (level === 2) { h2 += 1; h3 = 0; }
         else h3 += 1;
-      } else if (!numbered) {
+      } else if (autoNumber) {
         if (level === 2) { h2 += 1; h3 = 0; no = String(h2); }
         else { h3 += 1; no = h2 ? `${h2}.${h3}` : String(h3); }
       }

@@ -88,7 +88,7 @@ export default async function DraftPreviewPage({ params }: { params: Promise<{ p
         <h1 className="ui-admin-preview-title">{typeof data.title === "string" ? data.title : post}</h1>
         {typeof data.description === "string" ? <p className="ui-studio-meta">{data.description}</p> : null}
         <article className="article-body">
-          <MarkdownArticle content={proxyAssets(content, post)} />
+          <MarkdownArticle content={proxyAssets(content, post)} numbering={data.numbering === false ? false : undefined} />
         </article>
       </section>
     </AdminUiShell>

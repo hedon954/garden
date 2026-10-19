@@ -89,7 +89,7 @@ export default async function ColumnEntryPage({
   const listed = [...series].sort((left, right) => Date.parse(right.date) - Date.parse(left.date));
   const currentIndex = series.findIndex((item) => item.path === entry.path);
   const next = series[currentIndex + 1];
-  const headings = extractHeadings(entry.content);
+  const headings = extractHeadings(entry.content, { numbering: entry.numbering });
   const baseUrl = await getSiteUrl();
   const pathname = columnHref(entry);
   const canonicalUrl = absoluteUrl(pathname, baseUrl);
@@ -147,7 +147,7 @@ export default async function ColumnEntryPage({
         <ArticleMeasure />
         <div className="e-content">
           {entry.description ? <p className="lead p-summary">{entry.description}</p> : null}
-          <MarkdownArticle content={entry.content} />
+          <MarkdownArticle content={entry.content} numbering={entry.numbering} />
         </div>
         <ArticleReferences references={entry.references} />
         {next && (
