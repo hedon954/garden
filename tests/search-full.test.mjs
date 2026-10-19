@@ -228,3 +228,8 @@ test("the search label counts every match, not only the rows shown", () => {
   assert.match(header, /\$\{resultTotal\} 篇相关文章/);
   assert.doesNotMatch(header, /results\.length\} 个相关结果/);
 });
+
+test("search text keeps a link's or image's words and drops the whole address, in <…> or with parentheses", () => {
+  const md = "图 ![ParentDocumentRetriever](<https://o.com/img/image%20(1).png>) 后文 [Trie](https://en.wikipedia.org/wiki/Trie_(data_structure)) 和 [空格](<https://e.com/a b> \"标题\") 完";
+  assert.equal(fullText(md), "图 ParentDocumentRetriever 后文 Trie 和 空格 完");
+});

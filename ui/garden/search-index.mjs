@@ -8,13 +8,17 @@
  */
 import crypto from "node:crypto";
 import { contentToSearchText } from "../core/transform.mjs";
+import { inlineLinkPattern } from "./markdown-destination.mjs";
+
+const INLINE_LINK = inlineLinkPattern();
 
 /** Plain text of a post body, as search and word counts see it. */
 export function searchableText(markdown) {
   return contentToSearchText(markdown)
     .replace(/```[^\n]*\n([\s\S]*?)```/g, " $1 ")
-    .replace(/!\[([^\]]*)\]\([^)]+\)/g, " $1 ")
-    .replace(/\[([^\]]+)\]\([^)]+\)/g, " $1 ")
+    // Links and images leave their text; the address goes whole, even with
+    // parentheses or in <…> (ui/garden/markdown-destination.mjs).
+    .replace(INLINE_LINK, (...match) => ` ${match[2]} `)
     .replace(/<[^>]+>/g, " ")
     .replace(/[#>*_~`|[\]{}()]/g, " ")
     .replace(/\s+/g, " ")
