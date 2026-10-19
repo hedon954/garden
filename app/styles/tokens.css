@@ -61,6 +61,9 @@
 
 :root[data-theme="dark"],
 html[data-theme="dark"] {
+  /* Light backing under article images and link icons, so dark-on-transparent
+     artwork stays legible. */
+  --image-backing: #faf9f5;
   --paper: #1f1e1d;
   --paper-deep: #262624;
   --card: #262624;
