@@ -148,3 +148,21 @@ test("the client bundle's deployment ID is rewritten with the pages', so client 
   assert.equal(runs[0].txt, runs[1].txt);
   assert.equal(runs[0].other, "var untouched=1;");
 });
+
+// After a static export (the verify workflow's static step): the real output, prepared the way the Pages deploy does.
+const exported = new URL("../dist/client/index.txt", import.meta.url);
+test("prepared static export: the client bundle carries the payloads' deployment ID", { skip: !(await access(exported).then(() => true, () => false)) && "needs a static export in dist/client" }, async () => {
+  const root = await mkdtemp(path.join(tmpdir(), "garden-pages-export-"));
+  const destination = path.join(root, "repository");
+  await mkdir(path.join(destination, ".git"), { recursive: true });
+  await preparePagesOutput(new URL("../dist/client/", import.meta.url).pathname, destination);
+  const version = (await readFile(path.join(destination, "index.txt"), "utf8")).match(/"deploymentVersion":"([^"]+)"/u)?.[1];
+  assert.ok(version, "index.txt names its deployment ID");
+  const { readdir } = await import("node:fs/promises");
+  const chunks = path.join(destination, "_next", "static", "chunks");
+  const carriers = [];
+  for (const name of await readdir(chunks)) {
+    if (name.endsWith(".js") && (await readFile(path.join(chunks, name), "utf8")).includes(version)) carriers.push(name);
+  }
+  assert.ok(carriers.length > 0, "a client chunk carries the same deployment ID as the payloads");
+});
