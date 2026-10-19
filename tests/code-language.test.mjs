@@ -16,8 +16,8 @@ test("one label per language, whatever alias the fence uses", () => {
   assert.equal(codeLanguageLabel("typescript"), "TS");
   assert.equal(codeLanguageLabel("tsx"), "TSX");
   // Everything else by its full name.
-  assert.equal(codeLanguageLabel("bash"), "BASH");
-  assert.equal(codeLanguageLabel("sh"), "BASH");
+  // Every shell reads SHELL.
+  for (const name of ["sh", "zsh", "bash", "shell", "console", "Bash"]) assert.equal(codeLanguageLabel(name), "SHELL", name);
   assert.equal(codeLanguageLabel("rs"), "RUST");
   assert.equal(codeLanguageLabel("rust"), "RUST");
   assert.equal(codeLanguageLabel("yml"), "YAML");

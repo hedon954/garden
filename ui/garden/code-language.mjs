@@ -3,7 +3,8 @@
  * drawer and the standalone preview page all go through here, so ```py and
  * ```python read the same everywhere. Common aliases map to one language; JS and
  * TS use their abbreviations, every other language its full name in capitals
- * (PYTHON, GO, RUST, BASH), and an unknown fence language is shown in capitals.
+ * (PYTHON, GO, RUST), every shell (sh, zsh, bash, shell) reads SHELL, and an
+ * unknown fence language is shown in capitals.
  */
 const ALIASES = {
   py: "python",
@@ -15,8 +16,9 @@ const ALIASES = {
   ts: "typescript",
   mts: "typescript",
   tsx: "tsx",
-  sh: "bash",
-  zsh: "bash",
+  sh: "shell",
+  zsh: "shell",
+  bash: "shell",
   shell: "shell",
   console: "shell",
   golang: "go",

@@ -967,6 +967,9 @@ test("the article code block labels its language through the shared mapping, nex
   assert.match(html, /<pre class="code" data-language="C#"><code class="hljs language-c#">/u);
   assert.match(html, /<pre class="code" data-language="C\+\+"><code class="hljs language-c\+\+">/u);
   assert.doesNotMatch(html, /data-language="C"/u);
+  // ```sh and ```bash both read SHELL.
+  assert.equal(html.match(/<pre class="code" data-language="SHELL"><code class="hljs language-(?:sh|bash)">/gu)?.length, 2);
+  assert.doesNotMatch(html, /data-language="BASH"/u);
 });
 
 test("article, column article and thought pages link the RSS feed in <head> next to their canonical", async () => {
