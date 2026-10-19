@@ -62,8 +62,8 @@ pages:
       href: /blog
       label: 浏览博文
   garden:
-    title: "用 Markdown 写丨推送之后网站自己更新"
-    subtitle: "文章、随想和专栏都存在你自己的 Git 仓库里。下面这篇页面本身就由 Garden 渲染。"
+    title: "用 Markdown 写。\n推送之后，网站自己更新。"
+    subtitle: ""
 
 footer: 持续记录。
 ```
@@ -84,7 +84,7 @@ footer: 持续记录。
 | `footer` | 页脚签名文字 |
 
 > [!NOTE]
-> URL 末尾是否带斜杠（Trailing Slash）不由 `site.config.yaml` 控制，而是由构建环境变量 `NEXT_PUBLIC_TRAILING_SLASH`（或在 `STATIC_EXPORT=1` 静态导出时自动开启）控制。
+> URL 末尾是否带斜杠（Trailing Slash）不由 `site.config.yaml` 控制：静态导出（`STATIC_EXPORT=1`）时始终开启，服务端构建可通过环境变量 `TRAILING_SLASH=1` 开启。
 
 ### `pages` 一级页面文案
 
@@ -95,9 +95,9 @@ footer: 持续记录。
 
 ### `brand` 自定义图标与路由重定向
 
-- **`brand.logo`**：左上角站点名左侧的 SVG 标志。文件放在 `content/` 下（例如 `content/brand/logo.svg`，配置写 `brand/logo.svg`），构建时会内联进页头并去掉固定色值以跟随深浅色主题。设为 `false` 可隐藏左上角图标。
+- **`brand.logo`**：左上角站点名左侧的 SVG 标志。文件相对于站点根目录解析（例如放在 `brand/logo.svg`），构建时会内联进页头并跟随当前文字颜色。设为 `false` 可隐藏左上角图标。
 - **`brand.favicon` 与 `brand.appleTouchIcon`**：放在 `public/` 目录下的图标路径（如 `/favicon.svg`、`/apple-touch-icon.png`）；`appleTouchIcon` 设为 `false` 可不输出。
-- **`redirects`**：旧文章改路径后，可在 `site.config.yaml` 顶层配置 `redirects` 映射（例如 `"/blog/old-slug": "/blog/new-slug"`），正文里的站内旧链接会自动指向新地址。
+- **`redirects`**：旧文章改路径后，可在 `site.config.yaml` 顶层配置 `redirects` 映射（例如 `"/2024/01/20/old-post/": "/blog/new-post/"`），构建时会在旧路径生成跳转页，正文里的站内旧链接也会自动指向新地址。
 
 ## 2. 配置主题专栏（`content/columns.yaml`）
 

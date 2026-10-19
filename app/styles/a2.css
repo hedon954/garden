@@ -1738,15 +1738,22 @@ html[data-theme="dark"] .gf-scrim { background: rgb(0 0 0 / 45%); }
 /* ===== Garden Handbook (/garden & /garden/[...slug]) ===== */
 
 .garden-doc-page {
-  width: min(1340px, calc(100% - 64px));
+  width: min(1380px, calc(100% - 48px));
   margin: 0 auto;
   padding: 44px 0 112px;
   display: grid;
-  grid-template-columns: 236px minmax(0, var(--col)) 200px;
-  gap: 0 52px;
+  grid-template-columns: 224px minmax(0, var(--col)) 188px;
+  gap: 0 24px;
   align-items: start;
   justify-content: space-between;
   font-family: var(--sans);
+}
+
+.garden-doc-page .g-explore:not([data-sel="all"]) .dx-wrap [data-p]:not(.on),
+.garden-doc-page .g-explore:not([data-sel="all"]) .dx-wrap text:not(.on),
+.garden-doc-page .g-figure:not([data-sel="all"]) [data-p]:not(.on),
+.garden-doc-page .g-figure:not([data-sel="all"]) text:not(.on) {
+  opacity: 0.56;
 }
 
 .garden-doc-page > .toc {

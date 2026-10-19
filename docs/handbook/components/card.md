@@ -18,7 +18,7 @@ points:
   - 后台 Checkpoint 按阈值将日志页分批写回主库文件。
 ```
 
-```markdown
+````markdown
 ```garden card
 title: SQLite WAL 写入模式
 url: https://www.sqlite.org/wal.html
@@ -29,7 +29,7 @@ points:
   - 读事务记录当前末尾偏移量即可看到一致快照，不会阻塞并发写入。
   - 后台 Checkpoint 按阈值将日志页分批写回主库文件。
 ```
-```
+````
 
 - **用**：介绍一篇论文、一个开源项目或某个子系统，需要带出来源链接和 2～4 条关键要点时。
 - **别用**：只有一两句普通说明时直接写正文段落或链接卡片（`{card}`），不要套一层 `card`。

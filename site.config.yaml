@@ -43,6 +43,6 @@ pages:
       label: 浏览博文
   garden:
     title: "用 Markdown 写丨推送之后网站自己更新"
-    subtitle: "文章、随想和专栏都存在你自己的 Git 仓库里。下面这篇页面本身就由 Garden 渲染。"
+    subtitle: "用 Markdown 写文章、随想和专栏，保存在自己的 Git 仓库里。"
 
 footer: 持续记录。

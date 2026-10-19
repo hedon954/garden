@@ -11,23 +11,17 @@ badge: figure
 caption: 点击上方按钮切换高亮各步骤
 svg: |
   <svg viewBox="0 0 680 110" xmlns="http://www.w3.org/2000/svg" font-family="var(--sans)">
-    <g data-p="sync">
-      <rect x="12" y="18" width="196" height="74" rx="10" fill="var(--well)" stroke="var(--rule-strong)" stroke-width="1.5"/>
-      <text x="110" y="50" text-anchor="middle" font-size="14" font-weight="600" fill="var(--ink)">1. garden sync</text>
-      <text x="110" y="72" text-anchor="middle" font-size="12" fill="var(--muted)">解析 Markdown 与图片尺寸</text>
-    </g>
+    <rect data-p="sync" x="12" y="18" width="196" height="74" rx="10" fill="var(--card)" stroke="var(--rule-strong)" stroke-width="1.5"/>
+    <text data-p="sync" x="110" y="50" text-anchor="middle" font-size="14" font-weight="600" fill="var(--ink)">1. garden sync</text>
+    <text data-p="sync" x="110" y="72" text-anchor="middle" font-size="12" fill="var(--muted)">解析 Markdown 与图片尺寸</text>
     <path d="M214 55 H236" stroke="var(--muted)" stroke-width="1.5"/>
-    <g data-p="build">
-      <rect x="242" y="18" width="196" height="74" rx="10" fill="var(--well)" stroke="var(--rule-strong)" stroke-width="1.5"/>
-      <text x="340" y="50" text-anchor="middle" font-size="14" font-weight="600" fill="var(--ink)">2. garden build</text>
-      <text x="340" y="72" text-anchor="middle" font-size="12" fill="var(--muted)">生成静态页面与搜索索引</text>
-    </g>
+    <rect data-p="build" x="242" y="18" width="196" height="74" rx="10" fill="var(--card)" stroke="var(--rule-strong)" stroke-width="1.5"/>
+    <text data-p="build" x="340" y="50" text-anchor="middle" font-size="14" font-weight="600" fill="var(--ink)">2. garden build</text>
+    <text data-p="build" x="340" y="72" text-anchor="middle" font-size="12" fill="var(--muted)">生成静态页面与搜索索引</text>
     <path d="M444 55 H466" stroke="var(--muted)" stroke-width="1.5"/>
-    <g data-p="validate">
-      <rect x="472" y="18" width="196" height="74" rx="10" fill="var(--well)" stroke="var(--rule-strong)" stroke-width="1.5"/>
-      <text x="570" y="50" text-anchor="middle" font-size="14" font-weight="600" fill="var(--ink)">3. pages:validate</text>
-      <text x="570" y="72" text-anchor="middle" font-size="12" fill="var(--muted)">检查导出路由与静态资源</text>
-    </g>
+    <rect data-p="validate" x="472" y="18" width="196" height="74" rx="10" fill="var(--card)" stroke="var(--rule-strong)" stroke-width="1.5"/>
+    <text data-p="validate" x="570" y="50" text-anchor="middle" font-size="14" font-weight="600" fill="var(--ink)">3. pages:validate</text>
+    <text data-p="validate" x="570" y="72" text-anchor="middle" font-size="12" fill="var(--muted)">检查导出路由与静态资源</text>
   </svg>
 parts:
   - id: sync
@@ -41,18 +35,16 @@ parts:
     text: 检查静态导出目录中的内部链接、资源路径和页面结构是否完整。
 ```
 
-```markdown
+````markdown
 ```garden figure
 caption: 点击上方按钮切换高亮各步骤
 svg: |
   <svg viewBox="0 0 680 110" xmlns="http://www.w3.org/2000/svg" font-family="var(--sans)">
-    <g data-p="sync">
-      <rect x="12" y="18" width="196" height="74" rx="10" fill="var(--well)" stroke="var(--rule-strong)" stroke-width="1.5"/>
-      <text x="110" y="50" text-anchor="middle" font-size="14" font-weight="600" fill="var(--ink)">1. garden sync</text>
-      <text x="110" y="72" text-anchor="middle" font-size="12" fill="var(--muted)">解析 Markdown 与图片尺寸</text>
-    </g>
-    <g data-p="build">...</g>
-    <g data-p="validate">...</g>
+    <rect data-p="sync" x="12" y="18" width="196" height="74" rx="10" fill="var(--card)" stroke="var(--rule-strong)" stroke-width="1.5"/>
+    <text data-p="sync" x="110" y="50" text-anchor="middle" font-size="14" font-weight="600" fill="var(--ink)">1. garden sync</text>
+    <text data-p="sync" x="110" y="72" text-anchor="middle" font-size="12" fill="var(--muted)">解析 Markdown 与图片尺寸</text>
+    <rect data-p="build" x="242" y="18" width="196" height="74" rx="10" fill="var(--card)" stroke="var(--rule-strong)" stroke-width="1.5"/>
+    <rect data-p="validate" x="472" y="18" width="196" height="74" rx="10" fill="var(--card)" stroke="var(--rule-strong)" stroke-width="1.5"/>
   </svg>
 parts:
   - id: sync
@@ -65,7 +57,7 @@ parts:
     label: 3. 导出校验
     text: 检查静态导出目录中的内部链接、资源路径和页面结构是否完整。
 ```
-```
+````
 
 - **用**：展示模块架构或数据流向，需要读者点击按钮逐块查看对应区域职责时（SVG 内优先使用 `var(--well)`、`var(--ink)`、`var(--muted)` 等主题变量以兼容深色模式）。
 - **别用**：不需要分区点击说明的普通流程图或截图，直接用标准 Markdown 图片或 `mermaid` 代码块。

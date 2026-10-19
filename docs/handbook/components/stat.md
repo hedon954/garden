@@ -23,7 +23,7 @@ items:
     caption: 左右各最多向外延伸 300px
 ```
 
-```markdown
+````markdown
 ```garden stat
 items:
   - label: 正文列宽
@@ -39,7 +39,7 @@ items:
     unit: px
     caption: 左右各最多向外延伸 300px
 ```
-```
+````
 
 - **用**：把分散在段落里的 2～4 个核心数字、阈值或规格并排摆出来时。
 - **别用**：只有一个数字时直接写在正文句子里；有多行多列维度时改用 Markdown 表格。

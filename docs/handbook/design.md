@@ -15,9 +15,9 @@ Garden 的文章页面围绕长文阅读体验做了几项自动化处理。这�
 | 内容元素 | 最大宽度 | 展开规则与边界条件 |
 | :--- | :--- | :--- |
 | 普通段落、列表、代码块、内置组件 | `740px` | 正文字号 `17px`、行高 `1.75`，每行约 38～42 个汉字，始终保持在阅读列内 |
-| 宽幅配图（`.fig`） | `1040px` | 高分屏截图默认按像素宽度的一半（`naturalWidth / 2`）计算显示宽度；当显示宽度超过正文列且视口 `>= 900px` 时，向左右各最多延伸 `150px`（距窗口边缘至少留 `24px`） |
+| 宽幅配图（`.fig`） | `1040px` | 高分屏截图默认按像素宽度的一半（`naturalWidth / 2`）计算显示宽度；当显示宽度超过正文列且视口 `>= 900px` 时，向左右各最多延伸 `150px`（距窗口边缘至少留 `24px`；在说明书页面则限制在左侧导航与右侧目录之间的留白内） |
 | 多列宽表格（`.table-wrap`） | `1340px` | 脚本先以 `max-content` 测量表格不折行时的真实宽度；超出 `740px` 且视口 `>= 900px` 时，向左右各最多延伸 `300px` |
-| 右侧章节目录（`.toc`） | `200px` | 当拓宽后的图片或表格右边缘靠近目录时，目录自动向右平移避让；若右侧空间不足以放下目录则自动隐藏，滚过宽元素后恢复 |
+| 右侧章节目录（`.toc`） | `200px` | 在独立文章页，当拓宽后的图片或表格右边缘靠近目录时，目录自动向右平移避让；若右侧空间不足以放下目录则自动隐藏，滚过宽元素后恢复 |
 
 ## 2. 标题断行与字号缩放
 
@@ -27,7 +27,7 @@ Garden 的文章页面围绕长文阅读体验做了几项自动化处理。这�
 2. **没有写分隔符**：保持单段 `<h1>`，仅使用 CSS `text-wrap: balance` 让浏览器均衡换行，**不会**自动在冒号、破折号或中间位置拆行，也不会自动改变字号。
 
 > [!NOTE]
-> 如果标题里写了 `丨`，但竖线左边或右边为空（例如 `丨副标题`），`npx garden check` 会报 `title-pipe` 错误。
+> 如果标题里写了 `丨`，但分隔符左边或右边为空（例如 `丨副标题`），`npx garden check` 会报 `title-split` 警告（提示 `分隔符两侧都要有文字`）。
 
 ## 3. 构建期读取图片尺寸与点击放大
 
@@ -37,23 +37,17 @@ Garden 的文章页面围绕长文阅读体验做了几项自动化处理。这�
 caption: 点击上方按钮查看图片从构建到渲染的三个阶段
 svg: |
   <svg viewBox="0 0 680 110" xmlns="http://www.w3.org/2000/svg" font-family="var(--sans)">
-    <g data-p="sync">
-      <rect x="12" y="18" width="196" height="74" rx="10" fill="var(--well)" stroke="var(--rule-strong)" stroke-width="1.5"/>
-      <text x="110" y="50" text-anchor="middle" font-size="14" font-weight="600" fill="var(--ink)">1. 构建期读取尺寸</text>
-      <text x="110" y="72" text-anchor="middle" font-size="12" fill="var(--muted)">写入 width / height 与 --wl</text>
-    </g>
+    <rect data-p="sync" x="12" y="18" width="196" height="74" rx="10" fill="var(--card)" stroke="var(--rule-strong)" stroke-width="1.5"/>
+    <text data-p="sync" x="110" y="50" text-anchor="middle" font-size="14" font-weight="600" fill="var(--ink)">1. 构建期读取尺寸</text>
+    <text data-p="sync" x="110" y="72" text-anchor="middle" font-size="12" fill="var(--muted)">写入 width / height 与 --wl</text>
     <path d="M214 55 H236" stroke="var(--muted)" stroke-width="1.5"/>
-    <g data-p="measure">
-      <rect x="242" y="18" width="196" height="74" rx="10" fill="var(--well)" stroke="var(--rule-strong)" stroke-width="1.5"/>
-      <text x="340" y="50" text-anchor="middle" font-size="14" font-weight="600" fill="var(--ink)">2. 客户端测量拓宽</text>
-      <text x="340" y="72" text-anchor="middle" font-size="12" fill="var(--muted)">按当前视口调整宽图与目录</text>
-    </g>
+    <rect data-p="measure" x="242" y="18" width="196" height="74" rx="10" fill="var(--card)" stroke="var(--rule-strong)" stroke-width="1.5"/>
+    <text data-p="measure" x="340" y="50" text-anchor="middle" font-size="14" font-weight="600" fill="var(--ink)">2. 客户端测量拓宽</text>
+    <text data-p="measure" x="340" y="72" text-anchor="middle" font-size="12" fill="var(--muted)">按当前视口调整宽图与目录</text>
     <path d="M444 55 H466" stroke="var(--muted)" stroke-width="1.5"/>
-    <g data-p="dark">
-      <rect x="472" y="18" width="196" height="74" rx="10" fill="var(--well)" stroke="var(--rule-strong)" stroke-width="1.5"/>
-      <text x="570" y="50" text-anchor="middle" font-size="14" font-weight="600" fill="var(--ink)">3. 深色衬底与灯箱</text>
-      <text x="570" y="72" text-anchor="middle" font-size="12" fill="var(--muted)">深色垫 #faf9f5 · 点击放大</text>
-    </g>
+    <rect data-p="dark" x="472" y="18" width="196" height="74" rx="10" fill="var(--card)" stroke="var(--rule-strong)" stroke-width="1.5"/>
+    <text data-p="dark" x="570" y="50" text-anchor="middle" font-size="14" font-weight="600" fill="var(--ink)">3. 深色衬底与灯箱</text>
+    <text data-p="dark" x="570" y="72" text-anchor="middle" font-size="12" fill="var(--muted)">深色垫 #faf9f5 · 点击放大</text>
   </svg>
 parts:
   - id: sync
@@ -77,10 +71,11 @@ Garden 的做法是在深色模式下把正文配图与灯箱大图的 `backgrou
 
 | 颜色变量 | 浅色模式 | 深色模式 | 用途 |
 | :--- | :--- | :--- | :--- |
-| `--paper` | `#faf9f5` | `#1f1e1d` | 页面主背景色（深色模式下同时作为 `--image-backing` 的值 `#faf9f5`） |
-| `--well` / `--chip` | `#f0eee6` | `#2b2926` | 代码块底色、内嵌凹槽、标签胶囊背景 |
-| `--card` | `#ffffff` | `#252421` | 独立卡片、图框与弹窗底色 |
+| `--paper` | `#faf9f5` | `#1f1e1d` | 页面主背景色（深色模式下配图衬底 `--image-backing` 亦为 `#faf9f5`） |
+| `--paper-deep` / `--well` | `#f0eee6` | `#262624` | 代码块底色与内嵌凹槽背景 |
+| `--chip` | `#f0eee6` | `#30302e` | 标签胶囊与按钮底色 |
+| `--card` | `#ffffff` | `#262624` | 独立卡片、图框与弹窗底色 |
 | `--ink` | `#1b1a18` | `#eeece7` | 标题、正文强调与主交互色 |
-| `--text` / `--soft` | `#292826` / `#47443e` | `#dad6ce` / `#b5b0a6` | 正文段落与次级说明文字 |
-| `--muted` | `#6e6b64` | `#9c968c` | 日期、图注、表头辅助信息（均满足 WCAG AA 4.5:1 对比度） |
-| `--rule` | `#e6e3dc` | `#35332f` | 1px 细分割线与卡片边框 |
+| `--text` / `--soft` | `#2d2c29` / `#4a4844` | `#dcd9d2` / `#bdb9b0` | 正文段落与次级说明文字 |
+| `--muted` | `#6e6b64` | `#a09b91` | 日期、图注、表头辅助信息（均满足 WCAG AA 4.5:1 对比度） |
+| `--rule` / `--rule-strong` | `#e6e3dc` / `#d6d2c9` | `#3d3d3a` / `#4d4c48` | 1px 细分割线、卡片边框与强调边线 |

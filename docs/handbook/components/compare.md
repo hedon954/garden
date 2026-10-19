@@ -1,7 +1,7 @@
 ---
 title: 并排对比（compare）
 navTitle: 并排对比
-description: 把两到三种方案左右并列，直观对比各自的取舍与属性。
+description: 把两到三种方案左右并列，对比各自的取舍与属性。
 section: components
 order: 33
 badge: compare
@@ -19,7 +19,7 @@ items:
     额外密钥: PAGES_DEPLOY_KEY
 ```
 
-```markdown
+````markdown
 ```garden compare
 items:
   - title: 单个公开仓库
@@ -31,7 +31,7 @@ items:
     草稿可见性: 仅自己可见
     额外密钥: PAGES_DEPLOY_KEY
 ```
-```
+````
 
 - **用**：并排对比 2～3 种方案、配置方式或改动前后的行为差异时（每格文字控制在 60 字以内）。
 - **别用**：对比项超过 3 个或需要横向对齐多个参数维度时，直接用 Markdown 表格。

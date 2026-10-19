@@ -1,76 +1,87 @@
 ---
 title: 用 Markdown 写丨推送之后网站自己更新
-description: 文章、随想和专栏都存在你自己的 Git 仓库里。这篇页面本身就由 Garden 渲染。
+description: 用 Markdown 写文章、随想和专栏，保存在自己的 Git 仓库里。
 section: overview
 order: 0
 ---
 
-这篇文章就是 `/garden/` 首页，用 Garden 自己的 `740px` 正文列渲染。你在页面上看到的标题分行、宽图、宽表格、深色模式配图衬底、代码对比和提示框，都是当前页面实时运行的效果。
+长篇技术文章往往不只有段落：还会夹着架构图、多列参数对比、改动前后的代码和需要反复验算的公式。很多时候，作者为了把这些内容排清楚，不得不去折腾复杂的模板或自定义前端组件。
 
-## 标题分行、宽图与深色配图衬底
+Garden 的做法是让你只管写普通 Markdown。页面的排版脚本和构建流程会自动处理标题断行、宽图外扩、深色配图衬底、宽表格延伸以及代码对比——当前这篇页面本身就是用同一套规则实时渲染的。
 
-上方的页面标题在 `丨` 处分成两行（也支持 `｜` 或前后带空格的 ` | `），并根据较长一行的字数计算字号缩放比例 `--l`。不写分隔符的普通标题只应用 `text-wrap: balance`，不会在冒号、破折号或中间位置自动拆行改字号。
+## 标题分行与 `740px` 正文列
 
-正文默认列宽是 `740px`（`17px` 字号、`1.75` 行高）。当正文里的配图显示宽度超过正文列时，页面上的测量脚本会按窗口两侧剩余空白将图框向外扩展（最宽 `1040px`）。下面这张 `2080×560` 的透明底黑线 SVG 图在桌面宽屏下会向两侧延伸；切到深色模式时，图片自身背景会垫上 `#faf9f5` 暖白纸色，黑线与文字不需要准备第二套深色图：
+上方的页面标题在 `丨` 处分成了上下两行（同样支持全角 `｜` 或两侧带空格的 ` | `），并根据较长一行的字数自动计算字号比例，保证长标题不会在尴尬的位置折断。如果不写分隔符，标题就保持单段并使用 `text-wrap: balance` 均衡换行，不会自作主张在冒号或破折号处拆行。
 
-![740px 正文列与 1040px 宽图区尺寸示意（透明背景黑线 SVG，深色模式下自动衬上 #faf9f5 纸底）。](./assets/reading-layout.svg)
+正文默认保持在 `740px` 阅读列内（`17px` 字号、`1.75` 行高，每行约 38～42 个汉字）。当正文里的架构图或高分屏截图需要更大的展示空间时，测量脚本会根据当前窗口两侧剩余空白将图框向外扩展（在独立文章页最宽 `1040px`；在带有左侧章节导航与右侧目录的说明书页，则在两栏之间的留白内对称外扩，绝不遮挡两侧导航）。
 
-## 宽表格自动向两侧展开
+下面这张 `2080×560` 的透明底黑线 SVG 示意图在宽屏下会跳出 `740px` 正文列；当你点击右上角切换到深色模式时，图片下方会自动垫上 `--image-backing`（`#faf9f5` 暖白纸底），不需要为深色模式维护第二套配图：
 
-普通表格留在 `740px` 列内；当表格不折行宽度超过 `740px` 且窗口宽度不小于 `900px` 时，脚本会按左右可用空白对称向外拓宽（每侧最多 `300px`，总宽最宽 `1340px`）。如果展开后的表格与右侧目录重叠，目录会自动向右让位或暂时收起。下面是一张真实的多列表格：
+![740px 正文阅读列、1040px 宽图区与 1340px 宽表区示意（透明背景黑线 SVG，深色模式下自动衬上 #faf9f5 暖白纸底）。](./assets/reading-layout.svg)
 
-| 站点内容或配置 | 仓库文件路径 | 生成的页面路由与产物 | 校验与构建方式 | 常用命令或环境变量 |
-| :--- | :--- | :--- | :--- | :--- |
-| 长文与随文附件 | `content/posts/<slug>.md` 及同名目录 | `/blog/<path>`、`public/rss.xml`、`public/posts.xml` | 构建期校验 Front Matter、本地图片尺寸与组件字段 | `make new SLUG=my-post TITLE="标题"` |
-| 短随想与多媒体记录 | `content/thoughts/<slug>.md` | `/thoughts` 列表、`/thoughts/<slug>` 独立页、`public/rss.xml` | 校验 `date`、`media` 类型（`image` / `audio` / `video` / `link`）与本地路径 | 直接新建 `.md` 文件，或在 `/admin` 页面发布 |
-| 主题专栏编排 | `content/columns.yaml` | `/columns` 索引页、`/columns/<column>/<post>` 阅读页 | 校验专栏 `slug` 唯一性及引用的文章是否存在于 `content/posts/` | 在 `columns.yaml` 的 `posts` 列表按顺序填写文章路径 |
-| 站点与页面文案 | `site.config.yaml` | 导航栏、首页、关于页、`/garden/` 标题及全站全文搜索索引 | `npx garden sync` 生成 `.garden/site-config.ts` 与 `public/search-index.json` | `make dev`（草稿预览：`CONTENT_INCLUDE_DRAFTS=1 make dev`） |
+## 多列宽表格自动向外延伸
+
+窄表格留在正文列内；当表格不折行宽度超过 `740px` 且窗口宽度不小于 `900px` 时，脚本会先测量单元格的真实宽度，再向两侧对称拓宽（文章页最宽 `1340px`）。在文章阅读页，如果拓宽后的表格靠近右侧浮动目录，目录会自动向右平移让位。下面是一张对比不同内容载体如何落盘与渲染的宽表：
+
+| 内容形态 | 源文件位置 | 页面如何处理长文与媒体细节 | 适用场景 |
+| :--- | :--- | :--- | :--- |
+| 长篇技术文章 | `content/posts/<slug>.md` 及同名资源目录 | 自动测量本地配图宽高写入 HTML 防抖动，支持 `丨` 标题分行、宽图宽表外扩、LaTeX 公式与 Mermaid 图表 | 系统设计拆解、源码走读、排障复盘与长篇读书笔记 |
+| 随想与日常记录 | `content/thoughts/<slug>.md` | 支持多图宫格、原生音视频播放（`image` / `audio` / `video`）以及外部网页链接卡片（`link`） | 几句话的灵感、终端截图、短音视频与日常链接摘录 |
+| 主题系列专栏 | `content/columns.yaml` | 按顺序串联 `content/posts/` 下的多篇长文，在阅读页自动生成专栏进度与上下篇导航 | 连载教程、专题研究或按章节组织的系统笔记 |
 
 ## 代码块与「对比上一版」切换
 
-把一段完整代码块（写修改后的新代码）与一段 `diff` 代码块紧挨着写，页面会自动把它们合并成一个带「代码 / 对比上一版」切换按钮的代码框。默认展示干净的「代码」视图，点击右上角复制按钮时只复制完整的新代码：
+写技术文章经常需要展示「一段代码改了哪里」。如果只贴 `diff`，读者很难直接复制修改后的完整代码；如果把修改前后的两段完整代码都贴出来，又会拉长篇幅。
+
+在 Garden 里，把**修改后的完整代码块**与一段 `diff` 代码块紧挨着写，页面会自动把它们合并成一个带 **「代码」** 与 **「对比上一版」** 切换按钮的代码框。默认展示干净的新版代码，点击右上角复制按钮时也只复制完整代码：
 
 ```yaml
 pages:
   garden:
     title: "用 Markdown 写丨推送之后网站自己更新"
-    subtitle: "文章、随想和专栏都存在你自己的 Git 仓库里。"
+    subtitle: "用 Markdown 写文章、随想和专栏，保存在自己的 Git 仓库里。"
 ```
 
 ```diff
  pages:
    garden:
--    title: "用 Markdown 写。"
+-    title: "用 Markdown 写。\n推送之后，网站自己更新。"
 -    subtitle: ""
 +    title: "用 Markdown 写丨推送之后网站自己更新"
-+    subtitle: "文章、随想和专栏都存在你自己的 Git 仓库里。"
++    subtitle: "用 Markdown 写文章、随想和专栏，保存在自己的 Git 仓库里。"
 ```
 
 > [!NOTE]
-> 代码对比块前面的完整代码块必须写**修改后的新代码**，内容要与 `diff` 去掉 `-` 行后的结果一致；如果放成旧代码，`npx garden check` 会报错提示。
+> `diff` 代码块前面必须紧挨着一段完整代码块；如果单独放一段 `diff` 而前面没有完整代码，`npx garden check` 会报 `diff-orphan` 错误。
 
 > [!TIP] 提示框支持自定标题
-> 在 `> [!TIP]` 同一行后面直接写文字（或者下一行单独放一行粗体），会替换默认的「建议」标题。支持 `NOTE`、`TIP`、`IMPORTANT`、`WARNING`、`CAUTION` 五种类型。
+> 在 `> [!TIP]` 同一行后面直接写文字（或者下一行单独放一行粗体），会替换默认的「建议」标题。支持 `NOTE`、`TIP`、`IMPORTANT`、`WARNING`、`CAUTION` 等常见类型。
 
-## 内置 `garden` 组件
+## 在文章里嵌入结构化组件
 
-正文里除了标准 Markdown、LaTeX 公式（`$...$` 与 `$$...$$`）和 Mermaid 流程图，还可以用 ```` ```garden <name> ```` 代码块插入 9 个内置组件。组件名统一使用英文：
+除了标准 Markdown、行内与块级公式（`$...$`、`$$...$$`）以及 Mermaid 流程图，正文里还可以用 ```` ```garden <name> ```` 围栏插入数字指标、方案对比、时间线、条形图、分区结构图或可调公式。例如下面这组用 `garden stat` 渲染的版面宽度指标：
 
-| 组件围栏 | 用途 | 核对要点 |
-| :--- | :--- | :--- |
-| [`card`](/garden/components/card) | 论文、项目或模块说明卡片 | 至少包含 `description` 或 `points` |
-| [`stat`](/garden/components/stat) | 2～4 组并排指标卡片 | `items` 中每项含 `label` 与 `value` |
-| [`compare`](/garden/components/compare) | 2～3 项方案并排对比 | `items` 至少 2 项，支持 `title`、`text` 与附加属性标签 |
-| [`timeline`](/garden/components/timeline) | 按顺序排列的时间节点或排查步骤 | `items` 至少 2 项，每项含 `date`、`title`、`text` |
-| [`chart`](/garden/components/chart) | 比例条形图与可展开数据表 | `data` 至少 2 行，不要与同组数据的 Markdown 表格重复 |
-| [`figure`](/garden/components/figure) | 带分步按钮高亮的 SVG / 图片结构图 | 配合 `svg` 中的 `data-p` 分区和 `parts` 说明列表 |
-| [`html`](/garden/components/html) | 独立沙盒 `iframe` 网页片段 | 通过 `src` 引用同目录 `.html` 或内联 `code` |
-| [`interactive`](/garden/components/interactive) | 带参数滑杆与公式计算的交互卡片 | 必须包含 `Slider` / `Choice` 等控件及非平凡计算公式 |
-| [`file`](/garden/components/file) | 本地或远程附件下载与页内预览 | 缺失文件报 `missing-asset`，超过 `5 MB` 报 `file-large` 提醒 |
+```garden stat
+items:
+  - label: 正文阅读列
+    value: "740"
+    unit: px
+    caption: 段落、代码块与列表的默认列宽
+  - label: 宽幅配图区
+    value: "1040"
+    unit: px
+    caption: 原始宽度 ≥ 1280px 的配图最宽展开尺寸
+  - label: 多列宽表区
+    value: "1340"
+    unit: px
+    caption: 宽表格在桌面端向两侧对称外扩上限
+```
 
-## 在本地运行与日常命令
+9 个内置组件的完整参数与实时示例见左侧导航的 [组件总览](/garden/components)。
 
-新建站点目录后，先安装依赖，再用 `Makefile` 里的命令预览、新建文章和推送更新：
+<h2 id="garden-admin-title">从初始化到日常写作</h2>
+
+你的站点仓库只保存 `site.config.yaml`、`content/` 文章与静态资源，渲染与构建由 `hd-garden` 包完成。在本地初始化并启动预览只需四步：
 
 ```bash
 npx hd-garden init my-blog
@@ -79,13 +90,9 @@ npm install
 make dev
 ```
 
-- **本地预览**：`make dev` 启动开发服务器（若尚未安装依赖会自动执行 `npm install`）。要同时查看 `draft: true` 或未来日期的文章，运行 `CONTENT_INCLUDE_DRAFTS=1 make dev`。
-- **新建长文**：`make new DIR=notes SLUG=first-post TITLE="第一篇文章"`。`SLUG` 只能包含小写字母、数字和连字符，子目录通过 `DIR` 指定；生成的文件末尾会自动附上组件速查注释。
-- **同步与构建检查**：站点里的 `make check` 会依次运行 `npx garden sync` 和 `npx garden build`；检查单篇文章的排版与组件约束可运行 `npx garden check content/posts/first-post.md`。
-- **提交并推送**：`make update MESSAGE="docs: update post"` 会先执行 `make check`，通过后执行 `git add -A`、`git commit` 和 `git push`。
+写完文章后，运行 `make update` 会先做全站同步与构建检查，通过后自动提交并推送到 GitHub。接下来可以按左侧章节查看：
 
-<h2 id="garden-admin-title">外链卡片、GitHub Pages 与可选后台</h2>
-
-- **外链图标与链接卡片**：正文里的外部链接会自动附上目标站点的 Favicon，并把图标和链接首字绑在同一行。把完整网址单独写成一行，或在行内链接末尾加上 `{card}`（如 `[链接文字](https://example.com){card}`），会在构建期抓取网页元信息生成链接卡片。需要嵌入 YouTube 或 Bilibili 视频时，在【随想】（`content/thoughts/*.md`）的 `media` 列表里将 `type` 设为 `link`。
-- **GitHub Pages 发布**：公开仓库可以直接构建部署；如果想把 Markdown 草稿留在私有仓库、只把构建产物推到公开的 `<owner>.github.io` 仓库，在私有仓库配置 `PAGES_REPOSITORY` 变量和 `PAGES_DEPLOY_KEY`（SSH 部署密钥），详见 [发布到 GitHub Pages](/garden/deploy)。
-- **可选的 `/admin` 后台**：仓库自带 `/admin` 路由，配置 `GITHUB_OAUTH_CLIENT_ID`、`GITHUB_OAUTH_CLIENT_SECRET`、`GITHUB_SESSION_SECRET`、`ADMIN_GITHUB_LOGINS` 和 `CONTENT_GITHUB_TOKEN` 后，可以在网页端登录 GitHub 编写随想或上传图片并写回仓库。
+- **[快速开始](/garden/start)**：目录结构、`make new` 新建长文、草稿预览与日常命令。
+- **[站点与专栏配置](/garden/config)**：`site.config.yaml` 各字段含义、自定义 SVG 图标与 `content/columns.yaml` 专栏编排。
+- **[发布到 GitHub Pages](/garden/deploy)**：单个公开仓库或「私有源码仓库 + 公开页面仓库」的完整 Actions 工作流。
+- **[写文章与随想](/garden/writing)** 与 **[阅读排版是怎么工作的](/garden/design)**：Front Matter 字段、外链卡片、三级自适应宽度与色彩变量。

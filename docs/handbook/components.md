@@ -14,7 +14,7 @@ order: 30
 | :--- | :--- | :--- | :--- |
 | [知识卡片](/garden/components/card) | ```` ```garden card ```` | 介绍论文、开源项目或模块要点 | 至少填 `description` 或 `points` |
 | [数字指标](/garden/components/stat) | ```` ```garden stat ```` | 并排展示 2～4 组关键数值与单位 | 每项必填 `label` 与 `value` |
-| [并排对比](/garden/components/compare) | ```` ```garden compare ```` | 左右并列对比 2～3 种方案或改动前后差异 | `items` 至少 2 项 |
+| [并排对比](/garden/components/compare) | ```` ```garden compare ```` | 左右并列对比 2～3 种方案或改动前后差异 | `items` 至少 2 项，每格不超过约 60 字 |
 | [时间线](/garden/components/timeline) | ```` ```garden timeline ```` | 按先后顺序串联排查记录或演进阶段 | `items` 至少 2 项 |
 | [条形图表](/garden/components/chart) | ```` ```garden chart ```` | 用数据绘制比例条形图（自带可展开数据表） | `data` 至少 2 行 |
 | [分区结构图](/garden/components/figure) | ```` ```garden figure ```` | 带分区按钮高亮与说明的 SVG / 图片结构图 | `svg` 或 `image` 二选一 |
@@ -25,6 +25,6 @@ order: 30
 ## 编写与检查规则
 
 1. **优先使用标准 Markdown**：普通文字说明、有序列表和常规对比表格直接用 Markdown 编写，只有结构化组件能明显提升可读性时才用 `garden` 围栏。
-2. **不要重复展示同一组数据**：`chart` 组件下方自带「查看数据表」折叠区，同一小节内如果再放一张相同数字的 Markdown 表格，`npx garden check` 会报 `chart-table-dup` 警告。
+2. **不要重复展示同一组数据**：`chart` 组件下方自带「查看数据表」折叠区，同一小节内不需要再重复手写一张相同数据的 Markdown 表格。
 3. **支持行内格式**：各组件的 `text`、`description`、`caption`、`points` 等文本字段均支持行内 `**加粗**`、`` `行内代码` `` 和 `<u>荧光笔下划线</u>`。
 4. **本地预览全部组件样式**：运行 `npx garden ui catalog` 会在 `.garden/ui-catalog.html` 生成组件画廊页面，可在浏览器中直接打开查看。

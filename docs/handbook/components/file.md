@@ -13,13 +13,13 @@ title: 发布前检查清单
 note: Markdown 附件示例，可点击「预览」在当前页展开阅读，或直接下载原文件
 ```
 
-```markdown
+````markdown
 ```garden file
 src: ./file/checklist.md
 title: 发布前检查清单
 note: Markdown 附件示例，可点击「预览」在当前页展开阅读，或直接下载原文件
 ```
-```
+````
 
 - **用**：随文章提供配置文件、数据表、PDF、图片或 Markdown 附件供读者下载与页内预览时（多文件可用 `files` 数组）。
 - **别用**：正文里本来就要直接展示的配图用标准 Markdown 图片语法 `![]()`，不要放进 `file` 组件。

@@ -21,7 +21,7 @@ make dev
 
 `npx hd-garden init` 会把站点模板复制到 `my-blog` 目录，并写入 `.agents/skills/` 辅助技能文件。它不会自动执行 `npm install`，也不会自动创建 `.github/workflows/pages.yml`（GitHub Pages 工作流配置见 [发布到 GitHub Pages](/garden/deploy)）。
 
-首次运行 `make dev` 时，如果还没有 `node_modules`，`Makefile` 中的 `make prepare` 会自动执行 `npm install`，随后执行 `npx garden sync` 并启动本地开发服务器（默认地址为 `http://localhost:3000`）。
+首次运行 `make dev` 时，如果还没有 `node_modules`，`Makefile` 中的 `make prepare` 会先自动执行 `npm install`，随后运行 `npx garden dev`（其内部会先执行内容同步）并启动本地开发服务器，默认地址为 `http://localhost:3000`。
 
 ## 2. 站点目录结构
 
@@ -57,7 +57,7 @@ make new DIR=network SLUG=tcp-bbr TITLE="TCP BBR 拥塞控制笔记"
 ```
 
 > [!NOTE]
-> `SLUG` 只能包含小写字母、数字和连字符（`a-z`、`0-9`、`-`），不能包含 `/`；子目录必须用 `DIR` 参数传入。`make new` 只读取 `SLUG`、`TITLE` 和 `DIR`（没有 `--thought`、`--slug`、`--title`、`--edit` 等命令行参数，也不读取 `TAGS` 变量）。
+> `SLUG` 只能包含小写字母、数字和连字符（`a-z`、`0-9`、`-`），不能包含 `/`；子目录必须用 `DIR` 参数传入。`make new` 只读取 `SLUG`、`TITLE` 和 `DIR` 三个变量。
 
 新建的文件默认带有 `draft: true`。本地预览草稿或未来定时文章（`publishAt`）时，加上环境变量 `CONTENT_INCLUDE_DRAFTS=1`：
 
@@ -75,16 +75,16 @@ CONTENT_INCLUDE_DRAFTS=1 make dev
 
 | 命令 | 实际执行的操作 |
 | :--- | :--- |
-| `make dev` | 检查依赖并运行 `npx garden sync && npx garden dev` |
+| `make dev` | 先执行 `make prepare` 检查依赖，再运行 `npx garden dev`（内部自动执行同步并启动开发服务器） |
 | `CONTENT_INCLUDE_DRAFTS=1 make dev` | 连同 `draft: true` 草稿和未到 `publishAt` 时间的文章一起预览 |
-| `make new SLUG=xxx TITLE="标题" [DIR=子目录]` | 调用 `npx garden new` 在 `content/posts/` 下生成新文章草稿 |
+| `make new SLUG=xxx TITLE="标题" DIR=子目录` | 调用 `npx garden new` 在 `content/posts/` 下生成新文章草稿（`DIR` 可省略） |
 | `make check` | 在站点仓库中运行 `npx garden sync && npx garden build`，验证全站同步与生产构建 |
 | `npx garden check content/posts/xxx.md` | 单独检查某篇 Markdown 文章的标题、组件字段、代码对比与本地附件路径 |
-| `make update [MESSAGE="提交说明"]` | 先运行 `make check`，通过后执行 `git add -A`、`git commit`（默认提交信息为 `content: update YYYY-MM-DD HH:MM`）和 `git push` |
+| `make update MESSAGE="提交说明"` | 先运行 `make check`，通过后执行 `git add -A`、`git commit -m "$(MESSAGE)"`（`MESSAGE` 默认值为 `更新博客`）和 `git push origin HEAD` |
 
 ### 升级 `hd-garden` 版本
 
-站点仓库没有 `make upgrade` 命令。需要升级引擎版本时，编辑站点根目录下的 `package.json`，将 `"hd-garden"` 的版本号改为目标版本，然后运行 `npm install`：
+需要升级引擎版本时，编辑站点根目录下的 `package.json`，将 `"hd-garden"` 的版本号改为目标版本，然后运行 `npm install`：
 
 ```bash
 npm install

@@ -1,5 +1,0 @@
-workload,threads,throughput_ops_sec,p50_us,p99_us,write_amp
-point_lookup_zipf,32,284500,68,210,1.00
-blind_upsert_batched,16,148200,95,1180,1.42
-range_scan_256_keys,16,42600,310,1850,1.00
-mixed_rw_80_20,32,196400,82,940,1.28

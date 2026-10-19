@@ -34,7 +34,7 @@ code: |
   </html>
 ```
 
-```markdown
+````markdown
 ```garden html
 title: 字符长度与预计阅读耗时小工具
 height: 156
@@ -53,7 +53,7 @@ code: |
   </body>
   </html>
 ```
-```
+````
 
 - **用**：需要运行自定义 DOM 脚本、Canvas 绘图或独立 HTML 页面片段时（支持 `code` 内联或 `src` 引用文章同名目录下的 `.html` 文件）。
 - **别用**：只需要滑杆调参数算公式时用 [`interactive`](/garden/components/interactive)；静态结构图用 [`figure`](/garden/components/figure)。

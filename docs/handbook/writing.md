@@ -47,13 +47,13 @@ references:
 | `references` | 否 | `{ title, url? }[]` | 文末参考资料列表，构建期自动提取域名并渲染在正文底部的「参考」卡片中 |
 
 > [!CAUTION]
-> 不要在 Front Matter 里手写 `slug` 字段（构建器会直接报错：`不要写 slug，文件名就是标识`）。文章也没有 `topic` 分类字段。
+> 不要在 Front Matter 里手写 `slug` 字段（`npx garden check` 会报 `unexpected-slug` 错误：`不要写 slug，文件名就是标识`）。文章也没有 `topic` 分类字段。
 
 ## 2. 代码块与「代码 / 对比上一版」切换
 
 普通代码块在右上角带有语言名称（如 `RUST`、`TS`、`PYTHON`、`SHELL`）和复制按钮。
 
-如果你想展示某段代码修改前后的对比，**先放一段完整的新版代码块，紧接着放一段 `diff` 代码块**。渲染器会自动把它们合并成一个带 **「代码」** 和 **「对比上一版」** 两个切换按钮的代码框：
+如果你想展示某段代码修改前后的对比，**先放一段完整代码块，紧接着放一段 `diff` 代码块**。渲染器会自动把它们合并成一个带 **「代码」** 和 **「对比上一版」** 两个切换按钮的代码框：
 
 ````markdown
 ```go
@@ -70,7 +70,7 @@ func openStore(path string) (*Store, error) {
 ```
 ````
 
-实际渲染效果如下（点击右上角的 **「代码」** 与 **「对比上一版」** 可以切换，点击复制按钮始终复制完整的新版代码）：
+实际渲染效果如下（点击右上角的 **「代码」** 与 **「对比上一版」** 可以切换，点击复制按钮始终复制前面的完整代码）：
 
 ```go
 func openStore(path string) (*Store, error) {
@@ -86,13 +86,13 @@ func openStore(path string) (*Store, error) {
 ```
 
 > [!IMPORTANT]
-> 前面的完整代码块必须写**改动后的新版代码**，其内容必须与 `diff` 块去掉 `-` 删除行之后的结果完全一致；如果写成改动前的旧代码，`npx garden check` 会报 `code-diff-mismatch` 错误。
+> `diff` 代码块前面必须紧挨着一段完整代码块（中间只能隔空行）；如果单独放一段 `diff` 而前面没有完整代码块，`npx garden check` 会报 `diff-orphan` 错误。
 
 ## 3. 中文加粗、荧光笔高亮与提示框
 
 - **中文标点旁加粗**：内置 `remark-cjk-friendly`，紧挨中文括号、引号或顿号写 `**像「这样」的加粗**` 能正常解析，不需要在星号两侧加空格。
 - **荧光笔高亮**：用 `<u>重点句子</u>` 或 `<mark>重点句子</mark>` 可以给文字加上暖黄色荧光笔底纹，效果如：<u>这一句带有荧光笔下划线底色</u>。
-- **五种提示框（Callouts）**：使用 GitHub 风格 `> [!NOTE]`、`> [!TIP]`、`> [!IMPORTANT]`、`> [!WARNING]`、`> [!CAUTION]`。在标记同行末尾写文字可替换默认标题：
+- **提示框（Callouts）**：支持 `> [!NOTE]`、`> [!TIP]`、`> [!IMPORTANT]`、`> [!WARNING]`、`> [!CAUTION]`（以及 `INFO`、`SUCCESS`、`DANGER`、`FAILURE`）。在标记同行末尾写文字可替换默认标题：
 
 ```markdown
 > [!WARNING] 升级前先备份数据目录
@@ -104,19 +104,17 @@ func openStore(path string) (*Store, error) {
 
 ## 4. 本地图片与外部链接卡片
 
-- **本地图片与随文目录**：如果文章路径是 `content/posts/my-post.md`，把配图放在同名的 `content/posts/my-post/` 文件夹下，在文中写 `![图注说明](./assets/reading-layout.svg)`（此处以 `./<文章文件名>/<图片文件名>` 相对路径引用）。构建时会自动复制图片、读取像素宽高，并把 `alt` 文字（以 `image`、`截图`、`img` 开头的默认占位词除外）渲染成图注 `<figcaption>`。
+- **本地图片与随文目录**：如果文章路径是 `content/posts/my-post.md`，把配图放在同名的 `content/posts/my-post/` 文件夹下，在文中以 `./my-post/diagram.svg` 相对路径引用。构建时会自动复制图片、读取像素宽高，并把 `alt` 文字（以 `image`、`截图`、`img` 开头的默认占位词除外）渲染成图注 `<figcaption>`。
 - **行内外部链接**：正文里的外部链接会自动加上目标站点的 Favicon 小图标，并保证图标与链接第一个字同行不折断。
 - **链接卡片**：有两种写法可以把外部链接渲染成带网站名、标题和简介的链接卡片：
   1. 把完整网址单独写成一行段落（前后空行）：`https://spec.commonmark.org/`
   2. 在段落内的链接末尾紧跟 `{card}`（中间不加空格）：`参见 [CommonMark 规范](https://spec.commonmark.org/){card}。`
-
-> [!NOTE]
-> 在长文正文里把 YouTube 或 Bilibili 网址单独放一行，只会生成普通外部链接卡片，**不会**变成视频播放器。如果要在页面内嵌入 YouTube 或 Bilibili 视频播放器，请使用下方「随想」的 `media` 字段。
+  也可以运行 `make embed URL="https://example.com"` 抓取目标网页的 Open Graph 标题、摘要和封面图。
 
 ## 5. 数学公式与 Mermaid 图表
 
 - **LaTeX 数学公式**：使用 KaTeX 在构建与渲染期直接排版。行内公式写 `$L = \lambda W$`，独立公式块写 `$$...$$`。公式里带下划线的多字母变量名（如 `group_num`、`max_batch`）会自动保护为正体标识符 `\mathrm{group\_num}`，而 `W_q`、`H_{kv}` 等单字母带下标仍保持标准数学下标。
-- **Mermaid 图表**：使用 ```` ```mermaid ```` 代码块直接绘制流程图或时序图，图表会自动适配浅色与深色主题（无全屏按钮或主题切换下拉框）：
+- **Mermaid 图表**：使用 ```` ```mermaid ```` 代码块直接绘制流程图或时序图，图表会自动适配浅色与深色主题：
 
 ```mermaid
 graph LR
@@ -127,7 +125,7 @@ graph LR
 
 ## 6. 写随想（`content/thoughts/*.md`）
 
-随想适合记录短文字、多张配图、音频、视频或外部视频链接（YouTube / Bilibili）：
+随想适合记录短文字、多张配图、本地音视频或外部网页链接卡片：
 
 ```yaml
 ---
@@ -140,11 +138,11 @@ media:
     src: ./rainy-night/terminal.png
     alt: 终端里的压测输出
   - type: link
-    src: https://www.bilibili.com/video/BV1xx411c7mD
-    title: 演示录像
+    src: https://sqlite.org/wal.html
+    title: SQLite Write-Ahead Logging
 ---
 
 记一段简短的想法，支持完整的 Markdown 语法。
 ```
 
-`media` 数组支持四类条目：`image`（最多拼成宫格图集）、`audio`（原生音频播放器）、`video`（原生视频播放器，可配 `poster`）和 `link`（当 `src` 为 YouTube 或 Bilibili 链接时自动渲染为内嵌播放器，其他网址渲染为链接卡片）。
+`media` 数组支持四类条目：`image`（多张图片自动拼成宫格图集）、`audio`（原生 `<audio>` 音频播放器）、`video`（原生 `<video>` 视频播放器，指向视频文件地址，可配 `poster` 封面）和 `link`（渲染为外部链接卡片，支持 `src`、`title`、`description`、`image`）。

@@ -21,7 +21,7 @@ items:
     text: 运行 `npm run pages:validate` 检查死链与资源路径，通过后推送到 GitHub Pages。
 ```
 
-```markdown
+````markdown
 ```garden timeline
 title: 静态发布流水线执行步骤
 items:
@@ -35,7 +35,7 @@ items:
     title: 校验静态页面并部署
     text: 运行 `npm run pages:validate` 检查死链与资源路径，通过后推送到 GitHub Pages。
 ```
-```
+````
 
 - **用**：按先后顺序记录故障排查时间点、演进阶段或构建流水线步骤（至少 2 个节点）时。
 - **别用**：没有时间或先后顺序的并列要点，直接用无序列表。
