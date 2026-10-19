@@ -10,6 +10,7 @@ import { countDemoWords } from "../ui/garden/word-count.mjs";
 import { referenceDomain } from "../ui/garden/references.mjs";
 import { linkAssetsForRender } from "./link-assets.mjs";
 import { cardUrls } from "../ui/garden/markdown-links.mjs";
+import { formatInlineLink, replaceInlineLinks } from "../ui/garden/markdown-destination.mjs";
 import { configuredSiteAddress, sameSiteMatcher } from "../ui/garden/same-site.mjs";
 import { resolveBrand } from "./brand.mjs";
 import { imageSources, readImageCache, sizeFromBytes } from "./image-sizes.mjs";
@@ -173,10 +174,10 @@ function copyLocalAsset(value, markdownPath, sourcePath, options = {}) {
 }
 
 function rewriteMarkdownAssets(content, markdownPath, sourcePath) {
-  const markdownImages = content.replace(
-    /(!\[[^\]]*\]\()<?([^)\s>]+)>?((?:\s+["'][^"']*["'])?\))/gu,
-    (_, prefix, src, suffix) =>
-      `${prefix}${copyLocalAsset(src, markdownPath, sourcePath)}${suffix}`,
+  // `![alt](<a b (1).png>)` keeps its angle brackets: without them the space
+  // and the parentheses would no longer be one destination.
+  const markdownImages = replaceInlineLinks(content, (link) =>
+    link.image ? formatInlineLink(link, copyLocalAsset(link.url, markdownPath, sourcePath)) : undefined,
   );
 
   return markdownImages.replace(
