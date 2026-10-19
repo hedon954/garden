@@ -54,6 +54,8 @@ brand:
 
 都不写时使用 Garden 自带的图标。`logo` 会直接嵌进页面，高 26px，颜色跟随站名：画图标时用 `stroke="currentColor"` 或 `fill="currentColor"`。文件里的脚本和事件属性会被去掉。favicon 可以在 SVG 里用 `@media (prefers-color-scheme: dark)` 为深色标签栏换颜色。`appleTouchIcon` 是 180×180 的 PNG，写 false 不输出。
 
+构建时会用 favicon 生成 `/favicon.ico`（16、32、48 px），给只认这个地址的浏览器、阅读器和爬虫。favicon 可以是 SVG、PNG 或 ICO；`public/` 里已经有 `favicon.ico` 时用你自己的；favicon 写成外部地址时不生成。
+
 文章换过地址时，可以在 `redirects` 里列出旧路径和现在的地址，旧链接仍然能打开：
 
 ```yaml

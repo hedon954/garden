@@ -391,6 +391,8 @@ switch (command) {
     // Sizes of remote files in garden file blocks; failures fall back to file-sizes.json.
     if (process.env.GARDEN_OFFLINE !== "1") runNode("scripts/file-sizes.mjs");
     runVinext(["build", ...rest], { copyDist: true });
+    // /favicon.ico from the site's own icon (brand.favicon).
+    runNode("scripts/favicon-ico.mjs");
     // Pages for old addresses listed under redirects in site.config.yaml (static export only).
     if (process.env.STATIC_EXPORT === "1") {
       // What the export wrote for empty dynamic routes (ui/garden/static-params.mjs).
