@@ -90,7 +90,7 @@ footer: 持续记录。
 
 `pages` 下的每个键对应一个一级路由的页头文字：
 
-- **`pages.home`、`pages.blog`、`pages.thoughts`、`pages.columns`、`pages.garden`**：均使用 `title` 和 `subtitle` 两个字段。其中 `/garden/` 页面会读取 `pages.garden.title`（支持用 `丨` 分成两行）和 `pages.garden.subtitle`。
+- **`pages.home`、`pages.blog`、`pages.thoughts`、`pages.columns`、`pages.garden`**：均使用 `title` 和 `subtitle` 两个字段。其中 `/garden/` 页面会读取 `pages.garden.title`（写一个「丨」就在那里分成两行）和 `pages.garden.subtitle`。
 - **`pages.about`**：除 `title` 和 `subtitle` 外，还支持 `heading`（正文小标题）、`paragraphs`（段落数组）、`quote`（引言）、`focus`（关注方向标签数组）以及 `cta`（`{ href, label }` 按钮）。
 
 ### `brand` 自定义图标与路由重定向
