@@ -1,6 +1,7 @@
 import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import matter from "gray-matter";
 import { marked } from "marked";
 import { parse as parseYaml, stringify as stringifyYaml } from "yaml";
@@ -19,6 +20,7 @@ import { coverImageSet, loadSharp } from "./cover-images.mjs";
 import { readFileSizeCache } from "./file-sizes.mjs";
 import { previewDocument, previewFileName, renderFilePreview } from "./file-preview.mjs";
 import { parseGardenBlock, parseGardenInfo, scanFences } from "../ui/garden/parse.mjs";
+import { checkGardenMarkdown } from "../ui/garden/check.mjs";
 import {
   fileIcon,
   fileName,
@@ -30,6 +32,8 @@ import {
 } from "../ui/garden/file-block.mjs";
 import { resolveRepoFile } from "../ui/garden/file-paths.mjs";
 import { trailingSlashEnabled, withTrailingSlash } from "../ui/garden/site-href.mjs";
+
+const gardenPackageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
 function resolveSiteRoot() {
   if (process.env.GARDEN_SITE) return path.resolve(process.env.GARDEN_SITE);
@@ -141,10 +145,12 @@ function copyLocalAsset(value, markdownPath, sourcePath, options = {}) {
   if (!value || isExternalAsset(value)) return value;
 
   const baseDir = options.baseDir ?? path.dirname(markdownPath);
+  const allowedRoot = options.allowedRoot ?? contentRoot;
+  const mediaPrefix = options.mediaPrefix ?? "";
   const [assetPath, suffix = ""] = value.split(/(?=[?#])/u, 2);
   const decodedPath = decodeURIComponent(assetPath.replace(/^<|>$/g, ""));
   const absoluteSource = path.resolve(baseDir, decodedPath);
-  const relativeSource = path.relative(contentRoot, absoluteSource);
+  const relativeSource = path.relative(allowedRoot, absoluteSource);
 
   if (
     relativeSource.startsWith("..") ||
@@ -158,7 +164,8 @@ function copyLocalAsset(value, markdownPath, sourcePath, options = {}) {
   if (!assetCache.has(absoluteSource)) {
     const extension = path.extname(relativeSource);
     const stem = relativeSource.slice(0, Math.max(0, relativeSource.length - extension.length));
-    const safeRelative = `${stem
+    const prefixedStem = mediaPrefix ? path.join(mediaPrefix, stem) : stem;
+    const safeRelative = `${prefixedStem
       .split(path.sep)
       .map((segment) => segment.replace(/[^\w\u3400-\u9fff.-]+/gu, "-"))
       .join(path.sep)}${extension.toLowerCase()}`;
@@ -173,17 +180,17 @@ function copyLocalAsset(value, markdownPath, sourcePath, options = {}) {
   return `${assetCache.get(absoluteSource)}${suffix}`;
 }
 
-function rewriteMarkdownAssets(content, markdownPath, sourcePath) {
+function rewriteMarkdownAssets(content, markdownPath, sourcePath, options = {}) {
   // `![alt](<a b (1).png>)` keeps its angle brackets: without them the space
   // and the parentheses would no longer be one destination.
   const markdownImages = replaceInlineLinks(content, (link) =>
-    link.image ? formatInlineLink(link, copyLocalAsset(link.url, markdownPath, sourcePath)) : undefined,
+    link.image ? formatInlineLink(link, copyLocalAsset(link.url, markdownPath, sourcePath, options)) : undefined,
   );
 
   return markdownImages.replace(
     /(<(?:img|audio|video|source)\b[^>]*\bsrc=["'])([^"']+)(["'])/giu,
     (_, prefix, src, suffix) =>
-      `${prefix}${copyLocalAsset(src, markdownPath, sourcePath)}${suffix}`,
+      `${prefix}${copyLocalAsset(src, markdownPath, sourcePath, options)}${suffix}`,
   );
 }
 
@@ -284,7 +291,9 @@ function rewriteWidgetFences(content, markdownPath, sourcePath) {
 const remoteFileSizes = readFileSizeCache(root).files;
 
 /** One file of a `garden file` fence, resolved for the page. */
-function resolveFileEntry(file, markdownPath, sourcePath) {
+function resolveFileEntry(file, markdownPath, sourcePath, options = {}) {
+  const allowedRoot = options.allowedRoot ?? contentRoot;
+  const assetOptions = options.assetOptions ?? {};
   const src = file.src;
   const name = fileName(src);
   const entry = {
@@ -304,18 +313,18 @@ function resolveFileEntry(file, markdownPath, sourcePath) {
     const size = fs.existsSync(file) && fs.statSync(file).isFile() ? fs.statSync(file).size : 0;
     return { ...entry, url: `${basePath}${src}`, remote: false, preview: "", ...(size > 0 ? { size } : {}) };
   }
-  const resolved = resolveRepoFile(src, markdownPath, contentRoot);
+  const resolved = resolveRepoFile(src, markdownPath, allowedRoot);
   if (resolved.error) fail(sourcePath, `garden file：${resolved.error}`);
   const missingMessage = `garden file 找不到 ${src}；src 相对这篇 Markdown 所在的目录`;
   if (!fs.existsSync(resolved.path) || !fs.statSync(resolved.path).isFile()) fail(sourcePath, missingMessage);
-  const url = copyLocalAsset(src, markdownPath, sourcePath, { missingMessage });
+  const url = copyLocalAsset(src, markdownPath, sourcePath, { ...assetOptions, missingMessage });
   const preview = previewKind(src, { remote: false });
   const next = { ...entry, url, size: fs.statSync(resolved.path).size, remote: false, preview };
   if (preview === "md") {
     // Rendered now into its own file next to the copy; the page only links to it and the
     // preview fetches it on demand. Images next to the Markdown file are copied too.
     const { content } = matter(fs.readFileSync(resolved.path, "utf8"));
-    const html = renderFilePreview(rewriteMarkdownAssets(content.trim(), resolved.path, sourcePath));
+    const html = renderFilePreview(rewriteMarkdownAssets(content.trim(), resolved.path, sourcePath, assetOptions));
     const { destination } = assetFiles.get(url.split(/[?#]/u, 1)[0]);
     fs.writeFileSync(previewFileName(destination), previewDocument(html, { title: entry.title }));
     next.previewSrc = previewFileName(url.split(/[?#]/u, 1)[0]);
@@ -328,7 +337,7 @@ function resolveFileEntry(file, markdownPath, sourcePath) {
  * files to the public folder, and replace the YAML with `resolved:` data the
  * page renders without reading the file system.
  */
-function rewriteFileFences(content, markdownPath, sourcePath) {
+function rewriteFileFences(content, markdownPath, sourcePath, options = {}) {
   const fences = scanFences(maskHtmlComments(content)).filter((fence) => parseGardenInfo(fence.info)?.name === "file" && !fence.unclosed);
   if (!fences.length) return content;
   const lines = content.split("\n");
@@ -341,7 +350,7 @@ function rewriteFileFences(content, markdownPath, sourcePath) {
     const resolved = {
       layout: read.layout,
       ...(read.title ? { title: read.title } : {}),
-      files: read.files.map((file) => resolveFileEntry(file, markdownPath, sourcePath)),
+      files: read.files.map((file) => resolveFileEntry(file, markdownPath, sourcePath, options)),
     };
     const indent = " ".repeat(fence.indent);
     lines.splice(
@@ -355,7 +364,7 @@ function rewriteFileFences(content, markdownPath, sourcePath) {
   return lines.join("\n");
 }
 
-function rewriteUiFences(content, markdownPath, sourcePath, lineOffset) {
+function rewriteUiFences(content, markdownPath, sourcePath, lineOffset, assetOptions = {}) {
   const { content: transformed, errors } = transformUiContent(content, {
     mode: uiMode,
     markdownPath: sourcePath.split(path.sep).join("/"),
@@ -364,7 +373,7 @@ function rewriteUiFences(content, markdownPath, sourcePath, lineOffset) {
       const absolute = path.resolve(path.dirname(markdownPath), src);
       return fs.existsSync(absolute) && fs.statSync(absolute).isFile() ? fs.readFileSync(absolute, "utf8") : undefined;
     },
-    resolveAsset: (_sidecarPath, written) => copyLocalAsset(written, markdownPath, sourcePath),
+    resolveAsset: (_sidecarPath, written) => copyLocalAsset(written, markdownPath, sourcePath, assetOptions),
   });
   if (errors.length) {
     fail(
@@ -619,6 +628,83 @@ function readColumnReferences(posts) {
   });
 }
 
+const handbookRoot = path.join(gardenPackageRoot, "docs", "handbook");
+
+function readHandbookDocs() {
+  if (!fs.existsSync(handbookRoot)) return [];
+  const assetOptions = { allowedRoot: handbookRoot, mediaPrefix: "garden-docs" };
+  const fileOptions = { allowedRoot: handbookRoot, assetOptions };
+
+  function walk(dir) {
+    return fs.readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+      const fullPath = path.join(dir, entry.name);
+      if (entry.isDirectory()) return walk(fullPath);
+      if (!entry.name.endsWith(".md")) return [];
+
+      const raw = fs.readFileSync(fullPath, "utf8");
+      const parsed = matter(raw, {
+        engines: {
+          yaml: {
+            parse: (input) => parseYaml(input) ?? {},
+          },
+        },
+      });
+      // Sidecar Markdown attachments (such as docs/handbook/components/file/checklist.md)
+      // do not carry handbook front matter (`section`) and are served as downloadable files.
+      if (!parsed.data || typeof parsed.data.section !== "string") return [];
+      const relativeMd = path.relative(handbookRoot, fullPath).split(path.sep).join("/");
+      const sourcePath = `docs/handbook/${relativeMd}`;
+      const docPath = relativeMd.replace(/\.md$/u, "");
+      const slug = path.basename(fullPath, ".md");
+      const frontMatterLines = raw.slice(0, raw.length - parsed.content.length).split("\n").length - 1;
+      const title = requireString(parsed.data, "title", sourcePath);
+      const description = requireString(parsed.data, "description", sourcePath);
+      const section = requireString(parsed.data, "section", sourcePath);
+      const navTitle = optionalString(parsed.data, "navTitle", sourcePath);
+      const badge = optionalString(parsed.data, "badge", sourcePath);
+      const order = typeof parsed.data.order === "number" ? parsed.data.order : 999;
+      const references = normalizeReferences(parsed.data.references, sourcePath);
+
+      const diagnostics = checkGardenMarkdown(parsed.content.trim(), { title });
+      const blocking = diagnostics.filter((item) => item.severity === "error");
+      if (blocking.length) {
+        fail(
+          sourcePath,
+          blocking.map((item) => `第 ${item.line + frontMatterLines} 行 ${item.code}：${item.message}`).join("；"),
+        );
+      }
+
+      const content = rewriteFileFences(
+        rewriteMarkdownAssets(
+          rewriteUiFences(parsed.content.trim(), fullPath, sourcePath, frontMatterLines + leadingLines(parsed.content), assetOptions),
+          fullPath,
+          sourcePath,
+          assetOptions,
+        ),
+        fullPath,
+        sourcePath,
+        fileOptions,
+      );
+
+      return [{
+        title,
+        slug,
+        ...(navTitle ? { navTitle } : {}),
+        description,
+        path: docPath,
+        section,
+        order,
+        ...(badge ? { badge } : {}),
+        ...(references ? { references } : {}),
+        sourcePath,
+        content,
+      }];
+    });
+  }
+
+  return walk(handbookRoot).sort((a, b) => a.order - b.order || a.path.localeCompare(b.path));
+}
+
 fs.rmSync(generatedMediaRoot, { recursive: true, force: true });
 
 const posts = readMarkdownTree(path.join(contentRoot, "posts"), "post").sort(
@@ -630,6 +716,9 @@ const columns = readColumnReferences(posts).sort(
 const thoughts = readMarkdownTree(path.join(contentRoot, "thoughts"), "thought").sort(
   (a, b) => Date.parse(b.date) - Date.parse(a.date),
 );
+const allHandbookDocs = readHandbookDocs();
+const gardenIndexDoc = allHandbookDocs.find((doc) => doc.path === "index") ?? null;
+const gardenDocs = allHandbookDocs.filter((doc) => doc.path !== "index");
 
 // Intrinsic image sizes for width/height on <img>: local files are read now,
 // remote ones come from image-sizes.json (written by scripts/image-sizes.mjs).
@@ -650,7 +739,7 @@ function localImageFile(src) {
 }
 const remoteImageSizes = readImageCache(root).images;
 const imageSizes = {};
-for (const entry of [...posts, ...columns, ...thoughts]) {
+for (const entry of [...posts, ...columns, ...thoughts, ...allHandbookDocs]) {
   for (const src of imageSources(entry.content)) {
     if (imageSizes[src]) continue;
     if (/^https?:\/\//iu.test(src)) {
@@ -673,6 +762,7 @@ assertUnique(
   "专栏文章顺序",
 );
 assertUnique(thoughts, (item) => item.slug, "随想 slug");
+assertUnique(gardenDocs, (item) => item.path, "Garden 文档路径");
 
 const parityDir = path.join(root, "parity", "articles");
 const a2WordCounts = fs.existsSync(parityDir)
@@ -746,6 +836,18 @@ export type ContentEntry = {
   linkDescription?: string;
 };
 
+export type GardenDocEntry = {
+  title: string;
+  navTitle?: string;
+  description: string;
+  path: string;
+  section: string;
+  order: number;
+  badge?: string;
+  references?: { title: string; url?: string; domain?: string }[];
+  content: string;
+};
+
 export type LinkCardMeta = { title: string; description?: string; siteName?: string; author?: string; publishedTime?: string; image?: string };
 export type LinkAssets = { favicons: Record<string, string>; cards: Record<string, LinkCardMeta> };
 
@@ -753,6 +855,8 @@ export const contentHash = "${contentHash}";
 export const posts = ${JSON.stringify(posts, null, 2)} as ContentEntry[];
 export const columns = ${JSON.stringify(columns, null, 2)} as ContentEntry[];
 export const thoughts = ${JSON.stringify(thoughts, null, 2)} as ContentEntry[];
+export const gardenDocs = ${JSON.stringify(gardenDocs, null, 2)} as GardenDocEntry[];
+export const gardenIndexDoc = ${JSON.stringify(gardenIndexDoc, null, 2)} as GardenDocEntry | null;
 export const a2WordCounts = ${JSON.stringify(a2WordCounts, null, 2)} as Record<string, number>;
 export const linkAssets = ${JSON.stringify(linkAssetsForRender(root, basePath), null, 2)} as LinkAssets;
 export const imageSizes: Record<string, { width: number; height: number }> = ${JSON.stringify(imageSizes)};
@@ -843,7 +947,8 @@ writeRssFeed(
   posts.map((entry) => feedEntry(entry, `/blog/${entry.path}/`)),
 );
 const sitemapEntries = [
-  "/", "/blog/", "/thoughts/", "/columns/", "/about/",
+  "/", "/blog/", "/thoughts/", "/columns/", "/about/", "/garden/",
+  ...gardenDocs.map((entry) => `/garden/${entry.path}/`),
   ...posts.map((entry) => `/blog/${entry.path}/`),
   ...columns.map((entry) => `/columns/${entry.column}/${columnEntryPath(entry)}/`),
   ...thoughts.map((entry) => `/thoughts/${entry.slug}/`),

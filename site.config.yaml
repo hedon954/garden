@@ -42,7 +42,7 @@ pages:
       href: /blog
       label: 浏览博文
   garden:
-    title: "用 Markdown 写。\n推送之后，网站自己更新。"
-    subtitle: ""
+    title: "用 Markdown 写丨推送之后网站自己更新"
+    subtitle: "用 Markdown 写文章、随想和专栏，保存在自己的 Git 仓库里。"
 
 footer: 持续记录。

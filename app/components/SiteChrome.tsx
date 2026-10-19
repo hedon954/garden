@@ -12,7 +12,7 @@ export function SiteChrome({ children }: { children: React.ReactNode }) {
     <>
       <SiteHeader />
       <div id="main-content">{children}</div>
-      <SiteFooter />
+      <SiteFooter docs={pathname?.startsWith("/garden") ?? false} />
     </>
   );
 }
