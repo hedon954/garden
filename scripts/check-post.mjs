@@ -7,6 +7,7 @@ import { gardenSiteRoot } from "./garden-paths.mjs";
 import { checkUiBlock } from "../ui/core/validate.mjs";
 import { checkGardenMarkdown } from "../ui/garden/check.mjs";
 import { checkFileSources } from "../ui/garden/file-paths.mjs";
+import { inlineLinkParts, inlineLinkPattern } from "../ui/garden/markdown-destination.mjs";
 
 const siteRoot = gardenSiteRoot();
 const calloutTypes = new Set([
@@ -247,8 +248,9 @@ const scanBody = (errors, content, markdownPath, sourcePath, { warnings = [], dr
       error(errors, "callout-type", lineNumber, `${sourcePath}: 不支持的警告框类型 ${callout[1]}`);
     }
 
-    for (const image of line.matchAll(/!\[([^\]]*)\]\(([^)\s]+)(?:\s+"[^"]*")?\)/gu)) {
-      assertLocalFile(errors, image[2], path.dirname(markdownPath), sourcePath, lineNumber, "图片");
+    for (const match of line.matchAll(inlineLinkPattern())) {
+      const image = inlineLinkParts(match);
+      if (image.image) assertLocalFile(errors, image.url, path.dirname(markdownPath), sourcePath, lineNumber, "图片");
     }
   });
 

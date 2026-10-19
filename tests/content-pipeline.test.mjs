@@ -178,3 +178,54 @@ draft: false
     await rm(fixture, { recursive: true, force: true });
   }
 });
+
+test("angle-bracket destinations survive the build: spaces and parentheses, local and remote", async () => {
+  const fixture = await mkdtemp(path.join(tmpdir(), "hedon-angle-"));
+  try {
+    await mkdir(path.join(fixture, "scripts"), { recursive: true });
+    await mkdir(path.join(fixture, "content", "posts", "shots"), { recursive: true });
+    for (const script of ["build-content.mjs", "site-date.mjs", "link-assets.mjs", "link-meta-core.mjs", "cover-images.mjs", "brand.mjs", "image-sizes.mjs", "file-sizes.mjs", "file-preview.mjs"]) {
+      await cp(path.join(projectRoot, "scripts", script), path.join(fixture, "scripts", script));
+    }
+    await cp(path.join(projectRoot, "site.config.yaml"), path.join(fixture, "site.config.yaml"));
+    await symlink(path.join(projectRoot, "node_modules"), path.join(fixture, "node_modules"), "dir");
+    await symlink(path.join(projectRoot, "ui"), path.join(fixture, "ui"), "dir");
+    await writeFile(path.join(fixture, "content", "posts", "shots", "my shot (1).svg"), '<svg xmlns="http://www.w3.org/2000/svg" width="4" height="2"/>');
+    await writeFile(
+      path.join(fixture, "content", "posts", "angle.md"),
+      `---
+title: 尖括号地址
+description: 验证尖括号包住的图片和链接地址
+date: 2026-10-19
+---
+
+![远程图片](<https://oss.example.com/img/image%20(1).png>)
+
+![带标题](<https://oss.example.com/img/output (2).png> "标题")
+
+![本地图片](<./shots/my shot (1).svg>)
+
+[维基百科](<https://en.wikipedia.org/wiki/Trie_(data_structure)>) 和 [没有尖括号](https://en.wikipedia.org/wiki/Trie_(data_structure))
+`,
+    );
+    await execFileAsync(process.execPath, [path.join(fixture, "scripts", "build-content.mjs")], { cwd: fixture, env: { ...process.env, CONTENT_INCLUDE_DRAFTS: "0" } });
+    const generated = await readFile(path.join(fixture, ".garden", "generated-content.ts"), "utf8");
+    const posts = JSON.parse(generated.match(/export const posts = ([\s\S]*?) as ContentEntry\[\];/u)[1]);
+    const body = posts.find((post) => post.slug === "angle").content;
+    // The brackets stay; the local file is published and its new address is bracketed too.
+    assert.match(body, /!\[远程图片\]\(<https:\/\/oss\.example\.com\/img\/image%20\(1\)\.png>\)/u);
+    assert.match(body, /!\[带标题\]\(<https:\/\/oss\.example\.com\/img\/output \(2\)\.png> "标题"\)/u);
+    assert.match(body, /!\[本地图片\]\(<\/media\/posts\/shots\/my-shot-1-\.svg>\)/u);
+    await access(path.join(fixture, "public", "media", "posts", "shots", "my-shot-1-.svg"));
+    // Read as the article reads it: every address whole, nothing glued on.
+    const { renderFilePreview } = await import("../scripts/file-preview.mjs");
+    const html = renderFilePreview(body);
+    const srcs = [...html.matchAll(/<img [^>]*src="([^"]*)"/gu)].map((match) => match[1]);
+    assert.deepEqual(srcs, ["https://oss.example.com/img/image%20(1).png", "https://oss.example.com/img/output%20(2).png", "/media/posts/shots/my-shot-1-.svg"]);
+    assert.doesNotMatch(html, /%3E|&gt;\)/u);
+    const hrefs = [...html.matchAll(/<a [^>]*href="([^"]*)"/gu)].map((match) => match[1]);
+    assert.deepEqual(hrefs, ["https://en.wikipedia.org/wiki/Trie_(data_structure)", "https://en.wikipedia.org/wiki/Trie_(data_structure)"]);
+  } finally {
+    await rm(fixture, { recursive: true, force: true });
+  }
+});

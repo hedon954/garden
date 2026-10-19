@@ -7,6 +7,7 @@ import { AdminUiShell, isStaticExport, requireAdminPage, StaticAdminNotice } fro
 import { MarkdownArticle } from "../../../components/MarkdownArticle";
 import { repositoryContentPath } from "../../../lib/repository-path.mjs";
 import { readMarkdown, readText } from "../../../lib/ui-content";
+import { formatInlineLink, replaceInlineLinks } from "../../../../ui/garden/markdown-destination.mjs";
 
 export const dynamic = process.env.STATIC_EXPORT === "1" ? "force-static" : "force-dynamic";
 export const dynamicParams = false;
@@ -22,8 +23,8 @@ const isRelative = (value: string) => !/^(?:[a-z][a-z0-9+.-]*:|\/|#)/iu.test(val
 /** Same-name-directory files go through the authenticated, sandboxed proxy. */
 function proxyAssets(content: string, post: string) {
   const proxy = (relative: string) => `/api/admin/preview/asset?post=${encodeURIComponent(post)}&path=${encodeURIComponent(relative)}`;
-  let output = content.replace(/(!\[[^\]]*\]\()<?([^)\s>]+)>?/gu, (match, prefix: string, src: string) =>
-    isRelative(src) ? `${prefix}${proxy(src)}` : match,
+  let output = replaceInlineLinks(content, (link) =>
+    link.image && isRelative(link.url) ? formatInlineLink(link, proxy(link.url)) : undefined,
   );
   for (const fence of [...scanFences(output)].reverse()) {
     if (fence.lang !== "widget") continue;

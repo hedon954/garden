@@ -155,3 +155,18 @@ test("a card whose page cannot be read falls back to the link text and site", as
   assert.match(source, /const title = meta\?\.title \|\| text \|\| href;/u);
   assert.match(source, /meta\?\.siteName \|\| host/u);
 });
+
+test("link addresses in angle brackets or with parentheses are read whole, for cards and the link list", () => {
+  const md = "见 [Trie](<https://en.wikipedia.org/wiki/Trie_(data_structure)>){card}，[b](https://e.com/a_(b))，[空格](<https://e.com/a b>)，[本地](/blog/x){card}，![图](<https://o.com/a (1).png>)";
+  assert.deepEqual(markdownLinks(md), [
+    { url: "https://en.wikipedia.org/wiki/Trie_(data_structure)", card: true },
+    { url: "https://e.com/a_(b)", card: false },
+    { url: "https://e.com/a b", card: false },
+  ]);
+  assert.deepEqual(cardUrls(md), ["https://en.wikipedia.org/wiki/Trie_(data_structure)"]);
+  // The marker goes, the brackets stay; a marker on a site link is not a card and is left alone.
+  assert.equal(
+    stripCardMarkers(md),
+    "见 [Trie](<https://en.wikipedia.org/wiki/Trie_(data_structure)>)，[b](https://e.com/a_(b))，[空格](<https://e.com/a b>)，[本地](/blog/x){card}，![图](<https://o.com/a (1).png>)",
+  );
+});

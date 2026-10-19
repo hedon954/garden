@@ -685,6 +685,18 @@ html[data-theme="dark"] .markdown-body .markdown-alert code {
   height: auto;
 }
 
+/* Dark mode: article images sit on the light paper colour, so a transparent
+   image (black lines on nothing, like most SVG diagrams) stays legible and an
+   opaque one looks the same. The backing is the image's own background, so it
+   takes the image's own corner radius; no padding, no filters. Favicons, link
+   card thumbnails, covers, avatars and the logo are not article images. */
+html[data-theme="dark"] .markdown-image-trigger img,
+html[data-theme="dark"] .markdown-image-lightbox-content img,
+html[data-theme="dark"] .markdown-body > img,
+html[data-theme="dark"] .markdown-body > p > img:not([class]) {
+  background: #faf9f5;
+}
+
 .markdown-body .fig {
   margin: 36px 0;
 }
