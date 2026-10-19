@@ -197,3 +197,28 @@ src: ./sample/notes.md
 `));
   assert.deepEqual(clean.results[0].warnings.filter((item) => item.code === "folder-markdown"), []);
 });
+
+test("images in angle brackets: remote ones pass, local ones with spaces and parentheses are found or reported whole", async (t) => {
+  const root = await site(t);
+  await mkdir(path.join(root, "content", "posts", "shots"), { recursive: true });
+  await writeFile(path.join(root, "content", "posts", "shots", "my shot (1).png"), "png");
+  const ok = await check(root, post(`---
+
+## 正文
+
+![远程](<https://oss.example.com/img/image%20(1).png>)
+
+![本地](<./shots/my shot (1).png> "标题")
+
+![不带尖括号](./shots/my%20shot%20(1).png)
+`));
+  assert.deepEqual(codes(ok), []);
+  const missing = await check(root, post(`---
+
+## 正文
+
+![缺失](<./shots/gone (2).png>)
+`));
+  assert.deepEqual(codes(missing), ["missing-asset"]);
+  assert.match(missing.results[0].errors[0].message, /gone \(2\)\.png/u);
+});
