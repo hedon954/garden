@@ -1,13 +1,14 @@
 import { GithubLogo, Rss } from "@phosphor-icons/react/ssr";
 import { githubUrl, siteConfig } from "../site.config";
 
-export function SiteFooter() {
+/** On the Garden docs pages the footer carries no site-owner line. */
+export function SiteFooter({ docs = false }: { docs?: boolean }) {
   return (
     <footer className="sh-footer">
       <div className="sh-foot">
         <p>
-          © {new Date().getFullYear()} {siteConfig.author.name} · {siteConfig.footer}
-          <span className="footer-framework"> · 基于 <a href="https://github.com/hedon954/garden" target="_blank" rel="noreferrer">Garden</a> 构建</span>
+          {docs ? null : `© ${new Date().getFullYear()} ${siteConfig.author.name} · ${siteConfig.footer}`}
+          <span className="footer-framework">{docs ? "" : " · "}基于 <a href="https://github.com/hedon954/garden" target="_blank" rel="noreferrer">Garden</a> 构建</span>
         </p>
         <div className="sh-foot-links">
           <a href={githubUrl} rel="me">

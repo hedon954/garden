@@ -9,27 +9,23 @@ badge: compare
 
 ```garden compare
 items:
-  - title: 单个公开仓库
-    text: 源文件与构建产物都在同一个仓库，直接开启 Actions 部署。
-    草稿可见性: 公开可见
-    额外密钥: 无需配置
-  - title: 私有源码仓 + 公开页面仓
-    text: 在私仓写作，构建后把静态页面推到公开的 github.io 仓库。
-    草稿可见性: 仅自己可见
-    额外密钥: PAGES_DEPLOY_KEY
+  - title: 只贴一段 diff
+    text: 读者只看到增删行；前面没有完整代码块时，garden check 报 diff-orphan 错误。
+    能否复制新版: 不能
+  - title: 完整代码 + 紧跟的 diff
+    text: 两段合成一个代码框，可在「代码」和「对比上一版」之间切换。
+    能否复制新版: 两个标签下都复制新版
 ```
 
 ````markdown
 ```garden compare
 items:
-  - title: 单个公开仓库
-    text: 源文件与构建产物都在同一个仓库，直接开启 Actions 部署。
-    草稿可见性: 公开可见
-    额外密钥: 无需配置
-  - title: 私有源码仓 + 公开页面仓
-    text: 在私仓写作，构建后把静态页面推到公开的 github.io 仓库。
-    草稿可见性: 仅自己可见
-    额外密钥: PAGES_DEPLOY_KEY
+  - title: 只贴一段 diff
+    text: 读者只看到增删行；前面没有完整代码块时，garden check 报 diff-orphan 错误。
+    能否复制新版: 不能
+  - title: 完整代码 + 紧跟的 diff
+    text: 两段合成一个代码框，可在「代码」和「对比上一版」之间切换。
+    能否复制新版: 两个标签下都复制新版
 ```
 ````
 

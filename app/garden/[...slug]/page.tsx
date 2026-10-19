@@ -94,7 +94,6 @@ export default async function GardenDocPage({
             <span>{sectionMeta?.title ?? doc.sectionTitle ?? "指南"}</span>
             {componentBadge ? (
               <>
-                <span aria-hidden="true">·</span>
                 <code className="gdoc-eyebrow-fence">{`garden ${componentBadge}`}</code>
               </>
             ) : null}
