@@ -31,12 +31,11 @@ export async function generateMetadata(): Promise<Metadata> {
       icon: [{ url: brand.favicon, type: brand.favicon.endsWith(".svg") ? "image/svg+xml" : undefined }],
       ...(brand.appleTouchIcon ? { apple: [{ url: brand.appleTouchIcon, sizes: "180x180" }] } : {}),
     },
+    // index and follow are the default, so no robots meta is written here: the
+    // 404 page keeps exactly one, the noindex vinext adds, and noindex pages set
+    // their own. Only Google's preview limits are stated.
     robots: {
-      index: true,
-      follow: true,
       googleBot: {
-        index: true,
-        follow: true,
         "max-image-preview": "large",
         "max-snippet": -1,
         "max-video-preview": -1,

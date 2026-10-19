@@ -980,3 +980,17 @@ test("article, column article and thought pages link the RSS feed in <head> next
     assert.match(head, /<link rel="canonical" href="[^"]+"\/>/u, `${pathname} keeps its canonical`);
   }
 });
+
+test("the 404 page has exactly one robots meta (noindex); ordinary pages write none and keep Google's preview limits", async () => {
+  const missing = await render("/no-such-page");
+  assert.equal(missing.status, 404);
+  const head404 = (await missing.text()).split("</head>")[0];
+  const robots = [...head404.matchAll(/<meta (?:name="robots" content="([^"]*)"|content="([^"]*)" name="robots")/gu)].map((match) => match[1] ?? match[2]);
+  assert.deepEqual(robots, ["noindex"]);
+  const home = (await (await render("/")).text()).split("</head>")[0];
+  assert.doesNotMatch(home, /name="robots"/u);
+  assert.match(home, /<meta name="googlebot" content="max-image-preview:large, max-snippet:-1, max-video-preview:-1"\/>/u);
+  // noindex pages still say so.
+  const admin = (await (await render("/a2")).text()).split("</head>")[0];
+  assert.match(admin, /<meta name="robots" content="noindex, nofollow"\/>/u);
+});
