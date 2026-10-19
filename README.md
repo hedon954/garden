@@ -14,6 +14,8 @@ npm install
 
 推荐把 GitHub 仓库命名为 `<你的 GitHub 用户名>.github.io`，并在 **Settings → Pages** 把 Source 设为 **GitHub Actions**。然后修改 `site.config.yaml`，再写第一篇 Markdown。公开包名是 `hd-garden`；装进站点之后也可以用 `garden`。不要运行 `npx garden init`，npm 上的 `garden` 是别人的样式库。
 
+在国内想用 npm 镜像（例如 npmmirror），把 `registry` 写在自己的 `~/.npmrc` 或不提交的项目 `.npmrc` 里，不要让镜像地址进 `package-lock.json`：GitHub Actions 连不上镜像时 `npm ci` 会一直卡住。镜像会把新装包的 `resolved` 写成镜像地址，提交前运行 `node node_modules/hd-garden/scripts/check-lockfile-registry.mjs` 检查（Garden 仓库的 CI 也会检查）；报错时把这些地址的域名换回 `https://registry.npmjs.org/`，路径和 integrity 都不用改。
+
 也可以继续用 **Use this template**；该仓库同时是可运行的演示站。
 
 完成后运行：

@@ -257,6 +257,48 @@ actor ReadingProgress {
 }
 ```
 
+### C#
+
+```c#
+public record Article(string Title, DateOnly Published);
+
+public static class Archive
+{
+    public static IEnumerable<string> Titles(IEnumerable<Article> articles) =>
+        articles.OrderByDescending(a => a.Published).Select(a => a.Title);
+}
+```
+
+### C++
+
+```c++
+#include <string>
+#include <vector>
+
+struct Article {
+    std::string title;
+    int words;
+};
+
+int totalWords(const std::vector<Article>& articles) {
+    int total = 0;
+    for (const auto& article : articles) total += article.words;
+    return total;
+}
+```
+
+### Shell
+
+```sh
+npx garden check && npm run build
+```
+
+```bash
+for file in content/posts/*.md; do
+  wc -m "$file"
+done
+```
+
 ## Diff、图片与原生 HTML
 
 ```diff

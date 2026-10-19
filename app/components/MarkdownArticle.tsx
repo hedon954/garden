@@ -33,7 +33,7 @@ import { LinkCardRefresh } from "./LinkCardRefresh";
 import { linkHost } from "../../scripts/link-meta-core.mjs";
 import { cardDate } from "../../ui/garden/card-refresh.mjs";
 import { siteHref } from "../lib/site-href";
-import { codeLanguageLabel } from "../../ui/garden/code-language.mjs";
+import { codeLanguageLabel, fenceLanguage } from "../../ui/garden/code-language.mjs";
 
 // Full URLs back to this site are internal links, written as root-relative paths.
 const sameSite = sameSiteMatcher(siteLinks?.address ?? "", siteLinks?.basePath ?? "");
@@ -333,7 +333,7 @@ export function MarkdownArticle({ content }: { content: string }) {
             const className = isValidElement<{ className?: string }>(child)
               ? child.props.className
               : undefined;
-            const language = className?.match(/language-([\w-]+)/)?.[1];
+            const language = fenceLanguage(className);
             const preProps = { ...props };
             delete preProps.node;
 

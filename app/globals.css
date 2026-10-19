@@ -2188,7 +2188,7 @@ button {
   position: absolute;
   top: 8px;
   right: 12px;
-  color: #8b929c;
+  color: var(--muted);
   font-size: 9px;
   font-weight: 700;
   letter-spacing: 0.12em;

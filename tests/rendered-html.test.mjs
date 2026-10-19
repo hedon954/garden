@@ -963,6 +963,13 @@ test("the article code block labels its language through the shared mapping, nex
   assert.match(html, /<pre class="code" data-language="TS">/u);
   assert.doesNotMatch(html, /data-language="TYPESCRIPT"/u);
   for (const name of ["GO", "RUST", "SQL"]) assert.match(html, new RegExp(`data-language="${name}"`, "u"));
+  // ```c# and ```c++ keep their symbols all the way to the label (they used to read "C").
+  assert.match(html, /<pre class="code" data-language="C#"><code class="hljs language-c#">/u);
+  assert.match(html, /<pre class="code" data-language="C\+\+"><code class="hljs language-c\+\+">/u);
+  assert.doesNotMatch(html, /data-language="C"/u);
+  // ```sh and ```bash both read SHELL.
+  assert.equal(html.match(/<pre class="code" data-language="SHELL"><code class="hljs language-(?:sh|bash)">/gu)?.length, 2);
+  assert.doesNotMatch(html, /data-language="BASH"/u);
 });
 
 test("article, column article and thought pages link the RSS feed in <head> next to their canonical", async () => {
@@ -972,4 +979,18 @@ test("article, column article and thought pages link the RSS feed in <head> next
     assert.equal(head.match(/<link rel="alternate" type="application\/rss\+xml" href="[^"]*\/rss\.xml"\/>/gu)?.length, 1, `${pathname} should link the feed once`);
     assert.match(head, /<link rel="canonical" href="[^"]+"\/>/u, `${pathname} keeps its canonical`);
   }
+});
+
+test("the 404 page has exactly one robots meta (noindex); ordinary pages write none and keep Google's preview limits", async () => {
+  const missing = await render("/no-such-page");
+  assert.equal(missing.status, 404);
+  const head404 = (await missing.text()).split("</head>")[0];
+  const robots = [...head404.matchAll(/<meta (?:name="robots" content="([^"]*)"|content="([^"]*)" name="robots")/gu)].map((match) => match[1] ?? match[2]);
+  assert.deepEqual(robots, ["noindex"]);
+  const home = (await (await render("/")).text()).split("</head>")[0];
+  assert.doesNotMatch(home, /name="robots"/u);
+  assert.match(home, /<meta name="googlebot" content="max-image-preview:large, max-snippet:-1, max-video-preview:-1"\/>/u);
+  // noindex pages still say so.
+  const admin = (await (await render("/a2")).text()).split("</head>")[0];
+  assert.match(admin, /<meta name="robots" content="noindex, nofollow"\/>/u);
 });

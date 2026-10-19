@@ -89,3 +89,11 @@ test("every page in the static export names itself as canonical, with the traili
   assert.deepEqual(wrong, [], `${wrong.length} canonical links that do not point at the page itself`);
   assert.deepEqual(noFeed, [], `${noFeed.length} pages without exactly one RSS link in <head>`);
 });
+
+test("the static 404 page has exactly one robots meta, and it says noindex", { skip: exported ? false : "needs a static export in dist/client" }, () => {
+  const html = fs.readFileSync(path.join(outDir, "404.html"), "utf8");
+  const head = html.slice(0, html.indexOf("</head>"));
+  const robots = [...head.matchAll(/<meta (?:name="robots" content="([^"]*)"|content="([^"]*)" name="robots")/gu)].map((match) => match[1] ?? match[2]);
+  assert.deepEqual(robots, ["noindex"]);
+});
+

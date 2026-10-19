@@ -23,6 +23,8 @@ jobs:
           package-manager-cache: false
 
       - run: npm install --global npm@11
+      - name: Lockfile downloads only from registry.npmjs.org
+        run: node scripts/check-lockfile-registry.mjs
       - run: npm ci
       - run: npm test
 
