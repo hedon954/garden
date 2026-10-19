@@ -2,12 +2,13 @@
 // given viewport width and scripting state. Enough for the header's own rules
 // (classes, attributes, pseudo-classes, media features below); it throws on
 // media features it does not know, so a new kind of rule is noticed.
-import fs from "node:fs";
 import postcss from "postcss";
+import { clientAssetText } from "./client-assets.mjs";
 
 export function builtCss() {
-  const assets = new URL("../dist/client/assets/", import.meta.url);
-  return fs.readdirSync(assets).filter((name) => name.endsWith(".css")).sort().map((name) => fs.readFileSync(new URL(name, assets), "utf8")).join("\n");
+  const css = clientAssetText(/\.css$/u);
+  if (!css) throw new Error("no built CSS under dist/client/_next/static/: run the build first");
+  return css;
 }
 
 const px = (value) => Number.parseFloat(value);

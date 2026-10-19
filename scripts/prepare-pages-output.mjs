@@ -2,6 +2,7 @@ import crypto from "node:crypto";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
+import { STATIC_PLACEHOLDER } from "../ui/garden/static-params.mjs";
 
 const forbiddenDirectoryNames = new Set([
   ".git",
@@ -55,6 +56,7 @@ async function inspectTree(root, directory = root) {
       fail(`不允许源码目录：${relativePath}`);
     }
     if (entry.name.startsWith(".env")) fail(`不允许环境文件：${relativePath}`);
+    if (entry.name.startsWith(STATIC_PLACEHOLDER)) fail(`空动态路由的占位页没有删掉：${relativePath}`);
     if (/^package(?:-lock)?\.json$/u.test(entry.name)) {
       fail(`不允许依赖清单：${relativePath}`);
     }
@@ -106,7 +108,8 @@ async function stabilizeDeploymentVersion(root) {
   for (const file of await listFiles(root)) {
     const original = await fs.readFile(file.absolutePath);
     let normalized = original;
-    if ([".html", ".rsc"].includes(path.extname(file.relativePath))) {
+    // Flight payloads: .rsc from vinext 0.0.x, index.txt / <page>.txt from vinext 1.x static export.
+    if ([".html", ".rsc", ".txt"].includes(path.extname(file.relativePath))) {
       const text = original.toString("utf8");
       normalized = Buffer.from(
         normalizeDeploymentVersion(text, deploymentVersionPlaceholder),

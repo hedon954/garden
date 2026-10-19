@@ -27,12 +27,16 @@ import {
 } from "../../../lib/site";
 import { githubUrl, siteConfig } from "../../../site.config";
 import { siteHref } from "../../../lib/site-href";
+import { STATIC_PLACEHOLDER, staticParams } from "../../../../ui/garden/static-params.mjs";
 
 export function generateStaticParams() {
-  return columns.map((entry) => ({
-    column: entry.column,
-    path: columnEntryPath(entry).split("/"),
-  }));
+  return staticParams(
+    columns.map((entry) => ({
+      column: entry.column,
+      path: columnEntryPath(entry).split("/"),
+    })),
+    { column: STATIC_PLACEHOLDER, path: [STATIC_PLACEHOLDER] },
+  );
 }
 
 export async function generateMetadata({

@@ -8,6 +8,7 @@ import { MarkdownArticle } from "../../../components/MarkdownArticle";
 import { repositoryContentPath } from "../../../lib/repository-path.mjs";
 import { readMarkdown, readText } from "../../../lib/ui-content";
 import { formatInlineLink, replaceInlineLinks } from "../../../../ui/garden/markdown-destination.mjs";
+import { STATIC_PLACEHOLDER, staticParams } from "../../../../ui/garden/static-params.mjs";
 
 export const dynamic = process.env.STATIC_EXPORT === "1" ? "force-static" : "force-dynamic";
 export const dynamicParams = false;
@@ -15,7 +16,7 @@ export const metadata = { title: "草稿预览", robots: { index: false, follow:
 
 /** Draft preview is served by the admin worker. The public static export has no paths here. */
 export function generateStaticParams() {
-  return [];
+  return staticParams([], { path: [STATIC_PLACEHOLDER] });
 }
 
 const isRelative = (value: string) => !/^(?:[a-z][a-z0-9+.-]*:|\/|#)/iu.test(value);

@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import test from "node:test";
+import { clientAssetFiles } from "./client-assets.mjs";
 import { buildFullIndex, buildSearchIndex, fullText } from "../ui/garden/search-index.mjs";
 import { createSearch, queryTerms } from "../ui/garden/search-match.mjs";
 import { expandFullIndex, loadFullIndex, saveDataOn, whenIdleAfterLoad } from "../ui/garden/search-full.mjs";
@@ -185,10 +186,10 @@ test("the header loads full text in the background, never in the page bundle", (
   assert.match(header, /saveDataOn\(\)/u);
   assert.match(header, /whenIdleAfterLoad\(/u);
   assert.doesNotMatch(header, /import [^;]*search-full\.[0-9a-f]+\.json/u);
-  const assets = path.join(root.pathname, "dist/client/assets");
-  if (!fs.existsSync(assets)) return;
-  for (const name of fs.readdirSync(assets).filter((file) => file.endsWith(".js"))) {
-    assert.ok(!fs.readFileSync(path.join(assets, name), "utf8").includes("剪叶之后把盆转半圈"), `${name} carries body text`);
+  const scripts = clientAssetFiles(/\.js$/u);
+  assert.ok(scripts.length > 0, "run the build first");
+  for (const file of scripts) {
+    assert.ok(!fs.readFileSync(file, "utf8").includes("剪叶之后把盆转半圈"), `${path.basename(file)} carries body text`);
   }
 });
 

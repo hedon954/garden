@@ -8,9 +8,10 @@ import { a2WordCounts } from "@garden/generated-content";
 import { demoDateLabel, demoDateTime } from "../../lib/a2-meta";
 import { extractHeadings } from "../../lib/content";
 import { a2Slugs, readA2Article } from "../../lib/a2-preview";
+import { STATIC_PLACEHOLDER, staticParams } from "../../../ui/garden/static-params.mjs";
 
 export function generateStaticParams() {
-  return a2Slugs().map((slug) => ({ slug }));
+  return staticParams(a2Slugs().map((slug) => ({ slug })), { slug: STATIC_PLACEHOLDER });
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {

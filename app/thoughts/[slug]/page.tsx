@@ -14,9 +14,10 @@ import {
   webmentionApiEndpoint,
 } from "../../lib/site";
 import { siteHref } from "../../lib/site-href";
+import { STATIC_PLACEHOLDER, staticParams } from "../../../ui/garden/static-params.mjs";
 
 export function generateStaticParams() {
-  return thoughts.map((thought) => ({ slug: thought.slug }));
+  return staticParams(thoughts.map((thought) => ({ slug: thought.slug })), { slug: STATIC_PLACEHOLDER });
 }
 
 export async function generateMetadata({

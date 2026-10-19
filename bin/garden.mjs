@@ -392,7 +392,11 @@ switch (command) {
     if (process.env.GARDEN_OFFLINE !== "1") runNode("scripts/file-sizes.mjs");
     runVinext(["build", ...rest], { copyDist: true });
     // Pages for old addresses listed under redirects in site.config.yaml (static export only).
-    if (process.env.STATIC_EXPORT === "1") runNode("scripts/redirects.mjs");
+    if (process.env.STATIC_EXPORT === "1") {
+      // What the export wrote for empty dynamic routes (ui/garden/static-params.mjs).
+      runNode("scripts/static-placeholders.mjs");
+      runNode("scripts/redirects.mjs");
+    }
     break;
   case "links":
     runNode("scripts/link-assets.mjs");
