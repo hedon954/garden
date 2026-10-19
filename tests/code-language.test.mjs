@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import test from "node:test";
-import { codeLanguageLabel } from "../ui/garden/code-language.mjs";
+import { codeLanguageLabel, fenceLanguage } from "../ui/garden/code-language.mjs";
 import { renderFilePreview } from "../scripts/file-preview.mjs";
 
 test("one label per language, whatever alias the fence uses", () => {
@@ -29,9 +29,32 @@ test("one label per language, whatever alias the fence uses", () => {
   assert.equal(codeLanguageLabel(undefined), "");
 });
 
+test("language names keep their symbols: the parser does not stop at # or +", () => {
+  assert.equal(fenceLanguage("language-c#"), "c#");
+  assert.equal(fenceLanguage("hljs language-c++"), "c++");
+  assert.equal(fenceLanguage(["hljs", "language-f#"]), "f#");
+  assert.equal(fenceLanguage("language-objective-c"), "objective-c");
+  assert.equal(fenceLanguage("language-shell-session extra"), "shell-session");
+  assert.equal(fenceLanguage("language-"), "");
+  assert.equal(fenceLanguage("hljs"), "");
+  assert.equal(fenceLanguage(undefined), "");
+  // C# and C++, by any of their names.
+  for (const name of ["c#", "C#", "cs", "csharp"]) assert.equal(codeLanguageLabel(fenceLanguage(`language-${name}`)), "C#", name);
+  for (const name of ["c++", "C++", "cpp", "cc", "hpp"]) assert.equal(codeLanguageLabel(fenceLanguage(`language-${name}`)), "C++", name);
+  assert.equal(codeLanguageLabel("c"), "C");
+  assert.equal(codeLanguageLabel("f#"), "F#");
+  // Same result in the drawer and the standalone page.
+  assert.match(renderFilePreview("```c#\nint x;\n```"), /^<pre class="code" data-language="C#"><code class="hljs language-c#">/u);
+  assert.match(renderFilePreview("```c++\nint x;\n```"), /^<pre class="code" data-language="C\+\+"><code class="hljs language-c\+\+">/u);
+});
+
 test("the article, the preview drawer and the standalone page all label through the shared mapping", () => {
   const article = fs.readFileSync(new URL("../app/components/MarkdownArticle.tsx", import.meta.url), "utf8");
   assert.match(article, /data-language=\{codeLanguageLabel\(language\) \|\| undefined\}/u);
+  // One parser for the fence language everywhere; no regex that stops at symbols.
+  assert.match(article, /const language = fenceLanguage\(className\);/u);
+  assert.doesNotMatch(article, /language-\(\[\\w-\]\+\)/u);
+  assert.match(fs.readFileSync(new URL("../scripts/file-preview.mjs", import.meta.url), "utf8"), /fenceLanguage\(/u);
   const ui = fs.readFileSync(new URL("../ui/react/components/media.tsx", import.meta.url), "utf8");
   assert.match(ui, /data-language=\{codeLanguageLabel\(lang\) \|\| undefined\}/u);
   // The drawer and the .preview.html page share one rendering.

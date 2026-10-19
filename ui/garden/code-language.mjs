@@ -27,6 +27,7 @@ const ALIASES = {
   md: "markdown",
   htm: "html",
   "c++": "cpp",
+  "c#": "csharp",
   cc: "cpp",
   hpp: "cpp",
   cs: "csharp",
@@ -38,6 +39,17 @@ const ALIASES = {
 
 /** JavaScript and TypeScript go by their common abbreviations; everything else by its full name. */
 const NAMES = { javascript: "JS", typescript: "TS", cpp: "C++", csharp: "C#" };
+
+/**
+ * The fence language from a code element's class (`language-c#` → `c#`). Takes
+ * a class string or a class list. The name is everything after `language-` up
+ * to the next space, so symbols stay: c#, c++, f#, objective-c, shell-session.
+ */
+export function fenceLanguage(className) {
+  const names = Array.isArray(className) ? className.map(String) : String(className ?? "").split(/\s+/u);
+  const token = names.find((name) => name.startsWith("language-") && name.length > 9);
+  return token ? token.slice(9) : "";
+}
 
 /** Display label for a fence language, or "" when there is none. */
 export function codeLanguageLabel(language) {

@@ -963,6 +963,10 @@ test("the article code block labels its language through the shared mapping, nex
   assert.match(html, /<pre class="code" data-language="TS">/u);
   assert.doesNotMatch(html, /data-language="TYPESCRIPT"/u);
   for (const name of ["GO", "RUST", "SQL"]) assert.match(html, new RegExp(`data-language="${name}"`, "u"));
+  // ```c# and ```c++ keep their symbols all the way to the label (they used to read "C").
+  assert.match(html, /<pre class="code" data-language="C#"><code class="hljs language-c#">/u);
+  assert.match(html, /<pre class="code" data-language="C\+\+"><code class="hljs language-c\+\+">/u);
+  assert.doesNotMatch(html, /data-language="C"/u);
 });
 
 test("article, column article and thought pages link the RSS feed in <head> next to their canonical", async () => {
