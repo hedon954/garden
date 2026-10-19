@@ -1,44 +1,30 @@
 ---
-title: 内置组件总览：什么时候用、怎么选
-description: 9 个英文名组件（card、stat、compare、timeline、chart、figure、html、interactive、file）的用途对比与写法速查。
+title: 组件总览
+navTitle: 组件总览
+description: 9 个内置 garden 组件的用途、围栏名称与使用约束。
 section: components
-order: 1
+order: 30
 ---
 
-## 先判断需不需要用组件
+当标准 Markdown 段落、列表或表格不够表达时，可以在文章里使用 ```` ```garden <name> ```` 代码块插入内置组件。所有组件名均使用英文，内部使用 YAML（`interactive` 在 `---` 下方使用声明式标签）编写参数。
 
-Garden 内置了 9 个展示组件，都在代码块开头写 ````garden <组件英文名>`，里面按 YAML 格式填内容。
+## 9 个组件速查表
 
-动笔之前可以先看一眼这条简单的经验：**如果普通段落、列表或表格已经能说清楚，就直接写普通 Markdown。** 只有当普通文字排出来不好看、或者读者确实需要点按交互时，再用下面这些组件。
-
-```garden compare
-items:
-  - title: 直接写普通 Markdown
-    text: 几句话能讲清的结论写段落；多列参数写表格；改代码用 diff。
-    写法: 段落 / 表格 / diff
-  - title: 适合用内置组件
-    text: 并排摆实验数字、左右对比方案、点选结构图分区或放文件下载。
-    写法: stat / compare / figure
-```
-
-## 9 个内置组件速查表
-
-所有组件名都是简短的英文单词：
-
-| 组件名（英文） | 怎么写开头 | 用来干什么 | 常用字段 |
+| 组件名 | 代码块围栏 | 适用场景 | 必填字段或下限 |
 | :--- | :--- | :--- | :--- |
-| [`card`](/garden/components/card) | ````garden card` | 介绍一篇论文、一个开源项目或某个模块，下方可列编号要点 | `title`、`url`、`meta`、`description`、`points`、`source` |
-| [`stat`](/garden/components/stat) | ````garden stat` | 把 2–6 个关键数字、耗时或百分比并排摆出来 | `items`、`label`、`value`、`unit`、`caption`、`source` |
-| [`compare`](/garden/components/compare) | ````garden compare` | 两到三栏并排对比不同做法的优劣 | `items`（每项可写 `"标题：说明"` 或 `{ title, text, ... }`） |
-| [`timeline`](/garden/components/timeline) | ````garden timeline` | 按时间或步骤顺序串起故障复盘或演进过程 | `title`、`items`（含 `date`、`title`、`text`、`source`） |
-| [`chart`](/garden/components/chart) | ````garden chart` | 画比例条形图，下方自带可展开的完整数字表格 | `title`、`x`、`series`、`data`、`unit`、`caption` |
-| [`figure`](/garden/components/figure) | ````garden figure` | 给 SVG 结构图或配图加上可点选的分区按钮和说明 | `svg`、`image`、`parts`、`caption` |
-| [`html`](/garden/components/html) | ````garden html` | 嵌入自己写的 HTML/SVG 片段、选项卡、小测验或画布动画 | `src`、`code`、`title`、`height` |
-| [`interactive`](/garden/components/interactive) | ````garden interactive` | 放滑杆、开关或步骤条，让读者自己改参数看计算结果和曲线 | `id`、`caption`、`intent`、`expect` + 下方控件 |
-| [`file`](/garden/components/file) | ````garden file` | 放单个或多个附件供下载，支持 PDF、表格和文档在页内拉开预览 | `src`、`title`、`note`、`files` |
+| [知识卡片](/garden/components/card) | ```` ```garden card ```` | 介绍论文、开源项目或模块要点 | 至少填 `description` 或 `points` |
+| [数字指标](/garden/components/stat) | ```` ```garden stat ```` | 并排展示 2～4 组关键数值与单位 | 每项必填 `label` 与 `value` |
+| [并排对比](/garden/components/compare) | ```` ```garden compare ```` | 左右并列对比 2～3 种方案或改动前后差异 | `items` 至少 2 项 |
+| [时间线](/garden/components/timeline) | ```` ```garden timeline ```` | 按先后顺序串联排查记录或演进阶段 | `items` 至少 2 项 |
+| [条形图表](/garden/components/chart) | ```` ```garden chart ```` | 用数据绘制比例条形图（自带可展开数据表） | `data` 至少 2 行 |
+| [分区结构图](/garden/components/figure) | ```` ```garden figure ```` | 带分区按钮高亮与说明的 SVG / 图片结构图 | `svg` 或 `image` 二选一 |
+| [嵌入网页片段](/garden/components/html) | ```` ```garden html ```` | 在沙盒 `iframe` 中运行独立 HTML/JS 演示 | `src` 或 `code` 二选一 |
+| [可调公式与参数](/garden/components/interactive) | ```` ```garden interactive ```` | 提供滑杆或单选控件实时计算非平凡公式 | 含输入控件且公式不能是单次乘法 |
+| [文件下载与预览](/garden/components/file) | ```` ```garden file ```` | 提供本地或远程文件下载与页内预览 | `src` 或 `files` 二选一 |
 
-## 写组件时的三个小提醒
+## 编写与检查规则
 
-1. **写错名字会有提示**：如果你不小心把组件名或字段名拼错了（比如把 `garden card` 写成 `garden car`），运行 `make check` 时会直接告诉你哪一行写错了、正确的名字叫什么。
-2. **文字里带英文冒号记得加引号**：因为组件里面用的是 YAML 格式，如果某一行文字里刚好有「英文冒号 + 空格」（`: `），请用双引号把整句包起来（比如 `caption: "P99: 降低 42%"`）。
-3. **写草稿时可以先留白记想法**：如果你正在写长文，不想停下来查组件字段，可以先写一个不带名字的 ````garden` 代码块，在里面随手记一句「这里后面放个对比表」，等写完初稿再补全。
+1. **优先使用标准 Markdown**：普通文字说明、有序列表和常规对比表格直接用 Markdown 编写，只有结构化组件能明显提升可读性时才用 `garden` 围栏。
+2. **不要重复展示同一组数据**：`chart` 组件下方自带「查看数据表」折叠区，同一小节内如果再放一张相同数字的 Markdown 表格，`npx garden check` 会报 `chart-table-dup` 警告。
+3. **支持行内格式**：各组件的 `text`、`description`、`caption`、`points` 等文本字段均支持行内 `**加粗**`、`` `行内代码` `` 和 `<u>荧光笔下划线</u>`。
+4. **本地预览全部组件样式**：运行 `npx garden ui catalog` 会在 `.garden/ui-catalog.html` 生成组件画廊页面，可在浏览器中直接打开查看。

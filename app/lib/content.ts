@@ -2,6 +2,7 @@ import { markdownPlugins } from "./markdown-plugins";
 import {
   columns,
   gardenDocs,
+  gardenIndexDoc,
   posts,
   thoughts,
   type ContentEntry,
@@ -19,7 +20,7 @@ import { visit } from "unist-util-visit";
 import { splitHeadingNumber } from "./heading-number";
 import { siteHref } from "./site-href";
 
-export { columns, gardenDocs, posts, thoughts };
+export { columns, gardenDocs, gardenIndexDoc, posts, thoughts };
 export type { ContentEntry, GardenDocEntry, MediaItem };
 
 export const postHref = (post: Pick<ContentEntry, "path">) => siteHref(`/blog/${post.path}`);

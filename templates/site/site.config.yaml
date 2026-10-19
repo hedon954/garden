@@ -47,7 +47,7 @@ pages:
       href: /blog
       label: 浏览博文
   garden:
-    title: "用 Markdown 写。\n推送之后，网站自己更新。"
-    subtitle: ""
+    title: "用 Markdown 写丨推送之后网站自己更新"
+    subtitle: "文章、随想和专栏都存在你自己的 Git 仓库里。下面这篇页面本身就由 Garden 渲染。"
 
 footer: 持续记录。

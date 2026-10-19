@@ -62,6 +62,7 @@ declare module "@garden/generated-content" {
     content: string;
   };
   export const gardenDocs: GardenDocEntry[];
+  export const gardenIndexDoc: GardenDocEntry | null;
   export const a2WordCounts: Record<string, number>;
   export type LinkCardMeta = {
     title: string;

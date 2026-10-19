@@ -713,7 +713,9 @@ const columns = readColumnReferences(posts).sort(
 const thoughts = readMarkdownTree(path.join(contentRoot, "thoughts"), "thought").sort(
   (a, b) => Date.parse(b.date) - Date.parse(a.date),
 );
-const gardenDocs = readHandbookDocs();
+const allHandbookDocs = readHandbookDocs();
+const gardenIndexDoc = allHandbookDocs.find((doc) => doc.path === "index") ?? null;
+const gardenDocs = allHandbookDocs.filter((doc) => doc.path !== "index");
 
 // Intrinsic image sizes for width/height on <img>: local files are read now,
 // remote ones come from image-sizes.json (written by scripts/image-sizes.mjs).
@@ -734,7 +736,7 @@ function localImageFile(src) {
 }
 const remoteImageSizes = readImageCache(root).images;
 const imageSizes = {};
-for (const entry of [...posts, ...columns, ...thoughts, ...gardenDocs]) {
+for (const entry of [...posts, ...columns, ...thoughts, ...allHandbookDocs]) {
   for (const src of imageSources(entry.content)) {
     if (imageSizes[src]) continue;
     if (/^https?:\/\//iu.test(src)) {
@@ -835,7 +837,7 @@ export type GardenDocEntry = {
   navTitle?: string;
   description: string;
   path: string;
-  group: string;
+  section: string;
   order: number;
   badge?: string;
   references?: { title: string; url?: string; domain?: string }[];
@@ -850,6 +852,7 @@ export const posts = ${JSON.stringify(posts, null, 2)} as ContentEntry[];
 export const columns = ${JSON.stringify(columns, null, 2)} as ContentEntry[];
 export const thoughts = ${JSON.stringify(thoughts, null, 2)} as ContentEntry[];
 export const gardenDocs = ${JSON.stringify(gardenDocs, null, 2)} as GardenDocEntry[];
+export const gardenIndexDoc = ${JSON.stringify(gardenIndexDoc, null, 2)} as GardenDocEntry | null;
 export const a2WordCounts = ${JSON.stringify(a2WordCounts, null, 2)} as Record<string, number>;
 export const linkAssets = ${JSON.stringify(linkAssetsForRender(root, basePath), null, 2)} as LinkAssets;
 export const imageSizes: Record<string, { width: number; height: number }> = ${JSON.stringify(imageSizes)};

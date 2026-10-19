@@ -11,7 +11,9 @@ import {
 import { FEED_ALTERNATES } from "../../lib/page-alternates";
 import { absoluteUrl, getSiteUrl } from "../../lib/site";
 import { siteHref } from "../../lib/site-href";
+import { ArticleMeasure } from "../../components/ArticleMeasure";
 import { ArticleReferences } from "../../components/ArticleReferences";
+import { ArticleTitle } from "../../components/ArticleTitle";
 import { MarkdownArticle } from "../../components/MarkdownArticle";
 import { TableOfContents } from "../../components/TableOfContents";
 import { GardenDocsNav } from "../../components/GardenDocsNav";
@@ -97,11 +99,13 @@ export default async function GardenDocPage({
               </>
             ) : null}
           </div>
-          <h1 className="p-name">{doc.title}</h1>
+          <ArticleTitle title={doc.title} />
           {doc.description ? (
             <p className="gdoc-article-deck p-summary">{doc.description}</p>
           ) : null}
         </header>
+
+        <ArticleMeasure />
 
         <div className="e-content">
           <MarkdownArticle content={doc.content} />

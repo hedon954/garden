@@ -1,83 +1,67 @@
 ---
-title: html · 嵌入网页片段与交互演示
-description: 用 garden html 在文章里嵌入自己写的 HTML/SVG 片段、选项卡、自测题，或者带脚本的独立网页演示。
+title: 嵌入网页片段（html）
+navTitle: 嵌入网页片段
+description: 在沙盒 iframe 中运行独立的 HTML、CSS 与 JavaScript 演示片段。
 section: components
-order: 8
+order: 37
+badge: html
 ---
-
-## 什么时候用
-
-当内置的静态组件不够用，你想在文章里放一段自己写的 HTML/SVG 示意图、一组切换选项卡、一道给读者自测的小题目，或者一个带 `<script>` 脚本的画布动画时，用 `garden html`。
-
-Garden 会根据你写的 HTML 内容自动决定怎么展示：
-- 如果是不带脚本的普通 HTML/SVG，或者用了内置的轻量交互标记（比如 `data-g="tabs"` 选项卡、`data-g="quiz"` 自测题、`data-g="stepper"` 步骤条），会直接嵌在页面里渲染；
-- 如果里面包含 `<script>` 脚本，会自动放进安全的隔离沙盒窗口（`iframe`）里运行，并自动同步当前页面的浅色/深色主题和高度。
-
-## 效果与写法
-
-### 写法一：直接在代码块里写 HTML（轻量选项卡示例）
-
-在 YAML 标题下面加一行 `---`，后面直接写 HTML 即可：
 
 ```garden html
-title: 三种缓存淘汰策略的命中率对比
----
-<div class="g-tabs" data-g="tabs">
-  <div class="g-tab-bar">
-    <button type="button" data-on="1">LRU（最近最少使用）</button>
-    <button type="button">LFU（最不经常使用）</button>
-    <button type="button">W-TinyLFU</button>
-  </div>
-  <div class="g-tab-panes">
-    <div data-on="1">
-      <p><strong>特点：</strong>用双向链表维护访问顺序，实现最简单；但遇到全表扫描请求时，容易把真正的热点数据一次性全冲掉。</p>
-    </div>
-    <div>
-      <p><strong>特点：</strong>按历史访问频次淘汰，不怕偶发的全表扫描；但以前访问极多、现在已经不再访问的旧数据会长期占着内存不走。</p>
-    </div>
-    <div>
-      <p><strong>特点：</strong>前面放一个 1% 大小的窗口缓存吸收突发流量，后面用 Count-Min Sketch 统计频率并定期衰减，兼顾突发流量与扫描保护。</p>
-    </div>
-  </div>
-</div>
+title: 字符长度与预计阅读耗时小工具
+height: 156
+code: |
+  <!doctype html>
+  <html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <style>
+      body { margin: 0; padding: 16px 18px; font: 14px/1.6 system-ui, sans-serif; color: #1b1a18; background: #faf9f5; }
+      input { width: 100%; box-sizing: border-box; padding: 8px 10px; border: 1px solid #d5d1c8; border-radius: 6px; font: inherit; background: #fff; color: #1b1a18; }
+      .meta { margin-top: 10px; color: #6e6b64; font-variant-numeric: tabular-nums; }
+      strong { color: #1b1a18; }
+    </style>
+  </head>
+  <body>
+    <input id="txt" value="把文章放在自己的 Git 仓库里，推送后自动构建。" aria-label="输入示例文本" />
+    <div class="meta">当前字符数：<strong id="count">23</strong> 字</div>
+    <script>
+      const input = document.getElementById("txt");
+      const count = document.getElementById("count");
+      input.addEventListener("input", () => { count.textContent = String(input.value.length); });
+    </script>
+  </body>
+  </html>
 ```
 
-对应的 Markdown 写法：
-
-```html
-<!-- 代码块开头写：```garden html -->
-title: 三种缓存淘汰策略的命中率对比
----
-<div class="g-tabs" data-g="tabs">
-  <div class="g-tab-bar">
-    <button type="button" data-on="1">LRU（最近最少使用）</button>
-    <button type="button">LFU（最不经常使用）</button>
-    <button type="button">W-TinyLFU</button>
-  </div>
-  <div class="g-tab-panes">
-    <div data-on="1"><p>LRU 说明……</p></div>
-    <div><p>LFU 说明……</p></div>
-    <div><p>W-TinyLFU 说明……</p></div>
-  </div>
-</div>
+```markdown
+```garden html
+title: 字符长度与预计阅读耗时小工具
+height: 156
+code: |
+  <!doctype html>
+  <html lang="zh-CN">
+  <head><meta charset="utf-8" /></head>
+  <body>
+    <input id="txt" value="把文章放在自己的 Git 仓库里，推送后自动构建。" />
+    <div>当前字符数：<strong id="count">23</strong> 字</div>
+    <script>
+      const input = document.getElementById("txt");
+      const count = document.getElementById("count");
+      input.addEventListener("input", () => { count.textContent = String(input.value.length); });
+    </script>
+  </body>
+  </html>
+```
 ```
 
-### 写法二：引用同目录下的独立 `.html` 文件
+- **用**：需要运行自定义 DOM 脚本、Canvas 绘图或独立 HTML 页面片段时（支持 `code` 内联或 `src` 引用文章同名目录下的 `.html` 文件）。
+- **别用**：只需要滑杆调参数算公式时用 [`interactive`](/garden/components/interactive)；静态结构图用 [`figure`](/garden/components/figure)。
 
-如果 HTML 比较长（比如包含完整的 Canvas 动画和样式），可以把它存放在文章同名文件夹下（例如写 `content/posts/raft.md` 时，把网页存成 `content/posts/raft/election-sim.html`），然后在文章里用 `src` 引用：
-
-```yaml
-# 代码块开头写：```garden html
-src: ./raft/election-sim.html
-title: Raft 节点超时与选主过程模拟
-height: 420
-```
-
-## 可用字段一览
-
-| 字段名 | 必填 | 说明 |
-| :--- | :--- | :--- |
-| `title` | 否 | 标题说明（全屏查看和无障碍阅读器会用到）。 |
-| `src` | 否 | 引用文章同名文件夹下的 `.html` 文件路径（如 `./post-slug/demo.html`）。 |
-| `code` | 否 | 内联 HTML 字符串（也可以更方便地直接写在 `---` 分隔线下面）。 |
-| `height` | 否 | 当 HTML 包含 `<script>` 在沙盒窗口运行时，指定的初始高度（单位 `px`，默认 `360`，运行后会自动按内容高度撑开）。 |
+| 字段 | 必填 | 类型 | 说明 |
+| :--- | :--- | :--- | :--- |
+| `src` | 与 `code` 二选一 | 相对路径字符串 | 引用与当前 Markdown 同目录（或同名子目录）下的 `.html` 文件 |
+| `code` | 与 `src` 二选一 | 多行字符串 | 直接内联编写的 HTML 源码（也可用别名 `html`） |
+| `title` | 建议 | 字符串 | 卡片顶部栏标题及 `iframe` 的无障碍标题 |
+| `height` | 否 | 数字 | 初始高度（像素，默认 `260`；加载后也会随内容高度自动调整） |
+| `caption` | 否 | 字符串 | 底部的图注说明 |

@@ -1,98 +1,125 @@
 ---
 title: 站点与专栏配置
-description: 修改 site.config.yaml 设置网站标题、作者信息与旧链接跳转，用 content/columns.yaml 把多篇文章编成专栏。
+navTitle: 站点与专栏配置
+description: 配置 site.config.yaml 中的站点信息、各页标题、自定义品牌图标与 content/columns.yaml 专栏。
 section: getting-started
 order: 2
 ---
 
-## 修改网站基本信息（`site.config.yaml`）
+站点的全局文字与外观信息集中在根目录的 `site.config.yaml`，专栏目录集中在 `content/columns.yaml`。修改后运行 `npx garden sync`（或直接 `make dev`）即可生效。
 
-打开站点根目录下的 `site.config.yaml`，就能修改网站名字、作者信息和各个栏目的标题：
+## 1. `site.config.yaml` 完整结构
+
+下面是站点模板默认的 `site.config.yaml` 字段：
 
 ```yaml
-name: "林的笔记本"
-tagline: "数据库、网络协议与日常排障记录"
-description: "记录系统开发中的实验数据与读书笔记。"
-locale: "zh-CN"
-url: "https://notes.example.com"
-trailingSlash: true
+name: Garden
+tagline: 写作 · 记录 · 保持好奇
+description: 文章、随想和专栏。
+locale: zh_CN
+# 站点的公开地址。文章里指向这个地址的完整网址会按站内链接显示。
+# url: https://blog.example.com
+# 站点图标，不写时使用 Garden 自带的图标。
+# brand:
+#   logo: brand/logo.svg
+#   favicon: /favicon.svg
+#   appleTouchIcon: /apple-touch-icon.png
 
 author:
-  name: "Lin"
-  github: "octocat"
-  githubBio: "做存储引擎和网络服务。"
-  githubPinned:
-    - "octocat/lsm-bench"
-    - "octocat/raft-sim"
-
-brand:
-  logo: "/icons/logo.svg"          # 设为 false 可以隐藏左上角图标，只显示网站名字
-  favicon: "/favicon.svg"          # 放到 public/ 下，打包时会自动生成兼容旧浏览器的 favicon.ico
-  appleTouchIcon: "/apple-touch-icon.png"
+  name: Your Name
+  github: your-github-id
+  githubBio: 一句自我介绍。
+  githubPinned: []
 
 pages:
   home:
-    eyebrow: "最近更新"
-    title: "记一些正在折腾的技术问题。"
-    lead: "长文写完整推演，随想记现场碎片。"
+    title: |-
+      记一些正在做的事，
+      和想清楚的问题。
+    subtitle: 软件、笔记，和偶尔的工作记录。
   blog:
-    title: "文章"
-    subtitle: "按年份和标签归档的长文。"
+    title: 博文
+    subtitle: 写完的长文。
   thoughts:
-    title: "随想"
-    subtitle: "简短的排障记录与日常想法。"
+    title: 随想
+    subtitle: 短笔记、图片和链接。
   columns:
-    title: "专栏"
-    subtitle: "按顺序读的一组文章。"
-  tags:
-    title: "标签"
-    subtitle: "按主题查找文章。"
+    title: 专栏
+    subtitle: 按顺序读的一组文章。
   about:
-    title: "关于"
-    subtitle: "个人简介、开源项目与联系方式。"
+    title: 你好，我是 Your Name。
+    subtitle: 文章和笔记都在这里。
+    heading: 关于
+    paragraphs:
+      - 一名工程师。平时写代码，也把想清楚的问题记下来。
+      - 这里放文章、随想和专栏。
+    quote: ""
+    focus:
+      - 软件
+      - 笔记
+      - 日常
+    cta:
+      href: /blog
+      label: 浏览博文
+  garden:
+    title: "用 Markdown 写丨推送之后网站自己更新"
+    subtitle: "文章、随想和专栏都存在你自己的 Git 仓库里。下面这篇页面本身就由 Garden 渲染。"
 
-footer: "基于 Garden 构建"
+footer: 持续记录。
 ```
 
-## 常用配置项说明
+### 顶层与作者字段
 
-| 字段 | 作用 |
+| 字段 | 说明 |
 | :--- | :--- |
-| `name` | 网站名称，显示在顶部导航栏左边、浏览器标签页标题和 RSS 订阅源里。 |
-| `url` | 你的正式域名（比如 `https://example.com`），生成 RSS 订阅和站点地图时会用到。 |
-| `author.github` | 填你的 GitHub 用户名，「关于」页面会自动拉取你的头像、简介和代表仓库。 |
-| `author.githubPinned` | 指定「关于」页面展示哪几个 GitHub 仓库（格式为 `用户名/仓库名`）。 |
-| `brand.logo` | 顶部导航栏左侧的小图标路径；如果不想显示图标，写成 `logo: false` 即可。 |
-| `brand.favicon` | 浏览器标签页图标，放在 `public/` 目录下即可。 |
+| `name` | 站点名称，显示在左上角导航栏、浏览器标题后缀与 RSS 订阅源标题 |
+| `tagline` | 站点副标题 |
+| `description` | 站点简介，用于首页 SEO 描述与 RSS 频道描述 |
+| `locale` | 语言与地区标识，默认写 `zh_CN`（下划线格式） |
+| `url` | 站点的公开完整网址（如 `https://blog.example.com`）。配置后，文章里指向该地址的完整链接会自动按站内链接处理 |
+| `author.name` | 作者署名，显示在文章元信息栏、关于页和页脚 |
+| `author.github` | GitHub 用户名（不要写完整网址），用于拼接 GitHub 主页链接及拉取关于页的公开动态 |
+| `author.githubBio` | 当构建环境没有配置 `GITHUB_TOKEN` 时的个人简介降级文字 |
+| `author.githubPinned` | 本地无 `GITHUB_TOKEN` 时的置顶仓库降级列表 |
+| `footer` | 页脚签名文字 |
 
-## 把多篇文章编成专栏（`content/columns.yaml`）
+> [!NOTE]
+> URL 末尾是否带斜杠（Trailing Slash）不由 `site.config.yaml` 控制，而是由构建环境变量 `NEXT_PUBLIC_TRAILING_SLASH`（或在 `STATIC_EXPORT=1` 静态导出时自动开启）控制。
 
-如果你围绕同一个主题写了好几篇系列文章，可以在 `content/columns.yaml` 里把它们串成一个专栏。加入专栏的文章依然会正常出现在「文章」列表里，同时在「专栏」页面会多出左侧章节目录和文末的「下一篇」引导。
+### `pages` 一级页面文案
+
+`pages` 下的每个键对应一个一级路由的页头文字：
+
+- **`pages.home`、`pages.blog`、`pages.thoughts`、`pages.columns`、`pages.garden`**：均使用 `title` 和 `subtitle` 两个字段。其中 `/garden/` 页面会读取 `pages.garden.title`（支持用 `丨` 分成两行）和 `pages.garden.subtitle`。
+- **`pages.about`**：除 `title` 和 `subtitle` 外，还支持 `heading`（正文小标题）、`paragraphs`（段落数组）、`quote`（引言）、`focus`（关注方向标签数组）以及 `cta`（`{ href, label }` 按钮）。
+
+### `brand` 自定义图标与路由重定向
+
+- **`brand.logo`**：左上角站点名左侧的 SVG 标志。文件放在 `content/` 下（例如 `content/brand/logo.svg`，配置写 `brand/logo.svg`），构建时会内联进页头并去掉固定色值以跟随深浅色主题。设为 `false` 可隐藏左上角图标。
+- **`brand.favicon` 与 `brand.appleTouchIcon`**：放在 `public/` 目录下的图标路径（如 `/favicon.svg`、`/apple-touch-icon.png`）；`appleTouchIcon` 设为 `false` 可不输出。
+- **`redirects`**：旧文章改路径后，可在 `site.config.yaml` 顶层配置 `redirects` 映射（例如 `"/blog/old-slug": "/blog/new-slug"`），正文里的站内旧链接会自动指向新地址。
+
+## 2. 配置主题专栏（`content/columns.yaml`）
+
+专栏用于把 `content/posts/` 里的多篇长文按阅读顺序编成一组。编辑 `content/columns.yaml`：
 
 ```yaml
 columns:
-  - slug: storage-notes
-    title: 存储引擎实现手记
-    description: 从磁盘页格式、预写日志到 LSM-Tree 压缩调度的系列笔记。
+  - slug: building-in-public
+    title: 一个人造产品
     status: 连载中
-    cover: /media/covers/storage-column.svg
-    coverAlt: 存储引擎结构示意
+    description: 从最小闭环到验证发布的完整记录。
+    cover: windowsill-herbs.svg
     posts:
-      - storage/page-layout
-      - storage/wal-group-commit
-      - storage/lsm-leveled-compaction
+      - building-in-public/smallest-closed-loop
+      - building-in-public/ship-with-evidence
 ```
 
-`posts` 列表里直接写文章在 `content/posts/` 下的路径（不用写 `.md` 后缀），排在前面的就是第一章，排在后面的就是下一章。
-
-## 旧链接自动跳转（`redirects`）
-
-如果你是从 Hexo、Hugo 或其他博客搬家过来的，怕以前的链接失效，可以在 `site.config.yaml` 末尾加上 `redirects`：
-
-```yaml
-redirects:
-  "/2025/11/17/raft-log/": "/blog/consensus/raft-log-replication/"
-  "/posts/old-slug": "/blog/new-slug/"
-```
-
-配好之后，打包生成的静态网站会在旧地址放一个自动跳转页，读者访问旧链接时会直接跳到新文章地址。
+| 字段 | 必填 | 说明 |
+| :--- | :--- | :--- |
+| `slug` | 是 | 专栏标识，只能包含小写字母、数字和连字符，生成路由 `/columns/<slug>/<post>` |
+| `title` | 是 | 专栏名称（同时会显示在 `/blog` 文章列表对应文章的右侧） |
+| `description` | 是 | 专栏简介，显示在 `/columns` 列表卡片上 |
+| `status` | 否 | 状态文字（如 `连载中` 或 `已完结`） |
+| `cover` | 否 | 专栏封面图路径（相对 `content/covers/`） |
+| `posts` | 是 | 按阅读顺序排列的文章路径列表（相对于 `content/posts/`，不带 `.md` 后缀） |

@@ -26,7 +26,7 @@
     "app",
     "bin",
     "build",
-    "docs",
+    "docs/handbook",
     "public/favicon.svg",
     "public/apple-touch-icon.png",
     "public/og.png",
