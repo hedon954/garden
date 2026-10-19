@@ -48,6 +48,20 @@ declare module "@garden/generated-content" {
   export const posts: ContentEntry[];
   export const columns: ContentEntry[];
   export const thoughts: ContentEntry[];
+  export type GardenDocEntry = {
+    title: string;
+    slug: string;
+    path: string;
+    description?: string;
+    section?: string;
+    sectionTitle?: string;
+    order?: number;
+    readingTime?: string;
+    references?: { title: string; url?: string; domain?: string }[];
+    sourcePath: string;
+    content: string;
+  };
+  export const gardenDocs: GardenDocEntry[];
   export const a2WordCounts: Record<string, number>;
   export type LinkCardMeta = {
     title: string;

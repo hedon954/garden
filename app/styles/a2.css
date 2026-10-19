@@ -1698,3 +1698,1123 @@ html[data-theme="dark"] .gf-scrim { background: rgb(0 0 0 / 45%); }
 .gf-db .gf-doc p, .gf-db .gf-doc li { font-size: 15px; line-height: 1.75; }
 .gf-db .gf-doc p { margin: 0 0 14px; }
 .gf-db .gf-doc ul, .gf-db .gf-doc ol { margin: 0 0 14px; }
+
+/* ===== Garden Handbook (/garden & /garden/[...slug]) ===== */
+
+.garden-doc-page {
+  width: min(1340px, calc(100% - 64px));
+  margin: 0 auto;
+  padding: 44px 0 112px;
+  display: grid;
+  grid-template-columns: 236px minmax(0, var(--col)) 200px;
+  gap: 0 52px;
+  align-items: start;
+  justify-content: space-between;
+  font-family: var(--sans);
+}
+
+.garden-doc-page.garden-overview-page {
+  grid-template-columns: 236px minmax(0, 1fr);
+  gap: 0 56px;
+}
+
+.garden-doc-page > .toc {
+  margin-top: 8px;
+  position: sticky;
+  top: calc(var(--hdr) + 28px);
+  max-height: calc(100vh - var(--hdr) - 48px);
+  overflow-y: auto;
+  border-left: 0;
+  padding: 4px 0 24px;
+}
+
+/* Mobile chapter bar & backdrop (hidden on desktop) */
+.gdoc-mobile-bar,
+.gdoc-backdrop,
+.gdoc-mobile-close,
+.gdoc-nojs-trigger,
+.gdoc-nojs-close {
+  display: none;
+}
+
+/* Left Handbook Sidebar */
+.gdoc-sidebar {
+  position: sticky;
+  top: calc(var(--hdr) + 24px);
+  max-height: calc(100vh - var(--hdr) - 40px);
+  overflow-y: auto;
+  padding-right: 16px;
+  border-right: 1px solid var(--rule);
+  scrollbar-width: thin;
+}
+
+.gdoc-sidebar-head {
+  padding-bottom: 14px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--rule);
+}
+
+.gdoc-overview-link {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  color: var(--ink);
+  text-decoration: none;
+  transition: background-color 0.15s ease;
+}
+
+.gdoc-overview-link:hover {
+  background: var(--tint);
+}
+
+.gdoc-overview-link[aria-current="page"] {
+  background: var(--well);
+}
+
+.gdoc-overview-mark {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font: 600 15px/1.3 var(--serif);
+  color: var(--ink);
+}
+
+.gdoc-overview-link small {
+  padding-left: 23px;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--muted);
+}
+
+.gdoc-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.gdoc-nav-group-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 0 10px;
+  margin-bottom: 6px;
+}
+
+.gdoc-nav-group-head h2 {
+  margin: 0;
+  font: 600 12px/1.4 var(--sans);
+  letter-spacing: 0.02em;
+  color: var(--muted);
+}
+
+.gdoc-nav-group-head span {
+  font: 400 11px/1.3 var(--mono);
+  color: var(--muted);
+  opacity: 0.8;
+}
+
+.gdoc-nav-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.gdoc-nav-list li {
+  margin: 0;
+  padding: 0;
+}
+
+.gdoc-nav-list a {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--soft);
+  text-decoration: none;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.gdoc-nav-list a:hover {
+  background: var(--tint);
+  color: var(--ink);
+}
+
+.gdoc-nav-list li.is-active a,
+.gdoc-nav-list a[aria-current="page"] {
+  background: var(--well);
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.gdoc-comp-pill {
+  flex: none;
+  padding: 1px 6px;
+  border-radius: 5px;
+  border: 1px solid var(--rule-strong);
+  background: var(--card);
+  font: 500 12px/1.4 var(--mono);
+  color: var(--ink);
+}
+
+.gdoc-nav-list li.is-active .gdoc-comp-pill {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--paper);
+}
+
+.gdoc-comp-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Chapter Article Column */
+.garden-doc-article {
+  min-width: 0;
+  max-width: var(--col);
+  width: 100%;
+}
+
+.gdoc-article-head {
+  padding: 4px 0 28px;
+  margin-bottom: 32px;
+  border-bottom: 1px solid var(--rule);
+}
+
+.gdoc-eyebrow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.gdoc-eyebrow-root {
+  color: var(--soft);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.gdoc-eyebrow-root:hover {
+  color: var(--ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.gdoc-eyebrow-fence {
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: var(--well);
+  border: 1px solid var(--rule);
+  font: 500 12px/1.4 var(--mono);
+  color: var(--ink);
+}
+
+.gdoc-article-head h1 {
+  margin: 0;
+  font: 700 clamp(28px, 3.4vw, 38px) / 1.24 var(--sans);
+  color: var(--ink);
+  letter-spacing: -0.015em;
+  text-wrap: balance;
+}
+
+.gdoc-article-deck {
+  margin: 14px 0 0;
+  font-size: 18px;
+  line-height: 1.65;
+  color: var(--soft);
+}
+
+.garden-doc-article .markdown-body h2:first-child {
+  margin-top: 8px;
+}
+
+/* Prev / Next Pager */
+.gdoc-pager {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 64px;
+  padding-top: 28px;
+  border-top: 1px solid var(--rule);
+}
+
+.gdoc-pager-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 16px 18px;
+  border: 1px solid var(--rule);
+  border-radius: 12px;
+  background: var(--card);
+  text-decoration: none;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.gdoc-pager-card:hover {
+  border-color: var(--rule-strong);
+  background: var(--card-hover);
+}
+
+.gdoc-pager-card.is-next {
+  grid-column: 2;
+  text-align: right;
+  align-items: flex-end;
+}
+
+.gdoc-pager-dir {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.gdoc-pager-card strong {
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.45;
+  color: var(--ink);
+}
+
+/* ===== Overview Landing Page (/garden) ===== */
+
+.gdoc-overview-main {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 72px;
+}
+
+.gdoc-hero {
+  padding: 4px 0 40px;
+  border-bottom: 1px solid var(--rule);
+}
+
+.gdoc-hero h1 {
+  margin: 0;
+  max-width: 18em;
+  font: 700 clamp(32px, 4.2vw, 46px) / 1.18 var(--sans);
+  color: var(--ink);
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+
+.gdoc-hero-lede {
+  margin: 16px 0 0;
+  max-width: 44rem;
+  font-size: 18px;
+  line-height: 1.7;
+  color: var(--soft);
+}
+
+.gdoc-hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.gdoc-btn-primary,
+.gdoc-btn-secondary,
+.gdoc-btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 42px;
+  padding: 0 18px;
+  border-radius: 999px;
+  font: 600 14px/1 var(--sans);
+  text-decoration: none;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.gdoc-btn-primary {
+  background: var(--ink);
+  color: var(--paper);
+  border: 1px solid var(--ink);
+}
+
+.gdoc-btn-primary:hover {
+  background: var(--ink-soft);
+}
+
+.gdoc-btn-secondary {
+  background: var(--card);
+  color: var(--ink);
+  border: 1px solid var(--rule-strong);
+}
+
+.gdoc-btn-secondary:hover {
+  background: var(--card-hover);
+  border-color: var(--ink);
+}
+
+.gdoc-btn-ghost {
+  padding: 0 12px;
+  color: var(--soft);
+  font-weight: 500;
+}
+
+.gdoc-btn-ghost:hover {
+  color: var(--ink);
+  background: var(--tint);
+}
+
+.gdoc-hero-terminal {
+  margin-top: 28px;
+  border: 1px solid var(--rule);
+  border-radius: 12px;
+  background: var(--well);
+  overflow: hidden;
+}
+
+.gdoc-terminal-bar,
+.gdoc-pane-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--rule);
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.gdoc-terminal-bar code,
+.gdoc-pane-bar code {
+  margin-left: auto;
+  font: 500 12px/1.4 var(--mono);
+  color: var(--soft);
+}
+
+.gdoc-hero-terminal pre {
+  margin: 0;
+  padding: 14px 16px;
+  overflow-x: auto;
+  font: 500 14px/1.6 var(--mono);
+  color: var(--ink);
+}
+
+/* Sections */
+.gdoc-section {
+  scroll-margin-top: calc(var(--hdr) + 24px);
+}
+
+.gdoc-sec-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px 24px;
+  padding-bottom: 16px;
+  margin-bottom: 18px;
+  border-bottom: 1px solid var(--rule);
+}
+
+.gdoc-sec-kicker {
+  display: block;
+  margin-bottom: 4px;
+  font: 600 12px/1.4 var(--mono);
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+
+.gdoc-sec-head h2 {
+  margin: 0;
+  font: 700 clamp(22px, 2.6vw, 28px) / 1.3 var(--sans);
+  color: var(--ink);
+}
+
+.gdoc-sec-link,
+.gdoc-inline-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font: 500 14px/1.5 var(--sans);
+  color: var(--soft);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.gdoc-sec-link:hover,
+.gdoc-inline-link:hover {
+  color: var(--ink);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.gdoc-sec-intro {
+  margin: 0 0 24px;
+  max-width: 48rem;
+  font-size: 16px;
+  line-height: 1.75;
+  color: var(--soft);
+}
+
+.gdoc-sec-intro code {
+  padding: 2px 6px;
+  border-radius: 5px;
+  background: var(--well);
+  font: 500 13.5px/1.4 var(--mono);
+  color: var(--ink);
+}
+
+/* Visual Geometry Blueprint */
+.gdoc-geometry-card {
+  margin: 0 0 28px;
+  border: 1px solid var(--rule);
+  border-radius: 14px;
+  background: var(--card);
+  overflow: hidden;
+}
+
+.gdoc-geo-header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px 16px;
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--rule);
+  background: var(--well);
+  font: 500 12.5px/1.4 var(--mono);
+  color: var(--muted);
+}
+
+.gdoc-geo-stage {
+  padding: 22px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.gdoc-geo-band {
+  border-radius: 10px;
+  padding: 12px 16px;
+  text-align: center;
+}
+
+.gdoc-geo-band.is-table {
+  width: 100%;
+  border: 1px dashed var(--rule-strong);
+  background: var(--paper);
+}
+
+.gdoc-geo-band.is-figure {
+  width: min(82%, 100%);
+  border: 1px solid var(--rule-strong);
+  background: var(--well);
+}
+
+.gdoc-geo-band.is-prose {
+  width: min(62%, 100%);
+  border: 1.5px solid var(--ink);
+  background: var(--card);
+}
+
+.gdoc-geo-band-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.gdoc-geo-band-meta strong {
+  font: 600 14px/1.4 var(--mono);
+  color: var(--ink);
+}
+
+.gdoc-geo-band-meta span {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--soft);
+}
+
+.gdoc-geo-foot {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px 14px;
+  padding: 10px 18px;
+  border-top: 1px solid var(--rule);
+  background: var(--paper);
+  font-size: 12.5px;
+  color: var(--muted);
+}
+
+/* 6 Reading Mechanics Grid */
+.gdoc-mechanics-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.gdoc-mechanic-card {
+  padding: 18px 20px;
+  border: 1px solid var(--rule);
+  border-radius: 12px;
+  background: var(--card);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.gdoc-mechanic-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.gdoc-mechanic-tag {
+  padding: 2px 7px;
+  border-radius: 5px;
+  background: var(--well);
+  font: 600 12px/1.4 var(--mono);
+  color: var(--ink);
+}
+
+.gdoc-mechanic-src {
+  font: 400 11.5px/1.4 var(--mono);
+  color: var(--muted);
+}
+
+.gdoc-mechanic-card h3 {
+  margin: 0;
+  font: 600 16px/1.4 var(--sans);
+  color: var(--ink);
+}
+
+.gdoc-mechanic-card h3 a {
+  text-decoration: none;
+}
+
+.gdoc-mechanic-card h3 a:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.gdoc-mechanic-card p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.65;
+  color: var(--soft);
+}
+
+/* Live Source -> Rendered Specimen */
+.gdoc-specimen-split {
+  display: grid;
+  grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr);
+  gap: 20px;
+  align-items: stretch;
+}
+
+.gdoc-specimen-source,
+.gdoc-specimen-render {
+  border: 1px solid var(--rule);
+  border-radius: 14px;
+  background: var(--card);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.gdoc-specimen-source {
+  background: var(--well);
+}
+
+.gdoc-specimen-source pre {
+  margin: 0;
+  padding: 16px 18px;
+  overflow-x: auto;
+  font: 400 12.5px/1.65 var(--mono);
+  color: var(--ink);
+}
+
+.gdoc-specimen-body {
+  padding: 18px 22px 22px;
+}
+
+.gdoc-specimen-body .markdown-body h3:first-child {
+  margin-top: 0;
+}
+
+/* 9 Component Cards Grid */
+.gdoc-comp-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.gdoc-comp-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px 18px;
+  border: 1px solid var(--rule);
+  border-radius: 12px;
+  background: var(--card);
+  text-decoration: none;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.gdoc-comp-card:hover {
+  border-color: var(--ink);
+  background: var(--card-hover);
+}
+
+.gdoc-comp-card-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.gdoc-comp-name {
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: var(--ink);
+  color: var(--paper);
+  font: 600 13px/1.4 var(--mono);
+}
+
+.gdoc-comp-zh {
+  font: 600 15px/1.4 var(--sans);
+  color: var(--ink);
+}
+
+.gdoc-comp-arrow {
+  margin-left: auto;
+  color: var(--muted);
+  transition: transform 0.15s ease, color 0.15s ease;
+}
+
+.gdoc-comp-card:hover .gdoc-comp-arrow {
+  transform: translateX(2px);
+  color: var(--ink);
+}
+
+.gdoc-comp-desc {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--soft);
+  flex: 1;
+}
+
+.gdoc-comp-meta {
+  padding-top: 10px;
+  border-top: 1px solid var(--rule);
+}
+
+.gdoc-comp-meta code {
+  font: 400 11.5px/1.4 var(--mono);
+  color: var(--muted);
+}
+
+/* 4-Step Workflow Grid */
+.gdoc-steps-grid {
+  list-style: none;
+  margin: 0 0 24px;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.gdoc-step-card {
+  margin: 0;
+  padding: 18px 20px;
+  border: 1px solid var(--rule);
+  border-radius: 12px;
+  background: var(--card);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.gdoc-step-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.gdoc-step-num {
+  display: inline-grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--well);
+  border: 1px solid var(--rule-strong);
+  font: 600 12px/1 var(--mono);
+  color: var(--ink);
+}
+
+.gdoc-step-head h3 {
+  margin: 0;
+  font: 600 16px/1.4 var(--sans);
+  color: var(--ink);
+}
+
+.gdoc-step-card pre {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: var(--well);
+  overflow-x: auto;
+  font: 500 12.5px/1.5 var(--mono);
+  color: var(--ink);
+}
+
+.gdoc-step-card p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.65;
+  color: var(--soft);
+}
+
+/* Boundary Cards */
+.gdoc-boundary-split {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.gdoc-boundary-card {
+  padding: 20px 22px;
+  border: 1px solid var(--rule);
+  border-radius: 12px;
+  background: var(--card);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.gdoc-boundary-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--ink);
+}
+
+.gdoc-boundary-head h3 {
+  margin: 0;
+  font: 600 16px/1.4 var(--sans);
+  color: var(--ink);
+}
+
+.gdoc-boundary-card p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.68;
+  color: var(--soft);
+  flex: 1;
+}
+
+.gdoc-boundary-card code {
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: var(--well);
+  font: 500 12.5px/1.4 var(--mono);
+  color: var(--ink);
+}
+
+.gdoc-boundary-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+}
+
+/* Complete Handbook Map */
+.gdoc-map-groups {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.gdoc-map-group {
+  padding: 18px 20px;
+  border: 1px solid var(--rule);
+  border-radius: 12px;
+  background: var(--card);
+}
+
+.gdoc-map-group-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-bottom: 12px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid var(--rule);
+  color: var(--ink);
+}
+
+.gdoc-map-group-head h3 {
+  margin: 0;
+  font: 600 15px/1.4 var(--sans);
+}
+
+.gdoc-map-group-head span {
+  margin-left: auto;
+  font: 400 12px/1.4 var(--mono);
+  color: var(--muted);
+}
+
+.gdoc-map-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.gdoc-map-list li {
+  margin: 0;
+}
+
+.gdoc-map-list a {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: background-color 0.15s ease;
+}
+
+.gdoc-map-list a:hover {
+  background: var(--tint);
+}
+
+.gdoc-map-list strong {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.gdoc-map-list span {
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--muted);
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Responsive Breakpoints */
+@media (max-width: 1260px) {
+  .garden-doc-page:not(.garden-overview-page) {
+    grid-template-columns: 220px minmax(0, var(--col));
+    justify-content: center;
+    gap: 0 44px;
+  }
+
+  .garden-doc-page:not(.garden-overview-page) > .toc {
+    display: none;
+  }
+
+  .gdoc-comp-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .gdoc-specimen-split {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 1080px) {
+  .garden-doc-page,
+  .garden-doc-page.garden-overview-page,
+  .garden-doc-page:not(.garden-overview-page) {
+    display: block;
+    width: min(var(--col), calc(100% - 40px));
+    padding: 20px 0 88px;
+  }
+
+  .gdoc-mobile-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    margin-bottom: 24px;
+    border: 1px solid var(--rule);
+    border-radius: 10px;
+    background: var(--card);
+  }
+
+  .gdoc-mobile-trigger,
+  .gdoc-nojs-trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 34px;
+    padding: 0 12px;
+    border: 1px solid var(--rule-strong);
+    border-radius: 8px;
+    background: var(--well);
+    font: 600 13px/1 var(--sans);
+    color: var(--ink);
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
+  .gdoc-nojs-trigger {
+    display: none;
+    text-decoration: none;
+  }
+
+  .gdoc-mobile-crumb {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  .gdoc-mobile-crumb strong {
+    color: var(--ink);
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .gdoc-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 82;
+    border: 0;
+    padding: 0;
+    background: rgb(20 20 19 / 34%);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.18s ease, visibility 0s linear 0.18s;
+  }
+
+  .gdoc-backdrop[data-open="true"] {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transition: opacity 0.18s ease, visibility 0s;
+  }
+
+  .gdoc-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 84;
+    width: min(320px, 86vw);
+    max-height: none;
+    padding: 20px 18px 36px;
+    border-right: 1px solid var(--rule);
+    background: var(--paper);
+    box-shadow: 12px 0 36px rgb(0 0 0 / 14%);
+    transform: translateX(-104%);
+    visibility: hidden;
+    pointer-events: none;
+    transition: transform 0.2s ease, visibility 0s linear 0.2s;
+  }
+
+  .gdoc-sidebar[data-open="true"] {
+    transform: translateX(0);
+    visibility: visible;
+    pointer-events: auto;
+    transition: transform 0.2s ease, visibility 0s;
+  }
+
+  .gdoc-sidebar-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+
+  .gdoc-mobile-close {
+    display: inline-grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    border: 1px solid var(--rule);
+    border-radius: 50%;
+    background: var(--well);
+    color: var(--ink);
+  }
+}
+
+@media (max-width: 1080px) and (scripting: none) {
+  .gdoc-mobile-trigger,
+  .gdoc-mobile-close {
+    display: none;
+  }
+
+  .gdoc-nojs-trigger {
+    display: inline-flex;
+  }
+
+  .gdoc-nojs-close {
+    display: inline-grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    border: 1px solid var(--rule);
+    border-radius: 50%;
+    background: var(--well);
+    color: var(--ink);
+    text-decoration: none;
+  }
+
+  .gdoc-sidebar:target {
+    transform: translateX(0);
+    visibility: visible;
+    pointer-events: auto;
+  }
+}
+
+@media (max-width: 900px) {
+  .garden-doc-page:not(.garden-overview-page) > .toc {
+    display: flex;
+  }
+}
+
+@media (max-width: 720px) {
+  .gdoc-mechanics-grid,
+  .gdoc-comp-grid,
+  .gdoc-steps-grid,
+  .gdoc-boundary-split,
+  .gdoc-map-groups,
+  .gdoc-pager {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .gdoc-pager-card.is-next {
+    grid-column: 1;
+    text-align: left;
+    align-items: flex-start;
+  }
+
+  .gdoc-geo-band.is-figure,
+  .gdoc-geo-band.is-prose {
+    width: 100%;
+  }
+}
+
