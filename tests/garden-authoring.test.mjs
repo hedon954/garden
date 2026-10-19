@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
+import { CATALOG } from "../ui/garden/catalog.mjs";
 import { checkGardenMarkdown } from "../ui/garden/check.mjs";
 import { splitCompareLine } from "../ui/garden/compare-line.mjs";
 import { diffToNewCode, figureBreakout, figureImageWidth, imageDisplayWidth, protectMathIdentifiers, tableBreakout, tocShift } from "../ui/garden/enhance.mjs";
@@ -286,6 +287,13 @@ test("tocShift stays put without overlap, slides past the widest overlap, and hi
   assert.deepEqual(tocShift({ tocLeft: 40, tocWidth: 200, viewport: 1440, overlapRights: [80, 120] }), { shift: 96, hide: false });
   assert.deepEqual(tocShift({ tocLeft: 1162, tocWidth: 200, viewport: 1440, overlapRights: [1390] }), { shift: 286, hide: true });
   assert.deepEqual(tocShift({ tocLeft: 100, tocWidth: 100, viewport: 1000, overlapRights: [20] }), { shift: 0, hide: false });
+});
+
+test("every component's when and whenNot fit in one compare cell (60 characters)", () => {
+  for (const [name, spec] of Object.entries(CATALOG)) {
+    assert.ok([...spec.when].length <= 60, `${name}.when is ${[...spec.when].length} characters`);
+    assert.ok([...spec.whenNot].length <= 60, `${name}.whenNot is ${[...spec.whenNot].length} characters`);
+  }
 });
 
 test("editor snippets, Typora templates and text replacements come from one catalog", () => {

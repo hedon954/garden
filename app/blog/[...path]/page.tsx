@@ -77,7 +77,7 @@ export default async function PostPage({
     if (isStaticPlaceholder(path)) return null;
     notFound();
   }
-  const headings = extractHeadings(post.content);
+  const headings = extractHeadings(post.content, { numbering: post.numbering });
   const baseUrl = await getSiteUrl();
   const pathname = postHref(post);
   const canonicalUrl = absoluteUrl(pathname, baseUrl);
@@ -125,7 +125,7 @@ export default async function PostPage({
             <ArticleMeasure />
             <div className="e-content">
               {post.description ? <p className="lead quote-plain p-summary">{post.description}</p> : null}
-              <MarkdownArticle content={post.content} />
+              <MarkdownArticle content={post.content} numbering={post.numbering} />
             </div>
             <ArticleReferences references={post.references} />
             <Webmentions
