@@ -14,7 +14,7 @@ import {
   webmentionApiEndpoint,
 } from "../../lib/site";
 import { siteHref } from "../../lib/site-href";
-import { STATIC_PLACEHOLDER, staticParams } from "../../../ui/garden/static-params.mjs";
+import { isStaticPlaceholder, STATIC_PLACEHOLDER, staticParams } from "../../../ui/garden/static-params.mjs";
 
 export function generateStaticParams() {
   return staticParams(thoughts.map((thought) => ({ slug: thought.slug })), { slug: STATIC_PLACEHOLDER });
@@ -61,7 +61,10 @@ export default async function ThoughtPage({
 }) {
   const { slug } = await params;
   const thought = findPublishedThought(slug);
-  if (!thought) notFound();
+  if (!thought) {
+    if (isStaticPlaceholder(slug)) return null;
+    notFound();
+  }
   const baseUrl = await getSiteUrl();
   const pathname = siteHref(`/thoughts/${slug}`);
 

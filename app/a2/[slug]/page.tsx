@@ -8,7 +8,7 @@ import { a2WordCounts } from "@garden/generated-content";
 import { demoDateLabel, demoDateTime } from "../../lib/a2-meta";
 import { extractHeadings } from "../../lib/content";
 import { a2Slugs, readA2Article } from "../../lib/a2-preview";
-import { STATIC_PLACEHOLDER, staticParams } from "../../../ui/garden/static-params.mjs";
+import { isStaticPlaceholder, STATIC_PLACEHOLDER, staticParams } from "../../../ui/garden/static-params.mjs";
 
 export function generateStaticParams() {
   return staticParams(a2Slugs().map((slug) => ({ slug })), { slug: STATIC_PLACEHOLDER });
@@ -24,7 +24,10 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 export default async function A2ArticlePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const article = readA2Article(slug);
-  if (!article) notFound();
+  if (!article) {
+    if (isStaticPlaceholder(slug)) return null;
+    notFound();
+  }
   const headings = extractHeadings(article.content);
   const wordCount = a2WordCounts[slug] ?? 0;
   return (

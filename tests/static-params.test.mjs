@@ -3,7 +3,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
-import { STATIC_PLACEHOLDER, staticParams } from "../ui/garden/static-params.mjs";
+import { isStaticPlaceholder, STATIC_PLACEHOLDER, staticParams } from "../ui/garden/static-params.mjs";
 import { removeStaticPlaceholders } from "../scripts/static-placeholders.mjs";
 import { validateStaticOutput } from "../scripts/prepare-pages-output.mjs";
 
@@ -40,7 +40,18 @@ test("every generateStaticParams in app/ goes through staticParams", () => {
   for (const file of pages) {
     const body = fs.readFileSync(file, "utf8").match(/export (?:async )?function generateStaticParams\(\)[^{]*\{([\s\S]*?)\n\}/u)[1];
     assert.match(body, /staticParams\(/u, path.relative(process.cwd(), file));
+    // The prerender fails a route whose page answers 404, so the placeholder renders nothing before notFound().
+    const source = fs.readFileSync(file, "utf8");
+    if (/notFound\(\)/u.test(source)) assert.match(source, /if \(isStaticPlaceholder\([^)]*\)\) return null;\s*notFound\(\);/u, `${path.relative(process.cwd(), file)} renders the placeholder`);
   }
+});
+
+test("isStaticPlaceholder knows the placeholder slug and a catch-all path starting with it", () => {
+  assert.equal(isStaticPlaceholder(STATIC_PLACEHOLDER), true);
+  assert.equal(isStaticPlaceholder([STATIC_PLACEHOLDER]), true);
+  assert.equal(isStaticPlaceholder("go-lock"), false);
+  assert.equal(isStaticPlaceholder(["go", "go-lock"]), false);
+  assert.equal(isStaticPlaceholder(undefined), false);
 });
 
 test("the build step deletes what the export wrote for the placeholder and nothing else", () => {
