@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import test from "node:test";
 import { codeLanguageLabel, fenceLanguage } from "../ui/garden/code-language.mjs";
-import { renderFilePreview } from "../scripts/file-preview.mjs";
+import { previewStyleSheet, renderFilePreview } from "../scripts/file-preview.mjs";
 
 test("one label per language, whatever alias the fence uses", () => {
   assert.equal(codeLanguageLabel("py"), "PYTHON");
@@ -80,8 +80,24 @@ test("in the article the label sits left of the copy button, 8px apart, centred 
   assert.match(label, /line-height: 32px;/u);
   assert.match(css, /\.markdown-body \.ux-cb:has\(> \.ux-done\) > pre\[data-language\]::before \{\s*visibility: hidden;/u);
   // Below 640px the article shows only the copy button; nothing else about the block changes.
-  const narrow = css.match(/@media \(max-width: 639\.98px\) \{\s*\.markdown-body \.ux-cb > pre\[data-language\]::before \{([^}]*)\}\s*\}/u)?.[1] ?? "";
+  const narrow = css.match(/@media \(max-width: 639\.98px\) \{\s*\.markdown-body pre\[data-language\]::before \{([^}]*)\}\s*\}/u)?.[1] ?? "";
   assert.equal(narrow.trim(), "display: none;");
+});
+
+test("below 640px the file drawer hides the label too, and the standalone preview never draws one", () => {
+  const css = fs.readFileSync(new URL("../app/styles/a2.css", import.meta.url), "utf8");
+  // The narrow rule is not tied to the article's copy-button wrapper, so it also
+  // reaches the drawer body, which is .markdown-body.gf-doc with bare <pre>s.
+  const narrow = css.match(/@media \(max-width: 639\.98px\) \{\s*([^{]+)\{\s*display: none;\s*\}\s*\}/u)?.[1].trim();
+  assert.equal(narrow, ".markdown-body pre[data-language]::before");
+  const drawer = fs.readFileSync(new URL("../app/components/garden/FilePreview.tsx", import.meta.url), "utf8");
+  assert.match(drawer, /className="markdown-body prose gf-doc"/u);
+  // The drawer's markup carries the label; only CSS decides whether it shows.
+  assert.match(renderFilePreview("```c#\nvar a = 1;\n```\n"), /<pre class="code" data-language="C#">/u);
+  // The standalone .preview.html has its own small stylesheet with no label rule,
+  // so it shows no label at any width.
+  const sheet = previewStyleSheet();
+  assert.doesNotMatch(sheet, /::before|data-language|attr\(/u);
 });
 
 test("the label is the site's muted text colour, in both themes and in the drawer", () => {

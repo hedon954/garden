@@ -1267,9 +1267,10 @@ html[data-theme="dark"] .markdown-body .markdown-alert code {
   visibility: hidden;
 }
 
-/* Narrow screens: only the copy button; the code block layout stays as it is. */
+/* Narrow screens: no language label, in the article (only the copy button
+   stays) and in the file preview drawer alike; nothing else changes. */
 @media (max-width: 639.98px) {
-  .markdown-body .ux-cb > pre[data-language]::before {
+  .markdown-body pre[data-language]::before {
     display: none;
   }
 }
