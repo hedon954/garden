@@ -331,6 +331,6 @@ export function SourceMark({ href, icon }: { href: string; icon?: string }) {
   const mark = sourceIcon(href, useContext(FaviconContext), icon);
   return mark.src
     // eslint-disable-next-line @next/next/no-img-element -- a 14px site icon
-    ? <img className="g-src-fav" src={mark.src} alt="" width={14} height={14} loading="lazy" decoding="async" aria-hidden="true" />
+    ? <img className="g-src-fav" src={mark.src} alt="" width={14} height={14} decoding="async" aria-hidden="true" />
     : <span className="g-src-ic" aria-hidden="true">{mark.letter}</span>;
 }

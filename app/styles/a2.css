@@ -2498,3 +2498,4 @@ html[data-theme="dark"] .g-verdict-ic.good { color: #7fbf8e; }
 .g-choice-none:hover { color: var(--ink); }
 .g-choice-none:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
 .g-choice-none[aria-checked="true"] { color: var(--ink); background: var(--well); text-decoration: none; }
+.markdown-body img.g-src-fav { display: block; flex: none; width: 14px; height: 14px; max-width: none; margin: 0; border-radius: 3px; object-fit: contain; box-shadow: none; }
