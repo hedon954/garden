@@ -1,11 +1,23 @@
 {
   "version": 1,
   "favicons": {
+    "en.wikipedia.org": {
+      "file": "/link-assets/fav/en.wikipedia.org-51eea0c35f.ico"
+    },
     "github.com": {
       "file": "/link-assets/fav/github.com-74cf90ac2f.png"
     },
+    "gutenberg.org": {
+      "file": "/link-assets/fav/gutenberg.org-b71e72a17c.ico"
+    },
+    "openlibrary.org": {
+      "file": "/link-assets/fav/openlibrary.org-291d6aef76.png"
+    },
     "typora.io": {
       "file": "/link-assets/fav/typora.io-ac8bd1d6ec.png"
+    },
+    "zh.wikipedia.org": {
+      "file": "/link-assets/fav/zh.wikipedia.org-51eea0c35f.ico"
     }
   },
   "cards": {
@@ -13,7 +25,7 @@
       "title": "GitHub - remarkjs/remark-gfm: remark plugin to support GFM (autolink literals, footnotes, strikethrough, tables, tasklists)",
       "description": "remark plugin to support GFM (autolink literals, footnotes, strikethrough, tables, tasklists) - remarkjs/remark-gfm",
       "siteName": "GitHub",
-      "image": "/link-assets/og/6bffa3ac1b-70c8987f6c.webp"
+      "image": "/link-assets/og/6bffa3ac1b-a910af77e8.webp"
     },
     "https://katex.org/docs/supported.html": {
       "title": "Supported Functions · KaTeX",
