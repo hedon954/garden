@@ -66,10 +66,10 @@ export const HANDBOOK_UI = {
 } as const;
 
 export const HANDBOOK_SECTIONS: HandbookSectionMeta[] = [
-  { id: "getting-started", title: "快速上手" },
-  { id: "writing-and-reading", title: "写作与排版" },
-  { id: "components", title: "内置组件" },
-  { id: "workflow", title: "检查与补全" },
+  { id: "getting-started", title: "快速上手", titleEn: "Getting Started" },
+  { id: "writing-and-reading", title: "写作与排版", titleEn: "Writing & Layout" },
+  { id: "components", title: "内置组件", titleEn: "Built-in Components" },
+  { id: "workflow", title: "检查与补全", titleEn: "Checks & Shortcuts" },
 ];
 
 export const COMPONENT_BADGE: Record<string, string> = {

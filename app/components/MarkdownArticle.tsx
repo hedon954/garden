@@ -28,7 +28,7 @@ import { imageDimensions, lookupImageSize } from "../../ui/garden/image-dims.mjs
 import { siteConfig, siteLinks } from "@garden/site-config";
 import { articleLink, sameSiteMatcher } from "../../ui/garden/same-site.mjs";
 import { columnRedirects, internalLinkResolver, readRedirects } from "../../ui/garden/internal-links.mjs";
-import { columnHref, columns, gardenDocHref, gardenDocs, postHref, posts, thoughts } from "../lib/content";
+import { columnHref, columns, gardenDocHref, gardenDocs, gardenDocsEn, postHref, posts, thoughts } from "../lib/content";
 import { LinkCardRefresh } from "./LinkCardRefresh";
 import { linkHost } from "../../scripts/link-meta-core.mjs";
 import { cardDate } from "../../ui/garden/card-refresh.mjs";
@@ -46,11 +46,12 @@ const internalRoute = internalLinkResolver({
     ...columnRedirects({ columns: [...new Set(columns.map((entry) => entry.column).filter(Boolean))].map((slug) => ({ slug })) }),
   ],
   routes: [
-    "/", "/blog", "/columns", "/thoughts", "/tags", "/about", "/garden",
+    "/", "/blog", "/columns", "/thoughts", "/tags", "/about", "/garden", "/garden/en",
     ...posts.map(postHref),
     ...columns.map(columnHref),
     ...thoughts.map((thought) => `/thoughts/${thought.slug}`),
     ...gardenDocs.map(gardenDocHref),
+    ...gardenDocsEn.map((doc) => siteHref(`/garden/en/${doc.path}`)),
   ],
   basePath: siteLinks?.basePath ?? "",
   // Same shape as every other address in the site (the slash follows trailingSlash).
