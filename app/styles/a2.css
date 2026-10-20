@@ -2512,3 +2512,24 @@ html[data-theme="dark"] .g-verdict-ic.good { color: #7fbf8e; }
 .g-choice-none:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
 .g-choice-none[aria-checked="true"] { color: var(--ink); background: var(--well); text-decoration: none; }
 .markdown-body img.g-src-fav { display: block; flex: none; width: 14px; height: 14px; max-width: none; margin: 0; border-radius: 3px; object-fit: contain; box-shadow: none; }
+
+/* Handbook field tables: Required never wraps; narrow screens show each row as a card. */
+.table-wrap .field-table th.ft-req,
+.table-wrap .field-table td.ft-req { white-space: nowrap; min-width: 4em; }
+@media (max-width: 640px) {
+  .table-wrap.field-wrap { border: 0; border-radius: 0; overflow: visible; }
+  .field-wrap .field-table,
+  .field-wrap .field-table tbody,
+  .field-wrap .field-table tr,
+  .field-wrap .field-table td { display: block; width: auto; }
+  .field-wrap .field-table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+  .field-wrap .field-table tr { margin: 0 0 12px; padding: 12px 14px; border-radius: var(--r); background: var(--well); }
+  .field-wrap .field-table td { padding: 4px 0; border: 0; white-space: normal; min-width: 0; }
+  .field-wrap .field-table td:first-child { padding: 0 0 6px; font-weight: 600; color: var(--ink); }
+  .field-wrap .field-table td:not(:first-child)::before {
+    content: attr(data-label);
+    display: block;
+    font: 600 12px / 1.5 var(--sans);
+    color: var(--muted);
+  }
+}

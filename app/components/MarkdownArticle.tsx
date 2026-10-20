@@ -34,6 +34,7 @@ import { columnHref, columns, gardenDocHref, gardenDocs, gardenDocsEn, postHref,
 import { LinkCardRefresh } from "./LinkCardRefresh";
 import { linkHost } from "../../scripts/link-meta-core.mjs";
 import { FaviconProvider, SourceMark } from "./garden/patterns";
+import { rehypeFieldTables } from "../lib/rehype-field-tables.mjs";
 import { cardDate } from "../../ui/garden/card-refresh.mjs";
 import { siteHref } from "../lib/site-href";
 import { codeLanguageLabel, fenceLanguage } from "../../ui/garden/code-language.mjs";
@@ -212,7 +213,7 @@ const headingText = (children: ReactNode) => {
   return parts.join("");
 };
 
-export function MarkdownArticle({ content, numbering, lang }: { content: string; numbering?: boolean; lang?: UiLang }) {
+export function MarkdownArticle({ content, numbering, lang, fieldTables }: { content: string; numbering?: boolean; lang?: UiLang; fieldTables?: boolean }) {
   const t = ui(lang);
   // Optional layer 2: a Worker that refreshes card text. Without it, cards stay as built.
   const cardWorker = content.includes("{card}") ? siteConfig.linkPreview?.worker : undefined;
@@ -283,6 +284,8 @@ export function MarkdownArticle({ content, numbering, lang }: { content: string;
           // Not rehype-autolink-headings "wrap": a heading with a link in it would nest <a> in <a> (React #418).
           [rehypeHeadingAnchors, { className: ["h-anchor"] }],
           rehypeHighlight,
+          // Handbook only: field tables become cards on narrow screens.
+          ...(fieldTables ? [rehypeFieldTables] : []),
         ]}
         components={{
           p: ({ children, ...props }) => {
@@ -329,7 +332,7 @@ export function MarkdownArticle({ content, numbering, lang }: { content: string;
             return <MarkdownImage {...props} {...dims} style={{ ...props.style, ...dims.style }} />;
           },
           table: ({ children, ...props }) => (
-            <div className="table-wrap" role="region" aria-label={t.tableScroll} tabIndex={0}>
+            <div className={/\bfield-table\b/u.test(String(props.className ?? "")) ? "table-wrap field-wrap" : "table-wrap"} role="region" aria-label={t.tableScroll} tabIndex={0}>
               <table {...props}>{children}</table>
             </div>
           ),

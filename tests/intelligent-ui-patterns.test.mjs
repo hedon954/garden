@@ -154,6 +154,9 @@ test("verdict compares stack, so the side-by-side length limit does not apply", 
   assert.equal(verdict.filter((item) => item.code === "compare-long").length, 0);
   const plain = checkGardenMarkdown(`\`\`\`garden compare\nitems:\n  - title: a\n    text: ${long}\n\`\`\`\n`);
   assert.equal(plain.filter((item) => item.code === "compare-long").length, 1);
+  // Only good/bad stack; any other verdict value stays side by side and is still checked.
+  const other = checkGardenMarkdown(`\`\`\`garden compare\nitems:\n  - title: a\n    verdict: maybe\n    text: ${long}\n\`\`\`\n`);
+  assert.equal(other.filter((item) => item.code === "compare-long").length, 1);
 });
 
 test("relations accept 3 to 6 elements and point to mermaid outside that", () => {

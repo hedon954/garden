@@ -89,7 +89,7 @@ export function HandbookOverview({ lang }: { lang: HandbookLang }) {
         <ArticleMeasure />
 
         <div className="e-content">
-          <MarkdownArticle content={content} lang={lang} />
+          <MarkdownArticle content={content} lang={lang} fieldTables />
         </div>
 
         <ArticleReferences references={indexDoc?.references} />
@@ -146,7 +146,7 @@ export function HandbookDoc({ lang, doc }: { lang: HandbookLang; doc: GardenDocE
         <ArticleMeasure />
 
         <div className="e-content">
-          <MarkdownArticle content={doc.content} lang={lang} />
+          <MarkdownArticle content={doc.content} lang={lang} fieldTables />
         </div>
 
         <ArticleReferences references={doc.references} />
