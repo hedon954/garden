@@ -21,6 +21,9 @@ items:
     text: Run `npm run pages:validate` to confirm `index.html` exists and no `.env`, source directories, `.map` or `.md` files, or symlinks were included, then publish to GitHub Pages.
 ```
 
+- **When to use**: Walking through incident timestamps, evolution stages, or pipeline steps in chronological order (at least 2 items).
+- **When to skip**: Listing unordered points with no sequence; use a regular bullet list or [`list`](/garden/en/components/list) instead.
+
 You can tell the AI:
 
 ````markdown
@@ -29,5 +32,15 @@ List the three stages of static publishing in order as a timeline.
 ```
 ````
 
-- **When to use**: Walking through incident timestamps, evolution stages, or pipeline steps in chronological order.
-- **When to skip**: Listing unordered points with no sequence; use a regular bullet list instead.
+## Fields
+
+Fence header: ` ```garden timeline `.
+
+| Field | Required | Allowed Values & Limits | Description |
+| :--- | :--- | :--- | :--- |
+| `title` | Optional | string | Heading above the timeline |
+| `items` | Required | object[] (at least 2 items) | Ordered list of steps or milestones |
+| `items[].date` | Optional | string | Timestamp, year, or stage label above the item title |
+| `items[].title` | Required | string | Step heading |
+| `items[].text` | Optional | string | Detailed explanation for the step |
+| `items[].source` | Optional | URL, `{ url, site?, icon? }`, or array | Source attribution chip appended to the step text |

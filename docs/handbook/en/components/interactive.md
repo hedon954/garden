@@ -25,6 +25,9 @@ caption: "Example: estimate reading time from word count, reading speed, and ima
 </Chart>
 ```
 
+- **When to use**: Explaining a multi-variable formula, capacity estimate, or parameter tradeoff where dragging a slider reveals how the output responds.
+- **When to skip**: A block has only `<Steps>` without any state or input control (fails with `steps-prose`), or every `<Let>` is a single multiplication like `a * b` (fails with `interactive-trivial`). Write plain prose in both cases.
+
 You can tell the AI:
 
 ````markdown
@@ -33,5 +36,17 @@ Let readers drag word count, reading speed, and image count sliders to see how e
 ```
 ````
 
-- **When to use**: Explaining a multi-variable formula, capacity estimate, or parameter tradeoff where dragging a slider reveals how the output responds.
-- **When to skip**: There are no adjustable parameters or only a single multiplication; write plain prose instead.
+## Fields
+
+Fence header: ` ```garden interactive #<id> `. YAML metadata goes above `---` and declarative UI tags go below `---` (run `npx garden ui catalog` to inspect all internal tags in `.garden/ui-catalog.html`).
+
+| Field or Tag | Required | Allowed Values & Limits | Description |
+| :--- | :--- | :--- | :--- |
+| `#<id>` / `id` | Required | lowercase letters, digits, hyphens (unique per post) | Written on the fence line (such as `#reading-time`) or in the YAML header |
+| `caption` | Required | one-sentence takeaway string | States the conclusion visible in the default state |
+| `intent` | Optional | string | Original natural-language prompt this block was compiled from |
+| `expect` | Optional | `{ given: {...}, <name>: <expected> }[]` | Numeric assertions verified by `npx garden ui check` (use `{ value, tol }` for approximate values) |
+| `<State />` | Required | number, string, or boolean props | Declares mutable state variables and default values, e.g. `<State words={6000} />` |
+| `<Let />` | Optional | expression props | Computes derived numbers, arrays, or objects from state |
+| `<Slider />` / `<Choice />` / `<Toggle />` | At least one input control | `bind="<StateName>"` | Input controls bound to state variables; `Slider` requires `label`, `min`, and `max` |
+| `<Stat />` / `<Chart />` / `<Table />` | At least one output view | bound to state or `Let` values | Displays computed metrics, function curves (`sweep`), bar/line charts (`data`), or tables |

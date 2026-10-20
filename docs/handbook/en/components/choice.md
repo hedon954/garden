@@ -26,6 +26,9 @@ none:
 caption: Illustrative only. Venues and prices are made up.
 ```
 
+- **When to use**: Offering two or three concrete options where each choice has an icon, a prominent number or price, and a short note.
+- **When to skip**: Choosing an option recalculates a formula or updates a chart; use [`interactive`](/garden/en/components/interactive) instead.
+
 You can tell the AI:
 
 ````markdown
@@ -34,5 +37,18 @@ Give readers two venue cards (corner cafe vs. library meeting room) with cost, p
 ```
 ````
 
-- **When to use**: Offering two or three concrete options where each choice has an icon, a prominent number or price, and a short note.
-- **When to skip**: Choosing an option recalculates a formula or updates a chart; use [`interactive`](/garden/en/components/interactive) instead.
+## Fields
+
+Fence header: ` ```garden choice `. Renders as an accessible `role="radiogroup"` with arrow-key navigation; cards sit in 2 or 3 columns on desktop and stack vertically in a single column on narrow screens.
+
+| Field | Required | Allowed Values & Limits | Description |
+| :--- | :--- | :--- | :--- |
+| `title` | Optional | string | Question or heading above the option cards |
+| `items` | Required | object[] (2 to 3 items recommended) | Option cards |
+| `items[].icon` | Optional | one of the 23 built-in icon names | Line icon at the top of the card (shares the same 23 icon names as `garden list`) |
+| `items[].value` | Recommended | string or number | Prominent price, figure, or short headline on the card |
+| `items[].text` | Recommended | string | One-sentence description of the option |
+| `items[].label` | Optional | string | Preference tag with a dot indicator at the bottom of the card |
+| `items[].reply` | Optional | string | Response shown below the group when this card is selected |
+| `none` | Optional | `{ label: string, reply?: string }` | Full-width single-line fallback button underneath the cards (such as `"Neither / not sure"`) and its selection reply |
+| `caption` | Optional | string | Caption below the component |

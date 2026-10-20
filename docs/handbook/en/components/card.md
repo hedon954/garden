@@ -18,6 +18,9 @@ points:
   - Background checkpoints copy log pages back into the main database file in batches once a threshold is reached.
 ```
 
+- **When to use**: Introducing a paper, open-source project, or subsystem where a link and 2 to 4 numbered points belong together, or listing several tools or references with a takeaway line.
+- **When to skip**: A sentence or two of prose or a `[Title](url){card}` link card is enough.
+
 You can tell the AI:
 
 ````markdown
@@ -26,7 +29,9 @@ Summarize the SQLite WAL documentation in a card with a link, a one-sentence sum
 ```
 ````
 
-## Multiple Resource Row Cards
+## Multiple Resource Row Cards (`cards`)
+
+When you want to list several projects, tools, or references in one block and attach a takeaway line to each, use `cards`:
 
 ```garden card
 cards:
@@ -57,5 +62,20 @@ List Open Library and Project Gutenberg as two cards, each with a source link an
 ```
 ````
 
-- **When to use**: Introducing a paper, open-source project, or subsystem where a link and 2 to 4 numbered points belong together, or listing several tools or references with a takeaway line.
-- **When to skip**: A sentence or two of prose or a `[Title](url){card}` link card is enough.
+## Fields
+
+Fence header: ` ```garden card `. Place fields at the top level for a single card, or pass a `cards` array for multiple horizontal row cards.
+
+| Field | Required | Allowed Values & Limits | Description |
+| :--- | :--- | :--- | :--- |
+| `title` | Recommended | string | Card heading (falls back to `url` if omitted) |
+| `url` | Optional | full URL | External link on the heading |
+| `meta` | Optional | string | Subtitle or metadata line below the heading |
+| `description` | One of `description`, `points`, or `cards` | string (alias `text`) | Summary paragraph supporting inline bold and code |
+| `points` | One of `points`, `description`, or `cards` | string[] or `{ title, text? }[]` (alias `items`) | Numbered list of takeaways below the summary |
+| `image` | Optional | image path or Data URL | Card thumbnail |
+| `alt` | Optional | string | Thumbnail alt text (defaults to `title`) |
+| `source` | Optional | URL, `{ url, site?, icon? }`, or array | Source chip appended to `description`; multiple sources collapse to the first domain plus `+N` (such as `gutenberg.org +1`). A build-time downloaded favicon takes precedence over an explicit `icon`; if neither is present, the badge uses the uppercase first letter of the registrable domain's main label (e.g. `en.wikipedia.org` uses `W`, `bbc.co.uk` uses `B`) |
+| `site` | Optional | string | Display name for the source site |
+| `takeaway` | Optional | string | One-line takeaway separated by a top border at the bottom of the card (e.g. `"**Worth borrowing:** ..."`) |
+| `cards` | Required for multi-card mode | object[] | Stack of horizontal row cards, each supporting `url`, `title`, `description` (or `text`), `image`, `alt`, `meta`, `source`, and `takeaway` |

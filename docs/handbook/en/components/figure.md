@@ -35,6 +35,9 @@ parts:
     text: Runs pages:validate to confirm `index.html` exists and no `.env`, source directories, `.map` or `.md` files, or symlinks are present.
 ```
 
+- **When to use**: Walking through module boundaries or data flow where clicking each button highlights the matching part of the diagram and explains its role.
+- **When to skip**: A static image or a `mermaid` diagram does not need interactive region highlighting.
+
 You can tell the AI:
 
 ````markdown
@@ -43,5 +46,18 @@ Draw a diagram of the three static publishing steps where clicking each step hig
 ```
 ````
 
-- **When to use**: Walking through module boundaries or data flow where clicking each button highlights the matching part of the diagram and explains its role.
-- **When to skip**: A static image or a `mermaid` diagram does not need interactive region highlighting.
+## Fields
+
+Fence header: ` ```garden figure `.
+
+| Field | Required | Allowed Values & Limits | Description |
+| :--- | :--- | :--- | :--- |
+| `svg` | One of `svg`, `image`, or `mermaid` | multiline `<svg>` string | Inline SVG markup; tag elements to highlight with `data-p="<id>"` (use CSS variables such as `var(--card)`, `var(--ink)`, and `var(--muted)` so dark mode works) |
+| `image` | One of `image`, `svg`, or `mermaid` | path string | Path to a static diagram image |
+| `alt` | Optional | string | Alt text for `image` |
+| `mermaid` | One of `mermaid`, `svg`, or `image` | multiline string | Mermaid diagram source |
+| `parts` | Optional | object[] | Interactive buttons above the diagram and matching explanations below |
+| `parts[].id` | Recommended | string | Matches `data-p` on SVG elements (falls back to `name` or `label`; `"all"` highlights all regions) |
+| `parts[].label` | Required (or `name`) | string | Button label |
+| `parts[].text` | Required | string | Explanation shown below the diagram when the button is active |
+| `caption` | Optional | string | Caption below the frame |

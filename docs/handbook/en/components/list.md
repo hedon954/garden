@@ -19,6 +19,9 @@ items:
     text: Asks in the group chat whether listening only is fine
 ```
 
+- **When to use**: Listing parallel actions, signals, or practices paired with an icon, or grouping titled steps with one or more paragraphs each.
+- **When to skip**: Items follow a strict numbered sequence or chronological order; use a standard ordered list or [`timeline`](/garden/en/components/timeline) instead.
+
 You can tell the AI:
 
 ````markdown
@@ -27,7 +30,9 @@ List the four things a newcomer usually does before signing up, each paired with
 ```
 ````
 
-## Divided List with Headings
+## Divided Step List with Headings
+
+When any item includes `title`, the component switches to a divided step list where `text` can hold multiple paragraphs:
 
 ```garden list
 items:
@@ -55,5 +60,15 @@ Organize these three small experiments into an icon list with a heading and two 
 ```
 ````
 
-- **When to use**: Listing parallel actions, signals, or practices paired with an icon, or grouping titled steps with one or more paragraphs each.
-- **When to skip**: Items follow a strict numbered sequence or chronological order; use a standard ordered list or [`timeline`](/garden/en/components/timeline) instead.
+## Fields
+
+Fence header: ` ```garden list `.
+
+| Field | Required | Allowed Values & Limits | Description |
+| :--- | :--- | :--- | :--- |
+| `title` | Optional | string | Heading above the list |
+| `items` | Required | object[] | List entries; renders as a compact icon card when no item has `title`, or a divided step list when any item has `title` |
+| `items[].icon` | Optional | one of the 23 built-in icon names | Line icon name (unknown names render nothing): `search`, `eye`, `heart`, `chat`, `shield`, `wallet`, `bell`, `check`, `x`, `star`, `flag`, `clock`, `idea`, `book`, `link`, `user`, `chart`, `gear`, `file`, `pin`, `flask`, `target`, `question` |
+| `items[].title` | Optional | string | Item heading; switches the block to the divided step layout |
+| `items[].text` | Recommended | string or string[] | Item body text; each array element renders as its own paragraph |
+| `caption` | Optional | string | Caption below the list |

@@ -34,6 +34,9 @@ code: |
   </html>
 ```
 
+- **When to use**: Running custom DOM scripts, Canvas animations, physical simulations, or self-contained HTML widgets.
+- **When to skip**: You only need sliders wired to a formula (use [`interactive`](/garden/en/components/interactive)) or a diagram with clickable regions (use [`figure`](/garden/en/components/figure)).
+
 You can tell the AI:
 
 ````markdown
@@ -42,5 +45,13 @@ Embed a small widget where typing in an input box updates the character count in
 ```
 ````
 
-- **When to use**: Running custom DOM scripts, Canvas drawings, or self-contained HTML snippets.
-- **When to skip**: You only need sliders wired to a formula (use [`interactive`](/garden/en/components/interactive)) or a diagram with clickable regions (use [`figure`](/garden/en/components/figure)).
+## Fields
+
+Fence header: ` ```garden html `.
+
+| Field | Required | Allowed Values & Limits | Description |
+| :--- | :--- | :--- | :--- |
+| `src` | Either `src` or `code` | relative path (e.g. `./demo.html`) | Path to a standalone `.html` file inside the post's sidecar directory |
+| `code` | Either `code` or `src` | multiline HTML string | Inline HTML markup (runs inside a sandboxed `iframe` when `<script>` is present; HTML can also be placed below a `---` separator) |
+| `title` | Recommended | string | Frame header title and accessible `iframe` title (defaults to `"HTML"`) |
+| `height` | Optional | number (pixels) | Initial height in pixels (automatically resizes to fit content after loading) |
