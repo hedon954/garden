@@ -34,31 +34,31 @@ The `ArticleTitle` component applies two rules to headings:
 When `npx garden sync` runs, the build script reads the pixel width and height of every local image (PNG, JPEG, WebP, GIF, and SVG) and writes them into the `imageSizes` map in `.garden/generated-content.ts`:
 
 ```garden figure
-caption: 点击上方按钮查看图片从构建到渲染的三个阶段
+caption: Click the buttons above to inspect the three stages from build to browser render
 svg: |
   <svg viewBox="0 0 680 110" xmlns="http://www.w3.org/2000/svg" font-family="var(--sans)">
     <rect data-p="sync" x="12" y="18" width="196" height="74" rx="10" fill="var(--card)" stroke="var(--rule-strong)" stroke-width="1.5"/>
-    <text data-p="sync" x="110" y="50" text-anchor="middle" font-size="14" font-weight="600" fill="var(--ink)">1. 构建期读取尺寸</text>
-    <text data-p="sync" x="110" y="72" text-anchor="middle" font-size="12" fill="var(--muted)">写入 width / height 与 --wl</text>
+    <text data-p="sync" x="110" y="50" text-anchor="middle" font-size="14" font-weight="600" fill="var(--ink)">1. Build-time Sizing</text>
+    <text data-p="sync" x="110" y="72" text-anchor="middle" font-size="12" fill="var(--muted)">Emit width / height &amp; --wl</text>
     <path d="M214 55 H236" stroke="var(--muted)" stroke-width="1.5"/>
     <rect data-p="measure" x="242" y="18" width="196" height="74" rx="10" fill="var(--card)" stroke="var(--rule-strong)" stroke-width="1.5"/>
-    <text data-p="measure" x="340" y="50" text-anchor="middle" font-size="14" font-weight="600" fill="var(--ink)">2. 客户端测量拓宽</text>
-    <text data-p="measure" x="340" y="72" text-anchor="middle" font-size="12" fill="var(--muted)">按当前视口调整宽图与目录</text>
+    <text data-p="measure" x="340" y="50" text-anchor="middle" font-size="14" font-weight="600" fill="var(--ink)">2. Client Measurement</text>
+    <text data-p="measure" x="340" y="72" text-anchor="middle" font-size="12" fill="var(--muted)">Fit wide figures &amp; TOC</text>
     <path d="M444 55 H466" stroke="var(--muted)" stroke-width="1.5"/>
     <rect data-p="dark" x="472" y="18" width="196" height="74" rx="10" fill="var(--card)" stroke="var(--rule-strong)" stroke-width="1.5"/>
-    <text data-p="dark" x="570" y="50" text-anchor="middle" font-size="14" font-weight="600" fill="var(--ink)">3. 深色衬底与灯箱</text>
-    <text data-p="dark" x="570" y="72" text-anchor="middle" font-size="12" fill="var(--muted)">深色垫 #faf9f5 · 点击放大</text>
+    <text data-p="dark" x="570" y="50" text-anchor="middle" font-size="14" font-weight="600" fill="var(--ink)">3. Dark Backing &amp; Zoom</text>
+    <text data-p="dark" x="570" y="72" text-anchor="middle" font-size="12" fill="var(--muted)">Pad #faf9f5 · Click to zoom</text>
   </svg>
 parts:
   - id: sync
-    label: 1. 构建期读取尺寸
-    text: 服务端生成的 HTML 已经带有图片的 `width`、`height`、`data-nw`、`data-bw` 以及宽图的初始 `--wl` / `--wr`，图片尚未下载完成时也不会把下方文字顶得跳动。
+    label: 1. Build-time Sizing
+    text: Server-rendered HTML already carries the image's `width`, `height`, `data-nw`, `data-bw`, and initial `--wl` / `--wr`, preventing layout shift before the image finishes downloading.
   - id: measure
-    label: 2. 客户端测量拓宽
-    text: 浏览器加载后，`ArticleMeasure` 根据当前窗口的实际宽度重新计算拓宽边距，并在滚动时实时判断宽图是否与右侧目录重叠。
+    label: 2. Client Measurement
+    text: After load, `ArticleMeasure` recomputes the expansion margins for the current viewport width and checks on scroll whether a wide figure overlaps the floating table of contents.
   - id: dark
-    label: 3. 深色衬底与灯箱
-    text: "正文配图点击后可在当前页打开灯箱大图（按 `Esc` 或点击背景关闭）；深色模式下自动为配图设置 `--image-backing: #faf9f5` 背景。"
+    label: 3. Dark Backing & Zoom
+    text: "Clicking any article figure opens it in a full-screen lightbox (press `Esc` or click the backdrop to close); dark mode sets `--image-backing: #faf9f5` behind figures."
 ```
 
 ## 4. Dark-mode Image Backing and Warm Paper Tokens

@@ -11,19 +11,19 @@ Write "use `compare` to contrast describing a code change in one sentence agains
 
 ```garden compare
 items:
-  - title: 写一句话说明改了什么
-    text: 想法块紧跟在完整代码下面，garden-ui 把它换成 diff，页面合成「代码 / 对比上一版」。
-  - title: 手写 diff
-    text: 完整代码下面紧跟一段 diff；前面没有完整代码时，garden check 报 diff-orphan。
+  - title: Describe the change in one sentence
+    text: Idea block under full code; garden-ui writes the diff.
+  - title: Write the diff by hand
+    text: Place a diff below full code; alone it raises diff-orphan.
 ```
 
 ````markdown
 ```garden compare
 items:
-  - title: 写一句话说明改了什么
-    text: 想法块紧跟在完整代码下面，garden-ui 把它换成 diff，页面合成「代码 / 对比上一版」。
-  - title: 手写 diff
-    text: 完整代码下面紧跟一段 diff；前面没有完整代码时，garden check 报 diff-orphan。
+  - title: Describe the change in one sentence
+    text: Idea block under full code; garden-ui writes the diff.
+  - title: Write the diff by hand
+    text: Place a diff below full code; alone it raises diff-orphan.
 ```
 ````
 

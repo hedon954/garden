@@ -17,7 +17,7 @@ Place an unnamed `garden` fence where the component belongs and state what the r
 
 ````markdown
 ```garden
-让读者拖动每天写的字数和每周写几天，看写完一篇 8000 字的长文要几周。
+Let the reader drag daily word count and writing days per week to see how many weeks an 8,000-word article takes.
 ```
 ````
 
@@ -72,11 +72,11 @@ Place a `garden` idea fence immediately below an updated code block and state in
 ```yaml
 pages:
   garden:
-    title: "用 Markdown 写丨推送之后网站自己更新"
+    title: "Write in Markdown | Push to Update the Site"
 ```
 
 ```garden
-和上一版比：标题原来用句号和换行分两行，现在改成用「丨」分行。
+Compared with the previous version: split the title into two lines with " | " instead of a period and newline.
 ```
 ````
 

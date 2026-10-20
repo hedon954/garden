@@ -16,10 +16,10 @@ The four steps in this section come from a real post, and every command output i
 Drop an unnamed `garden` fence where the interactive block should go and state what the reader adjusts and sees:
 
 ````markdown
-## 写作节奏
+## Writing Pace
 
 ```garden
-让读者拖动每天写的字数和每周写几天，看写完一篇 8000 字的长文要几周。
+Let the reader drag daily word count and writing days per week to see how many weeks an 8,000-word article takes.
 ```
 ````
 
@@ -38,8 +38,8 @@ $ npx garden ui scan content/posts/writing-pace.md
       "status": "uncompiled",
       "startLine": 9,
       "intentHash": "cb3a3569",
-      "intent": "让读者拖动每天写的字数和每周写几天，看写完一篇 8000 字的长文要几周。",
-      "section": "写作节奏"
+      "intent": "Let the reader drag daily word count and writing days per week to see how many weeks an 8,000-word article takes.",
+      "section": "Writing Pace"
     }
   ]
 }
@@ -57,7 +57,7 @@ $ npx garden ui apply content/posts/writing-pace.md --intent-hash cb3a3569 --fil
 On the first `garden sync` or `garden dev` run, Garden writes `exec npx --no-install garden ui check --staged --quiet` to `.git/hooks/pre-commit`. If the author commits before step 2, the hook blocks the commit and prints a ready-to-paste prompt for the AI:
 
 ```console
-$ git commit -m "写作节奏"
+$ git commit -m "Writing pace"
 content/posts/writing-pace.md:9  -  garden-idea  还有没编译的想法
 
 ──────────────────────── 发给 AI 的修复提示词 ────────────────────────
@@ -83,18 +83,18 @@ The same prompt is saved to `.garden/ui-fix-prompt.md` and copied to the clipboa
 The `garden interactive` fence written back in step 2 renders directly on the article page as an interactive calculator:
 
 ```garden interactive #writing-pace
-caption: 每天多写几百字，比每周多写一天更快。
+caption: Writing a few hundred extra words each day finishes sooner than adding another writing day per week.
 intent: |
-  让读者拖动每天写的字数和每周写几天，看写完一篇 8000 字的长文要几周。
+  Let the reader drag daily word count and writing days per week to see how many weeks an 8,000-word article takes.
 ---
 <State daily={500} days={3} />
 <Let weekly={daily * days} />
 <Let weeks={ceil(8000 / weekly)} />
 
-<Slider bind="daily" label="每天写" min={200} max={2000} step={100} unit="字" />
-<Slider bind="days" label="每周写" min={1} max={7} step={1} unit="天" />
+<Slider bind="daily" label="Words per day" min={200} max={2000} step={100} unit="words" />
+<Slider bind="days" label="Days per week" min={1} max={7} step={1} unit="days" />
 
-<Stat label="写完 8000 字需要" value={weeks} unit="周" hint="不足一周按一周算" />
+<Stat label="Weeks to finish 8,000 words" value={weeks} unit="weeks" hint="Rounded up to full weeks" />
 ```
 
 > [!IMPORTANT] Humans and Agents Share the Same Tools
@@ -127,17 +127,17 @@ Write a one-sentence `garden` idea right below an updated code block to describe
 ```yaml
 pages:
   garden:
-    title: "用 Markdown 写丨推送之后网站自己更新"
-    subtitle: "用 Markdown 写文章、随想和专栏，保存在自己的 Git 仓库里。"
+    title: "Write in Markdown | Push to Update the Site"
+    subtitle: "Write posts, short notes, and columns in Markdown inside your own Git repository."
 ```
 
 ```diff
  pages:
    garden:
--    title: "用 Markdown 写。\n推送之后，网站自己更新。"
+-    title: "Write in Markdown.\nPush to update the site."
 -    subtitle: ""
-+    title: "用 Markdown 写丨推送之后网站自己更新"
-+    subtitle: "用 Markdown 写文章、随想和专栏，保存在自己的 Git 仓库里。"
++    title: "Write in Markdown | Push to Update the Site"
++    subtitle: "Write posts, short notes, and columns in Markdown inside your own Git repository."
 ```
 
 > [!NOTE] Note
@@ -152,18 +152,18 @@ Use ```` ```garden <name> ```` fences to insert metrics, side-by-side comparison
 
 ```garden stat
 items:
-  - label: 正文阅读列
+  - label: Reading Column
     value: "740"
     unit: px
-    caption: 段落、代码块与列表的默认列宽
-  - label: 宽幅配图区
+    caption: Default width for paragraphs, code blocks, and lists
+  - label: Wide Figure Zone
     value: "1040"
     unit: px
-    caption: 截图按像素宽度的一半显示，像素宽度约 2000px 以上时展开到这个宽度
-  - label: 多列宽表区
+    caption: Screenshots display at half their pixel width and expand up to this limit above ~2000px
+  - label: Wide Table Zone
     value: "1340"
     unit: px
-    caption: 宽表格在桌面端向两侧对称外扩上限
+    caption: Maximum width for wide multi-column tables expanding symmetrically on desktop
 ```
 
 See [Components Overview](/garden/en/components) in the sidebar for all 9 built-in components and their live examples.

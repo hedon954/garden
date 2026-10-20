@@ -11,35 +11,35 @@ Write "use `stat` to list the width limits for the prose column, wide figures, a
 
 ```garden stat
 items:
-  - label: 正文列宽
+  - label: Reading Column
     value: "740"
     unit: px
-    caption: 默认阅读列宽度
-  - label: 宽图上限
+    caption: Default prose column width
+  - label: Wide Figure Limit
     value: "1040"
     unit: px
-    caption: 左右各最多向外延伸 150px
-  - label: 宽表上限
+    caption: Extends up to 150px on each side
+  - label: Wide Table Limit
     value: "1340"
     unit: px
-    caption: 左右各最多向外延伸 300px
+    caption: Extends up to 300px on each side
 ```
 
 ````markdown
 ```garden stat
 items:
-  - label: 正文列宽
+  - label: Reading Column
     value: "740"
     unit: px
-    caption: 默认阅读列宽度
-  - label: 宽图上限
+    caption: Default prose column width
+  - label: Wide Figure Limit
     value: "1040"
     unit: px
-    caption: 左右各最多向外延伸 150px
-  - label: 宽表上限
+    caption: Extends up to 150px on each side
+  - label: Wide Table Limit
     value: "1340"
     unit: px
-    caption: 左右各最多向外延伸 300px
+    caption: Extends up to 300px on each side
 ```
 ````
 

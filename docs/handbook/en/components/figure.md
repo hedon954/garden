@@ -10,54 +10,54 @@ badge: figure
 Write "use `figure` to draw the static publishing flow where clicking each step highlights that box and shows what it does" inside a `garden` idea block, and the Agent generates the `garden figure` block below via the `garden-ui` skill (hand-written syntax follows).
 
 ```garden figure
-caption: 点击上方按钮切换高亮各步骤
+caption: Click the buttons above to highlight each stage
 svg: |
   <svg viewBox="0 0 680 110" xmlns="http://www.w3.org/2000/svg" font-family="var(--sans)">
     <rect data-p="sync" x="12" y="18" width="196" height="74" rx="10" fill="var(--card)" stroke="var(--rule-strong)" stroke-width="1.5"/>
     <text data-p="sync" x="110" y="50" text-anchor="middle" font-size="14" font-weight="600" fill="var(--ink)">1. garden sync</text>
-    <text data-p="sync" x="110" y="72" text-anchor="middle" font-size="12" fill="var(--muted)">解析 Markdown 与图片尺寸</text>
+    <text data-p="sync" x="110" y="72" text-anchor="middle" font-size="12" fill="var(--muted)">Parse Markdown &amp; image sizes</text>
     <path d="M214 55 H236" stroke="var(--muted)" stroke-width="1.5"/>
     <rect data-p="build" x="242" y="18" width="196" height="74" rx="10" fill="var(--card)" stroke="var(--rule-strong)" stroke-width="1.5"/>
     <text data-p="build" x="340" y="50" text-anchor="middle" font-size="14" font-weight="600" fill="var(--ink)">2. garden build</text>
-    <text data-p="build" x="340" y="72" text-anchor="middle" font-size="12" fill="var(--muted)">生成静态页面与搜索索引</text>
+    <text data-p="build" x="340" y="72" text-anchor="middle" font-size="12" fill="var(--muted)">Build static pages &amp; index</text>
     <path d="M444 55 H466" stroke="var(--muted)" stroke-width="1.5"/>
     <rect data-p="validate" x="472" y="18" width="196" height="74" rx="10" fill="var(--card)" stroke="var(--rule-strong)" stroke-width="1.5"/>
     <text data-p="validate" x="570" y="50" text-anchor="middle" font-size="14" font-weight="600" fill="var(--ink)">3. pages:validate</text>
-    <text data-p="validate" x="570" y="72" text-anchor="middle" font-size="12" fill="var(--muted)">检查 index.html 与禁用文件</text>
+    <text data-p="validate" x="570" y="72" text-anchor="middle" font-size="12" fill="var(--muted)">Check index.html &amp; files</text>
   </svg>
 parts:
   - id: sync
-    label: 1. 同步内容
-    text: 扫描 `content/` 与 `docs/handbook/`，复制随文附件并生成 `.garden/generated-content.ts`。
+    label: 1. Sync Content
+    text: Scans `content/` and `docs/handbook/`, copies sidecar assets, and generates `.garden/generated-content.ts`.
   - id: build
-    label: 2. 构建页面
-    text: 根据 `STATIC_EXPORT=1` 预渲染所有页面路由，输出 RSS、sitemap 与全文搜索文件。
+    label: 2. Build Pages
+    text: Prerenders all routes with `STATIC_EXPORT=1` and outputs RSS, sitemap, and full-text search indexes.
   - id: validate
-    label: 3. 导出校验
-    text: 运行 pages:validate，确认导出目录里有 `index.html`，且没有 `.env`、源码目录、`.map` 或 `.md` 文件和软链接。
+    label: 3. Validate Export
+    text: Runs pages:validate to confirm `index.html` exists and no `.env`, source directories, `.map` or `.md` files, or symlinks are present.
 ```
 
 ````markdown
 ```garden figure
-caption: 点击上方按钮切换高亮各步骤
+caption: Click the buttons above to highlight each stage
 svg: |
   <svg viewBox="0 0 680 110" xmlns="http://www.w3.org/2000/svg" font-family="var(--sans)">
     <rect data-p="sync" x="12" y="18" width="196" height="74" rx="10" fill="var(--card)" stroke="var(--rule-strong)" stroke-width="1.5"/>
     <text data-p="sync" x="110" y="50" text-anchor="middle" font-size="14" font-weight="600" fill="var(--ink)">1. garden sync</text>
-    <text data-p="sync" x="110" y="72" text-anchor="middle" font-size="12" fill="var(--muted)">解析 Markdown 与图片尺寸</text>
+    <text data-p="sync" x="110" y="72" text-anchor="middle" font-size="12" fill="var(--muted)">Parse Markdown &amp; image sizes</text>
     <rect data-p="build" x="242" y="18" width="196" height="74" rx="10" fill="var(--card)" stroke="var(--rule-strong)" stroke-width="1.5"/>
     <rect data-p="validate" x="472" y="18" width="196" height="74" rx="10" fill="var(--card)" stroke="var(--rule-strong)" stroke-width="1.5"/>
   </svg>
 parts:
   - id: sync
-    label: 1. 同步内容
-    text: 扫描 `content/` 与 `docs/handbook/`，复制随文附件并生成 `.garden/generated-content.ts`。
+    label: 1. Sync Content
+    text: Scans `content/` and `docs/handbook/`, copies sidecar assets, and generates `.garden/generated-content.ts`.
   - id: build
-    label: 2. 构建页面
-    text: 根据 `STATIC_EXPORT=1` 预渲染所有页面路由，输出 RSS、sitemap 与全文搜索文件。
+    label: 2. Build Pages
+    text: Prerenders all routes with `STATIC_EXPORT=1` and outputs RSS, sitemap, and full-text search indexes.
   - id: validate
-    label: 3. 导出校验
-    text: 运行 pages:validate，确认导出目录里有 `index.html`，且没有 `.env`、源码目录、`.map` 或 `.md` 文件和软链接。
+    label: 3. Validate Export
+    text: Runs pages:validate to confirm `index.html` exists and no `.env`, source directories, `.map` or `.md` files, or symlinks are present.
 ```
 ````
 

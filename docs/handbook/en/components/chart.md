@@ -10,34 +10,34 @@ badge: chart
 Write "use `chart` to compare the max widths of the prose column, wide figures, and wide tables" inside a `garden` idea block, and the Agent generates the `garden chart` block below via the `garden-ui` skill (hand-written syntax follows).
 
 ```garden chart
-title: 三种版面区域的宽度上限
-xLabel: 版面区域
-yLabel: 最大宽度
+title: Max Width by Layout Zone
+xLabel: Layout Zone
+yLabel: Max Width
 unit: px
 data:
-  - x: 普通正文列
+  - x: Prose Column
     y: 740
-  - x: 宽幅配图区
+  - x: Wide Figure Zone
     y: 1040
-  - x: 多列宽表格
+  - x: Wide Table Zone
     y: 1340
-caption: 点击「查看数据表」可展开完整数值表格。
+caption: Click "View data table" below to expand the full numeric table.
 ```
 
 ````markdown
 ```garden chart
-title: 三种版面区域的宽度上限
-xLabel: 版面区域
-yLabel: 最大宽度
+title: Max Width by Layout Zone
+xLabel: Layout Zone
+yLabel: Max Width
 unit: px
 data:
-  - x: 普通正文列
+  - x: Prose Column
     y: 740
-  - x: 宽幅配图区
+  - x: Wide Figure Zone
     y: 1040
-  - x: 多列宽表格
+  - x: Wide Table Zone
     y: 1340
-caption: 点击「查看数据表」可展开完整数值表格。
+caption: Click "View data table" below to expand the full numeric table.
 ```
 ````
 

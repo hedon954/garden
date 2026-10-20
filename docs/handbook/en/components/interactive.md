@@ -10,39 +10,39 @@ badge: interactive
 Write "let readers drag word count, reading speed, and image count sliders to see how estimated reading time changes" inside a `garden` idea block, and the Agent generates the `garden interactive` block below via the `garden-ui` skill (hand-written syntax follows).
 
 ```garden interactive #reading-time
-caption: 示例：按字数、阅读速度和配图数估算一篇文章的阅读时间。数字只用来演示组件，不是统计结果。
+caption: "Example: estimate reading time from word count, reading speed, and image count. Numbers are illustrative only."
 ---
 <State words={6000} speed={400} images={8} />
 <Let textMinutes={round(words / speed)} />
 <Let imageMinutes={round(images * 12 / 60)} />
-<Let parts={[{ part: "正文", minutes: textMinutes }, { part: "配图", minutes: imageMinutes }]} />
+<Let parts={[{ part: "Prose", minutes: textMinutes }, { part: "Images", minutes: imageMinutes }]} />
 
-<Slider bind="words" label="正文字数" min={1000} max={20000} step={500} unit="字" />
-<Slider bind="speed" label="阅读速度" min={200} max={800} step={50} unit="字/分钟" />
-<Slider bind="images" label="配图数" min={0} max={30} step={1} unit="张" />
+<Slider bind="words" label="Word count" min={1000} max={20000} step={500} unit="words" />
+<Slider bind="speed" label="Reading speed" min={200} max={800} step={50} unit="wpm" />
+<Slider bind="images" label="Image count" min={0} max={30} step={1} unit="images" />
 
-<Stat label="示例：预计阅读时间" value={textMinutes + imageMinutes} unit="分钟" hint="配图按每张 12 秒估算" />
-<Chart data={parts} x={part} yLabel="分钟">
-  <Bar y={minutes} label="示例" />
+<Stat label="Example: estimated reading time" value={textMinutes + imageMinutes} unit="min" hint="Counting 12 seconds per image" />
+<Chart data={parts} x={part} yLabel="min">
+  <Bar y={minutes} label="Example" />
 </Chart>
 ```
 
 ````markdown
 ```garden interactive #reading-time
-caption: 示例：按字数、阅读速度和配图数估算一篇文章的阅读时间。数字只用来演示组件，不是统计结果。
+caption: "Example: estimate reading time from word count, reading speed, and image count. Numbers are illustrative only."
 ---
 <State words={6000} speed={400} images={8} />
 <Let textMinutes={round(words / speed)} />
 <Let imageMinutes={round(images * 12 / 60)} />
-<Let parts={[{ part: "正文", minutes: textMinutes }, { part: "配图", minutes: imageMinutes }]} />
+<Let parts={[{ part: "Prose", minutes: textMinutes }, { part: "Images", minutes: imageMinutes }]} />
 
-<Slider bind="words" label="正文字数" min={1000} max={20000} step={500} unit="字" />
-<Slider bind="speed" label="阅读速度" min={200} max={800} step={50} unit="字/分钟" />
-<Slider bind="images" label="配图数" min={0} max={30} step={1} unit="张" />
+<Slider bind="words" label="Word count" min={1000} max={20000} step={500} unit="words" />
+<Slider bind="speed" label="Reading speed" min={200} max={800} step={50} unit="wpm" />
+<Slider bind="images" label="Image count" min={0} max={30} step={1} unit="images" />
 
-<Stat label="示例：预计阅读时间" value={textMinutes + imageMinutes} unit="分钟" hint="配图按每张 12 秒估算" />
-<Chart data={parts} x={part} yLabel="分钟">
-  <Bar y={minutes} label="示例" />
+<Stat label="Example: estimated reading time" value={textMinutes + imageMinutes} unit="min" hint="Counting 12 seconds per image" />
+<Chart data={parts} x={part} yLabel="min">
+  <Bar y={minutes} label="Example" />
 </Chart>
 ```
 ````

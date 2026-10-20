@@ -10,11 +10,11 @@ badge: html
 Write "use `html` to embed a small widget that counts characters as the reader types" inside a `garden` idea block, and the Agent generates the `garden html` block below via the `garden-ui` skill (hand-written syntax follows).
 
 ```garden html
-title: 字符长度与预计阅读耗时小工具
+title: Character Count Widget
 height: 156
 code: |
   <!doctype html>
-  <html lang="zh-CN">
+  <html lang="en">
   <head>
     <meta charset="utf-8" />
     <style>
@@ -25,8 +25,8 @@ code: |
     </style>
   </head>
   <body>
-    <input id="txt" value="把文章放在自己的 Git 仓库里，推送后自动构建。" aria-label="输入示例文本" />
-    <div class="meta">当前字符数：<strong id="count">23</strong> 字</div>
+    <input id="txt" value="Keep your posts in a Git repository and push to deploy." aria-label="Sample text input" />
+    <div class="meta">Characters: <strong id="count">55</strong></div>
     <script>
       const input = document.getElementById("txt");
       const count = document.getElementById("count");
@@ -38,15 +38,15 @@ code: |
 
 ````markdown
 ```garden html
-title: 字符长度与预计阅读耗时小工具
+title: Character Count Widget
 height: 156
 code: |
   <!doctype html>
-  <html lang="zh-CN">
+  <html lang="en">
   <head><meta charset="utf-8" /></head>
   <body>
-    <input id="txt" value="把文章放在自己的 Git 仓库里，推送后自动构建。" />
-    <div>当前字符数：<strong id="count">23</strong> 字</div>
+    <input id="txt" value="Keep your posts in a Git repository and push to deploy." />
+    <div>Characters: <strong id="count">55</strong></div>
     <script>
       const input = document.getElementById("txt");
       const count = document.getElementById("count");

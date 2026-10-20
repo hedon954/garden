@@ -11,15 +11,15 @@ Write "use `file` to attach a pre-publish checklist that readers can preview inl
 
 ```garden file
 src: ./file/checklist.md
-title: 发布前检查清单
-note: Markdown 附件示例，可点击「预览」在当前页展开阅读，或直接下载原文件
+title: Pre-publish Checklist
+note: Sample Markdown attachment; click Preview to read inline or Download to save the file
 ```
 
 ````markdown
 ```garden file
 src: ./file/checklist.md
-title: 发布前检查清单
-note: Markdown 附件示例，可点击「预览」在当前页展开阅读，或直接下载原文件
+title: Pre-publish Checklist
+note: Sample Markdown attachment; click Preview to read inline or Download to save the file
 ```
 ````
 

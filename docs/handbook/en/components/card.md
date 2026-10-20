@@ -10,26 +10,26 @@ badge: card
 Write "add a `card` summarizing the SQLite WAL documentation with a title, link, and three takeaways" inside a `garden` idea block, and the Agent generates the `garden card` block below via the `garden-ui` skill (hand-written syntax follows).
 
 ```garden card
-title: SQLite WAL 写入模式
+title: SQLite Write-Ahead Logging
 url: https://www.sqlite.org/wal.html
-meta: 文档说明 · sqlite.org
-description: 把修改先顺序追加到预写日志，读操作继续访问原数据库页，减少读写互斥等待。
+meta: Documentation · sqlite.org
+description: Appends changes sequentially to a write-ahead log while readers continue reading the original database pages, reducing read-write contention.
 points:
-  - 写入只追加到 `-wal` 文件末尾，不需要在事务提交时原地覆盖数据页。
-  - 读事务记录当前末尾偏移量即可看到一致快照，不会阻塞并发写入。
-  - 后台 Checkpoint 按阈值将日志页分批写回主库文件。
+  - Writes append to the end of the `-wal` file instead of overwriting database pages in place on commit.
+  - Readers record the current end-of-log mark to see a consistent snapshot without blocking concurrent writers.
+  - Background checkpoints copy log pages back into the main database file in batches once a threshold is reached.
 ```
 
 ````markdown
 ```garden card
-title: SQLite WAL 写入模式
+title: SQLite Write-Ahead Logging
 url: https://www.sqlite.org/wal.html
-meta: 文档说明 · sqlite.org
-description: 把修改先顺序追加到预写日志，读操作继续访问原数据库页，减少读写互斥等待。
+meta: Documentation · sqlite.org
+description: Appends changes sequentially to a write-ahead log while readers continue reading the original database pages, reducing read-write contention.
 points:
-  - 写入只追加到 `-wal` 文件末尾，不需要在事务提交时原地覆盖数据页。
-  - 读事务记录当前末尾偏移量即可看到一致快照，不会阻塞并发写入。
-  - 后台 Checkpoint 按阈值将日志页分批写回主库文件。
+  - Writes append to the end of the `-wal` file instead of overwriting database pages in place on commit.
+  - Readers record the current end-of-log mark to see a consistent snapshot without blocking concurrent writers.
+  - Background checkpoints copy log pages back into the main database file in batches once a threshold is reached.
 ```
 ````
 
