@@ -41,7 +41,7 @@ function SourceChip({ source }: { source: unknown }) {
   }).filter((item): item is { url: string; site: string; icon?: string } => Boolean(item?.url));
   if (!list.length) return null;
   return (
-    <span className="g-srcs">
+    <span className={list.length > 1 ? "g-srcs is-multi" : "g-srcs"}>
       <a className="g-src ext" href={list[0].url} target="_blank" rel="noopener noreferrer">
         <SourceMark href={list[0].url} icon={list[0].icon} />
         <span>{list[0].site}</span>

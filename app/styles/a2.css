@@ -2477,7 +2477,9 @@ html[data-theme="dark"] .g-verdict-ic.good { color: #7fbf8e; }
 /* review fixes: chip gap, truncated hosts, the "none of these" choice */
 .markdown-body a.ext.g-src-chip > span,
 .markdown-body a.ext.g-src > span { overflow: hidden; text-overflow: ellipsis; }
-.markdown-body a.ext.g-src > span { max-width: 6.5em; }
+/* A single source shows its whole domain; a tag with "+N" cuts only hosts past ~14 characters. */
+.markdown-body .g-srcs.is-multi a.ext.g-src > span { max-width: 14ch; }
+.markdown-body .g-srcs:not(.is-multi) a.ext.g-src { max-width: none; }
 .markdown-body a.ext.g-src-chip,
 .markdown-body a.ext.g-src { gap: 6px; }
 .g-choice-group { display: grid; gap: 0; }

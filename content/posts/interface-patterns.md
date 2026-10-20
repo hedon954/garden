@@ -25,10 +25,10 @@ items:
   - title: 复盘
     text: 记下下次要改的地方
 links:
-  - from: 4
-    to: 1
   - from: 3
-    to: 2
+    to: 1
+  - from: 2
+    to: 4
 caption: 四个环节互相提供信息，而不是按固定顺序走一遍。
 ```
 
@@ -107,8 +107,8 @@ cards:
     image: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 132 132'%3E%3Crect width='132' height='132' fill='%23E8EEF0'/%3E%3Ccircle cx='66' cy='60' r='30' fill='%239DB7A8'/%3E%3Crect x='30' y='98' width='72' height='8' rx='4' fill='%233F6B55'/%3E%3Crect x='44' y='112' width='44' height='6' rx='3' fill='%239DB7A8'/%3E%3C/svg%3E"
     alt: 一盏台灯
     source:
-      - https://en.wikipedia.org/wiki/Project_Gutenberg
       - https://www.gutenberg.org/
+      - https://en.wikipedia.org/wiki/Project_Gutenberg
     takeaway: "**可借鉴：** 偶尔选一本公版书，没买书的人也能马上加入。"
   - url: https://en.wikipedia.org/wiki/Book_discussion_club
     title: 维基百科：读书会词条

@@ -22,6 +22,25 @@ test("the same host gets the same mark wherever it appears", () => {
   assert.deepEqual(sourceIcon("https://x.org/", {}, "/mine.png"), { src: "/mine.png" });
 });
 
+test("only a source tag with +N truncates its host", async () => {
+  const { readFileSync } = await import("node:fs");
+  const css = readFileSync(new URL("../app/styles/a2.css", import.meta.url), "utf8");
+  const tsx = readFileSync(new URL("../app/components/garden/blocks.tsx", import.meta.url), "utf8");
+  assert.match(tsx, /list\.length > 1 \? "g-srcs is-multi" : "g-srcs"/u);
+  assert.match(css, /\.g-srcs\.is-multi a\.ext\.g-src > span \{ max-width: 14ch; \}/u);
+  assert.match(css, /\.g-srcs:not\(\.is-multi\) a\.ext\.g-src \{ max-width: none; \}/u);
+  assert.doesNotMatch(css, /^\.markdown-body a\.ext\.g-src > span \{ max-width/mu);
+});
+
+test("showcase cycle links join opposite nodes; Gutenberg cites itself first", async () => {
+  const { readFileSync } = await import("node:fs");
+  for (const file of ["interface-patterns.md", "interface-patterns-en.md"]) {
+    const md = readFileSync(new URL(`../content/posts/${file}`, import.meta.url), "utf8");
+    assert.match(md, /links:\n  - from: 3\n    to: 1\n  - from: 2\n    to: 4\n/u);
+    assert.match(md, /source:\n      - https:\/\/www\.gutenberg\.org\/\n      - https:\/\/en\.wikipedia\.org\/wiki\/Project_Gutenberg/u);
+  }
+});
+
 test("card source URLs are collected for favicon fetching", () => {
   const md = "```garden card\ncards:\n  - url: https://a.org/x\n    source:\n      - https://en.wikipedia.org/wiki/A\n      - https://b.org/\n```\n\n```garden stat\nsource: https://no.org/\n```";
   assert.deepEqual(gardenSourceUrls(md), ["https://a.org/x", "https://en.wikipedia.org/wiki/A", "https://b.org/"]);
