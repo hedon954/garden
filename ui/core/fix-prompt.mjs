@@ -6,12 +6,12 @@ const MAX_BLOCKS = 10;
  */
 export function buildFixPrompt(problems, { standaloneReference = null } = {}) {
   const lines = [
-    "请修复下面 Garden 博文里有错误的 ui 块。",
+    "请处理下面 Garden 博文里列出的块：没编译的想法要编译，有错误的交互块要修好。",
     "",
     "要求：",
     "- 先运行 npx garden ui prompt，读组件目录和规则；仓库里有 garden-ui skill 时按它的流程做。",
-    "- 只改列出的块，用 npx garden ui apply <稿件> --id <id> 写回（没有 id 的 intent 用 --intent-hash），不要直接编辑稿件。",
-    "- 不改 intent 的原意。修好后运行 npx garden ui check <稿件>，直到通过。",
+    "- 只改列出的块，用 npx garden ui apply <稿件> --id <id> 写回（没有 id 的想法用 --intent-hash），不要直接编辑稿件。",
+    "- 不改作者原话的意思。改完运行 npx garden ui check <稿件>，直到通过。",
     "- 如果你不能访问这个仓库，就只回复每块修好后的完整围栏。",
     "",
   ];
@@ -19,6 +19,9 @@ export function buildFixPrompt(problems, { standaloneReference = null } = {}) {
     const { file, block, diagnostics } = problem;
     const target = block.id ? `id: ${block.id}` : `intent-hash: ${block.intentHash}`;
     lines.push(`${index + 1}. ${file}，第 ${block.startLine}–${block.endLine} 行，${target}`);
+    if (block.lang === "garden-idea") {
+      lines.push("   - garden-idea：这段想法还没编译，请按原话编译成 garden interactive 或其他 garden 组件（或判断后写回正文）。");
+    }
     if (block.lang === "intent") {
       lines.push("   - intent-uncompiled：这段想法还没编译，请按原话编译成 ui 块（或判断后写回正文）。");
     }

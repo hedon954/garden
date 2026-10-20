@@ -165,18 +165,21 @@ function commandCheck() {
       for (const item of block.diagnostics.filter((entry) => entry.severity === "warning")) {
         warnings.push(`${target.file}:${item.line}  ${block.id ?? "-"}  ${item.code}  ${item.message}`);
       }
-      if (block.lang === "intent" && !draft) problems.push({ file: target.file, block, diagnostics: [] });
+      if ((block.lang === "intent" || block.lang === "garden-idea") && !draft) problems.push({ file: target.file, block, diagnostics: [] });
       else if (errors.length) problems.push({ file: target.file, block, diagnostics: errors });
     }
   }
   for (const line of warnings) process.stderr.write(`提醒  ${line}\n`);
   if (!problems.length) {
-    if (!flag("quiet")) process.stdout.write(`ui 检查通过（${files.length} 个文件）\n`);
+    if (!flag("quiet")) process.stdout.write(`检查通过（${files.length} 个文件）\n`);
     return;
   }
   for (const problem of problems) {
     if (problem.block.lang === "intent") {
       process.stderr.write(`${problem.file}:${problem.block.startLine}  ${problem.block.id ?? "-"}  intent-uncompiled  还有没编译的 intent 块\n`);
+    }
+    if (problem.block.lang === "garden-idea") {
+      process.stderr.write(`${problem.file}:${problem.block.startLine}  -  garden-idea  还有没编译的想法\n`);
     }
     for (const item of problem.diagnostics) {
       process.stderr.write(`${problem.file}:${item.line}  ${problem.block.id ?? "-"}  ${item.code}  ${item.message}\n`);
@@ -294,7 +297,7 @@ switch (command) {
 
   garden ui scan <稿件.md>                 列出块、状态、行号和哈希（JSON）
   garden ui check <稿件.md>... | --staged | --all [--standalone]
-                                           检查 ui / intent 块，失败时给出修复提示词
+                                           检查 garden 想法和 garden interactive（以及旧的 ui / intent 块），失败时给出修复提示词
   garden ui apply <稿件.md> --id <id> [--base <哈希>] [--file 新内容.md]
                                            只替换一块，围栏外逐字节不变
   garden ui prompt [--studio]              打印写作规则、组件参考和配方

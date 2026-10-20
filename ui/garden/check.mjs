@@ -4,6 +4,7 @@ import { blanksBetween, classifyFence, isFullCodeFence, scanFences } from "./par
 import { splitTitle } from "./title.mjs";
 import { splitCompareLine } from "./compare-line.mjs";
 import { readFileProps } from "./file-block.mjs";
+import { checkInteractiveFence } from "../core/scan.mjs";
 
 const COMPARE_LIMIT = 60;
 
@@ -104,6 +105,11 @@ export function checkGardenMarkdown(markdown, { draft = false, title = "", title
       }
       if (isProseSteps(source)) {
         push(fence.line, "steps-prose", "步骤只是散文。", "连续的段落不要拆成步骤；有状态变化时才用 interactive。");
+      }
+      // The component tree: the same check the page and `garden ui check` run.
+      const { diagnostics: uiDiagnostics = [] } = checkInteractiveFence({ lang: "garden", info: fence.meta ?? "", body: fence.body, startLine: fence.line }, { skipData: true });
+      for (const item of uiDiagnostics.filter((entry) => entry.severity === "error")) {
+        push(item.line, item.code, item.message, "运行 npx garden ui check 拿到修复提示词。");
       }
     }
   });

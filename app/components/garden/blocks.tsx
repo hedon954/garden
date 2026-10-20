@@ -2,7 +2,7 @@
 
 import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 import ReactMarkdown from "react-markdown";
-import { stringify } from "yaml";
+import { interactiveUiSource } from "../../../ui/core/garden-fence.mjs";
 import { markdownPlugins } from "../../lib/markdown-plugins";
 import { compileUiBlock } from "../../../ui/core/compile.mjs";
 import { splitCompareLine } from "../../../ui/garden/compare-line.mjs";
@@ -499,13 +499,8 @@ export function GardenHtml({ props, children }: { props: Record<string, unknown>
 }
 
 export function GardenInteractive({ block }: { block: { id?: string | null; props: Record<string, unknown>; children?: string } }) {
-  const header = {
-    id: block.id || block.props.id || "interactive",
-    caption: block.props.caption ?? "",
-    intent: block.props.intent ?? "",
-    ...(block.props.expect ? { expect: block.props.expect } : {}),
-  };
-  const source = `---\n${stringify(header)}---\n${block.children ?? ""}`;
+  // Same source `garden ui check` validates (ui/core/garden-fence.mjs).
+  const { source, header } = interactiveUiSource({ id: block.id ?? null, props: block.props, children: block.children ?? "" });
   const { payload, check } = compileUiBlock(source);
   if (!payload) {
     return (
