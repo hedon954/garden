@@ -443,3 +443,10 @@ html[data-theme="dark"] .sh-repos > li.sk::after{background:linear-gradient(90de
 a.sh-lang:hover{color:var(--ink)}
 a.sh-lang:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
 .sh-lang.is-disabled{opacity:.55;cursor:default}
+
+/* English pages: Latin system fonts first, Chinese fonts only as fallback
+   (otherwise English text renders in Noto Sans CJK / YaHei). */
+:root:lang(en){
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"PingFang SC","Hiragino Sans GB","Noto Sans SC","Noto Sans CJK SC","Microsoft YaHei",system-ui,sans-serif;
+  --serif:"Source Serif 4",Georgia,"Times New Roman","Source Han Serif SC","Noto Serif SC","Noto Serif CJK SC","Songti SC","STSong",serif;
+}

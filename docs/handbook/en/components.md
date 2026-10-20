@@ -78,18 +78,25 @@ data:
 
 ```garden figure
 svg: |
-  <svg viewBox="0 0 680 110" xmlns="http://www.w3.org/2000/svg" font-family="var(--sans)">
-    <rect data-p="sync" x="12" y="18" width="196" height="74" rx="10" fill="var(--card)" stroke="var(--rule-strong)" stroke-width="1.5"/>
-    <text data-p="sync" x="110" y="50" text-anchor="middle" font-size="14" font-weight="600" fill="var(--ink)">1. garden sync</text>
-    <text data-p="sync" x="110" y="72" text-anchor="middle" font-size="12" fill="var(--muted)">Parse Markdown &amp; image sizes</text>
-    <path d="M214 55 H236" stroke="var(--muted)" stroke-width="1.5"/>
-    <rect data-p="build" x="242" y="18" width="196" height="74" rx="10" fill="var(--card)" stroke="var(--rule-strong)" stroke-width="1.5"/>
-    <text data-p="build" x="340" y="50" text-anchor="middle" font-size="14" font-weight="600" fill="var(--ink)">2. garden build</text>
-    <text data-p="build" x="340" y="72" text-anchor="middle" font-size="12" fill="var(--muted)">Build static pages &amp; index</text>
-    <path d="M444 55 H466" stroke="var(--muted)" stroke-width="1.5"/>
-    <rect data-p="validate" x="472" y="18" width="196" height="74" rx="10" fill="var(--card)" stroke="var(--rule-strong)" stroke-width="1.5"/>
-    <text data-p="validate" x="570" y="50" text-anchor="middle" font-size="14" font-weight="600" fill="var(--ink)">3. pages:validate</text>
-    <text data-p="validate" x="570" y="72" text-anchor="middle" font-size="12" fill="var(--muted)">Check exported files</text>
+  <svg viewBox="0 0 560 194" xmlns="http://www.w3.org/2000/svg" font-family="var(--sans)" style="max-width: 380px; margin-inline: auto">
+    <rect data-p="sync" x="2" y="4" width="180" height="186" rx="16" fill="var(--card)" stroke="var(--rule-strong)" stroke-width="2.5"/>
+    <text data-p="sync" x="92" y="42" text-anchor="middle" font-size="24" font-weight="600" fill="var(--ink)">1. garden</text>
+    <text data-p="sync" x="92" y="72" text-anchor="middle" font-size="24" font-weight="600" fill="var(--ink)">sync</text>
+    <text data-p="sync" x="92" y="108" text-anchor="middle" font-size="24" fill="var(--muted)">Parse</text>
+    <text data-p="sync" x="92" y="137" text-anchor="middle" font-size="24" fill="var(--muted)">Markdown &amp;</text>
+    <text data-p="sync" x="92" y="166" text-anchor="middle" font-size="24" fill="var(--muted)">image sizes</text>
+    <path d="M183.5 97 H188.5" stroke="var(--muted)" stroke-width="2.5"/>
+    <rect data-p="build" x="190" y="4" width="180" height="186" rx="16" fill="var(--card)" stroke="var(--rule-strong)" stroke-width="2.5"/>
+    <text data-p="build" x="280" y="42" text-anchor="middle" font-size="24" font-weight="600" fill="var(--ink)">2. garden</text>
+    <text data-p="build" x="280" y="72" text-anchor="middle" font-size="24" font-weight="600" fill="var(--ink)">build</text>
+    <text data-p="build" x="280" y="108" text-anchor="middle" font-size="24" fill="var(--muted)">Build static</text>
+    <text data-p="build" x="280" y="137" text-anchor="middle" font-size="24" fill="var(--muted)">pages &amp; index</text>
+    <path d="M371.5 97 H376.5" stroke="var(--muted)" stroke-width="2.5"/>
+    <rect data-p="validate" x="378" y="4" width="180" height="186" rx="16" fill="var(--card)" stroke="var(--rule-strong)" stroke-width="2.5"/>
+    <text data-p="validate" x="468" y="42" text-anchor="middle" font-size="24" font-weight="600" fill="var(--ink)">3. pages:</text>
+    <text data-p="validate" x="468" y="72" text-anchor="middle" font-size="24" font-weight="600" fill="var(--ink)">validate</text>
+    <text data-p="validate" x="468" y="108" text-anchor="middle" font-size="24" fill="var(--muted)">Check</text>
+    <text data-p="validate" x="468" y="137" text-anchor="middle" font-size="24" fill="var(--muted)">exported files</text>
   </svg>
 parts:
   - id: sync

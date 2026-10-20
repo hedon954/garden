@@ -2612,6 +2612,10 @@ html[data-theme="dark"] .ref-demo { --rd-s: #262624; --rd-p: #1f1e1d; --rd-i: #e
   /* Flex columns: no margin collapsing, so both panes start their content on the same line. */
   .ref-demo .ref-pane, .ref-demo .ref-pane[data-off] { display: flex; flex-direction: column; }
   .ref-demo .ref-pane > * { margin-top: 0 !important; }
+  /* interactive: its own top spacing (g-play margin and padding, the figure's
+     margin) would push the preview 67px below the code. Reference only. */
+  .ref-demo .ref-pane[data-p="v"] .ux-fs > .g-play { margin-top: 0; padding-top: 0; }
+  .ref-demo .ref-pane[data-p="v"] .g-play > .garden-ui:first-child { margin-top: 0; }
   .ref-pane[data-p="c"] { grid-column: 1; grid-row: 1; }
   .ref-pane[data-p="v"] { grid-column: 2; grid-row: 1; }
   .ref-pane-h { display: block; font-size: 12px; line-height: 18px; letter-spacing: 0.04em; color: var(--rd-m); margin: 0 0 10px !important; }
