@@ -1,3 +1,5 @@
+import { UiLangProvider } from "./UiLang";
+import { ui, type UiLang } from "../lib/i18n";
 import { markdownPlugins } from "../lib/markdown-plugins";
 import { remarkA2 } from "../lib/remark-a2.mjs";
 import { remarkLinkCard } from "../lib/remark-link-card.mjs";
@@ -209,7 +211,8 @@ const headingText = (children: ReactNode) => {
   return parts.join("");
 };
 
-export function MarkdownArticle({ content, numbering }: { content: string; numbering?: boolean }) {
+export function MarkdownArticle({ content, numbering, lang }: { content: string; numbering?: boolean; lang?: UiLang }) {
+  const t = ui(lang);
   // Optional layer 2: a Worker that refreshes card text. Without it, cards stay as built.
   const cardWorker = content.includes("{card}") ? siteConfig.linkPreview?.worker : undefined;
   const numbers = { h2: 0, h3: 0 };
@@ -249,7 +252,7 @@ export function MarkdownArticle({ content, numbering }: { content: string; numbe
     "garden-block": (props: { dataPayload?: string; "data-payload"?: string }) => {
       const payload = props.dataPayload ?? props["data-payload"];
       const block = readGardenPayload(payload);
-      if (block?.name === "file" && !block.error) return <GardenFile props={(block.props ?? {}) as Record<string, unknown>} />;
+      if (block?.name === "file" && !block.error) return <GardenFile props={(block.props ?? {}) as Record<string, unknown>} lang={lang} />;
       return <GardenBlock dataPayload={payload} />;
     },
     "garden-codediff": (props: {
@@ -267,6 +270,7 @@ export function MarkdownArticle({ content, numbering }: { content: string; numbe
     ),
   };
   return (
+    <UiLangProvider lang={lang}>
     <div className="markdown-body prose">
       <ReactMarkdown
         remarkPlugins={[...markdownPlugins, [remarkLinkCard, { sameSite }], [remarkA2, { imageSize: (src: string) => lookupImageSize(imageSizes, src) }]]}
@@ -321,7 +325,7 @@ export function MarkdownArticle({ content, numbering }: { content: string; numbe
             return <MarkdownImage {...props} {...dims} style={{ ...props.style, ...dims.style }} />;
           },
           table: ({ children, ...props }) => (
-            <div className="table-wrap" role="region" aria-label="表格，可横向滚动" tabIndex={0}>
+            <div className="table-wrap" role="region" aria-label={t.tableScroll} tabIndex={0}>
               <table {...props}>{children}</table>
             </div>
           ),
@@ -357,5 +361,6 @@ export function MarkdownArticle({ content, numbering }: { content: string; numbe
       </ReactMarkdown>
       {cardWorker ? <LinkCardRefresh endpoint={cardWorker} /> : null}
     </div>
+    </UiLangProvider>
   );
 }

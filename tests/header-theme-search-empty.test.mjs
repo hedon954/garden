@@ -11,7 +11,7 @@ const shell = fs.readFileSync(new URL("../app/styles/shell.css", import.meta.url
 const globals = fs.readFileSync(new URL("../app/globals.css", import.meta.url), "utf8");
 
 test("the mobile menu ends with a dark mode switch that shares the desktop toggle", () => {
-  assert.match(header, /<button className="sh-menu-theme" \{\.\.\.themeSwitchProps\(dark, toggleTheme\)\}>\s*<span>深色模式<\/span>/);
+  assert.match(header, /<button className="sh-menu-theme" \{\.\.\.themeSwitchProps\(dark, toggleTheme\)\}>\s*<span>\{t\.darkMode\}<\/span>/);
   assert.match(header, /className="sh-icon sh-theme" type="button" onClick=\{toggleTheme\}/);
   assert.equal(header.match(/const toggleTheme = /g)?.length, 1, "one implementation");
   // Without a stored choice the theme follows the system, also when it changes.
@@ -31,7 +31,7 @@ test("a search with no results shows one line naming the query, escaped", () => 
   assert.equal(html, '<p class="empty-state">没有找到和「&lt;img src=x onerror=&quot;alert(1)&quot;&gt;」相关的文章</p>');
   // The count label is not shown for zero results, and the line is a text child.
   assert.match(header, /\{query && engine && resultTotal === 0 \? null : \(/);
-  assert.match(header, /\{engine \? noResultsText\(query\) :/);
+  assert.match(header, /\{engine \? t\.noResults\(query\.trim\(\)\) :/);
   assert.doesNotMatch(header, /dangerouslySetInnerHTML=\{\{ __html: [^}]*query/);
   assert.match(globals, /\.empty-state \{[^}]*color: var\(--muted\);[^}]*text-align: center;/);
   assert.match(globals, /\.search-results:has\(> \.empty-state:only-child\) \{\s*align-content: center;/);
@@ -48,7 +48,7 @@ test("the menu theme row is a keyboard-operable switch that stays in sync", () =
   const row = header.slice(header.indexOf('className="sh-menu-theme"'), header.indexOf("</button>", header.indexOf('className="sh-menu-theme"')));
   assert.doesNotMatch(row, /onKey(Down|Up|Press)|tabIndex|disabled/);
   // aria-checked comes from the same state the desktop button reads, and both call one toggle.
-  assert.match(header, /aria-label=\{dark \? ui\(\)\.toLight : ui\(\)\.toDark\}/);
+  assert.match(header, /aria-label=\{dark \? t\.toLight : t\.toDark\}/);
   assert.match(fs.readFileSync(new URL("../app/lib/i18n.ts", import.meta.url), "utf8"), /toLight: "切换到浅色模式",\n  toDark: "切换到深色模式",/);
   assert.equal(header.match(/onClick=\{toggleTheme\}/g)?.length, 1, "desktop button");
   assert.equal(header.match(/themeSwitchProps\(dark, toggleTheme\)/g)?.length, 1, "menu row");

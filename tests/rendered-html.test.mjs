@@ -231,7 +231,7 @@ test("collapses the reading table of contents per heading and keeps its active i
   assert.match(toc, /nestHeadings/);
   assert.match(toc, /renderNode/);
   assert.match(toc, /className="toc-sublist" hidden=\{collapsed\}/);
-  assert.match(toc, /aria-label=\{`\$\{collapsed \? "展开" : "收起"\}「\$\{node\.text\}」的子目录`\}/);
+  assert.match(toc, /aria-label=\{t\.tocToggle\(collapsed, node\.text\)\}/);
   assert.match(toc, /listRef/);
   assert.match(toc, /\[aria-current="location"\]/);
   assert.match(toc, /list\.scrollTo/);

@@ -81,7 +81,7 @@ test("search entry: magnifier and 搜索 like a nav link, ⌘K only with a fine 
   assert.match(shell, /\.sh-search kbd\{display:none;/u);
   assert.match(shell, /@media \(hover:hover\) and \(pointer:fine\)\{\.sh-search kbd\{display:inline\}\}/u);
   assert.match(shell, /\.sh-menu-btn,\.sh-search-m\{display:inline-grid;width:44px;height:44px\}/u);
-  assert.match(read("app/components/SiteHeader.tsx"), /<span className="lbl">\{ui\(\)\.search\}<\/span>/u);
+  assert.match(read("app/components/SiteHeader.tsx"), /<span className="lbl">\{t\.search\}<\/span>/u);
   assert.match(read("app/lib/i18n.ts"), /search: "搜索",/u);
 });
 

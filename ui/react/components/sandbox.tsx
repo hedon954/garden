@@ -4,9 +4,11 @@ import { useEffect, useRef, useState } from "react";
 import { buildSrcdoc, isHttpsUrl, readSandboxMessage, sandboxRemote } from "../../host.mjs";
 import { asString, propValue, registerComponents, useHost, useRuntime } from "../runtime";
 import type { Env, UiNode } from "../types";
+import { useRuntimeText } from "../lang";
 
 function Sandbox({ node, env }: { node: UiNode; env: Env }) {
   const runtime = useRuntime();
+  const tx = useRuntimeText();
   const host = useHost();
   const frameRef = useRef<HTMLIFrameElement>(null);
   const [height, setHeight] = useState(180);
@@ -14,7 +16,7 @@ function Sandbox({ node, env }: { node: UiNode; env: Env }) {
   const html = asString(propValue(runtime, node, "html", env));
   const css = asString(propValue(runtime, node, "css", env));
   const js = asString(propValue(runtime, node, "js", env));
-  const title = asString(propValue(runtime, node, "title", env), "交互");
+  const title = asString(propValue(runtime, node, "title", env), tx.interactive);
   const blocked = sandboxRemote(html) || sandboxRemote(css) || sandboxRemote(js);
 
   useEffect(() => {

@@ -1,5 +1,6 @@
 "use client";
 
+import { useUi } from "./UiLang";
 import { useEffect, useState, type ComponentPropsWithoutRef } from "react";
 
 // react-markdown also hands over its syntax-tree `node`; it must not reach the DOM.
@@ -8,7 +9,8 @@ type MarkdownImageProps = ComponentPropsWithoutRef<"img"> & { node?: unknown };
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function MarkdownImage({ alt = "", src, node, style, ...props }: MarkdownImageProps) {
   const [open, setOpen] = useState(false);
-  const description = alt || "查看原图";
+  const t = useUi();
+  const description = alt || t.viewImage;
 
   useEffect(() => {
     if (!open) return undefined;
@@ -33,7 +35,7 @@ export function MarkdownImage({ alt = "", src, node, style, ...props }: Markdown
         type="button"
         className="markdown-image-trigger"
         onClick={() => setOpen(true)}
-        aria-label={`放大查看：${description}`}
+        aria-label={t.zoomImage(description)}
       >
         {/* Native images preserve Typora-authored relative paths. */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -56,9 +58,9 @@ export function MarkdownImage({ alt = "", src, node, style, ...props }: Markdown
               type="button"
               className="markdown-image-lightbox-close"
               onClick={() => setOpen(false)}
-              aria-label="关闭图片预览"
+              aria-label={t.closeImage}
             >
-              关闭
+              {t.close.trim()}
             </button>
           </div>
         </div>

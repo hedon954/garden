@@ -94,9 +94,6 @@ export default function RootLayout({
         )}
       </head>
       <body>
-        <a className="skip-link" href="#main-content">
-          跳到正文
-        </a>
         <SiteChrome>{children}</SiteChrome>
       </body>
     </html>

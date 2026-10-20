@@ -1,18 +1,27 @@
 "use client";
 
 import { usePathname } from "next/navigation";
+import { routeLang, ui } from "../lib/i18n";
 import { SiteFooter } from "./SiteFooter";
 import { SiteHeader } from "./SiteHeader";
 
 export function SiteChrome({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  if (pathname?.startsWith("/admin")) return <>{children}</>;
+  const lang = routeLang(pathname);
+  // The skip link follows the route language too (/garden/en/ is English).
+  const skip = (
+    <a className="skip-link" href="#main-content">
+      {ui(lang).skipToContent}
+    </a>
+  );
+  if (pathname?.startsWith("/admin")) return <>{skip}{children}</>;
 
   return (
     <>
+      {skip}
       <SiteHeader />
       <div id="main-content">{children}</div>
-      <SiteFooter docs={pathname?.startsWith("/garden") ?? false} />
+      <SiteFooter docs={pathname?.startsWith("/garden") ?? false} lang={lang} />
     </>
   );
 }

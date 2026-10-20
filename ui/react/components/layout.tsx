@@ -3,6 +3,7 @@
 import { useEffect, useId, useRef, useState, useSyncExternalStore, type KeyboardEvent } from "react";
 import { asNumber, asString, expandChildren, propValue, registerComponents, RenderNodes, useRuntime } from "../runtime";
 import type { Env, UiNode } from "../types";
+import { useRuntimeText } from "../lang";
 
 const GAPS = [0, 4, 8, 12, 16];
 const gapOf = (value: unknown, fallback = 3) => GAPS[typeof value === "number" && value >= 0 && value <= 4 ? value : fallback];
@@ -133,6 +134,7 @@ function Tabs({ node, env }: { node: UiNode; env: Env }) {
 
 function Steps({ node, env }: { node: UiNode; env: Env }) {
   const runtime = useRuntime();
+  const tx = useRuntimeText();
   const steps = expandChildren(runtime, node.c, env).filter((item) => item.node.n === "Step");
   const [index, setIndex] = useIndex(node, steps.length);
   const autoplay = asNumber(propValue(runtime, node, "autoplay", env));
@@ -208,7 +210,7 @@ function Steps({ node, env }: { node: UiNode; env: Env }) {
         ))}
       </div>
       <div className="garden-ui-steps-controls">
-        <button type="button" className="garden-ui-round" aria-label="上一步" onClick={() => go(index - 1)} disabled={index === 0}>
+        <button type="button" className="garden-ui-round" aria-label={tx.prevStep} onClick={() => go(index - 1)} disabled={index === 0}>
           <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3.5 5.5 8l4.5 4.5" /></svg>
         </button>
         <span className="garden-ui-steps-dots">
@@ -216,17 +218,17 @@ function Steps({ node, env }: { node: UiNode; env: Env }) {
             <button
               key={stepIndex}
               type="button"
-              aria-label={`第 ${stepIndex + 1} 步：${asString(propValue(runtime, step.node, "title", step.env))}`}
+              aria-label={tx.stepN(stepIndex + 1, asString(propValue(runtime, step.node, "title", step.env)))}
               aria-current={stepIndex === index ? "step" : undefined}
               onClick={() => go(stepIndex)}
             />
           ))}
         </span>
-        <button type="button" className="garden-ui-round" aria-label="下一步" onClick={() => go(index + 1)} disabled={index >= steps.length - 1}>
+        <button type="button" className="garden-ui-round" aria-label={tx.nextStep} onClick={() => go(index + 1)} disabled={index >= steps.length - 1}>
           <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3.5 10.5 8 6 12.5" /></svg>
         </button>
         {autoplay && !reducedMotion ? (
-          <button type="button" className="garden-ui-button" onClick={() => setPlaying((value) => !value)}>{playing ? "暂停" : "播放"}</button>
+          <button type="button" className="garden-ui-button" onClick={() => setPlaying((value) => !value)}>{playing ? tx.pause : tx.play}</button>
         ) : null}
       </div>
     </div>

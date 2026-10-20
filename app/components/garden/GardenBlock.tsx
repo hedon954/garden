@@ -1,5 +1,6 @@
 "use client";
 
+import { useUiLang } from "../UiLang";
 import { readGardenPayload } from "../../lib/remark-garden.mjs";
 import {
   GardenCard,
@@ -17,6 +18,7 @@ import {
 import { GardenFile } from "./GardenFile";
 
 export function GardenBlock({ dataPayload }: { dataPayload?: string }) {
+  const lang = useUiLang();
   const block = readGardenPayload(dataPayload);
   if (!block) return null;
   if (block.legacy && block.suggestion) return <GardenLegacy suggestion={String(block.suggestion)} />;
@@ -42,7 +44,7 @@ export function GardenBlock({ dataPayload }: { dataPayload?: string }) {
       return <GardenInteractive block={{ id: block.id, props, children: block.children }} />;
     case "file":
       // Post bodies render file cards on the server (MarkdownArticle); this path has no Markdown preview.
-      return <GardenFile props={props} />;
+      return <GardenFile props={props} lang={lang} />;
     default:
       return <GardenUnknown name={String(block.name)} />;
   }

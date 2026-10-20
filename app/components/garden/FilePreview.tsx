@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useId, useRef, useState, type FocusEvent, type MouseEvent } from "react";
 import { createPortal } from "react-dom";
+import { ui, type UiLang } from "../../lib/i18n";
 import { previewBody, previewFrameProps } from "../../../ui/garden/file-block.mjs";
 import { ActionGlyph, FileGlyph } from "./file-icons";
 
@@ -25,7 +26,8 @@ type Loaded = { state: "idle" | "loading" | "error" } | { state: "ready"; html: 
  * The control is a link: without JavaScript it opens the same preview (or the
  * file) in a new tab, next to the card's download link.
  */
-export function FilePreview({ file, compact }: { file: PreviewFile; compact: boolean }) {
+export function FilePreview({ file, compact, lang }: { file: PreviewFile; compact: boolean; lang?: UiLang }) {
+  const t = ui(lang);
   const [open, setOpen] = useState(false);
   const [loaded, setLoaded] = useState<Loaded>({ state: "idle" });
   const trigger = useRef<HTMLAnchorElement>(null);
@@ -130,13 +132,13 @@ export function FilePreview({ file, compact }: { file: PreviewFile; compact: boo
                 {file.meta ? <div className="gf-meta">{file.meta}</div> : null}
               </div>
               <div className="gf-act">
-                <a className="gf-btn icon" href={file.url} download={file.name} aria-label={`下载 ${file.name}`} title="下载">
+                <a className="gf-btn icon" href={file.url} download={file.name} aria-label={t.downloadNamed(file.name)} title={t.download}>
                   <ActionGlyph name="download" />
                 </a>
-                <a className="gf-btn icon" href={file.url} target="_blank" rel="noopener noreferrer" aria-label={`在新标签页打开 ${file.name}`} title="在新标签页打开">
+                <a className="gf-btn icon" href={file.url} target="_blank" rel="noopener noreferrer" aria-label={t.openNamedInTab(file.name)} title={t.openInTab}>
                   <ActionGlyph name="external" />
                 </a>
-                <button ref={closeButton} type="button" className="gf-btn icon" onClick={close} aria-label="关闭预览" title="关闭">
+                <button ref={closeButton} type="button" className="gf-btn icon" onClick={close} aria-label={t.closePreview} title={ui(lang).close.trim()}>
                   <ActionGlyph name="close" />
                 </button>
               </div>
@@ -147,14 +149,14 @@ export function FilePreview({ file, compact }: { file: PreviewFile; compact: boo
                   <div className="markdown-body prose gf-doc" dangerouslySetInnerHTML={{ __html: loaded.html }} />
                 ) : loaded.state === "error" ? (
                   <div className="gf-state" role="alert">
-                    <p>预览没能载入。</p>
+                    <p>{t.previewFailed}</p>
                     <div className="gf-state-act">
-                      <button type="button" className="gf-btn" onClick={() => load()}>重试</button>
-                      <a className="gf-btn" href={file.url} download={file.name}>下载文件</a>
+                      <button type="button" className="gf-btn" onClick={() => load()}>{t.retry}</button>
+                      <a className="gf-btn" href={file.url} download={file.name}>{t.downloadFile}</a>
                     </div>
                   </div>
                 ) : (
-                  <div className="gf-state" role="status">正在载入预览…</div>
+                  <div className="gf-state" role="status">{t.previewLoading}</div>
                 )}
               </div>
             ) : (
@@ -165,7 +167,7 @@ export function FilePreview({ file, compact }: { file: PreviewFile; compact: boo
                 <span tabIndex={0} className="gf-sentinel" data-gf-sentinel="after" onFocus={fromAfter} />
               </div>
             )}
-            <p className="gf-hint">Esc 关闭</p>
+            <p className="gf-hint">{t.escClose}</p>
           </aside>
         </div>,
         document.body,
@@ -183,10 +185,10 @@ export function FilePreview({ file, compact }: { file: PreviewFile; compact: boo
         data-compact={compact ? "true" : undefined}
         onClick={openDrawer}
         aria-haspopup="dialog"
-        aria-label={`预览 ${file.name}`}
+        aria-label={t.previewNamed(file.name)}
       >
         <ActionGlyph name="eye" />
-        <span className="gf-lb">预览</span>
+        <span className="gf-lb">{t.preview}</span>
       </a>
       {drawer}
     </>

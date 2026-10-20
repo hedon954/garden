@@ -374,7 +374,7 @@ export function TableOfContents({
               type="button"
               aria-controls={childListId}
               aria-expanded={!collapsed}
-              aria-label={`${collapsed ? "展开" : "收起"}「${node.text}」的子目录`}
+              aria-label={t.tocToggle(collapsed, node.text)}
               onClick={() => toggleSection(node.id)}
             >
               <span aria-hidden="true">{collapsed ? "+" : "−"}</span>
