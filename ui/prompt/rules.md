@@ -1,6 +1,6 @@
 # 把作者的想法编译成 Garden 块
 
-文章里只有一种写法：`garden` 围栏。名字只有 card、stat、compare、timeline、chart、figure、html、interactive。裸 `garden` 围栏是作者的想法，发布前编译掉。不要再写 `ui`、`widget`、`embed`、`intent` 或 `garden:名字`。
+文章里只有一种写法：`garden` 围栏。名字只有 card、stat、compare、timeline、chart、figure、html、interactive、file、relations、list、choice。裸 `garden` 围栏是作者的想法，发布前编译掉。不要再写 `ui`、`widget`、`embed`、`intent` 或 `garden:名字`。
 
 ## 只用作者的原文
 

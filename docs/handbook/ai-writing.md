@@ -86,8 +86,8 @@ Agent 按 `garden-ui` skill 会把这个想法块替换成一段紧挨着完整�
 
 不借助 AI 手写组件时，可以直接使用包内自带的模板与代码片段：
 
-- `make new` 创建的草稿底部自带一段 `<!-- 组件速查 ... -->` 注释，包含想法块和 9 个组件的示例，写完可直接删掉。
-- `templates/garden-blocks.md` 汇总了想法块与 9 个组件的适用场景（`when` / `whenNot`）和可复制示例；macOS 与 Typora / Alfred 用户可导入 `templates/garden-snippets.plist`，输入 `;gidea`（或 `;garden想法`）、`;gcard`、`;gstat`、`;gcompare`、`;gtimeline`、`;gchart`、`;gfigure`、`;ghtml`、`;ginteractive`、`;gfile` 即可展开对应围栏。
+- `make new` 创建的草稿底部自带一段 `<!-- 组件速查 ... -->` 注释，包含想法块和 12 个组件的示例，写完可直接删掉。
+- `templates/garden-blocks.md` 汇总了想法块与 12 个组件的适用场景（`when` / `whenNot`）和可复制示例；macOS 与 Typora / Alfred 用户可导入 `templates/garden-snippets.plist`，输入 `;gidea`（或 `;garden想法`）、`;gcard`、`;gstat`、`;gcompare`、`;gtimeline`、`;gchart`、`;gfigure`、`;ghtml`、`;ginteractive`、`;gfile`、`;grel`、`;glist`、`;gchoice` 即可展开对应围栏。
 - 引擎仓库的 `editors/vscode`、`editors/typora` 与 `editors/obsidian` 目录提供了对应的编辑器片段与插件支持，运行 `npx garden ui catalog` 则可在本地生成 `.garden/ui-catalog.html` 离线组件画廊。
 
 ## 7. 可选的独立管理后台

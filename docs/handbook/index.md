@@ -166,7 +166,7 @@ items:
     caption: 宽表格在桌面端向两侧对称外扩上限
 ```
 
-9 个内置组件的完整参数与实时示例见左侧导航的 [组件总览](/garden/components)。
+12 个内置组件的完整参数与实时示例见左侧导航的 [组件总览](/garden/components)。
 
 <h2 id="garden-admin-title">从初始化到日常写作</h2>
 
