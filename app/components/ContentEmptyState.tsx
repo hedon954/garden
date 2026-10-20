@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { ArrowRight, Article, Books, Quotes } from "@phosphor-icons/react/ssr";
 import { siteHref } from "../lib/site-href";
+import { siteLang } from "../lib/i18n";
 
 const emptyContent = {
   posts: {
@@ -31,8 +32,35 @@ const emptyContent = {
   },
 } as const;
 
+const emptyContentEn = {
+  posts: {
+    icon: Article,
+    eyebrow: "No posts yet",
+    title: "No posts yet.",
+    description: "Published posts will appear here in chronological order.",
+    actionHref: "/",
+    actionLabel: "Back to home",
+  },
+  thoughts: {
+    icon: Quotes,
+    eyebrow: "No thoughts yet",
+    title: "No thoughts yet.",
+    description: "Short notes and links will appear here.",
+    actionHref: "/blog",
+    actionLabel: "Read posts",
+  },
+  columns: {
+    icon: Books,
+    eyebrow: "No columns yet",
+    title: "No columns yet.",
+    description: "Series of related posts will be listed here in reading order.",
+    actionHref: "/blog",
+    actionLabel: "Browse posts",
+  },
+} as const;
+
 export function ContentEmptyState({ kind }: { kind: keyof typeof emptyContent }) {
-  const content = emptyContent[kind];
+  const content = (siteLang === "en" ? emptyContentEn : emptyContent)[kind];
   const Icon = content.icon;
 
   return (

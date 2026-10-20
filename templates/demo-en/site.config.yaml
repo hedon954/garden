@@ -1,0 +1,47 @@
+name: "Garden · Field Notes"
+tagline: "Writing · Notes · Quiet Tools"
+description: "Essays, short thoughts, and thematic columns."
+locale: en_US
+url: https://hedon954.github.io/garden-docs-en
+
+author:
+  name: "Garden Demo"
+  github: your-github-id
+  githubBio: "Writing about software, plain text, and quiet reading interfaces."
+  githubPinned: []
+
+pages:
+  home:
+    title: |-
+      Plain Markdown, warm paper,
+      built for long-form reading.
+    subtitle: "Notes on software engineering, reading typography, and small tools that age well."
+  blog:
+    title: "Posts"
+    subtitle: "Longer essays and technical notes."
+  thoughts:
+    title: "Thoughts"
+    subtitle: "Short observations, working notes, and bookmarks."
+  columns:
+    title: "Columns"
+    subtitle: "Series of related posts arranged in reading order."
+  about:
+    title: "A quiet corner for long-form technical writing."
+    subtitle: "Built with Garden — Markdown files in Git, static HTML out."
+    heading: "About This Demo"
+    paragraphs:
+      - "This site is the English showcase for Garden, a static blog framework designed around comfortable long-form reading on warm paper."
+      - "Every post, column entry, and short thought is a plain Markdown file in content/, checked before build and exported as static HTML."
+    quote: "Keep the source in plain text; let the page get out of the reader's way."
+    focus:
+      - "Readable typography"
+      - "Plain-text workflows"
+      - "Small, durable tools"
+    cta:
+      href: /blog
+      label: Browse posts
+  garden:
+    title: "Write in Markdown · Push to Publish"
+    subtitle: "Write posts, thoughts, and columns in Markdown and keep them in your own Git repository."
+
+footer: "Built with Garden."

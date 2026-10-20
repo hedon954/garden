@@ -1,0 +1,8 @@
+columns:
+  - slug: small-tools
+    title: "Small Tools & Plain Text"
+    description: "Practical notes on building command-line tools, static pipelines, and plain-text archives that stay readable ten years later."
+    status: "Ongoing"
+    posts:
+      - small-tools/plain-text-first
+      - small-tools/calm-defaults

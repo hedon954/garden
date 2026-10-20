@@ -8,6 +8,7 @@ import {
   MapPin,
   Users,
 } from "@phosphor-icons/react";
+import { siteLang } from "../lib/i18n";
 
 export type GithubPublicProfile = {
   avatar_url: string;
@@ -70,28 +71,29 @@ export function GithubLiveOverview({
     return () => controller.abort();
   }, [username]);
 
+  const en = siteLang === "en";
   const displayName = visibleGithubText(profile.name ?? profile.login) || profile.login;
   const profileBio = profile.bio?.trim();
   const signature = statusMessage?.trim() || profileBio;
   const syncLabel = syncState === "synced"
-    ? "本次访问已同步"
+    ? (en ? "Synced this visit" : "本次访问已同步")
     : syncState === "snapshot"
-      ? "暂用发布时快照"
-      : "正在同步当前资料";
+      ? (en ? "Build snapshot" : "暂用发布时快照")
+      : (en ? "Syncing profile" : "正在同步当前资料");
 
   return (
     <>
       <header className="github-overview">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={profile.avatar_url} alt={`${profile.login} 的 GitHub 头像`} />
+        <img src={profile.avatar_url} alt={en ? `${profile.login} GitHub avatar` : `${profile.login} 的 GitHub 头像`} />
         <div className="github-identity">
-          <span className="eyebrow" aria-live="polite"><GithubLogo size={17} /> GitHub 公开资料 · {syncLabel}</span>
+          <span className="eyebrow" aria-live="polite"><GithubLogo size={17} /> {en ? `GitHub profile · ${syncLabel}` : `GitHub 公开资料 · ${syncLabel}`}</span>
           <h2>{displayName}</h2>
           {signature && <p>{signature}</p>}
           {profile.location && <span className="github-location"><MapPin size={14} />{profile.location}</span>}
         </div>
         <a href={profile.html_url} target="_blank" rel="noopener noreferrer">
-          查看 GitHub
+          {en ? "View GitHub" : "查看 GitHub"}
           <ArrowUpRight size={16} />
         </a>
       </header>
@@ -99,7 +101,7 @@ export function GithubLiveOverview({
       <dl className="github-metrics">
         <div>
           <GithubLogo size={21} aria-hidden="true" />
-          <dt>公开仓库</dt>
+          <dt>{en ? "Public repos" : "公开仓库"}</dt>
           <dd>{syncState === "synced" || initialLive ? profile.public_repos : "—"}</dd>
         </div>
         <div>
@@ -109,7 +111,7 @@ export function GithubLiveOverview({
         </div>
         <div>
           <GitCommit size={21} aria-hidden="true" />
-          <dt>近 30 天 commits</dt>
+          <dt>{en ? "Commits (30d)" : "近 30 天 commits"}</dt>
           <dd>{recentCommits ?? "—"}</dd>
         </div>
       </dl>

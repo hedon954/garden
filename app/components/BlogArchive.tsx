@@ -17,6 +17,7 @@ import {
 } from "../lib/tag-filter";
 import { ContentEmptyState } from "./ContentEmptyState";
 import { siteHref } from "../lib/site-href";
+import { siteLang } from "../lib/i18n";
 
 function day(value: string) {
   const date = new Date(value);
@@ -72,6 +73,7 @@ export function BlogArchiveFallback({ posts, series }: ArchiveData) {
 }
 
 function ArchiveView({ posts, series, selected, go }: ArchiveData & { selected: string[]; go: (next: string[]) => void }) {
+  const en = siteLang === "en";
   const [compact, setCompact] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const options = useMemo(() => tagOptions(posts, selected), [posts, selected]);
@@ -81,7 +83,7 @@ function ArchiveView({ posts, series, selected, go }: ArchiveData & { selected: 
     .sort((left, right) => Date.parse(right.date) - Date.parse(left.date));
   const years = new Map<string, typeof filtered>();
   for (const post of filtered) {
-    const year = day(post.date).slice(0, 4) || "未知";
+    const year = day(post.date).slice(0, 4) || (en ? "Unknown" : "未知");
     const list = years.get(year);
     if (list) list.push(post);
     else years.set(year, [post]);
@@ -92,7 +94,7 @@ function ArchiveView({ posts, series, selected, go }: ArchiveData & { selected: 
       <div>
         {options.length ? (
           <div className="sh-tagfilter">
-            <ul className="sh-tagchips" aria-label="按标签筛选">
+            <ul className="sh-tagchips" aria-label={en ? "Filter by tag" : "按标签筛选"}>
               {shown.map((option) => (
                 <li key={option.tag}>
                   <button
@@ -111,7 +113,7 @@ function ArchiveView({ posts, series, selected, go }: ArchiveData & { selected: 
               {hidden > 0 || expanded ? (
                 <li>
                   <button type="button" className="sh-tagmore" aria-expanded={expanded} onClick={() => setExpanded(!expanded)}>
-                    {expanded ? "收起" : `展开全部 ${options.length} 个标签`}
+                    {en ? (expanded ? "Collapse" : `Show all ${options.length} tags`) : (expanded ? "收起" : `展开全部 ${options.length} 个标签`)}
                   </button>
                 </li>
               ) : null}
@@ -119,17 +121,17 @@ function ArchiveView({ posts, series, selected, go }: ArchiveData & { selected: 
           </div>
         ) : null}
         <div className="sh-status">
-          <span aria-live="polite">{tagSummary(selected.length, filtered.length)}</span>
-          {selected.length ? <button type="button" onClick={() => go([])}>清除</button> : null}
-          <div className="sh-view" role="group" aria-label="列表密度">
-            <button type="button" aria-pressed={!compact} onClick={() => setCompact(false)}>摘要</button>
-            <button type="button" aria-pressed={compact} onClick={() => setCompact(true)}>紧凑</button>
+          <span aria-live="polite">{tagSummary(selected.length, filtered.length, siteLang)}</span>
+          {selected.length ? <button type="button" onClick={() => go([])}>{en ? "Clear" : "清除"}</button> : null}
+          <div className="sh-view" role="group" aria-label={en ? "List density" : "列表密度"}>
+            <button type="button" aria-pressed={!compact} onClick={() => setCompact(false)}>{en ? "Summary" : "摘要"}</button>
+            <button type="button" aria-pressed={compact} onClick={() => setCompact(true)}>{en ? "Compact" : "紧凑"}</button>
           </div>
         </div>
         <div id="sh-list" className={compact ? "is-compact" : undefined}>
           {filtered.length ? [...years.entries()].map(([year, entries]) => (
             <section className="sh-year" id={`y${year}`} key={year} aria-labelledby={`yh${year}`}>
-              <h2 id={`yh${year}`}>{year}<span className="n">{entries.length} 篇</span></h2>
+              <h2 id={`yh${year}`}>{year}<span className="n">{en ? `${entries.length} ${entries.length === 1 ? "post" : "posts"}` : `${entries.length} 篇`}</span></h2>
               <ol className="sh-rows">
                 {entries.map((post) => (
                   <li className="sh-row" key={post.path}>
@@ -137,7 +139,7 @@ function ArchiveView({ posts, series, selected, go }: ArchiveData & { selected: 
                     <div className="archive-copy">
                       <h3>
                         <Link href={postHref(post)}>{post.title}</Link>
-                        {post.pinned ? <span className="pin">置顶</span> : null}
+                        {post.pinned ? <span className="pin">{en ? "Pinned" : "置顶"}</span> : null}
                       </h3>
                       {post.description ? <p>{post.description}</p> : null}
                     </div>
@@ -148,19 +150,19 @@ function ArchiveView({ posts, series, selected, go }: ArchiveData & { selected: 
             </section>
           )) : selected.length ? (
             <div className="sh-tagempty">
-              <p>没有同时带这些标签的文章。</p>
+              <p>{en ? "No posts match all of these tags." : "没有同时带这些标签的文章。"}</p>
               <div className="acts">
                 {selected.length > 1 ? (
-                  <button type="button" onClick={() => go(selected.slice(0, -1))}>去掉「{selected[selected.length - 1]}」</button>
+                  <button type="button" onClick={() => go(selected.slice(0, -1))}>{en ? `Remove "${selected[selected.length - 1]}"` : `去掉「${selected[selected.length - 1]}」`}</button>
                 ) : null}
-                <button type="button" onClick={() => go([])}>看全部文章</button>
+                <button type="button" onClick={() => go([])}>{en ? "View all posts" : "看全部文章"}</button>
               </div>
             </div>
           ) : <ContentEmptyState kind="posts" />}
         </div>
       </div>
-      <aside className="sh-rail" aria-label="按年份跳转">
-        {years.size ? <h2>按年份</h2> : null}
+      <aside className="sh-rail" aria-label={en ? "Jump by year" : "按年份跳转"}>
+        {years.size ? <h2>{en ? "By year" : "按年份"}</h2> : null}
         <ol>
           {[...years.keys()].map((year) => (
             <li key={year}>
@@ -170,7 +172,7 @@ function ArchiveView({ posts, series, selected, go }: ArchiveData & { selected: 
         </ol>
         {series.length ? (
           <>
-            <h2>专栏</h2>
+            <h2>{en ? "Columns" : "专栏"}</h2>
             <ol>
               {series.map((column) => (
                 <li key={column.slug}>

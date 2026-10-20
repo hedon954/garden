@@ -5,16 +5,25 @@ import { PageIntro } from "../components/PageIntro";
 import { siteConfig } from "../site.config";
 import { siteHref } from "../lib/site-href";
 import { pageAlternates } from "../lib/page-alternates";
+import { siteLang } from "../lib/i18n";
 
+const en = siteLang === "en";
 const about = siteConfig.pages.about;
-const heading = about.heading ?? "关于";
-const paragraphs = about.paragraphs ?? [
-  "一名工程师。平时写代码，也把想清楚的问题记下来。",
-  "这里放文章、随想和专栏。",
-];
+const heading = about.heading ?? (en ? "About" : "关于");
+const paragraphs = about.paragraphs ?? (
+  en
+    ? [
+        "Software engineer writing notes on tools, typography, and systems.",
+        "Longer essays, short thoughts, and thematic columns live here.",
+      ]
+    : [
+        "一名工程师。平时写代码，也把想清楚的问题记下来。",
+        "这里放文章、随想和专栏。",
+      ]
+);
 const quote = about.quote ?? "";
-const focus = about.focus ?? ["软件", "笔记", "日常"];
-const cta = about.cta ?? { href: "/blog", label: "浏览博文" };
+const focus = about.focus ?? (en ? ["Software", "Notes", "Craft"] : ["软件", "笔记", "日常"]);
+const cta = about.cta ?? { href: "/blog", label: en ? "Read posts" : "浏览博文" };
 
 export const metadata = {
   title: { absolute: siteConfig.name },
@@ -26,7 +35,7 @@ export default function AboutPage() {
   return (
     <main className="page-shell about-page">
       <PageIntro
-        eyebrow="关于"
+        eyebrow={en ? "ABOUT" : "关于"}
         title={about.title}
         subtitle={about.subtitle}
       />
@@ -40,7 +49,7 @@ export default function AboutPage() {
           {quote ? <blockquote>{quote}</blockquote> : null}
         </section>
         <aside className="about-facts">
-          <span>现在关注</span>
+          <span>{en ? "Focus" : "现在关注"}</span>
           <ul>
             {focus.map((item) => (
               <li key={item}>{item}</li>

@@ -1,4 +1,5 @@
 import { referenceColumns, referenceDomain } from "../../ui/garden/references.mjs";
+import { siteLang } from "../lib/i18n";
 
 type ReferenceItem = {
   title: string;
@@ -19,7 +20,7 @@ export function ArticleReferences({
       className={split ? "article-references is-split" : "article-references"}
       aria-labelledby="article-references-heading"
     >
-      <h2 id="article-references-heading">参考</h2>
+      <h2 id="article-references-heading">{siteLang === "en" ? "References" : "参考"}</h2>
       <ol>
         {references.map((item, index) => {
           const domain = item.domain ?? referenceDomain(item.url);

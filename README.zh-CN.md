@@ -4,12 +4,12 @@
 
 Garden 是一个用 Markdown 写作、用 Git 管理稿件的个人博客框架，支持长文、随想与专栏连载。你的站点仓库只保留 `site.config.yaml` 和 `content/`，阅读排版、GitHub Pages 静态导出与本地检查都由 `hd-garden` 包提供；正文中需要放图表、对比卡片或可调公式时，只需在稿件里写一句自然语言描述，交给编码 Agent 用与提交前钩子同一套 CLI 编译写回。
 
-![Garden 浅色模式首页，展示暖纸底色、衬线大标题与最新文章卡片](docs/screenshots/01-home-light.png)
+![Garden 浅色模式首页，展示暖纸底色、衬线大标题与最新文章卡片](docs/screenshots/zh/01-home-light.png)
 
-| ![文章阅读页的宽表格、语义提示框与右侧浮动目录](docs/screenshots/02-article-table-toc.png) | ![使用说明中的 card 组件渲染效果与对应的 Markdown 围栏源码](docs/screenshots/03-components-cards.png) |
+| ![文章阅读页的宽表格、语义提示框与右侧浮动目录](docs/screenshots/zh/02-article-table-toc.png) | ![使用说明中的 card 组件渲染效果与对应的 Markdown 围栏源码](docs/screenshots/zh/03-components-cards.png) |
 | :--- | :--- |
 | **长文阅读排版**：`740px` 正文阅读列、向两侧对称外扩的宽表与宽图、语义提示框以及右侧浮动目录。 | **内置结构化组件**：9 种 `garden` 组件（`card`、`stat`、`compare`、`timeline`、`chart`、`figure`、`html`、`interactive`、`file`），可手写也可由一句话想法编译生成。 |
-| ![深色模式下的文章页标题区与配图](docs/screenshots/04-article-dark.png) | ![移动端下的 Garden 首页排版](docs/screenshots/05-mobile-home.png) |
+| ![深色模式下的文章页标题区与配图](docs/screenshots/zh/04-article-dark.png) | ![移动端下的 Garden 首页排版](docs/screenshots/zh/05-mobile-home.png) |
 | **深色模式**：暖炭灰背景搭配透明深色线条图自动铺设的 `#faf9f5` 暖纸衬底。 | **移动端适配**：响应式字号、可收起的导航与目录抽屉，以及构建期写入图片尺寸带来的零布局跳动。 |
 
 ## 快速开始
@@ -74,9 +74,9 @@ make dev
 
 ## 使用说明与深入文档
 
-本地运行 `make dev` 后访问 `/garden`（英文版在 `/garden/en`），或直接阅读仓库内的文档：
+本地运行 `make dev` 后访问 `/garden`，或直接阅读仓库内的文档：
 
-- **[Garden 使用说明（中文）](docs/handbook/index.md)** · **[Garden Handbook (English)](docs/handbook/en/index.md)**：[快速开始](docs/handbook/start.md)、[用 AI 写作](docs/handbook/ai-writing.md)、[站点与专栏配置](docs/handbook/config.md)、[发布到 GitHub Pages](docs/handbook/deploy.md)、[写文章与随想](docs/handbook/writing.md)、[阅读排版是怎么工作的](docs/handbook/design.md)、[组件总览](docs/handbook/components.md) 与 [语法检查与快捷输入](docs/handbook/workflow.md)。
+- **[Garden 使用说明](docs/handbook/index.md)**：[快速开始](docs/handbook/start.md)、[用 AI 写作](docs/handbook/ai-writing.md)、[站点与专栏配置](docs/handbook/config.md)、[发布到 GitHub Pages](docs/handbook/deploy.md)、[写文章与随想](docs/handbook/writing.md)、[阅读排版是怎么工作的](docs/handbook/design.md)、[组件总览](docs/handbook/components.md) 与 [语法检查与快捷输入](docs/handbook/workflow.md)。
 - **[从零开始](docs/quick-start.md)** 与 **[GitHub Pages 部署](docs/github-pages.md)**：单公开仓库或「私有源码仓库 + 公开页面仓库」的 Actions 配置与 Giscus 评论接入。
 - **[独立管理后台](docs/admin-service.md)**：`/admin` 的环境变量配置与部署说明。
 

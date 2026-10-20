@@ -61,6 +61,7 @@
     "dev": "node bin/garden.mjs dev",
     "prebuild": "npm run content:sync",
     "build": "node bin/garden.mjs build",
+    "demo:en": "STATIC_EXPORT=1 NEXT_PUBLIC_BASE_PATH=/garden-docs-en GARDEN_SITE=templates/demo-en node bin/garden.mjs build && NEXT_PUBLIC_BASE_PATH=/garden-docs-en GARDEN_SITE=templates/demo-en node bin/garden.mjs pages:validate",
     "start": "node bin/garden.mjs start",
     "admin:local": "npm run start -- --host 0.0.0.0 --port 3000",
     "admin:cloudflare": "npm run build && wrangler deploy --config dist/server/wrangler.json",

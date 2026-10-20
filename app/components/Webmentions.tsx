@@ -8,7 +8,7 @@ import {
   Quotes,
   Repeat,
 } from "@phosphor-icons/react";
-import { ui } from "../lib/i18n";
+import { siteLang, ui } from "../lib/i18n";
 
 type WebmentionEntry = {
   author?: {
@@ -89,6 +89,8 @@ export function Webmentions({
     [entries],
   );
 
+  const en = siteLang === "en";
+
   return (
     <section className="webmentions" aria-labelledby="webmentions-heading">
       <div className="webmention-title">
@@ -102,26 +104,26 @@ export function Webmentions({
       {!endpoint && (
         <div className="integration-notice">
           <Quotes size={20} weight="fill" />
-          <p>接收与展示代码已经就绪，注册正式域名后即可开始收集回应。</p>
+          <p>{en ? "Webmention receiving and display are ready; connect a domain to start collecting responses." : "接收与展示代码已经就绪，注册正式域名后即可开始收集回应。"}</p>
         </div>
       )}
 
       {endpoint && loading && (
         <p className="integration-status" role="status">
-          正在读取开放网络回应…
+          {en ? "Loading Webmentions…" : "正在读取开放网络回应…"}
         </p>
       )}
 
       {endpoint && failed && (
         <p className="integration-status" role="status">
-          暂时无法读取回应，稍后会自动恢复。
+          {en ? "Could not load Webmentions right now; will retry automatically." : "暂时无法读取回应，稍后会自动恢复。"}
         </p>
       )}
 
       {endpoint && !loading && !failed && entries.length === 0 && (
         <div className="integration-notice">
           <Quotes size={20} weight="fill" />
-          <p>还没有站外回应。任何链接到这篇文章的网站都可以向它发送 Webmention。</p>
+          <p>{en ? "No Webmentions yet. Any site that links to this post can send one." : "还没有站外回应。任何链接到这篇文章的网站都可以向它发送 Webmention。"}</p>
         </div>
       )}
 
@@ -130,15 +132,15 @@ export function Webmentions({
           <span>
             <Heart size={16} weight="fill" />
             <Repeat size={16} />
-            {reactions.length} 个喜欢、转发或收藏
+            {en ? `${reactions.length} likes, reposts, or bookmarks` : `${reactions.length} 个喜欢、转发或收藏`}
           </span>
-          <div className="webmention-facepile" aria-label="回应者">
+          <div className="webmention-facepile" aria-label={en ? "Responders" : "回应者"}>
             {reactions.slice(0, 16).map((entry, index) => (
               <a
                 href={entry.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                aria-label={entry.author?.name ?? "查看站外回应"}
+                aria-label={entry.author?.name ?? (en ? "View response" : "查看站外回应")}
                 key={`${entry.url}-${index}`}
               >
                 {entry.author?.photo ? (
@@ -165,10 +167,10 @@ export function Webmentions({
             return (
               <article key={`${entry.url}-${index}`}>
                 <header>
-                  <strong>{entry.author?.name ?? "开放网络访客"}</strong>
+                  <strong>{entry.author?.name ?? (en ? "Open web visitor" : "开放网络访客")}</strong>
                   {received && (
                     <time dateTime={received}>
-                      {new Intl.DateTimeFormat("zh-CN", {
+                      {new Intl.DateTimeFormat(en ? "en-US" : "zh-CN", {
                         year: "numeric",
                         month: "2-digit",
                         day: "2-digit",
@@ -182,7 +184,7 @@ export function Webmentions({
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  查看原文
+                  {en ? "Source" : "查看原文"}
                   <ArrowSquareOut size={14} />
                 </a>
               </article>

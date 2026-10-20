@@ -1,7 +1,10 @@
 import type { NextConfig } from "next";
 import { trailingSlashEnabled } from "./ui/garden/site-href.mjs";
 
+const basePath = (process.env.NEXT_PUBLIC_BASE_PATH ?? "").replace(/\/+$/u, "");
+
 const nextConfig: NextConfig = {
+  ...(basePath ? { basePath } : {}),
   ...(process.env.STATIC_EXPORT === "1"
     ? {
         output: "export",

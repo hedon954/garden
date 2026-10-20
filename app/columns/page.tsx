@@ -4,6 +4,7 @@ import { columnHref, columns } from "../lib/content";
 import { ContentEmptyState } from "../components/ContentEmptyState";
 import { siteConfig, siteDocumentTitle } from "../site.config";
 import { pageAlternates } from "../lib/page-alternates";
+import { siteLang } from "../lib/i18n";
 
 export const metadata = {
   title: siteDocumentTitle,
@@ -36,22 +37,24 @@ export default function ColumnsPage() {
     entries: [...entries].sort((left, right) => Date.parse(right.date) - Date.parse(left.date)),
   }));
 
+  const en = siteLang === "en";
+
   return (
     <main className="sh-main" id="content">
       <div className="sh-head">
-        <h1>{siteConfig.pages.columns.title || "专栏"}</h1>
+        <h1>{siteConfig.pages.columns.title || (en ? "Columns" : "专栏")}</h1>
         {siteConfig.pages.columns.subtitle ? <p className="sh-deck">{siteConfig.pages.columns.subtitle}</p> : null}
       </div>
       {grouped.length ? grouped.map(({ slug, first, entries }) => (
         <section className="sh-series" aria-labelledby={slug} key={slug}>
           <div className="cover" style={{ background: "var(--well)" }}>
-            {first.columnCover ? <img className="column-feature-cover" src={first.columnCover} alt={first.columnCoverAlt ?? `${first.columnTitle} 封面`} /> : null}
+            {first.columnCover ? <img className="column-feature-cover" src={first.columnCover} alt={first.columnCoverAlt ?? `${first.columnTitle} ${en ? "cover" : "封面"}`} /> : null}
           </div>
           <div className="body">
             <h2 id={slug}>{first.columnTitle}</h2>
-            <p className="count">阅读清单，{entries.length} 篇，{first.columnStatus ?? "持续更新"}</p>
-            <p className="desc">{first.columnDescription ?? first.description ?? "按顺序组织的专题文章系列。"}</p>
-            <ol aria-label={`${first.columnTitle}，从新到旧`}>
+            <p className="count">{en ? `Reading list · ${entries.length} posts · ${first.columnStatus ?? "ongoing"}` : `阅读清单，${entries.length} 篇，${first.columnStatus ?? "持续更新"}`}</p>
+            <p className="desc">{first.columnDescription ?? first.description ?? (en ? "A series of posts arranged in reading order." : "按顺序组织的专题文章系列。")}</p>
+            <ol aria-label={en ? `${first.columnTitle}, newest first` : `${first.columnTitle}，从新到旧`}>
               {entries.map((entry) => (
                 <li key={entry.path}>
                   <Link href={columnHref(entry)}>{entry.title}</Link>

@@ -4,6 +4,7 @@ import { ContentEmptyState } from "../components/ContentEmptyState";
 import { PageIntro } from "../components/PageIntro";
 import { siteConfig, siteDocumentTitle } from "../site.config";
 import { pageAlternates } from "../lib/page-alternates";
+import { siteLang } from "../lib/i18n";
 
 export const metadata = {
   title: siteDocumentTitle,
@@ -17,7 +18,7 @@ export default function ThoughtsPage() {
   return (
     <main className="page-shell thoughts-page">
       <PageIntro
-        eyebrow="THOUGHTS / 随想"
+        eyebrow={siteLang === "en" ? "THOUGHTS" : "THOUGHTS / 随想"}
         title={siteConfig.pages.thoughts.title}
         subtitle={siteConfig.pages.thoughts.subtitle}
       />

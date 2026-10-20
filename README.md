@@ -4,12 +4,12 @@
 
 Garden is a personal blog framework for writing long-form posts, short thoughts, and ordered columns in Markdown inside your own Git repository. Your site repo holds only `site.config.yaml` and `content/`, while `hd-garden` handles typography, static export for GitHub Pages, and local checks. When a paragraph calls for a chart, a comparison card, or an interactive calculator, you can write a single plain-language sentence in the draft and let your coding Agent compile it with the same CLI that guards your commits.
 
-![Garden home page in light mode with warm paper background, serif display heading, and featured post card](docs/screenshots/01-home-light.png)
+![Garden home page in light mode with warm paper background, serif display heading, and featured post card](docs/screenshots/en/01-home-light.png)
 
-| ![Article view with wide table, callouts, and floating table of contents](docs/screenshots/02-article-table-toc.png) | ![Handbook component page showing a rendered card and its Markdown fence](docs/screenshots/03-components-cards.png) |
+| ![Article view with wide table, callouts, and floating table of contents](docs/screenshots/en/02-article-table-toc.png) | ![Handbook component page showing a rendered card and its Markdown fence](docs/screenshots/en/03-components-cards.png) |
 | :--- | :--- |
 | **Long-form reading**: `740px` prose column, tables and figures that widen into the margins, semantic callouts, and a floating table of contents. | **Built-in components**: 9 `garden` block types (`card`, `stat`, `compare`, `timeline`, `chart`, `figure`, `html`, `interactive`, `file`) written by hand or compiled from a one-sentence idea. |
-| ![Article header and cover image rendered in dark mode](docs/screenshots/04-article-dark.png) | ![Mobile view of the Garden home page](docs/screenshots/05-mobile-home.png) |
+| ![Article header and cover image rendered in dark mode](docs/screenshots/en/04-article-dark.png) | ![Mobile view of the Garden home page](docs/screenshots/en/05-mobile-home.png) |
 | **Dark mode**: warm charcoal surfaces with automatic `#faf9f5` paper backing behind transparent dark-line diagrams. | **Mobile layout**: responsive typography, collapsible navigation and table-of-contents drawers, and zero-CLS image sizing. |
 
 ## Quick Start
@@ -45,7 +45,7 @@ If you use a custom npm mirror locally, keep `registry` in `~/.npmrc` so mirror 
 ### 1. Reading Layout and Typography
 
 - **Three-tier adaptive widths**: prose stays in a `740px` column (`17px` body copy), wide figures expand up to `1040px`, and wide tables expand up to `1340px` without overlapping the `200px` floating table of contents.
-- **Two-line title splitting**: write ` | ` (with spaces on both sides) or `丨` inside a title to split it across two lines and scale the heading to fit the wider line.
+- **Two-line title splitting**: write ` | ` (with spaces on both sides) inside a title to split it across two lines and scale the heading to fit the wider line.
 - **Build-time image sizing and dark backing**: `npx garden sync` records intrinsic `width` and `height` for local images to prevent layout shift, and dark mode places a `#faf9f5` paper backing behind transparent diagrams so dark strokes remain legible without CSS filter inversion.
 - **Technical Markdown out of the box**: KaTeX math (`$...$` and `$$...$$`), Mermaid diagrams, syntax-highlighted code blocks with copy buttons, adjacent `diff` fences that merge into a `Code / Diff from previous` toggle, CJK-friendly bold, `<u>` highlighter strokes, and Open Graph link cards (`{card}`).
 
@@ -74,9 +74,9 @@ Ask your Agent to compile the post using the bundled `garden-ui` skill:
 
 ## Handbook and Reference Docs
 
-Start `make dev` and open `/garden/en` (Chinese at `/garden`), or read the Markdown sources in this repository:
+Start `make dev` and open `/garden/en`, or read the Markdown sources in this repository:
 
-- **[Garden Handbook (English)](docs/handbook/en/index.md)** · **[Garden 使用说明（中文）](docs/handbook/index.md)**: [Quick Start](docs/handbook/en/start.md), [Writing with AI](docs/handbook/en/ai-writing.md), [Site & Column Config](docs/handbook/en/config.md), [Deploy to GitHub Pages](docs/handbook/en/deploy.md), [Writing Posts & Thoughts](docs/handbook/en/writing.md), [How the Reading Layout Works](docs/handbook/en/design.md), [Components Overview](docs/handbook/en/components.md), and [Checks & Shortcuts](docs/handbook/en/workflow.md).
+- **[Garden Handbook](docs/handbook/en/index.md)**: [Quick Start](docs/handbook/en/start.md), [Writing with AI](docs/handbook/en/ai-writing.md), [Site & Column Config](docs/handbook/en/config.md), [Deploy to GitHub Pages](docs/handbook/en/deploy.md), [Writing Posts & Thoughts](docs/handbook/en/writing.md), [How the Reading Layout Works](docs/handbook/en/design.md), [Components Overview](docs/handbook/en/components.md), and [Checks & Shortcuts](docs/handbook/en/workflow.md).
 - **[Quick Start Guide](docs/quick-start.md)** and **[GitHub Pages Deployment](docs/github-pages.md)**: single public repository or private source + public Pages repository workflows, plus Giscus comments.
 - **[Admin Service](docs/admin-service.md)**: `/admin` configuration, environment variables, and deployment options.
 

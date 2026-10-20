@@ -6,18 +6,28 @@ function shanghaiDate(value: string) {
   return new Date(date.getTime() + shanghaiOffsetMs);
 }
 
+const MONTHS_EN = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
 /** Calendar date in Asia/Shanghai, the zone the demo uses for 「2026 年 9 月 18 日」. */
-export function demoDateLabel(value: string) {
+export function demoDateLabel(value: string, lang: "zh" | "en" = "zh") {
   const date = shanghaiDate(value);
   if (!date) return value;
+  if (lang === "en") {
+    return `${MONTHS_EN[date.getUTCMonth()]} ${date.getUTCDate()}, ${date.getUTCFullYear()}`;
+  }
   return `${date.getUTCFullYear()} 年 ${date.getUTCMonth() + 1} 月 ${date.getUTCDate()} 日`;
 }
 
 /** Home list label. The current Shanghai year drops the year so the column stays narrow. */
-export function homeListDate(value: string, now = new Date()) {
+export function homeListDate(value: string, now = new Date(), lang: "zh" | "en" = "zh") {
   const date = shanghaiDate(value);
   if (!date) return value;
   const today = shanghaiDate(now.toISOString());
+  if (lang === "en") {
+    const monthDay = `${MONTHS_EN[date.getUTCMonth()]} ${date.getUTCDate()}`;
+    if (today && date.getUTCFullYear() === today.getUTCFullYear()) return monthDay;
+    return `${monthDay}, ${date.getUTCFullYear()}`;
+  }
   const monthDay = `${date.getUTCMonth() + 1} 月 ${date.getUTCDate()} 日`;
   if (today && date.getUTCFullYear() === today.getUTCFullYear()) return monthDay;
   return `${date.getUTCFullYear()} 年 ${monthDay}`;

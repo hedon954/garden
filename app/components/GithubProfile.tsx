@@ -6,6 +6,7 @@ import {
 import { githubUsername } from "../lib/site";
 import { siteConfig } from "../site.config";
 import { GithubLiveOverview, type GithubPublicProfile } from "./GithubLiveOverview";
+import { siteLang } from "../lib/i18n";
 
 type GithubRepository = {
   nameWithOwner: string;
@@ -95,24 +96,33 @@ async function loadGithubUser(token?: string) {
 function activityFromEvent(event: GithubEvent): GithubActivity | null {
   const repository = event.repo.name;
   const repositoryUrl = `https://github.com/${repository}`;
+  const en = siteLang === "en";
 
   if (event.type === "PushEvent") {
-    return { id: event.id, label: "推送了代码", repository, date: event.created_at, url: `${repositoryUrl}/commits` };
+    return { id: event.id, label: en ? "Pushed commits" : "推送了代码", repository, date: event.created_at, url: `${repositoryUrl}/commits` };
   }
   if (event.type === "PullRequestEvent") {
-    const action = event.payload.action === "closed" ? "完成了 Pull Request" : "提交了 Pull Request";
+    const action = event.payload.action === "closed"
+      ? (en ? "Merged or closed a pull request" : "完成了 Pull Request")
+      : (en ? "Opened a pull request" : "提交了 Pull Request");
     return { id: event.id, label: action, repository, date: event.created_at, url: event.payload.pull_request?.html_url ?? repositoryUrl };
   }
   if (event.type === "IssuesEvent") {
-    const action = event.payload.action === "closed" ? "关闭了 Issue" : "参与了 Issue";
+    const action = event.payload.action === "closed"
+      ? (en ? "Closed an issue" : "关闭了 Issue")
+      : (en ? "Updated an issue" : "参与了 Issue");
     return { id: event.id, label: action, repository, date: event.created_at, url: event.payload.issue?.html_url ?? repositoryUrl };
   }
   if (event.type === "CreateEvent") {
-    const target = event.payload.ref_type === "repository" ? "创建了仓库" : `创建了${event.payload.ref_type === "tag" ? "标签" : "分支"}`;
+    const target = event.payload.ref_type === "repository"
+      ? (en ? "Created a repository" : "创建了仓库")
+      : en
+        ? `Created a ${event.payload.ref_type === "tag" ? "tag" : "branch"}`
+        : `创建了${event.payload.ref_type === "tag" ? "标签" : "分支"}`;
     return { id: event.id, label: target, repository, date: event.created_at, url: repositoryUrl };
   }
   if (event.type === "ReleaseEvent") {
-    return { id: event.id, label: "发布了新版本", repository, date: event.created_at, url: event.payload.release?.html_url ?? `${repositoryUrl}/releases` };
+    return { id: event.id, label: en ? "Published a release" : "发布了新版本", repository, date: event.created_at, url: event.payload.release?.html_url ?? `${repositoryUrl}/releases` };
   }
   return null;
 }
@@ -239,8 +249,10 @@ export async function GithubProfile() {
     : await loadConfiguredRepositories(token);
   const calendarDays = graph?.year.contributionCalendar.weeks.flatMap((week) => week.contributionDays) ?? [];
 
+  const en = siteLang === "en";
+
   return (
-    <section className="github-profile" aria-label="GitHub 资料">
+    <section className="github-profile" aria-label={en ? "GitHub profile" : "GitHub 资料"}>
       <GithubLiveOverview
         username={githubUsername}
         initialProfile={profile}
@@ -252,8 +264,8 @@ export async function GithubProfile() {
       <section className="github-pinned" aria-labelledby="github-pinned-title">
         <header>
           <div>
-            <p className="eyebrow">PINNED / 置顶仓库</p>
-            <h3 id="github-pinned-title">正在做的项目</h3>
+            <p className="eyebrow">{en ? "PINNED" : "PINNED / 置顶仓库"}</p>
+            <h3 id="github-pinned-title">{en ? "Pinned repositories" : "正在做的项目"}</h3>
           </div>
           <PushPin size={20} aria-hidden="true" />
         </header>
@@ -262,7 +274,7 @@ export async function GithubProfile() {
             {pinned.map((repository) => (
               <a href={repository.url} target="_blank" rel="noopener noreferrer" key={repository.nameWithOwner}>
                 <strong>{repository.nameWithOwner.split("/").at(-1)}</strong>
-                <p>{repository.description ?? "查看这个公开仓库的代码与最近更新。"}</p>
+                <p>{repository.description ?? (en ? "View code and recent updates in this public repository." : "查看这个公开仓库的代码与最近更新。")}</p>
                 <span>
                   {repository.primaryLanguage && <><i style={{ background: repository.primaryLanguage.color ?? undefined }} />{repository.primaryLanguage.name}</>}
                   <small><Star size={13} weight="fill" />{repository.stargazerCount}</small>
@@ -271,38 +283,38 @@ export async function GithubProfile() {
             ))}
           </div>
         ) : (
-          <p className="github-data-note">配置 GitHub Token 或 author.githubPinned 后，这里会展示置顶仓库。</p>
+          <p className="github-data-note">{en ? "Configure a GitHub token or author.githubPinned to display pinned repositories." : "配置 GitHub Token 或 author.githubPinned 后，这里会展示置顶仓库。"}</p>
         )}
       </section>
 
       <section className="github-contributions" aria-labelledby="github-contributions-title">
         <header>
           <div>
-            <p className="eyebrow">CONTRIBUTIONS / 贡献</p>
-            <h3 id="github-contributions-title">过去一年的公开贡献</h3>
+            <p className="eyebrow">{en ? "CONTRIBUTIONS" : "CONTRIBUTIONS / 贡献"}</p>
+            <h3 id="github-contributions-title">{en ? "Public contributions over the past year" : "过去一年的公开贡献"}</h3>
           </div>
-          <strong>{graph ? `${graph.year.contributionCalendar.totalContributions} 次贡献` : "需要 GitHub Token"}</strong>
+          <strong>{graph ? (en ? `${graph.year.contributionCalendar.totalContributions} contributions` : `${graph.year.contributionCalendar.totalContributions} 次贡献`) : (en ? "GitHub token required" : "需要 GitHub Token")}</strong>
         </header>
         {calendarDays.length > 0 ? (
-          <div className="github-calendar" role="img" aria-label={`过去一年 ${graph?.year.contributionCalendar.totalContributions ?? 0} 次公开贡献`}>
+          <div className="github-calendar" role="img" aria-label={en ? `${graph?.year.contributionCalendar.totalContributions ?? 0} public contributions over the past year` : `过去一年 ${graph?.year.contributionCalendar.totalContributions ?? 0} 次公开贡献`}>
             {calendarDays.map((day) => (
               <span
                 className={`github-contribution-day level-${contributionLevelClass(day.contributionLevel)}`}
                 key={day.date}
-                title={`${day.date} · ${day.contributionCount} 次贡献`}
-                aria-label={`${day.date}，${day.contributionCount} 次贡献`}
+                title={en ? `${day.date} · ${day.contributionCount} contributions` : `${day.date} · ${day.contributionCount} 次贡献`}
+                aria-label={en ? `${day.date}, ${day.contributionCount} contributions` : `${day.date}，${day.contributionCount} 次贡献`}
               />
             ))}
           </div>
         ) : (
-          <p className="github-data-note">正式发布时会使用工作流的只读令牌生成贡献热点图。</p>
+          <p className="github-data-note">{en ? "A read-only token in the deployment workflow populates the contribution graph." : "正式发布时会使用工作流的只读令牌生成贡献热点图。"}</p>
         )}
       </section>
 
       <section className="github-activity" aria-labelledby="github-activity-title">
         <header>
-          <p className="eyebrow">CONTRIBUTION ACTIVITY / 最近活动</p>
-          <h3 id="github-activity-title">最近在 GitHub 上做了什么</h3>
+          <p className="eyebrow">{en ? "CONTRIBUTION ACTIVITY" : "CONTRIBUTION ACTIVITY / 最近活动"}</p>
+          <h3 id="github-activity-title">{en ? "Recent public activity on GitHub" : "最近在 GitHub 上做了什么"}</h3>
         </header>
         {activity.length > 0 ? (
           <ol>
@@ -318,7 +330,7 @@ export async function GithubProfile() {
             ))}
           </ol>
         ) : (
-          <p className="github-data-note">GitHub 暂时没有返回最近的公开贡献活动。</p>
+          <p className="github-data-note">{en ? "No recent public GitHub activity returned." : "GitHub 暂时没有返回最近的公开贡献活动。"}</p>
         )}
       </section>
     </section>

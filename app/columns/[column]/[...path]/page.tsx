@@ -29,7 +29,7 @@ import {
 import { githubUrl, siteConfig } from "../../../site.config";
 import { siteHref } from "../../../lib/site-href";
 import { isStaticPlaceholder, STATIC_PLACEHOLDER, staticParams } from "../../../../ui/garden/static-params.mjs";
-import { ui } from "../../../lib/i18n";
+import { siteLang, ui } from "../../../lib/i18n";
 
 export function generateStaticParams() {
   return staticParams(
@@ -97,14 +97,16 @@ export default async function ColumnEntryPage({
   const pathname = columnHref(entry);
   const canonicalUrl = absoluteUrl(pathname, baseUrl);
 
+  const en = siteLang === "en";
+
   return (
     <main className="column-reading-page">
       <aside className="series-nav">
         <Link href={siteHref("/columns")} className="back-link">
           <ArrowLeft size={15} />
-          所有专栏
+          {en ? "All columns" : "所有专栏"}
         </Link>
-        <p>主题专栏</p>
+        <p>{en ? "Column" : "主题专栏"}</p>
         <h2>{entry.columnTitle}</h2>
         <ol>
           {listed.map((item) => (
@@ -113,12 +115,12 @@ export default async function ColumnEntryPage({
             </li>
           ))}
         </ol>
-        <small>{series.length} 篇 · 持续更新</small>
+        <small>{en ? `${series.length} posts · ${entry.columnStatus ?? "ongoing"}` : `${series.length} 篇 · 持续更新`}</small>
       </aside>
 
       <article className="article-column series-article h-entry">
         <Link className="u-url sr-only" href={pathname}>
-          {entry.title} 永久链接
+          {entry.title} {en ? "permalink" : "永久链接"}
         </Link>
         <a
           className="p-author h-card sr-only"
@@ -137,13 +139,13 @@ export default async function ColumnEntryPage({
               </time>
             </li>
             {originalUrl(entry) ? (
-              <li><a className="orig ext" href={originalUrl(entry)} target="_blank" rel="noopener noreferrer">原文 ↗</a></li>
+              <li><a className="orig ext" href={originalUrl(entry)} target="_blank" rel="noopener noreferrer">{en ? "Original ↗" : "原文 ↗"}</a></li>
             ) : null}
           </ul>
           <ArticleTags tags={entry.tags} />
           {entry.cover && (
             <figure className="article-hero article-cover cover-img">
-              <CoverImage className="u-photo" src={entry.cover} image={entry.coverImage} alt={`${entry.title} 封面`} sizes="(max-width: 852px) calc(100vw - 40px), 812px" priority />
+              <CoverImage className="u-photo" src={entry.cover} image={entry.coverImage} alt={en ? `${entry.title} cover` : `${entry.title} 封面`} sizes="(max-width: 852px) calc(100vw - 40px), 812px" priority />
             </figure>
           )}
         </header>

@@ -9,6 +9,14 @@ const ALERT_TITLE = {
   caution: "注意",
 };
 
+const ALERT_TITLE_EN = {
+  note: "Note",
+  tip: "Tip",
+  important: "Important",
+  warning: "Warning",
+  caution: "Caution",
+};
+
 const LEGACY_KIND = {
   info: "note",
   success: "tip",
@@ -47,13 +55,14 @@ function isBlankParagraph(node) {
   return node?.type === "paragraph" && toString(node).trim() === "" && meaningfulChildren(node).length === 0;
 }
 
-function alertTitle(kind, label) {
+function alertTitle(kind, label, lang) {
+  const titles = lang === "en" ? ALERT_TITLE_EN : ALERT_TITLE;
   return {
     type: "paragraph",
     data: { hName: "p", hProperties: { className: ["markdown-alert-title"] } },
     children: [
       { type: "html", value: ALERT_ICON[kind] },
-      { type: "text", value: label || ALERT_TITLE[kind] },
+      { type: "text", value: label || titles[kind] },
     ],
   };
 }
@@ -136,7 +145,7 @@ function strongOnlyText(node) {
   return toString(children[0]).trim();
 }
 
-function rewriteAlert(node) {
+function rewriteAlert(node, lang) {
   const children = node.children ?? [];
   const gfm = gfmAlert(children[0]);
   const legacy = gfm ? null : legacyAlert(children[0]);
@@ -156,7 +165,7 @@ function rewriteAlert(node) {
     }
   }
   while (rest.length && isBlankParagraph(rest[0])) rest.shift();
-  node.children = [alertTitle(kind, label), ...rest];
+  node.children = [alertTitle(kind, label, lang), ...rest];
   node.data ??= {};
   node.data.hProperties ??= {};
   const existing = node.data.hProperties.className;
@@ -203,17 +212,18 @@ function asFigure(node, imageSize) {
   };
 }
 
-function walk(node, imageSize) {
+function walk(node, imageSize, lang) {
   if (!node || typeof node !== "object" || !Array.isArray(node.children)) return;
-  if (node.type === "blockquote") rewriteAlert(node);
+  if (node.type === "blockquote") rewriteAlert(node, lang);
   node.children = node.children.map((child) => asFigure(child, imageSize) ?? child);
-  for (const child of node.children) walk(child, imageSize);
+  for (const child of node.children) walk(child, imageSize, lang);
 }
 
 /** Demo alert cards and captioned figures. Article rendering only. */
 export function remarkA2(options = {}) {
   const imageSize = typeof options?.imageSize === "function" ? options.imageSize : () => null;
+  const lang = options?.lang;
   return (tree) => {
-    walk(tree, imageSize);
+    walk(tree, imageSize, lang);
   };
 }

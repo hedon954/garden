@@ -1,4 +1,5 @@
 import crypto from "node:crypto";
+import fsSync from "node:fs";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
@@ -206,9 +207,16 @@ if (invokedDirectly) {
   if (!sourceDirectory || process.argv.length > 4) {
     throw new Error("用法：node scripts/prepare-pages-output.mjs <静态产物目录> [Pages 仓库目录]");
   }
+  const base = (process.env.NEXT_PUBLIC_BASE_PATH ?? "").replace(/^\/+/u, "").replace(/\/+$/u, "");
+  const resolvedSource =
+    base &&
+    !fsSync.existsSync(path.join(sourceDirectory, "index.html")) &&
+    fsSync.existsSync(path.join(sourceDirectory, base, "index.html"))
+      ? path.join(sourceDirectory, base)
+      : sourceDirectory;
   if (destinationDirectory) {
-    await preparePagesOutput(sourceDirectory, destinationDirectory);
+    await preparePagesOutput(resolvedSource, destinationDirectory);
   } else {
-    await validateStaticOutput(sourceDirectory);
+    await validateStaticOutput(resolvedSource);
   }
 }

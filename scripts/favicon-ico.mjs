@@ -100,6 +100,10 @@ export async function runFaviconStep({ siteRoot, env = process.env, out = proces
   }
   try {
     const result = await writeFaviconIco({ source, outDir, siteRoot });
+    const baseDir = basePath ? path.join(outDir, basePath.replace(/^\/+/u, "")) : "";
+    if (baseDir && fs.existsSync(path.join(baseDir, "index.html"))) {
+      fs.copyFileSync(result.target, path.join(baseDir, "favicon.ico"));
+    }
     if (result.status === "kept") out.write("favicon.ico：使用 public/favicon.ico。\n");
     else out.write(`favicon.ico：由 ${path.relative(siteRoot, source)} 生成${result.sizes ? `（${result.sizes.join("、")} px）` : ""}。\n`);
   } catch (error) {

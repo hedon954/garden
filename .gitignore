@@ -64,3 +64,12 @@ next-env.d.ts
 /public/link-allowlist.json
 /public/search-index.json
 /public/search-full.*.json
+
+# Generated when building templates/demo-en locally.
+/templates/demo-en/.agents/
+/templates/demo-en/.garden/
+/templates/demo-en/.wrangler/
+/templates/demo-en/Makefile
+/templates/demo-en/dist/
+/templates/demo-en/public/
+

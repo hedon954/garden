@@ -144,8 +144,10 @@ export function runRedirectStep({ siteRoot, env = process.env, out = process.std
     if (!config.redirects && !extra.length) return 0;
     if (!fs.existsSync(outDir)) throw new Error(`找不到构建产物 ${path.relative(siteRoot, outDir)}`);
     const basePath = env.NEXT_PUBLIC_BASE_PATH ?? "";
+    const baseDir = basePath ? path.join(outDir, basePath.replace(/^\/+/u, "").replace(/\/+$/u, "")) : "";
+    const redirectOutDir = baseDir && fs.existsSync(path.join(baseDir, "index.html")) ? baseDir : outDir;
     const { written, expected, skipped } = generate({
-      outDir,
+      outDir: redirectOutDir,
       config,
       env,
       basePath,

@@ -1089,14 +1089,17 @@ export function checkHandbookPairs(root = ROOT) {
 }
 
 /**
- * Scan all docs/handbook/ and app/garden/ files and return any fact-check failures.
+ * Scan all docs/handbook/, app/garden/, and templates/demo-en/ files and return any fact-check failures.
  */
 export function checkAllHandbookFacts(root = ROOT) {
   const facts = deriveHandbookFacts(root);
   const files = [
+    path.join(root, "README.md"),
+    path.join(root, "README.zh-CN.md"),
     ...walkFiles(path.join(root, "docs/handbook"), (f) => f.endsWith(".md")),
     ...walkFiles(path.join(root, "app/garden"), (f) => /\.(?:ts|tsx|js|mjs|md)$/u.test(f)),
-  ];
+    ...walkFiles(path.join(root, "templates/demo-en/content"), (f) => f.endsWith(".md")),
+  ].filter((f) => fs.existsSync(f));
   const issues = [];
   for (const file of files) {
     const content = fs.readFileSync(file, "utf8");
