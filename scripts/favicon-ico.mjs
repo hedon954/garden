@@ -14,6 +14,7 @@ import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { parse as parseYaml } from "yaml";
 import { resolveBrand } from "./brand.mjs";
+import { siteCliLang } from "../ui/core/cli-locale.mjs";
 
 export const ICO_SIZES = [16, 32, 48];
 
@@ -80,9 +81,10 @@ export async function writeFaviconIco({ source, outDir, siteRoot }) {
 
 export async function runFaviconStep({ siteRoot, env = process.env, out = process.stdout }) {
   const outDir = path.join(siteRoot, "dist", "client");
-  const warn = (line) => out.write(`警告：${line}\n`);
+  const en = siteCliLang(siteRoot) === "en";
+  const warn = (line) => out.write(en ? `Warning: ${line}\n` : `警告：${line}\n`);
   if (!fs.existsSync(outDir)) {
-    warn(`找不到构建产物 ${path.relative(siteRoot, outDir)}，没有生成 favicon.ico。`);
+    warn(en ? `No build output at ${path.relative(siteRoot, outDir)}; favicon.ico was not generated.` : `找不到构建产物 ${path.relative(siteRoot, outDir)}，没有生成 favicon.ico。`);
     return 0;
   }
   const configFile = path.join(siteRoot, "site.config.yaml");
@@ -91,19 +93,20 @@ export async function runFaviconStep({ siteRoot, env = process.env, out = proces
   const { favicon } = resolveBrand(siteRoot, config, basePath);
   const source = faviconSource(siteRoot, outDir, favicon, basePath);
   if (source === null) {
-    warn(`brand.favicon 是外部地址 ${favicon}，没有生成 favicon.ico。`);
+    warn(en ? `brand.favicon is an external URL (${favicon}); favicon.ico was not generated.` : `brand.favicon 是外部地址 ${favicon}，没有生成 favicon.ico。`);
     return 0;
   }
   if (!source) {
-    warn(`找不到图标文件 ${favicon}，没有生成 favicon.ico。`);
+    warn(en ? `Icon file ${favicon} not found; favicon.ico was not generated.` : `找不到图标文件 ${favicon}，没有生成 favicon.ico。`);
     return 0;
   }
   try {
     const result = await writeFaviconIco({ source, outDir, siteRoot });
-    if (result.status === "kept") out.write("favicon.ico：使用 public/favicon.ico。\n");
+    if (result.status === "kept") out.write(en ? "favicon.ico: using public/favicon.ico.\n" : "favicon.ico：使用 public/favicon.ico。\n");
+    else if (en) out.write(`favicon.ico: generated from ${path.relative(siteRoot, source)}${result.sizes ? ` (${result.sizes.join(", ")} px)` : ""}.\n`);
     else out.write(`favicon.ico：由 ${path.relative(siteRoot, source)} 生成${result.sizes ? `（${result.sizes.join("、")} px）` : ""}。\n`);
   } catch (error) {
-    warn(`favicon.ico 生成失败（${error.message}），页面仍使用 ${favicon}。`);
+    warn(en ? `favicon.ico generation failed (${error.message}); pages still use ${favicon}.` : `favicon.ico 生成失败（${error.message}），页面仍使用 ${favicon}。`);
   }
   return 0;
 }

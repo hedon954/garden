@@ -36,18 +36,25 @@ When `npx garden sync` runs, the build script reads the pixel width and height o
 ```garden figure
 caption: Click the buttons above to inspect the three stages from build to browser render
 svg: |
-  <svg viewBox="0 0 680 110" xmlns="http://www.w3.org/2000/svg" font-family="var(--sans)">
-    <rect data-p="sync" x="12" y="18" width="196" height="74" rx="10" fill="var(--card)" stroke="var(--rule-strong)" stroke-width="1.5"/>
-    <text data-p="sync" x="110" y="50" text-anchor="middle" font-size="14" font-weight="600" fill="var(--ink)">1. Build-time Sizing</text>
-    <text data-p="sync" x="110" y="72" text-anchor="middle" font-size="12" fill="var(--muted)">Emit width / height &amp; --wl</text>
-    <path d="M214 55 H236" stroke="var(--muted)" stroke-width="1.5"/>
-    <rect data-p="measure" x="242" y="18" width="196" height="74" rx="10" fill="var(--card)" stroke="var(--rule-strong)" stroke-width="1.5"/>
-    <text data-p="measure" x="340" y="50" text-anchor="middle" font-size="14" font-weight="600" fill="var(--ink)">2. Client Measurement</text>
-    <text data-p="measure" x="340" y="72" text-anchor="middle" font-size="12" fill="var(--muted)">Fit wide figures &amp; TOC</text>
-    <path d="M444 55 H466" stroke="var(--muted)" stroke-width="1.5"/>
-    <rect data-p="dark" x="472" y="18" width="196" height="74" rx="10" fill="var(--card)" stroke="var(--rule-strong)" stroke-width="1.5"/>
-    <text data-p="dark" x="570" y="50" text-anchor="middle" font-size="14" font-weight="600" fill="var(--ink)">3. Dark Backing &amp; Zoom</text>
-    <text data-p="dark" x="570" y="72" text-anchor="middle" font-size="12" fill="var(--muted)">Pad #faf9f5 · Click to zoom</text>
+  <svg viewBox="0 0 560 195" xmlns="http://www.w3.org/2000/svg" font-family="var(--sans)" style="max-width: 380px; margin-inline: auto">
+    <rect data-p="sync" x="2" y="4" width="180" height="187" rx="16" fill="var(--card)" stroke="var(--rule-strong)" stroke-width="2.5"/>
+    <text data-p="sync" x="92" y="42" text-anchor="middle" font-size="24" font-weight="600" fill="var(--ink)">1. Build-time</text>
+    <text data-p="sync" x="92" y="72" text-anchor="middle" font-size="24" font-weight="600" fill="var(--ink)">Sizing</text>
+    <text data-p="sync" x="92" y="138" text-anchor="middle" font-size="24" fill="var(--muted)">Emit width /</text>
+    <text data-p="sync" x="92" y="167" text-anchor="middle" font-size="24" fill="var(--muted)">height &amp; --wl</text>
+    <path d="M183.5 97.5 H188.5" stroke="var(--muted)" stroke-width="2.5"/>
+    <rect data-p="measure" x="190" y="4" width="180" height="187" rx="16" fill="var(--card)" stroke="var(--rule-strong)" stroke-width="2.5"/>
+    <text data-p="measure" x="280" y="42" text-anchor="middle" font-size="24" font-weight="600" fill="var(--ink)">2. Client</text>
+    <text data-p="measure" x="280" y="72" text-anchor="middle" font-size="24" font-weight="600" fill="var(--ink)">Measurement</text>
+    <text data-p="measure" x="280" y="138" text-anchor="middle" font-size="24" fill="var(--muted)">Fit wide</text>
+    <text data-p="measure" x="280" y="167" text-anchor="middle" font-size="24" fill="var(--muted)">figures &amp; TOC</text>
+    <path d="M371.5 97.5 H376.5" stroke="var(--muted)" stroke-width="2.5"/>
+    <rect data-p="dark" x="378" y="4" width="180" height="187" rx="16" fill="var(--card)" stroke="var(--rule-strong)" stroke-width="2.5"/>
+    <text data-p="dark" x="468" y="42" text-anchor="middle" font-size="24" font-weight="600" fill="var(--ink)">3. Dark</text>
+    <text data-p="dark" x="468" y="72" text-anchor="middle" font-size="24" font-weight="600" fill="var(--ink)">Backing &amp;</text>
+    <text data-p="dark" x="468" y="102" text-anchor="middle" font-size="24" font-weight="600" fill="var(--ink)">Zoom</text>
+    <text data-p="dark" x="468" y="138" text-anchor="middle" font-size="24" fill="var(--muted)">Pad #faf9f5 ·</text>
+    <text data-p="dark" x="468" y="167" text-anchor="middle" font-size="24" fill="var(--muted)">Click to zoom</text>
   </svg>
 parts:
   - id: sync

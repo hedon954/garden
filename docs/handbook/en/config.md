@@ -10,16 +10,16 @@ Global site copy and appearance settings live in `site.config.yaml` at the repos
 
 ## 1. Full `site.config.yaml` Structure
 
-Here is the default `site.config.yaml` shipped with the site template:
+Below are the default `site.config.yaml` fields generated for an English site (`npx hd-garden init --locale en_US`):
 
 ```yaml
 name: Garden
-tagline: 写作 · 记录 · 保持好奇
-description: 文章、随想和专栏。
-locale: zh_CN
-# 站点的公开地址。文章里指向这个地址的完整网址会按站内链接显示。
+tagline: Writing · Notes · Staying curious
+description: Posts, short notes, and columns.
+locale: en_US
+# Public address of the site. Full URLs pointing here inside posts render as internal links.
 # url: https://blog.example.com
-# 站点图标，不写时使用 Garden 自带的图标。
+# Site icons; falls back to Garden's built-in icons when omitted.
 # brand:
 #   logo: brand/logo.svg
 #   favicon: /favicon.svg
@@ -28,44 +28,46 @@ locale: zh_CN
 author:
   name: Your Name
   github: your-github-id
-  githubBio: 一句自我介绍。
+  githubBio: A short bio.
   githubPinned: []
 
 pages:
   home:
     title: |-
-      记一些正在做的事，
-      和想清楚的问题。
-    subtitle: 软件、笔记，和偶尔的工作记录。
+      Notes on what I am building,
+      and questions worth thinking through.
+    subtitle: Software, reading notes, and occasional work logs.
   blog:
-    title: 博文
-    subtitle: 写完的长文。
+    title: Posts
+    subtitle: Finished long-form essays.
   thoughts:
-    title: 随想
-    subtitle: 短笔记、图片和链接。
+    title: Thoughts
+    subtitle: Short notes, images, and links.
+    # How many items to show per screen; the next screen loads automatically as you scroll. Default: 10.
+    # pageSize: 10
   columns:
-    title: 专栏
-    subtitle: 按顺序读的一组文章。
+    title: Columns
+    subtitle: Series of posts meant to be read in order.
   about:
-    title: 你好，我是 Your Name。
-    subtitle: 文章和笔记都在这里。
-    heading: 关于
+    title: Hi, I am Your Name.
+    subtitle: Essays and notes live here.
+    heading: About
     paragraphs:
-      - 一名工程师。平时写代码，也把想清楚的问题记下来。
-      - 这里放文章、随想和专栏。
+      - A software engineer writing code and keeping notes on things figured out along the way.
+      - This site holds long-form posts, short thoughts, and columns.
     quote: ""
     focus:
-      - 软件
-      - 笔记
-      - 日常
+      - Software
+      - Notes
+      - Daily
     cta:
       href: /blog
-      label: 浏览博文
+      label: Browse posts
   garden:
-    title: "用 Markdown 写。\n推送之后，网站自己更新。"
+    title: "Write in Markdown.\nPush to update the site."
     subtitle: ""
 
-footer: 持续记录。
+footer: Keep writing.
 ```
 
 ### Top-level and Author Fields
@@ -75,7 +77,7 @@ footer: 持续记录。
 | `name` | Site name shown in the top-left header, browser title suffix, and RSS feed title |
 | `tagline` | Site tagline |
 | `description` | Site summary used for the home page SEO description and RSS channel description |
-| `locale` | Language and region tag (`zh_CN` by default; setting `en_US` switches the site chrome to English at build time) |
+| `locale` | Language and region tag (`zh_CN` by default; setting `en_US` switches all framework-rendered UI strings—navigation, home page, post list, post metadata and permalink label, Giscus prompts, tags, columns, About page, 404 page, pagination, RSS/sitemap, and meta/og—to English at build time) |
 | `url` | Public root URL of the site (such as `https://blog.example.com`). Full URLs pointing to this address inside posts are treated as internal links |
 | `author.name` | Author name displayed in article metadata, the About page, and the footer |
 | `author.github` | GitHub username (without the full URL), used to link your GitHub profile and fetch public activity for the About page |
@@ -107,7 +109,7 @@ Columns group multiple posts from `content/posts/` into an ordered reading serie
 columns:
   - slug: building-in-public
     title: Building in Public
-    status: Ongoing
+    status: ongoing
     description: Notes from initial prototype to production release.
     cover: windowsill-herbs.svg
     posts:
@@ -120,6 +122,6 @@ columns:
 | `slug` | Yes | Column identifier (lowercase letters, digits, and hyphens only), generating routes at `/columns/<slug>/<post>` |
 | `title` | Yes | Column title (also shown beside member posts on `/blog`) |
 | `description` | Yes | Column summary shown on `/columns` cards |
-| `status` | No | Status badge text |
+| `status` | No | Status value: `default` (or omitted, shown as "Active"), `ongoing` ("Ongoing"), or `completed` ("Completed"). Legacy Chinese values are still accepted, and any other text is shown verbatim |
 | `cover` | No | Cover image path relative to `content/covers/` |
 | `posts` | Yes | Ordered array of post paths relative to `content/posts/`, without the `.md` extension |

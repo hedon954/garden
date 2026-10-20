@@ -1,0 +1,55 @@
+name: Garden
+tagline: Writing · Notes · Staying curious
+description: Posts, short notes, and columns.
+locale: en_US
+# Public address of the site. Full URLs pointing here inside posts render as internal links.
+# url: https://blog.example.com
+# Site icons; falls back to Garden's built-in icons when omitted.
+# brand:
+#   logo: brand/logo.svg
+#   favicon: /favicon.svg
+#   appleTouchIcon: /apple-touch-icon.png
+
+author:
+  name: Your Name
+  github: your-github-id
+  githubBio: A short bio.
+  githubPinned: []
+
+pages:
+  home:
+    title: |-
+      Notes on what I am building,
+      and questions worth thinking through.
+    subtitle: Software, reading notes, and occasional work logs.
+  blog:
+    title: Posts
+    subtitle: Finished long-form essays.
+  thoughts:
+    title: Thoughts
+    subtitle: Short notes, images, and links.
+    # How many items to show per screen; the next screen loads automatically as you scroll. Default: 10.
+    # pageSize: 10
+  columns:
+    title: Columns
+    subtitle: Series of posts meant to be read in order.
+  about:
+    title: Hi, I am Your Name.
+    subtitle: Essays and notes live here.
+    heading: About
+    paragraphs:
+      - A software engineer writing code and keeping notes on things figured out along the way.
+      - This site holds long-form posts, short thoughts, and columns.
+    quote: ""
+    focus:
+      - Software
+      - Notes
+      - Daily
+    cta:
+      href: /blog
+      label: Browse posts
+  garden:
+    title: "Write in Markdown.\nPush to update the site."
+    subtitle: ""
+
+footer: Keep writing.

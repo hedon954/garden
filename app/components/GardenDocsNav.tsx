@@ -9,6 +9,8 @@ import {
   HANDBOOK_SECTIONS,
   HANDBOOK_UI,
   NAV_SHORT_TITLE,
+  REFERENCE_SECTION,
+  isReferencePath,
   handbookPath,
   sectionTitle,
   type GardenDocNavItem,
@@ -152,7 +154,7 @@ export function GardenDocsNav({
         </div>
 
         <nav className="gdoc-nav" aria-label={t.chapters}>
-          {groups.map((group) => (
+          {(isReferencePath(currentPath) ? [...groups].sort((a, b) => Number(b.id === REFERENCE_SECTION) - Number(a.id === REFERENCE_SECTION)) : groups).map((group) => (
             <div key={group.id} className="gdoc-nav-group">
               <h2 className="gdoc-nav-group-head">{sectionTitle(HANDBOOK_SECTIONS.find((sec) => sec.id === group.id), lang) ?? group.title}</h2>
               <ol className="gdoc-nav-list">
@@ -170,7 +172,7 @@ export function GardenDocsNav({
                         {badge ? (
                           <>
                             <code className="gdoc-comp-pill">{badge}</code>
-                            <span className="gdoc-comp-label">{label}</span>
+                            {group.id === REFERENCE_SECTION ? null : <span className="gdoc-comp-label">{label}</span>}
                           </>
                         ) : (
                           <span>{label}</span>

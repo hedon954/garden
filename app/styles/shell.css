@@ -129,6 +129,10 @@ html[data-theme="dark"] .sh-rail{color:var(--muted)}
 .sh-year > h2{font:700 var(--fs-lead)/1.3 var(--sans);color:var(--ink);margin:40px 0 0;padding:0 0 12px;border-bottom:1px solid var(--rule-strong);display:flex;align-items:baseline;gap:10px}
 .sh-year > h2 .n{font:400 var(--fs-meta)/1 var(--sans);color:var(--muted)}
 .sh-year[hidden],.sh-row[hidden]{display:none}
+/* Home list dates drop the year in the current year, so the track is fixed to the locale's longest label
+   (zh「2025 年 12 月 19 日」≈ 7.1em, en "May 28, 2025" ≈ 4.9em at the row's 17px) and every title starts at the same x. */
+:root{--sh-date-track:7.5em}
+:root:lang(en){--sh-date-track:5.5em}
 .sh-rows{list-style:none;margin:0;padding:0}
 .sh-row{position:relative;display:grid;grid-template-columns:72px minmax(0,1fr) auto;gap:4px 20px;padding:18px 0 19px;border-bottom:1px solid var(--rule)}
 .sh-row time{grid-row:1;font-size:var(--fs-small);line-height:1.6;color:var(--muted);font-variant-numeric:tabular-nums;padding-top:2px;white-space:nowrap}
@@ -144,6 +148,7 @@ html[data-theme="dark"] .sh-rail{color:var(--muted)}
 .sh-row .series{font-weight:400;color:var(--muted);font-size:var(--fs-meta);margin-left:8px;white-space:nowrap}
 .sh-row:hover h3 a{color:var(--blue);text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:4px}
 .sh-row h3 a{transition:color .15s ease}
+.sh-home-grid .sh-row{grid-template-columns:var(--sh-date-track) minmax(0,1fr) auto}
 .is-compact .sh-row{padding:11px 0 12px}
 .is-compact .sh-row p{display:none}
 .is-compact .sh-row h3{font-weight:500}
@@ -170,8 +175,6 @@ html[data-theme="dark"] .sh-rail{color:var(--muted)}
 .sh-feature p{margin:14px 0 0;font-size:var(--fs-body);color:var(--soft)}
 .sh-feature .tags{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:16px;font-size:var(--fs-meta);color:var(--muted)}
 .sh-home-grid{display:grid;grid-template-columns:minmax(0,var(--list)) minmax(0,320px);gap:0 72px;justify-content:space-between;align-items:start}
-.sh-home-grid .sh-row{grid-template-columns:minmax(6em,max-content) minmax(0,1fr) auto}
-.sh-home-grid .sh-row time{min-width:6em;font-variant-numeric:tabular-nums}
 .sh-side-list{list-style:none;margin:0;padding:0}
 .sh-side-list li{position:relative;padding:16px 0;border-bottom:1px solid var(--rule)}
 .sh-side-list a{font:600 15px/1.6 var(--sans);color:var(--ink);text-decoration:none}
@@ -394,6 +397,7 @@ html[data-theme="dark"] .sh-repos > li.sk::after{background:linear-gradient(90de
 /* ===== 专栏 v4: moderate cover, no numbers, dates, link to category ===== */
 .sh-series{display:grid;grid-template-columns:240px minmax(0,760px);gap:0 40px;padding:36px 0;border-top:1px solid var(--rule)}
 .sh-series:first-of-type{border-top:0;padding-top:8px}
+.sh-series.no-cover{grid-template-columns:minmax(0,760px)}
 .sh-series .cover{aspect-ratio:16/9;border-radius:var(--r);display:flex;align-items:center;justify-content:center;overflow:hidden;align-self:start}
 .sh-series h2{font:700 var(--fs-h2)/1.3 var(--sans);color:var(--ink);margin:0}
 .sh-series .count{font-size:var(--fs-small);color:var(--muted);margin:6px 0 0}
@@ -426,6 +430,8 @@ html[data-theme="dark"] .sh-repos > li.sk::after{background:linear-gradient(90de
   .sh-series li a{padding:0}
   .sh-series li time{margin-top:2px}
   .sh-series .tocat{margin-left:0}
+  .sh-series.no-cover{grid-template-columns:minmax(0,1fr)}
+  .sh-series.no-cover h2,.sh-series.no-cover .count{grid-column:1 / -1;grid-row:auto}
 }
 
 .sh-row .incol{grid-column:2;justify-self:start;position:relative;z-index:1;margin-top:4px;font-size:var(--fs-meta);line-height:1.6;color:var(--muted);text-decoration:none}
@@ -443,3 +449,10 @@ html[data-theme="dark"] .sh-repos > li.sk::after{background:linear-gradient(90de
 a.sh-lang:hover{color:var(--ink)}
 a.sh-lang:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
 .sh-lang.is-disabled{opacity:.55;cursor:default}
+
+/* English pages: Latin system fonts first, Chinese fonts only as fallback
+   (otherwise English text renders in Noto Sans CJK / YaHei). */
+:root:lang(en){
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"PingFang SC","Hiragino Sans GB","Noto Sans SC","Noto Sans CJK SC","Microsoft YaHei",system-ui,sans-serif;
+  --serif:"Source Serif 4",Georgia,"Times New Roman","Source Han Serif SC","Noto Serif SC","Noto Serif CJK SC","Songti SC","STSong",serif;
+}

@@ -6,6 +6,7 @@ import { columns, posts, thoughts } from "../lib/content";
 import { isContentRepositoryConfigured, listRepositoryThoughts } from "../lib/github-content";
 import { getSiteUrl } from "../lib/site";
 import { siteConfig } from "../site.config";
+import { ui } from "../lib/i18n";
 import { modelConfig, remainingDrafts } from "../lib/ui-model";
 import { CATALOG_VERSION } from "../../ui/core/catalog.mjs";
 import packageJson from "../../package.json";
@@ -13,7 +14,7 @@ import packageJson from "../../package.json";
 export const dynamic = process.env.STATIC_EXPORT === "1" ? "force-static" : "force-dynamic";
 
 export const metadata = {
-  title: "内容管理",
+  title: ui().adminTitleMain,
   robots: { index: false, follow: false },
 };
 
@@ -27,17 +28,17 @@ export default async function AdminPage({
     return (
       <main className="admin-access-page">
         <div className="admin-access-card">
-          <h1>后台在另一个地址。</h1>
-          <p>这个页面是公开博客。写随想、上传和转发，去后台。</p>
+          <h1>{ui().staticAdminHeading}</h1>
+          <p>{ui().staticAdminRootBody}</p>
           <div className="admin-access-actions">
             {adminUrl ? (
               <a className="admin-github-login" href={adminUrl}>
-                打开后台 <ArrowSquareOut size={15} />
+                {`${ui().staticAdminOpen} `}<ArrowSquareOut size={15} />
               </a>
             ) : (
-              <p>还没有填写后台地址。</p>
+              <p>{ui().staticAdminNoUrl}</p>
             )}
-            <Link href="/">返回公开博客</Link>
+            <Link href="/">{ui().staticAdminBack}</Link>
           </div>
         </div>
       </main>

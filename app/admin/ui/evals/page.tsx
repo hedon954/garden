@@ -2,10 +2,11 @@ import { parse as parseYaml } from "yaml";
 import casesSource from "../../../../ui/evals/cases.yaml?raw";
 import { AdminEvals } from "../../../components/AdminUiPanels";
 import { AdminUiShell, isStaticExport, requireAdminPage, StaticAdminNotice } from "../../../components/AdminUiShell";
+import { ui } from "../../../lib/i18n";
 import { modelConfig } from "../../../lib/ui-model";
 
 export const dynamic = process.env.STATIC_EXPORT === "1" ? "force-static" : "force-dynamic";
-export const metadata = { title: "模型自检", robots: { index: false, follow: false } };
+export const metadata = { title: ui().adminTitleEvals, robots: { index: false, follow: false } };
 
 export default async function UiEvalsPage() {
   if (isStaticExport()) return <StaticAdminNotice />;

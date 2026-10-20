@@ -110,10 +110,11 @@ func openStore(path string) (*Store, error) {
 > [!WARNING] Back Up the Data Directory Before Upgrading
 > Changing the page size requires rebuilding the index files and cannot be rolled back in place.
 
-## 4. Local Images and External Link Cards
+## 4. Local Images, Source Chips, and External Link Cards
 
 - **Local images and sidecar folders**: For a post at `content/posts/my-post.md`, place its images inside `content/posts/my-post/` and reference them with relative paths such as `./my-post/diagram.svg`. At build time, Garden copies the file, records its pixel dimensions, and renders the `alt` text (unless it starts with default placeholders like `image` or `img`) as a `<figcaption>`.
-- **Inline external links**: External links in body text automatically display the target site's favicon and keep the icon attached to the first word of the link so it never wraps alone.
+- **Inline external links**: Regular external links in body text automatically display the target site's favicon and a trailing `↗` arrow, keeping the icon attached to the first word of the link so it never wraps alone.
+- **Inline source chips (`{source}`)**: Append `{source}` directly after the closing `)` of an external link (with no space), such as `[wikipedia.org](https://en.wikipedia.org/wiki/Book_discussion_club){source}`, to render it as an inline source chip: the site's build-time favicon (or the uppercase first letter of the registrable domain's main label, such as `W` for `en.wikipedia.org`) plus the link text, **without** the `↗` external-link arrow. For example: cited from Wikipedia [wikipedia.org](https://en.wikipedia.org/wiki/Book_discussion_club){source}.
 - **Link cards**: Turn an external URL into a preview card with site name, title, and description in either of two ways:
   1. Put the full URL on its own paragraph line (surrounded by blank lines): `https://spec.commonmark.org/`
   2. Append `{card}` directly to an inline link (with no space): `See the [CommonMark Spec](https://spec.commonmark.org/){card}.`

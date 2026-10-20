@@ -4,7 +4,7 @@
  * Names describe what the reader sees. English only.
  */
 
-export const GARDEN_NAMES = ["card", "stat", "compare", "timeline", "chart", "figure", "html", "interactive", "file"];
+export const GARDEN_NAMES = ["card", "stat", "compare", "timeline", "chart", "figure", "html", "interactive", "file", "relations", "list", "choice"];
 
 export const LEGACY_FENCES = {
   embed: { name: "card", suggestion: "`embed` 已改为 `garden card`" },
@@ -19,7 +19,8 @@ export const CATALOG = {
     label: "资源卡",
     when: "一篇论文、一个仓库或一本书，读者需要标题、链接和一句说明。",
     whenNot: "正文里已经有这句话时，不要再包一张卡。",
-    keys: ["url", "title", "description", "image", "alt", "points", "meta", "text", "source", "site", "items"],
+    keys: ["url", "title", "description", "image", "alt", "points", "meta", "text", "source", "site", "items", "takeaway", "cards"],
+    itemKeys: ["url", "title", "description", "image", "alt", "meta", "text", "source", "takeaway"],
     example: `\`\`\`garden card
 url: https://arxiv.org/abs/2309.06180
 title: PagedAttention
@@ -46,7 +47,7 @@ items:
     when: "两三件东西并排，每格约 60 字以内。原文是「X：Y」列表时，每格写成一行带引号的「X：Y」。",
     whenNot: "任何一格超过约 60 字时，用原文的列表，不要并排。",
     keys: ["items"],
-    itemKeys: ["title", "text"],
+    itemKeys: ["title", "text", "verdict"],
     example: `\`\`\`garden compare
 items:
   - title: 自旋锁
@@ -146,6 +147,77 @@ note: 一句话说明里面有什么
 \`\`\``,
     triggers: ["gfile"],
   },
+  relations: {
+    label: "关系图",
+    when: "三到六个关键要素，读者需要看清谁影响谁、哪些是双向的；首尾相接的循环也用它，把每一步写成一条 link。",
+    whenNot: "要素更多、有分支或先后顺序时，用 ```mermaid 流程图；只走一遍的步骤用 garden list。",
+    keys: ["title", "items", "center", "links", "caption"],
+    itemKeys: ["title", "text"],
+    linkKeys: ["from", "to", "style", "direction", "label"],
+    example: `\`\`\`garden relations
+items:
+  - title: 观察
+    text: 记下发生了什么
+  - title: 假设
+    text: 猜一个原因
+  - title: 实验
+    text: 只改一个变量
+  - title: 复盘
+    text: 留下能复用的结论
+links:
+  - from: 1
+    to: 2
+  - from: 2
+    to: 3
+  - from: 3
+    to: 4
+  - from: 4
+    to: 1
+  - from: 4
+    to: 2
+    style: dashed
+    label: 改写
+caption: 复盘的结论会改写下一轮的假设。
+\`\`\``,
+    triggers: ["grel"],
+  },
+  list: {
+    label: "图标列表",
+    when: "几条并列的行为、信号或做法，每条配一个线条图标；带标题时每条可以写几段说明。",
+    whenNot: "条目之间有先后顺序或要编号时，用普通有序列表。",
+    keys: ["title", "items", "caption"],
+    itemKeys: ["icon", "title", "text"],
+    example: `\`\`\`garden list
+items:
+  - icon: search
+    text: 搜索「降噪耳机」
+  - icon: eye
+    text: 看了 5 个商品详情
+\`\`\``,
+    triggers: ["glist"],
+  },
+  choice: {
+    label: "选择卡",
+    when: "给读者两三个具体选项让他选一个，每个选项有图标、一个醒目的数字和一句说明。",
+    whenNot: "选项会改变后面的计算结果时，写成想法，编译成 interactive。",
+    keys: ["title", "items", "none", "caption"],
+    itemKeys: ["icon", "value", "text", "label", "reply"],
+    example: `\`\`\`garden choice
+title: 你更倾向哪一种？
+items:
+  - icon: shield
+    value: ¥2,950
+    text: 原装，价格略高
+    label: 更看重可靠
+  - icon: wallet
+    value: ¥2,450
+    text: 换过电池，价格更低
+    label: 更看重价格
+none:
+  label: 都不合适
+\`\`\``,
+    triggers: ["gchoice"],
+  },
 };
 
 export const IDEA = {
@@ -201,7 +273,136 @@ export function suggestName(name) {
   return best;
 }
 
-export function cheatSheet() {
+export const IDEA_EN = {
+  label: "Idea",
+  when: "When you are not sure which component to use yet, write one sentence about what you want the reader to see.",
+  whenNot: "Must be compiled before publishing. Fine to leave in drafts.",
+  example: `\`\`\`garden
+Let the reader see...; show how...
+\`\`\``,
+  triggers: ["gidea"],
+};
+
+export const CATALOG_EXAMPLES_EN = {
+  card: `\`\`\`garden card
+url: https://arxiv.org/abs/2309.06180
+title: PagedAttention
+description: Paged KV cache management in vLLM.
+\`\`\``,
+  stat: `\`\`\`garden stat
+items:
+  - label: Llama-2-13B · 4K context
+    value: 3.2
+    unit: GiB
+    source: https://arxiv.org/abs/2309.06180
+\`\`\``,
+  compare: `\`\`\`garden compare
+items:
+  - title: Spinlock
+    text: Busy-waits when the critical section is tiny; never sleeps.
+  - title: Mutex
+    text: Sleeps under contention to avoid burning CPU cycles.
+\`\`\``,
+  timeline: `\`\`\`garden timeline
+items:
+  - date: 2015
+    title: Concurrent mark
+    text: Pause times drop significantly.
+  - date: 2017
+    title: Stack rescan moved out of STW
+    text: Pauses typically stay under 100 microseconds.
+  - date: 2022
+    title: Soft memory limit
+    text: Runtime adds GOMEMLIMIT.
+\`\`\``,
+  chart: `\`\`\`garden chart
+type: bar
+title: Sample latency
+x: Option
+series:
+  - name: Latency
+    data: [120, 85]
+unit: ms
+\`\`\``,
+  figure: `\`\`\`garden figure
+image: ./figure.svg
+parts:
+  - name: All
+    text: The full diagram.
+  - name: Mark
+    text: This step only marks reachable objects.
+\`\`\``,
+  html: `\`\`\`garden html
+src: ./demo.html
+title: Diagram
+\`\`\``,
+  interactive: `\`\`\`garden interactive #kv-memory
+caption: KV memory scales linearly with both batch size and sequence length.
+intent: |
+  Let the reader adjust batch size and inspect KV memory.
+---
+<State batch={1} />
+\`\`\``,
+  file: `\`\`\`garden file
+src: ./post-name/spec.zip
+note: One-line summary of what is inside
+\`\`\``,
+  relations: `\`\`\`garden relations
+items:
+  - title: Observe
+    text: Note what happened
+  - title: Hypothesize
+    text: Guess one cause
+  - title: Experiment
+    text: Change one variable
+  - title: Review
+    text: Keep a reusable lesson
+links:
+  - from: 1
+    to: 2
+  - from: 2
+    to: 3
+  - from: 3
+    to: 4
+  - from: 4
+    to: 1
+  - from: 4
+    to: 2
+    style: dashed
+    label: revises
+caption: The review revises the next round's hypothesis.
+\`\`\``,
+  list: `\`\`\`garden list
+items:
+  - icon: search
+    text: Searched for "noise-cancelling headphones"
+  - icon: eye
+    text: Viewed 5 product pages
+\`\`\``,
+  choice: `\`\`\`garden choice
+title: Which would you pick?
+items:
+  - icon: shield
+    value: $415
+    text: Original, a bit pricier
+    label: Reliability first
+  - icon: wallet
+    value: $345
+    text: Battery replaced, cheaper
+    label: Price first
+none:
+  label: Neither fits
+\`\`\``,
+};
+
+export function cheatSheet(lang = "zh") {
+  if (lang === "en") {
+    const blocks = [
+      IDEA_EN.example,
+      ...GARDEN_NAMES.map((name) => CATALOG_EXAMPLES_EN[name] ?? CATALOG[name].example),
+    ];
+    return ["<!-- Component cheat sheet. Copy the block you need and delete this comment.", ...blocks.flatMap((example) => ["", example]), "-->"].join("\n");
+  }
   const blocks = [
     IDEA.example,
     ...GARDEN_NAMES.map((name) => CATALOG[name].example),

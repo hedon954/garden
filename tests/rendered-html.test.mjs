@@ -55,7 +55,10 @@ test("server-renders the finished blog home", async () => {
   assert.match(shell, /\.sh-foot-links\{display:flex;align-items:center;gap:20px\}/);
   assert.match(shell, /\.sh-foot a\{display:inline-flex;align-items:center;gap:6px;min-height:44px/);
   assert.match(shell, /\.sh-foot-links a svg\{display:block;flex:none;width:16px;height:16px\}/);
-  assert.match(shell, /\.sh-home-grid \.sh-row time\{min-width:6em;font-variant-numeric:tabular-nums\}/);
+  assert.match(shell, /:root\{--sh-date-track:7\.5em\}/);
+  assert.match(shell, /:root:lang\(en\)\{--sh-date-track:5\.5em\}/);
+  assert.match(shell, /\.sh-home-grid \.sh-row\{grid-template-columns:var\(--sh-date-track\) minmax\(0,1fr\) auto\}/);
+  assert.doesNotMatch(shell, /max-content\) minmax\(0,1fr\)/);
   const footer = html.match(/<footer class="sh-footer"[\s\S]*?<\/footer>/)?.[0] ?? "";
   assert.match(footer, /class="sh-foot-links"/);
   assert.match(footer, /GitHub/);
@@ -997,4 +1000,37 @@ test("the 404 page has exactly one robots meta (noindex); ordinary pages write n
   // noindex pages still say so.
   const admin = (await (await render("/a2")).text()).split("</head>")[0];
   assert.match(admin, /<meta name="robots" content="noindex, nofollow"\/>/u);
+});
+
+test("home list dates keep the year only outside the current year, per locale", async () => {
+  const { homeListDate } = await import("../app/lib/a2-meta.ts");
+  const now = new Date("2026-10-20T04:00:00Z");
+  assert.equal(homeListDate("2026-09-18", now), "9 月 18 日");
+  assert.equal(homeListDate("2025-12-19", now), "2025 年 12 月 19 日");
+  assert.equal(homeListDate("2026-09-18", now, "en"), "Sep 18");
+  assert.equal(homeListDate("2025-12-19", now, "en"), "Dec 19, 2025");
+});
+
+test("full list dates follow the site locale", async () => {
+  const { fullListDate } = await import("../app/lib/a2-meta.ts");
+  assert.equal(fullListDate("2025-07-21"), "2025 年 7 月 21 日");
+  assert.equal(fullListDate("2025-07-21", "en"), "Jul 21, 2025");
+});
+
+test("column status is an enum with localized labels and Chinese back-compat", async () => {
+  const i18n = await readFile(new URL("../app/lib/i18n.ts", import.meta.url), "utf8");
+  assert.match(i18n, /columnOngoing: "连载中"/);
+  assert.match(i18n, /columnCompleted: "已完结"/);
+  assert.match(i18n, /columnOngoing: "Ongoing"/);
+  assert.match(i18n, /columnCompleted: "Completed"/);
+  const build = await readFile(new URL("../scripts/build-content.mjs", import.meta.url), "utf8");
+  assert.match(i18n, /columnDefault: "持续更新"/);
+  assert.match(i18n, /columnDefault: "Active"/);
+  assert.match(build, /持续更新: "default"/);
+  assert.match(build, /连载中: "ongoing"/);
+  assert.match(build, /已完结: "completed"/);
+  assert.match(build, /if \(raw === undefined\) return "default";/);
+  const generated = await readFile(new URL("../.garden/generated-content.ts", import.meta.url), "utf8");
+  assert.match(generated, /"columnStatus": "ongoing"/);
+  assert.doesNotMatch(generated, /"columnStatus": "(连载中|持续更新|已完结)"/);
 });

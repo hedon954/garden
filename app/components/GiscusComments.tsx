@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 
 import type { GiscusConfig } from "../lib/giscus-config";
+import { ui } from "../lib/i18n";
 
 export type { GiscusConfig };
 
@@ -38,7 +39,7 @@ export function GiscusComments({
     script.dataset.emitMetadata = "0";
     script.dataset.inputPosition = "bottom";
     script.dataset.theme = currentGiscusTheme();
-    script.dataset.lang = "zh-CN";
+    script.dataset.lang = ui().giscusLang;
     script.dataset.loading = "lazy";
     container.append(script);
 

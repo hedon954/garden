@@ -17,11 +17,13 @@ import {
   HANDBOOK_SECTIONS,
   HANDBOOK_UI,
   handbookPath,
+  isReferencePath,
   orderedHandbookDocs,
   sectionTitle,
   toHandbookNavItems,
   type HandbookLang,
 } from "../lib/garden-docs-meta";
+import { UI_STRINGS, siteLang } from "../lib/i18n";
 import { siteConfig } from "../site.config";
 
 const other = (lang: HandbookLang): HandbookLang => (lang === "en" ? "zh" : "en");
@@ -29,6 +31,7 @@ const hreflang = (lang: HandbookLang) => (lang === "en" ? "en" : "zh-CN");
 
 /** canonical + hreflang links; the counterpart is listed only when it exists. */
 export function handbookLanguages(lang: HandbookLang, docPath: string) {
+  if (siteLang === "en") return undefined;
   if (!hasHandbookPage(other(lang), docPath)) return undefined;
   const zh = siteHref(handbookPath("zh", docPath));
   const en = siteHref(handbookPath("en", docPath));
@@ -38,21 +41,101 @@ export function handbookLanguages(lang: HandbookLang, docPath: string) {
 export const handbookAlternates = (lang: HandbookLang, docPath: string) =>
   pageAlternates(handbookPath(lang, docPath), handbookLanguages(lang, docPath));
 
+export async function handbookOverviewMetadata(lang: HandbookLang, indexDoc: GardenDocEntry | null | undefined) {
+  const t = HANDBOOK_UI[lang];
+  const baseUrl = await getSiteUrl();
+  const pathname = siteHref(handbookPath(lang, "index"));
+  const description = indexDoc?.description ?? "";
+  const fullTitle = `${t.name} · ${siteConfig.name}`;
+  const imageAlt =
+    lang === "en"
+      ? `${siteConfig.name} · ${indexDoc?.title || t.name}`
+      : `${siteConfig.name} · ${siteConfig.pages.home.title.replace("\n", "")}`;
+  return {
+    title: t.name,
+    description,
+    alternates: pageAlternates(handbookPath(lang), handbookLanguages(lang, "index")),
+    openGraph: {
+      type: "website",
+      url: absoluteUrl(pathname, baseUrl),
+      title: fullTitle,
+      description,
+      locale: lang === "en" ? "en_US" : "zh_CN",
+      images: [
+        {
+          url: "/og.png",
+          width: 1731,
+          height: 909,
+          alt: imageAlt,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: fullTitle,
+      description,
+      images: ["/og.png"],
+    },
+  } satisfies Metadata;
+}
+
 export async function handbookDocMetadata(lang: HandbookLang, doc: GardenDocEntry | undefined) {
-  if (!doc) return {};
+  if (!doc) {
+    const copy = UI_STRINGS[lang];
+    const fullTitle = `${copy.notFoundTitle} · ${siteConfig.name}`;
+    return {
+      title: copy.notFoundTitle,
+      description: copy.notFoundDeck,
+      openGraph: {
+        type: "website",
+        title: fullTitle,
+        description: copy.notFoundDeck,
+        locale: lang === "en" ? "en_US" : "zh_CN",
+        images: [
+          {
+            url: "/og.png",
+            width: 1731,
+            height: 909,
+            alt: fullTitle,
+          },
+        ],
+      },
+      twitter: {
+        card: "summary_large_image",
+        title: fullTitle,
+        description: copy.notFoundDeck,
+        images: ["/og.png"],
+      },
+    } satisfies Metadata;
+  }
   const t = HANDBOOK_UI[lang];
   const baseUrl = await getSiteUrl();
   const pathname = siteHref(handbookPath(lang, doc.path));
+  const docTitle = `${doc.title} · ${t.name}`;
   return {
-    title: `${doc.title} · ${t.name}`,
+    title: docTitle,
     description: doc.description,
     alternates: handbookAlternates(lang, doc.path),
     openGraph: {
       type: "article",
       url: absoluteUrl(pathname, baseUrl),
-      title: `${doc.title} · ${t.name}`,
+      title: docTitle,
       description: doc.description,
       locale: lang === "en" ? "en_US" : "zh_CN",
+      images: [
+        {
+          url: "/og.png",
+          width: 1731,
+          height: 909,
+          alt: `${siteConfig.name} · ${docTitle}`,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: docTitle,
+      description: doc.description,
+      images: ["/og.png"],
     },
   } satisfies Metadata;
 }
@@ -66,7 +149,7 @@ export function HandbookOverview({ lang }: { lang: HandbookLang }) {
   const content = indexDoc?.content ?? "";
   const headings = extractHeadings(content);
   // The site config title/subtitle is written in the site's own language.
-  const configured = lang === "zh" ? siteConfig.pages.garden : { title: "", subtitle: "" };
+  const configured = lang === siteLang ? siteConfig.pages.garden : { title: "", subtitle: "" };
   const title = configured.title?.trim() || indexDoc?.title || t.name;
   const subtitle = configured.subtitle?.trim() || indexDoc?.description || "";
 
@@ -89,10 +172,10 @@ export function HandbookOverview({ lang }: { lang: HandbookLang }) {
         <ArticleMeasure />
 
         <div className="e-content">
-          <MarkdownArticle content={content} lang={lang} />
+          <MarkdownArticle content={content} lang={lang} fieldTables handbook />
         </div>
 
-        <ArticleReferences references={indexDoc?.references} />
+        <ArticleReferences references={indexDoc?.references} lang={lang} />
 
         {firstDoc ? (
           <nav className="gdoc-pager" aria-label={t.pager}>
@@ -125,7 +208,7 @@ export function HandbookDoc({ lang, doc }: { lang: HandbookLang; doc: GardenDocE
   const componentBadge = COMPONENT_BADGE[doc.path];
 
   return (
-    <main className="column-reading-page garden-doc-page" lang={hreflang(lang)}>
+    <main className={`column-reading-page garden-doc-page${isReferencePath(doc.path) ? " is-reference" : ""}`} lang={hreflang(lang)}>
       <HandbookLangRedirect lang={lang} />
       <GardenDocsNav docs={navItems} currentPath={doc.path} lang={lang} />
 
@@ -146,10 +229,10 @@ export function HandbookDoc({ lang, doc }: { lang: HandbookLang; doc: GardenDocE
         <ArticleMeasure />
 
         <div className="e-content">
-          <MarkdownArticle content={doc.content} lang={lang} />
+          <MarkdownArticle content={doc.content} lang={lang} fieldTables handbook refDemos={isReferencePath(doc.path)} />
         </div>
 
-        <ArticleReferences references={doc.references} />
+        <ArticleReferences references={doc.references} lang={lang} />
 
         <nav className="gdoc-pager" aria-label={t.pager}>
           {prev ? (

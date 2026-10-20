@@ -19,7 +19,7 @@ npm install
 make dev
 ```
 
-`npx hd-garden init` 会把站点模板复制到 `my-blog` 目录，并写入 `.agents/skills/` 辅助技能文件。它不会自动执行 `npm install`，也不会自动创建 `.github/workflows/pages.yml`（GitHub Pages 工作流配置见 [发布到 GitHub Pages](/garden/deploy)）。
+`npx hd-garden init` 会把站点模板复制到 `my-blog` 目录，并写入 `.agents/skills/` 辅助技能文件（传入 `--locale en` 或 `--locale en_US` 时会生成英文版 `site.config.yaml`、`Makefile`、`README.md`，并安装 `.github/workflows/pages.yml`）。默认中文初始化不会自动执行 `npm install`，也不会自动创建 `.github/workflows/pages.yml`（GitHub Pages 工作流配置见 [发布到 GitHub Pages](/garden/deploy)）。
 
 首次运行 `make dev` 时，如果还没有 `node_modules`，`Makefile` 中的 `make prepare` 会先自动执行 `npm install`，随后运行 `npx garden dev`（其内部会先执行内容同步）并启动本地开发服务器，默认地址为 `http://localhost:3000`。
 

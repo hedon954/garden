@@ -15,6 +15,7 @@ import {
 } from "../../lib/site";
 import { siteHref } from "../../lib/site-href";
 import { isStaticPlaceholder, STATIC_PLACEHOLDER, staticParams } from "../../../ui/garden/static-params.mjs";
+import { ui } from "../../lib/i18n";
 
 export function generateStaticParams() {
   return staticParams(thoughts.map((thought) => ({ slug: thought.slug })), { slug: STATIC_PLACEHOLDER });
@@ -72,7 +73,7 @@ export default async function ThoughtPage({
     <main className="page-shell thought-detail-page">
       <Link href={siteHref("/thoughts")} className="back-link">
         <ArrowLeft size={16} />
-        返回随想
+        {ui().backToThoughts}
       </Link>
       <ThoughtCard thought={thought} showPermalink={false} />
       <Webmentions

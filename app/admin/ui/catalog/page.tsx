@@ -1,9 +1,10 @@
 import { AdminCatalog } from "../../../components/AdminUiPanels";
 import { AdminUiShell, isStaticExport, requireAdminPage, StaticAdminNotice } from "../../../components/AdminUiShell";
+import { ui } from "../../../lib/i18n";
 import { recipeSources } from "../../../lib/ui-model";
 
 export const dynamic = process.env.STATIC_EXPORT === "1" ? "force-static" : "force-dynamic";
-export const metadata = { title: "组件清单", robots: { index: false, follow: false } };
+export const metadata = { title: ui().adminTitleCatalog, robots: { index: false, follow: false } };
 
 export default async function UiCatalogPage() {
   if (isStaticExport()) return <StaticAdminNotice />;

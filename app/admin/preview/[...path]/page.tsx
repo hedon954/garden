@@ -7,12 +7,13 @@ import { AdminUiShell, isStaticExport, requireAdminPage, StaticAdminNotice } fro
 import { MarkdownArticle } from "../../../components/MarkdownArticle";
 import { repositoryContentPath } from "../../../lib/repository-path.mjs";
 import { readMarkdown, readText } from "../../../lib/ui-content";
+import { ui } from "../../../lib/i18n";
 import { formatInlineLink, replaceInlineLinks } from "../../../../ui/garden/markdown-destination.mjs";
 import { STATIC_PLACEHOLDER, staticParams } from "../../../../ui/garden/static-params.mjs";
 
 export const dynamic = process.env.STATIC_EXPORT === "1" ? "force-static" : "force-dynamic";
 export const dynamicParams = false;
-export const metadata = { title: "草稿预览", robots: { index: false, follow: false } };
+export const metadata = { title: ui().adminTitlePreview, robots: { index: false, follow: false } };
 
 /** Draft preview is served by the admin worker. The public static export has no paths here. */
 export function generateStaticParams() {

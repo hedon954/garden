@@ -43,6 +43,8 @@ pages:
   thoughts:
     title: 随想
     subtitle: 短笔记、图片和链接。
+    # 每屏显示多少条，往下读时自动加载下一屏。默认 10。
+    # pageSize: 10
   columns:
     title: 专栏
     subtitle: 按顺序读的一组文章。
@@ -75,7 +77,7 @@ footer: 持续记录。
 | `name` | 站点名称，显示在左上角导航栏、浏览器标题后缀与 RSS 订阅源标题 |
 | `tagline` | 站点副标题 |
 | `description` | 站点简介，用于首页 SEO 描述与 RSS 频道描述 |
-| `locale` | 语言与地区标识，默认写 `zh_CN`（下划线格式） |
+| `locale` | 语言与地区标识，默认写 `zh_CN`（下划线格式）；设为 `en_US` 时，全站框架文案（导航、首页、文章列表、文章元信息与永久链接、Giscus 评论提示、标签、专栏、关于页、404 页面、分页、RSS/sitemap 与 meta/og）会在构建时切换为英文 |
 | `url` | 站点的公开完整网址（如 `https://blog.example.com`）。配置后，文章里指向该地址的完整链接会自动按站内链接处理 |
 | `author.name` | 作者署名，显示在文章元信息栏、关于页和页脚 |
 | `author.github` | GitHub 用户名（不要写完整网址），用于拼接 GitHub 主页链接及拉取关于页的公开动态 |
@@ -107,7 +109,7 @@ footer: 持续记录。
 columns:
   - slug: building-in-public
     title: 一个人造产品
-    status: 连载中
+    status: ongoing
     description: 从最小闭环到验证发布的完整记录。
     cover: windowsill-herbs.svg
     posts:
@@ -120,6 +122,6 @@ columns:
 | `slug` | 是 | 专栏标识，只能包含小写字母、数字和连字符，生成路由 `/columns/<slug>/<post>` |
 | `title` | 是 | 专栏名称（同时会显示在 `/blog` 文章列表对应文章的右侧） |
 | `description` | 是 | 专栏简介，显示在 `/columns` 列表卡片上 |
-| `status` | 否 | 状态文字（如 `连载中` 或 `已完结`） |
+| `status` | 否 | 状态标识：`default`（或不写，显示为「持续更新」）、`ongoing`（「连载中」）、`completed`（「已完结」）；旧写法 `持续更新`、`连载中`、`已完结` 仍可识别，其他文字按原样显示 |
 | `cover` | 否 | 专栏封面图路径（相对 `content/covers/`） |
 | `posts` | 是 | 按阅读顺序排列的文章路径列表（相对于 `content/posts/`，不带 `.md` 后缀） |

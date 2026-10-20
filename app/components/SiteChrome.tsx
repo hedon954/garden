@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { routeLang, ui } from "../lib/i18n";
+import { inAppPath, isHandbookPath, routeLang, ui } from "../lib/i18n";
 import { SiteFooter } from "./SiteFooter";
 import { SiteHeader } from "./SiteHeader";
 
@@ -14,14 +14,14 @@ export function SiteChrome({ children }: { children: React.ReactNode }) {
       {ui(lang).skipToContent}
     </a>
   );
-  if (pathname?.startsWith("/admin")) return <>{skip}{children}</>;
+  if (inAppPath(pathname).startsWith("/admin")) return <>{skip}{children}</>;
 
   return (
     <>
       {skip}
       <SiteHeader />
       <div id="main-content">{children}</div>
-      <SiteFooter docs={pathname?.startsWith("/garden") ?? false} lang={lang} />
+      <SiteFooter docs={isHandbookPath(pathname)} lang={lang} />
     </>
   );
 }

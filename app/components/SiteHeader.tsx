@@ -17,7 +17,7 @@ import { createSearch } from "../../ui/garden/search-match.mjs";
 import { cropMatchedText, highlightParts } from "../../ui/garden/search-preview.mjs";
 import { resolveDark, themeSwitchProps } from "../../ui/garden/theme.mjs";
 import { SITE_NAV, isCurrentNav } from "../../ui/garden/site-nav.mjs";
-import { routeLang, ui } from "../lib/i18n";
+import { isHandbookPath, routeLang, ui } from "../lib/i18n";
 import { HandbookLangSwitch } from "./HandbookLangSwitch";
 import { createIdbStore, loadFullIndex, saveDataOn, whenIdleAfterLoad } from "../../ui/garden/search-full.mjs";
 import { siteConfig } from "../site.config";
@@ -192,7 +192,12 @@ export function SiteHeader() {
   useEffect(() => {
     const system = window.matchMedia("(prefers-color-scheme: dark)");
     const apply = () => {
-      const stored = window.localStorage.getItem("theme");
+      let stored: string | null = null;
+      try {
+        stored = window.localStorage.getItem("theme");
+      } catch {
+        // Storage blocked (cookies off, opaque origin): follow the system.
+      }
       const useDark = resolveDark(stored, system.matches);
       document.documentElement.dataset.theme = useDark ? "dark" : "light";
       setDark(useDark);
@@ -298,7 +303,11 @@ export function SiteHeader() {
     const next = !dark;
     setDark(next);
     document.documentElement.dataset.theme = next ? "dark" : "light";
-    window.localStorage.setItem("theme", next ? "dark" : "light");
+    try {
+      window.localStorage.setItem("theme", next ? "dark" : "light");
+    } catch {
+      // Storage blocked: the choice lasts for this page only.
+    }
   };
 
   const current = (href: string) => isCurrentNav(pathname, href);
@@ -338,7 +347,7 @@ export function SiteHeader() {
                 <path d="M13.3 13.3 17 17" />
               </svg>
             </button>
-            {pathname?.startsWith("/garden") ? <HandbookLangSwitch /> : null}
+            {isHandbookPath(pathname) ? <HandbookLangSwitch /> : null}
             <button className="sh-icon sh-theme" type="button" onClick={toggleTheme} aria-label={dark ? t.toLight : t.toDark}>
               <svg className="i-moon" viewBox="0 0 20 20" aria-hidden="true">
                 <path d="M16.5 12.2A6.8 6.8 0 0 1 7.8 3.5a6.8 6.8 0 1 0 8.7 8.7Z" />

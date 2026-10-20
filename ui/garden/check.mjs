@@ -24,6 +24,8 @@ function cellText(item) {
 
 function compareTooLong(props) {
   const items = Array.isArray(props?.items) ? props.items : [];
+  // Good/bad verdicts stack one under another, so a longer quote still reads well.
+  if (items.some((item) => item && typeof item === "object" && (item.verdict === "good" || item.verdict === "bad"))) return false;
   return items.some((item) => [...cellText(item).trim()].length > COMPARE_LIMIT);
 }
 
@@ -82,6 +84,10 @@ export function checkGardenMarkdown(markdown, { draft = false, title = "", title
     if (block.error?.code === "garden-yaml") {
       const allowed = block.error.allowed ?? CATALOG[block.name]?.keys ?? [];
       push(fence.line, "garden-yaml", block.error.message, allowed.length ? `可用的键：${allowed.join("、")}` : "检查缩进和冒号。");
+      return;
+    }
+    if (block.error?.code === "garden-relations") {
+      push(fence.line, "garden-relations", block.error.message, "要素更多或有分支：```mermaid flowchart；一次走完的步骤：garden list。");
       return;
     }
     if (block.name === "file") {

@@ -1,9 +1,10 @@
 import { AdminBlocks } from "../../../components/AdminUiPanels";
 import { AdminUiShell, isStaticExport, requireAdminPage, StaticAdminNotice } from "../../../components/AdminUiShell";
+import { ui } from "../../../lib/i18n";
 import { getSiteUrl } from "../../../lib/site";
 
 export const dynamic = process.env.STATIC_EXPORT === "1" ? "force-static" : "force-dynamic";
-export const metadata = { title: "交互块", robots: { index: false, follow: false } };
+export const metadata = { title: ui().adminTitleBlocks, robots: { index: false, follow: false } };
 
 export default async function UiBlocksPage() {
   if (isStaticExport()) return <StaticAdminNotice />;

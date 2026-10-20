@@ -12,6 +12,7 @@ import { pathToFileURL } from "node:url";
 import { parse as parseYaml } from "yaml";
 import { CATALOG } from "../ui/garden/catalog.mjs";
 import {
+  ALLOWED_EN_HANDBOOK_CJK,
   ALLOWED_EXTERNAL_FLAGS,
   ALLOWED_NON_ENV_UPPER_SNAKE,
 } from "./handbook-allowlist.mjs";
@@ -154,7 +155,7 @@ function deriveMakefileFacts(root = ROOT) {
   const targets = new Set();
   const variables = new Set(["MAKE"]);
 
-  for (const rel of ["templates/site/Makefile", "Makefile"]) {
+  for (const rel of ["templates/site/Makefile", "templates/site/Makefile.en", "Makefile"]) {
     const file = path.join(root, rel);
     if (!fs.existsSync(file)) continue;
     const text = fs.readFileSync(file, "utf8");
@@ -217,19 +218,21 @@ function deriveEnvVars(root = ROOT) {
     }
   }
 
-  // .env.example
-  const envExample = path.join(root, ".env.example");
-  if (fs.existsSync(envExample)) {
-    const text = fs.readFileSync(envExample, "utf8");
-    for (const match of text.matchAll(/^#?\s*([A-Z][A-Z0-9_]+)=/gmu)) {
-      envVars.add(match[1]);
+  // .env.example & .env.en.example
+  for (const envRel of [".env.example", ".env.en.example"]) {
+    const envExample = path.join(root, envRel);
+    if (fs.existsSync(envExample)) {
+      const text = fs.readFileSync(envExample, "utf8");
+      for (const match of text.matchAll(/^#?\s*([A-Z][A-Z0-9_]+)=/gmu)) {
+        envVars.add(match[1]);
+      }
     }
   }
 
   // GitHub workflows and template Makefiles
   const workflowFiles = [
     ...walkFiles(path.join(root, ".github/workflows"), (f) => /\.ya?ml$/u.test(f)),
-    ...walkFiles(path.join(root, "templates"), (f) => /\.ya?ml$|Makefile$/u.test(f)),
+    ...walkFiles(path.join(root, "templates"), (f) => /\.ya?ml$|Makefile(?:\.en)?$/u.test(f)),
   ];
   for (const file of workflowFiles) {
     const text = fs.readFileSync(file, "utf8");
@@ -272,7 +275,7 @@ function deriveSiteConfigKeys(root = ROOT) {
     }
   }
 
-  for (const rel of ["templates/site/site.config.yaml", "site.config.yaml"]) {
+  for (const rel of ["templates/site/site.config.yaml", "templates/site/site.config.en.yaml", "site.config.yaml"]) {
     const file = path.join(root, rel);
     if (!fs.existsSync(file)) continue;
     const text = fs.readFileSync(file, "utf8");
@@ -357,7 +360,7 @@ function deriveCheckCodes(root = ROOT) {
   // ui/core/validate.mjs & ui/core/parse.mjs
   for (const rel of ["ui/core/validate.mjs", "ui/core/parse.mjs"]) {
     const text = fs.readFileSync(path.join(root, rel), "utf8");
-    for (const match of text.matchAll(/\b(?:add|report)\(\s*["']([a-z0-9-]+)["']\s*,\s*[^,]+,\s*[^,)]+(?:,\s*["'](error|warning)["'])?\s*\)/gu)) {
+    for (const match of text.matchAll(/\b(?:add|report)\(\s*["']([a-z0-9-]+)["']\s*,\s*(?:[^,()]|\([^()]*\))+,\s*(?:[^,()]|\([^()]*\))+(?:,\s*["'](error|warning)["'])?\s*\)/gu)) {
       record(match[1], match[2] === "warning" ? "warning" : "error");
     }
   }
@@ -1088,6 +1091,294 @@ export function checkHandbookPairs(root = ROOT) {
   return issues;
 }
 
+const CJK_RE = /[\u3000-\u303f\u3400-\u9fff\uf900-\ufaff\uff00-\uffef]/gu;
+
+function findDisallowedEnCjk(line, { allowTitleSplit = false } = {}) {
+  const disallowed = [];
+  for (const match of line.matchAll(CJK_RE)) {
+    const ch = match[0];
+    if (allowTitleSplit && ALLOWED_EN_HANDBOOK_CJK.titleSplitChars.has(ch)) continue;
+    disallowed.push(ch);
+  }
+  return disallowed;
+}
+
+/**
+ * Extract local relative file paths included or embedded by an English handbook Markdown page
+ * (Markdown images, HTML media tags, and `garden file` / `garden figure` / `garden html` fences).
+ */
+function extractIncludedHandbookFiles(markdown, mdFile, root = ROOT) {
+  const handbookRoot = path.join(root, "docs/handbook");
+  const baseDir = path.dirname(mdFile);
+  const included = new Set();
+
+  const addIfLocal = (rawRef) => {
+    if (!rawRef || typeof rawRef !== "string") return;
+    const cleaned = rawRef.trim().replace(/^<|>$/gu, "").split(/[?#]/u, 1)[0];
+    if (!cleaned || /^(?:[a-z]+:)?\/\//iu.test(cleaned) || cleaned.startsWith("/") || cleaned.startsWith("#") || cleaned.startsWith("data:")) {
+      return;
+    }
+    const resolved = path.resolve(baseDir, decodeURIComponent(cleaned));
+    const relToHandbook = path.relative(handbookRoot, resolved);
+    if (!relToHandbook.startsWith("..") && !path.isAbsolute(relToHandbook) && fs.existsSync(resolved) && fs.statSync(resolved).isFile()) {
+      included.add(resolved);
+    }
+  };
+
+  for (const match of markdown.matchAll(/!\[[^\]]*\]\(([^)]+)\)/gu)) {
+    addIfLocal(match[1].trim().split(/\s+/u, 1)[0]);
+  }
+  for (const match of markdown.matchAll(/<(?:img|audio|video|source)\b[^>]*\bsrc=["']([^"']+)["']/giu)) {
+    addIfLocal(match[1]);
+  }
+  const { fences } = parseMarkdownRegions(markdown);
+  for (const fence of fences) {
+    if (!fence.info.startsWith("garden ")) continue;
+    const bodyText = fence.bodyLines.map((l) => l.text).join("\n");
+    for (const srcMatch of bodyText.matchAll(/^\s*(?:-\s*)?(?:src|image)\s*:\s*(.+)$/gmu)) {
+      addIfLocal(srcMatch[1].replace(/^(["'])(.*)\1$/u, "$2"));
+    }
+  }
+  return [...included];
+}
+
+/**
+ * Strip the narrow, line-specific `"全部"` config value exception when checking
+ * `docs/handbook/en/components/figure.md` on the `parts[].id` field row.
+ */
+function stripAllowedFigureAllKeywordInLine(relFile, line) {
+  const rule = ALLOWED_EN_HANDBOOK_CJK.figureAllKeyword;
+  if (relFile === rule.file && rule.linePattern.test(line)) {
+    return line.replaceAll(`\`${rule.literal}\``, "").replaceAll(rule.literal, "");
+  }
+  return line;
+}
+
+/**
+ * Strip the narrow, row-specific `<code>"全部"</code>` config value exception when
+ * checking built HTML for `/garden/en/components/figure` on the `parts[].id` table row.
+ */
+export function stripAllowedFigureAllKeywordInHtml(html, pageLabel = "") {
+  const rule = ALLOWED_EN_HANDBOOK_CJK.figureAllKeyword;
+  if (!rule.routePattern.test(String(pageLabel))) return String(html);
+  return String(html).replace(/<tr\b[^>]*>[\s\S]*?<\/tr>/giu, (tr) => {
+    if (!/<code>parts\[\]\.id<\/code>/u.test(tr)) return tr;
+    return tr.replace(/<code>(?:"|&quot;)全部(?:"|&quot;)<\/code>/gu, '<code>"all"</code>');
+  });
+}
+
+/**
+ * Every English handbook page under docs/handbook/en/ (including fenced code blocks and
+ * any included/embedded files) must not contain CJK characters, except the explicit allowlist.
+ * Note: This static check inspects Markdown source, embedded assets, and pre-rendered HTML files;
+ * it does not cover client-side runtime rendering or hydration (which is verified by browser tests).
+ */
+export function checkEnglishHandbookNoCjk(root = ROOT) {
+  const enRoot = path.join(root, "docs/handbook/en");
+  if (!fs.existsSync(enRoot)) return [];
+  const issues = [];
+  const checkedAssets = new Set();
+
+  const checkFileLines = (filePath, allowTitleSplit = false) => {
+    const relFile = path.relative(root, filePath).replace(/\\/g, "/");
+    const lines = fs.readFileSync(filePath, "utf8").split(/\r?\n/u);
+    for (let i = 0; i < lines.length; i += 1) {
+      const line = lines[i];
+      const lineAllowSplit = allowTitleSplit && /(?:title|split|delimiter|heading|two-line|` \| `)/iu.test(line);
+      const scannedLine = stripAllowedFigureAllKeywordInLine(relFile, line);
+      const bad = findDisallowedEnCjk(scannedLine, { allowTitleSplit: lineAllowSplit });
+      if (bad.length > 0) {
+        const sample = [...new Set(bad)].slice(0, 8).join("");
+        issues.push({
+          file: relFile,
+          line: i + 1,
+          kind: "en-cjk",
+          message: `English handbook contains CJK character(s) "${sample}": ${line.trim().slice(0, 80)}`,
+        });
+      }
+    }
+  };
+
+  const enFiles = walkFiles(enRoot);
+  for (const file of enFiles) {
+    checkedAssets.add(file);
+    checkFileLines(file, file.endsWith(".md"));
+    if (file.endsWith(".md")) {
+      const content = fs.readFileSync(file, "utf8");
+      for (const asset of extractIncludedHandbookFiles(content, file, root)) {
+        if (checkedAssets.has(asset)) continue;
+        checkedAssets.add(asset);
+        if (/\.(?:md|markdown|svg|html|htm|txt|csv|tsv|json|ya?ml)$/iu.test(asset)) {
+          checkFileLines(asset, false);
+        }
+      }
+    }
+  }
+
+  const builtPreviewDir = path.join(root, "public/media/garden-docs/en");
+  for (const file of walkFiles(builtPreviewDir)) {
+    if (checkedAssets.has(file)) continue;
+    checkedAssets.add(file);
+    if (/\.(?:md|markdown|svg|html|htm|txt|csv|tsv|json|ya?ml)$/iu.test(file)) {
+      checkFileLines(file, false);
+    }
+  }
+
+  return issues;
+}
+
+/**
+ * Inspect a single built HTML document for an English handbook route (or the
+ * English 404 output), covering <head> meta tags, <title>, visible text, and
+ * user-facing attributes (`content`, `alt`, `title`, `aria-label`, `placeholder`).
+ * Only the `中` language switcher, the `丨` / `｜` title-split delimiter explanation,
+ * and the narrow `"全部"` config value on `/garden/en/components/figure` (`parts[].id` row)
+ * are permitted.
+ * Note: This check inspects static HTML markup only and does not cover runtime rendering
+ * or client-side hydration in a real browser.
+ */
+export function findBuiltEnglishHtmlCjk(html, pageLabel = "/garden/en") {
+  const issues = [];
+  const cleaned = stripAllowedFigureAllKeywordInHtml(
+    String(html)
+      .replace(/<script[\s\S]*?<\/script>/giu, "")
+      .replace(/<style[\s\S]*?<\/style>/giu, ""),
+    pageLabel,
+  );
+
+  const recordIfCjk = (value, context, allowTitleSplit = false) => {
+    const text = String(value ?? "").trim();
+    if (!text) return;
+    if (text === ALLOWED_EN_HANDBOOK_CJK.switcher) return;
+    const bad = findDisallowedEnCjk(text, { allowTitleSplit });
+    if (bad.length > 0) {
+      const sample = [...new Set(bad)].slice(0, 8).join("");
+      issues.push({
+        file: pageLabel,
+        line: 1,
+        kind: "en-built-cjk",
+        message: `Built English HTML (${context}) contains CJK character(s) "${sample}": ${text.slice(0, 100)}`,
+      });
+    }
+  };
+
+  // 1. Check <head> <title> and <meta> tags
+  const headMatch = /<head\b[^>]*>([\s\S]*?)<\/head>/iu.exec(cleaned);
+  const headHtml = headMatch ? headMatch[1] : "";
+  for (const m of headHtml.matchAll(/<title\b[^>]*>([\s\S]*?)<\/title>/giu)) {
+    recordIfCjk(m[1], "<title>", false);
+  }
+  for (const m of headHtml.matchAll(/<meta\b[^>]*>/giu)) {
+    const tag = m[0];
+    const nameOrProp =
+      /\b(?:name|property)=["']([^"']*)["']/iu.exec(tag)?.[1] ?? "<meta>";
+    const content = /\bcontent=["']([^"']*)["']/iu.exec(tag)?.[1] ?? "";
+    recordIfCjk(content, `meta[${nameOrProp}]`, false);
+  }
+
+  // 2. Check user-facing attributes across the entire document
+  for (const m of cleaned.matchAll(/\s(aria-label|title|placeholder|alt)=["']([^"']*)["']/giu)) {
+    recordIfCjk(m[2], `attr[${m[1]}]`, false);
+  }
+
+  // 3. Check all text nodes across the entire document
+  for (const m of cleaned.matchAll(/>([^<]+)</gu)) {
+    const text = m[1].trim();
+    if (!text) continue;
+    recordIfCjk(text, "text", true);
+  }
+
+  return issues;
+}
+
+/**
+ * Check any static-export HTML files already present under dist/client/garden/en/.
+ * Note: Static CJK checks do not cover runtime rendering or hydration of routes such as
+ * the shared root 404.html; runtime rendering is verified separately in a real browser.
+ */
+export function checkBuiltEnglishHandbookHtmlFiles(root = ROOT) {
+  const clientDir = path.join(root, "dist/client");
+  const clientEnDir = path.join(clientDir, "garden/en");
+  const issues = [];
+  if (fs.existsSync(clientEnDir)) {
+    for (const file of walkFiles(clientEnDir, (f) => f.endsWith(".html"))) {
+      const rel = path.relative(root, file).replace(/\\/g, "/");
+      const html = fs.readFileSync(file, "utf8");
+      issues.push(...findBuiltEnglishHtmlCjk(html, rel));
+    }
+  }
+  return issues;
+}
+
+const HANDBOOK_EMBEDDED_TEMPLATES = [
+  {
+    handbookFile: "docs/handbook/config.md",
+    templateFile: "templates/site/site.config.yaml",
+    label: "site.config.yaml",
+  },
+  {
+    handbookFile: "docs/handbook/en/config.md",
+    templateFile: "templates/site/site.config.en.yaml",
+    label: "site.config.en.yaml",
+  },
+  {
+    handbookFile: "docs/handbook/deploy.md",
+    templateFile: "templates/workflows/pages.yml",
+    label: "pages.yml",
+  },
+  {
+    handbookFile: "docs/handbook/en/deploy.md",
+    templateFile: "templates/workflows/pages.en.yml",
+    label: "pages.en.yml",
+  },
+];
+
+/**
+ * Verify that the Chinese and English handbook config/deploy pages embed their
+ * corresponding site.config.yaml and pages.yml templates verbatim.
+ */
+export function checkHandbookTemplates(root = ROOT) {
+  const issues = [];
+  for (const { handbookFile, templateFile, label } of HANDBOOK_EMBEDDED_TEMPLATES) {
+    const fullHandbook = path.join(root, handbookFile);
+    const fullTemplate = path.join(root, templateFile);
+    if (!fs.existsSync(fullHandbook) || !fs.existsSync(fullTemplate)) continue;
+    const expected = fs.readFileSync(fullTemplate, "utf8").replace(/\r\n/gu, "\n").trimEnd();
+    const { fences } = parseMarkdownRegions(fs.readFileSync(fullHandbook, "utf8"));
+    const yamlFence = fences.find((f) => f.lang === "yaml" || f.lang === "yml");
+    if (!yamlFence) {
+      issues.push({
+        file: handbookFile,
+        line: 1,
+        kind: "template-drift",
+        message: `Missing YAML fence for template ${templateFile} (${label})`,
+      });
+      continue;
+    }
+    const actual = yamlFence.bodyLines.map((l) => l.text).join("\n").replace(/\r\n/gu, "\n").trimEnd();
+    if (actual !== expected) {
+      const actualLines = actual.split("\n");
+      const expectedLines = expected.split("\n");
+      let diffIdx = 0;
+      while (
+        diffIdx < actualLines.length &&
+        diffIdx < expectedLines.length &&
+        actualLines[diffIdx] === expectedLines[diffIdx]
+      ) {
+        diffIdx += 1;
+      }
+      const line = yamlFence.bodyLines[diffIdx]?.lineNumber ?? yamlFence.startLine;
+      issues.push({
+        file: handbookFile,
+        line,
+        kind: "template-drift",
+        message: `Embedded ${label} fence does not match ${templateFile} verbatim (first difference at template line ${diffIdx + 1})`,
+      });
+    }
+  }
+  return issues;
+}
+
 /**
  * Scan all docs/handbook/ and app/garden/ files and return any fact-check failures.
  */
@@ -1103,6 +1394,9 @@ export function checkAllHandbookFacts(root = ROOT) {
     issues.push(...checkFileFacts(file, content, facts, root));
   }
   issues.push(...checkHandbookPairs(root));
+  issues.push(...checkHandbookTemplates(root));
+  issues.push(...checkEnglishHandbookNoCjk(root));
+  issues.push(...checkBuiltEnglishHandbookHtmlFiles(root));
   const svgFiles = walkFiles(path.join(root, "docs/handbook"), (f) => f.endsWith(".svg"));
   for (const svgFile of svgFiles) {
     const svgContent = fs.readFileSync(svgFile, "utf8");
@@ -1133,6 +1427,6 @@ if (invokedDirectly) {
     }
     process.exitCode = 1;
   } else {
-    console.log("Handbook fact-check passed: 0 issues.");
+    console.log("Handbook fact-check passed: 0 issues (static source/HTML check; does not cover runtime rendering).");
   }
 }

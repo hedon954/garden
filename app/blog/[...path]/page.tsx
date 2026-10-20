@@ -28,7 +28,7 @@ import {
 } from "../../lib/site";
 import { githubUrl, siteConfig } from "../../site.config";
 import { isStaticPlaceholder, STATIC_PLACEHOLDER, staticParams } from "../../../ui/garden/static-params.mjs";
-import { ui } from "../../lib/i18n";
+import { siteLang, ui } from "../../lib/i18n";
 
 export function generateStaticParams() {
   return staticParams(posts.map((post) => ({ path: post.path.split("/") })), { path: [STATIC_PLACEHOLDER] });
@@ -86,12 +86,13 @@ export default async function PostPage({
   const canonicalUrl = absoluteUrl(pathname, baseUrl);
   const wordCount = estimateWordCount(post.content);
   const { prev, next } = adjacentByDate(posts, (item: { path: string }) => item.path === post.path);
+  const t = ui();
 
   return (
     <main className="reading-page post-reading-page">
       <article className="post-article h-entry">
         <Link className="u-url sr-only" href={pathname}>
-          {post.title} 永久链接
+          {siteLang === "en" ? t.permalinkLabel(post.title) : <>{post.title} 永久链接</>}
         </Link>
         <a
           className="p-author h-card sr-only"
@@ -109,18 +110,18 @@ export default async function PostPage({
                 {formatDate(post.date)}
               </time>
             </li>
-            {post.updated ? <li>更新于 {formatDate(post.updated)}</li> : null}
-            <li>{ui().wordCount(wordCount)}</li>
+            {post.updated ? <li>{siteLang === "en" ? t.updatedOn(formatDate(post.updated)) : <>更新于 {formatDate(post.updated)}</>}</li> : null}
+            <li>{t.wordCount(wordCount)}</li>
             {originalUrl(post) ? (
               <li>
-                <a className="orig ext" href={originalUrl(post)} target="_blank" rel="noopener noreferrer">原文 ↗</a>
+                <a className="orig ext" href={originalUrl(post)} target="_blank" rel="noopener noreferrer">{t.originalLink}</a>
               </li>
             ) : null}
           </ul>
           <ArticleTags tags={post.tags} />
           {post.cover && (
             <figure className="article-hero article-cover cover-card cover-img">
-              <CoverImage className="u-photo" src={post.cover} image={post.coverImage} alt={`${post.title} 封面`} sizes="(max-width: 852px) calc(100vw - 40px), 812px" priority />
+              <CoverImage className="u-photo" src={post.cover} image={post.coverImage} alt={t.coverLabel(post.title)} sizes="(max-width: 852px) calc(100vw - 40px), 812px" priority />
             </figure>
           )}
         </header>

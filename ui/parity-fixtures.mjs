@@ -74,3 +74,80 @@ fmt.Println(b)\`} />
 `,
   },
 ];
+
+const enHeader = (id, caption) => `---
+id: ${id}
+caption: ${caption}
+intent: |
+  Pixel parity check
+---
+`;
+
+export const PARITY_FIXTURES_EN = [
+  {
+    id: "parity-slider",
+    width: 768,
+    body: `${enHeader("parity-slider", "Longer sequences require more KV memory.")}
+<State seq={4096} />
+<Slider bind="seq" label="Sequence length" min={1024} max={32768} scale="log" format="thousands" unit="token" />
+`,
+  },
+  {
+    id: "parity-chart",
+    width: 768,
+    body: `${enHeader("parity-chart", "Memory grows linearly with sequence length.")}
+<State seq={4096} />
+<Let mem={2 * 32 * 8 * 128 * seq * 2} />
+<Chart sweep="seq" from={1024} to={32768} scale="log" height={220} xLabel="Sequence length" yLabel="KV memory">
+  <Line y={mem} label="KV memory" format="bytes" />
+</Chart>
+`,
+  },
+  {
+    id: "parity-steps",
+    width: 768,
+    body: `${enHeader("parity-steps", "Prefill writes K/V in one pass; Decode appends one row per step.")}
+<Steps>
+  <Step title="Prefill">Write all K/V rows in one pass.</Step>
+  <Step title="Decode">Append a single row on this tick.</Step>
+  <Step title="Done">21 projections reduced to 7.</Step>
+</Steps>
+`,
+  },
+  {
+    id: "parity-grid",
+    width: 768,
+    body: `${enHeader("parity-grid", "Under ECB, identical plaintext blocks produce identical ciphertext blocks.")}
+<Grid cols={["Block 1", "Block 2", "Block 3"]} legend={{ same: "Identical plaintext produces identical ciphertext" }}>
+  <Row label="Plaintext" cells={["A", "B", "A"]} tones={["same", "plain", "same"]} />
+  <Row label="ECB Ciphertext" cells={["X", "Y", "X"]} tones={["same", "plain", "same"]} notes={["Same as Block 3", "", "Same as Block 1"]} />
+</Grid>
+`,
+  },
+  {
+    id: "parity-code",
+    width: 768,
+    body: `${enHeader("parity-code", "This step performs the accumulation.")}
+<Code lang="go" highlight="2" code={\`a := 1
+b := a + 1
+fmt.Println(b)\`} />
+`,
+  },
+  {
+    id: "parity-diagram",
+    width: 768,
+    body: `${enHeader("parity-diagram", "Leaves SYN-SENT only after receiving SYN+ACK.")}
+<Diagram highlight={["synsent"]} mermaid={\`flowchart LR
+  closed[CLOSED] --> synsent[SYN-SENT]
+  synsent --> established[ESTABLISHED]\`} />
+`,
+  },
+  {
+    id: "parity-sandbox",
+    width: 768,
+    body: `${enHeader("parity-sandbox", "Custom interactions outside the catalog run in a networkless canvas.")}
+<Sandbox title="Counter" html={"<p id=\\"n\\">0</p><button id=\\"b\\" type=\\"button\\">Add one</button>"} css="button{color:var(--blue)}" js="document.getElementById('b').onclick=()=>{const n=document.getElementById('n');n.textContent=String(Number(n.textContent)+1)}" />
+`,
+  },
+];
+

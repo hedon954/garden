@@ -37,6 +37,7 @@
     "worker",
     ".agents",
     ".env.example",
+    ".env.en.example",
     ".openai",
     "Makefile",
     "eslint.config.mjs",

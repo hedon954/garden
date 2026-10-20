@@ -3923,6 +3923,16 @@ html[data-theme="dark"] .search-footer {
     transition: opacity 160ms ease, transform 160ms ease, visibility 0s;
   }
 
+  /* The floating contents button sits over the bottom 76px of the screen:
+     keep that much room after the last line, and keep anchors clear of it. */
+  html:has(.toc-mobile-trigger) {
+    scroll-padding-bottom: calc(76px + env(safe-area-inset-bottom));
+  }
+
+  body:has(.toc-mobile-trigger) main {
+    padding-bottom: calc(76px + env(safe-area-inset-bottom));
+  }
+
   :root[data-theme="dark"] .toc-mobile-trigger,
   html[data-theme="dark"] .toc-mobile-trigger,
   :root[data-theme="dark"] .toc-nojs-trigger,

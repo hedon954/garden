@@ -7,6 +7,7 @@ import { TableOfContents } from "../../components/TableOfContents";
 import { a2WordCounts } from "@garden/generated-content";
 import { demoDateLabel, demoDateTime } from "../../lib/a2-meta";
 import { extractHeadings } from "../../lib/content";
+import { siteLang, ui } from "../../lib/i18n";
 import { a2Slugs, readA2Article } from "../../lib/a2-preview";
 import { isStaticPlaceholder, STATIC_PLACEHOLDER, staticParams } from "../../../ui/garden/static-params.mjs";
 
@@ -37,9 +38,9 @@ export default async function A2ArticlePage({ params }: { params: Promise<{ slug
           <ArticleTitle title={article.title.replace(/（互动版）$/u, "")} />
           <ul className="meta article-meta">
             <li>Hedon</li>
-            {article.date ? <li><time dateTime={demoDateTime(article.date)}>{demoDateLabel(article.date)}</time></li> : null}
-            <li>约 {wordCount.toLocaleString("en-US")} 字</li>
-            {article.original ? <li><a className="orig ext" href={article.original} target="_blank" rel="noopener noreferrer">原文 ↗</a></li> : null}
+            {article.date ? <li><time dateTime={demoDateTime(article.date)}>{demoDateLabel(article.date, siteLang)}</time></li> : null}
+            <li>{siteLang === "en" ? ui().wordCount(wordCount) : <>约 {wordCount.toLocaleString("en-US")} 字</>}</li>
+            {article.original ? <li><a className="orig ext" href={article.original} target="_blank" rel="noopener noreferrer">{siteLang === "en" ? "Original ↗" : "原文 ↗"}</a></li> : null}
           </ul>
           {article.cover ? (
             <figure className="article-hero article-cover cover-card cover-img">
