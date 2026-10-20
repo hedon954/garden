@@ -35,16 +35,16 @@ Compare the max widths of the prose column, wide figures, and wide tables with a
 
 ## Fields
 
-Fence header: ` ```garden chart `. Provide rows via `data: [{ x, y, label? }]` or column arrays via `x` + `series`.
+Fence header: ` ```garden chart ` (snippet trigger `;gchart`). Provide rows via `data: [{ x, y, label? }]` or column arrays via `x` + `series`.
 
-| Field | Required | Allowed Values & Limits | Description |
-| :--- | :--- | :--- | :--- |
-| `title` | Recommended | string | Heading above the chart |
-| `data` | Either `data` or `series` | `{ x, y, label? }[]` (at least 2 rows) | Row entries where `x` is the row label, `y` is the numeric value, and `label` is the formatted text on the right (defaults to `y` + `unit`) |
-| `series` | Either `series` or `data` | `{ name?, data: number[] }[]` | Numeric series paired with an `x` label array |
-| `x` | Optional | string or string[] | Category labels when using `series`, or first-column header string when `xLabel` is omitted |
-| `type` | Optional | `"bar"` | Chart type (defaults to horizontal bar chart) |
-| `unit` | Optional | string | Unit suffix appended to values when `label` is omitted |
-| `xLabel` | Optional | string | Header for the first column of the expandable data table |
-| `yLabel` | Optional | string | Header for the second column of the expandable data table |
-| `caption` | Optional | string | Caption below the chart |
+| Field | Required | Default | Allowed Values & Limits | Description |
+| :--- | :--- | :--- | :--- | :--- |
+| `title` | Recommended | `"Chart"` for `aria-label` (no visible heading) | string | Heading above the chart |
+| `data` | Either `data` or `series` | `[]` | `{ x, y, label? }[]` (at least `2` rows, `2` to `8` recommended; unknown top-level keys or invalid YAML report `garden-yaml`) | Row entries where `x` is the row label, `y` is the numeric value, and `label` defaults to `y` + `unit` |
+| `series` | Either `series` or `data` | none | `{ name?, data: number[] }[]` (at least `2` data points) | Numeric series paired with an `x` label array (`series[0].data` is rendered) |
+| `x` | Optional | `["1", "2", ...]` (1-based row numbers) | string or string[] | Category labels when using `series`, or first-column header string when `xLabel` is omitted |
+| `type` | Optional | `"bar"` | `"bar"` | Chart type (horizontal bar chart) |
+| `unit` | Optional | `""` | string | Unit suffix appended to values when `data[].label` is omitted |
+| `xLabel` | Optional | string `x` or `"Item"` | string | Header for the first column of the expandable data table |
+| `yLabel` | Optional | `"Value"` | string | Header for the second column of the expandable data table |
+| `caption` | Optional | none | string | Caption below the chart |

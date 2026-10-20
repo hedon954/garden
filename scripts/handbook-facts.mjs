@@ -357,7 +357,7 @@ function deriveCheckCodes(root = ROOT) {
   // ui/core/validate.mjs & ui/core/parse.mjs
   for (const rel of ["ui/core/validate.mjs", "ui/core/parse.mjs"]) {
     const text = fs.readFileSync(path.join(root, rel), "utf8");
-    for (const match of text.matchAll(/\b(?:add|report)\(\s*["']([a-z0-9-]+)["']\s*,\s*[^,]+,\s*[^,)]+(?:,\s*["'](error|warning)["'])?\s*\)/gu)) {
+    for (const match of text.matchAll(/\b(?:add|report)\(\s*["']([a-z0-9-]+)["']\s*,\s*(?:[^,()]|\([^()]*\))+,\s*(?:[^,()]|\([^()]*\))+(?:,\s*["'](error|warning)["'])?\s*\)/gu)) {
       record(match[1], match[2] === "warning" ? "warning" : "error");
     }
   }

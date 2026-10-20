@@ -47,11 +47,11 @@ Embed a small widget where typing in an input box updates the character count in
 
 ## Fields
 
-Fence header: ` ```garden html `.
+Fence header: ` ```garden html ` (snippet trigger `;ghtml`).
 
-| Field | Required | Allowed Values & Limits | Description |
-| :--- | :--- | :--- | :--- |
-| `src` | Either `src` or `code` | relative path (e.g. `./demo.html`) | Path to a standalone `.html` file inside the post's sidecar directory |
-| `code` | Either `code` or `src` | multiline HTML string | Inline HTML markup (runs inside a sandboxed `iframe` when `<script>` is present; HTML can also be placed below a `---` separator) |
-| `title` | Recommended | string | Frame header title and accessible `iframe` title (defaults to `"HTML"`) |
-| `height` | Optional | number (pixels) | Initial height in pixels (automatically resizes to fit content after loading) |
+| Field | Required | Default | Allowed Values & Limits | Description |
+| :--- | :--- | :--- | :--- | :--- |
+| `src` | Either `src` or `code` | none | relative path (e.g. `./demo.html`; unknown top-level keys or invalid YAML report `garden-yaml`) | Path to a standalone `.html` file inside the post's sidecar directory |
+| `code` | Either `code` or `src` | HTML body below `---` or `""` | multiline HTML string | Inline HTML markup (runs inside a sandboxed `iframe` when `<script>` is present; HTML can also be placed below a `---` separator) |
+| `title` | Recommended | `"HTML"` | string | Frame header title and accessible `iframe` title |
+| `height` | Optional | auto-resized to content height | number (pixels) | Initial height in pixels (automatically resizes to fit content after loading) |

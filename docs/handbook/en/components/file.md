@@ -26,11 +26,11 @@ Attach checklist.md here so readers can preview it inline or download it.
 
 ## Fields
 
-Fence header: ` ```garden file `. Use top-level `src` for a single file, or `files` for multiple attachments (mutually exclusive with top-level `src`).
+Fence header: ` ```garden file ` (snippet trigger `;gfile`). Use top-level `src` for a single file, or `files` for multiple attachments.
 
-| Field | Required | Allowed Values & Limits | Description |
-| :--- | :--- | :--- | :--- |
-| `src` | Required for single file | relative path, `/public` path, or `https://` URL | Attachment path; local paths must stay inside the content root (otherwise `file-outside`), missing files raise `missing-asset`, and files over `5 MB` emit a `file-large` warning |
-| `title` | Optional | string | Display title (defaults to filename; serves as the group heading when using `files`) |
-| `note` | Optional | string | Short note shown below the filename |
-| `files` | Required for multi-file | `{ src, title?, note? }[]` (non-empty array) | List of attachments, each requiring `src` with optional `title` and `note` (do not write the build-generated `resolved` field by hand, which raises `garden-file`) |
+| Field | Required | Default | Allowed Values & Limits | Description |
+| :--- | :--- | :--- | :--- | :--- |
+| `src` | Required for single file | none | relative path, `/public` path, or `https://` URL; missing `src` or combining `src` with `files` reports `garden-file`, local paths outside `content/` report `file-outside`, missing local files report `missing-asset`, and a local file over `5 MB` reports a `file-large` warning | Attachment path |
+| `title` | Optional | decoded filename from `src` (single file) or `""` (multi-file) | string | Display title for a single file, or group heading when using `files` |
+| `note` | Optional | `""` | string (combining top-level `note` with `files` reports `garden-file`) | Short note shown below the filename in single-file mode |
+| `files` | Required for multi-file | none | `{ src, title?, note? }[]` (at least `1` item; empty array, non-array, combining with top-level `src`/`note`, item missing `src`, unknown item keys, or hand-writing `resolved` reports `garden-file`; unknown top-level keys report `garden-yaml`) | List of attachments, each requiring `src` with optional `title` (defaults to filename) and `note` (defaults to `""`) |

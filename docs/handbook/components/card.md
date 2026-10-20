@@ -64,18 +64,18 @@ cards:
 
 ## 字段说明
 
-围栏写 ` ```garden card `。单张卡片直接在顶层写字段，多张横向资源行卡用 `cards` 数组。
+围栏写 ` ```garden card `（编辑器代码片段触发词 `;gcard`）。单张卡片直接在顶层写字段，多张横向资源行卡用 `cards` 数组。
 
-| 字段 | 是否必填 | 取值与限制 | 说明 |
-| :--- | :--- | :--- | :--- |
-| `title` | 建议填写 | 字符串 | 卡片标题（未填时回退为 `url`） |
-| `url` | 可选 | 完整网址 | 标题跳转的外链 |
-| `meta` | 可选 | 字符串 | 标题下方的副标题或来源说明 |
-| `description` | 与 `points`、`cards` 至少填一项 | 字符串（别名 `text`） | 摘要段落，支持行内加粗与代码 |
-| `points` | 与 `description`、`cards` 至少填一项 | 字符串数组或 `{ title, text? }[]`（别名 `items`） | 摘要下方的编号要点列表 |
-| `image` | 可选 | 图片路径或 Data URL | 卡片缩略图 |
-| `alt` | 可选 | 字符串 | 缩略图替代文本（默认取 `title`） |
-| `source` | 可选 | 单个网址、`{ url, site?, icon? }` 或数组 | 跟在 `description` 后的来源胶囊；多个来源自动折叠为首域名加 `+N`（如 `gutenberg.org +1`）。构建期下载到的站点 Favicon 优先于手写的 `icon`，都没有时取可注册域名主体的首字母大写（如 `en.wikipedia.org` 取 `W`，`bbc.co.uk` 取 `B`） |
-| `site` | 可选 | 字符串 | 来源站点名称 |
-| `takeaway` | 可选 | 字符串 | 卡片底部带顶部分隔线的启发或结论（如 `"**可借鉴：** ……"`） |
-| `cards` | 多卡模式必填 | 对象数组 | 多张横向资源行卡，每项可使用 `url`、`title`、`description`（或 `text`）、`image`、`alt`、`meta`、`source`、`takeaway` |
+| 字段 | 是否必填 | 默认值 | 取值与限制 | 说明 |
+| :--- | :--- | :--- | :--- | :--- |
+| `title` | 建议填写 | 同 `url` | 字符串 | 卡片标题；未填时回退显示 `url` |
+| `url` | 可选 | `""` | 完整 `https://` 或 `http://` 网址 | 标题跳转的外链；未填时标题渲染为纯文本 |
+| `meta` | 可选 | 无 | 字符串 | 标题下方的副标题或来源说明 |
+| `description` | 与 `points`、`cards` 至少填一项 | `""` | 字符串（别名 `text`） | 摘要段落，支持行内加粗与代码 |
+| `points` | 与 `description`、`cards` 至少填一项 | `[]` | 字符串数组或 `{ title, text? }[]`（别名 `items`；建议 `2`～`4` 条要点，顶层写未知键名或 YAML 格式错误时报 `garden-yaml` 错误） | 摘要下方的编号要点列表 |
+| `image` | 可选 | 无 | 图片路径或 Data URL | 卡片缩略图 |
+| `alt` | 可选 | 同 `title` | 字符串 | 缩略图替代文本 |
+| `source` | 可选 | 无 | 单个网址、`{ url, site?, icon? }` 或数组 | 跟在 `description` 后的来源胶囊；多个来源自动折叠为首域名加 `+N`（如 `gutenberg.org +1`）。`icon` 默认优先使用构建期下载到的站点 Favicon，其次取可注册域名主体的首字母大写（如 `en.wikipedia.org` 取 `W`，`bbc.co.uk` 取 `B`） |
+| `site` | 可选 | `url` 去掉 `www.` 后的域名 | 字符串 | 来源站点显示名称 |
+| `takeaway` | 可选 | 无 | 字符串 | 卡片底部带顶部分隔线的启发或结论（如 `"**可借鉴：** ……"`） |
+| `cards` | 多卡模式必填 | 无 | 对象数组（顶层写未知键名或 YAML 格式错误时报 `garden-yaml` 错误） | 多张横向资源行卡，每项支持 `url`、`title`、`description`（或 `text`）、`image`、`alt`、`meta`、`source`、`takeaway` |

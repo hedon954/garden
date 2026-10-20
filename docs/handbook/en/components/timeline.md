@@ -34,13 +34,13 @@ List the three stages of static publishing in order as a timeline.
 
 ## Fields
 
-Fence header: ` ```garden timeline `.
+Fence header: ` ```garden timeline ` (snippet trigger `;gtimeline`).
 
-| Field | Required | Allowed Values & Limits | Description |
-| :--- | :--- | :--- | :--- |
-| `title` | Optional | string | Heading above the timeline |
-| `items` | Required | object[] (at least 2 items) | Ordered list of steps or milestones |
-| `items[].date` | Optional | string | Timestamp, year, or stage label above the item title |
-| `items[].title` | Required | string | Step heading |
-| `items[].text` | Optional | string | Detailed explanation for the step |
-| `items[].source` | Optional | URL, `{ url, site?, icon? }`, or array | Source attribution chip appended to the step text |
+| Field | Required | Default | Allowed Values & Limits | Description |
+| :--- | :--- | :--- | :--- | :--- |
+| `title` | Optional | none | string | Heading above the timeline |
+| `items` | Required | `[]` | object[] (at least `2` items; unknown top-level keys or invalid YAML report `garden-yaml`) | Ordered list of steps or milestones |
+| `items[].date` | Optional | none | string | Timestamp, year, or stage label above the item title |
+| `items[].title` | Required | `""` | string | Step heading |
+| `items[].text` | Optional | none | string | Detailed explanation for the step |
+| `items[].source` | Optional | none | URL, `{ url, site?, icon? }`, or array | Source attribution chip appended to the step text (`site` defaults to the URL hostname without `www.`) |

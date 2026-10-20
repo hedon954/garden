@@ -36,14 +36,14 @@ Put the three width limits for the reading column, wide figures, and wide tables
 
 ## Fields
 
-Fence header: ` ```garden stat `. Place multiple figures in `items` (2 to 4 items recommended); for a single figure, fields can be placed at the top level.
+Fence header: ` ```garden stat ` (snippet trigger `;gstat`). Place multiple figures in `items`; for a single figure, fields can be placed at the top level.
 
-| Field | Required | Allowed Values & Limits | Description |
-| :--- | :--- | :--- | :--- |
-| `items` | Required for multiple figures | object[] (2 to 4 items recommended) | List of stat items displayed side by side |
-| `label` | Required | string | Metric name shown above the number |
-| `value` | Required | string or number | Primary figure rendered in large tabular type |
-| `unit` | Optional | string | Unit shown immediately to the right of `value` |
-| `caption` | Optional | string | Short note below the figure |
-| `text` | Optional | string | Additional explanatory text |
-| `source` | Optional | URL, `{ url, site?, icon? }`, or array | Source attribution chip |
+| Field | Required | Default | Allowed Values & Limits | Description |
+| :--- | :--- | :--- | :--- | :--- |
+| `items` | Required for multiple figures | `[top-level object]` | object[] (`2` to `4` items recommended; unknown top-level keys or invalid YAML report `garden-yaml`) | List of stat items displayed side by side; when omitted, top-level fields render as a single stat item |
+| `label` | Required | `""` | string | Metric name shown above the number |
+| `value` | Required | `""` | string or number | Primary figure rendered in large tabular type |
+| `unit` | Optional | none | string | Unit shown immediately to the right of `value` |
+| `caption` | Optional | none | string | Short note below the figure |
+| `text` | Optional | none | string | Additional explanatory text |
+| `source` | Optional | none | URL, `{ url, site?, icon? }`, or array | Source attribution chip (`site` defaults to the URL hostname without `www.`) |

@@ -92,19 +92,19 @@ On wide screens, elements sit evenly on an ellipse starting at the top (12 o'clo
 
 ## Fields
 
-Fence header: ` ```garden relations ` (snippet trigger `grel`). Nodes have no emphasis or accent option—every element carries equal visual weight. Other item counts (fewer than 3 or more than 6), an unknown `center`, or invalid `links` fail the build and `npx garden check` with `garden-relations`, pointing to a ` ```mermaid ` flowchart or `garden list` (` ```mermaid ` fences are supported for any other diagram).
+Fence header: ` ```garden relations ` (snippet trigger `grel`). Nodes have no emphasis or accent option—every element carries equal visual weight; ` ```mermaid ` fences are supported for any other diagram, and `garden list` covers one-pass steps.
 
-| Field | Required | Allowed Values & Limits | Description |
-| :--- | :--- | :--- | :--- |
-| `title` | Optional | string | Heading above the diagram |
-| `items` | Required | object[] (strictly `3` to `6` items) | Elements in the diagram; when `center` is omitted, all items are spaced evenly on an ellipse starting at the top (12 o'clock), clockwise |
-| `items[].title` | Required | string | Node heading (`links` and `center` reference items by 1-based number or exact `title`) |
-| `items[].text` | Optional | string | Short note below the node heading |
-| `center` | Optional | `1..N` (1-based number) or exact item `title` | Placed between `items` and `links`: puts that element in the middle and spaces the remaining elements evenly on the outer ring starting at the top, clockwise; no auto-detection, and an unknown `center` fails the build |
-| `links` | Optional | object[] | Directed or bidirectional links between elements; neighbour outer-ring links bow outward while others run straight through the middle; write a repeating loop by listing each step (`1->2`, `2->3`, `3->4`, `4->1`) |
-| `links[].from` | Required | `1..N` (1-based number) or exact item `title` | Source element (cannot equal `to`) |
-| `links[].to` | Required | `1..N` (1-based number) or exact item `title` | Target element (cannot equal `from`) |
-| `links[].style` | Optional | `"solid"` (default) \| `"dashed"` | Solid line (`→` / `↔`) or dashed line (`⇢` / `⇠⇢`) |
-| `links[].direction` | Optional | `"one"` (default) \| `"both"` | One-way arrow toward `to` or arrowheads on both ends |
-| `links[].label` | Optional | short string | Short label along the line (dodges line crossings on wide screens, and moves off the line into each card's relation line on narrow screens, e.g. `→ Venue limits`) |
-| `caption` | Optional | string | Caption below the diagram |
+| Field | Required | Default | Allowed Values & Limits | Description |
+| :--- | :--- | :--- | :--- | :--- |
+| `title` | Optional | `"Relationship diagram"` for `aria-label` (no visible heading) | string (unknown top-level keys or invalid YAML report `garden-yaml`) | Heading above the diagram |
+| `items` | Required | none | object[], strictly `3` to `6` items (fewer than `3` or more than `6` items reports `garden-relations`) | Elements in the diagram; when `center` is omitted, all items are spaced evenly on an ellipse starting at the top (12 o'clock), clockwise |
+| `items[].title` | Required | `""` | string | Node heading (`links` and `center` reference items by 1-based number or exact `title`) |
+| `items[].text` | Optional | `""` | string | Short note below the node heading |
+| `center` | Optional | none (all items on the outer ellipse) | `1..N` (1-based number) or exact item `title` (an unknown index or title reports `garden-relations`) | Placed between `items` and `links`: puts that element in the middle and spaces the remaining elements evenly on the outer ring starting at the top, clockwise; no auto-detection |
+| `links` | Optional | `[]` | object[] (non-array or entry with unknown keys reports `garden-relations`) | Directed or bidirectional links between elements; neighbour outer-ring links bow outward while others run straight through the middle; write a repeating loop by listing each step (`1->2`, `2->3`, `3->4`, `4->1`) |
+| `links[].from` | Required | none | `1..N` (1-based number) or exact item `title`, cannot equal `to` (missing, unknown target, or `from === to` reports `garden-relations`) | Source element |
+| `links[].to` | Required | none | `1..N` (1-based number) or exact item `title`, cannot equal `from` (missing, unknown target, or `from === to` reports `garden-relations`) | Target element |
+| `links[].style` | Optional | `"solid"` | `"solid"` \| `"dashed"` (any other value reports `garden-relations`) | Solid line (`→` / `↔`) or dashed line (`⇢` / `⇠⇢`) |
+| `links[].direction` | Optional | `"one"` | `"one"` \| `"both"` (any other value reports `garden-relations`) | One-way arrow toward `to` or arrowheads on both ends |
+| `links[].label` | Optional | `""` | short string (non-string value reports `garden-relations`) | Short label along the line (dodges line crossings on wide screens, and moves off the line into each card's relation line on narrow screens, e.g. `→ Venue limits`) |
+| `caption` | Optional | none | string | Caption below the diagram |

@@ -48,16 +48,16 @@ Draw a diagram of the three static publishing steps where clicking each step hig
 
 ## Fields
 
-Fence header: ` ```garden figure `.
+Fence header: ` ```garden figure ` (snippet trigger `;gfigure`).
 
-| Field | Required | Allowed Values & Limits | Description |
-| :--- | :--- | :--- | :--- |
-| `svg` | One of `svg`, `image`, or `mermaid` | multiline `<svg>` string | Inline SVG markup; tag elements to highlight with `data-p="<id>"` (use CSS variables such as `var(--card)`, `var(--ink)`, and `var(--muted)` so dark mode works) |
-| `image` | One of `image`, `svg`, or `mermaid` | path string | Path to a static diagram image |
-| `alt` | Optional | string | Alt text for `image` |
-| `mermaid` | One of `mermaid`, `svg`, or `image` | multiline string | Mermaid diagram source |
-| `parts` | Optional | object[] | Interactive buttons above the diagram and matching explanations below |
-| `parts[].id` | Recommended | string | Matches `data-p` on SVG elements (falls back to `name` or `label`; `"all"` highlights all regions) |
-| `parts[].label` | Required (or `name`) | string | Button label |
-| `parts[].text` | Required | string | Explanation shown below the diagram when the button is active |
-| `caption` | Optional | string | Caption below the frame |
+| Field | Required | Default | Allowed Values & Limits | Description |
+| :--- | :--- | :--- | :--- | :--- |
+| `svg` | One of `svg`, `image`, or `mermaid` | `<svg>` body below `---` or `""` | multiline `<svg>` string (unknown top-level keys or invalid YAML report `garden-yaml`) | Inline SVG markup; tag elements to highlight with `data-p="<id>"` (use CSS variables such as `var(--card)`, `var(--ink)`, and `var(--muted)` so dark mode works) |
+| `image` | One of `image`, `svg`, or `mermaid` | none | path string | Path to a static diagram image |
+| `alt` | Optional | `caption` (then `""`) | string | Alt text for `image` |
+| `mermaid` | One of `mermaid`, `svg`, or `image` | none | multiline string | Mermaid diagram source |
+| `parts` | Optional | `[]` (initial selection defaults to `parts[0].id` or `"all"`) | object[] | Interactive buttons above the diagram and matching explanations below |
+| `parts[].id` | Recommended | `parts[].name` or `parts[].label` | string | Matches `data-p` on SVG elements (`"all"` highlights all regions) |
+| `parts[].label` | Required (or `name`) | `"Part N"` (1-based) | string | Button label |
+| `parts[].text` | Required | `""` | string | Explanation shown below the diagram when the button is active |
+| `caption` | Optional | none | string | Caption below the frame |
