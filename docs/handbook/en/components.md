@@ -154,7 +154,7 @@ title: Pre-publish Checklist
 note: Click Preview to read inline or Download to save the file
 ```
 
-## [Relationship Diagram · relations](/garden/en/components/relations)
+## [Relationship diagram · relations](/garden/en/components/relations)
 
 ```garden relations
 items:
