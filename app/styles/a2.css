@@ -2391,11 +2391,15 @@ html[data-theme="dark"] .gf-scrim { background: rgb(0 0 0 / 45%); }
 .g-rel figcaption { margin-top: 18px; font-size: 13px; color: var(--muted); text-align: center; }
 /* Same graph at every width. Below 560px the nodes take a larger share of the width,
    show their title on at most two lines (>= 13px), and open the full text on tap. */
-.g-rel-node { font: inherit; color: inherit; cursor: default; appearance: none; -webkit-appearance: none; }
+.g-rel-node { font: inherit; color: inherit; appearance: none; -webkit-appearance: none; }
 .g-rel-node > span { display: block; }
-.g-rel[data-compact] .g-rel-node { cursor: pointer; padding: 8px 8px; border-radius: 12px; }
-.g-rel[data-compact] .g-rel-node:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
-.g-rel[data-compact] .g-rel-node[aria-expanded="true"] { border-color: var(--ink); }
+/* Every width: titles stop at two lines, descriptions at three, both with an ellipsis; tap opens the full text. */
+.g-rel-node { cursor: pointer; }
+.g-rel-node:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+.g-rel-node[aria-expanded="true"] { border-color: var(--ink); }
+.markdown-body .g-rel-t, .markdown-body .g-rel-x { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; text-overflow: ellipsis; overflow-wrap: anywhere; }
+.markdown-body .g-rel-x { -webkit-line-clamp: 3; }
+.g-rel[data-compact] .g-rel-node { padding: 8px 8px; border-radius: 12px; }
 .markdown-body .g-rel[data-compact] .g-rel-t {
   font-size: 13.5px;
   line-height: 1.3;
@@ -2405,7 +2409,7 @@ html[data-theme="dark"] .gf-scrim { background: rgb(0 0 0 / 45%); }
   overflow: hidden;
   overflow-wrap: anywhere;
 }
-.g-rel[data-compact] .g-rel-x { display: none; }
+.markdown-body .g-rel[data-compact] .g-rel-x { margin-top: 2px; font-size: 13px; line-height: 1.35; -webkit-line-clamp: 2; }
 .g-rel-badge {
   display: inline-grid;
   place-items: center;

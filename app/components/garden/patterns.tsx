@@ -246,7 +246,11 @@ export function GardenRelations({ props }: { props: Record<string, unknown> }) {
         return { x: r.left - frame.left, y: r.top - frame.top, w: r.width, h: r.height };
       });
       const hub = { x: frame.width / 2, y: frame.height / 2 };
-      const geometry = parsed.map((link) => {
+      // Edges between the same pair of nodes each get their own arc, so a dashed line never hides under a solid one.
+      const pairKey = (l: Edge) => (l.from < l.to ? `${l.from}-${l.to}` : `${l.to}-${l.from}`);
+      const pairCount = new Map<string, number>();
+      const pairIndex = parsed.map((l) => { const k = pairKey(l); const i = pairCount.get(k) ?? 0; pairCount.set(k, i + 1); return i; });
+      const geometry = parsed.map((link, index) => {
         const from = boxes[link.from];
         const to = boxes[link.to];
         const cf = center(from);
@@ -255,22 +259,32 @@ export function GardenRelations({ props }: { props: Record<string, unknown> }) {
         const rf = spots[link.from].ring;
         const rt = spots[link.to].ring;
         const neighbours = rf >= 0 && rt >= 0 && outer > 3 && (Math.abs(rf - rt) === 1 || Math.abs(rf - rt) === outer - 1);
-        if (neighbours && !small) {
-          // Next to each other on the outer ring: a gentle arc that bows outward.
-          const mid = { x: (cf.x + ct.x) / 2, y: (cf.y + ct.y) / 2 };
-          const out = { x: mid.x - hub.x, y: mid.y - hub.y };
-          const length = Math.hypot(out.x, out.y) || 1;
-          const bow = Math.min(small ? 24 : 40, Math.hypot(ct.x - cf.x, ct.y - cf.y) / 4);
-          const c = { x: mid.x + (out.x / length) * bow, y: mid.y + (out.y / length) * bow };
-          const a = edge(from, c, gapStart);
-          const b = edge(to, c, 10);
-          const at = (k: number) => ({ x: (1 - k) ** 2 * a.x + 2 * (1 - k) * k * c.x + k ** 2 * b.x, y: (1 - k) ** 2 * a.y + 2 * (1 - k) * k * c.y + k ** 2 * b.y });
-          return { d: `M${a.x},${a.y} Q${c.x},${c.y} ${b.x},${b.y}`, a, b, at, link };
+        const total = pairCount.get(pairKey(link)) ?? 1;
+        const mid = { x: (cf.x + ct.x) / 2, y: (cf.y + ct.y) / 2 };
+        const span = Math.hypot(ct.x - cf.x, ct.y - cf.y) || 1;
+        // Normal in a direction that does not depend on which end is "from", so pair offsets spread apart.
+        const lo = link.from < link.to ? cf : ct;
+        const hi = link.from < link.to ? ct : cf;
+        let nx = -(hi.y - lo.y) / span;
+        let ny = (hi.x - lo.x) / span;
+        let bow = 0;
+        if (neighbours) {
+          // Next to each other on the outer ring: a gentle arc that bows outward, at every width.
+          if (nx * (mid.x - hub.x) + ny * (mid.y - hub.y) < 0) { nx = -nx; ny = -ny; }
+          bow = Math.min(small ? 22 : 40, span / 4);
         }
-        const a = edge(from, ct, gapStart);
-        const b = edge(to, cf, 10);
-        const at = (k: number) => ({ x: a.x + (b.x - a.x) * k, y: a.y + (b.y - a.y) * k });
-        return { d: `M${a.x},${a.y} L${b.x},${b.y}`, a, b, at, link };
+        if (total > 1) bow += (pairIndex[index] - (total - 1) / 2) * (small ? 30 : 40) * 2;
+        if (!bow) {
+          const a = edge(from, ct, gapStart);
+          const b = edge(to, cf, 10);
+          const at = (k: number) => ({ x: a.x + (b.x - a.x) * k, y: a.y + (b.y - a.y) * k });
+          return { d: `M${a.x},${a.y} L${b.x},${b.y}`, a, b, at, link };
+        }
+        const c = { x: mid.x + nx * bow, y: mid.y + ny * bow };
+        const a = edge(from, c, gapStart);
+        const b = edge(to, c, 10);
+        const at = (k: number) => ({ x: (1 - k) ** 2 * a.x + 2 * (1 - k) * k * c.x + k ** 2 * b.x, y: (1 - k) ** 2 * a.y + 2 * (1 - k) * k * c.y + k ** 2 * b.y });
+        return { d: `M${a.x},${a.y} Q${c.x},${c.y} ${b.x},${b.y}`, a, b, at, link };
       });
       // Labels that do not fit on their line at 12px become circled numbers listed under the graph.
       // Every mark gets a spot that overlaps no node and no other mark.
@@ -324,10 +338,10 @@ export function GardenRelations({ props }: { props: Record<string, unknown> }) {
               key={index}
               data-i={index + 1}
               data-center={index === layout.centre ? "true" : undefined}
-              aria-expanded={compact ? open === index : undefined}
-              aria-controls={compact ? `${base}-d` : undefined}
-              tabIndex={compact ? 0 : -1}
-              onClick={() => { if (compact) setOpen(open === index ? null : index); }}
+              aria-expanded={open === index}
+              aria-controls={`${base}-d`}
+              tabIndex={0}
+              onClick={() => setOpen(open === index ? null : index)}
               style={{ "--x": `${spot.x}%`, "--y": `${50 + spot.s * 38}%`, "--w": `${spot.w}%` } as CSSProperties}
             >
               <span className="g-rel-t"><Rich text={titles[index]} /></span>
@@ -372,7 +386,7 @@ export function GardenRelations({ props }: { props: Record<string, unknown> }) {
           >{line.badge >= 0 ? circled(line.badge) : line.label}</span>
         ) : null)}
       </div>
-      {compact && open !== null ? (
+      {open !== null ? (
         <div className="g-rel-detail" id={`${base}-d`} aria-live="polite">
           <span className="g-rel-detail-t"><Rich text={titles[open]} /></span>
           {items[open]?.text ? <span className="g-rel-detail-x"><Rich text={String(items[open].text)} /></span> : null}
