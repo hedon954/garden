@@ -148,7 +148,7 @@ caption: "Example: estimate reading time from word count and reading speed."
 ## [File Download & Preview · file](/garden/en/components/file)
 
 ```garden file
-src: ../components/file/checklist.md
+src: ./components/file/checklist.md
 title: Pre-publish Checklist
 note: Click Preview to read inline or Download to save the file
 ```
