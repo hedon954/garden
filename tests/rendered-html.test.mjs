@@ -55,7 +55,10 @@ test("server-renders the finished blog home", async () => {
   assert.match(shell, /\.sh-foot-links\{display:flex;align-items:center;gap:20px\}/);
   assert.match(shell, /\.sh-foot a\{display:inline-flex;align-items:center;gap:6px;min-height:44px/);
   assert.match(shell, /\.sh-foot-links a svg\{display:block;flex:none;width:16px;height:16px\}/);
-  assert.match(shell, /\.sh-home-grid \.sh-row time\{min-width:6em;font-variant-numeric:tabular-nums\}/);
+  assert.match(shell, /:root\{--sh-date-track:7\.5em\}/);
+  assert.match(shell, /:root:lang\(en\)\{--sh-date-track:5\.5em\}/);
+  assert.match(shell, /\.sh-home-grid \.sh-row\{grid-template-columns:var\(--sh-date-track\) minmax\(0,1fr\) auto\}/);
+  assert.doesNotMatch(shell, /max-content\) minmax\(0,1fr\)/);
   const footer = html.match(/<footer class="sh-footer"[\s\S]*?<\/footer>/)?.[0] ?? "";
   assert.match(footer, /class="sh-foot-links"/);
   assert.match(footer, /GitHub/);
@@ -997,4 +1000,13 @@ test("the 404 page has exactly one robots meta (noindex); ordinary pages write n
   // noindex pages still say so.
   const admin = (await (await render("/a2")).text()).split("</head>")[0];
   assert.match(admin, /<meta name="robots" content="noindex, nofollow"\/>/u);
+});
+
+test("home list dates keep the year only outside the current year, per locale", async () => {
+  const { homeListDate } = await import("../app/lib/a2-meta.ts");
+  const now = new Date("2026-10-20T04:00:00Z");
+  assert.equal(homeListDate("2026-09-18", now), "9 月 18 日");
+  assert.equal(homeListDate("2025-12-19", now), "2025 年 12 月 19 日");
+  assert.equal(homeListDate("2026-09-18", now, "en"), "Sep 18");
+  assert.equal(homeListDate("2025-12-19", now, "en"), "Dec 19, 2025");
 });

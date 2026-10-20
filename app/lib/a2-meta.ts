@@ -14,10 +14,19 @@ export function demoDateLabel(value: string) {
 }
 
 /** Home list label. The current Shanghai year drops the year so the column stays narrow. */
-export function homeListDate(value: string, now = new Date()) {
+export function homeListDate(value: string, now = new Date(), lang: "zh" | "en" = "zh") {
   const date = shanghaiDate(value);
   if (!date) return value;
   const today = shanghaiDate(now.toISOString());
+  const sameYear = Boolean(today && date.getUTCFullYear() === today.getUTCFullYear());
+  if (lang === "en") {
+    return new Intl.DateTimeFormat("en-US", {
+      timeZone: "UTC",
+      month: "short",
+      day: "numeric",
+      ...(sameYear ? {} : { year: "numeric" }),
+    }).format(date);
+  }
   const monthDay = `${date.getUTCMonth() + 1} 月 ${date.getUTCDate()} 日`;
   if (today && date.getUTCFullYear() === today.getUTCFullYear()) return monthDay;
   return `${date.getUTCFullYear()} 年 ${monthDay}`;

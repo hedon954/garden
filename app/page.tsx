@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { CoverImage } from "./components/CoverImage";
 import { homeListDate } from "./lib/a2-meta";
+import { siteLang } from "./lib/i18n";
 import { columns, formatDate, postHref, posts } from "./lib/content";
 import { githubUrl, siteConfig } from "./site.config";
 import { siteHref } from "./lib/site-href";
@@ -79,7 +80,7 @@ export default function Home() {
           <ol className="sh-rows">
             {recent.slice(0, 6).map((post) => (
               <li className="sh-row" key={post.path}>
-                <time className="num" dateTime={day(post.date)}>{homeListDate(post.date)}</time>
+                <time className="num" dateTime={day(post.date)}>{homeListDate(post.date, undefined, siteLang)}</time>
                 <h3><Link href={postHref(post)}>{post.title}</Link></h3>
                 {post.description ? <p>{post.description}</p> : null}
               </li>

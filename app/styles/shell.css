@@ -129,6 +129,10 @@ html[data-theme="dark"] .sh-rail{color:var(--muted)}
 .sh-year > h2{font:700 var(--fs-lead)/1.3 var(--sans);color:var(--ink);margin:40px 0 0;padding:0 0 12px;border-bottom:1px solid var(--rule-strong);display:flex;align-items:baseline;gap:10px}
 .sh-year > h2 .n{font:400 var(--fs-meta)/1 var(--sans);color:var(--muted)}
 .sh-year[hidden],.sh-row[hidden]{display:none}
+/* Home list dates drop the year in the current year, so the track is fixed to the locale's longest label
+   (zh「2025 年 12 月 19 日」≈ 7.1em, en "May 28, 2025" ≈ 4.9em at the row's 17px) and every title starts at the same x. */
+:root{--sh-date-track:7.5em}
+:root:lang(en){--sh-date-track:5.5em}
 .sh-rows{list-style:none;margin:0;padding:0}
 .sh-row{position:relative;display:grid;grid-template-columns:72px minmax(0,1fr) auto;gap:4px 20px;padding:18px 0 19px;border-bottom:1px solid var(--rule)}
 .sh-row time{grid-row:1;font-size:var(--fs-small);line-height:1.6;color:var(--muted);font-variant-numeric:tabular-nums;padding-top:2px;white-space:nowrap}
@@ -144,6 +148,7 @@ html[data-theme="dark"] .sh-rail{color:var(--muted)}
 .sh-row .series{font-weight:400;color:var(--muted);font-size:var(--fs-meta);margin-left:8px;white-space:nowrap}
 .sh-row:hover h3 a{color:var(--blue);text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:4px}
 .sh-row h3 a{transition:color .15s ease}
+.sh-home-grid .sh-row{grid-template-columns:var(--sh-date-track) minmax(0,1fr) auto}
 .is-compact .sh-row{padding:11px 0 12px}
 .is-compact .sh-row p{display:none}
 .is-compact .sh-row h3{font-weight:500}
@@ -170,8 +175,6 @@ html[data-theme="dark"] .sh-rail{color:var(--muted)}
 .sh-feature p{margin:14px 0 0;font-size:var(--fs-body);color:var(--soft)}
 .sh-feature .tags{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:16px;font-size:var(--fs-meta);color:var(--muted)}
 .sh-home-grid{display:grid;grid-template-columns:minmax(0,var(--list)) minmax(0,320px);gap:0 72px;justify-content:space-between;align-items:start}
-.sh-home-grid .sh-row{grid-template-columns:minmax(6em,max-content) minmax(0,1fr) auto}
-.sh-home-grid .sh-row time{min-width:6em;font-variant-numeric:tabular-nums}
 .sh-side-list{list-style:none;margin:0;padding:0}
 .sh-side-list li{position:relative;padding:16px 0;border-bottom:1px solid var(--rule)}
 .sh-side-list a{font:600 15px/1.6 var(--sans);color:var(--ink);text-decoration:none}
