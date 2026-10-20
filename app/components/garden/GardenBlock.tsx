@@ -16,6 +16,7 @@ import {
   GardenUnknown,
 } from "./blocks";
 import { GardenFile } from "./GardenFile";
+import { GardenChoice, GardenCycle, GardenList } from "./patterns";
 
 export function GardenBlock({ dataPayload }: { dataPayload?: string }) {
   const lang = useUiLang();
@@ -45,6 +46,12 @@ export function GardenBlock({ dataPayload }: { dataPayload?: string }) {
     case "file":
       // Post bodies render file cards on the server (MarkdownArticle); this path has no Markdown preview.
       return <GardenFile props={props} lang={lang} />;
+    case "cycle":
+      return <GardenCycle props={props} />;
+    case "list":
+      return <GardenList props={props} />;
+    case "choice":
+      return <GardenChoice props={props} />;
     default:
       return <GardenUnknown name={String(block.name)} />;
   }

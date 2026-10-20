@@ -4,7 +4,7 @@
  * Names describe what the reader sees. English only.
  */
 
-export const GARDEN_NAMES = ["card", "stat", "compare", "timeline", "chart", "figure", "html", "interactive", "file"];
+export const GARDEN_NAMES = ["card", "stat", "compare", "timeline", "chart", "figure", "html", "interactive", "file", "cycle", "list", "choice"];
 
 export const LEGACY_FENCES = {
   embed: { name: "card", suggestion: "`embed` 已改为 `garden card`" },
@@ -19,7 +19,8 @@ export const CATALOG = {
     label: "资源卡",
     when: "一篇论文、一个仓库或一本书，读者需要标题、链接和一句说明。",
     whenNot: "正文里已经有这句话时，不要再包一张卡。",
-    keys: ["url", "title", "description", "image", "alt", "points", "meta", "text", "source", "site", "items"],
+    keys: ["url", "title", "description", "image", "alt", "points", "meta", "text", "source", "site", "items", "takeaway", "cards"],
+    itemKeys: ["url", "title", "description", "image", "alt", "meta", "text", "source", "takeaway"],
     example: `\`\`\`garden card
 url: https://arxiv.org/abs/2309.06180
 title: PagedAttention
@@ -46,7 +47,7 @@ items:
     when: "两三件东西并排，每格约 60 字以内。原文是「X：Y」列表时，每格写成一行带引号的「X：Y」。",
     whenNot: "任何一格超过约 60 字时，用原文的列表，不要并排。",
     keys: ["items"],
-    itemKeys: ["title", "text"],
+    itemKeys: ["title", "text", "verdict"],
     example: `\`\`\`garden compare
 items:
   - title: 自旋锁
@@ -145,6 +146,65 @@ src: ./post-name/spec.zip
 note: 一句话说明里面有什么
 \`\`\``,
     triggers: ["gfile"],
+  },
+  cycle: {
+    label: "循环图",
+    when: "三到六个环节首尾相接、反复进行，读者需要看出它是一个圈而不是一条线。",
+    whenNot: "步骤只走一遍时，用有序列表或 timeline。",
+    keys: ["title", "items", "links", "caption"],
+    itemKeys: ["title", "text", "accent"],
+    example: `\`\`\`garden cycle
+items:
+  - title: 观察
+    text: 记下发生了什么
+  - title: 假设
+    text: 猜一个原因
+    accent: true
+  - title: 实验
+    text: 只改一个变量
+  - title: 复盘
+    text: 留下能复用的结论
+links:
+  - from: 4
+    to: 2
+caption: 复盘的结论会改写下一轮的假设。
+\`\`\``,
+    triggers: ["gcycle"],
+  },
+  list: {
+    label: "图标列表",
+    when: "几条并列的行为、信号或做法，每条配一个线条图标；带标题时每条可以写几段说明。",
+    whenNot: "条目之间有先后顺序或要编号时，用普通有序列表。",
+    keys: ["title", "items", "caption"],
+    itemKeys: ["icon", "title", "text"],
+    example: `\`\`\`garden list
+items:
+  - icon: search
+    text: 搜索「降噪耳机」
+  - icon: eye
+    text: 看了 5 个商品详情
+\`\`\``,
+    triggers: ["glist"],
+  },
+  choice: {
+    label: "选择卡",
+    when: "给读者两三个具体选项让他选一个，每个选项有图标、一个醒目的数字和一句说明。",
+    whenNot: "选项会改变后面的计算结果时，写成想法，编译成 interactive。",
+    keys: ["title", "items", "caption"],
+    itemKeys: ["icon", "value", "text", "label", "reply"],
+    example: `\`\`\`garden choice
+title: 你更倾向哪一种？
+items:
+  - icon: shield
+    value: ¥2,950
+    text: 原装，价格略高
+    label: 更看重可靠
+  - icon: wallet
+    value: ¥2,450
+    text: 换过电池，价格更低
+    label: 更看重价格
+\`\`\``,
+    triggers: ["gchoice"],
   },
 };
 

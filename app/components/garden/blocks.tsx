@@ -10,6 +10,7 @@ import { compileUiBlock } from "../../../ui/core/compile.mjs";
 import { splitCompareLine } from "../../../ui/garden/compare-line.mjs";
 import { RuntimeLangProvider, UiErrorCard, UiFigure, type Diagnostic, type UiPayload } from "../../../ui/react";
 import { FullscreenFrame, SandboxFrame } from "./chrome";
+import { VerdictIcon } from "./patterns";
 
 function Rich({ text }: { text: string }) {
   return (
@@ -33,15 +34,19 @@ function SourceChip({ source }: { source: unknown }) {
     if (item && typeof item === "object" && "url" in item) {
       const url = String((item as { url?: unknown }).url ?? "");
       const site = String((item as { site?: unknown }).site ?? hostOf(url));
-      return { url, site };
+      const icon = (item as { icon?: unknown }).icon;
+      return { url, site, icon: typeof icon === "string" ? icon : undefined };
     }
     return null;
-  }).filter((item): item is { url: string; site: string } => Boolean(item?.url));
+  }).filter((item): item is { url: string; site: string; icon?: string } => Boolean(item?.url));
   if (!list.length) return null;
   return (
     <span className="g-srcs">
       <a className="g-src ext" href={list[0].url} target="_blank" rel="noopener noreferrer">
-        <span className="g-src-ic" aria-hidden="true">{[...list[0].site][0] || "·"}</span>
+        {list[0].icon
+          // eslint-disable-next-line @next/next/no-img-element -- a 14px site icon the author points at
+          ? <img className="g-src-fav" src={list[0].icon} alt="" width={14} height={14} loading="lazy" decoding="async" />
+          : <span className="g-src-ic" aria-hidden="true">{[...list[0].site][0] || "·"}</span>}
         <span>{list[0].site}</span>
       </a>
       {list.length > 1 ? <span className="g-src-more">+{list.length - 1}</span> : null}
@@ -54,12 +59,25 @@ function itemsOf(props: Record<string, unknown>) {
 }
 
 export function GardenCard({ props }: { props: Record<string, unknown> }) {
+  if (Array.isArray(props.cards)) {
+    return (
+      <div className="g-entities">
+        {props.cards.map((card, index) => (
+          <GardenCardItem key={index} props={(card ?? {}) as Record<string, unknown>} row />
+        ))}
+      </div>
+    );
+  }
+  return <GardenCardItem props={props} />;
+}
+
+function GardenCardItem({ props, row = false }: { props: Record<string, unknown>; row?: boolean }) {
   const url = typeof props.url === "string" ? props.url : "";
   const title = String(props.title ?? url);
   const description = typeof props.description === "string" ? props.description : typeof props.text === "string" ? props.text : "";
   const points = Array.isArray(props.points) ? props.points : Array.isArray(props.items) ? props.items : [];
   return (
-    <article className="g-entity">
+    <article className={`g-entity${row ? " g-entity-row" : ""}`}>
       {typeof props.image === "string" ? (
         <div className="g-entity-img">
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -70,6 +88,7 @@ export function GardenCard({ props }: { props: Record<string, unknown> }) {
         <h4 className="g-entity-t">{url ? <a className="ext" href={url} target="_blank" rel="noopener noreferrer"><Rich text={title} /></a> : <Rich text={title} />}</h4>
         {typeof props.meta === "string" ? <p className="g-entity-m"><Rich text={props.meta} /></p> : null}
         {description ? <p><Rich text={description} /> <SourceChip source={props.source} /></p> : null}
+        {typeof props.takeaway === "string" ? <p className="g-entity-k"><Rich text={props.takeaway} /></p> : null}
       </div>
       {points.length ? (
         <ol className="g-entity-list">
@@ -119,8 +138,31 @@ function CompareLine({ line }: { line: string }) {
   );
 }
 
+function verdictOf(entry: unknown) {
+  if (!entry || typeof entry !== "object") return "";
+  const value = String((entry as Record<string, unknown>).verdict ?? "").trim().toLowerCase();
+  return value === "good" || value === "bad" ? value : "";
+}
+
 export function GardenCompare({ props }: { props: Record<string, unknown> }) {
   const items = Array.isArray(props.items) ? props.items as unknown[] : [];
+  if (items.some((entry) => verdictOf(entry))) {
+    return (
+      <div className="g-verdicts" role="group">
+        {items.map((entry, index) => {
+          const item = (entry && typeof entry === "object" ? entry : { text: String(entry ?? "") }) as Record<string, unknown>;
+          const verdict = verdictOf(item);
+          const texts = item.text == null ? [] : Array.isArray(item.text) ? item.text : [item.text];
+          return (
+            <section className={`g-verdict${verdict ? ` is-${verdict}` : ""}`} key={index}>
+              <h4><VerdictIcon verdict={verdict} /><Rich text={String(item.title ?? "")} /></h4>
+              {texts.map((paragraph, paragraphIndex) => <p key={paragraphIndex}><Rich text={String(paragraph)} /></p>)}
+            </section>
+          );
+        })}
+      </div>
+    );
+  }
   return (
     <div className="g-compare" role="group">
       {items.map((entry, index) => {
@@ -128,7 +170,8 @@ export function GardenCompare({ props }: { props: Record<string, unknown> }) {
           return <section className="g-cmp" key={index}><CompareLine line={String(entry)} /></section>;
         }
         if (!entry || typeof entry !== "object") return null;
-        const { title, text, ...rest } = entry as Record<string, unknown>;
+        const { title, text, verdict: _verdict, ...rest } = entry as Record<string, unknown>;
+        void _verdict;
         const texts = text == null ? [] : Array.isArray(text) ? text : [text];
         return (
           <section className="g-cmp" key={index}>

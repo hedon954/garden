@@ -2,11 +2,11 @@
   "Garden 块": {
     "prefix": "garden",
     "body": [
-      "```garden ${1|idea,card,stat,compare,timeline,chart,figure,html,interactive,file|}",
+      "```garden ${1|idea,card,stat,compare,timeline,chart,figure,html,interactive,file,cycle,list,choice|}",
       "$0",
       "```"
     ],
-    "description": "选择 Garden 块：想法 / card / stat / compare / timeline / chart / figure / html / interactive / file"
+    "description": "选择 Garden 块：想法 / card / stat / compare / timeline / chart / figure / html / interactive / file / cycle / list / choice"
   },
   "Garden 想法 garden想法": {
     "prefix": "garden想法",
@@ -142,6 +142,59 @@
       "```"
     ],
     "description": "给读者一份可以下载的文件：规格包、PDF、示例代码。Markdown、HTML、PDF 还能在页面里预览。 不该用：只是引用一个网页时用 card；要在正文里直接展示的图表或页面用 html。"
+  },
+  "Garden 循环图 gcycle": {
+    "prefix": "gcycle",
+    "body": [
+      "```garden cycle",
+      "items:",
+      "  - title: 观察",
+      "    text: 记下发生了什么",
+      "  - title: 假设",
+      "    text: 猜一个原因",
+      "    accent: true",
+      "  - title: 实验",
+      "    text: 只改一个变量",
+      "  - title: 复盘",
+      "    text: 留下能复用的结论",
+      "links:",
+      "  - from: 4",
+      "    to: 2",
+      "caption: 复盘的结论会改写下一轮的假设。",
+      "```"
+    ],
+    "description": "三到六个环节首尾相接、反复进行，读者需要看出它是一个圈而不是一条线。 不该用：步骤只走一遍时，用有序列表或 timeline。"
+  },
+  "Garden 图标列表 glist": {
+    "prefix": "glist",
+    "body": [
+      "```garden list",
+      "items:",
+      "  - icon: search",
+      "    text: 搜索「降噪耳机」",
+      "  - icon: eye",
+      "    text: 看了 5 个商品详情",
+      "```"
+    ],
+    "description": "几条并列的行为、信号或做法，每条配一个线条图标；带标题时每条可以写几段说明。 不该用：条目之间有先后顺序或要编号时，用普通有序列表。"
+  },
+  "Garden 选择卡 gchoice": {
+    "prefix": "gchoice",
+    "body": [
+      "```garden choice",
+      "title: 你更倾向哪一种？",
+      "items:",
+      "  - icon: shield",
+      "    value: ¥2,950",
+      "    text: 原装，价格略高",
+      "    label: 更看重可靠",
+      "  - icon: wallet",
+      "    value: ¥2,450",
+      "    text: 换过电池，价格更低",
+      "    label: 更看重价格",
+      "```"
+    ],
+    "description": "给读者两三个具体选项让他选一个，每个选项有图标、一个醒目的数字和一句说明。 不该用：选项会改变后面的计算结果时，写成想法，编译成 interactive。"
   },
   "Garden 代码与对比": {
     "prefix": "gdiff",

@@ -137,3 +137,59 @@ intent: |
 src: ./post-name/spec.zip
 note: 一句话说明里面有什么
 ```
+
+## cycle · 循环图
+
+三到六个环节首尾相接、反复进行，读者需要看出它是一个圈而不是一条线。
+
+不该用：步骤只走一遍时，用有序列表或 timeline。
+
+```garden cycle
+items:
+  - title: 观察
+    text: 记下发生了什么
+  - title: 假设
+    text: 猜一个原因
+    accent: true
+  - title: 实验
+    text: 只改一个变量
+  - title: 复盘
+    text: 留下能复用的结论
+links:
+  - from: 4
+    to: 2
+caption: 复盘的结论会改写下一轮的假设。
+```
+
+## list · 图标列表
+
+几条并列的行为、信号或做法，每条配一个线条图标；带标题时每条可以写几段说明。
+
+不该用：条目之间有先后顺序或要编号时，用普通有序列表。
+
+```garden list
+items:
+  - icon: search
+    text: 搜索「降噪耳机」
+  - icon: eye
+    text: 看了 5 个商品详情
+```
+
+## choice · 选择卡
+
+给读者两三个具体选项让他选一个，每个选项有图标、一个醒目的数字和一句说明。
+
+不该用：选项会改变后面的计算结果时，写成想法，编译成 interactive。
+
+```garden choice
+title: 你更倾向哪一种？
+items:
+  - icon: shield
+    value: ¥2,950
+    text: 原装，价格略高
+    label: 更看重可靠
+  - icon: wallet
+    value: ¥2,450
+    text: 换过电池，价格更低
+    label: 更看重价格
+```

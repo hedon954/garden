@@ -312,7 +312,7 @@ export function MarkdownArticle({ content, numbering, lang }: { content: string;
                 href={href}
                 {...domProps}
                 {...(external
-                  ? { className: "ext", target: "_blank", rel: "noopener noreferrer" }
+                  ? { ...(domProps.className ? { className: `ext ${domProps.className}` } : { className: "ext" }), target: "_blank", rel: "noopener noreferrer" }
                   : {})}
               >
                 {external && href ? <WithFavicon href={href}>{children}</WithFavicon> : children}

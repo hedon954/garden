@@ -24,6 +24,8 @@ function cellText(item) {
 
 function compareTooLong(props) {
   const items = Array.isArray(props?.items) ? props.items : [];
+  // Good/bad verdicts stack one under another, so a longer quote still reads well.
+  if (items.some((item) => item && typeof item === "object" && item.verdict)) return false;
   return items.some((item) => [...cellText(item).trim()].length > COMPARE_LIMIT);
 }
 
