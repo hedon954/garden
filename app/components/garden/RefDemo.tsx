@@ -13,7 +13,7 @@ const visible = new Set<Element>();
 const sync = () => document.documentElement.classList.toggle("ref-demo-in", visible.size > 0);
 
 /** Code on the left and the real block on the right; tabs below 1024px. */
-export function RefDemo({ children, lang = "zh" }: { children?: ReactNode; lang?: "zh" | "en" }) {
+export function RefDemo({ children, lang = "zh", name }: { children?: ReactNode; lang?: "zh" | "en"; name?: string }) {
   const t = LABELS[lang];
   const [tab, setTab] = useState<"v" | "c">("v");
   const ref = useRef<HTMLDivElement>(null);
@@ -44,7 +44,7 @@ export function RefDemo({ children, lang = "zh" }: { children?: ReactNode; lang?
   );
 
   return (
-    <div className="ref-demo" ref={ref} data-tab={tab}>
+    <div className="ref-demo" ref={ref} data-tab={tab} data-name={name}>
       <div className="ref-tabs" role="tablist" aria-label={t.tabs}>
         {tabButton("v", t.preview)}
         {tabButton("c", t.code)}

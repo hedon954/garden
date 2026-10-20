@@ -916,8 +916,7 @@ html[data-theme="dark"] .markdown-body > p > img:not([class]) {
 }
 
 .dx-wrap {
-  overflow-x: auto;
-  overscroll-behavior-x: contain;
+  overflow: visible;
   margin-top: 10px;
   max-width: 100%;
 }
@@ -2617,4 +2616,13 @@ html[data-theme="dark"] .ref-demo { --rd-s: #262624; --rd-p: #1f1e1d; --rd-i: #e
 @media (max-width: 1023px) {
   .ref-pane[data-p="c"] pre { padding-right: 56px; }
   .ref-demo-in .toc-mobile-trigger { opacity: 0; visibility: hidden; pointer-events: none; }
+}
+
+/* figure reference page: the drawing needs room, so the example stacks
+   (preview on top, full width; code below). Scoped to the reference demo;
+   figures in articles are untouched. */
+@media (min-width: 1024px) {
+  .ref-demo[data-name="figure"] { grid-template-columns: minmax(0, 1fr); background: var(--rd-p); }
+  .ref-demo[data-name="figure"] .ref-pane[data-p="v"] { grid-column: 1; grid-row: 1; }
+  .ref-demo[data-name="figure"] .ref-pane[data-p="c"] { grid-column: 1; grid-row: 2; background: var(--rd-s); border-top: 1px solid var(--rd-r); }
 }

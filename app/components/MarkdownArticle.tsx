@@ -259,7 +259,7 @@ export function MarkdownArticle({ content, numbering, lang, fieldTables, refDemo
       if (block?.name === "file" && !block.error) return <GardenFile props={(block.props ?? {}) as Record<string, unknown>} lang={lang} />;
       return <GardenBlock dataPayload={payload} />;
     },
-    "garden-refdemo": (props: { children?: ReactNode }) => <RefDemo lang={lang === "en" ? "en" : "zh"}>{props.children}</RefDemo>,
+    "garden-refdemo": (props: { children?: ReactNode; "data-name"?: string }) => <RefDemo lang={lang === "en" ? "en" : "zh"} name={props["data-name"]}>{props.children}</RefDemo>,
     "garden-codediff": (props: {
       children?: ReactNode;
       dataDiff?: string;

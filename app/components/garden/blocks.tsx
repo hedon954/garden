@@ -324,14 +324,6 @@ export function GardenFigure({ props, children }: { props: Record<string, unknow
         /* getBBox can fail before layout */
       }
     });
-    // Never shrink the drawing so far that its smallest label drops below
-    // 11px; on a narrow screen the drawing scrolls sideways in its own box.
-    const view = drawing.viewBox?.baseVal;
-    const sizes = [...drawing.querySelectorAll("text")].map((text) => Number.parseFloat(getComputedStyle(text).fontSize)).filter((size) => size > 0);
-    if (view?.width && sizes.length) {
-      const need = Math.ceil((view.width * 11) / Math.min(...sizes));
-      drawing.style.minWidth = `${Math.min(need, view.width)}px`;
-    }
   }, [svg]);
 
   useEffect(() => {
