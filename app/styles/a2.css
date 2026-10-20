@@ -2255,3 +2255,9 @@ html[data-theme="dark"] .gf-scrim { background: rgb(0 0 0 / 45%); }
 .garden-doc-page:lang(en) .gdoc-article-deck {
   line-height: 1.6;
 }
+
+/* Article pager: no rule above (the Webmention block ends the section); the comments keep theirs. */
+.gdoc-pager.article-pager {
+  border-top: 0;
+  padding-top: 0;
+}

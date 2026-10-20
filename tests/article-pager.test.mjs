@@ -47,3 +47,8 @@ test("随想 pages have no pager: they read as a feed", () => {
   const source = fs.readFileSync(new URL("../app/thoughts/[slug]/page.tsx", import.meta.url), "utf8");
   assert.doesNotMatch(source, /ArticlePager/u);
 });
+
+test("the article pager has no divider above it", () => {
+  const css = fs.readFileSync(new URL("../app/styles/a2.css", import.meta.url), "utf8");
+  assert.match(css, /\.gdoc-pager\.article-pager \{\s*border-top: 0;/u);
+});
