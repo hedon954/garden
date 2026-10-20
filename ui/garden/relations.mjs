@@ -51,7 +51,7 @@ export function relationLayout(n, centre = -1, compact = false) {
   // With a node in the middle, narrower nodes leave the spokes room for arrows and labels.
   // Compact (narrow container): the same ring, with nodes a larger share of the width.
   // Wide screens get wider nodes so an English title fits in two lines without breaking a word.
-  const w = compact ? (hasCentre ? 26 : n <= 4 ? 34 : 28) : hasCentre ? 27 : n <= 4 ? 32 : 30;
+  const w = compact ? (hasCentre ? 26 : n <= 4 ? 34 : 28) : hasCentre ? 26 : n <= 4 ? 32 : 30;
   // A narrow hub has a narrower middle node, so each spoke keeps a visible line between the boxes.
   const cw = hasCentre ? (compact ? 22 : 24) : w;
   const rx = 50 - w / 2 - (compact && hasCentre ? 0.5 : 1);

@@ -215,15 +215,15 @@ function fitLines(el: HTMLElement, full: string, lines: number): string | null {
     let hi = parts.length - 1;
     while (lo < hi) {
       const mid = Math.ceil((lo + hi) / 2);
-      if (fits(`${parts.slice(0, mid).join("").trimEnd()}…`)) lo = mid; else hi = mid - 1;
+      if (fits(`${parts.slice(0, mid).join("").trimEnd()}\u2060…`)) lo = mid; else hi = mid - 1;
     }
     if (lo === 0 && parts.length > 1) {
       // Even the first word is too wide: cut inside it as a last resort.
-      const chars = [...parts[0]];
+      const chars = [...parts[0].trimEnd()];
       let c = chars.length;
-      while (c > 1 && !fits(`${chars.slice(0, c).join("")}…`)) c -= 1;
-      result = `${chars.slice(0, c).join("")}…`;
-    } else result = `${parts.slice(0, Math.max(lo, 1)).join("").trimEnd()}…`;
+      while (c > 1 && !fits(`${chars.slice(0, c).join("")}\u2060…`)) c -= 1;
+      result = `${chars.slice(0, c).join("")}\u2060…`;
+    } else result = `${parts.slice(0, Math.max(lo, 1)).join("").trimEnd()}\u2060…`;
   }
   probe.remove();
   return result;
@@ -303,8 +303,8 @@ export function GardenRelations({ props }: { props: Record<string, unknown> }) {
       // open the ring up a step at a time until the shortest line is long enough.
       const target = small ? 24 : 48;
       const shortest = (boxes: Box[]) => Math.min(Infinity, ...parsed.map((link) => {
-        const a = edge(boxes[link.from], center(boxes[link.to]), link.both ? (small ? 7 : 10) : 6);
-        const b = edge(boxes[link.to], center(boxes[link.from]), small ? 7 : 10);
+        const a = edge(boxes[link.from], center(boxes[link.to]), link.both ? (small ? 7 : 8) : 6);
+        const b = edge(boxes[link.to], center(boxes[link.from]), small ? 7 : 8);
         return Math.hypot(b.x - a.x, b.y - a.y);
       }));
       let ry = minRy;
@@ -325,7 +325,7 @@ export function GardenRelations({ props }: { props: Record<string, unknown> }) {
         const to = boxes[link.to];
         const cf = center(from);
         const ct = center(to);
-        const endGap = small ? 7 : 10;
+        const endGap = small ? 7 : 8;
         const gapStart = link.both ? endGap : 6;
         const rf = spots[link.from].ring;
         const rt = spots[link.to].ring;
