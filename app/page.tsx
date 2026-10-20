@@ -60,7 +60,7 @@ export default function Home() {
           ) : null}
           <div>
             <p className="kicker">
-              <span>{t.homeLatest}</span>
+              <span>{t.homeLatestBadge}</span>
               <time className="num" dateTime={day(feature.date)}>{fullListDate(feature.date, siteLang)}</time>
             </p>
             <h2 id="ft"><Link href={postHref(feature)}>{feature.title}</Link></h2>
@@ -75,7 +75,7 @@ export default function Home() {
       <div className="sh-home-grid">
         <section className="sh-section" aria-labelledby="h-recent">
           <div className="sh-sec-head">
-            <h2 id="h-recent">{t.homeRecent}</h2>
+            <h2 id="h-recent">{t.homeRecentHeading}</h2>
             <Link className="sh-more" href={siteHref("/blog")}>{t.homeAllPosts(posts.length)}</Link>
           </div>
           <ol className="sh-rows">
