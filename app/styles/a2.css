@@ -2514,8 +2514,9 @@ html[data-theme="dark"] .g-verdict-ic.good { color: #7fbf8e; }
 .markdown-body img.g-src-fav { display: block; flex: none; width: 14px; height: 14px; max-width: none; margin: 0; border-radius: 3px; object-fit: contain; box-shadow: none; }
 
 /* Handbook field tables: Required never wraps; narrow screens show each row as a card. */
+/* Short values (必填, Optional) stay on one line; long conditions wrap instead of widening the column. */
 .table-wrap .field-table th.ft-req,
-.table-wrap .field-table td.ft-req { white-space: nowrap; min-width: 4em; }
+.table-wrap .field-table td.ft-req { white-space: normal; min-width: 4em; max-width: 9em; width: 9em; }
 @media (max-width: 640px) {
   .table-wrap.field-wrap { border: 0; border-radius: 0; overflow: visible; }
   .field-wrap .field-table,
