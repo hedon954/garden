@@ -213,7 +213,7 @@ test("real browser renders 404 in English at /garden/en/does-not-exist (with and
   try {
     const wsUrl = await new Promise((resolve, reject) => {
       let stderr = "";
-      const timer = setTimeout(() => reject(new Error(`Timed out waiting for Chrome DevTools:\n${stderr}`)), 15000);
+      const timer = setTimeout(() => reject(new Error(`Timed out waiting for Chrome DevTools:\n${stderr}`)), 45000);
       chrome.stderr.on("data", (chunk) => {
         stderr += chunk.toString();
         const match = stderr.match(/DevTools listening on (ws:\/\/[^\s]+)/u);

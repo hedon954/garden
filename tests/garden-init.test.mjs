@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { execFileSync, spawn } from "node:child_process";
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, promises as fsPromises, readFileSync, readdirSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import http from "node:http";
 import net from "node:net";
 import { tmpdir } from "node:os";
@@ -172,7 +172,7 @@ async function verifyPagesInRealBrowser(chromeBin, baseUrl, routes) {
   );
   try {
     let targets = null;
-    for (let i = 0; i < 40; i += 1) {
+    for (let i = 0; i < 60; i += 1) {
       try {
         const res = await fetch(`http://127.0.0.1:${debugPort}/json/list`);
         if (res.ok) {
@@ -182,7 +182,7 @@ async function verifyPagesInRealBrowser(chromeBin, baseUrl, routes) {
       } catch {
         // wait for DevTools port
       }
-      await new Promise((r) => setTimeout(r, 100));
+      await new Promise((r) => setTimeout(r, 150));
     }
     assert.ok(targets && targets.length > 0, "Chrome DevTools target did not start");
     const pageTarget = targets.find((t) => t.type === "page") ?? targets[0];
@@ -214,44 +214,61 @@ async function verifyPagesInRealBrowser(chromeBin, baseUrl, routes) {
         ws.send(JSON.stringify({ id: msgId, method, params }));
       });
 
-    await send("Page.enable");
-    await send("Runtime.enable");
+    try {
+      await send("Page.enable");
+      await send("Runtime.enable");
 
-    const results = {};
-    for (const route of routes) {
-      await send("Page.navigate", { url: `${baseUrl}${route}` });
-      // Poll until document.readyState === 'complete' and main element is rendered
-      for (let i = 0; i < 30; i += 1) {
-        const state = await send("Runtime.evaluate", {
-          expression: "document.readyState === 'complete' && Boolean(document.querySelector('main'))",
+      const results = {};
+      for (const route of routes) {
+        await send("Page.navigate", { url: `${baseUrl}${route}` });
+        // Poll until document.readyState === 'complete' and main element is rendered
+        for (let i = 0; i < 30; i += 1) {
+          const state = await send("Runtime.evaluate", {
+            expression: "document.readyState === 'complete' && Boolean(document.querySelector('main'))",
+            returnByValue: true,
+          });
+          if (state?.result?.value === true) break;
+          await new Promise((r) => setTimeout(r, 100));
+        }
+        await new Promise((r) => setTimeout(r, 150));
+        const evalRes = await send("Runtime.evaluate", {
+          expression: `JSON.stringify({
+            lang: document.documentElement.lang,
+            title: document.title,
+            h1: document.querySelector("h1")?.textContent?.trim() ?? "",
+            bodyText: document.body.innerText,
+            metaTexts: Array.from(document.querySelectorAll("meta[content]")).map((m) => (m.getAttribute("name") || m.getAttribute("property") || "meta") + "=" + m.getAttribute("content")),
+            permalinkLabel: document.querySelector("a.u-url")?.textContent?.trim() ?? "",
+            commentsText: document.querySelector(".comments")?.textContent?.trim() ?? "",
+            footerText: document.querySelector(".sh-footer")?.textContent?.trim() ?? "",
+            navText: document.querySelector(".sh-nav")?.textContent?.trim() ?? "",
+          })`,
           returnByValue: true,
         });
-        if (state?.result?.value === true) break;
-        await new Promise((r) => setTimeout(r, 100));
+        results[route] = JSON.parse(evalRes.result.value);
       }
-      await new Promise((r) => setTimeout(r, 150));
-      const evalRes = await send("Runtime.evaluate", {
-        expression: `JSON.stringify({
-          lang: document.documentElement.lang,
-          title: document.title,
-          h1: document.querySelector("h1")?.textContent?.trim() ?? "",
-          bodyText: document.body.innerText,
-          metaTexts: Array.from(document.querySelectorAll("meta[content]")).map((m) => (m.getAttribute("name") || m.getAttribute("property") || "meta") + "=" + m.getAttribute("content")),
-          permalinkLabel: document.querySelector("a.u-url")?.textContent?.trim() ?? "",
-          commentsText: document.querySelector(".comments")?.textContent?.trim() ?? "",
-          footerText: document.querySelector(".sh-footer")?.textContent?.trim() ?? "",
-          navText: document.querySelector(".sh-nav")?.textContent?.trim() ?? "",
-        })`,
-        returnByValue: true,
-      });
-      results[route] = JSON.parse(evalRes.result.value);
+      await send("Browser.close").catch(() => {});
+      ws.close();
+      assert.deepEqual(exceptions, [], `Uncaught browser exceptions: ${exceptions.join("; ")}`);
+      return results;
+    } finally {
+      ws.close();
     }
-    ws.close();
-    assert.deepEqual(exceptions, [], `Uncaught browser exceptions: ${exceptions.join("; ")}`);
-    return results;
   } finally {
-    proc.kill("SIGKILL");
-    rmSync(userDataDir, { recursive: true, force: true });
+    if (proc.exitCode === null && proc.signalCode === null) {
+      proc.kill("SIGTERM");
+      await new Promise((resolve) => {
+        const timer = setTimeout(() => {
+          proc.kill("SIGKILL");
+          resolve();
+        }, 2000);
+        proc.once("exit", () => {
+          clearTimeout(timer);
+          resolve();
+        });
+      });
+    }
+    await fsPromises.rm(userDataDir, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 }).catch(() => {});
   }
 }
 
@@ -264,6 +281,7 @@ test("an en_US site from garden init --locale en builds a 100% English static si
 
   const env = {
     ...process.env,
+    GITHUB_ACTIONS: "",
     GARDEN_SITE: site,
     GARDEN_OFFLINE: "1",
     STATIC_EXPORT: "1",
