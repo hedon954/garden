@@ -10,6 +10,7 @@ import {
   type ReactNode,
 } from "react";
 import { List, X } from "@phosphor-icons/react";
+import { ui, type UiLang } from "../lib/i18n";
 
 type Heading = { depth: number; text: string; id: string; no?: string };
 
@@ -115,11 +116,16 @@ const scrollToHeading = (id: string) => {
 
 export function TableOfContents({
   headings,
-  label = "本篇目录",
+  label,
+  lang,
 }: {
   headings: Heading[];
   label?: string;
+  /** Defaults to the site language; the bilingual handbook passes its own. */
+  lang?: UiLang;
 }) {
+  const t = ui(lang);
+  label ??= t.toc;
   const [activeId, setActiveId] = useState(headings[0]?.id);
   const [collapsedSections, setCollapsedSections] = useState<Set<string>>(
     () => new Set(),
@@ -368,7 +374,7 @@ export function TableOfContents({
               type="button"
               aria-controls={childListId}
               aria-expanded={!collapsed}
-              aria-label={`${collapsed ? "展开" : "收起"}「${node.text}」的子目录`}
+              aria-label={t.tocToggle(collapsed, node.text)}
               onClick={() => toggleSection(node.id)}
             >
               <span aria-hidden="true">{collapsed ? "+" : "−"}</span>
@@ -396,25 +402,25 @@ export function TableOfContents({
         type="button"
         aria-controls={panelId}
         aria-expanded={mobileOpen}
-        aria-label={`打开${label}${activeHeading ? `，当前章节：${activeHeading.text}` : ""}`}
+        aria-label={`${t.open}${label}${activeHeading ? `${t.currentSection}${activeHeading.text}` : ""}`}
         tabIndex={mobileOpen ? -1 : 0}
         data-mobile-open={mobileOpen}
         onClick={() => setMobileOpen(true)}
       >
         <List size={17} weight="bold" aria-hidden="true" />
-        <span>目录</span>
+        <span>{t.tocShort}</span>
       </button>
       {/* Without JavaScript the button above does nothing. This link opens the
           drawer through :target instead; CSS shows it only when scripting is
           off, so with JavaScript nothing here is visible. */}
-      <a className="toc-nojs-trigger" id={`${panelId}-open`} href={`#${panelId}`} aria-label={`打开${label}`}>
+      <a className="toc-nojs-trigger" id={`${panelId}-open`} href={`#${panelId}`} aria-label={`${t.open}${label}`}>
         <List size={17} weight="bold" aria-hidden="true" />
-        <span>目录</span>
+        <span>{t.tocShort}</span>
       </a>
       <button
         className="toc-mobile-backdrop"
         type="button"
-        aria-label={`关闭${label}`}
+        aria-label={`${t.close}${label}`}
         tabIndex={mobileOpen ? 0 : -1}
         data-mobile-open={mobileOpen}
         onClick={() => closeMobileToc(true)}
@@ -431,12 +437,12 @@ export function TableOfContents({
             ref={mobileCloseRef}
             className="toc-mobile-close"
             type="button"
-            aria-label={`关闭${label}`}
+            aria-label={`${t.close}${label}`}
             onClick={() => closeMobileToc(true)}
           >
             <X size={18} aria-hidden="true" />
           </button>
-          <a className="toc-nojs-close" href={`#${panelId}-open`} aria-label={`关闭${label}`}>
+          <a className="toc-nojs-close" href={`#${panelId}-open`} aria-label={`${t.close}${label}`}>
             <X size={18} aria-hidden="true" />
           </a>
         </div>

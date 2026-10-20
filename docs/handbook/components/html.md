@@ -7,6 +7,8 @@ order: 37
 badge: html
 ---
 
+在 `garden` 想法块里写一句「用 `html` 嵌一个小工具，输入文字就实时算出字符数」，Agent 会按 `garden-ui` skill 生成下面的 `garden html`（手写格式附后）。
+
 ```garden html
 title: 字符长度与预计阅读耗时小工具
 height: 156

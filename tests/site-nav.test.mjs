@@ -7,7 +7,7 @@ test("header nav links are written with the slash and shaped by siteHref for the
   assert.deepEqual(SITE_NAV.map((item) => item.href), ["/blog/", "/thoughts/", "/columns/", "/tags/", "/about/"]);
   for (const { href } of SITE_NAV) assert.match(href, /^\/[a-z]+\/$/u);
   const header = fs.readFileSync(new URL("../app/components/SiteHeader.tsx", import.meta.url), "utf8");
-  assert.match(header, /^const nav = SITE_NAV\.map\(\(item\) => \(\{ \.\.\.item, href: siteHref\(item\.href\) \}\)\);$/mu, "the slash follows trailingSlash");
+  assert.match(header, /^const nav = SITE_NAV\.map\(\(item\) => \(\{ \.\.\.item, key: item\.href, href: siteHref\(item\.href\) \}\)\);$/mu, "the slash follows trailingSlash");
   assert.match(header, /const current = \(href: string\) => isCurrentNav\(pathname, href\);/u);
   assert.doesNotMatch(header, /href: "\/(blog|thoughts|columns|tags|about)"/u);
 });

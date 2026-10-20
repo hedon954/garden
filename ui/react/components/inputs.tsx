@@ -5,6 +5,7 @@ import { formatValue } from "../../core/format.mjs";
 import { isPowerOfTwo } from "../../core/state.mjs";
 import { asNumber, asString, evalExpr, expandChildren, lookupFor, propValue, registerComponents, RenderNodes, useRuntime, type Runtime } from "../runtime";
 import type { Env, UiNode } from "../types";
+import { useRuntimeText } from "../lang";
 
 const isPlainObject = (value: unknown): value is Record<string, unknown> =>
   Boolean(value) && typeof value === "object" && !Array.isArray(value);
@@ -41,6 +42,7 @@ const LOG_RESOLUTION = 1000;
 
 function Slider({ node, env }: { node: UiNode; env: Env }) {
   const runtime = useRuntime();
+  const tx = useRuntimeText();
   const id = useId();
   const bind = String(node.p?.bind && node.p.bind.k === "lit" ? node.p.bind.v : "");
   const model = sliderModel(runtime, node, env);
@@ -48,7 +50,7 @@ function Slider({ node, env }: { node: UiNode; env: Env }) {
   const format = propValue(runtime, node, "format", env) as string | undefined;
   const unit = asString(propValue(runtime, node, "unit", env));
   const value = asNumber(runtime.state[bind]) ?? model?.min ?? 0;
-  if (!model) return <p className="garden-ui-error-inline">滑杆 {label} 的范围无效</p>;
+  if (!model) return <p className="garden-ui-error-inline">{tx.badSlider(String(label))}</p>;
 
   let position: number;
   let inputMin = model.min;
@@ -204,6 +206,7 @@ function Button({ node, env }: { node: UiNode; env: Env }) {
 
 function Stepper({ node, env }: { node: UiNode; env: Env }) {
   const runtime = useRuntime();
+  const tx = useRuntimeText();
   const bind = String(node.p?.bind && node.p.bind.k === "lit" ? node.p.bind.v : "");
   const min = asNumber(propValue(runtime, node, "min", env)) ?? 0;
   const max = asNumber(propValue(runtime, node, "max", env)) ?? min;
@@ -216,10 +219,10 @@ function Stepper({ node, env }: { node: UiNode; env: Env }) {
     <div className="garden-ui-stepper">
       {label !== undefined ? <span className="garden-ui-stepper-label">{asString(label)}</span> : null}
       <div className="garden-ui-stepper-row">
-        <button type="button" className="garden-ui-round" aria-label="减少" onClick={() => set(current - step)} disabled={current <= min}>−</button>
+        <button type="button" className="garden-ui-round" aria-label={tx.decrease} onClick={() => set(current - step)} disabled={current <= min}>−</button>
         <span className="garden-ui-stepper-value" aria-live="polite">{current}</span>
         {unit !== undefined ? <span className="garden-ui-stepper-unit">{asString(unit)}</span> : null}
-        <button type="button" className="garden-ui-round" aria-label="增加" onClick={() => set(current + step)} disabled={current >= max}>+</button>
+        <button type="button" className="garden-ui-round" aria-label={tx.increase} onClick={() => set(current + step)} disabled={current >= max}>+</button>
       </div>
     </div>
   );

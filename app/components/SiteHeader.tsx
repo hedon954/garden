@@ -14,9 +14,11 @@ import type Fuse from "fuse.js";
 import { MagnifyingGlass, X } from "@phosphor-icons/react";
 import { brand, searchFull, searchIndexUrl } from "@garden/site-config";
 import { createSearch } from "../../ui/garden/search-match.mjs";
-import { cropMatchedText, highlightParts, noResultsText } from "../../ui/garden/search-preview.mjs";
+import { cropMatchedText, highlightParts } from "../../ui/garden/search-preview.mjs";
 import { resolveDark, themeSwitchProps } from "../../ui/garden/theme.mjs";
 import { SITE_NAV, isCurrentNav } from "../../ui/garden/site-nav.mjs";
+import { routeLang, ui } from "../lib/i18n";
+import { HandbookLangSwitch } from "./HandbookLangSwitch";
 import { createIdbStore, loadFullIndex, saveDataOn, whenIdleAfterLoad } from "../../ui/garden/search-full.mjs";
 import { siteConfig } from "../site.config";
 import { siteHref } from "../lib/site-href";
@@ -87,7 +89,7 @@ function loadSearchEngine() {
   return engineLoad;
 }
 
-const nav = SITE_NAV.map((item) => ({ ...item, href: siteHref(item.href) }));
+const nav = SITE_NAV.map((item) => ({ ...item, key: item.href, href: siteHref(item.href) }));
 
 function rangesFor(
   matches: readonly SearchMatch[] | undefined,
@@ -140,6 +142,7 @@ function searchPreview(
 
 export function SiteHeader() {
   const pathname = usePathname() || "/";
+  const t = ui(routeLang(pathname));
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -313,29 +316,30 @@ export function SiteHeader() {
             {brand.logo ? <span className="sh-mark" aria-hidden="true" dangerouslySetInnerHTML={{ __html: brand.logo }} /> : null}
             {siteConfig.name}
           </Link>
-          <nav className="sh-nav" aria-label="站点导航">
+          <nav className="sh-nav" aria-label={t.siteNav}>
             {nav.map((item) => (
               <Link key={item.href} href={item.href} aria-current={current(item.href) ? "page" : undefined}>
-                {item.label}
+                {t.navLabels[item.key] ?? item.label}
               </Link>
             ))}
           </nav>
           <div className="sh-tools">
-            <button ref={searchTriggerRef} className="sh-search" type="button" onClick={openSearch} onPointerEnter={prefetchSearch} onFocus={prefetchSearch} aria-label="搜索文章" aria-expanded={searchOpen} aria-controls="site-search-dialog">
+            <button ref={searchTriggerRef} className="sh-search" type="button" onClick={openSearch} onPointerEnter={prefetchSearch} onFocus={prefetchSearch} aria-label={t.searchArticles} aria-expanded={searchOpen} aria-controls="site-search-dialog">
               <svg viewBox="0 0 20 20" aria-hidden="true">
                 <circle cx="9" cy="9" r="5.8" />
                 <path d="M13.3 13.3 17 17" />
               </svg>
-              <span className="lbl">搜索</span>
+              <span className="lbl">{t.search}</span>
               <kbd><span className="kbd-mod kbd-mac">⌘</span><span className="kbd-mod kbd-other">Ctrl</span>{" "}K</kbd>
             </button>
-            <button className="sh-icon sh-search-m" type="button" onClick={openSearch} onPointerDown={prefetchSearch} aria-label="搜索文章">
+            <button className="sh-icon sh-search-m" type="button" onClick={openSearch} onPointerDown={prefetchSearch} aria-label={t.searchArticles}>
               <svg viewBox="0 0 20 20" aria-hidden="true">
                 <circle cx="9" cy="9" r="5.8" />
                 <path d="M13.3 13.3 17 17" />
               </svg>
             </button>
-            <button className="sh-icon sh-theme" type="button" onClick={toggleTheme} aria-label={dark ? "切换到浅色模式" : "切换到深色模式"}>
+            {pathname?.startsWith("/garden") ? <HandbookLangSwitch /> : null}
+            <button className="sh-icon sh-theme" type="button" onClick={toggleTheme} aria-label={dark ? t.toLight : t.toDark}>
               <svg className="i-moon" viewBox="0 0 20 20" aria-hidden="true">
                 <path d="M16.5 12.2A6.8 6.8 0 0 1 7.8 3.5a6.8 6.8 0 1 0 8.7 8.7Z" />
               </svg>
@@ -344,27 +348,27 @@ export function SiteHeader() {
                 <path d="M10 1.8v2M10 16.2v2M1.8 10h2M16.2 10h2M4.2 4.2l1.4 1.4M14.4 14.4l1.4 1.4M4.2 15.8l1.4-1.4M14.4 5.6l1.4-1.4" />
               </svg>
             </button>
-            <button className="sh-icon sh-menu-btn" type="button" aria-expanded={menuOpen} aria-controls="sh-menu" aria-label={menuOpen ? "关闭菜单" : "打开菜单"} onClick={() => setMenuOpen((open) => !open)}>
+            <button className="sh-icon sh-menu-btn" type="button" aria-expanded={menuOpen} aria-controls="sh-menu" aria-label={menuOpen ? t.closeMenu : t.openMenu} onClick={() => setMenuOpen((open) => !open)}>
               {menuOpen ? <X size={18} /> : <span aria-hidden="true">☰</span>}
             </button>
             {/* Without JavaScript the button above cannot open anything: these two links take its place
                 and open or close the menu through :target on the fixed anchors above (shell.css). */}
-            <a className="sh-icon sh-menu-nojs" id="sh-menu-open" href="#sh-menu-on" aria-label="打开菜单">
+            <a className="sh-icon sh-menu-nojs" id="sh-menu-open" href="#sh-menu-on" aria-label={t.openMenu}>
               <span aria-hidden="true">☰</span>
             </a>
-            <a className="sh-icon sh-menu-nojs-close" href="#sh-menu-off" aria-label="关闭菜单">
+            <a className="sh-icon sh-menu-nojs-close" href="#sh-menu-off" aria-label={t.closeMenu}>
               <X size={18} />
             </a>
           </div>
         </div>
-        <nav className={`sh-menu${menuOpen ? " is-open" : ""}`} id="sh-menu" aria-label="站点导航（移动端）">
+        <nav className={`sh-menu${menuOpen ? " is-open" : ""}`} id="sh-menu" aria-label={t.siteNavMobile}>
           {nav.map((item) => (
             <Link key={item.href} href={item.href} aria-current={current(item.href) ? "page" : undefined} onClick={() => setMenuOpen(false)}>
-              {item.label}
+              {t.navLabels[item.key] ?? item.label}
             </Link>
           ))}
           <button className="sh-menu-theme" {...themeSwitchProps(dark, toggleTheme)}>
-            <span>深色模式</span>
+            <span>{t.darkMode}</span>
             <span className="sh-switch" aria-hidden="true" />
           </button>
         </nav>
@@ -388,7 +392,7 @@ export function SiteHeader() {
             onKeyDown={handleSearchKeyDown}
           >
             <h2 className="sr-only" id="site-search-title">
-              搜索站内内容
+              {t.searchTitle}
             </h2>
             <div className="search-input-wrap">
               <MagnifyingGlass size={20} aria-hidden="true" />
@@ -400,8 +404,8 @@ export function SiteHeader() {
                   setActiveResult(-1);
                   resultRefs.current = [];
                 }}
-                placeholder="搜索标题、主题或正文…"
-                aria-label="模糊搜索"
+                placeholder={t.searchPlaceholder}
+                aria-label={t.searchInput}
                 role="combobox"
                 aria-expanded="true"
                 aria-autocomplete="list"
@@ -410,7 +414,7 @@ export function SiteHeader() {
                   activeResult >= 0 ? `site-search-result-${activeResult}` : undefined
                 }
               />
-              <button onClick={closeSearch} aria-label="关闭搜索">
+              <button onClick={closeSearch} aria-label={t.closeSearch}>
                 <X size={19} />
               </button>
             </div>
@@ -418,11 +422,11 @@ export function SiteHeader() {
               className="search-results"
               id="site-search-results"
               role="listbox"
-              aria-label="搜索结果"
+              aria-label={t.searchResults}
             >
               {query && engine && resultTotal === 0 ? null : (
                 <p className="search-label">
-                  {query ? `${resultTotal} 篇相关文章` : "最近内容"}
+                  {query ? t.resultCount(resultTotal) : t.recent}
                 </p>
               )}
               {results.map((result, index) => {
@@ -464,13 +468,13 @@ export function SiteHeader() {
               {results.length === 0 && (
                 <p className="empty-state">
                   {/* The query is a React text child, so it is escaped. */}
-                  {engine ? noResultsText(query) : engineFailed ? "搜索暂时打不开，请稍后再试。" : "正在载入…"}
+                  {engine ? t.noResults(query.trim()) : engineFailed ? t.searchFailed : t.loading}
                 </p>
               )}
             </div>
             <footer className="search-footer">
-              <span>支持模糊匹配</span>
-              <span><kbd>ESC</kbd> 关闭</span>
+              <span>{t.fuzzy}</span>
+              <span><kbd>ESC</kbd> {t.escToClose}</span>
             </footer>
           </section>
         </div>

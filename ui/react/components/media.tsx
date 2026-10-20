@@ -4,9 +4,11 @@ import { useEffect, useId, useRef, useState } from "react";
 import { asNumber, asString, expandChildren, propValue, registerComponents, RenderNodes, useRuntime } from "../runtime";
 import type { Env, UiNode } from "../types";
 import { codeLanguageLabel } from "../../garden/code-language.mjs";
+import { useRuntimeText } from "../lang";
 
 function Image({ node, env }: { node: UiNode; env: Env }) {
   const runtime = useRuntime();
+  const tx = useRuntimeText();
   const src = asString(propValue(runtime, node, "src", env));
   const alt = asString(propValue(runtime, node, "alt", env));
   const ratio = asString(propValue(runtime, node, "ratio", env));
@@ -55,7 +57,7 @@ function Image({ node, env }: { node: UiNode; env: Env }) {
             <RenderNodes nodes={current.node.c} env={current.env} />
           </>
         ) : (
-          <p>点图上的序号看说明。</p>
+          <p>{tx.tapNumbers}</p>
         )}
       </div>
     </div>
@@ -122,6 +124,7 @@ function renderMermaid(source: string, id: string, dark: boolean) {
 
 function Diagram({ node, env }: { node: UiNode; env: Env }) {
   const runtime = useRuntime();
+  const tx = useRuntimeText();
   const source = asString(propValue(runtime, node, "mermaid", env)).trim();
   const highlightValue = propValue(runtime, node, "highlight", env);
   const edgesValue = propValue(runtime, node, "edges", env);
@@ -173,11 +176,11 @@ function Diagram({ node, env }: { node: UiNode; env: Env }) {
 
   return (
     <div className="garden-ui-diagram">
-      {failed ? <p className="garden-ui-error-inline">图没能画出来（语法有误，或这里没有 Mermaid）。下面是源码。</p> : null}
+      {failed ? <p className="garden-ui-error-inline">{tx.mermaidFailed}</p> : null}
       {failed ? <pre className="garden-ui-code"><code>{source}</code></pre> : null}
-      {!svg && !failed ? <p className="garden-ui-note">正在绘制图…</p> : null}
+      {!svg && !failed ? <p className="garden-ui-note">{tx.drawing}</p> : null}
       <div ref={canvasRef} className="garden-ui-diagram-canvas" dangerouslySetInnerHTML={{ __html: svg }} />
-      {highlight.length ? <p className="garden-ui-sr-only" aria-live="polite">{`当前高亮：${highlight.join("、")}`}</p> : null}
+      {highlight.length ? <p className="garden-ui-sr-only" aria-live="polite">{tx.highlighted(highlight)}</p> : null}
     </div>
   );
 }

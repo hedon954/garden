@@ -178,7 +178,7 @@ test("renders complex Markdown, article covers, and mixed thought media", async 
   assert.match(metaText, /^Your Name 2026 年 7 月 25 日 约 [\d,]+ 字$/);
   assert.doesNotMatch(meta, /<li>\s*<\/li>/);
   assert.doesNotMatch(meta, /分钟/);
-  assert.match(article, /约 <!-- -->[\d,]+<!-- --> 字/);
+  assert.match(article, /约 (?:<!-- -->)?[\d,]+(?:<!-- -->)? 字/);
   assert.ok(
     article.indexOf('class="article-header article-summary-row hero"') <
       article.indexOf('class="article-hero article-cover'),
@@ -203,7 +203,7 @@ test("renders complex Markdown, article covers, and mixed thought media", async 
   assert.equal(kv.status, 200);
   const kvHtml = await kv.text();
   assert.match(kvHtml, /2026 年 9 月 18 日/);
-  assert.match(kvHtml, /约 <!-- -->[\d,]+<!-- --> 字/);
+  assert.match(kvHtml, /约 (?:<!-- -->)?[\d,]+(?:<!-- -->)? 字/);
   assert.doesNotMatch(kvHtml, /mermaid-view-switcher/);
   assert.ok(
     kvHtml.indexOf('class="article-header article-summary-row hero"') <
@@ -231,7 +231,7 @@ test("collapses the reading table of contents per heading and keeps its active i
   assert.match(toc, /nestHeadings/);
   assert.match(toc, /renderNode/);
   assert.match(toc, /className="toc-sublist" hidden=\{collapsed\}/);
-  assert.match(toc, /aria-label=\{`\$\{collapsed \? "展开" : "收起"\}「\$\{node\.text\}」的子目录`\}/);
+  assert.match(toc, /aria-label=\{t\.tocToggle\(collapsed, node\.text\)\}/);
   assert.match(toc, /listRef/);
   assert.match(toc, /\[aria-current="location"\]/);
   assert.match(toc, /list\.scrollTo/);
@@ -364,7 +364,7 @@ test("renders safe external embeds and the complete GitHub profile experience", 
   const [markdown, embed, garden, github, liveGithub, workflow, docs] = await Promise.all([
     readFile(new URL("../app/components/MarkdownArticle.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/components/ExternalEmbed.tsx", import.meta.url), "utf8"),
-    readFile(new URL("../app/garden/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/components/GardenMediaGuide.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/components/GithubProfile.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/components/GithubLiveOverview.tsx", import.meta.url), "utf8"),
     readFile(new URL("../.github/workflows/pages.yml", import.meta.url), "utf8"),

@@ -1,13 +1,15 @@
 import Link from "next/link";
+import { ui } from "./lib/i18n";
 
 export default function NotFound() {
+  const t = ui();
   return (
     <main className="page-shell">
       <header className="sh-head">
-        <h1>找不到这一页</h1>
-        <p className="sh-deck">地址可能写错了，或者这篇已经不在了。</p>
+        <h1>{t.notFoundTitle}</h1>
+        <p className="sh-deck">{t.notFoundDeck}</p>
       </header>
-      <p><Link href="/">返回首页</Link></p>
+      <p><Link href="/">{t.backHome}</Link></p>
     </main>
   );
 }

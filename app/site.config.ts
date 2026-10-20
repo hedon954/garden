@@ -22,7 +22,7 @@ export type SiteConfig = {
   pages: {
     home: PageCopy;
     blog: PageCopy;
-    thoughts: PageCopy;
+    thoughts: PageCopy & { pageSize?: number };
     columns: PageCopy;
     about: AboutPage;
     garden: PageCopy;

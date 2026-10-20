@@ -1,5 +1,6 @@
 import { parse as parseYaml } from "yaml";
 import { sha256Hex } from "./sha256.mjs";
+import { gardenKind, readInteractiveFence } from "./garden-fence.mjs";
 
 export const normalizeNewlines = (text) => text.replace(/\r\n?/gu, "\n");
 
@@ -83,9 +84,18 @@ export function scanFences(markdown) {
 
 export const BLOCK_LANGS = new Set(["ui", "intent", "widget"]);
 
-/** @param {string} markdown @returns {Fence[]} */
+/**
+ * Blocks the authoring tools act on. `garden` ideas and `garden interactive`
+ * fences come back with lang `garden-idea` / `garden-interactive`; the older
+ * `ui`, `intent` and `widget` fences keep their own lang.
+ * @param {string} markdown @returns {Fence[]}
+ */
 export function findBlocks(markdown) {
-  return scanFences(markdown).filter((fence) => BLOCK_LANGS.has(fence.lang));
+  return scanFences(markdown).flatMap((fence) => {
+    if (BLOCK_LANGS.has(fence.lang)) return [fence];
+    const kind = gardenKind(fence);
+    return kind ? [{ ...fence, lang: `garden-${kind}` }] : [];
+  });
 }
 
 /**
@@ -140,7 +150,11 @@ export function compiledOf(headerText) {
 }
 
 export function intentOf(fence) {
-  if (fence.lang === "intent") return normalizeNewlines(fence.body);
+  if (fence.lang === "intent" || fence.lang === "garden-idea") return normalizeNewlines(fence.body);
+  if (fence.lang === "garden-interactive") {
+    const { props } = readInteractiveFence(fence);
+    return typeof props.intent === "string" ? props.intent : null;
+  }
   if (fence.lang === "ui") {
     const { header } = splitUiBody(fence.body);
     return typeof header?.intent === "string" ? header.intent : null;
@@ -158,6 +172,7 @@ export function intentOf(fence) {
 
 export function idOf(fence) {
   if (fence.lang === "intent") return fence.info.split(/\s+/u)[0] || null;
+  if (fence.lang === "garden-interactive") return readInteractiveFence(fence).id;
   if (fence.lang === "ui") {
     const { header } = splitUiBody(fence.body);
     return typeof header?.id === "string" ? header.id : null;

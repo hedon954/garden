@@ -160,10 +160,10 @@ test("the drawer fetches the Markdown preview only when opened, with loading, er
   const drawer = await readFile(new URL("../app/components/garden/FilePreview.tsx", import.meta.url), "utf8");
   assert.match(drawer, /fetch\(file\.src, \{ signal: controller\.signal \}\)/u);
   assert.match(drawer, /if \(file\.preview === "md" && loaded\.state !== "ready" && loaded\.state !== "loading"\) load\(\);/u, "loaded on the first open, kept afterwards");
-  assert.match(drawer, /正在载入预览…/u);
-  assert.match(drawer, /预览没能载入。/u);
-  assert.match(drawer, />重试<\/button>/u);
-  assert.match(drawer, />下载文件<\/a>/u);
+  assert.match(drawer, /\{t\.previewLoading\}/u);
+  assert.match(drawer, /\{t\.previewFailed\}/u);
+  assert.match(drawer, />\{t\.retry\}<\/button>/u);
+  assert.match(drawer, />\{t\.downloadFile\}<\/a>/u);
   assert.match(drawer, /request\.current\?\.abort\(\);\n    setOpen\(false\);/u, "closing stops a pending load");
   // Without JavaScript the control is a link to the same preview (or the file) in a new tab.
   assert.match(drawer, /href=\{file\.preview === "md" && file\.src \? file\.src : file\.url\}\n\s+target="_blank"/u);
@@ -483,7 +483,7 @@ test("an html or pdf preview keeps focus in the drawer: sentinels around the ifr
   assert.match(drawer, /\.filter\(\(element\) => !element\.hasAttribute\("data-gf-sentinel"\)\)/u, "the Tab handler skips the sentinels");
   assert.match(css, /\.gf-sentinel \{ position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset\(50%\);/u);
   // The hint: one quiet line at the bottom, muted, hidden where there is no keyboard.
-  assert.match(drawer, /<p className="gf-hint">Esc 关闭<\/p>\s*<\/aside>/u);
+  assert.match(drawer, /<p className="gf-hint">\{t\.escClose\}<\/p>\s*<\/aside>/u);
   assert.match(css, /\.gf-hint \{[^}]*font-size: 12px;[^}]*color: var\(--muted\);/u);
   assert.match(css, /@media \(hover: none\) and \(pointer: coarse\) \{ \.gf-hint \{ display: none; \} \}/u);
 });

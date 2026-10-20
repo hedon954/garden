@@ -1,5 +1,7 @@
 "use client";
 
+import { useUi } from "../UiLang";
+
 import {
   useEffect,
   useId,
@@ -47,7 +49,9 @@ function writeClipboard(text: string) {
   });
 }
 
-export function CopyButton({ getText, label = "复制代码" }: { getText: () => string; label?: string }) {
+export function CopyButton({ getText, label }: { getText: () => string; label?: string }) {
+  const t = useUi();
+  label = label ?? t.copyCode;
   const [done, setDone] = useState(false);
   const timer = useRef<number>(0);
 
@@ -56,8 +60,8 @@ export function CopyButton({ getText, label = "复制代码" }: { getText: () =>
       <button
         type="button"
         className={`ux-btn ux-copy${done ? " ux-done" : ""}`}
-        aria-label={done ? "已复制" : label}
-        title={done ? "已复制" : label}
+        aria-label={done ? t.copied : label}
+        title={done ? t.copied : label}
         onClick={() => {
           const text = getText();
           writeClipboard(text).then(() => {
@@ -67,9 +71,9 @@ export function CopyButton({ getText, label = "复制代码" }: { getText: () =>
           }).catch(() => setDone(false));
         }}
       >
-        {done ? "已复制" : COPY_ICON}
+        {done ? t.copied : COPY_ICON}
       </button>
-      <span className="ux-live" aria-live="polite">{done ? "已复制到剪贴板" : ""}</span>
+      <span className="ux-live" aria-live="polite">{done ? t.copiedLive : ""}</span>
     </>
   );
 }
@@ -88,12 +92,12 @@ export function CodeCopy({ children }: { children: ReactNode }) {
   );
 }
 
-function diffLines(source: string) {
+function diffLines(source: string, t: ReturnType<typeof useUi>) {
   return source.replace(/\n$/u, "").split("\n").map((line) => {
     const kind = line.startsWith("+") ? "add" : line.startsWith("-") ? "del" : "ctx";
     const body = kind === "ctx" ? line.replace(/^ /u, "") : line.slice(1);
     const mark = kind === "add" ? "+" : kind === "del" ? "−" : " ";
-    const spoken = kind === "add" ? "（新增）" : kind === "del" ? "（删除）" : "";
+    const spoken = kind === "add" ? t.diffAdded : kind === "del" ? t.diffRemoved : "";
     return { kind, body, mark, spoken };
   });
 }
@@ -109,11 +113,12 @@ export function CodeDiff({
 }) {
   const [tab, setTab] = useState(0);
   const base = useId();
-  const tabs = ["代码", "对比上一版"];
+  const t = useUi();
+  const tabs = t.codeTabs;
 
   return (
     <div className="g-tabs g-code-group g-codediff" data-g="tabs">
-      <div role="tablist" aria-label="代码">
+      <div role="tablist" aria-label={t.codeTabsLabel}>
         {tabs.map((label, index) => (
           <button
             key={label}
@@ -146,7 +151,7 @@ export function CodeDiff({
       <div role="tabpanel" id={`${base}-p1`} aria-labelledby={`${base}-t1`} hidden={tab !== 1}>
         <pre className="code g-diff">
           <code>
-            {diffLines(diff).map((line, index) => (
+            {diffLines(diff, t).map((line, index) => (
               <span className={`d-${line.kind}`} key={index}>
                 <span className="d-m" aria-hidden="true">{line.mark}</span>
                 {line.body}
@@ -164,7 +169,9 @@ function fullscreenElement() {
   return document.fullscreenElement || (document as Document & { webkitFullscreenElement?: Element }).webkitFullscreenElement || null;
 }
 
-export function FullscreenFrame({ children, label = "演示" }: { children: ReactNode; label?: string }) {
+export function FullscreenFrame({ children, label }: { children: ReactNode; label?: string }) {
+  const t = useUi();
+  label = label ?? t.demo;
   const ref = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const restoreRef = useRef<HTMLElement | null>(null);
@@ -255,8 +262,8 @@ export function FullscreenFrame({ children, label = "演示" }: { children: Reac
           ref={buttonRef}
           type="button"
           className="ux-btn ux-fsb"
-          aria-label={active ? "退出全屏" : "全屏"}
-          title={active ? "退出全屏" : "全屏"}
+          aria-label={active ? t.exitFullscreen : t.fullscreen}
+          title={active ? t.exitFullscreen : t.fullscreen}
           onClick={() => (active ? close() : open())}
         >
           {active ? EXIT_ICON : ENTER_ICON}

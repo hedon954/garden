@@ -226,7 +226,7 @@ test("the search label counts every match, not only the rows shown", () => {
   assert.deepEqual(engine.find("", 6), { hits: [], total: 0 });
   // The dialog shows six rows, so its label uses the total.
   const header = fs.readFileSync(new URL("../app/components/SiteHeader.tsx", import.meta.url), "utf8");
-  assert.match(header, /\$\{resultTotal\} 篇相关文章/);
+  assert.match(header, /t\.resultCount\(resultTotal\)/);
   assert.doesNotMatch(header, /results\.length\} 个相关结果/);
 });
 

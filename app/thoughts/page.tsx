@@ -1,5 +1,5 @@
 import { getPublishedThoughts } from "../lib/public-thoughts";
-import { ThoughtCard } from "../components/ThoughtCard";
+import { ThoughtFeed } from "../components/ThoughtFeed";
 import { ContentEmptyState } from "../components/ContentEmptyState";
 import { PageIntro } from "../components/PageIntro";
 import { siteConfig, siteDocumentTitle } from "../site.config";
@@ -22,11 +22,7 @@ export default function ThoughtsPage() {
         subtitle={siteConfig.pages.thoughts.subtitle}
       />
       {thoughts.length > 0 ? (
-        <div className="thought-stream">
-          {thoughts.map((thought) => (
-            <ThoughtCard key={thought.slug} thought={thought} />
-          ))}
-        </div>
+        <ThoughtFeed page={1} />
       ) : (
         <ContentEmptyState kind="thoughts" />
       )}

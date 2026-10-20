@@ -1,9 +1,10 @@
 import Link from "next/link";
+import { ArticlePager } from "../../../components/ArticlePager";
 import { CoverImage } from "../../../components/CoverImage";
 import type { Metadata } from "next";
 import { FEED_ALTERNATES } from "../../../lib/page-alternates";
 import { notFound } from "next/navigation";
-import { ArrowLeft, ArrowRight } from "@phosphor-icons/react/ssr";
+import { ArrowLeft } from "@phosphor-icons/react/ssr";
 import {
   columns,
   extractHeadings,
@@ -28,6 +29,7 @@ import {
 import { githubUrl, siteConfig } from "../../../site.config";
 import { siteHref } from "../../../lib/site-href";
 import { isStaticPlaceholder, STATIC_PLACEHOLDER, staticParams } from "../../../../ui/garden/static-params.mjs";
+import { ui } from "../../../lib/i18n";
 
 export function generateStaticParams() {
   return staticParams(
@@ -88,7 +90,8 @@ export default async function ColumnEntryPage({
   const series = columns.filter((item) => item.column === column);
   const listed = [...series].sort((left, right) => Date.parse(right.date) - Date.parse(left.date));
   const currentIndex = series.findIndex((item) => item.path === entry.path);
-  const next = series[currentIndex + 1];
+  const prev = series[currentIndex - 1] ?? null;
+  const next = series[currentIndex + 1] ?? null;
   const headings = extractHeadings(entry.content, { numbering: entry.numbering });
   const baseUrl = await getSiteUrl();
   const pathname = columnHref(entry);
@@ -150,19 +153,14 @@ export default async function ColumnEntryPage({
           <MarkdownArticle content={entry.content} numbering={entry.numbering} />
         </div>
         <ArticleReferences references={entry.references} />
-        {next && (
-          <Link
-            href={columnHref(next)}
-            className="next-entry"
-          >
-            <span>下一篇</span>
-            <strong>{next.title}</strong>
-            <ArrowRight size={20} />
-          </Link>
-        )}
         <Webmentions
           target={canonicalUrl}
           endpoint={webmentionApiEndpoint()}
+        />
+        <ArticlePager
+          label={ui().columnPagerLabel}
+          prev={prev ? { href: columnHref(prev), title: prev.title } : null}
+          next={next ? { href: columnHref(next), title: next.title } : null}
         />
         <Comments slug={`${column}:${entry.path}`} />
       </article>

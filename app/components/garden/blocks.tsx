@@ -2,11 +2,13 @@
 
 import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 import ReactMarkdown from "react-markdown";
-import { stringify } from "yaml";
+import { useUi, useUiLang } from "../UiLang";
+import { langOf, ui } from "../../lib/i18n";
+import { interactiveUiSource } from "../../../ui/core/garden-fence.mjs";
 import { markdownPlugins } from "../../lib/markdown-plugins";
 import { compileUiBlock } from "../../../ui/core/compile.mjs";
 import { splitCompareLine } from "../../../ui/garden/compare-line.mjs";
-import { UiErrorCard, UiFigure, type Diagnostic, type UiPayload } from "../../../ui/react";
+import { RuntimeLangProvider, UiErrorCard, UiFigure, type Diagnostic, type UiPayload } from "../../../ui/react";
 import { FullscreenFrame, SandboxFrame } from "./chrome";
 
 function Rich({ text }: { text: string }) {
@@ -187,7 +189,8 @@ function chartRows(props: Record<string, unknown>) {
 export function GardenChart({ props }: { props: Record<string, unknown> }) {
   const rows = chartRows(props);
   const max = Math.max(...rows.map((row) => row.y), 1);
-  const title = String(props.title ?? "图表");
+  const t = useUi();
+  const title = String(props.title ?? t.chart);
   return (
     <figure className="g-chart" role="group" aria-label={title}>
       {props.title ? <p className="g-chart-t">{title}</p> : null}
@@ -201,9 +204,9 @@ export function GardenChart({ props }: { props: Record<string, unknown> }) {
         ))}
       </div>
       <details className="g-chart-data">
-        <summary>查看数据表</summary>
+        <summary>{t.dataTable}</summary>
         <table>
-          <thead><tr><th>{String(props.xLabel ?? (typeof props.x === "string" ? props.x : "项目"))}</th><th>{String(props.yLabel ?? "数值")}</th></tr></thead>
+          <thead><tr><th>{String(props.xLabel ?? (typeof props.x === "string" ? props.x : t.item))}</th><th>{String(props.yLabel ?? t.value)}</th></tr></thead>
           <tbody>
             {rows.map((row) => <tr key={row.x}><td>{row.x}</td><td>{row.label}</td></tr>)}
           </tbody>
@@ -216,11 +219,11 @@ export function GardenChart({ props }: { props: Record<string, unknown> }) {
 
 type Part = { id: string; label: string; text: string };
 
-function partsOf(props: Record<string, unknown>): Part[] {
+function partsOf(props: Record<string, unknown>, partLabel: (n: number) => string): Part[] {
   if (!Array.isArray(props.parts)) return [];
   return props.parts.map((part, index) => {
     const item = part as Record<string, unknown>;
-    const label = String(item.label ?? item.name ?? `部分 ${index + 1}`);
+    const label = String(item.label ?? item.name ?? partLabel(index + 1));
     return { id: String(item.id ?? item.name ?? label), label, text: String(item.text ?? "") };
   });
 }
@@ -240,7 +243,8 @@ function partOn(selected: string, token: string) {
 }
 
 export function GardenFigure({ props, children }: { props: Record<string, unknown>; children?: string }) {
-  const parts = partsOf(props);
+  const t = useUi();
+  const parts = partsOf(props, t.part);
   const [selected, setSelected] = useState(parts[0]?.id ?? "all");
   const svgRef = useRef<HTMLDivElement>(null);
   const base = useId();
@@ -286,7 +290,7 @@ export function GardenFigure({ props, children }: { props: Record<string, unknow
   const body = (
     <figure className="g-explore" data-g="explore" data-sel={selected} ref={svgRef}>
       {parts.length ? (
-        <div role="tablist" aria-label="选择一个部分">
+        <div role="tablist" aria-label={t.pickPart}>
           {parts.map((part, index) => (
             <button
               key={part.id}
@@ -324,7 +328,7 @@ export function GardenFigure({ props, children }: { props: Record<string, unknow
       {typeof props.caption === "string" ? <figcaption><Rich text={props.caption} /></figcaption> : null}
     </figure>
   );
-  return parts.length || svg ? <FullscreenFrame label="结构图">{body}</FullscreenFrame> : body;
+  return parts.length || svg ? <FullscreenFrame label={t.diagram}>{body}</FullscreenFrame> : body;
 }
 
 function htmlHasScript(source: string) {
@@ -336,6 +340,8 @@ function isLightWidget(source: string) {
 }
 
 function bindGardenWidgets(root: HTMLElement) {
+  const attr = root.closest("[lang]")?.getAttribute("lang");
+  const t = ui(attr ? langOf(attr) : undefined);
   root.querySelectorAll<HTMLElement>("[data-g=tabs]").forEach((widget) => {
     const list = widget.querySelector<HTMLElement>(":scope > [role=tablist]");
     const tabs = [...(list?.querySelectorAll<HTMLElement>(":scope > [role=tab]") ?? [])];
@@ -373,12 +379,12 @@ function bindGardenWidgets(root: HTMLElement) {
       const chosen = form.querySelector<HTMLInputElement>("input:checked");
       if (!chosen) {
         out.className = "g-quiz-out";
-        out.textContent = "先选一个答案。";
+        out.textContent = t.pickAnswer;
         return;
       }
       const correct = chosen.value === form.dataset.answer;
       out.className = `g-quiz-out ${correct ? "ok" : "no"}`;
-      out.textContent = correct ? "✓ 答对了" : "✗ 再想想";
+      out.textContent = correct ? t.correct : t.wrong;
       if (explain) explain.hidden = !correct;
     });
   });
@@ -446,7 +452,7 @@ function bindGardenWidgets(root: HTMLElement) {
       const equation = calc.querySelector("[data-calc]");
       if (equation && spec.show) {
         const shown = spec.show.replace(/\{(\w+)\}/g, (_, key: string) => String(values[key]));
-        equation.textContent = `${shown} = ${spec.format === "GB" ? `${Math.round(result).toLocaleString("en-US")} 字节` : String(Math.round(result * 1e4) / 1e4)}`;
+        equation.textContent = `${shown} = ${spec.format === "GB" ? `${Math.round(result).toLocaleString("en-US")} ${t.bytes}` : String(Math.round(result * 1e4) / 1e4)}`;
       }
     };
     calc.addEventListener("input", run);
@@ -484,9 +490,10 @@ function LightGardenHtml({ code }: { code: string }) {
 
 export function GardenHtml({ props, children }: { props: Record<string, unknown>; children?: string }) {
   const code = typeof props.code === "string" ? props.code : children || "";
+  const t = useUi();
   const title = String(props.title ?? "HTML");
   if (!code && typeof props.src === "string") {
-    return <p className="g-embed-note">HTML 在 {props.src}。发布时由同名目录读入。</p>;
+    return <p className="g-embed-note">{t.htmlAt(String(props.src))}</p>;
   }
   if (htmlHasScript(code)) {
     return <SandboxFrame html={code} title={title} />;
@@ -499,36 +506,38 @@ export function GardenHtml({ props, children }: { props: Record<string, unknown>
 }
 
 export function GardenInteractive({ block }: { block: { id?: string | null; props: Record<string, unknown>; children?: string } }) {
-  const header = {
-    id: block.id || block.props.id || "interactive",
-    caption: block.props.caption ?? "",
-    intent: block.props.intent ?? "",
-    ...(block.props.expect ? { expect: block.props.expect } : {}),
-  };
-  const source = `---\n${stringify(header)}---\n${block.children ?? ""}`;
+  const t = useUi();
+  const lang = useUiLang();
+  // Same source `garden ui check` validates (ui/core/garden-fence.mjs).
+  const { source, header } = interactiveUiSource({ id: block.id ?? null, props: block.props, children: block.children ?? "" });
   const { payload, check } = compileUiBlock(source);
   if (!payload) {
     return (
+      <RuntimeLangProvider lang={lang}>
       <UiErrorCard
         id={String(header.id)}
         caption={String(header.caption)}
         diagnostics={(check.diagnostics ?? []) as Diagnostic[]}
       />
+      </RuntimeLangProvider>
     );
   }
   return (
-    <FullscreenFrame label={String(header.caption || "交互")}>
+    <RuntimeLangProvider lang={lang}>
+    <FullscreenFrame label={String(header.caption || t.interactive)}>
       <div className="g-play">
         <UiFigure payload={payload as UiPayload} />
       </div>
     </FullscreenFrame>
+    </RuntimeLangProvider>
   );
 }
 
 export function GardenIdea({ text }: { text: string }) {
+  const t = useUi();
   return (
     <aside className="g-idea">
-      <p className="g-example-label">想法 · 发布前编译</p>
+      <p className="g-example-label">{t.ideaLabel}</p>
       <p>{text}</p>
     </aside>
   );
@@ -539,7 +548,8 @@ export function GardenLegacy({ suggestion }: { suggestion: string }) {
 }
 
 export function GardenUnknown({ name }: { name: string }) {
-  return <p className="g-embed-note">未知 Garden 块：{name}</p>;
+  const t = useUi();
+  return <p className="g-embed-note">{t.unknownBlock(name)}</p>;
 }
 
 export function GardenMessage({ children }: { children: ReactNode }) {

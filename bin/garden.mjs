@@ -398,6 +398,10 @@ switch (command) {
       // What the export wrote for empty dynamic routes (ui/garden/static-params.mjs).
       runNode("scripts/static-placeholders.mjs");
       runNode("scripts/redirects.mjs");
+      // <html lang="en"> on the English handbook pages.
+      runNode("scripts/html-lang.mjs");
+      // 404.html also under basePath when the host serves that folder alone.
+      runNode("scripts/static-404.mjs");
     }
     break;
   case "links":

@@ -39,8 +39,8 @@ const opened = [":has(", ":target"];
 test("with JavaScript off the ☰ opens the menu through :target and ✕ closes it", () => {
   // Both links target fixed anchors outside the sticky header, so neither scrolls the page.
   assert.match(header, /<span className="sh-menu-target" id="sh-menu-on" aria-hidden="true" \/>\s*<span className="sh-menu-target" id="sh-menu-off" aria-hidden="true" \/>\s*<header className="sh-header" id="site-header">/u);
-  assert.match(header, /<a className="sh-icon sh-menu-nojs" id="sh-menu-open" href="#sh-menu-on" aria-label="打开菜单">\s*<span aria-hidden="true">☰<\/span>/u);
-  assert.match(header, /<a className="sh-icon sh-menu-nojs-close" href="#sh-menu-off" aria-label="关闭菜单">/u);
+  assert.match(header, /<a className="sh-icon sh-menu-nojs" id="sh-menu-open" href="#sh-menu-on" aria-label=\{t\.openMenu\}>\s*<span aria-hidden="true">☰<\/span>/u);
+  assert.match(header, /<a className="sh-icon sh-menu-nojs-close" href="#sh-menu-off" aria-label=\{t\.closeMenu\}>/u);
   assert.doesNotMatch(header, /href="#site-header"|href="#sh-menu"/u);
   assert.equal(value("sh-menu-target", "position", at390off), "fixed");
   assert.match(header, /<header className="sh-header" id="site-header">/u);
@@ -69,7 +69,7 @@ test("with JavaScript on the menu works as before and the no-JS links stay out o
   // Only .is-open (state) opens it; a #sh-menu-on hash does nothing.
   assert.equal(value("sh-menu", "visibility", { ...at390on, state: opened }), "hidden");
   assert.equal(value("sh-menu", "visibility", { ...at390on, state: [".is-open"] }), "visible");
-  assert.match(header, /<button className="sh-icon sh-menu-btn" type="button" aria-expanded=\{menuOpen\} aria-controls="sh-menu" aria-label=\{menuOpen \? "关闭菜单" : "打开菜单"\} onClick=\{\(\) => setMenuOpen\(\(open\) => !open\)\}>/u);
+  assert.match(header, /<button className="sh-icon sh-menu-btn" type="button" aria-expanded=\{menuOpen\} aria-controls="sh-menu" aria-label=\{menuOpen \? t\.closeMenu : t\.openMenu\} onClick=\{\(\) => setMenuOpen\(\(open\) => !open\)\}>/u);
 });
 
 test("with JavaScript off the phone search button is hidden; with it on it shows (built CSS)", () => {

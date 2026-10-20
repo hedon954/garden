@@ -6,6 +6,7 @@ import { formatValue } from "../../core/format.mjs";
 import { isPowerOfTwo, lookupFrom, sampleDomain } from "../../core/state.mjs";
 import { asNumber, asString, evalExpr, expandChildren, propValue, registerComponents, rowValue, useRuntime } from "../runtime";
 import type { Env, Lookup, UiNode } from "../types";
+import { useRuntimeText } from "../lang";
 
 const SERIES = new Set(["Line", "Area", "Bar", "Point"]);
 const DEFAULT_TONES = ["accent", "muted", "new", "same"];
@@ -91,6 +92,7 @@ type Model = {
 
 function Chart({ node, env }: { node: UiNode; env: Env }) {
   const runtime = useRuntime();
+  const tx = useRuntimeText();
   const baseId = useId().replaceAll(":", "");
   const wrapRef = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState(640);
@@ -126,7 +128,7 @@ function Chart({ node, env }: { node: UiNode; env: Env }) {
   const model = ((): Model | null => {
     const describe = (item: { node: UiNode; env: Env }, index: number) => ({
       kind: item.node.n ?? "Line",
-      label: asString(propValue(runtime, item.node, "label", item.env), `系列 ${index + 1}`),
+      label: asString(propValue(runtime, item.node, "label", item.env), tx.seriesN(index + 1)),
       tone: (() => {
         const tone = propValue(runtime, item.node, "tone", item.env);
         return typeof tone === "string" && (TONES as string[]).includes(tone) ? tone : DEFAULT_TONES[index % DEFAULT_TONES.length];
@@ -192,7 +194,7 @@ function Chart({ node, env }: { node: UiNode; env: Env }) {
     };
   })();
 
-  if (!model || !model.series.length) return <p className="garden-ui-error-inline">图表缺少有效的范围或数据</p>;
+  if (!model || !model.series.length) return <p className="garden-ui-error-inline">{tx.badChart}</p>;
 
   const innerWidth = width - MARGIN.left - MARGIN.right;
   const innerHeight = height - MARGIN.top - MARGIN.bottom;
@@ -268,7 +270,7 @@ function Chart({ node, env }: { node: UiNode; env: Env }) {
         className="garden-ui-chart-canvas"
         tabIndex={0}
         role="group"
-        aria-label={`${asString(value("yLabel"), "图表")}，左右方向键查看各点`}
+        aria-label={tx.chartKeys(asString(value("yLabel"), tx.chart))}
         aria-describedby={`${baseId}-table`}
         onPointerMove={(event) => setHover(nearest(event.clientX))}
         onPointerLeave={() => setHover(null)}
@@ -426,6 +428,7 @@ function ringPath(cx: number, cy: number, inner: number, outer: number, start: n
 
 function Pie({ node, env }: { node: UiNode; env: Env }) {
   const runtime = useRuntime();
+  const tx = useRuntimeText();
   const title = propValue(runtime, node, "title", env);
   const slices = expandChildren(runtime, node.c, env)
     .filter((item) => item.node.n === "Slice")
@@ -447,7 +450,7 @@ function Pie({ node, env }: { node: UiNode; env: Env }) {
     <figure className="garden-ui-pie">
       {title !== undefined ? <p className="garden-ui-pie-title">{asString(title)}</p> : null}
       <div className="garden-ui-pie-chart">
-        <svg viewBox={`0 0 ${PIE_VIEW.width} ${PIE_VIEW.height}`} role="img" aria-label={title !== undefined ? asString(title) : "圆环图"}>
+        <svg viewBox={`0 0 ${PIE_VIEW.width} ${PIE_VIEW.height}`} role="img" aria-label={title !== undefined ? asString(title) : tx.donut}>
           {arcs.map((arc) => <path key={arc.label} d={arc.path} fill={arc.color} />)}
         </svg>
         <ul className="garden-ui-legend">

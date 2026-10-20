@@ -1,4 +1,5 @@
 // Server component: the card for `garden file`. Only the 预览 control is a client island.
+import { ui, type UiLang } from "../../lib/i18n";
 import { blockFiles, fileMeta } from "../../../ui/garden/file-block.mjs";
 import { ActionGlyph, FileGlyph, safeFileHref } from "./file-icons";
 import { FilePreview, type PreviewFile } from "./FilePreview";
@@ -19,7 +20,8 @@ type FileEntry = {
 
 const PREVIEWS = new Set(["md", "html", "pdf"]);
 
-export function GardenFile({ props }: { props: Record<string, unknown> }) {
+export function GardenFile({ props, lang }: { props: Record<string, unknown>; lang?: UiLang }) {
+  const t = ui(lang);
   const block = blockFiles(props) as { layout?: string; title?: string; files: FileEntry[] };
   const files = block.files.filter((file) => safeFileHref(file.url));
   if (!files.length) return null;
@@ -29,7 +31,7 @@ export function GardenFile({ props }: { props: Record<string, unknown> }) {
       {group && block.title ? <div className="gf-title">{block.title}</div> : null}
       {files.map((file, index) => {
         const href = safeFileHref(file.url);
-        const name = file.name || file.title || "文件";
+        const name = file.name || file.title || t.file;
         const title = file.title || name;
         const meta = fileMeta(file);
         const previewSrc = file.preview === "md" ? safeFileHref(file.previewSrc) : "";
@@ -44,20 +46,20 @@ export function GardenFile({ props }: { props: Record<string, unknown> }) {
               {meta ? <div className="gf-meta">{meta}</div> : null}
             </div>
             <div className="gf-act">
-              {previewFile ? <FilePreview file={previewFile} compact={group} /> : null}
+              {previewFile ? <FilePreview file={previewFile} compact={group} lang={lang} /> : null}
               {file.remote ? (
-                <a className="gf-btn icon" href={href} target="_blank" rel="noopener noreferrer" aria-label={`在新标签页打开 ${name}`} title="在新标签页打开">
+                <a className="gf-btn icon" href={href} target="_blank" rel="noopener noreferrer" aria-label={t.openNamedInTab(name)} title={t.openInTab}>
                   <ActionGlyph name="external" />
                 </a>
               ) : null}
               {group ? (
-                <a className="gf-btn icon" href={href} download={file.remote ? undefined : name} aria-label={`下载 ${name}`} title="下载">
+                <a className="gf-btn icon" href={href} download={file.remote ? undefined : name} aria-label={t.downloadNamed(name)} title={t.download}>
                   <ActionGlyph name="download" />
                 </a>
               ) : (
-                <a className="gf-btn pri" href={href} download={file.remote ? undefined : name} aria-label={`下载 ${name}`}>
+                <a className="gf-btn pri" href={href} download={file.remote ? undefined : name} aria-label={t.downloadNamed(name)}>
                   <ActionGlyph name="download" />
-                  <span className="gf-lb">下载</span>
+                  <span className="gf-lb">{t.download}</span>
                 </a>
               )}
             </div>

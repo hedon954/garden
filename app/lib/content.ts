@@ -3,6 +3,8 @@ import {
   columns,
   gardenDocs,
   gardenIndexDoc,
+  gardenDocsEn,
+  gardenIndexDocEn,
   posts,
   thoughts,
   type ContentEntry,
@@ -19,8 +21,9 @@ import { unified } from "unified";
 import { visit } from "unist-util-visit";
 import { articleUsesHeadingNumbers, autoNumbersHeadings, splitHeadingNumber } from "./heading-number";
 import { siteHref } from "./site-href";
+import { ui } from "./i18n";
 
-export { columns, gardenDocs, gardenIndexDoc, posts, thoughts };
+export { columns, gardenDocs, gardenDocsEn, gardenIndexDoc, gardenIndexDocEn, posts, thoughts };
 export type { ContentEntry, GardenDocEntry, MediaItem };
 
 export const postHref = (post: Pick<ContentEntry, "path">) => siteHref(`/blog/${post.path}`);
@@ -45,7 +48,7 @@ export const formatDate = (value: string, withTime = false) => {
   const canonical = canonicalSiteDate(value) ?? value;
   const date = new Date(canonical);
   if (Number.isNaN(date.getTime())) return value;
-  return new Intl.DateTimeFormat("zh-CN", {
+  return new Intl.DateTimeFormat(ui().dateLocale, {
     timeZone: "Asia/Shanghai",
     year: "numeric",
     month: "2-digit",
@@ -134,6 +137,13 @@ export const findThought = (slug: string): ContentEntry | undefined =>
 
 export const findGardenDoc = (path: string): GardenDocEntry | undefined =>
   gardenDocs.find((doc) => doc.path === path);
+
+/** Handbook pages and the overview of one language. */
+export const handbookDocs = (lang: "zh" | "en") => (lang === "en" ? gardenDocsEn : gardenDocs);
+export const handbookIndexDoc = (lang: "zh" | "en") => (lang === "en" ? gardenIndexDocEn : gardenIndexDoc);
+/** Whether a handbook page (or "index") exists in a language. */
+export const hasHandbookPage = (lang: "zh" | "en", path: string) =>
+  path === "index" || path === "" ? Boolean(handbookIndexDoc(lang)) : handbookDocs(lang).some((doc) => doc.path === path);
 
 export const findColumnEntry = (
   column: string,

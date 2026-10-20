@@ -5,6 +5,7 @@ import { createBudget, evaluate } from "../core/expr.mjs";
 import { formatValue } from "../core/format.mjs";
 import { collectDecls, computeScope, defaultStateValues, lookupFrom } from "../core/state.mjs";
 import type { Env, Expr, Lookup, Prop, UiNode, UiPayload } from "./types";
+import { useRuntimeText } from "./lang";
 
 type Decls = ReturnType<typeof collectDecls>;
 
@@ -119,6 +120,7 @@ const safeHref = (href: string) => (/^(?:https:\/\/|\.{0,2}\/|#)/u.test(href) ||
 
 export function RenderNode({ node, env }: { node: UiNode; env: Env }): ReactNode {
   const runtime = useRuntime();
+  const tx = useRuntimeText();
   switch (node.t) {
     case "text":
       return node.v ?? "";
@@ -173,7 +175,7 @@ export function RenderNode({ node, env }: { node: UiNode; env: Env }): ReactNode
         );
       }
       const component = node.n ? registry.get(node.n) : undefined;
-      if (!component) return <span className="garden-ui-unknown">预览需要更新 Garden 插件（不认识 &lt;{node.n}&gt;）</span>;
+      if (!component) return <span className="garden-ui-unknown">{tx.unknownComponent(String(node.n))}</span>;
       // Registry entries are module-level functions, so their identity is stable across renders.
       return createElement(component, { node, env });
     }

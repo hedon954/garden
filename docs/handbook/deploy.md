@@ -3,7 +3,7 @@ title: 发布到 GitHub Pages
 navTitle: 发布到 GitHub Pages
 description: 配置 GitHub Actions 工作流，支持单个公开仓库或「私有源码仓库 + 公开页面仓库」两种发布方式。
 section: getting-started
-order: 3
+order: 4
 ---
 
 `npx hd-garden init` 不会自动创建 `.github/workflows/pages.yml`。发布到 GitHub Pages 时，在站点仓库新建这个文件。同一份工作流同时支持**单个公开仓库**和**私有源码仓库 + 公开页面仓库**两种模式，按 `PAGES_REPOSITORY` 变量是否为空自动切换。

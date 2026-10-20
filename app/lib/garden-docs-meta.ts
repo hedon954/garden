@@ -4,19 +4,72 @@ export type GardenDocNavItem = {
   description?: string;
   section?: string;
   order?: number;
+  navTitle?: string;
 };
+
+export type HandbookLang = "zh" | "en";
 
 export type HandbookSectionMeta = {
   id: string;
   title: string;
-  note?: string;
+  /** English sidebar group heading; falls back to the Chinese one until translated. */
+  titleEn?: string;
 };
 
+/** Where each language of the handbook lives. English mirrors the Chinese paths. */
+export const handbookBase = (lang: HandbookLang) => (lang === "en" ? "/garden/en" : "/garden");
+export const handbookPath = (lang: HandbookLang, docPath = "") =>
+  docPath && docPath !== "index" ? `${handbookBase(lang)}/${docPath}` : handbookBase(lang);
+export const sectionTitle = (section: HandbookSectionMeta | undefined, lang: HandbookLang) =>
+  section ? (lang === "en" ? section.titleEn ?? section.title : section.title) : undefined;
+/** The handbook remembers the reader's choice under this localStorage key. */
+export const HANDBOOK_LANG_KEY = "garden-handbook-lang";
+
+/** Handbook chrome labels. Page text lives in docs/handbook and docs/handbook/en. */
+export const HANDBOOK_UI = {
+  zh: {
+    name: "Garden 使用说明",
+    overview: "总览",
+    overviewHint: "总览与快速入口",
+    guide: "指南",
+    pager: "说明书上下篇导航",
+    prev: "上一篇",
+    next: "下一篇",
+    backToOverview: "返回总览",
+    overviewDocTitle: "Garden 使用说明首页",
+    toc: "本页目录",
+    sidebar: "Garden 使用说明目录",
+    chapters: "章节导航",
+    closeSidebar: "关闭说明目录",
+    openSidebar: "打开说明目录",
+    sidebarShort: "说明目录",
+    mobileBar: "说明书目录栏",
+  },
+  en: {
+    name: "Garden Handbook",
+    overview: "Overview",
+    overviewHint: "Overview and quick links",
+    guide: "Guide",
+    pager: "Handbook pages",
+    prev: "Previous",
+    next: "Next",
+    backToOverview: "Back to overview",
+    overviewDocTitle: "Garden Handbook home",
+    toc: "On this page",
+    sidebar: "Garden Handbook contents",
+    chapters: "Chapters",
+    closeSidebar: "Close contents",
+    openSidebar: "Open contents",
+    sidebarShort: "Contents",
+    mobileBar: "Handbook contents bar",
+  },
+} as const;
+
 export const HANDBOOK_SECTIONS: HandbookSectionMeta[] = [
-  { id: "getting-started", title: "快速上手", note: "建站、配置与发布" },
-  { id: "writing-and-reading", title: "写作与排版", note: "Markdown 与阅读版面" },
-  { id: "components", title: "内置组件", note: "garden <name>" },
-  { id: "workflow", title: "检查与补全", note: "语法检查与编辑器片段" },
+  { id: "getting-started", title: "快速上手", titleEn: "Getting Started" },
+  { id: "writing-and-reading", title: "写作与排版", titleEn: "Writing & Layout" },
+  { id: "components", title: "内置组件", titleEn: "Built-in Components" },
+  { id: "workflow", title: "检查与补全", titleEn: "Checks & Shortcuts" },
 ];
 
 export const COMPONENT_BADGE: Record<string, string> = {
@@ -33,6 +86,7 @@ export const COMPONENT_BADGE: Record<string, string> = {
 
 export const NAV_SHORT_TITLE: Record<string, string> = {
   start: "快速开始",
+  "ai-writing": "用 AI 写作",
   config: "站点与专栏配置",
   deploy: "发布到 GitHub Pages",
   writing: "写文章与随想",
@@ -79,5 +133,6 @@ export function toHandbookNavItems(docs: GardenDocNavItem[]): GardenDocNavItem[]
     description: doc.description,
     section: doc.section,
     order: doc.order,
+    ...(doc.navTitle ? { navTitle: doc.navTitle } : {}),
   }));
 }

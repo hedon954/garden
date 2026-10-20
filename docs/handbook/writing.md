@@ -46,14 +46,14 @@ references:
 | `original` | 否 | 完整链接 | 原文链接，设置后在标题下方元信息栏显示 `原文 ↗` |
 | `references` | 否 | `{ title, url? }[]` | 文末参考资料列表，构建期自动提取域名并渲染在正文底部的「参考」卡片中 |
 
+文章页底部，在「来自开放网络的回应」和评论之间，有「上一篇」「下一篇」两个按钮。长文只和长文排，按 `date` 先后，上一篇是更早的那篇；专栏文章按专栏里的顺序排；最早或最新的一篇只显示一侧。
+
 > [!CAUTION]
 > 不要在 Front Matter 里手写 `slug` 字段（`npx garden check` 会报 `unexpected-slug` 错误：`不要写 slug，文件名就是标识`）。文章也没有 `topic` 分类字段。
 
 ## 2. 代码块与「代码 / 对比上一版」切换
 
-普通代码块在右上角带有语言名称（如 `RUST`、`TS`、`PYTHON`、`SHELL`）和复制按钮。
-
-如果你想展示某段代码修改前后的对比，**先放一段完整代码块，紧接着放一段 `diff` 代码块**。渲染器会自动把它们合并成一个带 **「代码」** 和 **「对比上一版」** 两个切换按钮的代码框：
+普通代码块在右上角带有语言名称（如 `RUST`、`TS`、`PYTHON`、`SHELL`）和复制按钮。想展示一段代码和上一版相比改了什么，先放改好的完整代码，再紧跟着写一个 `garden` 想法块，用一句话写出改动内容：
 
 ````markdown
 ```go
@@ -62,15 +62,12 @@ func openStore(path string) (*Store, error) {
 }
 ```
 
-```diff
- func openStore(path string) (*Store, error) {
--	return openWithMode(path, ModeJournal)
-+	return openWithMode(path, ModeWAL)
- }
+```garden
+和上一版比：打开存储时的模式从 ModeJournal 改成了 ModeWAL。
 ```
 ````
 
-实际渲染效果如下（点击右上角的 **「代码」** 与 **「对比上一版」** 可以切换，点击复制按钮始终复制前面的完整代码）：
+Agent 按 `garden-ui` skill 会通过 `npx garden ui apply` 把这段想法替换成紧挨着完整代码的 `diff` 围栏（详见 [用 AI 写作](/garden/ai-writing)）。页面渲染时会把这两段合成一个可切换 **「代码」** 和 **「对比上一版」** 的代码框，右上角的复制按钮始终复制新版完整代码：
 
 ```go
 func openStore(path string) (*Store, error) {
@@ -85,8 +82,19 @@ func openStore(path string) (*Store, error) {
  }
 ```
 
+**手写格式**：如果不使用 Agent，也可以直接在完整代码块正下方手写一段 `diff` 代码块（两段之间只隔空行）：
+
+````markdown
+```diff
+ func openStore(path string) (*Store, error) {
+-	return openWithMode(path, ModeJournal)
++	return openWithMode(path, ModeWAL)
+ }
+```
+````
+
 > [!IMPORTANT]
-> `diff` 代码块前面必须紧挨着一段完整代码块（中间只能隔空行）；如果单独放一段 `diff` 而前面没有完整代码块，`npx garden check` 会报 `diff-orphan` 错误。
+> `diff` 代码块必须紧跟在一段完整代码块后面；如果单独写一段 `diff` 而前面没有完整代码，`npx garden check` 会报 `diff-orphan` 错误。
 
 ## 3. 中文加粗、荧光笔高亮与提示框
 

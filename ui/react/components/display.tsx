@@ -5,6 +5,7 @@ import { TONE_LABELS, TONES } from "../../core/catalog.mjs";
 import { formatValue } from "../../core/format.mjs";
 import { asNumber, asString, expandChildren, propValue, registerComponents, RenderNodes, rowValue, useRuntime, type Runtime } from "../runtime";
 import type { Env, UiNode } from "../types";
+import { useRuntimeText } from "../lang";
 
 const isPlainObject = (value: unknown): value is Record<string, unknown> =>
   Boolean(value) && typeof value === "object" && !Array.isArray(value);
@@ -32,6 +33,7 @@ function Stat({ node, env }: { node: UiNode; env: Env }) {
 
 function Meter({ node, env }: { node: UiNode; env: Env }) {
   const runtime = useRuntime();
+  const tx = useRuntimeText();
   const format = propValue(runtime, node, "format", env) as string | undefined;
   const max = asNumber(propValue(runtime, node, "max", env)) ?? 0;
   const rawParts = propValue(runtime, node, "parts", env);
@@ -49,7 +51,7 @@ function Meter({ node, env }: { node: UiNode; env: Env }) {
         <span>{label !== undefined ? asString(label) : ""}</span>
         <span>
           {formatValue(total, format)} / {formatValue(max, format)}
-          {over ? <strong>{` 超出 ${formatValue(total - max, format)}`}</strong> : null}
+          {over ? <strong>{tx.over(formatValue(total - max, format))}</strong> : null}
         </span>
       </div>
       <div className="garden-ui-meter-track" role="meter" aria-valuemin={0} aria-valuemax={max} aria-valuenow={total} aria-label={label !== undefined ? asString(label) : undefined}>
@@ -177,6 +179,7 @@ function Table({ node, env }: { node: UiNode; env: Env }) {
 
 function Grid({ node, env }: { node: UiNode; env: Env }) {
   const runtime = useRuntime();
+  const tx = useRuntimeText();
   const colsValue = propValue(runtime, node, "cols", env);
   const cols = (Array.isArray(colsValue) ? colsValue : []).map((col) => asString(col));
   const legendValue = propValue(runtime, node, "legend", env);
@@ -195,7 +198,7 @@ function Grid({ node, env }: { node: UiNode; env: Env }) {
   };
   const current = selected ? rows[selected.row] : null;
   const note = current && selected
-    ? `${current.label ?? `第 ${selected.row + 1} 行`} · ${cols[selected.col] ?? ""}：${current.notes[selected.col] || formatValue(current.cells[selected.col])}`
+    ? tx.cellNote(current.label ?? tx.rowN(selected.row + 1), cols[selected.col] ?? "", current.notes[selected.col] || formatValue(current.cells[selected.col]))
     : "";
   return (
     <div className="garden-ui-grid-wrap">
@@ -241,7 +244,7 @@ function Grid({ node, env }: { node: UiNode; env: Env }) {
           ))}
         </tbody>
       </table>
-      <p className="garden-ui-note" id={`${baseId}-note`} aria-live="polite">{note || "点一格看说明。"}</p>
+      <p className="garden-ui-note" id={`${baseId}-note`} aria-live="polite">{note || tx.tapCell}</p>
       {usedTones.length ? (
         <ul className="garden-ui-legend">
           {usedTones.map((tone) => (
