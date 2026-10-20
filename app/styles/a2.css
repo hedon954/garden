@@ -2397,7 +2397,7 @@ html[data-theme="dark"] .gf-scrim { background: rgb(0 0 0 / 45%); }
 .g-rel-node { cursor: pointer; }
 .g-rel-node:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
 .g-rel-node[aria-expanded="true"] { border-color: var(--ink); }
-.markdown-body .g-rel-t, .markdown-body .g-rel-x { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; text-overflow: ellipsis; overflow-wrap: anywhere; }
+.markdown-body .g-rel-t, .markdown-body .g-rel-x { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; text-overflow: ellipsis; overflow-wrap: normal; word-break: normal; hyphens: manual; text-align: center; }
 .markdown-body .g-rel-x { -webkit-line-clamp: 3; }
 .g-rel[data-compact] .g-rel-node { padding: 8px 8px; border-radius: 12px; }
 .markdown-body .g-rel[data-compact] .g-rel-t {
@@ -2407,8 +2407,14 @@ html[data-theme="dark"] .gf-scrim { background: rgb(0 0 0 / 45%); }
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
   overflow: hidden;
-  overflow-wrap: anywhere;
+  overflow-wrap: normal;
 }
+/* The middle node of a narrow hub shows its title only; tap for the description. */
+.g-rel[data-compact] .g-rel-node[data-center] .g-rel-x { display: none; }
+.g-rel[data-compact] .g-rel-node[data-center] { padding-left: 3px; padding-right: 3px; }
+.markdown-body .g-rel[data-compact] .g-rel-node[data-center] .g-rel-t { font-size: 13px; }
+/* A wide hub has five or six nodes on one ring: titles at 16px keep two lines without crowding the spokes. */
+.markdown-body .g-rel:not([data-compact]) .g-rel-ring[data-center] .g-rel-t { font-size: 16px; }
 .markdown-body .g-rel[data-compact] .g-rel-x { margin-top: 2px; font-size: 13px; line-height: 1.35; -webkit-line-clamp: 2; }
 .g-rel-badge {
   display: inline-grid;
