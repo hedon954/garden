@@ -12,6 +12,33 @@
 - 保留作者自己的 mermaid。全局概览图保持一整张，不要拆开。
 - 正文已经读得清楚时，不要再套一个组件。
 
+## 静态 garden 组件字段与校验规则
+
+除 `interactive` 外，其余 11 个 `garden <name>` 组件都用 YAML 书写：
+
+- `garden card`：
+  - 单卡模式：支持 `title`、`url`、`meta`、`description`、`points`（字符串数组）、`image`、`alt`、`source`、`takeaway`（与 `description` / `points` / `cards` 择一）。
+  - 多卡模式（`cards:` 数组）：每项支持 `url`、`title`、`description`、`image`、`alt`、`meta`、`source`、`takeaway`（如 `"**可借鉴：** ……"`）。
+  - `source` 支持单个链接或链接数组；单个来源显示去掉 `www.` 的域名，多个来源自动折叠为第一个域名加 `+N`（如 `gutenberg.org +1`）。构建期下载到的 Favicon 优先于手写的 `icon`；都没有时取可注册域名主体的首字母大写（如 `en.wikipedia.org` -> `W`，`bbc.co.uk` -> `B`）。
+  - 正文行内链接末尾紧跟 `{source}`（如 `[wikipedia.org](https://en.wikipedia.org/wiki/Book_discussion_club){source}`）渲染为不带 `↗` 的行内来源胶囊。
+- `garden stat`：`items` 数组（2～4 项），每项必填 `label` 与 `value`，可选 `unit`、`caption`、`text`、`source`。
+- `garden compare`：`items` 数组（至少 2 项），每项含 `title`、`text`。
+  - 并排模式：每格文字不超过约 60 字，超出报 `compare-long` 错误；额外键值渲染为底部属性标签。
+  - 正反对照模式：给条目加 `verdict: bad` 或 `verdict: good`，改为上下堆叠并显示红叉或绿勾，不受 60 字 `compare-long` 限制。
+- `garden timeline`：可选 `title`，必填 `items` 数组（至少 2 项，每项含可选 `date`、必填 `title`、可选 `text`、`source`）。
+- `garden chart`：可选 `title`、`unit`、`xLabel`、`yLabel`、`caption`，必填 `data`（`{ x, y, label? }[]`，至少 2 项）或 `series`。自带可展开数据表，同节不要重复手写相同数据的 Markdown 表。
+- `garden figure`：`svg`（内联 `<svg>`，在可切换元素上标 `data-p="<id>"`）或 `image` 二选一，配 `parts`（`{ id, label, text }[]`）与可选 `caption`。
+- `garden html`：`src`（同名子目录下的本地 `.html`）或 `code` 二选一，配 `title`、可选 `height`、`caption`。
+- `garden file`：单文件填 `src`（可选 `title`、`note`），多文件填 `files` 数组（每项含 `src`、可选 `title`、`note`）。本地路径相对当前 Markdown 且不能越出 `content/`（否则报 `file-outside`），单文件超过 `5 MB` 报 `file-large` 警告；不要手写 `resolved`（报 `garden-file`）。
+- `garden relations`：可选 `title`、`caption`，必填 `items`（3～6 项，每项含 `title`、`text`，节点无强调色选项），在 `items` 与 `links` 之间可选 `center: <序号|标题>`，可选 `links` 数组。
+  - `center`：把指定要素（1..N 序号或节点 `title`）放在正中，其余要素从正上方起顺时针均布在外圈；不做自动识别，写了不存在的 `center` 会使构建与检查失败（报 `garden-relations`）。
+  - `links` 每项必填 `from`、`to`（1..N 序号或节点 `title`，不能相同），可选 `style: solid | dashed`、`direction: one | both`、`label`。
+  - 首尾相接的循环把每一步写成一条 `link`（`1->2`、`2->3`、`3->4`、`4->1`）。窄屏（`<= 560px`）下不画圆环与 SVG 连线，改为单列卡片；连线上的 `label` 不会丢掉，而是从连线移入每张卡片下方的关系行（如「`→ 场地 限制`」「`⇠⇢ 书单 提名`」）。
+  - 要素不在 3～6 个之间、`center` 找不到对应要素或 `links` 不合法时报 `garden-relations` 错误（要素更多或有分支改用 ```mermaid 流程图，只走一遍的步骤用 `garden list`）。
+- `garden list`：可选 `title`、`caption`，必填 `items` 数组（每项含 `icon`、可选 `title`、`text` 字符串或字符串数组）。全不带 `title` 时为紧凑图标列表；任一项带 `title` 时为带分隔线的步骤列表。
+  - 可用 `icon` 名（23 个）：`search`、`eye`、`heart`、`chat`、`shield`、`wallet`、`bell`、`check`、`x`、`star`、`flag`、`clock`、`idea`、`book`、`link`、`user`、`chart`、`gear`、`file`、`pin`、`flask`、`target`、`question`。
+- `garden choice`：可选 `title`、`caption`，必填 `items` 数组（2～3 项，每项含 `icon`、`value`、`text`、`label`、`reply`），可选 `none: { label, reply }`（在卡片下方渲染为单行兜底文字按钮）。整组支持键盘方向键切换，窄屏下卡片单列纵向堆叠。
+
 interactive 的正文仍用下面的组件和属性。那是 interactive 的内部零件，不是文章里的名字。
 
 # 把作者的意图写成 Garden 的 interactive 块

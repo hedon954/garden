@@ -1,13 +1,11 @@
 ---
 title: 分区结构图（figure）
 navTitle: 分区结构图
-description: 为 SVG 结构图加上分区高亮按钮，点击切换对应区域与文字说明。
+description: 一张带切换按钮的结构图，点到哪个部分就高亮并显示对应说明。
 section: components
 order: 36
 badge: figure
 ---
-
-在 `garden` 想法块里写一句「用 `figure` 画一张静态发布流程的结构图，点到哪一步就高亮并显示那一步的说明」，Agent 会按 `garden-ui` skill 生成下面的 `garden figure`（手写格式附后）。
 
 ```garden figure
 caption: 点击上方按钮切换高亮各步骤
@@ -28,45 +26,22 @@ svg: |
 parts:
   - id: sync
     label: 1. 同步内容
-    text: 扫描 `content/` 与 `docs/handbook/`，复制随文附件并生成 `.garden/generated-content.ts`。
+    text: 扫描正文与随文附件，生成站点内容数据。
   - id: build
     label: 2. 构建页面
-    text: 根据 `STATIC_EXPORT=1` 预渲染所有页面路由，输出 RSS、sitemap 与全文搜索文件。
+    text: 预渲染所有页面路由，输出 RSS、sitemap 与全文搜索文件。
   - id: validate
     label: 3. 导出校验
-    text: 运行 pages:validate，确认导出目录里有 `index.html`，且没有 `.env`、源码目录、`.map` 或 `.md` 文件和软链接。
+    text: 确认导出目录里有 `index.html`，且没有混入源码或配置文件。
 ```
 
+可以这样对 AI 说：
+
 ````markdown
-```garden figure
-caption: 点击上方按钮切换高亮各步骤
-svg: |
-  <svg viewBox="0 0 680 110" xmlns="http://www.w3.org/2000/svg" font-family="var(--sans)">
-    <rect data-p="sync" x="12" y="18" width="196" height="74" rx="10" fill="var(--card)" stroke="var(--rule-strong)" stroke-width="1.5"/>
-    <text data-p="sync" x="110" y="50" text-anchor="middle" font-size="14" font-weight="600" fill="var(--ink)">1. garden sync</text>
-    <text data-p="sync" x="110" y="72" text-anchor="middle" font-size="12" fill="var(--muted)">解析 Markdown 与图片尺寸</text>
-    <rect data-p="build" x="242" y="18" width="196" height="74" rx="10" fill="var(--card)" stroke="var(--rule-strong)" stroke-width="1.5"/>
-    <rect data-p="validate" x="472" y="18" width="196" height="74" rx="10" fill="var(--card)" stroke="var(--rule-strong)" stroke-width="1.5"/>
-  </svg>
-parts:
-  - id: sync
-    label: 1. 同步内容
-    text: 扫描 `content/` 与 `docs/handbook/`，复制随文附件并生成 `.garden/generated-content.ts`。
-  - id: build
-    label: 2. 构建页面
-    text: 根据 `STATIC_EXPORT=1` 预渲染所有页面路由，输出 RSS、sitemap 与全文搜索文件。
-  - id: validate
-    label: 3. 导出校验
-    text: 运行 pages:validate，确认导出目录里有 `index.html`，且没有 `.env`、源码目录、`.map` 或 `.md` 文件和软链接。
+```garden
+画一张静态发布流程的结构图，点到哪一步就高亮那一步并显示说明。
 ```
 ````
 
-- **用**：展示模块架构或数据流向，需要读者点击按钮逐块查看对应区域职责时（SVG 内优先使用 `var(--well)`、`var(--ink)`、`var(--muted)` 等主题变量以兼容深色模式）。
-- **别用**：不需要分区点击说明的普通流程图或截图，直接用标准 Markdown 图片或 `mermaid` 代码块。
-
-| 字段 | 必填 | 类型 | 说明 |
-| :--- | :--- | :--- | :--- |
-| `svg` | 与 `image` 二选一 | 多行字符串 | 内联 `<svg>` 源码；在需要高亮的分组上标注 `data-p="<id>"` |
-| `image` | 与 `svg` 二选一 | 路径字符串 | 普通图片路径（可写成 `{ src, alt }`） |
-| `parts` | 否 | `{ id, label, text }[]` | 顶部分区切换按钮及底部对应的说明文字 |
-| `caption` | 否 | 字符串 | 图框下方的图注说明 |
+- **什么时候用**：一张架构图或数据流图，读者点一个区域就能看清那一部分做什么。
+- **什么时候不用**：不需要分区点击说明的普通流程图或截图，直接贴图片或画 Mermaid 图。

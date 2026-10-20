@@ -1,13 +1,11 @@
 ---
 title: 嵌入网页片段（html）
 navTitle: 嵌入网页片段
-description: 在沙盒 iframe 中运行独立的 HTML、CSS 与 JavaScript 演示片段。
+description: 在沙盒中运行一段独立的网页小工具、画布动画或演示。
 section: components
 order: 37
 badge: html
 ---
-
-在 `garden` 想法块里写一句「用 `html` 嵌一个小工具，输入文字就实时算出字符数」，Agent 会按 `garden-ui` skill 生成下面的 `garden html`（手写格式附后）。
 
 ```garden html
 title: 字符长度与预计阅读耗时小工具
@@ -36,34 +34,13 @@ code: |
   </html>
 ```
 
+可以这样对 AI 说：
+
 ````markdown
-```garden html
-title: 字符长度与预计阅读耗时小工具
-height: 156
-code: |
-  <!doctype html>
-  <html lang="zh-CN">
-  <head><meta charset="utf-8" /></head>
-  <body>
-    <input id="txt" value="把文章放在自己的 Git 仓库里，推送后自动构建。" />
-    <div>当前字符数：<strong id="count">23</strong> 字</div>
-    <script>
-      const input = document.getElementById("txt");
-      const count = document.getElementById("count");
-      input.addEventListener("input", () => { count.textContent = String(input.value.length); });
-    </script>
-  </body>
-  </html>
+```garden
+做一个网页小工具，让读者输入一句话就能实时看到字符数。
 ```
 ````
 
-- **用**：需要运行自定义 DOM 脚本、Canvas 绘图或独立 HTML 页面片段时（支持 `code` 内联或 `src` 引用文章同名目录下的 `.html` 文件）。
-- **别用**：只需要滑杆调参数算公式时用 [`interactive`](/garden/components/interactive)；静态结构图用 [`figure`](/garden/components/figure)。
-
-| 字段 | 必填 | 类型 | 说明 |
-| :--- | :--- | :--- | :--- |
-| `src` | 与 `code` 二选一 | 相对路径字符串 | 引用与当前 Markdown 同目录（或同名子目录）下的 `.html` 文件 |
-| `code` | 与 `src` 二选一 | 多行字符串 | 直接内联编写的 HTML 源码（也可用别名 `html`） |
-| `title` | 建议 | 字符串 | 卡片顶部栏标题及 `iframe` 的无障碍标题 |
-| `height` | 否 | 数字 | 初始高度（像素，默认 `260`；加载后也会随内容高度自动调整） |
-| `caption` | 否 | 字符串 | 底部的图注说明 |
+- **什么时候用**：内置组件画不出来的画布动画、物理模拟或独立小工具。
+- **什么时候不用**：只需要拖动滑杆算公式时用[可调公式与参数](/garden/components/interactive)；静态图表或结构图优先用对应组件。

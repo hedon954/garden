@@ -1,34 +1,25 @@
 ---
 title: 文件下载与预览（file）
 navTitle: 文件下载与预览
-description: 提供单个或一组附件下载，自动显示格式与大小，支持在页内展开预览。
+description: 给读者提供一份或一组可下载的文件，支持在当前页展开预览。
 section: components
 order: 39
 badge: file
 ---
 
-在 `garden` 想法块里写一句「用 `file` 给读者一份可以下载和页内预览的发布前检查清单」，Agent 会按 `garden-ui` skill 生成下面的 `garden file`（手写格式附后）。
-
 ```garden file
 src: ./file/checklist.md
 title: 发布前检查清单
 note: Markdown 附件示例，可点击「预览」在当前页展开阅读，或直接下载原文件
 ```
 
+可以这样对 AI 说：
+
 ````markdown
-```garden file
-src: ./file/checklist.md
-title: 发布前检查清单
-note: Markdown 附件示例，可点击「预览」在当前页展开阅读，或直接下载原文件
+```garden
+把同目录下的 checklist.md 放成附件，让读者可以在页面里预览或下载。
 ```
 ````
 
-- **用**：随文章提供配置文件、数据表、PDF、图片或 Markdown 附件供读者下载与页内预览时（多文件可用 `files` 数组）。
-- **别用**：正文里本来就要直接展示的配图用标准 Markdown 图片语法 `![]()`，不要放进 `file` 组件。
-
-| 字段 | 必填 | 类型 | 说明 |
-| :--- | :--- | :--- | :--- |
-| `src` | 单文件必填 | 路径或完整链接 | 相对当前 Markdown 文件的本地路径（不得越出 `content/`）、`/public` 路径或 `https://` 链接 |
-| `title` | 否 | 字符串 | 显示的文件标题（默认取文件名；多文件模式下作为分组标题） |
-| `note` | 否 | 字符串 | 文件名下方的简短说明 |
-| `files` | 多文件必填 | `{ src, title?, note? }[]` | 一次列出多个文件时使用（与顶层 `src` 二选一） |
+- **什么时候用**：随文章提供配置文件、PDF、压缩包或 Markdown 附件供读者下载与页内预览。
+- **什么时候不用**：只是引用一个外部网页时用[知识卡片](/garden/components/card)；正文里本来就要直接展示的配图直接贴图片。
