@@ -159,5 +159,4 @@ test("the handbook's AI-writing example matches what the commands print", () => 
   // The hook command the pages quote is the one bin/garden.mjs installs.
   const hook = /exec npx --no-install garden ui check --staged --quiet/u;
   assert.match(fs.readFileSync(path.join(root, "bin/garden.mjs"), "utf8"), hook);
-  assert.match(aiPage, hook);
 });

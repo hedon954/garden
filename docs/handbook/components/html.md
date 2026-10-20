@@ -7,7 +7,7 @@ order: 37
 badge: html
 ---
 
-不用记下面的写法：在 `garden` 想法块里写一句「嵌一个小工具，输入字数就算出预计阅读时间」，Agent 会按 `garden-ui` skill 生成这样的 `garden html`。手写格式放在后面，供核对。
+TODO(copy:component-html-opener)
 
 ```garden html
 title: 字符长度与预计阅读耗时小工具

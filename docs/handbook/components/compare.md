@@ -7,27 +7,23 @@ order: 33
 badge: compare
 ---
 
-不用记下面的写法：在 `garden` 想法块里写一句「并排比较用一句话描述代码改动和手写 diff 两种做法」，Agent 会按 `garden-ui` skill 生成这样的 `garden compare`。手写格式放在后面，供核对。
+TODO(copy:component-compare-opener)
 
 ```garden compare
 items:
-  - title: 写一句话说明改了什么
-    text: 想法块紧跟在完整代码下面，garden-ui 把它换成 diff，页面合成「代码 / 对比上一版」。
-    要记格式: 不用
-  - title: 手写 diff
-    text: 完整代码下面紧跟一段 diff；前面没有完整代码时，garden check 报 diff-orphan。
-    要记格式: 要
+  - title: TODO(copy:compare-a-title)
+    text: TODO(copy:compare-a-text)
+  - title: TODO(copy:compare-b-title)
+    text: TODO(copy:compare-b-text)
 ```
 
 ````markdown
 ```garden compare
 items:
-  - title: 写一句话说明改了什么
-    text: 想法块紧跟在完整代码下面，garden-ui 把它换成 diff，页面合成「代码 / 对比上一版」。
-    要记格式: 不用
-  - title: 手写 diff
-    text: 完整代码下面紧跟一段 diff；前面没有完整代码时，garden check 报 diff-orphan。
-    要记格式: 要
+  - title: TODO(copy:compare-a-title)
+    text: TODO(copy:compare-a-text)
+  - title: TODO(copy:compare-b-title)
+    text: TODO(copy:compare-b-text)
 ```
 ````
 

@@ -5,15 +5,15 @@ section: overview
 order: 0
 ---
 
-Garden 是一个 Claude 风格的博客框架：文章用 Markdown 写，图表、指标、交互这些组件不用记语法，写一句话说清想要什么，交给 Agent 生成。
+TODO(copy:overview-lead)
 
-## 一个完整的例子
+## TODO(copy:overview-example-title)
 
-下面四步是同一篇稿子的真实过程，命令输出都是实际运行的结果。
+TODO(copy:overview-example-intro)
 
-### 1. 作者：写一句话
+### 1. TODO(copy:overview-step1-title)
 
-在想放交互的地方写一个不带名字的 `garden` 围栏，里面只写想让读者做什么、看到什么：
+TODO(copy:overview-step1-text)
 
 ````markdown
 ## 写作节奏
@@ -23,9 +23,9 @@ Garden 是一个 Claude 风格的博客框架：文章用 Markdown 写，图表�
 ```
 ````
 
-### 2. Agent：拉出待转换的块，按 skill 转换
+### 2. TODO(copy:overview-step2-title)
 
-对 Agent 说「编译这篇：content/posts/writing-pace.md」。它按站点里的 `garden-ui` skill 先运行 `npx garden ui scan`，拿到这一块的位置、原话和哈希（输出节选）：
+TODO(copy:overview-step2-scan-text)
 
 ```console
 $ npx garden ui scan content/posts/writing-pace.md
@@ -45,16 +45,16 @@ $ npx garden ui scan content/posts/writing-pace.md
 }
 ```
 
-再读 `npx garden ui prompt` 里的组件目录，写出 `garden interactive`，用 `npx garden ui apply` 只替换这一块，围栏外的文字一个字节都不动：
+TODO(copy:overview-step2-apply-text)
 
 ```console
 $ npx garden ui apply content/posts/writing-pace.md --intent-hash cb3a3569 --file new.md
 {"ok":true,"file":"content/posts/writing-pace.md","kind":"garden","line":9}
 ```
 
-### 3. 提交：同一个脚本再查一遍
+### 3. TODO(copy:overview-step3-title)
 
-`garden sync` 或 `garden dev` 第一次运行时会装好提交前钩子，它运行的是 `npx --no-install garden ui check --staged --quiet`，和 Agent 自查用的是同一条命令。如果作者在第 2 步之前就提交，钩子会拦下来，并打印一段可以直接发给 AI 的提示词：
+TODO(copy:overview-step3-hook-text)
 
 ```console
 $ git commit -m "写作节奏"
@@ -76,11 +76,11 @@ content/posts/writing-pace.md:9  -  garden-idea  还有没编译的想法
 已写入 .garden/ui-fix-prompt.md。确实要先提交，可以用 git commit --no-verify。
 ```
 
-提示词同时写进 `.garden/ui-fix-prompt.md`，能用剪贴板时也会自动复制。把它贴给 Agent，它就回到第 2 步。转换完再提交，钩子不再输出任何内容，提交照常完成。
+TODO(copy:overview-step3-after-text)
 
-### 4. 结果
+### 4. TODO(copy:overview-step4-title)
 
-第 2 步写回的块在页面上是这样，可以直接拖：
+TODO(copy:overview-step4-text)
 
 ```garden interactive #writing-pace
 caption: 每天多写几百字，比每周多写一天更快。
@@ -98,9 +98,9 @@ intent: |
 ```
 
 > [!IMPORTANT] 人和 Agent 用同一套工具
-> 作者提交时跑的检查、Agent 找块用的扫描、写回用的命令，都是 `garden ui` 下的同一组子命令。检查不通过时给出的提示词，正好是 Agent 下一步要做的事。详见 [用 AI 写作](/garden/ai-writing)。
+> TODO(copy:overview-highlight-body)。链接到 [用 AI 写作](/garden/ai-writing)。
 
-下面几节是不用 Agent 也会自动生效的排版。
+TODO(copy:overview-example-outro)
 
 ## 标题分行与 `740px` 正文列
 
@@ -122,7 +122,7 @@ intent: |
 
 ## 代码块与「对比上一版」切换
 
-在改好的完整代码下面写一句话说明改了什么，Agent 会生成一段 `diff`；也可以自己写。完整代码和 `diff` 紧挨着时，页面会把它们合成一个可以切换「代码」和「对比上一版」的代码框，复制按钮复制的总是新版完整代码。
+TODO(copy:overview-diff-text)
 
 ```yaml
 pages:

@@ -7,7 +7,7 @@ order: 39
 badge: file
 ---
 
-不用记下面的写法：在 `garden` 想法块里写一句「给读者一份可以下载的检查清单」，Agent 会按 `garden-ui` skill 生成这样的 `garden file`。手写格式放在后面，供核对。
+TODO(copy:component-file-opener)
 
 ```garden file
 src: ./file/checklist.md

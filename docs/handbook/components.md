@@ -6,7 +6,7 @@ section: components
 order: 30
 ---
 
-这些组件都可以用一句话描述，交给 Agent 生成，做法见 [用 AI 写作](/garden/ai-writing)。手写时用 ```` ```garden <name> ```` 代码块插入，组件名都是英文，参数用 YAML 写（`interactive` 在 `---` 下方写声明式标签）。
+TODO(copy:components-intro)
 
 ## 9 个组件速查表
 

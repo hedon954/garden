@@ -7,7 +7,7 @@ order: 38
 badge: interactive
 ---
 
-不用记下面的写法：在 `garden` 想法块里写一句「让读者拖动字数、阅读速度和配图数，看预计阅读时间怎么变」，Agent 会按 `garden-ui` skill 生成这样的 `garden interactive`。手写格式放在后面，供核对。
+TODO(copy:component-interactive-opener)
 
 ```garden interactive #reading-time
 caption: 示例：按字数、阅读速度和配图数估算一篇文章的阅读时间。数字只用来演示组件，不是统计结果。
