@@ -71,8 +71,16 @@ export const ALLOWED_NON_ENV_UPPER_SNAKE = {
  * Explicit allowlist of CJK characters permitted on English handbook pages:
  * - "中": the "中 / EN" language switcher in the header
  * - "丨" / "｜": the two-line title split delimiter character where explained in prose
+ * - figureAllKeyword: the literal config value `"全部"` ONLY in
+ *   docs/handbook/en/components/figure.md on the `parts[].id` field row
  */
 export const ALLOWED_EN_HANDBOOK_CJK = {
   switcher: "中",
   titleSplitChars: new Set(["丨", "｜"]),
+  figureAllKeyword: {
+    file: "docs/handbook/en/components/figure.md",
+    routePattern: /(?:^|\/)garden\/en\/components\/figure(?:\/index\.html|\/)?$/u,
+    linePattern: /^\|\s*`parts\[\]\.id`\s*\|/u,
+    literal: '"全部"',
+  },
 };

@@ -1,4 +1,9 @@
+import { siteLinks } from "@garden/site-config";
 import { siteConfig } from "../site.config";
+import {
+  inAppPath as resolveInAppPath,
+  isHandbookPath as resolveIsHandbookPath,
+} from "../../ui/garden/html-lang.mjs";
 
 /**
  * Framework chrome strings. The site language is chosen at build time with
@@ -210,12 +215,24 @@ export const UI_STRINGS = { zh, en } as const;
 export const ui = (lang: UiLang = siteLang) => UI_STRINGS[lang];
 
 /**
+ * Normalize a browser or router pathname to the in-app path (stripping a
+ * configured basePath or a leading deployment prefix before /garden).
+ */
+export function inAppPath(pathname: string | null | undefined): string {
+  return resolveInAppPath(pathname, siteLinks?.basePath);
+}
+
+export function isHandbookPath(pathname: string | null | undefined): boolean {
+  return resolveIsHandbookPath(pathname, siteLinks?.basePath);
+}
+
+/**
  * Chrome language for a route. The handbook follows its own URL (/garden/en/
  * is English, the rest of /garden/ is Chinese); every other page uses the site
  * language. `pathname` is the in-app path (no basePath), as usePathname gives.
  */
 export function routeLang(pathname: string | null | undefined): UiLang {
-  const path = pathname || "/";
+  const path = inAppPath(pathname);
   if (/^\/garden\/en(\/|$)/u.test(path)) return "en";
   if (/^\/garden(\/|$)/u.test(path)) return "zh";
   return siteLang;

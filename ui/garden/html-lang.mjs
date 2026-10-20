@@ -21,6 +21,24 @@ export function stripConfiguredBasePath(pathname, basePath = "") {
 }
 
 /**
+ * Normalize a browser or router pathname to an in-app route by stripping a
+ * configured basePath or a leading deployment prefix before /garden.
+ */
+export function inAppPath(pathname, basePath = "") {
+  if (!pathname) return "/";
+  const stripped = stripConfiguredBasePath(pathname, basePath);
+  const gardenMatch = /^\/[^/]+(\/garden(?:\/.*)?)$/u.exec(stripped);
+  if (gardenMatch) return gardenMatch[1];
+  return stripped;
+}
+
+/** True when pathname (with or without a basePath) is under /garden. */
+export function isHandbookPath(pathname, basePath = "") {
+  const p = inAppPath(pathname, basePath);
+  return p === "/garden" || p.startsWith("/garden/");
+}
+
+/**
  * Pick the 404 page language ("en" or "zh") from a pathname after stripping
  * the configured basePath. If the stripped path starts with /garden/en/ (or
  * equals /garden/en), returns "en"; otherwise returns "zh".
@@ -48,11 +66,10 @@ function replaceMetaContent(html, attrName, attrValue, nextContent) {
 }
 
 /**
- * Rewrites a rendered 404 HTML document into the English 404 page (head meta
- * tags, <html lang="en">, and visible chrome/body copy) without hardcoding any
- * site-owner values.
+ * Updates <html lang="en"> and <head> metadata on a server-rendered English 404
+ * response so the initial HTTP response has English <title> and <meta> tags.
  */
-export function toEnglishNotFoundHtml(html) {
+export function withEnglishNotFoundHead(html) {
   let out = withHtmlLang(String(html), "en");
   const titleMatch = /<title>([^<]*)<\/title>/u.exec(out);
   const siteName = titleMatch ? titleMatch[1].split(" · ").at(-1)?.trim() || "Garden" : "Garden";
@@ -67,85 +84,5 @@ export function toEnglishNotFoundHtml(html) {
   out = replaceMetaContent(out, "property", "og:image:alt", enTitle);
   out = replaceMetaContent(out, "name", "twitter:title", enTitle);
   out = replaceMetaContent(out, "name", "twitter:description", enDesc);
-
-  // Rewrite visible body/chrome strings when rendered from a Chinese site locale
-  out = out
-    .replace(/>跳到正文</gu, ">Skip to content<")
-    .replace(/aria-label="站点导航"/gu, 'aria-label="Site navigation"')
-    .replace(/aria-label="站点导航（移动端）"/gu, 'aria-label="Site navigation (mobile)"')
-    .replace(/>文章</gu, ">Posts<")
-    .replace(/>随想</gu, ">Thoughts<")
-    .replace(/>专栏</gu, ">Columns<")
-    .replace(/>标签</gu, ">Tags<")
-    .replace(/>关于</gu, ">About<")
-    .replace(/aria-label="搜索文章"/gu, 'aria-label="Search posts"')
-    .replace(/>搜索</gu, ">Search<")
-    .replace(/aria-label="切换到深色模式"/gu, 'aria-label="Switch to dark mode"')
-    .replace(/aria-label="切换到浅色模式"/gu, 'aria-label="Switch to light mode"')
-    .replace(/aria-label="打开菜单"/gu, 'aria-label="Open menu"')
-    .replace(/aria-label="关闭菜单"/gu, 'aria-label="Close menu"')
-    .replace(/>深色模式</gu, ">Dark mode<")
-    .replace(
-      /<main\b[^>]*\bid="garden-not-found"[^>]*>[\s\S]*?<\/main>/u,
-      (mainHtml) =>
-        mainHtml
-          .replace(/<h1[^>]*>[\s\S]*?<\/h1>/u, "<h1>Page not found</h1>")
-          .replace(
-            /<p class="sh-deck"[^>]*>[\s\S]*?<\/p>/u,
-            '<p class="sh-deck" data-not-found-deck="">The address may be wrong, or the page has moved.</p>',
-          )
-          .replace(
-            /(<a\b[^>]*\bdata-not-found-home=""[^>]*>)[\s\S]*?(<\/a>)/u,
-            "$1Back to home$2",
-          ),
-    )
-    .replace(/>找不到这一页</gu, ">Page not found<")
-    .replace(/>地址可能写错了，或者这篇已经不在了。</gu, ">The address may be wrong, or the page has moved.<")
-    .replace(/>返回首页</gu, ">Back to home<")
-    .replace(/<footer class="sh-footer">[\s\S]*?<\/footer>/u, (footer) =>
-      footer.replace(
-        /<p>[\s\S]*?<\/p>/u,
-        '<p><span class="footer-framework">Built with <a href="https://github.com/hedon954/garden" target="_blank" rel="noreferrer">Garden</a></span></p>',
-      ),
-    );
-
   return out;
-}
-
-/**
- * Rewrites a rendered 404 HTML document into the full Chinese 404 copy when
- * loaded at a non-/garden/en/ path.
- */
-export function toChineseNotFoundHtml(html) {
-  return String(html).replace(
-    /<main\b[^>]*\bid="garden-not-found"[^>]*>[\s\S]*?<\/main>/u,
-    (mainHtml) =>
-      mainHtml
-        .replace(/<h1[^>]*>[\s\S]*?<\/h1>/u, "<h1>找不到这一页</h1>")
-        .replace(
-          /<p class="sh-deck"[^>]*>[\s\S]*?<\/p>/u,
-          '<p class="sh-deck" data-not-found-deck="">地址可能写错了，或者这篇已经不在了。</p>',
-        )
-        .replace(
-          /(<a\b[^>]*\bdata-not-found-home=""[^>]*>)[\s\S]*?(<\/a>)/u,
-          "$1返回首页$2",
-        ),
-  );
-}
-
-/**
- * Simulates loading the single root 404.html at `pathname` (with optional
- * `basePath` override) and running its inline language-selection script.
- */
-export function applyRoot404ForPath(html, pathname, basePath) {
-  const rawHtml = String(html);
-  const scriptBaseMatch = /data-not-found-script="[^"]*"[^>]*>[\s\S]*?var b=("[^"]*");/u.exec(rawHtml);
-  const configuredBase =
-    basePath !== undefined
-      ? basePath
-      : scriptBaseMatch
-        ? JSON.parse(scriptBaseMatch[1])
-        : "";
-  const lang = pickNotFoundLang(pathname, configuredBase);
-  return lang === "en" ? toEnglishNotFoundHtml(rawHtml) : toChineseNotFoundHtml(rawHtml);
 }

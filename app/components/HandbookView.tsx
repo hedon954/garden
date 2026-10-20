@@ -22,6 +22,7 @@ import {
   toHandbookNavItems,
   type HandbookLang,
 } from "../lib/garden-docs-meta";
+import { UI_STRINGS } from "../lib/i18n";
 import { siteConfig } from "../site.config";
 
 const other = (lang: HandbookLang): HandbookLang => (lang === "en" ? "zh" : "en");
@@ -77,7 +78,34 @@ export async function handbookOverviewMetadata(lang: HandbookLang, indexDoc: Gar
 }
 
 export async function handbookDocMetadata(lang: HandbookLang, doc: GardenDocEntry | undefined) {
-  if (!doc) return {};
+  if (!doc) {
+    const copy = UI_STRINGS[lang];
+    const fullTitle = `${copy.notFoundTitle} · ${siteConfig.name}`;
+    return {
+      title: copy.notFoundTitle,
+      description: copy.notFoundDeck,
+      openGraph: {
+        type: "website",
+        title: fullTitle,
+        description: copy.notFoundDeck,
+        locale: lang === "en" ? "en_US" : "zh_CN",
+        images: [
+          {
+            url: "/og.png",
+            width: 1731,
+            height: 909,
+            alt: fullTitle,
+          },
+        ],
+      },
+      twitter: {
+        card: "summary_large_image",
+        title: fullTitle,
+        description: copy.notFoundDeck,
+        images: ["/og.png"],
+      },
+    } satisfies Metadata;
+  }
   const t = HANDBOOK_UI[lang];
   const baseUrl = await getSiteUrl();
   const pathname = siteHref(handbookPath(lang, doc.path));

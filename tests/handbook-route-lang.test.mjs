@@ -1,10 +1,13 @@
+import { spawn } from "node:child_process";
 import fs from "node:fs";
+import http from "node:http";
+import os from "node:os";
 import path from "node:path";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { ALLOWED_EN_HANDBOOK_CJK } from "../scripts/handbook-allowlist.mjs";
-import { findBuiltEnglishHtmlCjk } from "../scripts/handbook-facts.mjs";
-import { applyRoot404ForPath, pickNotFoundLang, stripConfiguredBasePath } from "../ui/garden/html-lang.mjs";
+import { findBuiltEnglishHtmlCjk, stripAllowedFigureAllKeywordInHtml } from "../scripts/handbook-facts.mjs";
+import { inAppPath, isHandbookPath, pickNotFoundLang, stripConfiguredBasePath } from "../ui/garden/html-lang.mjs";
 import "./workerd-modules.mjs";
 
 const UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36";
@@ -63,10 +66,11 @@ function allEnglishHandbookRoutes() {
   return routes;
 }
 
-function bodyChinese(page) {
-  // Check visible text and attributes inside <main>, excluding the allowlisted 中 switcher and 丨 title-split explanation.
-  const mainMatch = /<main\b[\s\S]*?<\/main>/u.exec(page);
-  const mainHtml = mainMatch ? mainMatch[0] : page;
+function bodyChinese(page, route = "/garden/en") {
+  // Check visible text and attributes inside <main>, excluding the allowlisted 中 switcher,
+  // 丨 title-split explanation, and the narrow `"全部"` config value on /garden/en/components/figure.
+  const mainMatch = /<main\b[\s\S]*?<\/main>/u.exec(stripAllowedFigureAllKeywordInHtml(page, route));
+  const mainHtml = mainMatch ? mainMatch[0] : stripAllowedFigureAllKeywordInHtml(page, route);
   const attrs = [...mainHtml.matchAll(/\s(?:aria-label|title|placeholder|alt)="([^"]*)"/gu)]
     .map((m) => m[1])
     .filter((v) => HAN.test(v));
@@ -87,7 +91,7 @@ for (const route of allEnglishHandbookRoutes()) {
     const raw = await fetchRoute(route, 200);
     const page = raw.replace(/<script[\s\S]*?<\/script>/gu, "").replace(/<style[\s\S]*?<\/style>/gu, "");
     assert.deepEqual(chromeChinese(page), []);
-    assert.deepEqual(bodyChinese(page), []);
+    assert.deepEqual(bodyChinese(page, route), []);
     assert.deepEqual(findBuiltEnglishHtmlCjk(raw, route), []);
   });
 }
@@ -102,191 +106,277 @@ test("missing /garden/en/* route serves an English 404 with English metadata and
   assert.deepEqual(findBuiltEnglishHtmlCjk(raw404, "/garden/en/does-not-exist"), []);
 });
 
-test("root 404.html without JS shows one line of Chinese and one line of English, never both full copy sets at once", async () => {
-  const rawStatic404 = await fetchRoute("/does-not-exist", 404);
-  const mainMatch = /<main\b[^>]*\bid="garden-not-found"[^>]*>([\s\S]*?)<\/main>/u.exec(
-    rawStatic404.replace(/<script[\s\S]*?<\/script>/gu, ""),
+test("stripConfiguredBasePath and pickNotFoundLang resolve /garden/en/* with and without basePath", () => {
+  assert.equal(stripConfiguredBasePath("/garden/en/does-not-exist", ""), "/garden/en/does-not-exist");
+  assert.equal(pickNotFoundLang("/garden/en/does-not-exist", ""), "en");
+  assert.equal(
+    stripConfiguredBasePath("/garden-docs-v6/garden/en/does-not-exist", "/garden-docs-v6"),
+    "/garden/en/does-not-exist",
   );
-  assert.ok(mainMatch, "root 404 has #garden-not-found main");
-  const mainNoJs = mainMatch[1];
-  // Shows one line of Chinese (heading) and one line of English (deck)
-  assert.match(mainNoJs, /<h1[^>]*>找不到这一页<\/h1>/u);
-  assert.match(mainNoJs, /<p[^>]*\blang="en"[^>]*>The address may be wrong, or the page has moved\.<\/p>/u);
-  // Never shows both full copy sets at once
-  assert.doesNotMatch(mainNoJs, /Page not found/u);
-  assert.doesNotMatch(mainNoJs, /地址可能写错了，或者这篇已经不在了。/u);
-  assert.doesNotMatch(mainNoJs, /返回首页/u);
-  assert.doesNotMatch(mainNoJs, /Back to home/u);
-});
-
-test("root 404.html loaded at /garden/en/xxx (with and without basePath) shows English copy, lang=en, and zero CJK", async () => {
-  const vm = await import("node:vm");
-  const rawStatic404 = await fetchRoute("/does-not-exist", 404);
-  const scriptMatch = /<script\b[^>]*\bdata-not-found-script=""[^>]*>([\s\S]*?)<\/script>/u.exec(rawStatic404);
-  assert.ok(scriptMatch, "root 404 contains inline language-picker script");
-
-  function runInline404Script(pathname, configuredBasePath = "") {
-    const scriptCode = scriptMatch[1].replace(/var b="[^"]*";/u, `var b=${JSON.stringify(configuredBasePath)};`);
-    const metaStore = new Map([
-      ['meta[name="description"]', "原始中文描述"],
-      ['meta[property="og:title"]', "站点名"],
-      ['meta[property="og:description"]', "原始中文副标题"],
-      ['meta[property="og:locale"]', "zh_CN"],
-      ['meta[property="og:image:alt"]', "站点名 · 首页"],
-      ['meta[name="twitter:title"]', "站点名"],
-      ['meta[name="twitter:description"]', "原始中文副标题"],
-    ]);
-    const h1 = { textContent: "找不到这一页" };
-    const deck = {
-      textContent: "The address may be wrong, or the page has moved.",
-      lang: "en",
-      removeAttribute(attr) {
-        if (attr === "lang") this.lang = undefined;
-      },
-    };
-    const homeLink = { textContent: "← /" };
-    const skipLink = { textContent: "跳到正文" };
-    const footerP = { innerHTML: "© 2026 作者 · 页脚 · 基于 Garden 构建" };
-    const headerLinks = [
-      { textContent: "文章" },
-      { textContent: "随想" },
-      { textContent: "专栏" },
-      { textContent: "标签" },
-      { textContent: "关于" },
-      { textContent: "搜索" },
-      { textContent: "深色模式" },
-    ];
-    const headerAria = [
-      {
-        val: "站点导航",
-        getAttribute() { return this.val; },
-        setAttribute(_k, v) { this.val = v; },
-      },
-      {
-        val: "搜索文章",
-        getAttribute() { return this.val; },
-        setAttribute(_k, v) { this.val = v; },
-      },
-    ];
-    const document = {
-      documentElement: { lang: "zh-CN" },
-      title: "找不到这一页 · Garden",
-      querySelector(sel) {
-        if (metaStore.has(sel)) {
-          return {
-            setAttribute(_k, v) { metaStore.set(sel, v); },
-          };
-        }
-        if (sel === ".skip-link") return skipLink;
-        if (sel === ".sh-footer .sh-foot > p") return footerP;
-        return null;
-      },
-      querySelectorAll(sel) {
-        if (sel.includes("#site-header a")) return headerLinks;
-        if (sel.includes("#site-header [aria-label]")) return headerAria;
-        return [];
-      },
-      getElementById(id) {
-        if (id !== "garden-not-found") return null;
-        return {
-          querySelector(sel) {
-            if (sel === "h1") return h1;
-            if (sel === "[data-not-found-deck]") return deck;
-            if (sel === "a[data-not-found-home]") return homeLink;
-            return null;
-          },
-        };
-      },
-    };
-    vm.runInNewContext(scriptCode, { location: { pathname }, document });
-    return { document, metaStore, h1, deck, homeLink, skipLink, footerP, headerLinks, headerAria };
-  }
-
-  // 1. Without basePath at /garden/en/xxx
-  assert.equal(stripConfiguredBasePath("/garden/en/xxx", ""), "/garden/en/xxx");
-  assert.equal(pickNotFoundLang("/garden/en/xxx", ""), "en");
-  const domNoBase = runInline404Script("/garden/en/xxx", "");
-  assert.equal(domNoBase.document.documentElement.lang, "en");
-  assert.equal(domNoBase.h1.textContent, "Page not found");
-  assert.equal(domNoBase.deck.textContent, "The address may be wrong, or the page has moved.");
-  assert.equal(domNoBase.homeLink.textContent, "Back to home");
-  assert.equal(domNoBase.metaStore.get('meta[property="og:locale"]'), "en_US");
-  const htmlNoBase = applyRoot404ForPath(rawStatic404, "/garden/en/xxx", "");
-  assert.match(htmlNoBase, /<html[^>]*\slang="en"/u);
-  assert.match(htmlNoBase, /<h1>Page not found<\/h1>/u);
-  assert.match(htmlNoBase, />The address may be wrong, or the page has moved\.</u);
-  assert.match(htmlNoBase, />Back to home</u);
-  assert.deepEqual(findBuiltEnglishHtmlCjk(htmlNoBase, "404.html@/garden/en/xxx"), []);
-
-  // 2. With basePath /garden-docs-v6 at /garden-docs-v6/garden/en/xxx
-  assert.equal(stripConfiguredBasePath("/garden-docs-v6/garden/en/xxx", "/garden-docs-v6"), "/garden/en/xxx");
-  assert.equal(pickNotFoundLang("/garden-docs-v6/garden/en/xxx", "/garden-docs-v6"), "en");
-  const domWithBase = runInline404Script("/garden-docs-v6/garden/en/xxx", "/garden-docs-v6");
-  assert.equal(domWithBase.document.documentElement.lang, "en");
-  assert.equal(domWithBase.h1.textContent, "Page not found");
-  assert.equal(domWithBase.deck.textContent, "The address may be wrong, or the page has moved.");
-  assert.equal(domWithBase.homeLink.textContent, "Back to home");
-  const htmlWithBase = applyRoot404ForPath(rawStatic404, "/garden-docs-v6/garden/en/xxx", "/garden-docs-v6");
-  assert.match(htmlWithBase, /<html[^>]*\slang="en"/u);
-  assert.match(htmlWithBase, /<h1>Page not found<\/h1>/u);
-  assert.match(htmlWithBase, />Back to home</u);
-  assert.deepEqual(findBuiltEnglishHtmlCjk(htmlWithBase, "404.html@/garden-docs-v6/garden/en/xxx"), []);
-
-  // 3. Non-English paths (/garden/xxx, /blog/xxx, /garden-docs-v6/garden/xxx) show Chinese copy
-  for (const [p, b] of [
-    ["/garden/xxx", ""],
-    ["/blog/xxx", ""],
-    ["/garden-docs-v6/garden/xxx", "/garden-docs-v6"],
-    ["/other-prefix/garden/en/xxx", "/garden-docs-v6"],
-  ]) {
-    assert.equal(pickNotFoundLang(p, b), "zh", `${p} (base=${b})`);
-    const domZh = runInline404Script(p, b);
-    assert.equal(domZh.document.documentElement.lang, "zh-CN");
-    assert.equal(domZh.h1.textContent, "找不到这一页");
-    assert.equal(domZh.deck.textContent, "地址可能写错了，或者这篇已经不在了。");
-    assert.equal(domZh.homeLink.textContent, "返回首页");
-  }
+  assert.equal(pickNotFoundLang("/garden-docs-v6/garden/en/does-not-exist", "/garden-docs-v6"), "en");
+  assert.equal(pickNotFoundLang("/does-not-exist", ""), "zh");
+  assert.equal(pickNotFoundLang("/garden/does-not-exist", ""), "zh");
+  assert.equal(pickNotFoundLang("/garden-docs-v6/garden/does-not-exist", "/garden-docs-v6"), "zh");
 });
 
 const outDir = new URL("../dist/client/", import.meta.url).pathname;
 const exported = fs.existsSync(path.join(outDir, "404.html")) && fs.existsSync(path.join(outDir, "index.html"));
 
-test("static export root 404.html loaded at /garden/en/xxx (with and without basePath) asserts English copy and zero CJK", { skip: exported ? false : "needs a static export in dist/client" }, () => {
-  const raw404 = fs.readFileSync(path.join(outDir, "404.html"), "utf8");
-  // No nested /garden/en/404.html is emitted
+test("static export keeps a single root 404.html and no index.txt RSC payload contains Chinese 404 copy", { skip: exported ? false : "needs a static export in dist/client" }, () => {
+  assert.equal(fs.existsSync(path.join(outDir, "404.html")), true);
   assert.equal(fs.existsSync(path.join(outDir, "garden", "en", "404.html")), false);
 
-  // Without JS: one line of Chinese and one line of English, never both full copy sets at once
-  const mainNoJs = /<main\b[^>]*\bid="garden-not-found"[^>]*>([\s\S]*?)<\/main>/u.exec(
-    raw404.replace(/<script[\s\S]*?<\/script>/gu, ""),
-  )?.[1] ?? "";
-  assert.match(mainNoJs, /<h1[^>]*>找不到这一页<\/h1>/u);
-  assert.match(mainNoJs, /<p[^>]*\blang="en"[^>]*>The address may be wrong, or the page has moved\.<\/p>/u);
-  assert.doesNotMatch(mainNoJs, /Page not found/u);
-  assert.doesNotMatch(mainNoJs, /地址可能写错了，或者这篇已经不在了。/u);
+  const indexTxtFiles = fs
+    .readdirSync(outDir, { recursive: true })
+    .map(String)
+    .filter((f) => f.endsWith("index.txt"));
+  assert.ok(indexTxtFiles.length > 0, "expected index.txt RSC payloads in dist/client");
+  for (const rel of indexTxtFiles) {
+    const content = fs.readFileSync(path.join(outDir, rel), "utf8");
+    assert.equal(content.includes("找不到这一页"), false, `${rel} should not contain Chinese 404 copy`);
+  }
+});
 
-  // Loaded at /garden/en/xxx without basePath
-  const enNoBase = applyRoot404ForPath(raw404, "/garden/en/xxx", "");
-  assert.match(enNoBase, /<html[^>]*\slang="en"/u);
-  assert.match(enNoBase, /<h1>Page not found<\/h1>/u);
-  assert.match(enNoBase, />The address may be wrong, or the page has moved\.</u);
-  assert.match(enNoBase, />Back to home</u);
-  assert.deepEqual(findBuiltEnglishHtmlCjk(enNoBase, "dist/client/404.html@/garden/en/xxx"), []);
+function findChromeBinary() {
+  const candidates = [
+    process.env.CHROME_BIN,
+    "/usr/local/bin/google-chrome",
+    "/usr/bin/google-chrome",
+    "/usr/bin/google-chrome-stable",
+    "/usr/bin/chromium",
+    "/usr/bin/chromium-browser",
+  ].filter(Boolean);
+  for (const bin of candidates) {
+    if (fs.existsSync(bin)) return bin;
+  }
+  return null;
+}
 
-  // Loaded at /garden-docs-v6/garden/en/xxx with basePath /garden-docs-v6
-  const enWithBase = applyRoot404ForPath(raw404, "/garden-docs-v6/garden/en/xxx", "/garden-docs-v6");
-  assert.match(enWithBase, /<html[^>]*\slang="en"/u);
-  assert.match(enWithBase, /<h1>Page not found<\/h1>/u);
-  assert.match(enWithBase, />The address may be wrong, or the page has moved\.</u);
-  assert.match(enWithBase, />Back to home</u);
-  assert.deepEqual(findBuiltEnglishHtmlCjk(enWithBase, "dist/client/404.html@/garden-docs-v6/garden/en/xxx"), []);
+const MIME_TYPES = {
+  ".js": "application/javascript; charset=utf-8",
+  ".css": "text/css; charset=utf-8",
+  ".html": "text/html; charset=utf-8",
+  ".json": "application/json; charset=utf-8",
+  ".svg": "image/svg+xml",
+  ".txt": "text/plain; charset=utf-8",
+  ".ico": "image/x-icon",
+};
 
-  // Loaded at a non-English route (/garden/xxx or /blog/xxx): shows Chinese copy
-  const zh404 = applyRoot404ForPath(raw404, "/garden/xxx", "");
-  assert.match(zh404, /<html[^>]*\slang="zh-CN"/u);
-  assert.match(zh404, /<h1>找不到这一页<\/h1>/u);
-  assert.match(zh404, />地址可能写错了，或者这篇已经不在了。</u);
-  assert.match(zh404, />返回首页</u);
+test("real browser renders 404 in English at /garden/en/does-not-exist (with and without basePath) and keeps /does-not-exist Chinese with zero hydration errors", async () => {
+  const chromeBin = findChromeBinary();
+  assert.ok(chromeBin, "Expected Chrome/Chromium binary to be installed for real-browser 404 test");
+
+  const root404Html = fs.existsSync(path.join(outDir, "404.html"))
+    ? fs.readFileSync(path.join(outDir, "404.html"), "utf8")
+    : await fetchRoute("/does-not-exist", 404);
+
+  const server = http.createServer((req, res) => {
+    const u = new URL(req.url ?? "/", "http://127.0.0.1");
+    const stripped = u.pathname.replace(/^\/garden-docs-v6(?=\/|$)/u, "") || "/";
+    for (const candidatePath of [u.pathname, stripped]) {
+      const candidate = path.join(outDir, candidatePath);
+      if (fs.existsSync(candidate) && fs.statSync(candidate).isFile()) {
+        const ext = path.extname(candidate);
+        res.writeHead(200, { "content-type": MIME_TYPES[ext] ?? "application/octet-stream" });
+        res.end(fs.readFileSync(candidate));
+        return;
+      }
+      const idx = path.join(candidate, "index.html");
+      if (fs.existsSync(idx) && fs.statSync(idx).isFile()) {
+        res.writeHead(200, { "content-type": "text/html; charset=utf-8" });
+        res.end(fs.readFileSync(idx));
+        return;
+      }
+    }
+    res.writeHead(404, { "content-type": "text/html; charset=utf-8" });
+    res.end(root404Html);
+  });
+
+  await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
+  const { port } = server.address();
+  const userDataDir = fs.mkdtempSync(path.join(os.tmpdir(), "garden-chrome-404-"));
+
+  const chrome = spawn(
+    chromeBin,
+    [
+      "--headless=new",
+      "--no-sandbox",
+      "--disable-gpu",
+      "--disable-dev-shm-usage",
+      `--user-data-dir=${userDataDir}`,
+      "--remote-debugging-port=0",
+      "about:blank",
+    ],
+    { stdio: ["ignore", "ignore", "pipe"] },
+  );
+
+  try {
+    const wsUrl = await new Promise((resolve, reject) => {
+      let stderr = "";
+      const timer = setTimeout(() => reject(new Error(`Timed out waiting for Chrome DevTools:\n${stderr}`)), 15000);
+      chrome.stderr.on("data", (chunk) => {
+        stderr += chunk.toString();
+        const match = stderr.match(/DevTools listening on (ws:\/\/[^\s]+)/u);
+        if (match) {
+          clearTimeout(timer);
+          resolve(match[1]);
+        }
+      });
+      chrome.once("exit", (code) => {
+        clearTimeout(timer);
+        reject(new Error(`Chrome exited prematurely (${code}):\n${stderr}`));
+      });
+    });
+
+    const browserRes = await fetch(wsUrl.replace(/^ws:/u, "http:").replace(/\/devtools\/browser\/.*$/u, "/json/list"));
+    const targets = await browserRes.json();
+    const pageWsUrl = targets.find((t) => t.type === "page")?.webSocketDebuggerUrl;
+    assert.ok(pageWsUrl, "Expected a debuggable page target in headless Chrome");
+
+    const ws = new WebSocket(pageWsUrl);
+    await new Promise((resolve, reject) => {
+      ws.addEventListener("open", resolve, { once: true });
+      ws.addEventListener("error", reject, { once: true });
+    });
+
+    let nextId = 1;
+    const pending = new Map();
+    const consoleErrors = [];
+    ws.addEventListener("message", (event) => {
+      const msg = JSON.parse(String(event.data));
+      if (msg.id && pending.has(msg.id)) {
+        const { resolve, reject } = pending.get(msg.id);
+        pending.delete(msg.id);
+        if (msg.error) reject(new Error(msg.error.message));
+        else resolve(msg.result);
+      } else if (msg.method === "Runtime.consoleAPICalled") {
+        const type = msg.params.type;
+        const text = (msg.params.args ?? []).map((a) => a.value ?? a.description ?? "").join(" ");
+        if (type === "error" || type === "warning" || /hydrat|#418|#423|#425/iu.test(text)) {
+          consoleErrors.push(`console.${type}: ${text}`);
+        }
+      } else if (msg.method === "Runtime.exceptionThrown") {
+        consoleErrors.push(`exception: ${JSON.stringify(msg.params.exceptionDetails)}`);
+      } else if (msg.method === "Log.entryAdded") {
+        const entry = msg.params.entry;
+        if (entry.level === "error" && entry.source !== "network") {
+          consoleErrors.push(`log.${entry.level}: ${entry.text} (${entry.url ?? ""})`);
+        }
+      }
+    });
+
+    const send = (method, params = {}) =>
+      new Promise((resolve, reject) => {
+        const id = nextId++;
+        pending.set(id, { resolve, reject });
+        ws.send(JSON.stringify({ id, method, params }));
+      });
+
+    await send("Page.enable");
+    await send("Runtime.enable");
+    await send("Log.enable");
+
+    async function inspectRouteInBrowser(routePath) {
+      consoleErrors.length = 0;
+      await send("Page.navigate", { url: `http://127.0.0.1:${port}${routePath}` });
+      for (let attempt = 0; attempt < 40; attempt += 1) {
+        const check = await send("Runtime.evaluate", {
+          expression: `Boolean(document.getElementById("garden-not-found") && Object.keys(document.getElementById("garden-not-found")).some(k => k.startsWith("__reactProps$")))`,
+          returnByValue: true,
+        });
+        if (check.result?.value === true) break;
+        await new Promise((r) => setTimeout(r, 100));
+      }
+      // Wait an extra tick after hydration for layout effects and any post-hydration warnings
+      await new Promise((r) => setTimeout(r, 150));
+      const evalRes = await send("Runtime.evaluate", {
+        expression: `(() => {
+          const mainEl = document.getElementById("garden-not-found");
+          const hydrated = Boolean(mainEl && Object.keys(mainEl).some(k => k.startsWith("__reactProps$")));
+          const meta = (sel) => document.querySelector(sel)?.getAttribute("content") ?? null;
+          return {
+            hydrated,
+            lang: document.documentElement.lang,
+            title: document.title,
+            h1: document.querySelector("h1")?.textContent ?? null,
+            deck: document.querySelector("#garden-not-found .sh-deck")?.textContent ?? null,
+            homeLink: document.querySelector("#garden-not-found a")?.textContent ?? null,
+            description: meta('meta[name="description"]'),
+            ogTitle: meta('meta[property="og:title"]'),
+            ogDescription: meta('meta[property="og:description"]'),
+            ogLocale: meta('meta[property="og:locale"]'),
+            ogImageAlt: meta('meta[property="og:image:alt"]'),
+            twitterTitle: meta('meta[name="twitter:title"]'),
+            twitterDescription: meta('meta[name="twitter:description"]'),
+            visibleText: document.body.innerText,
+          };
+        })()`,
+        returnByValue: true,
+      });
+      return {
+        ...evalRes.result.value,
+        consoleErrors: [...consoleErrors],
+      };
+    }
+
+    // 1. English 404 without basePath (/garden/en/does-not-exist) and with basePath (/garden-docs-v6/garden/en/does-not-exist)
+    for (const enPath of ["/garden/en/does-not-exist", "/garden-docs-v6/garden/en/does-not-exist"]) {
+      const snap = await inspectRouteInBrowser(enPath);
+      assert.equal(snap.hydrated, true, `${enPath} should hydrate in Chrome`);
+      assert.deepEqual(snap.consoleErrors, [], `${enPath} should have zero hydration or console errors`);
+      assert.equal(snap.lang, "en", `${enPath} <html lang>`);
+      assert.match(snap.title, /^Page not found · /u, `${enPath} document.title`);
+      assert.equal(HAN.test(snap.title), false, `${enPath} title must not contain CJK: ${snap.title}`);
+      assert.equal(snap.h1, "Page not found", `${enPath} <h1>`);
+      assert.equal(snap.deck, "The address may be wrong, or the page has moved.", `${enPath} deck`);
+      assert.equal(snap.homeLink, "Back to home", `${enPath} home link`);
+      assert.equal(snap.description, "The address may be wrong, or the page has moved.");
+      assert.match(snap.ogTitle ?? "", /^Page not found · /u);
+      assert.equal(snap.ogDescription, "The address may be wrong, or the page has moved.");
+      assert.equal(snap.ogLocale, "en_US");
+      assert.match(snap.ogImageAlt ?? "", /^Page not found · /u);
+      assert.match(snap.twitterTitle ?? "", /^Page not found · /u);
+      assert.equal(snap.twitterDescription, "The address may be wrong, or the page has moved.");
+
+      // Visible text must have no CJK (apart from the single allowlisted 中 switcher button)
+      const visibleWithoutSwitcher = snap.visibleText.replace(/中\s*\/\s*EN/gu, "EN");
+      const cjkInVisible = [...visibleWithoutSwitcher].filter((ch) => HAN.test(ch));
+      assert.deepEqual(cjkInVisible, [], `${enPath} visible text must not contain CJK: ${snap.visibleText}`);
+    }
+
+    // 2. Non-English 404 (/does-not-exist) stays Chinese
+    const zhSnap = await inspectRouteInBrowser("/does-not-exist");
+    assert.equal(zhSnap.hydrated, true, "/does-not-exist should hydrate in Chrome");
+    assert.deepEqual(zhSnap.consoleErrors, [], "/does-not-exist should have zero hydration or console errors");
+    assert.equal(zhSnap.lang, "zh-CN");
+    assert.match(zhSnap.title, /^找不到这一页 · /u);
+    assert.equal(zhSnap.h1, "找不到这一页");
+    assert.equal(zhSnap.deck, "地址可能写错了，或者这篇已经不在了。");
+    assert.equal(zhSnap.homeLink, "返回首页");
+    assert.equal(zhSnap.description, "地址可能写错了，或者这篇已经不在了。");
+    assert.match(zhSnap.ogTitle ?? "", /^找不到这一页 · /u);
+    assert.equal(zhSnap.ogDescription, "地址可能写错了，或者这篇已经不在了。");
+    assert.equal(zhSnap.ogLocale, "zh_CN");
+
+    await send("Browser.close").catch(() => {});
+    ws.close();
+  } finally {
+    if (chrome.exitCode === null && chrome.signalCode === null) {
+      chrome.kill("SIGTERM");
+      await new Promise((resolve) => {
+        const t = setTimeout(() => {
+          chrome.kill("SIGKILL");
+          resolve();
+        }, 2000);
+        chrome.once("exit", () => {
+          clearTimeout(t);
+          resolve();
+        });
+      });
+    }
+    server.close();
+    await fs.promises.rm(userDataDir, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 }).catch(() => {});
+  }
 });
 
 test("English handbook header, code tabs and copy buttons are English", async () => {
@@ -315,10 +405,15 @@ test("Chinese handbook keeps the Chinese chrome", async () => {
   assert.match(page, /role="tab"[^>]*>对比上一版</u);
 });
 
-test("routeLang: /garden/en is English, /garden is Chinese, elsewhere the site language", async () => {
-  const src = (await import("node:fs")).readFileSync(new URL("../app/lib/i18n.ts", import.meta.url), "utf8");
+test("routeLang: /garden/en is English, /garden is Chinese, elsewhere the site language", () => {
+  const src = fs.readFileSync(new URL("../app/lib/i18n.ts", import.meta.url), "utf8");
   assert.match(src, /\^\\\/garden\\\/en\(\\\/\|\$\)/u);
   assert.match(src, /return siteLang;\n\}/u);
+  assert.equal(inAppPath("/garden/en/does-not-exist"), "/garden/en/does-not-exist");
+  assert.equal(inAppPath("/garden-docs-v6/garden/en/does-not-exist"), "/garden/en/does-not-exist");
+  assert.equal(isHandbookPath("/garden/en/does-not-exist"), true);
+  assert.equal(isHandbookPath("/garden-docs-v6/garden/en/does-not-exist"), true);
+  assert.equal(isHandbookPath("/does-not-exist"), false);
 });
 
 test("the language switch keeps the basePath: /repo/garden/x/ ⇄ /repo/garden/en/x/", async () => {

@@ -1,7 +1,7 @@
 /** Cloudflare Worker entry point for the vinext-starter template. */
 import { handleImageOptimization, DEFAULT_DEVICE_SIZES, DEFAULT_IMAGE_SIZES } from "vinext/server/image-optimization";
 import handler from "vinext/server/app-router-entry";
-import { handbookHtmlLang, toEnglishNotFoundHtml, withHtmlLang } from "../ui/garden/html-lang.mjs";
+import { handbookHtmlLang, withEnglishNotFoundHead, withHtmlLang } from "../ui/garden/html-lang.mjs";
 
 interface Env {
   ASSETS: Fetcher;
@@ -54,8 +54,12 @@ const worker = {
     const headers = new Headers(response.headers);
     headers.delete("content-length");
     const rawHtml = await response.text();
-    const html = response.status === 404 ? toEnglishNotFoundHtml(rawHtml) : withHtmlLang(rawHtml, lang);
-    return new Response(html, { status: response.status, statusText: response.statusText, headers });
+    const html = response.status === 404 ? withEnglishNotFoundHead(rawHtml) : withHtmlLang(rawHtml, lang);
+    return new Response(html, {
+      status: response.status,
+      statusText: response.statusText,
+      headers,
+    });
   },
 };
 

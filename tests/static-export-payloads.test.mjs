@@ -33,3 +33,11 @@ test("the exported client bundle asks for index.txt and takes text/plain as a pa
   assert.match(scripts, /index\.txt/u);
   assert.match(scripts, /text\/plain/u);
 });
+
+test("no exported index.txt RSC payload carries hardcoded Chinese 404 copy", { skip }, () => {
+  const payloads = files(out).filter((name) => name.endsWith("index.txt"));
+  for (const name of payloads) {
+    const content = fs.readFileSync(path.join(out, name), "utf8");
+    assert.doesNotMatch(content, /找不到这一页/u, name);
+  }
+});

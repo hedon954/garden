@@ -342,3 +342,71 @@ test("findBuiltEnglishHtmlCjk catches CJK in <head> meta tags, attributes, and b
   assert.ok(issues.some((i) => i.message.includes("meta[og:image:alt]")));
   assert.ok(issues.some((i) => i.message.includes("找不到这一页")));
 });
+
+test("allowlist permits the literal keyword \"全部\" ONLY in docs/handbook/en/components/figure.md on the parts[].id row", async () => {
+  const { checkEnglishHandbookNoCjk, findBuiltEnglishHtmlCjk } = await import("../scripts/handbook-facts.mjs");
+  const fsMod = await import("node:fs");
+  const os = await import("node:os");
+  const pathMod = await import("node:path");
+  const dir = fsMod.mkdtempSync(pathMod.join(os.tmpdir(), "hb-figure-all-"));
+  try {
+    fsMod.mkdirSync(pathMod.join(dir, "docs/handbook/en/components"), { recursive: true });
+    // Allowed on parts[].id row in en/components/figure.md
+    fsMod.writeFileSync(
+      pathMod.join(dir, "docs/handbook/en/components/figure.md"),
+      [
+        "---",
+        "title: Annotated Diagram (figure)",
+        "section: components",
+        "---",
+        "",
+        '| `parts[].id` | Recommended | `parts[].name` | string | Matches `data-p` on SVG elements (`"all"` or `"全部"` highlights all regions) |',
+      ].join("\n"),
+    );
+    assert.deepEqual(checkEnglishHandbookNoCjk(dir), []);
+
+    // Disallowed on another line in en/components/figure.md, or on parts[].id in a different file
+    fsMod.writeFileSync(
+      pathMod.join(dir, "docs/handbook/en/components/figure.md"),
+      [
+        "---",
+        "title: Annotated Diagram (figure)",
+        "section: components",
+        "---",
+        "",
+        '| `parts[].id` | Recommended | `parts[].name` | string | Matches `data-p` on SVG elements (`"all"` or `"全部"` highlights all regions) |',
+        'Other prose mentioning `"全部"` is rejected.',
+      ].join("\n"),
+    );
+    fsMod.writeFileSync(
+      pathMod.join(dir, "docs/handbook/en/components/other.md"),
+      [
+        "---",
+        "title: Other",
+        "section: components",
+        "---",
+        "",
+        '| `parts[].id` | Recommended | `parts[].name` | string | Matches `data-p` on SVG elements (`"all"` or `"全部"` highlights all regions) |',
+      ].join("\n"),
+    );
+    const issues = checkEnglishHandbookNoCjk(dir);
+    assert.deepEqual(
+      issues.map((i) => `${i.file}:${i.line}`).sort(),
+      [
+        "docs/handbook/en/components/figure.md:7",
+        "docs/handbook/en/components/other.md:6",
+      ],
+    );
+
+    // Built HTML: allowed only on /garden/en/components/figure inside the parts[].id row
+    const figureHtml = [
+      '<!DOCTYPE html><html lang="en"><head><title>figure · Garden</title></head><body>',
+      '<table><tr><td><code>parts[].id</code></td><td>Matches <code>data-p</code> (<code>"all"</code> or <code>"全部"</code> highlights all regions)</td></tr></table>',
+      "</body></html>",
+    ].join("");
+    assert.deepEqual(findBuiltEnglishHtmlCjk(figureHtml, "/garden/en/components/figure"), []);
+    assert.equal(findBuiltEnglishHtmlCjk(figureHtml, "/garden/en/components/other").length, 1);
+  } finally {
+    fsMod.rmSync(dir, { recursive: true, force: true });
+  }
+});
