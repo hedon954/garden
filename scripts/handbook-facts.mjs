@@ -1197,6 +1197,80 @@ export function checkEnglishHandbookNoCjk(root = ROOT) {
   return issues;
 }
 
+/**
+ * Inspect a single built HTML document for an English handbook route (or the
+ * English 404 output), covering <head> meta tags, <title>, visible text, and
+ * user-facing attributes (`content`, `alt`, `title`, `aria-label`, `placeholder`).
+ * Only the `中` language switcher and the `丨` / `｜` title-split delimiter explanation
+ * are permitted.
+ */
+export function findBuiltEnglishHtmlCjk(html, pageLabel = "/garden/en") {
+  const issues = [];
+  const cleaned = String(html)
+    .replace(/<script[\s\S]*?<\/script>/giu, "")
+    .replace(/<style[\s\S]*?<\/style>/giu, "");
+
+  const recordIfCjk = (value, context, allowTitleSplit = false) => {
+    const text = String(value ?? "").trim();
+    if (!text) return;
+    if (text === ALLOWED_EN_HANDBOOK_CJK.switcher) return;
+    const bad = findDisallowedEnCjk(text, { allowTitleSplit });
+    if (bad.length > 0) {
+      const sample = [...new Set(bad)].slice(0, 8).join("");
+      issues.push({
+        file: pageLabel,
+        line: 1,
+        kind: "en-built-cjk",
+        message: `Built English HTML (${context}) contains CJK character(s) "${sample}": ${text.slice(0, 100)}`,
+      });
+    }
+  };
+
+  // 1. Check <head> <title> and <meta> tags
+  const headMatch = /<head\b[^>]*>([\s\S]*?)<\/head>/iu.exec(cleaned);
+  const headHtml = headMatch ? headMatch[1] : "";
+  for (const m of headHtml.matchAll(/<title\b[^>]*>([\s\S]*?)<\/title>/giu)) {
+    recordIfCjk(m[1], "<title>", false);
+  }
+  for (const m of headHtml.matchAll(/<meta\b[^>]*>/giu)) {
+    const tag = m[0];
+    const nameOrProp =
+      /\b(?:name|property)=["']([^"']*)["']/iu.exec(tag)?.[1] ?? "<meta>";
+    const content = /\bcontent=["']([^"']*)["']/iu.exec(tag)?.[1] ?? "";
+    recordIfCjk(content, `meta[${nameOrProp}]`, false);
+  }
+
+  // 2. Check user-facing attributes across the entire document
+  for (const m of cleaned.matchAll(/\s(aria-label|title|placeholder|alt)=["']([^"']*)["']/giu)) {
+    recordIfCjk(m[2], `attr[${m[1]}]`, false);
+  }
+
+  // 3. Check all text nodes across the entire document
+  for (const m of cleaned.matchAll(/>([^<]+)</gu)) {
+    const text = m[1].trim();
+    if (!text) continue;
+    recordIfCjk(text, "text", true);
+  }
+
+  return issues;
+}
+
+/**
+ * Check any static-export HTML files already present under dist/client/garden/en/
+ * (including dist/client/garden/en/404.html).
+ */
+export function checkBuiltEnglishHandbookHtmlFiles(root = ROOT) {
+  const clientEnDir = path.join(root, "dist/client/garden/en");
+  if (!fs.existsSync(clientEnDir)) return [];
+  const issues = [];
+  for (const file of walkFiles(clientEnDir, (f) => f.endsWith(".html"))) {
+    const rel = path.relative(root, file).replace(/\\/g, "/");
+    const html = fs.readFileSync(file, "utf8");
+    issues.push(...findBuiltEnglishHtmlCjk(html, rel));
+  }
+  return issues;
+}
+
 const HANDBOOK_EMBEDDED_TEMPLATES = [
   {
     handbookFile: "docs/handbook/config.md",
@@ -1283,6 +1357,7 @@ export function checkAllHandbookFacts(root = ROOT) {
   issues.push(...checkHandbookPairs(root));
   issues.push(...checkHandbookTemplates(root));
   issues.push(...checkEnglishHandbookNoCjk(root));
+  issues.push(...checkBuiltEnglishHandbookHtmlFiles(root));
   const svgFiles = walkFiles(path.join(root, "docs/handbook"), (f) => f.endsWith(".svg"));
   for (const svgFile of svgFiles) {
     const svgContent = fs.readFileSync(svgFile, "utf8");

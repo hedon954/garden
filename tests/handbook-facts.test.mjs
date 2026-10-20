@@ -311,3 +311,34 @@ test("checkHandbookTemplates enforces verbatim matching between handbook config/
     fsMod.rmSync(dir, { recursive: true, force: true });
   }
 });
+
+test("findBuiltEnglishHtmlCjk catches CJK in <head> meta tags, attributes, and body while allowing the 中 switcher and 丨 delimiter", async () => {
+  const { findBuiltEnglishHtmlCjk } = await import("../scripts/handbook-facts.mjs");
+  const cleanHtml = [
+    '<!DOCTYPE html><html lang="en"><head>',
+    "<title>Quick Start · Garden Handbook</title>",
+    '<meta property="og:description" content="English description" />',
+    '<meta name="twitter:description" content="English description" />',
+    '<meta property="og:image:alt" content="Garden · Garden Handbook" />',
+    "</head><body>",
+    '<a href="/garden/"><span>中</span> / <span>EN</span></a>',
+    "<main><p>Split two-line headings with <code>丨</code>.</p></main>",
+    "</body></html>",
+  ].join("");
+  assert.deepEqual(findBuiltEnglishHtmlCjk(cleanHtml, "/garden/en/start"), []);
+
+  const dirtyHtml = [
+    '<!DOCTYPE html><html lang="en"><head>',
+    "<title>Quick Start · Garden Handbook</title>",
+    '<meta property="og:description" content="写作 · 记录 · 保持好奇" />',
+    '<meta property="og:image:alt" content="Garden · 记一些正在做的事" />',
+    "</head><body>",
+    "<main><h1>找不到这一页</h1></main>",
+    "</body></html>",
+  ].join("");
+  const issues = findBuiltEnglishHtmlCjk(dirtyHtml, "/garden/en/404");
+  assert.equal(issues.length, 3);
+  assert.ok(issues.some((i) => i.message.includes("meta[og:description]")));
+  assert.ok(issues.some((i) => i.message.includes("meta[og:image:alt]")));
+  assert.ok(issues.some((i) => i.message.includes("找不到这一页")));
+});

@@ -38,21 +38,74 @@ export function handbookLanguages(lang: HandbookLang, docPath: string) {
 export const handbookAlternates = (lang: HandbookLang, docPath: string) =>
   pageAlternates(handbookPath(lang, docPath), handbookLanguages(lang, docPath));
 
+export async function handbookOverviewMetadata(lang: HandbookLang, indexDoc: GardenDocEntry | null | undefined) {
+  const t = HANDBOOK_UI[lang];
+  const baseUrl = await getSiteUrl();
+  const pathname = siteHref(handbookPath(lang, "index"));
+  const description = indexDoc?.description ?? "";
+  const fullTitle = `${t.name} · ${siteConfig.name}`;
+  const imageAlt =
+    lang === "en"
+      ? `${siteConfig.name} · ${indexDoc?.title || t.name}`
+      : `${siteConfig.name} · ${siteConfig.pages.home.title.replace("\n", "")}`;
+  return {
+    title: t.name,
+    description,
+    alternates: pageAlternates(handbookPath(lang), handbookLanguages(lang, "index")),
+    openGraph: {
+      type: "website",
+      url: absoluteUrl(pathname, baseUrl),
+      title: fullTitle,
+      description,
+      locale: lang === "en" ? "en_US" : "zh_CN",
+      images: [
+        {
+          url: "/og.png",
+          width: 1731,
+          height: 909,
+          alt: imageAlt,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: fullTitle,
+      description,
+      images: ["/og.png"],
+    },
+  } satisfies Metadata;
+}
+
 export async function handbookDocMetadata(lang: HandbookLang, doc: GardenDocEntry | undefined) {
   if (!doc) return {};
   const t = HANDBOOK_UI[lang];
   const baseUrl = await getSiteUrl();
   const pathname = siteHref(handbookPath(lang, doc.path));
+  const docTitle = `${doc.title} · ${t.name}`;
   return {
-    title: `${doc.title} · ${t.name}`,
+    title: docTitle,
     description: doc.description,
     alternates: handbookAlternates(lang, doc.path),
     openGraph: {
       type: "article",
       url: absoluteUrl(pathname, baseUrl),
-      title: `${doc.title} · ${t.name}`,
+      title: docTitle,
       description: doc.description,
       locale: lang === "en" ? "en_US" : "zh_CN",
+      images: [
+        {
+          url: "/og.png",
+          width: 1731,
+          height: 909,
+          alt: `${siteConfig.name} · ${docTitle}`,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: docTitle,
+      description: doc.description,
+      images: ["/og.png"],
     },
   } satisfies Metadata;
 }

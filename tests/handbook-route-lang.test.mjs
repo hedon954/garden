@@ -3,12 +3,13 @@ import path from "node:path";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { ALLOWED_EN_HANDBOOK_CJK } from "../scripts/handbook-allowlist.mjs";
+import { findBuiltEnglishHtmlCjk } from "../scripts/handbook-facts.mjs";
 import "./workerd-modules.mjs";
 
 const UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36";
 const root = path.resolve(import.meta.dirname, "..");
 
-async function html(pathname) {
+async function fetchRoute(pathname, expectedStatus = 200) {
   const url = new URL("../dist/server/index.js", import.meta.url);
   url.searchParams.set("test", `${process.pid}-route-lang`);
   const { default: worker } = await import(url.href);
@@ -17,8 +18,13 @@ async function html(pathname) {
     { ASSETS: { fetch: async () => new Response("Not found", { status: 404 }) } },
     { waitUntil() {}, passThroughOnException() {} },
   );
-  assert.equal(res.status, 200, pathname);
-  return (await res.text()).replace(/<script[\s\S]*?<\/script>/gu, "").replace(/<style[\s\S]*?<\/style>/gu, "");
+  assert.equal(res.status, expectedStatus, pathname);
+  return res.text();
+}
+
+async function html(pathname) {
+  const raw = await fetchRoute(pathname, 200);
+  return raw.replace(/<script[\s\S]*?<\/script>/gu, "").replace(/<style[\s\S]*?<\/style>/gu, "");
 }
 
 const HAN = /[\u3000-\u303f\u3400-\u9fff\uf900-\ufaff\uff00-\uffef]/u;
@@ -64,12 +70,44 @@ function bodyChinese(page) {
 }
 
 for (const route of allEnglishHandbookRoutes()) {
-  test(`English handbook page has no CJK characters (chrome, body, fenced code): ${route}`, async () => {
-    const page = await html(route);
+  test(`English handbook built HTML has no CJK in <head> meta tags, chrome, body, or fenced code: ${route}`, async () => {
+    const raw = await fetchRoute(route, 200);
+    const page = raw.replace(/<script[\s\S]*?<\/script>/gu, "").replace(/<style[\s\S]*?<\/style>/gu, "");
     assert.deepEqual(chromeChinese(page), []);
     assert.deepEqual(bodyChinese(page), []);
+    assert.deepEqual(findBuiltEnglishHtmlCjk(raw, route), []);
   });
 }
+
+test("missing /garden/en/* route serves an English 404 with English metadata and zero CJK", async () => {
+  const raw404 = await fetchRoute("/garden/en/does-not-exist", 404);
+  assert.match(raw404, /<html[^>]*\slang="en"/u);
+  assert.match(raw404, /<h1>Page not found<\/h1>/u);
+  assert.match(raw404, /The address may be wrong, or the page has moved\./u);
+  assert.match(raw404, />Back to home</u);
+  assert.match(raw404, /<meta property="og:locale" content="en_US"/u);
+  assert.deepEqual(findBuiltEnglishHtmlCjk(raw404, "/garden/en/does-not-exist"), []);
+});
+
+test("static export writeEnglishNotFoundPage produces a CJK-free garden/en/404.html", async () => {
+  const os = await import("node:os");
+  const { writeEnglishNotFoundPage } = await import("../scripts/static-404.mjs");
+  const rawChinese404 = await fetchRoute("/does-not-exist", 404);
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "en-404-"));
+  try {
+    fs.mkdirSync(path.join(dir, "garden", "en"), { recursive: true });
+    fs.writeFileSync(path.join(dir, "404.html"), rawChinese404);
+    const written = writeEnglishNotFoundPage(dir);
+    assert.deepEqual(written, ["garden/en/404.html"]);
+    const en404 = fs.readFileSync(path.join(dir, "garden", "en", "404.html"), "utf8");
+    assert.match(en404, /<html[^>]*\slang="en"/u);
+    assert.match(en404, /<h1>Page not found<\/h1>/u);
+    assert.match(en404, />Back to home</u);
+    assert.deepEqual(findBuiltEnglishHtmlCjk(en404, "garden/en/404.html"), []);
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
 
 test("English handbook header, code tabs and copy buttons are English", async () => {
   const page = await html("/garden/en/writing");
