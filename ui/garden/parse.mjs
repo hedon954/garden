@@ -91,6 +91,9 @@ function asObject(value) {
  * An empty name is an idea. Invalid YAML or an unknown name is still returned,
  * with `error` set, so the checker and the renderer share one parse.
  */
+export const CYCLE_MIN = 3;
+export const CYCLE_MAX = 6;
+
 export function parseGardenBlock(info, body) {
   const header = parseGardenInfo(info);
   if (!header) return null;
@@ -147,6 +150,23 @@ export function parseGardenBlock(info, body) {
       legacy: header.legacy,
       error: { code: "garden-yaml", message: `不支持的键 ${unknown.join("、")}`, unknown, allowed: spec.keys },
     };
+  }
+  if (header.name === "cycle") {
+    const count = Array.isArray(props.items) ? props.items.length : 0;
+    if (count < CYCLE_MIN || count > CYCLE_MAX) {
+      return {
+        name: header.name,
+        props,
+        children,
+        id: header.id ?? props.id ?? null,
+        legacy: Boolean(header.legacy),
+        error: {
+          code: "garden-cycle-count",
+          message: `cycle 需要 ${CYCLE_MIN} 到 ${CYCLE_MAX} 个环节，现在是 ${count} 个。环节更多或有分支时改用 \`\`\`mermaid 流程图；只走一遍的步骤用 garden list。`,
+          count,
+        },
+      };
+    }
   }
   return {
     name: header.name,

@@ -230,7 +230,7 @@ function linkIndex(value: unknown, titles: string[]) {
 
 export function GardenCycle({ props }: { props: Record<string, unknown> }) {
   const t = useUi();
-  const items = itemsOf(props).slice(0, 6);
+  const items = itemsOf(props).slice(0, 6); // parse rejects counts outside 3..6
   const titles = items.map((item) => String(item.title ?? ""));
   const links = (Array.isArray(props.links) ? props.links : [])
     .map((link) => link as Record<string, unknown>)

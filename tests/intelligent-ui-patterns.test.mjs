@@ -23,7 +23,7 @@ test("cycle, list and choice are catalog blocks with English names", () => {
 });
 
 test("cycle keeps items and dashed links; nodes have no emphasis", () => {
-  const block = parse("garden cycle", "items:\n  - title: A\n    text: a\n  - title: B\nlinks:\n  - from: 2\n    to: 1\ncaption: loop");
+  const block = parse("garden cycle", "items:\n  - title: A\n    text: a\n  - title: B\n  - title: C\nlinks:\n  - from: 2\n    to: 1\ncaption: loop");
   assert.equal(block.error, undefined);
   assert.deepEqual(CATALOG.cycle.itemKeys, ["title", "text"]);
   const css = readFileSync(new URL("../app/styles/a2.css", import.meta.url), "utf8");
@@ -100,4 +100,21 @@ test("verdict compares stack, so the side-by-side length limit does not apply", 
   assert.equal(verdict.filter((item) => item.code === "compare-long").length, 0);
   const plain = checkGardenMarkdown(`\`\`\`garden compare\nitems:\n  - title: a\n    text: ${long}\n\`\`\`\n`);
   assert.equal(plain.filter((item) => item.code === "compare-long").length, 1);
+});
+
+test("cycle accepts 3 to 6 steps and points elsewhere outside that", () => {
+  const cycle = (n) => `items:\n${Array.from({ length: n }, (_, i) => `  - title: S${i + 1}`).join("\n")}`;
+  for (const n of [3, 4, 5, 6]) {
+    const block = parse("garden cycle", `${cycle(n)}\nlinks:\n  - from: 1\n    to: ${n}`);
+    assert.equal(block.error, undefined, `n=${n}`);
+    assert.equal(block.props.items.length, n);
+  }
+  for (const n of [0, 1, 2, 7, 8]) {
+    const block = parse("garden cycle", cycle(n) || "items: []");
+    assert.equal(block.error?.code, "garden-cycle-count", `n=${n}`);
+    assert.match(block.error.message, /mermaid/u);
+    assert.match(block.error.message, /garden list/u);
+  }
+  const diagnostics = checkGardenMarkdown(`\`\`\`garden cycle\n${cycle(8)}\n\`\`\`\n`);
+  assert.equal(diagnostics.find((d) => d.code === "garden-cycle-count")?.severity, "error");
 });
