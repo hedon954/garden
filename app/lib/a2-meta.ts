@@ -32,6 +32,14 @@ export function homeListDate(value: string, now = new Date(), lang: "zh" | "en" 
   return `${date.getUTCFullYear()} 年 ${monthDay}`;
 }
 
+/** Full list date: 「2025 年 7 月 21 日」 or "Jul 21, 2025". */
+export function fullListDate(value: string, lang: "zh" | "en" = "zh") {
+  if (lang !== "en") return demoDateLabel(value);
+  const date = shanghaiDate(value);
+  if (!date) return value;
+  return new Intl.DateTimeFormat("en-US", { timeZone: "UTC", year: "numeric", month: "short", day: "numeric" }).format(date);
+}
+
 export function demoDateTime(value: string) {
   const date = shanghaiDate(value);
   if (!date) return value.slice(0, 10);

@@ -1010,3 +1010,9 @@ test("home list dates keep the year only outside the current year, per locale", 
   assert.equal(homeListDate("2026-09-18", now, "en"), "Sep 18");
   assert.equal(homeListDate("2025-12-19", now, "en"), "Dec 19, 2025");
 });
+
+test("full list dates follow the site locale", async () => {
+  const { fullListDate } = await import("../app/lib/a2-meta.ts");
+  assert.equal(fullListDate("2025-07-21"), "2025 年 7 月 21 日");
+  assert.equal(fullListDate("2025-07-21", "en"), "Jul 21, 2025");
+});

@@ -13,6 +13,16 @@ export const siteLang: UiLang = langOf(siteConfig.locale);
 export const htmlLang = (lang: UiLang) => (lang === "en" ? "en" : "zh-CN");
 
 const zh = {
+  homeAbout: "关于我",
+  homeRss: "RSS 订阅",
+  homeLatest: "最新文章",
+  homeRecent: "最近更新",
+  homeAllPosts: (n: number) => `全部 ${n} 篇`,
+  homePinned: "置顶",
+  homeColumns: "专栏",
+  homeAllColumns: "全部专栏",
+  columnCount: (n: number, status: string) => `${n} 篇，${status}`,
+  columnOngoing: "持续更新",
   toc: "本篇目录",
   tocShort: "目录",
   tocPage: "本页目录",
@@ -110,6 +120,16 @@ const zh = {
 };
 
 const en: typeof zh = {
+  homeAbout: "About",
+  homeRss: "RSS",
+  homeLatest: "Latest",
+  homeRecent: "Recent posts",
+  homeAllPosts: (n: number) => `All ${n} posts`,
+  homePinned: "Pinned",
+  homeColumns: "Columns",
+  homeAllColumns: "All columns",
+  columnCount: (n: number, status: string) => `${n} ${n === 1 ? "post" : "posts"} · ${status}`,
+  columnOngoing: "Ongoing",
   toc: "Contents",
   tocShort: "Contents",
   tocPage: "On this page",
