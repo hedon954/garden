@@ -92,19 +92,4 @@ Elements sit evenly on an ellipse starting at the top (12 o'clock) then clockwis
 
 ## Fields
 
-Fence header: ` ```garden relations ` (snippet trigger `;grel`). Nodes have no emphasis or accent option—every element carries equal visual weight; ` ```mermaid ` fences are supported for any other diagram, and `garden list` covers one-pass steps. Invalid YAML or unknown top-level keys report `garden-yaml` on the block.
-
-| Field | Required | Default | Allowed Values & Limits | Description |
-| :--- | :--- | :--- | :--- | :--- |
-| `title` | Optional | `"Relationship diagram"` for `aria-label` (no visible heading) | string | Heading above the diagram |
-| `items` | Required | none | object[], strictly `3` to `6` items (fewer than `3` or more than `6` items reports `garden-relations`) | Elements in the diagram; when `center` is omitted, all items are spaced evenly on an ellipse starting at the top (12 o'clock), clockwise |
-| `items[].title` | Required | `""` | string | Node heading (`links` and `center` reference items by 1-based number or exact `title`) |
-| `items[].text` | Optional | `""` | string | Short note below the node heading |
-| `center` | Optional | none (all items on the outer ellipse) | `1..N` (1-based number) or exact item `title` (an unknown index or title reports `garden-relations`) | Placed between `items` and `links`: puts that element in the middle and spaces the remaining elements evenly on the outer ring starting at the top, clockwise; no auto-detection |
-| `links` | Optional | `[]` | object[] (non-array or entry with unknown keys reports `garden-relations`) | Directed or bidirectional links between elements; neighbour outer-ring links bow outward while others run straight through the middle; write a repeating loop by listing each step (`1->2`, `2->3`, `3->4`, `4->1`) |
-| `links[].from` | Required | none | `1..N` (1-based number) or exact item `title`, cannot equal `to` (missing, unknown target, or `from === to` reports `garden-relations`) | Source element |
-| `links[].to` | Required | none | `1..N` (1-based number) or exact item `title`, cannot equal `from` (missing, unknown target, or `from === to` reports `garden-relations`) | Target element |
-| `links[].style` | Optional | `"solid"` | `"solid"` \| `"dashed"` (any other value reports `garden-relations`) | Solid line (`→` / `↔`) or dashed line (`⇢` / `⇠⇢`) |
-| `links[].direction` | Optional | `"one"` | `"one"` \| `"both"` (any other value reports `garden-relations`) | One-way arrow toward `to` or arrowheads on both ends |
-| `links[].label` | Optional | `""` | short string (non-string value reports `garden-relations`) | Short label along the line (dodges line crossings; when it does not fit on its line it becomes a circled number listed under the graph, e.g. `① limits: Budget → Venue`) |
-| `caption` | Optional | none | string | Caption below the diagram |
+Every field, default, limit and error code is in [Component reference · relations](/garden/en/reference/relations).

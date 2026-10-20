@@ -24,6 +24,8 @@ import { CodeCopy } from "./garden/chrome";
 import { CodeDiff } from "./garden/chrome";
 import { GardenBlock } from "./garden/GardenBlock";
 import { GardenFile } from "./garden/GardenFile";
+import { RefDemo } from "./garden/RefDemo";
+import { remarkRefDemos } from "../lib/remark-ref-demos.mjs";
 import { readGardenPayload } from "../lib/remark-garden.mjs";
 import { imageSizes, linkAssets } from "@garden/generated-content";
 import { imageDimensions, lookupImageSize } from "../../ui/garden/image-dims.mjs";
@@ -213,7 +215,7 @@ const headingText = (children: ReactNode) => {
   return parts.join("");
 };
 
-export function MarkdownArticle({ content, numbering, lang, fieldTables }: { content: string; numbering?: boolean; lang?: UiLang; fieldTables?: boolean }) {
+export function MarkdownArticle({ content, numbering, lang, fieldTables, refDemos }: { content: string; numbering?: boolean; lang?: UiLang; fieldTables?: boolean; refDemos?: boolean }) {
   const t = ui(lang);
   // Optional layer 2: a Worker that refreshes card text. Without it, cards stay as built.
   const cardWorker = content.includes("{card}") ? siteConfig.linkPreview?.worker : undefined;
@@ -257,6 +259,7 @@ export function MarkdownArticle({ content, numbering, lang, fieldTables }: { con
       if (block?.name === "file" && !block.error) return <GardenFile props={(block.props ?? {}) as Record<string, unknown>} lang={lang} />;
       return <GardenBlock dataPayload={payload} />;
     },
+    "garden-refdemo": (props: { children?: ReactNode }) => <RefDemo lang={lang === "en" ? "en" : "zh"}>{props.children}</RefDemo>,
     "garden-codediff": (props: {
       children?: ReactNode;
       dataDiff?: string;
@@ -276,7 +279,7 @@ export function MarkdownArticle({ content, numbering, lang, fieldTables }: { con
     <FaviconProvider favicons={linkAssets?.favicons}>
     <div className="markdown-body prose">
       <ReactMarkdown
-        remarkPlugins={[...markdownPlugins, [remarkLinkCard, { sameSite }], [remarkA2, { imageSize: (src: string) => lookupImageSize(imageSizes, src) }]]}
+        remarkPlugins={[...(refDemos ? [remarkRefDemos] : []), ...markdownPlugins, [remarkLinkCard, { sameSite }], [remarkA2, { imageSize: (src: string) => lookupImageSize(imageSizes, src) }]]}
         rehypePlugins={[
           rehypeRaw,
           rehypeKatex,

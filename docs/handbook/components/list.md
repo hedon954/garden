@@ -62,13 +62,4 @@ items:
 
 ## 字段说明
 
-围栏写 ` ```garden list `（编辑器代码片段触发词 `;glist`）。YAML 语法错误或顶层含未知键名时整块报 `garden-yaml` 错误。
-
-| 字段 | 是否必填 | 默认值 | 取值与限制 | 说明 |
-| :--- | :--- | :--- | :--- | :--- |
-| `title` | 可选 | 无 | 字符串 | 列表上方的总标题 |
-| `items` | 必填 | `[]` | 对象或字符串数组 | 列表项；所有条目都不带 `title` 时渲染为紧凑图标卡片，任一条目带 `title` 时渲染为带分隔线的步骤列表 |
-| `items[].icon` | 可选 | 无（不绘制图标） | 23 个内置图标名之一：`search`、`eye`、`heart`、`chat`、`shield`、`wallet`、`bell`、`check`、`x`、`star`、`flag`、`clock`、`idea`、`book`、`link`、`user`、`chart`、`gear`、`file`、`pin`、`flask`、`target`、`question` | 线条图标名（未识别的名称不显示图标） |
-| `items[].title` | 可选 | 无（默认紧凑行模式） | 字符串 | 条目小标题；填写后整组切换为带分隔线的步骤布局 |
-| `items[].text` | 建议填写 | `[]` | 字符串或字符串数组 | 条目说明文字；写成数组时每个元素渲染为独立段落 |
-| `caption` | 可选 | 无 | 字符串 | 列表底部的图注 |
+全部字段、默认值、取值限制和报错代码见 [组件参考 · list](/garden/reference/list)。

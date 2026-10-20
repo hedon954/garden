@@ -35,16 +35,4 @@ Compare the max widths of the prose column, wide figures, and wide tables with a
 
 ## Fields
 
-Fence header: ` ```garden chart ` (snippet trigger `;gchart`). Provide rows via `data: [{ x, y, label? }]` or column arrays via `x` + `series`; invalid YAML or unknown top-level keys report `garden-yaml` on the block.
-
-| Field | Required | Default | Allowed Values & Limits | Description |
-| :--- | :--- | :--- | :--- | :--- |
-| `title` | Recommended | `"Chart"` for `aria-label` (no visible heading) | string | Heading above the chart |
-| `data` | Either `data` or `series` | `[]` | `{ x, y, label? }[]` (at least `2` rows and `2` to `8` rows recommended, not checked) | Row entries where `x` is the row label, `y` is the numeric value, and `label` defaults to `y` + `unit` |
-| `series` | Either `series` or `data` | none | `{ name?, data: number[] }[]` (at least `2` data points recommended, not checked) | Numeric series paired with an `x` label array (`series[0].data` is rendered) |
-| `x` | Optional | `["1", "2", ...]` (1-based row numbers) | string or string[] | Category labels when using `series`, or first-column header string when `xLabel` is omitted |
-| `type` | Optional | `"bar"` | `"bar"` | Chart type (horizontal bar chart) |
-| `unit` | Optional | `""` | string | Unit suffix appended to values when `data[].label` is omitted |
-| `xLabel` | Optional | string `x` or `"Item"` | string | Header for the first column of the expandable data table |
-| `yLabel` | Optional | `"Value"` | string | Header for the second column of the expandable data table |
-| `caption` | Optional | none | string | Caption below the chart |
+Every field, default, limit and error code is in [Component reference · chart](/garden/en/reference/chart).

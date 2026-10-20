@@ -17,6 +17,7 @@ import {
   HANDBOOK_SECTIONS,
   HANDBOOK_UI,
   handbookPath,
+  isReferencePath,
   orderedHandbookDocs,
   sectionTitle,
   toHandbookNavItems,
@@ -125,7 +126,7 @@ export function HandbookDoc({ lang, doc }: { lang: HandbookLang; doc: GardenDocE
   const componentBadge = COMPONENT_BADGE[doc.path];
 
   return (
-    <main className="column-reading-page garden-doc-page" lang={hreflang(lang)}>
+    <main className={`column-reading-page garden-doc-page${isReferencePath(doc.path) ? " is-reference" : ""}`} lang={hreflang(lang)}>
       <HandbookLangRedirect lang={lang} />
       <GardenDocsNav docs={navItems} currentPath={doc.path} lang={lang} />
 
@@ -146,7 +147,7 @@ export function HandbookDoc({ lang, doc }: { lang: HandbookLang; doc: GardenDocE
         <ArticleMeasure />
 
         <div className="e-content">
-          <MarkdownArticle content={doc.content} lang={lang} fieldTables />
+          <MarkdownArticle content={doc.content} lang={lang} fieldTables refDemos={isReferencePath(doc.path)} />
         </div>
 
         <ArticleReferences references={doc.references} />

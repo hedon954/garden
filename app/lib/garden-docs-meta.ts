@@ -70,7 +70,12 @@ export const HANDBOOK_SECTIONS: HandbookSectionMeta[] = [
   { id: "writing-and-reading", title: "写作与排版", titleEn: "Writing & Layout" },
   { id: "components", title: "内置组件", titleEn: "Built-in Components" },
   { id: "workflow", title: "检查与补全", titleEn: "Checks & Shortcuts" },
+  { id: "reference", title: "组件参考", titleEn: "Component reference" },
 ];
+
+/** Component reference pages: one per component, all fields and error codes. */
+export const REFERENCE_SECTION = "reference";
+export const isReferencePath = (docPath: string) => docPath === REFERENCE_SECTION || docPath.startsWith(`${REFERENCE_SECTION}/`);
 
 export const COMPONENT_BADGE: Record<string, string> = {
   "components/card": "card",
@@ -85,6 +90,18 @@ export const COMPONENT_BADGE: Record<string, string> = {
   "components/relations": "relations",
   "components/list": "list",
   "components/choice": "choice",
+  "reference/card": "card",
+  "reference/stat": "stat",
+  "reference/compare": "compare",
+  "reference/timeline": "timeline",
+  "reference/chart": "chart",
+  "reference/figure": "figure",
+  "reference/html": "html",
+  "reference/interactive": "interactive",
+  "reference/file": "file",
+  "reference/relations": "relations",
+  "reference/list": "list",
+  "reference/choice": "choice",
 };
 
 export const NAV_SHORT_TITLE: Record<string, string> = {
@@ -108,6 +125,7 @@ export const NAV_SHORT_TITLE: Record<string, string> = {
   "components/list": "图标列表",
   "components/choice": "选择卡",
   workflow: "语法检查与快捷输入",
+  reference: "总览",
 };
 
 export function groupHandbookDocs<T extends GardenDocNavItem>(docs: T[]) {

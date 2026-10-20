@@ -46,10 +46,4 @@ Embed a small widget where typing in an input box updates the character count in
 
 ## Fields
 
-Fence header: ` ```garden html ` (snippet trigger `;ghtml`). Invalid YAML or unknown top-level keys report `garden-yaml` on the block.
-
-| Field | Required | Default | Allowed Values & Limits | Description |
-| :--- | :--- | :--- | :--- | :--- |
-| `src` | Either `src` or `code` | none | relative path (e.g. `./demo.html`) | Path to a standalone `.html` file inside the post's sidecar directory |
-| `code` | Either `code` or `src` | HTML body below `---` or `""` | multiline HTML string | Inline HTML markup (runs inside a sandboxed `iframe` and resizes to fit its content when `<script>` is present; HTML can also be placed below a `---` separator) |
-| `title` | Recommended | `"HTML"` | string | Frame header title and accessible `iframe` title |
+Every field, default, limit and error code is in [Component reference · html](/garden/en/reference/html).

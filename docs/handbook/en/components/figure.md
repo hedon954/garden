@@ -48,16 +48,4 @@ Draw a diagram of the three static publishing steps where clicking each step hig
 
 ## Fields
 
-Fence header: ` ```garden figure ` (snippet trigger `;gfigure`). Invalid YAML or unknown top-level keys report `garden-yaml` on the block.
-
-| Field | Required | Default | Allowed Values & Limits | Description |
-| :--- | :--- | :--- | :--- | :--- |
-| `svg` | One of `svg`, `image`, or `mermaid` | `<svg>` body below `---` or `""` | multiline `<svg>` string | Inline SVG markup; tag elements to highlight with `data-p="<id>"` (use CSS variables such as `var(--card)`, `var(--ink)`, and `var(--muted)` so dark mode works) |
-| `image` | One of `image`, `svg`, or `mermaid` | none | path string | Path to a static diagram image |
-| `alt` | Optional | `caption` (then `""`) | string | Alt text for `image` |
-| `mermaid` | One of `mermaid`, `svg`, or `image` | none | multiline string | Mermaid diagram source |
-| `parts` | Optional | `[]` (initial selection defaults to `parts[0].id` or `"all"`) | object[] | Interactive buttons above the diagram and matching explanations below |
-| `parts[].id` | Recommended | `parts[].name` or `parts[].label` | string | Matches `data-p` on SVG elements (`"all"` or `"全部"` highlights all regions) |
-| `parts[].label` | Required (or `name`) | `"Part N"` (1-based) | string | Button label |
-| `parts[].text` | Required | `""` | string | Explanation shown below the diagram when the button is active |
-| `caption` | Optional | none | string | Caption below the frame |
+Every field, default, limit and error code is in [Component reference · figure](/garden/en/reference/figure).
