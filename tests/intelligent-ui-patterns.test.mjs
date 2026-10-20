@@ -179,7 +179,8 @@ test("relations accept 3 to 6 elements and point to mermaid outside that", () =>
 test("relations center: that node in the middle, the rest evenly on the ring", () => {
   const { spots, ring, outer, centre } = relationLayout(5, 0);
   assert.equal(centre, 0);
-  assert.deepEqual(spots[0], { x: 50, s: 0, w: 22, ring: -1 });
+  assert.deepEqual(spots[0], { x: 50, s: 0, w: 24, ring: -1 });
+  assert.equal(relationLayout(5, 0, true).spots[0].w, 22, "narrow hub: a narrower middle node keeps every spoke visible");
   assert.deepEqual(ring, [1, 2, 3, 4]);
   assert.equal(outer, 4);
   assert.equal(spots[1].s, -1, "first outer node on top");

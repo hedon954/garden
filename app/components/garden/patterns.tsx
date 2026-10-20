@@ -199,6 +199,36 @@ function textWidth(text: string, font: string) {
   return ctx.measureText(text).width;
 }
 
+/** The longest start of `full`, cut after a word, that fits in `lines` lines of `el` with "…" added; null when it all fits. */
+function fitLines(el: HTMLElement, full: string, lines: number): string | null {
+  const probe = el.cloneNode(false) as HTMLElement;
+  probe.style.cssText = `display:block;-webkit-line-clamp:none;overflow:visible;position:absolute;visibility:hidden;left:0;top:0;width:${el.clientWidth}px`;
+  el.parentElement?.appendChild(probe);
+  const style = getComputedStyle(probe);
+  const line = parseFloat(style.lineHeight) || parseFloat(style.fontSize) * 1.35;
+  const fits = (text: string) => { probe.textContent = text; return probe.scrollHeight <= line * lines + 1 && probe.scrollWidth <= probe.clientWidth + 1; };
+  let result: string | null = null;
+  if (!fits(full)) {
+    // CJK text has no spaces: every character is a place to cut; otherwise cut between words.
+    const parts = /\s/u.test(full.trim()) ? full.split(/(?<=\s)/u) : [...full];
+    let lo = 0;
+    let hi = parts.length - 1;
+    while (lo < hi) {
+      const mid = Math.ceil((lo + hi) / 2);
+      if (fits(`${parts.slice(0, mid).join("").trimEnd()}\u2060…`)) lo = mid; else hi = mid - 1;
+    }
+    if (lo === 0 && parts.length > 1) {
+      // Even the first word is too wide: cut inside it as a last resort.
+      const chars = [...parts[0].trimEnd()];
+      let c = chars.length;
+      while (c > 1 && !fits(`${chars.slice(0, c).join("")}\u2060…`)) c -= 1;
+      result = `${chars.slice(0, c).join("")}\u2060…`;
+    } else result = `${parts.slice(0, Math.max(lo, 1)).join("").trimEnd()}\u2060…`;
+  }
+  probe.remove();
+  return result;
+}
+
 export function GardenRelations({ props }: { props: Record<string, unknown> }) {
   const t = useUi();
   const lang = useUiLang();
@@ -214,6 +244,9 @@ export function GardenRelations({ props }: { props: Record<string, unknown> }) {
   const [size, setSize] = useState({ w: 0, h: 0 });
   const [compact, setCompact] = useState(false);
   const [open, setOpen] = useState<number | null>(null);
+  // Titles and descriptions that do not fit their line limit, cut at a word with "…" (index -> [title, text]).
+  const [clipped, setClipped] = useState<Record<number, [string | null, string | null]>>({});
+  const fullText = useRef<{ key: string; text: [string, string][] } | null>(null);
   const base = useId().replace(/:/gu, "");
   const edgeKey = JSON.stringify({ edges, centre, n });
 
@@ -236,15 +269,52 @@ export function GardenRelations({ props }: { props: Record<string, unknown> }) {
       const nodes = [...ring.querySelectorAll<HTMLElement>(":scope > .g-rel-node")];
       // Same layout at every width: place each node by percent of the width, then size the canvas to the nodes.
       nodes.forEach((node, i) => { node.style.left = `${spots[i].x}%`; node.style.width = `${spots[i].w}%`; });
-      const minRy = small ? Math.max(90, width * 0.26) : Math.min(200, Math.max(120, width * 0.2)) * (middle >= 0 ? 1.25 : 1);
-      const { ys, height } = relationHeights(spots, nodes.map((node) => node.offsetHeight), small ? 40 : 48, minRy);
-      nodes.forEach((node, i) => { node.style.top = `${ys[i]}px`; });
-      ring.style.height = `${Math.ceil(height)}px`;
-      const frame = ring.getBoundingClientRect();
-      const boxes = nodes.map((node) => {
-        const r = node.getBoundingClientRect();
-        return { x: r.left - frame.left, y: r.top - frame.top, w: r.width, h: r.height };
+      // Cut long text ourselves, at a word, so the "…" line stays centred (Chrome's line-clamp centres
+      // the last line as if the cut words were still there). The CSS clamp stays as the no-script fallback.
+      if (!fullText.current || fullText.current.key !== edgeKey) {
+        fullText.current = { key: edgeKey, text: nodes.map((node) => [node.querySelector(".g-rel-t")?.textContent ?? "", node.querySelector(".g-rel-x")?.textContent ?? ""]) };
+      }
+      const cut: Record<number, [string | null, string | null]> = {};
+      nodes.forEach((node, i) => {
+        const pair: [string | null, string | null] = [null, null];
+        (["g-rel-t", "g-rel-x"] as const).forEach((cls, k) => {
+          const el = node.querySelector<HTMLElement>(`.${cls}`);
+          const full = fullText.current?.text[i][k] ?? "";
+          if (!el || !full || getComputedStyle(el).display === "none") return;
+          pair[k] = fitLines(el, full, k === 0 ? 2 : small ? 2 : 3);
+        });
+        if (pair[0] !== null || pair[1] !== null) cut[i] = pair;
       });
+      setClipped(cut);
+      const minRy = small ? Math.max(90, width * 0.26) : Math.min(200, Math.max(120, width * 0.2)) * (middle >= 0 ? 1.25 : 1);
+      const heights = nodes.map((node) => node.offsetHeight);
+      const place = (ry: number) => {
+        const { ys, height } = relationHeights(spots, heights, small ? 40 : 48, ry);
+        nodes.forEach((node, i) => { node.style.top = `${ys[i]}px`; });
+        ring.style.height = `${Math.ceil(height)}px`;
+        const frame = ring.getBoundingClientRect();
+        const boxes = nodes.map((node) => {
+          const r = node.getBoundingClientRect();
+          return { x: r.left - frame.left, y: r.top - frame.top, w: r.width, h: r.height };
+        });
+        return { frame, boxes };
+      };
+      // Every line keeps a visible stretch between its two boxes (24px narrow, 48px wide):
+      // open the ring up a step at a time until the shortest line is long enough.
+      const target = small ? 24 : 48;
+      const shortest = (boxes: Box[]) => Math.min(Infinity, ...parsed.map((link) => {
+        const a = edge(boxes[link.from], center(boxes[link.to]), link.both ? (small ? 7 : 8) : 6);
+        const b = edge(boxes[link.to], center(boxes[link.from]), small ? 7 : 8);
+        return Math.hypot(b.x - a.x, b.y - a.y);
+      }));
+      let ry = minRy;
+      let { frame, boxes } = place(ry);
+      for (let step = 0; step < 10; step += 1) {
+        const short = shortest(boxes);
+        if (short >= target) break;
+        ry += Math.max(12, (target - short) * 1.5);
+        ({ frame, boxes } = place(ry));
+      }
       const hub = { x: frame.width / 2, y: frame.height / 2 };
       // Edges between the same pair of nodes each get their own arc, so a dashed line never hides under a solid one.
       const pairKey = (l: Edge) => (l.from < l.to ? `${l.from}-${l.to}` : `${l.to}-${l.from}`);
@@ -255,7 +325,8 @@ export function GardenRelations({ props }: { props: Record<string, unknown> }) {
         const to = boxes[link.to];
         const cf = center(from);
         const ct = center(to);
-        const gapStart = link.both ? 10 : 6;
+        const endGap = small ? 7 : 8;
+        const gapStart = link.both ? endGap : 6;
         const rf = spots[link.from].ring;
         const rt = spots[link.to].ring;
         const neighbours = rf >= 0 && rt >= 0 && outer > 3 && (Math.abs(rf - rt) === 1 || Math.abs(rf - rt) === outer - 1);
@@ -276,13 +347,13 @@ export function GardenRelations({ props }: { props: Record<string, unknown> }) {
         if (total > 1) bow += (pairIndex[index] - (total - 1) / 2) * (small ? 30 : 40) * 2;
         if (!bow) {
           const a = edge(from, ct, gapStart);
-          const b = edge(to, cf, 10);
+          const b = edge(to, cf, endGap);
           const at = (k: number) => ({ x: a.x + (b.x - a.x) * k, y: a.y + (b.y - a.y) * k });
           return { d: `M${a.x},${a.y} L${b.x},${b.y}`, a, b, at, link };
         }
         const c = { x: mid.x + nx * bow, y: mid.y + ny * bow };
         const a = edge(from, c, gapStart);
-        const b = edge(to, c, 10);
+        const b = edge(to, c, endGap);
         const at = (k: number) => ({ x: (1 - k) ** 2 * a.x + 2 * (1 - k) * k * c.x + k ** 2 * b.x, y: (1 - k) ** 2 * a.y + 2 * (1 - k) * k * c.y + k ** 2 * b.y });
         return { d: `M${a.x},${a.y} Q${c.x},${c.y} ${b.x},${b.y}`, a, b, at, link };
       });
@@ -344,8 +415,8 @@ export function GardenRelations({ props }: { props: Record<string, unknown> }) {
               onClick={() => setOpen(open === index ? null : index)}
               style={{ "--x": `${spot.x}%`, "--y": `${50 + spot.s * 38}%`, "--w": `${spot.w}%` } as CSSProperties}
             >
-              <span className="g-rel-t"><Rich text={titles[index]} /></span>
-              {item.text ? <span className="g-rel-x"><Rich text={String(item.text)} /></span> : null}
+              <span className="g-rel-t">{clipped[index]?.[0] ?? <Rich text={titles[index]} />}</span>
+              {item.text ? <span className="g-rel-x">{clipped[index]?.[1] ?? <Rich text={String(item.text)} />}</span> : null}
               {lines[index].length ? (
                 <span className="g-rel-out">
                   {lines[index].map((line, k) => (

@@ -50,12 +50,15 @@ export function relationLayout(n, centre = -1, compact = false) {
   const outer = hasCentre ? n - 1 : n;
   // With a node in the middle, narrower nodes leave the spokes room for arrows and labels.
   // Compact (narrow container): the same ring, with nodes a larger share of the width.
-  const w = compact ? (hasCentre ? 26 : n <= 4 ? 34 : 30) : hasCentre ? 22 : n <= 4 ? 30 : 26;
-  const rx = 50 - w / 2 - 1;
+  // Wide screens get wider nodes so an English title fits in two lines without breaking a word.
+  const w = compact ? (hasCentre ? 26 : n <= 4 ? 34 : 28) : hasCentre ? 26 : n <= 4 ? 32 : 30;
+  // A narrow hub has a narrower middle node, so each spoke keeps a visible line between the boxes.
+  const cw = hasCentre ? (compact ? 22 : 24) : w;
+  const rx = 50 - w / 2 - (compact && hasCentre ? 0.5 : 1);
   const ring = [];
   let k = 0;
   const spots = Array.from({ length: n }, (_, i) => {
-    if (i === centre && hasCentre) return { x: 50, s: 0, w, ring: -1 };
+    if (i === centre && hasCentre) return { x: 50, s: 0, w: cw, ring: -1 };
     const angle = -Math.PI / 2 + (k * 2 * Math.PI) / outer;
     ring.push(i);
     const spot = { x: 50 + rx * Math.cos(angle), s: Math.sin(angle), w, ring: k };
@@ -82,7 +85,7 @@ export function relationHeights(spots, heights, gap = 36, minRy = 60) {
       ry = Math.max(ry, ((heights[i] + heights[j]) / 2 + gap) / ds);
     }
   }
-  ry = Math.min(ry, 280);
+  ry = Math.min(ry, Math.max(280, minRy));
   const top = Math.min(...spots.map((spot, i) => spot.s * ry - heights[i] / 2));
   const ys = spots.map((spot) => spot.s * ry - top);
   const height = Math.max(...spots.map((spot, i) => ys[i] + heights[i] / 2));
