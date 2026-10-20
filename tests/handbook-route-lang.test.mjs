@@ -65,3 +65,19 @@ test("routeLang: /garden/en is English, /garden is Chinese, elsewhere the site l
   assert.match(src, /\^\\\/garden\\\/en\(\\\/\|\$\)/u);
   assert.match(src, /return siteLang;\n\}/u);
 });
+
+test("the language switch keeps the basePath: /repo/garden/x/ ⇄ /repo/garden/en/x/", async () => {
+  const { swapHandbookLang } = await import("../app/lib/handbook-path.ts");
+  assert.equal(swapHandbookLang("/garden/ai-writing/", "en"), "/garden/en/ai-writing/");
+  assert.equal(swapHandbookLang("/garden/en/ai-writing/", "zh"), "/garden/ai-writing/");
+  assert.equal(swapHandbookLang("/garden/", "en"), "/garden/en/");
+  assert.equal(swapHandbookLang("/garden/en/", "zh"), "/garden/");
+  assert.equal(swapHandbookLang("/garden-docs-v6/garden/components/compare/", "en"), "/garden-docs-v6/garden/en/components/compare/");
+  assert.equal(swapHandbookLang("/garden-docs-v6/garden/en/", "zh"), "/garden-docs-v6/garden/");
+  assert.equal(swapHandbookLang("/blog/x/", "en"), null);
+});
+
+test("the infinite-scroll link carries the basePath", async () => {
+  const src = (await import("node:fs")).readFileSync(new URL("../app/components/FeedMore.tsx", import.meta.url), "utf8");
+  assert.match(src, /useState\(next \? `\$\{base\}\$\{next\}` : null\)/u);
+});

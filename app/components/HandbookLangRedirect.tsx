@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { HANDBOOK_LANG_KEY, type HandbookLang } from "../lib/garden-docs-meta";
+import { swapHandbookLang } from "../lib/handbook-path";
 
 /**
  * First visit: follow the browser language. Afterwards: follow the reader's
@@ -20,9 +21,10 @@ export function HandbookLangRedirect({ lang }: { lang: HandbookLang }) {
     if (wanted === lang) return;
     const link = document.querySelector<HTMLLinkElement>(`link[rel="alternate"][hreflang="${wanted === "en" ? "en" : "zh-CN"}"]`);
     if (!link?.href) return;
-    // hreflang links carry the production origin; stay on this one.
-    const { pathname } = new URL(link.href, location.href);
-    if (pathname !== location.pathname) location.replace(pathname + location.search + location.hash);
+    // The hreflang link says the page exists; the address comes from this one,
+    // so the origin and any basePath stay as they are.
+    const pathname = swapHandbookLang(location.pathname, wanted);
+    if (pathname && pathname !== location.pathname) location.replace(pathname + location.search + location.hash);
   }, [lang]);
   return null;
 }

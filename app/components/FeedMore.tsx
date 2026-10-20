@@ -10,7 +10,9 @@ type Labels = { nextPage: string; loadingMore: string; loadFailed: string; feedE
  * fetches that page's HTML, appends its items to the list above and moves on.
  */
 export function FeedMore({ next, streamSelector, labels }: { next: string | null; streamSelector: string; labels: Labels }) {
-  const [href, setHref] = useState(next);
+  // Page links are written without the basePath; the pages fetched later carry it already.
+  const base = (process.env.NEXT_PUBLIC_BASE_PATH ?? "").replace(/\/+$/u, "");
+  const [href, setHref] = useState(next ? `${base}${next}` : null);
   const [state, setState] = useState<"idle" | "loading" | "error">("idle");
   const navRef = useRef<HTMLElement>(null);
   const busy = useRef(false);

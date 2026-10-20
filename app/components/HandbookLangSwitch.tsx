@@ -4,13 +4,14 @@ import { useSyncExternalStore } from "react";
 import { usePathname } from "next/navigation";
 import { HANDBOOK_LANG_KEY, handbookBase, type HandbookLang } from "../lib/garden-docs-meta";
 import { siteHref } from "../lib/site-href";
+import { swapHandbookLang } from "../lib/handbook-path";
 
 const noSubscribe = () => () => {};
 
 /** The counterpart page from the hreflang link in <head>, on this origin. */
 function counterpartHref(target: HandbookLang) {
   const link = document.querySelector<HTMLLinkElement>(`link[rel="alternate"][hreflang="${target === "en" ? "en" : "zh-CN"}"]`);
-  if (link?.href) return new URL(link.href, location.href).pathname;
+  if (link?.href) return swapHandbookLang(location.pathname, target);
   return target === "zh" ? siteHref(`${handbookBase("zh")}/`) : null;
 }
 
@@ -41,7 +42,7 @@ export function HandbookLangSwitch() {
     return <span className="sh-lang is-disabled" title="No English version of this page yet">{label}</span>;
   }
   return (
-    <a className="sh-lang" href={href} hrefLang={target === "en" ? "en" : "zh-CN"} lang={target === "en" ? "en" : "zh-CN"} onClick={remember} aria-label={target === "en" ? "Read in English" : "切换到中文"}>
+    <a className="sh-lang" href={href} hrefLang={target === "en" ? "en" : "zh-CN"} lang={target === "en" ? "en" : undefined} onClick={remember} aria-label={target === "en" ? "Read in English" : "Switch to Chinese"}>
       {label}
     </a>
   );
