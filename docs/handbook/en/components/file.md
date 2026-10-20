@@ -7,28 +7,19 @@ order: 39
 badge: file
 ---
 
-Write "use `file` to attach a pre-publish checklist that readers can preview inline or download" inside a `garden` idea block, and the Agent generates the `garden file` block below via the `garden-ui` skill (hand-written syntax follows).
-
 ```garden file
 src: ./file/checklist.md
 title: Pre-publish Checklist
 note: Sample Markdown attachment; click Preview to read inline or Download to save the file
 ```
 
+You can tell the AI:
+
 ````markdown
-```garden file
-src: ./file/checklist.md
-title: Pre-publish Checklist
-note: Sample Markdown attachment; click Preview to read inline or Download to save the file
+```garden
+Attach checklist.md here so readers can preview it inline or download it.
 ```
 ````
 
-- **Use when**: Attaching config files, datasets, PDFs, images, or Markdown documents for readers to download or preview inline (use `files` for multiple attachments).
-- **Skip when**: Showing a regular illustration in the middle of an article; use standard Markdown image syntax `![]()` instead.
-
-| Field | Required | Type | Description |
-| :--- | :--- | :--- | :--- |
-| `src` | Required for single file | path or URL | Relative path (must stay inside the content root), `/public` path, or `https://` URL |
-| `title` | No | string | Display title (defaults to filename; serves as the group heading when using `files`) |
-| `note` | No | string | Short note shown below the filename |
-| `files` | Required for multi-file | `{ src, title?, note? }[]` | List of multiple attachments (mutually exclusive with top-level `src`) |
+- **When to use**: Attaching config files, datasets, PDFs, images, or Markdown documents for readers to download or preview inline.
+- **When to skip**: Showing a regular illustration in the middle of an article; use standard Markdown image syntax `![]()` instead.
