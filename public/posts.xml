@@ -9,7 +9,7 @@
     <lastBuildDate>Thu, 15 Oct 2026 16:00:00 GMT</lastBuildDate>
     <item>
       <title>窗台香草丨01丨播种到第一次采摘</title>
-      <link>https://example.com/blog/windowsill-herbs</link>
+      <link>https://example.com/blog/windowsill-herbs/</link>
       <guid isPermaLink="true">https://example.com/blog/windowsill-herbs/</guid>
       <pubDate>Thu, 15 Oct 2026 16:00:00 GMT</pubDate>
       <description>一盆罗勒从播种、间苗到第一次剪叶，按周记下高度和浇水量。</description>
@@ -242,34 +242,8 @@ description: 叶子对生，花排成穗。窗台上的那盆对得上。
 ]]></content:encoded>
     </item>
     <item>
-      <title>窗台香草丨附录丨记录表与资料下载</title>
-      <link>https://example.com/blog/windowsill-herbs-kit</link>
-      <guid isPermaLink="true">https://example.com/blog/windowsill-herbs-kit/</guid>
-      <pubDate>Wed, 14 Oct 2026 16:00:00 GMT</pubDate>
-      <description>播种指南、浇水记录表和排盆小工具，整理成可以下载和预览的文件。</description>
-      <category>香草</category><category>窗台</category>
-      <content:encoded><![CDATA[<p>种了一季，用到的表格和小工具都放在这里。想照着种，先下载整包。</p>
-<ul>
-<li><a href="https://example.com/media/posts/windowsill-herbs-kit/herb-kit.zip">窗台香草资料包</a>（ZIP · 1.8 KB）：浇水记录表（CSV 和 Markdown）和排盆小工具，解压就能用</li>
-</ul>
-<h2>单独的文件</h2>
-<p>每份文件也可以单独看。Markdown、HTML 和 PDF 点「预览」，在页面右侧打开，不用离开这篇。</p>
-<p><strong>种植资料</strong></p>
-<ul>
-<li><a href="https://example.com/media/posts/windowsill-herbs-kit/watering-log.md">watering-log.md</a>（MD · 846 B）：前四周的浇水量和土况</li>
-<li><a href="https://example.com/media/posts/windowsill-herbs-kit/sill-planner.html">窗台排盆</a>（HTML · 1.8 KB）：拖动滑块，看一条窗台放几只盆合适</li>
-<li><a href="https://example.com/media/posts/windowsill-herbs-kit/seed-guide.pdf">播种指南</a>（PDF · 204 KB）：从准备盆土到第一次采摘，一页纸</li>
-</ul>
-<h2>放在对象存储里的大文件</h2>
-<p>原图这类大文件不进仓库，放到对象存储，<code>src</code> 写完整地址。这样的文件只能下载或在新标签页打开。</p>
-<ul>
-<li><a href="https://upload.wikimedia.org/wikipedia/commons/9/90/Basil-Basilico-Ocimum_basilicum-albahaca.jpg">罗勒原图</a>（JPG · 4.3 MB）：Castielli 摄，来自 Wikimedia Commons，CC BY-SA 3.0</li>
-</ul>
-]]></content:encoded>
-    </item>
-    <item>
       <title>Intelligent UI 实验室</title>
-      <link>https://example.com/blog/intelligent-ui-lab</link>
+      <link>https://example.com/blog/intelligent-ui-lab/</link>
       <guid isPermaLink="true">https://example.com/blog/intelligent-ui-lab/</guid>
       <pubDate>Fri, 09 Oct 2026 16:00:00 GMT</pubDate>
       <description>用一段自然语言写下想法，让 AI 编译成可以拖、点、翻的交互块。</description>
@@ -277,29 +251,29 @@ description: 叶子对生，花排成穗。窗台上的那盆对得上。
       <content:encoded><![CDATA[<p>这篇文章演示 Garden 的 Intelligent UI：作者在稿里写一段 <code>intent</code>，AI 把它编译成 <code>ui</code> 块，站点画成可交互的组件。下面每一块都写在它要讲的那一段旁边。</p>
 <h2>KV cache 到底占多少显存</h2>
 <p>每个 token 在每一层都要存一份 K 和一份 V。以 32 层、8 个 KV 头、每头 128 维、fp16 的模型为例：</p>
-<figure><p>batch：1（网页中可调，范围 1–32）</p><p>序列长度：4,096（网页中可调，范围 1,024–32,768）</p><p>batch 为 1、序列 4,096 时，KV cache 要 <strong>512 MiB</strong>。</p><p>（网页中为可交互图表）</p><table><thead><tr><th>序列长度</th><th>KV 显存</th></tr></thead><tbody><tr><td>1,024</td><td>128 MiB</td></tr><tr><td>2,048</td><td>256 MiB</td></tr><tr><td>4,096</td><td>512 MiB</td></tr><tr><td>8,192</td><td>1 GiB</td></tr><tr><td>16,384</td><td>2 GiB</td></tr><tr><td>32,768</td><td>4 GiB</td></tr></tbody></table><figcaption>显存与 batch、序列长度都成正比；batch 8、序列 32K 就要 32 GiB。 · <a href="https://example.com/blog/intelligent-ui-lab#ui-kv-memory">在网页中交互</a></figcaption></figure>
+<figure><p>batch：1（网页中可调，范围 1–32）</p><p>序列长度：4,096（网页中可调，范围 1,024–32,768）</p><p>batch 为 1、序列 4,096 时，KV cache 要 <strong>512 MiB</strong>。</p><p>（网页中为可交互图表）</p><table><thead><tr><th>序列长度</th><th>KV 显存</th></tr></thead><tbody><tr><td>1,024</td><td>128 MiB</td></tr><tr><td>2,048</td><td>256 MiB</td></tr><tr><td>4,096</td><td>512 MiB</td></tr><tr><td>8,192</td><td>1 GiB</td></tr><tr><td>16,384</td><td>2 GiB</td></tr><tr><td>32,768</td><td>4 GiB</td></tr></tbody></table><figcaption>显存与 batch、序列长度都成正比；batch 8、序列 32K 就要 32 GiB。 · <a href="https://example.com/blog/intelligent-ui-lab/#ui-kv-memory">在网页中交互</a></figcaption></figure>
 
 <p>所以长上下文推理的瓶颈往往不是算力，而是显存。</p>
 <h2>Prefill 和 Decode 有什么不同</h2>
 <p>Prefill 阶段一次处理整段 prompt；之后每生成一个 token，都只为这个新 token 算 K/V。</p>
-<figure><ol><li><p><strong>Prefill</strong>：一次算完 3 个 prompt token 的 K/V，全部写进缓存。</p></li><li><p><strong>Decode 1</strong>：新 token 只算自己的 K/V，追加第 4 行；前 3 行直接读缓存。</p></li><li><p><strong>Decode 2</strong>：再追加一行。缓存里已有 5 行，本步新算 1 行。</p></li></ol><table><thead><tr><th></th><th>K</th><th>V</th></tr></thead><tbody><tr><td>t1</td><td>k1（本步新算）</td><td>v1（本步新算）</td></tr><tr><td>t2</td><td>k2（本步新算）</td><td>v2（本步新算）</td></tr><tr><td>t3</td><td>k3（本步新算）</td><td>v3（本步新算）</td></tr></tbody></table><figcaption>Prefill 一次写满 3 行 K/V；之后每步只新算 1 行，其余读缓存。 · <a href="https://example.com/blog/intelligent-ui-lab#ui-prefill-decode">在网页中交互</a></figcaption></figure>
+<figure><ol><li><p><strong>Prefill</strong>：一次算完 3 个 prompt token 的 K/V，全部写进缓存。</p></li><li><p><strong>Decode 1</strong>：新 token 只算自己的 K/V，追加第 4 行；前 3 行直接读缓存。</p></li><li><p><strong>Decode 2</strong>：再追加一行。缓存里已有 5 行，本步新算 1 行。</p></li></ol><table><thead><tr><th></th><th>K</th><th>V</th></tr></thead><tbody><tr><td>t1</td><td>k1（本步新算）</td><td>v1（本步新算）</td></tr><tr><td>t2</td><td>k2（本步新算）</td><td>v2（本步新算）</td></tr><tr><td>t3</td><td>k3（本步新算）</td><td>v3（本步新算）</td></tr></tbody></table><figcaption>Prefill 一次写满 3 行 K/V；之后每步只新算 1 行，其余读缓存。 · <a href="https://example.com/blog/intelligent-ui-lab/#ui-prefill-decode">在网页中交互</a></figcaption></figure>
 
 <p>这就是 decode 阶段每步计算量和序列长度无关的原因。</p>
 <h2>读多写少时选哪把锁</h2>
 <p>假设每次读和写都要 10 ms，几个读者和一个写者同时到达。</p>
-<figure><p>同时到达的读者：3 个（网页中可调，范围 1–8）</p><p><strong>Mutex</strong></p><p>读者和写者一个接一个，共 <strong>40 ms</strong>。</p><p><strong>RwLock</strong></p><p>3 个读者一起读，写者再独占，共 <strong>20 ms</strong>。</p><figcaption>读者越多，Mutex 越慢；RwLock 让读者并行，总耗时不变。 · <a href="https://example.com/blog/intelligent-ui-lab#ui-mutex-vs-rwlock">在网页中交互</a></figcaption></figure>
+<figure><p>同时到达的读者：3 个（网页中可调，范围 1–8）</p><p><strong>Mutex</strong></p><p>读者和写者一个接一个，共 <strong>40 ms</strong>。</p><p><strong>RwLock</strong></p><p>3 个读者一起读，写者再独占，共 <strong>20 ms</strong>。</p><figcaption>读者越多，Mutex 越慢；RwLock 让读者并行，总耗时不变。 · <a href="https://example.com/blog/intelligent-ui-lab/#ui-mutex-vs-rwlock">在网页中交互</a></figcaption></figure>
 
 <p>代价是 RwLock 自身更重，写多的场景反而更慢。</p>
 <h2>为什么 ECB 会泄露图案</h2>
-<figure><p>模式：ECB（网页中可选：ECB / CBC）</p><table><thead><tr><th></th><th>块1</th><th>块2</th><th>块3</th><th>块4</th></tr></thead><tbody><tr><td>明文</td><td>A</td><td>B</td><td>A</td><td>A</td></tr><tr><td>密文</td><td>X（密文与别的块相同）</td><td>Y</td><td>X（密文与别的块相同）</td><td>X（密文与别的块相同）</td></tr></tbody></table><p>密文 · 块1：和块3、块4相同</p><p>密文 · 块3：和块1相同</p><p>密文 · 块4：和块1相同</p><figcaption>ECB 下相同的明文块得到相同的密文块；CBC 把上一块的密文混进来，重复就消失了。 · <a href="https://example.com/blog/intelligent-ui-lab#ui-ecb-vs-cbc">在网页中交互</a></figcaption></figure>
+<figure><p>模式：ECB（网页中可选：ECB / CBC）</p><table><thead><tr><th></th><th>块1</th><th>块2</th><th>块3</th><th>块4</th></tr></thead><tbody><tr><td>明文</td><td>A</td><td>B</td><td>A</td><td>A</td></tr><tr><td>密文</td><td>X（密文与别的块相同）</td><td>Y</td><td>X（密文与别的块相同）</td><td>X（密文与别的块相同）</td></tr></tbody></table><p>密文 · 块1：和块3、块4相同</p><p>密文 · 块3：和块1相同</p><p>密文 · 块4：和块1相同</p><figcaption>ECB 下相同的明文块得到相同的密文块；CBC 把上一块的密文混进来，重复就消失了。 · <a href="https://example.com/blog/intelligent-ui-lab/#ui-ecb-vs-cbc">在网页中交互</a></figcaption></figure>
 
 <p>相同的明文块在 ECB 下总是得到相同的密文块，图案就这样漏了出来。</p>
 <h2>人数一变，采购量跟着变</h2>
-<figure><p>人数：5 人（网页中可调，范围 1–12）</p><p>5 人，带骨羊腿大约 2.0 kg。</p><p>来源 USDA</p><hr><p><strong>这一桌的构成</strong></p><ul><li><p>羊腿：2</p></li><li><p>土豆：1.25</p></li><li><p>蔬菜：0.75</p></li></ul><p><strong>周日时间表</strong></p><ul><li><p>☐ 12:30 处理羊腿 —— 蒜、迷迭香、柠檬</p></li><li><p>☐ 15:00 入烤箱 —— 用温度计，不单看时间</p></li><li><p>☐ 17:00 上桌</p></li></ul><figcaption>人数用加减号调，羊腿重量和圆环占比一起变。 · <a href="https://example.com/blog/intelligent-ui-lab#ui-sunday-shop">在网页中交互</a></figcaption></figure>]]></content:encoded>
+<figure><p>人数：5 人（网页中可调，范围 1–12）</p><p>5 人，带骨羊腿大约 2.0 kg。</p><p>来源 USDA</p><hr><p><strong>这一桌的构成</strong></p><ul><li><p>羊腿：2</p></li><li><p>土豆：1.25</p></li><li><p>蔬菜：0.75</p></li></ul><p><strong>周日时间表</strong></p><ul><li><p>☐ 12:30 处理羊腿 —— 蒜、迷迭香、柠檬</p></li><li><p>☐ 15:00 入烤箱 —— 用温度计，不单看时间</p></li><li><p>☐ 17:00 上桌</p></li></ul><figcaption>人数用加减号调，羊腿重量和圆环占比一起变。 · <a href="https://example.com/blog/intelligent-ui-lab/#ui-sunday-shop">在网页中交互</a></figcaption></figure>]]></content:encoded>
     </item>
     <item>
       <title>Markdown 复杂语法实验场</title>
-      <link>https://example.com/blog/markdown-lab</link>
+      <link>https://example.com/blog/markdown-lab/</link>
       <guid isPermaLink="true">https://example.com/blog/markdown-lab/</guid>
       <pubDate>Fri, 24 Jul 2026 16:00:00 GMT</pubDate>
       <description>用一篇真实文章验证 Typora 常用语法、数学公式、Mermaid、脚注、表格与原生 HTML。</description>
@@ -310,7 +284,7 @@ description: 叶子对生，花排成穗。窗台上的那盆对得上。
 </blockquote>
 <h2>基础排版与 GFM</h2>
 <p>实现**掩码（Masking）<strong>操作，引入</strong>多头注意力（Multi-Head Attention）<strong>机制；前</strong>（中文括号）**后也能正常加粗。</p>
-<p><u>新的向量知道前面有 <code>Your journey</code>，后面有 <code>with one step</code>，高亮应连续。</u></p>
+<p><u>新的向量知道前面有 <code>Your journey</code>，后面有 <code>with one step</code>，下划线应连续。</u></p>
 <p>一段文字可以同时包含<strong>粗体</strong>、<em>斜体</em>、<del>删除线</del>、<code>inline code</code> 和 <a href="https://typora.io/">外部链接</a>。</p>
 <ul>
 <li>第一层列表<ul>
@@ -383,8 +357,6 @@ description: 叶子对生，花排成穗。窗台上的那盆对得上。
 <p>链接单独占一行时，卡片就放在这一行的位置：</p>
 <p><a href="https://katex.org/docs/supported.html">KaTeX 支持的函数</a></p>
 <p>写在代码里的 <code>[文字](https://example.com){card}</code> 不会变成卡片，原样显示。</p>
-<h3>标题里的 <a href="https://typora.io/">Typora</a> 外链</h3>
-<p>标题本身点了会定位到这里，不带下划线；标题里的外链照常带虚线下划线。</p>
 <h2>数学公式</h2>
 <p><strong>求和部分：$\sum_{j=1}^{N}$（上下限）</strong>。</p>
 <p>$$
@@ -519,37 +491,6 @@ WHERE rank &lt;= 3;
     }
 }
 </code></pre>
-<h3>C#</h3>
-<pre><code class="language-c#">public record Article(string Title, DateOnly Published);
-
-public static class Archive
-{
-    public static IEnumerable&lt;string&gt; Titles(IEnumerable&lt;Article&gt; articles) =&gt;
-        articles.OrderByDescending(a =&gt; a.Published).Select(a =&gt; a.Title);
-}
-</code></pre>
-<h3>C++</h3>
-<pre><code class="language-c++">#include &lt;string&gt;
-#include &lt;vector&gt;
-
-struct Article {
-    std::string title;
-    int words;
-};
-
-int totalWords(const std::vector&lt;Article&gt;&amp; articles) {
-    int total = 0;
-    for (const auto&amp; article : articles) total += article.words;
-    return total;
-}
-</code></pre>
-<h3>Shell</h3>
-<pre><code class="language-sh">npx garden check &amp;&amp; npm run build
-</code></pre>
-<pre><code class="language-bash">for file in content/posts/*.md; do
-  wc -m &quot;$file&quot;
-done
-</code></pre>
 <h2>Diff、图片与原生 HTML</h2>
 <pre><code class="language-diff">- const publishing = &quot;copy and paste&quot;;
 + const publishing = &quot;content as source&quot;;
@@ -563,10 +504,6 @@ done
 <pre><code class="language-garden">code: |
   &lt;p class=&quot;garden-html-probe&quot;&gt;静态 HTML 块&lt;/p&gt;
 </code></pre>
-<pre><code class="language-garden">items:
-  - &quot;**程序化**：结构化、强状态、可以穷举的场景。&quot;
-  - &quot;大模型: 非结构化、需要理解语境的场景。&quot;
-</code></pre>
 <hr>
 <p>最后用一个脚注说明这篇文章的角色：它既是示例，也是未来升级 Markdown 依赖时的回归测试。[^regression]</p>
 <p>[^regression]: 页面构建测试会检查公式与示例内容，浏览器验收会检查 Mermaid 是否被转换为 SVG。</p>
@@ -574,7 +511,7 @@ done
     </item>
     <item>
       <title>注意力也是一种界面</title>
-      <link>https://example.com/blog/attention-is-an-interface</link>
+      <link>https://example.com/blog/attention-is-an-interface/</link>
       <guid isPermaLink="true">https://example.com/blog/attention-is-an-interface/</guid>
       <pubDate>Mon, 20 Jul 2026 16:00:00 GMT</pubDate>
       <description>当工具越来越聪明，真正稀缺的不是功能，而是我们把注意力放在哪里。</description>
@@ -630,7 +567,7 @@ const shouldRemove = (friction: Friction) =&gt;
     </item>
     <item>
       <title>03 · 带着证据发布</title>
-      <link>https://example.com/blog/building-in-public/ship-with-evidence</link>
+      <link>https://example.com/blog/building-in-public/ship-with-evidence/</link>
       <guid isPermaLink="true">https://example.com/blog/building-in-public/ship-with-evidence/</guid>
       <pubDate>Fri, 17 Jul 2026 16:00:00 GMT</pubDate>
       <description>“我改完了”不是完成，“用户可以确认它好了”才是。</description>
@@ -646,7 +583,7 @@ const shouldRemove = (friction: Friction) =&gt;
     </item>
     <item>
       <title>我为什么重新选择本地写作</title>
-      <link>https://example.com/blog/local-first-writing</link>
+      <link>https://example.com/blog/local-first-writing/</link>
       <guid isPermaLink="true">https://example.com/blog/local-first-writing/</guid>
       <pubDate>Sat, 11 Jul 2026 16:00:00 GMT</pubDate>
       <description>Markdown 文件、可迁移的媒体资源，以及不被平台锁住的长期写作。</description>
@@ -667,7 +604,7 @@ const shouldRemove = (friction: Friction) =&gt;
     </item>
     <item>
       <title>02 · 让状态变得可靠</title>
-      <link>https://example.com/blog/building-in-public/stable-state</link>
+      <link>https://example.com/blog/building-in-public/stable-state/</link>
       <guid isPermaLink="true">https://example.com/blog/building-in-public/stable-state/</guid>
       <pubDate>Thu, 09 Jul 2026 16:00:00 GMT</pubDate>
       <description>状态设计的关键，是明确谁拥有事实。</description>
@@ -683,7 +620,7 @@ const shouldRemove = (friction: Friction) =&gt;
     </item>
     <item>
       <title>01 · 从最小闭环开始</title>
-      <link>https://example.com/blog/building-in-public/smallest-closed-loop</link>
+      <link>https://example.com/blog/building-in-public/smallest-closed-loop/</link>
       <guid isPermaLink="true">https://example.com/blog/building-in-public/smallest-closed-loop/</guid>
       <pubDate>Fri, 03 Jul 2026 16:00:00 GMT</pubDate>
       <description>先让最重要的一条路径真正跑通。</description>
@@ -707,7 +644,7 @@ const shouldRemove = (friction: Friction) =&gt;
     </item>
     <item>
       <title>做一个 PDF 阅读器之后，我重新理解了「位置」</title>
-      <link>https://example.com/blog/building-a-pdf-reader</link>
+      <link>https://example.com/blog/building-a-pdf-reader/</link>
       <guid isPermaLink="true">https://example.com/blog/building-a-pdf-reader/</guid>
       <pubDate>Sat, 27 Jun 2026 16:00:00 GMT</pubDate>
       <description>阅读位置不是页码，而是一段连续体验的锚点。</description>

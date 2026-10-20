@@ -192,7 +192,12 @@ export function SiteHeader() {
   useEffect(() => {
     const system = window.matchMedia("(prefers-color-scheme: dark)");
     const apply = () => {
-      const stored = window.localStorage.getItem("theme");
+      let stored: string | null = null;
+      try {
+        stored = window.localStorage.getItem("theme");
+      } catch {
+        // Storage blocked (cookies off, opaque origin): follow the system.
+      }
       const useDark = resolveDark(stored, system.matches);
       document.documentElement.dataset.theme = useDark ? "dark" : "light";
       setDark(useDark);
@@ -298,7 +303,11 @@ export function SiteHeader() {
     const next = !dark;
     setDark(next);
     document.documentElement.dataset.theme = next ? "dark" : "light";
-    window.localStorage.setItem("theme", next ? "dark" : "light");
+    try {
+      window.localStorage.setItem("theme", next ? "dark" : "light");
+    } catch {
+      // Storage blocked: the choice lasts for this page only.
+    }
   };
 
   const current = (href: string) => isCurrentNav(pathname, href);

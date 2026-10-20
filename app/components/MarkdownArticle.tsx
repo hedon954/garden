@@ -24,6 +24,8 @@ import { CodeCopy } from "./garden/chrome";
 import { CodeDiff } from "./garden/chrome";
 import { GardenBlock } from "./garden/GardenBlock";
 import { GardenFile } from "./garden/GardenFile";
+import { RefDemo } from "./garden/RefDemo";
+import { remarkRefDemos } from "../lib/remark-ref-demos.mjs";
 import { readGardenPayload } from "../lib/remark-garden.mjs";
 import { imageSizes, linkAssets } from "@garden/generated-content";
 import { imageDimensions, lookupImageSize } from "../../ui/garden/image-dims.mjs";
@@ -33,6 +35,8 @@ import { columnRedirects, internalLinkResolver, readRedirects } from "../../ui/g
 import { columnHref, columns, gardenDocHref, gardenDocs, gardenDocsEn, postHref, posts, thoughts } from "../lib/content";
 import { LinkCardRefresh } from "./LinkCardRefresh";
 import { linkHost } from "../../scripts/link-meta-core.mjs";
+import { FaviconProvider, SourceMark } from "./garden/patterns";
+import { rehypeFieldTables } from "../lib/rehype-field-tables.mjs";
 import { cardDate } from "../../ui/garden/card-refresh.mjs";
 import { siteHref } from "../lib/site-href";
 import { codeLanguageLabel, fenceLanguage } from "../../ui/garden/code-language.mjs";
@@ -42,7 +46,7 @@ const sameSite = sameSiteMatcher(siteLinks?.address ?? "", siteLinks?.basePath ?
 
 // Links to other pages of the site render as Link. A link to an old address listed under
 // redirects is rewritten to the page it moved to; a link that lands on no known page stays a plain anchor.
-const internalRoute = internalLinkResolver({
+const siteRoute = internalLinkResolver({
   redirects: [
     ...readRedirects(siteConfig),
     ...columnRedirects({ columns: [...new Set(columns.map((entry) => entry.column).filter(Boolean))].map((slug) => ({ slug })) }),
@@ -57,6 +61,18 @@ const internalRoute = internalLinkResolver({
   ],
   basePath: siteLinks?.basePath ?? "",
   // Same shape as every other address in the site (the slash follows trailingSlash).
+  format: siteHref,
+});
+
+// The handbook ships with the framework and its links are written without
+// any base path (/garden/…); Link adds the site's own prefix.
+const handbookRoute = internalLinkResolver({
+  redirects: [],
+  routes: [
+    "/garden", "/garden/en",
+    ...gardenDocs.map(gardenDocHref),
+    ...gardenDocsEn.map((doc) => siteHref(`/garden/en/${doc.path}`)),
+  ],
   format: siteHref,
 });
 
@@ -211,7 +227,8 @@ const headingText = (children: ReactNode) => {
   return parts.join("");
 };
 
-export function MarkdownArticle({ content, numbering, lang }: { content: string; numbering?: boolean; lang?: UiLang }) {
+export function MarkdownArticle({ content, numbering, lang, fieldTables, refDemos, handbook }: { content: string; numbering?: boolean; lang?: UiLang; fieldTables?: boolean; refDemos?: boolean; handbook?: boolean }) {
+  const internalRoute = handbook ? handbookRoute : siteRoute;
   const t = ui(lang);
   // Optional layer 2: a Worker that refreshes card text. Without it, cards stay as built.
   const cardWorker = content.includes("{card}") ? siteConfig.linkPreview?.worker : undefined;
@@ -255,6 +272,7 @@ export function MarkdownArticle({ content, numbering, lang }: { content: string;
       if (block?.name === "file" && !block.error) return <GardenFile props={(block.props ?? {}) as Record<string, unknown>} lang={lang} />;
       return <GardenBlock dataPayload={payload} />;
     },
+    "garden-refdemo": (props: { children?: ReactNode; "data-name"?: string }) => <RefDemo lang={lang === "en" ? "en" : "zh"} name={props["data-name"]}>{props.children}</RefDemo>,
     "garden-codediff": (props: {
       children?: ReactNode;
       dataDiff?: string;
@@ -271,9 +289,10 @@ export function MarkdownArticle({ content, numbering, lang }: { content: string;
   };
   return (
     <UiLangProvider lang={lang}>
+    <FaviconProvider favicons={linkAssets?.favicons}>
     <div className="markdown-body prose">
       <ReactMarkdown
-        remarkPlugins={[...markdownPlugins, [remarkLinkCard, { sameSite }], [remarkA2, { imageSize: (src: string) => lookupImageSize(imageSizes, src), lang: lang ?? siteLang }]]}
+        remarkPlugins={[...(refDemos ? [remarkRefDemos] : []), ...markdownPlugins, [remarkLinkCard, { sameSite }], [remarkA2, { imageSize: (src: string) => lookupImageSize(imageSizes, src), lang: lang ?? siteLang }]]}
         rehypePlugins={[
           rehypeRaw,
           rehypeKatex,
@@ -281,6 +300,8 @@ export function MarkdownArticle({ content, numbering, lang }: { content: string;
           // Not rehype-autolink-headings "wrap": a heading with a link in it would nest <a> in <a> (React #418).
           [rehypeHeadingAnchors, { className: ["h-anchor"] }],
           rehypeHighlight,
+          // Handbook only: field tables become cards on narrow screens.
+          ...(fieldTables ? [rehypeFieldTables] : []),
         ]}
         components={{
           p: ({ children, ...props }) => {
@@ -312,10 +333,12 @@ export function MarkdownArticle({ content, numbering, lang }: { content: string;
                 href={href}
                 {...domProps}
                 {...(external
-                  ? { className: "ext", target: "_blank", rel: "noopener noreferrer" }
+                  ? { ...(domProps.className ? { className: `ext ${domProps.className}` } : { className: "ext" }), target: "_blank", rel: "noopener noreferrer" }
                   : {})}
               >
-                {external && href ? <WithFavicon href={href}>{children}</WithFavicon> : children}
+                {external && href && /\bg-src-chip\b/u.test(String(domProps.className ?? ""))
+                  ? <><SourceMark href={href} /><span>{children}</span></>
+                  : <>{external && href ? <WithFavicon href={href}>{children}</WithFavicon> : children}</>}
               </a>
             );
           },
@@ -325,7 +348,7 @@ export function MarkdownArticle({ content, numbering, lang }: { content: string;
             return <MarkdownImage {...props} {...dims} style={{ ...props.style, ...dims.style }} />;
           },
           table: ({ children, ...props }) => (
-            <div className="table-wrap" role="region" aria-label={t.tableScroll} tabIndex={0}>
+            <div className={/\bfield-table\b/u.test(String(props.className ?? "")) ? "table-wrap field-wrap" : "table-wrap"} role="region" aria-label={t.tableScroll} tabIndex={0}>
               <table {...props}>{children}</table>
             </div>
           ),
@@ -361,6 +384,7 @@ export function MarkdownArticle({ content, numbering, lang }: { content: string;
       </ReactMarkdown>
       {cardWorker ? <LinkCardRefresh endpoint={cardWorker} /> : null}
     </div>
+    </FaviconProvider>
     </UiLangProvider>
   );
 }

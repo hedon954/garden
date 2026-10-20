@@ -51,7 +51,7 @@ function mapInline(text, visit) {
 // Inline links read as CommonMark reads them (ui/garden/markdown-destination.mjs):
 // `[t](<https://e.com/a (1)>)` and `[t](https://e.com/Trie_(x))` are whole addresses.
 // Groups: 1 `!`, 3 or 4 the address, 6 `{card}`.
-const LINK = new RegExp(`${INLINE_LINK_SOURCE}(\\{card\\})?`, "giu");
+const LINK = new RegExp(`${INLINE_LINK_SOURCE}(\\{card\\}|\\{source\\})?`, "giu");
 const linkUrl = (match) => match[3] ?? match[4];
 const isWebUrl = (url) => /^https?:\/\//iu.test(url);
 const AUTOLINK = /<(https?:\/\/[^\s>]+)>/giu;
@@ -62,7 +62,7 @@ export function markdownLinks(markdown) {
   const links = [];
   mapOutsideCode(markdown, (text) => {
     for (const match of text.matchAll(LINK)) {
-      if (match[1] !== "!" && isWebUrl(linkUrl(match))) links.push({ url: linkUrl(match), card: Boolean(match[6]) });
+      if (match[1] !== "!" && isWebUrl(linkUrl(match))) links.push({ url: linkUrl(match), card: match[6] === CARD_MARKER });
     }
     const rest = text.replace(LINK, " ");
     for (const match of rest.matchAll(AUTOLINK)) links.push({ url: match[1], card: false });
@@ -74,14 +74,17 @@ export function markdownLinks(markdown) {
 
 /** The marker that asks for a link card: `[text](url){card}`, nothing in between. */
 export const CARD_MARKER = "{card}";
+/** The marker that draws a link as an inline source chip: `[site](url){source}`. */
+export const SOURCE_MARKER = "{source}";
 
 /**
  * The same Markdown without `{card}` markers, for excerpts, RSS and the search
  * index. Markers inside code stay, since there they are literal text.
  */
 export function stripCardMarkers(markdown) {
-  if (!String(markdown ?? "").includes(CARD_MARKER)) return markdown;
-  return mapOutsideCode(markdown, (text) => text.replace(LINK, (...match) => (match[6] && isWebUrl(linkUrl(match)) ? match[0].slice(0, -CARD_MARKER.length) : match[0])));
+  const raw = String(markdown ?? "");
+  if (!raw.includes(CARD_MARKER) && !raw.includes(SOURCE_MARKER)) return markdown;
+  return mapOutsideCode(markdown, (text) => text.replace(LINK, (...match) => (match[6] && isWebUrl(linkUrl(match)) ? match[0].slice(0, -match[6].length) : match[0])));
 }
 
 /** URLs the author asked to show as cards, in order, without repeats. */

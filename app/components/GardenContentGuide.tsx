@@ -32,7 +32,15 @@ cover: writing/first-post.jpg
 
 ## 一个小标题
 
-可以继续插入图片、代码、公式和 Mermaid 图表。`;
+可以继续插入图片、代码、公式、Mermaid 图表，或用 \`garden\` 围栏写组件：
+
+\`\`\`garden list
+items:
+  - icon: idea
+    text: 记下为什么重新开始写
+  - icon: book
+    text: 先把旧笔记整理成目录
+\`\`\``;
 
 const thoughtSource = `---
 title: 雨后的散步

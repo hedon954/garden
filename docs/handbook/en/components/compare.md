@@ -1,14 +1,12 @@
 ---
 title: Side-by-Side Comparison (compare)
 navTitle: compare
-description: Place two or three options side by side to contrast tradeoffs and attributes.
+description: Place two or three options side by side to contrast tradeoffs, or stack good and bad practices.
 section: components
 order: 33
 badge: compare
 ---
 
-Write "use `compare` to contrast describing a code change in one sentence against writing a diff block by hand" inside a `garden` idea block, and the Agent generates the `garden compare` block below via the `garden-ui` skill (hand-written syntax follows).
-
 ```garden compare
 items:
   - title: Describe the change in one sentence
@@ -17,22 +15,39 @@ items:
     text: Place a diff below full code; alone it raises diff-orphan.
 ```
 
+- **When to use**: Comparing 2 or 3 options, configurations, or before/after behaviors side by side (up to ~60 characters per cell in side-by-side mode), or stacking anti-patterns and recommended practices.
+- **When to skip**: Comparing more than 3 items or aligning multiple attributes across rows; use a Markdown list or table instead.
+
+You can tell the AI:
+
 ````markdown
-```garden compare
-items:
-  - title: Describe the change in one sentence
-    text: Idea block under full code; garden-ui writes the diff.
-  - title: Write the diff by hand
-    text: Place a diff below full code; alone it raises diff-orphan.
+```garden
+Contrast describing a code change in one sentence against writing a diff block by hand.
 ```
 ````
 
-- **Use when**: Comparing 2 or 3 options, configurations, or before/after behaviors side by side (keep each cell under ~60 characters).
-- **Skip when**: Comparing more than 3 items or aligning multiple attributes across rows; use a Markdown table instead.
+## Good vs. Bad Verdicts (`verdict: good | bad`)
 
-| Field | Required | Type | Description |
-| :--- | :--- | :--- | :--- |
-| `items` | Yes | array (at least 2) | Options to compare; each entry can also be a `"Title: description"` shorthand string |
-| `items[].title` | Recommended | string | Column heading |
-| `items[].text` | Recommended | string or string[] | Body description for the column |
-| `items[].<customKey>` | No | string or number | Extra key-value pairs rendered as attribute tags along the bottom of the card |
+When contrasting an anti-pattern with a recommended practice, adding `verdict: bad` or `verdict: good` stacks the items vertically and shows a red cross or green check beside each heading:
+
+```garden compare
+items:
+  - title: A poor question
+    verdict: bad
+    text: "“Have you read this author's other books? Could you share a review?”"
+  - title: A better question
+    verdict: good
+    text: "“When do you usually read? Would you like to sit in once first?”"
+```
+
+You can tell the AI:
+
+````markdown
+```garden
+Contrast a poor question and a better question when welcoming a newcomer, marked as bad and good examples.
+```
+````
+
+## Fields
+
+Every field, default, limit and error code is in [Component reference · compare](/garden/en/reference/compare).

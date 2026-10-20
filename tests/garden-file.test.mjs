@@ -366,6 +366,8 @@ test("the build copies repo files, writes the Markdown preview to its own file, 
     assert.deepEqual(blocks[0], {
       layout: "single",
       files: [{ name: "data.csv", title: "<b>数据</b>", format: "CSV", icon: "file", url: "/media/posts/notes/kit/data.csv", size: 8, remote: false, preview: "" }],
+      // The YAML as written, for pages that show a block's own source.
+      source: "src: ./kit/data.csv\ntitle: <b>数据</b>",
     });
     const [guide, demo, big, unknown] = blocks[1].files;
     assert.equal(blocks[1].title, "一组");

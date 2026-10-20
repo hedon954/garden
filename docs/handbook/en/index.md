@@ -171,7 +171,7 @@ items:
     caption: Maximum width for wide multi-column tables expanding symmetrically on desktop
 ```
 
-See [Components Overview](/garden/en/components) in the sidebar for all 9 built-in components and their live examples.
+See [Components Overview](/garden/en/components) in the sidebar for all 12 built-in components and their live examples.
 
 <h2 id="garden-admin-title">From Init to Daily Writing</h2>
 

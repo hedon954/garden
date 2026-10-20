@@ -361,6 +361,9 @@ function rewriteFileFences(content, markdownPath, sourcePath, options = {}) {
       layout: read.layout,
       ...(read.title ? { title: read.title } : {}),
       files: read.files.map((file) => resolveFileEntry(file, markdownPath, sourcePath, options)),
+      // The YAML as written, so a page that shows its own source (the
+      // component reference) shows what the author typed, not this data.
+      source: fence.body.replace(/\n$/u, ""),
     };
     const indent = " ".repeat(fence.indent);
     lines.splice(

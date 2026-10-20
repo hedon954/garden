@@ -11,7 +11,7 @@ description: >-
 
 # 编译 Garden 交互块
 
-作者在稿里用不带名字的 `garden` 围栏写一句想法，这个 skill 把它变成 `garden interactive` 或别的 `garden` 组件。交互组件和设计规则在 `npx garden ui prompt` 的输出里，9 个 `garden` 组件的用途和示例在 `node_modules/hd-garden/templates/garden-blocks.md`（在引擎仓库里是 `templates/garden-blocks.md`），以这两份为准，不凭记忆写组件。
+作者在稿里用不带名字的 `garden` 围栏写一句想法，这个 skill 把它变成 `garden interactive` 或别的 `garden` 组件。交互组件和设计规则在 `npx garden ui prompt` 的输出里，12 个 `garden` 组件的用途和示例在 `node_modules/hd-garden/templates/garden-blocks.md`（在引擎仓库里是 `templates/garden-blocks.md`），以这两份为准，不凭记忆写组件。
 
 作者提交时，提交前钩子跑的是同一个 `npx garden ui check`。你用来找块、写回、自查的命令，和拦住作者提交的命令是同一套。
 
@@ -48,7 +48,7 @@ description: >-
    - **写回正文**：一句话、一张表或一张 Mermaid 就能说清时。
    - **写 `garden interactive`**：读者需要拖、点、翻才能看懂时。
    - **写一段 `diff`**：想法紧跟在一段完整代码后面，说的是「和上一版比改了什么」时。按原话写出 diff，用一段普通 Markdown 写回（只有这一个 `diff` 围栏）。写回后它紧挨着那段代码，页面会合成「代码 / 对比上一版」切换；diff 里的新行要和上面的完整代码一致。
-   - **写别的 `garden` 组件**：一张资源卡、几个指标、两种做法并排、一条时间线、一张静态图表、一张结构图、一份下载文件。
+   - **写别的 `garden` 组件**：一张或多张资源卡（`card` / `cards`）、几个指标（`stat`）、两种做法并排或好坏对照（`compare` / `verdict: good|bad`）、一条时间线（`timeline`）、一张静态图表（`chart`）、一张分区结构图（`figure`）、一份下载文件（`file`）、3～6 个要素的关系图（`relations`）、紧凑图标列表或分步列表（`list`）、两三个选项的选择卡（`choice`）。字段与校验约束见 `npx garden ui prompt` 与 `templates/garden-blocks.md`。
    - **写 `garden html`**：目录表达不了的画布动画、音频、物理模拟等。按 [garden-interactive-chart](../garden-interactive-chart/SKILL.md) 在同名目录写 HTML，用 `title` 写下判断。
 
 4. 写 `garden interactive` 时：

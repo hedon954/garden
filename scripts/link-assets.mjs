@@ -19,6 +19,7 @@ import matter from "gray-matter";
 import { fetchFavicon, fetchImage, fetchPageMeta, isPublicUrl, linkHost } from "./link-meta-core.mjs";
 import { parse as parseYaml } from "yaml";
 import { markdownLinks } from "../ui/garden/markdown-links.mjs";
+import { gardenSourceUrls } from "../ui/garden/source-icon.mjs";
 import { configuredSiteAddress, sameSiteMatcher } from "../ui/garden/same-site.mjs";
 
 export const CACHE_FILE = "link-assets.json";
@@ -73,6 +74,12 @@ export function collectSiteLinks(siteRoot, env = process.env) {
       if (!isPublicUrl(url) || sameSite(url)) continue;
       urls.add(url);
       if (card) cards.add(url);
+      const host = linkHost(url);
+      if (host && !hosts.has(host)) hosts.set(host, url);
+    }
+    // Card sources get the same favicon as links to that site.
+    for (const url of gardenSourceUrls(content)) {
+      if (!isPublicUrl(url) || sameSite(url)) continue;
       const host = linkHost(url);
       if (host && !hosts.has(host)) hosts.set(host, url);
     }

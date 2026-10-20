@@ -47,7 +47,7 @@ export default function Home() {
         <div className="links">
           <Link href={siteHref("/about")}>{t.homeAbout}</Link>
           <a href={githubUrl} rel="me">GitHub</a>
-          <a href="/rss.xml">{t.homeRss}</a>
+          <a href={`${(process.env.NEXT_PUBLIC_BASE_PATH ?? "").replace(/\/+$/u, "")}/rss.xml`}>{t.homeRss}</a>
         </div>
       </section>
 
