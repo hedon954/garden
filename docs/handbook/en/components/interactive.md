@@ -42,7 +42,7 @@ Fence header: ` ```garden interactive #<id> ` (snippet trigger `;ginteractive`).
 
 | Field or Tag | Required | Default | Allowed Values & Limits | Description |
 | :--- | :--- | :--- | :--- | :--- |
-| `#<id>` / `id` | Required | none | lowercase letters, digits, hyphens `^[a-z0-9]+(?:-[a-z0-9]+)*$`, unique per post; missing or invalid reports `ui-id`, unsupported header keys report `ui-header` | Written on the fence line (such as `#reading-time`) or in the YAML header |
+| `#<id>` / `id` | Required | none | lowercase letters, digits, hyphens `^[a-z0-9]+(?:-[a-z0-9]+)*$`, unique per post; missing or invalid reports `ui-id` | Written on the fence line (such as `#reading-time`) or in the YAML header |
 | `caption` | Required | none | non-empty one-sentence takeaway string; missing or empty reports `ui-caption` | States the conclusion visible in the default state |
 | `intent` | Optional | none | string (non-string reports `ui-header`; modified `intent` without recompiling reports a `ui-stale` warning) | Original natural-language prompt this block was compiled from |
 | `expect` | Optional | none | `{ given: {...}, <name>: <expected> }[]` (non-array reports `ui-header`; malformed or failing assertion reports `ui-expect`) | Numeric assertions verified by `npx garden ui check` (use `{ value, tol }` for approximate values) |
