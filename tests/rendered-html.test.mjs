@@ -1016,3 +1016,16 @@ test("full list dates follow the site locale", async () => {
   assert.equal(fullListDate("2025-07-21"), "2025 年 7 月 21 日");
   assert.equal(fullListDate("2025-07-21", "en"), "Jul 21, 2025");
 });
+
+test("column status is an enum with localized labels and Chinese back-compat", async () => {
+  const i18n = await readFile(new URL("../app/lib/i18n.ts", import.meta.url), "utf8");
+  assert.match(i18n, /columnOngoing: "连载中"/);
+  assert.match(i18n, /columnCompleted: "已完结"/);
+  assert.match(i18n, /columnOngoing: "Ongoing"/);
+  assert.match(i18n, /columnCompleted: "Completed"/);
+  const build = await readFile(new URL("../scripts/build-content.mjs", import.meta.url), "utf8");
+  for (const legacy of ["连载中", "持续更新", "已完结"]) assert.match(build, new RegExp(`${legacy}: "(ongoing|completed)"`));
+  const generated = await readFile(new URL("../.garden/generated-content.ts", import.meta.url), "utf8");
+  assert.match(generated, /"columnStatus": "ongoing"/);
+  assert.doesNotMatch(generated, /"columnStatus": "(连载中|持续更新|已完结)"/);
+});

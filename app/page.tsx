@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { CoverImage } from "./components/CoverImage";
 import { fullListDate, homeListDate } from "./lib/a2-meta";
-import { siteLang, ui } from "./lib/i18n";
+import { columnStatusLabel, siteLang, ui } from "./lib/i18n";
 import { columns, postHref, posts } from "./lib/content";
 import { githubUrl, siteConfig } from "./site.config";
 import { siteHref } from "./lib/site-href";
@@ -122,7 +122,7 @@ export default function Home() {
                   </div>
                   <div className="body">
                     <h3><Link href={siteHref(`/columns/#${slug}`)}>{first.columnTitle}</Link></h3>
-                    <p className="count">{t.columnCount(entries.length, first.columnStatus ?? t.columnOngoing)}</p>
+                    <p className="count">{t.columnCount(entries.length, columnStatusLabel(first.columnStatus))}</p>
                     <p>{first.columnDescription ?? first.description}</p>
                   </div>
                 </article>

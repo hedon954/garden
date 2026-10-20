@@ -35,6 +35,13 @@ import { trailingSlashEnabled, withTrailingSlash } from "../ui/garden/site-href.
 
 const gardenPackageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
+/** Column status is a framework enum. Older sites wrote the Chinese label, so map those too. */
+const COLUMN_STATUS = { ongoing: "ongoing", completed: "completed", 连载中: "ongoing", 持续更新: "ongoing", 更新中: "ongoing", 已完结: "completed", 完结: "completed" };
+function columnStatusOf(raw) {
+  if (raw === undefined) return "ongoing";
+  return COLUMN_STATUS[raw.trim().toLowerCase()] ?? raw.trim();
+}
+
 function resolveSiteRoot() {
   if (process.env.GARDEN_SITE) return path.resolve(process.env.GARDEN_SITE);
   const yaml = path.join(process.cwd(), "site.config.yaml");
@@ -619,7 +626,7 @@ function readColumnReferences(posts) {
         column: slug,
         columnTitle: title,
         columnDescription: description,
-        columnStatus: optionalString(value, "status", sourcePath) ?? "持续更新",
+        columnStatus: columnStatusOf(optionalString(value, "status", sourcePath)),
         columnCover: optionalString(value, "cover", sourcePath),
         columnCoverAlt: optionalString(value, "coverAlt", sourcePath),
         order: order + 1,

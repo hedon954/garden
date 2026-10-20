@@ -1,4 +1,5 @@
 /* eslint-disable @next/next/no-img-element -- static GitHub Pages assets must keep their exact paths. */
+import { columnStatusLabel, ui } from "../lib/i18n";
 import Link from "next/link";
 import { columnHref, columns } from "../lib/content";
 import { ContentEmptyState } from "../components/ContentEmptyState";
@@ -49,7 +50,7 @@ export default function ColumnsPage() {
           </div>
           <div className="body">
             <h2 id={slug}>{first.columnTitle}</h2>
-            <p className="count">阅读清单，{entries.length} 篇，{first.columnStatus ?? "持续更新"}</p>
+            <p className="count">{ui().columnReadingList(entries.length, columnStatusLabel(first.columnStatus))}</p>
             <p className="desc">{first.columnDescription ?? first.description ?? "按顺序组织的专题文章系列。"}</p>
             <ol aria-label={`${first.columnTitle}，从新到旧`}>
               {entries.map((entry) => (
