@@ -6,7 +6,7 @@ section: getting-started
 order: 4
 ---
 
-`npx hd-garden init` 不会自动创建 `.github/workflows/pages.yml`。发布到 GitHub Pages 时，在站点仓库新建这个文件。同一份工作流同时支持**单个公开仓库**和**私有源码仓库 + 公开页面仓库**两种模式，按 `PAGES_REPOSITORY` 变量是否为空自动切换。
+默认中文初始化（`npx hd-garden init`）不会自动创建 `.github/workflows/pages.yml`（使用 `--locale en` 或 `--locale en_US` 初始化英文站点时会自动安装英文工作流模板）。发布到 GitHub Pages 时，在站点仓库新建或检查这个文件。同一份工作流同时支持**单个公开仓库**和**私有源码仓库 + 公开页面仓库**两种模式，按 `PAGES_REPOSITORY` 变量是否为空自动切换。
 
 下面的工作流和 Garden 仓库自己的 `.github/workflows/pages.yml` 一致，改动只有两处：一是去掉只对 Garden 仓库有用的 `paths-ignore`、`npm run lint` 和 `npm test`；二是 `publish-repository` 任务先装依赖，再用 `npx garden pages:prepare static-site pages-repository` 写入公开仓库（Garden 仓库里直接调用的是同一个脚本 `scripts/prepare-pages-output.mjs`）。`npm ci` 需要仓库里有 `package-lock.json`，第一次 `npm install` 后记得一起提交。
 

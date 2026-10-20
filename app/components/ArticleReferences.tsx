@@ -1,4 +1,5 @@
 import { referenceColumns, referenceDomain } from "../../ui/garden/references.mjs";
+import { ui, type UiLang } from "../lib/i18n";
 
 type ReferenceItem = {
   title: string;
@@ -8,8 +9,10 @@ type ReferenceItem = {
 
 export function ArticleReferences({
   references,
+  lang,
 }: {
   references?: ReferenceItem[];
+  lang?: UiLang;
 }) {
   if (!references?.length) return null;
   const split = referenceColumns(references.length) === 2;
@@ -19,7 +22,7 @@ export function ArticleReferences({
       className={split ? "article-references is-split" : "article-references"}
       aria-labelledby="article-references-heading"
     >
-      <h2 id="article-references-heading">参考</h2>
+      <h2 id="article-references-heading">{ui(lang).referencesHeading}</h2>
       <ol>
         {references.map((item, index) => {
           const domain = item.domain ?? referenceDomain(item.url);

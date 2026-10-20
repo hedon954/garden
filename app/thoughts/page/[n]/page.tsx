@@ -37,7 +37,7 @@ export default async function ThoughtsPage({ params }: { params: Promise<{ n: st
   }
   return (
     <main className="page-shell thoughts-page">
-      <PageIntro eyebrow="THOUGHTS / 随想" title={siteConfig.pages.thoughts.title} subtitle={siteConfig.pages.thoughts.subtitle} />
+      <PageIntro eyebrow={ui().thoughtsEyebrow} title={siteConfig.pages.thoughts.title} subtitle={siteConfig.pages.thoughts.subtitle} />
       <ThoughtFeed page={page} />
     </main>
   );

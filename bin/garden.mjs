@@ -5,6 +5,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { createRequire } from "node:module";
 import { gardenPackageRoot, gardenSiteRoot } from "../scripts/garden-paths.mjs";
+import { langOf, siteCliLang } from "../ui/core/cli-locale.mjs";
 
 const siteRoot = gardenSiteRoot();
 const args = process.argv.slice(2);
@@ -90,7 +91,17 @@ function ensurePublic() {
   }
 }
 
-function printGiscusGuide() {
+function printGiscusGuide(lang = siteCliLang(siteRoot)) {
+  if (lang === "en") {
+    process.stdout.write(`Comments are disabled by default. Configure Giscus before publishing, or GitHub Actions builds will fail:
+  1. Prepare a public GitHub repository and enable Discussions. A public source repo works directly; a private source repo needs a separate public repo.
+  2. Open https://giscus.app, install the Giscus App for that repository, and pick a category.
+  3. Set GISCUS_REPO, GISCUS_REPO_ID, GISCUS_CATEGORY, and GISCUS_CATEGORY_ID in .env.local.
+  4. Add the same four variables under Settings -> Secrets and variables -> Actions -> Variables in your source repository.
+Placeholder values do not count as configured. To publish without comments, set the Actions Variable GISCUS_DISABLED to 1.
+`);
+    return;
+  }
   process.stdout.write(`评论默认关闭。发布前要接上自己的 Giscus，留空会让 GitHub Actions 构建失败：
   1. 准备一个公开 GitHub 仓库，并开启 Discussions。公开源码仓库可以直接用；私有源码要另建一个公开仓库。
   2. 打开 https://giscus.app/zh-CN ，安装 Giscus App，只授权这个仓库，并选一个分类。
@@ -104,11 +115,12 @@ function ensureEnv() {
   // CI injects the real values. Copying .env.example there would fill any
   // unset key with a sample, which used to turn comments on for owner/repository.
   if (process.env.GITHUB_ACTIONS === "true") return;
-  const example = path.join(gardenPackageRoot, ".env.example");
+  const lang = siteCliLang(siteRoot);
+  const example = path.join(gardenPackageRoot, lang === "en" ? ".env.en.example" : ".env.example");
   const local = path.join(siteRoot, ".env.local");
   if (!fs.existsSync(local) && fs.existsSync(example)) {
     fs.copyFileSync(example, local);
-    printGiscusGuide();
+    printGiscusGuide(lang);
   }
 }
 
@@ -176,22 +188,27 @@ function copyIfMissing(from, to) {
 
 function ensureSiteKit(destinationRoot = siteRoot) {
   if (samePath(destinationRoot, gardenPackageRoot)) return;
+  const lang = siteCliLang(destinationRoot);
 
   const added = [];
   if (
     copyIfMissing(
-      path.join(gardenPackageRoot, "templates", "site", "Makefile"),
+      path.join(gardenPackageRoot, "templates", "site", lang === "en" ? "Makefile.en" : "Makefile"),
       path.join(destinationRoot, "Makefile"),
     )
   ) {
     added.push("Makefile");
   }
   if (added.length) {
-    process.stdout.write(`已补齐站点文件：${added.join("、")}\n`);
+    process.stdout.write(
+      lang === "en"
+        ? `Added missing site files: ${added.join(", ")}\n`
+        : `已补齐站点文件：${added.join("、")}\n`,
+    );
   }
 
-  installSkill(destinationRoot, { onlyMissing: true });
-  if (process.env.GARDEN_SKIP_HOOKS !== "1") installHook(destinationRoot, { quiet: true });
+  installSkill(destinationRoot, { onlyMissing: true, lang });
+  if (process.env.GARDEN_SKIP_HOOKS !== "1") installHook(destinationRoot, { quiet: true, lang });
 }
 
 const HOOK_MARKER = "# garden: ui check";
@@ -203,30 +220,46 @@ if [ ! -d node_modules/hd-garden ]; then
 fi
 exec npx --no-install garden ui check --staged --quiet
 `;
+const HOOK_SCRIPT_EN = `#!/bin/sh
+${HOOK_MARKER}
+if [ ! -d node_modules/hd-garden ]; then
+  echo "garden is not installed yet (run npm install first); skipping ui check." >&2
+  exit 0
+fi
+exec npx --no-install garden ui check --staged --quiet
+`;
 
 /** Installs the pre-commit hook unless the repository already has one. */
-function installHook(destinationRoot = siteRoot, { quiet = false, force = false } = {}) {
+function installHook(destinationRoot = siteRoot, { quiet = false, force = false, lang = siteCliLang(destinationRoot) } = {}) {
   const result = spawnSync("git", ["rev-parse", "--git-path", "hooks/pre-commit"], { cwd: destinationRoot, encoding: "utf8" });
   if (result.status !== 0) {
-    if (!quiet) process.stdout.write("这里不是 git 仓库，没有安装提交前检查。\n");
+    if (!quiet) process.stdout.write(lang === "en" ? "Not a git repository; skipping pre-commit hook installation.\n" : "这里不是 git 仓库，没有安装提交前检查。\n");
     return;
   }
   const hookPath = path.resolve(destinationRoot, result.stdout.trim());
   if (fs.existsSync(hookPath)) {
     const current = fs.readFileSync(hookPath, "utf8");
     if (current.includes(HOOK_MARKER) && !force) {
-      if (!quiet) process.stdout.write("提交前检查已经装好了。\n");
+      if (!quiet) process.stdout.write(lang === "en" ? "Pre-commit hook is already installed.\n" : "提交前检查已经装好了。\n");
       return;
     }
     if (!current.includes(HOOK_MARKER)) {
-      process.stdout.write(`已有 pre-commit 钩子，没有覆盖。请把这一行加进 ${path.relative(destinationRoot, hookPath)}：\n  npx --no-install garden ui check --staged --quiet\n`);
+      process.stdout.write(
+        lang === "en"
+          ? `Existing pre-commit hook kept. Add this line to ${path.relative(destinationRoot, hookPath)}:\n  npx --no-install garden ui check --staged --quiet\n`
+          : `已有 pre-commit 钩子，没有覆盖。请把这一行加进 ${path.relative(destinationRoot, hookPath)}：\n  npx --no-install garden ui check --staged --quiet\n`,
+      );
       return;
     }
   }
   fs.mkdirSync(path.dirname(hookPath), { recursive: true });
-  fs.writeFileSync(hookPath, HOOK_SCRIPT, { mode: 0o755 });
+  fs.writeFileSync(hookPath, lang === "en" ? HOOK_SCRIPT_EN : HOOK_SCRIPT, { mode: 0o755 });
   fs.chmodSync(hookPath, 0o755);
-  process.stdout.write("已安装提交前检查：提交时会检查暂存稿件里的 ui 块。\n");
+  process.stdout.write(
+    lang === "en"
+      ? "Installed pre-commit hook: staged posts will be checked for valid ui blocks before commit.\n"
+      : "已安装提交前检查：提交时会检查暂存稿件里的 ui 块。\n",
+  );
 }
 
 function prepare() {
@@ -283,15 +316,45 @@ function runVinext(vinextArgs, { copyDist = false } = {}) {
   if (result.status !== 0) process.exit(result.status || 1);
 }
 
+const EN_TEMPLATE_VARIANTS = new Set(["site.config.en.yaml", "Makefile.en", "README.en.md"]);
+
 function copyTemplate(from, to) {
   fs.mkdirSync(to, { recursive: true });
   for (const entry of fs.readdirSync(from, { withFileTypes: true })) {
-    if (entry.name === ".git") continue;
+    if (entry.name === ".git" || EN_TEMPLATE_VARIANTS.has(entry.name)) continue;
     const source = path.join(from, entry.name);
     const destination = path.join(to, entry.name);
     if (entry.isDirectory()) copyTemplate(source, destination);
     else if (!fs.existsSync(destination)) fs.copyFileSync(source, destination);
   }
+}
+
+function parseInitArgs(argv) {
+  let locale = process.env.GARDEN_LOCALE ?? "";
+  const positional = [];
+  const hasLocaleFlag = argv.includes("--locale");
+  for (let i = 0; i < argv.length; i += 1) {
+    const arg = argv[i];
+    if (arg === "--locale") {
+      locale = argv[i + 1] ?? "";
+      i += 1;
+      continue;
+    }
+    if (arg.startsWith("--locale=")) {
+      locale = arg.slice("--locale=".length);
+      continue;
+    }
+    if (/^locale\s*[:=]/iu.test(arg)) {
+      locale = arg.replace(/^locale\s*[:=]\s*/iu, "");
+      continue;
+    }
+    positional.push(arg);
+  }
+  void hasLocaleFlag;
+  return {
+    destination: path.resolve(positional[0] ?? "."),
+    lang: langOf(locale),
+  };
 }
 
 function writeEngineDependency(destination) {
@@ -306,14 +369,44 @@ function writeEngineDependency(destination) {
 }
 
 function initSite() {
-  const destination = path.resolve(rest[0] ?? ".");
+  const { destination, lang } = parseInitArgs(rest);
   const template = path.join(gardenPackageRoot, "templates", "site");
   if (!fs.existsSync(template)) fail("Garden 包里缺少 templates/site。");
   if (fs.existsSync(path.join(destination, "site.config.yaml"))) {
-    fail(`目录已是 Garden 站点：${destination}`);
+    fail(lang === "en" ? `Directory is already a Garden site: ${destination}` : `目录已是 Garden 站点：${destination}`);
   }
   copyTemplate(template, destination);
+  if (lang === "en") {
+    for (const [srcName, destName] of [
+      ["site.config.en.yaml", "site.config.yaml"],
+      ["Makefile.en", "Makefile"],
+      ["README.en.md", "README.md"],
+    ]) {
+      const srcFile = path.join(template, srcName);
+      if (fs.existsSync(srcFile)) {
+        fs.copyFileSync(srcFile, path.join(destination, destName));
+      }
+    }
+    const enWorkflow = path.join(gardenPackageRoot, "templates", "workflows", "pages.en.yml");
+    if (fs.existsSync(enWorkflow)) {
+      const workflowDest = path.join(destination, ".github", "workflows", "pages.yml");
+      fs.mkdirSync(path.dirname(workflowDest), { recursive: true });
+      fs.copyFileSync(enWorkflow, workflowDest);
+    }
+  }
   writeEngineDependency(destination);
+  if (lang === "en") {
+    process.stdout.write(`Created site: ${destination}\n`);
+    installSkill(destination, { lang });
+    process.stdout.write("Next steps:\n");
+    process.stdout.write(`  cd ${destination}\n`);
+    process.stdout.write("  npm install\n");
+    process.stdout.write("  Configure comments in four steps below, then start writing\n");
+    process.stdout.write("  make new TITLE=\"Hello, World\" SLUG=hello\n");
+    process.stdout.write("  make dev\n");
+    printGiscusGuide("en");
+    return;
+  }
   process.stdout.write(`已创建站点：${destination}\n`);
   installSkill(destination);
   process.stdout.write("下一步：\n");
@@ -322,7 +415,7 @@ function initSite() {
   process.stdout.write("  按下面四步接上评论，再写文章\n");
   process.stdout.write("  make new TITLE=\"你好，世界\" SLUG=hello\n");
   process.stdout.write("  make dev\n");
-  printGiscusGuide();
+  printGiscusGuide("zh");
 }
 
 function packagedSkills() {
@@ -333,7 +426,7 @@ function packagedSkills() {
     .map((entry) => entry.name);
 }
 
-function installSkill(destinationRoot = siteRoot, { onlyMissing = false } = {}) {
+function installSkill(destinationRoot = siteRoot, { onlyMissing = false, lang = siteCliLang(destinationRoot) } = {}) {
   const names = packagedSkills();
   if (!names.length) fail("Garden 包里没有 skill。");
   const installed = [];
@@ -344,7 +437,11 @@ function installSkill(destinationRoot = siteRoot, { onlyMissing = false } = {}) 
     installed.push(name);
   }
   if (installed.length) {
-    process.stdout.write(`已安装 skill：${installed.join("、")}\n`);
+    process.stdout.write(
+      lang === "en"
+        ? `Installed skills: ${installed.join(", ")}\n`
+        : `已安装 skill：${installed.join("、")}\n`,
+    );
   }
 }
 

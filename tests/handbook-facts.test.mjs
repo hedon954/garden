@@ -238,3 +238,175 @@ test("the fact gate reads English handbook pages too", async () => {
   const issues = checkFileFacts("docs/handbook/en/start.md", "Run `npx garden no-such-command` first.\n", facts);
   assert.ok(issues.length > 0);
 });
+
+test("checkEnglishHandbookNoCjk fails on CJK in English handbook prose, fenced code, and included assets, while allowing the 丨 title-split explanation", async () => {
+  const { checkEnglishHandbookNoCjk } = await import("../scripts/handbook-facts.mjs");
+  const fsMod = await import("node:fs");
+  const os = await import("node:os");
+  const pathMod = await import("node:path");
+  const dir = fsMod.mkdtempSync(pathMod.join(os.tmpdir(), "hb-en-cjk-"));
+  try {
+    fsMod.mkdirSync(pathMod.join(dir, "docs/handbook/en/components/file"), { recursive: true });
+    fsMod.mkdirSync(pathMod.join(dir, "docs/handbook/assets"), { recursive: true });
+    fsMod.writeFileSync(
+      pathMod.join(dir, "docs/handbook/en/config.md"),
+      [
+        "---",
+        "title: Config",
+        "section: getting-started",
+        "---",
+        "",
+        "Split two-line headings with ` | ` or `丨`.",
+        "",
+        "```yaml",
+        "tagline: 写作 · 记录",
+        "```",
+        "",
+        "![Layout](../assets/diagram.svg)",
+        "",
+        "```garden file",
+        "src: ./components/file/note.md",
+        "```",
+      ].join("\n"),
+    );
+    fsMod.writeFileSync(pathMod.join(dir, "docs/handbook/assets/diagram.svg"), "<svg><text>正文阅读列</text></svg>\n");
+    fsMod.writeFileSync(pathMod.join(dir, "docs/handbook/en/components/file/note.md"), "# Note\n\n这里有一句中文。\n");
+
+    const issues = checkEnglishHandbookNoCjk(dir);
+    assert.deepEqual(
+      issues.map((i) => `${i.file}:${i.line}`).sort(),
+      [
+        "docs/handbook/assets/diagram.svg:1",
+        "docs/handbook/en/components/file/note.md:3",
+        "docs/handbook/en/config.md:9",
+      ],
+    );
+  } finally {
+    fsMod.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("checkHandbookTemplates enforces verbatim matching between handbook config/deploy pages and templates", async () => {
+  const { checkHandbookTemplates } = await import("../scripts/handbook-facts.mjs");
+  assert.deepEqual(checkHandbookTemplates(root), []);
+
+  const fsMod = await import("node:fs");
+  const os = await import("node:os");
+  const pathMod = await import("node:path");
+  const dir = fsMod.mkdtempSync(pathMod.join(os.tmpdir(), "hb-tpl-"));
+  try {
+    fsMod.mkdirSync(pathMod.join(dir, "docs/handbook/en"), { recursive: true });
+    fsMod.mkdirSync(pathMod.join(dir, "templates/site"), { recursive: true });
+    fsMod.mkdirSync(pathMod.join(dir, "templates/workflows"), { recursive: true });
+    fsMod.writeFileSync(pathMod.join(dir, "templates/site/site.config.en.yaml"), "name: Garden\nlocale: en_US\n");
+    fsMod.writeFileSync(
+      pathMod.join(dir, "docs/handbook/en/config.md"),
+      "---\ntitle: Config\n---\n\n```yaml\nname: Drifted\nlocale: en_US\n```\n",
+    );
+    const issues = checkHandbookTemplates(dir);
+    assert.equal(issues.length, 1);
+    assert.equal(issues[0].file, "docs/handbook/en/config.md");
+    assert.equal(issues[0].kind, "template-drift");
+  } finally {
+    fsMod.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("findBuiltEnglishHtmlCjk catches CJK in <head> meta tags, attributes, and body while allowing the 中 switcher and 丨 delimiter", async () => {
+  const { findBuiltEnglishHtmlCjk } = await import("../scripts/handbook-facts.mjs");
+  const cleanHtml = [
+    '<!DOCTYPE html><html lang="en"><head>',
+    "<title>Quick Start · Garden Handbook</title>",
+    '<meta property="og:description" content="English description" />',
+    '<meta name="twitter:description" content="English description" />',
+    '<meta property="og:image:alt" content="Garden · Garden Handbook" />',
+    "</head><body>",
+    '<a href="/garden/"><span>中</span> / <span>EN</span></a>',
+    "<main><p>Split two-line headings with <code>丨</code>.</p></main>",
+    "</body></html>",
+  ].join("");
+  assert.deepEqual(findBuiltEnglishHtmlCjk(cleanHtml, "/garden/en/start"), []);
+
+  const dirtyHtml = [
+    '<!DOCTYPE html><html lang="en"><head>',
+    "<title>Quick Start · Garden Handbook</title>",
+    '<meta property="og:description" content="写作 · 记录 · 保持好奇" />',
+    '<meta property="og:image:alt" content="Garden · 记一些正在做的事" />',
+    "</head><body>",
+    "<main><h1>找不到这一页</h1></main>",
+    "</body></html>",
+  ].join("");
+  const issues = findBuiltEnglishHtmlCjk(dirtyHtml, "/garden/en/404");
+  assert.equal(issues.length, 3);
+  assert.ok(issues.some((i) => i.message.includes("meta[og:description]")));
+  assert.ok(issues.some((i) => i.message.includes("meta[og:image:alt]")));
+  assert.ok(issues.some((i) => i.message.includes("找不到这一页")));
+});
+
+test("allowlist permits the literal keyword \"全部\" ONLY in docs/handbook/en/components/figure.md on the parts[].id row", async () => {
+  const { checkEnglishHandbookNoCjk, findBuiltEnglishHtmlCjk } = await import("../scripts/handbook-facts.mjs");
+  const fsMod = await import("node:fs");
+  const os = await import("node:os");
+  const pathMod = await import("node:path");
+  const dir = fsMod.mkdtempSync(pathMod.join(os.tmpdir(), "hb-figure-all-"));
+  try {
+    fsMod.mkdirSync(pathMod.join(dir, "docs/handbook/en/components"), { recursive: true });
+    // Allowed on parts[].id row in en/components/figure.md
+    fsMod.writeFileSync(
+      pathMod.join(dir, "docs/handbook/en/components/figure.md"),
+      [
+        "---",
+        "title: Annotated Diagram (figure)",
+        "section: components",
+        "---",
+        "",
+        '| `parts[].id` | Recommended | `parts[].name` | string | Matches `data-p` on SVG elements (`"all"` or `"全部"` highlights all regions) |',
+      ].join("\n"),
+    );
+    assert.deepEqual(checkEnglishHandbookNoCjk(dir), []);
+
+    // Disallowed on another line in en/components/figure.md, or on parts[].id in a different file
+    fsMod.writeFileSync(
+      pathMod.join(dir, "docs/handbook/en/components/figure.md"),
+      [
+        "---",
+        "title: Annotated Diagram (figure)",
+        "section: components",
+        "---",
+        "",
+        '| `parts[].id` | Recommended | `parts[].name` | string | Matches `data-p` on SVG elements (`"all"` or `"全部"` highlights all regions) |',
+        'Other prose mentioning `"全部"` is rejected.',
+      ].join("\n"),
+    );
+    fsMod.writeFileSync(
+      pathMod.join(dir, "docs/handbook/en/components/other.md"),
+      [
+        "---",
+        "title: Other",
+        "section: components",
+        "---",
+        "",
+        '| `parts[].id` | Recommended | `parts[].name` | string | Matches `data-p` on SVG elements (`"all"` or `"全部"` highlights all regions) |',
+      ].join("\n"),
+    );
+    const issues = checkEnglishHandbookNoCjk(dir);
+    assert.deepEqual(
+      issues.map((i) => `${i.file}:${i.line}`).sort(),
+      [
+        "docs/handbook/en/components/figure.md:7",
+        "docs/handbook/en/components/other.md:6",
+      ],
+    );
+
+    // Built HTML: allowed only on /garden/en/components/figure inside the parts[].id row
+    const figureHtml = [
+      '<!DOCTYPE html><html lang="en"><head><title>figure · Garden</title></head><body>',
+      '<table><tr><td><code>parts[].id</code></td><td>Matches <code>data-p</code> (<code>"all"</code> or <code>"全部"</code> highlights all regions)</td></tr></table>',
+      "</body></html>",
+    ].join("");
+    assert.deepEqual(findBuiltEnglishHtmlCjk(figureHtml, "/garden/en/components/figure"), []);
+    assert.equal(findBuiltEnglishHtmlCjk(figureHtml, "/garden/en/components/other").length, 1);
+  } finally {
+    fsMod.rmSync(dir, { recursive: true, force: true });
+  }
+});

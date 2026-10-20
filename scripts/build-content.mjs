@@ -74,6 +74,7 @@ const siteAddress = configuredSiteAddress(siteConfig, process.env);
 const sameSite = sameSiteMatcher(siteAddress, basePath);
 const siteName = process.env.SITE_NAME ?? siteConfig.name;
 const siteDescription = process.env.SITE_DESCRIPTION ?? siteConfig.description;
+const siteLang = /^en/iu.test(String(siteConfig.locale ?? "")) ? "en" : "zh";
 
 const fail = (sourcePath, message) => {
   throw new Error(`${sourcePath}: ${message}`);
@@ -304,11 +305,12 @@ function resolveFileEntry(file, markdownPath, sourcePath, options = {}) {
   const assetOptions = options.assetOptions ?? {};
   const src = file.src;
   const name = fileName(src);
+  const lang = options.lang ?? siteLang;
   const entry = {
     name,
     title: file.title || name,
     ...(file.note ? { note: file.note } : {}),
-    format: formatLabel(src),
+    format: formatLabel(src, lang),
     icon: fileIcon(src),
   };
   if (isRemoteSrc(src)) {
@@ -332,9 +334,9 @@ function resolveFileEntry(file, markdownPath, sourcePath, options = {}) {
     // Rendered now into its own file next to the copy; the page only links to it and the
     // preview fetches it on demand. Images next to the Markdown file are copied too.
     const { content } = matter(fs.readFileSync(resolved.path, "utf8"));
-    const html = renderFilePreview(rewriteMarkdownAssets(content.trim(), resolved.path, sourcePath, assetOptions));
+    const html = renderFilePreview(rewriteMarkdownAssets(content.trim(), resolved.path, sourcePath, assetOptions), { lang });
     const { destination } = assetFiles.get(url.split(/[?#]/u, 1)[0]);
-    fs.writeFileSync(previewFileName(destination), previewDocument(html, { title: entry.title }));
+    fs.writeFileSync(previewFileName(destination), previewDocument(html, { title: entry.title, lang }));
     next.previewSrc = previewFileName(url.split(/[?#]/u, 1)[0]);
   }
   return next;
@@ -513,6 +515,7 @@ function validateAndNormalize(data, content, markdownPath, kind, sourcePath, lin
       ),
       markdownPath,
       sourcePath,
+      { lang: siteLang },
     ),
   };
 }
@@ -682,6 +685,8 @@ function readHandbookDocs() {
         );
       }
 
+      const docLang = docPath === "en" || docPath.startsWith("en/") ? "en" : "zh";
+      if (siteLang === "en" && docLang === "zh") return [];
       const content = rewriteFileFences(
         rewriteMarkdownAssets(
           rewriteUiFences(parsed.content.trim(), fullPath, sourcePath, frontMatterLines + leadingLines(parsed.content), assetOptions),
@@ -691,7 +696,7 @@ function readHandbookDocs() {
         ),
         fullPath,
         sourcePath,
-        fileOptions,
+        { ...fileOptions, lang: docLang },
       );
 
       return [{
@@ -732,8 +737,8 @@ const allHandbookDocs = readHandbookDocs().map((doc) =>
     ? { ...doc, lang: "en", path: doc.path === "en" ? "index" : doc.path.slice(3) }
     : { ...doc, lang: "zh" },
 );
-const zhHandbookDocs = allHandbookDocs.filter((doc) => doc.lang === "zh");
 const enHandbookDocs = allHandbookDocs.filter((doc) => doc.lang === "en");
+const zhHandbookDocs = siteLang === "en" ? enHandbookDocs : allHandbookDocs.filter((doc) => doc.lang === "zh");
 const gardenIndexDoc = zhHandbookDocs.find((doc) => doc.path === "index") ?? null;
 const gardenDocs = zhHandbookDocs.filter((doc) => doc.path !== "index");
 const gardenIndexDocEn = enHandbookDocs.find((doc) => doc.path === "index") ?? null;
@@ -907,7 +912,7 @@ export const siteLinks = ${JSON.stringify({ address: siteAddress, basePath, trai
 `,
 );
 fs.mkdirSync(path.join(root, "public"), { recursive: true });
-fs.writeFileSync(path.join(root, "public", "search-index.json"), JSON.stringify(buildSearchIndex({ posts, columns, thoughts })));
+fs.writeFileSync(path.join(root, "public", "search-index.json"), JSON.stringify(buildSearchIndex({ posts, columns, thoughts }, { lang: siteLang })));
 for (const name of fs.readdirSync(path.join(root, "public"))) {
   if (/^search-full\.[0-9a-f]+\.json$/u.test(name) && name !== fullIndex.fileName) fs.rmSync(path.join(root, "public", name));
 }
@@ -960,7 +965,7 @@ function writeRssFeed(fileName, entries) {
     <link>${escapeXml(publicBaseUrl)}</link>
     <atom:link href="${escapeXml(`${publicBaseUrl}/${fileName}`)}" rel="self" type="application/rss+xml" />
     <description>${escapeXml(siteDescription)}</description>
-    <language>zh-CN</language>
+    <language>${siteLang === "en" ? "en-US" : "zh-CN"}</language>
     <lastBuildDate>${feedLastBuildDate(entries)}</lastBuildDate>${rssItems}
   </channel>
 </rss>
@@ -973,14 +978,16 @@ writeRssFeed(
   posts.map((entry) => feedEntry(entry, `/blog/${entry.path}/`)),
 );
 const sitemapEntries = [
-  "/", "/blog/", "/thoughts/", "/columns/", "/about/", "/garden/",
-  ...gardenDocs.map((entry) => `/garden/${entry.path}/`),
-  ...(gardenIndexDocEn ? ["/garden/en/"] : []),
-  ...gardenDocsEn.map((entry) => `/garden/en/${entry.path}/`),
-  ...posts.map((entry) => `/blog/${entry.path}/`),
-  ...columns.map((entry) => `/columns/${entry.column}/${columnEntryPath(entry)}/`),
-  ...thoughts.map((entry) => `/thoughts/${entry.slug}/`),
-].map(pageAddress);
+  ...new Set([
+    "/", "/blog/", "/thoughts/", "/columns/", "/about/", "/garden/",
+    ...gardenDocs.map((entry) => `/garden/${entry.path}/`),
+    ...(gardenIndexDocEn ? ["/garden/en/"] : []),
+    ...gardenDocsEn.map((entry) => `/garden/en/${entry.path}/`),
+    ...posts.map((entry) => `/blog/${entry.path}/`),
+    ...columns.map((entry) => `/columns/${entry.column}/${columnEntryPath(entry)}/`),
+    ...thoughts.map((entry) => `/thoughts/${entry.slug}/`),
+  ].map(pageAddress)),
+];
 // Card URLs in published entries: the only pages the link-card Worker may read.
 fs.writeFileSync(
   path.join(publicRoot, "link-allowlist.json"),

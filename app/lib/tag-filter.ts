@@ -153,7 +153,14 @@ export function tagFilterHref(selected: readonly string[], pathname = "/blog") {
 export const ARTICLE_TAG_LIST = "/blog/";
 export const articleTagHref = (tag: string) => tagFilterHref([tag], ARTICLE_TAG_LIST);
 
-/** 「共 N 篇」, or 「2 个标签，共 5 篇」 with a selection. */
-export function tagSummary(selectedCount: number, resultCount: number) {
+/** 「共 N 篇」, or 「2 个标签，共 5 篇」 with a selection (or English equivalent when lang === "en"). */
+export function tagSummary(selectedCount: number, resultCount: number, lang: "zh" | "en" = "zh") {
+  if (lang === "en") {
+    const postsWord = resultCount === 1 ? "post" : "posts";
+    if (!selectedCount) return `${resultCount} ${postsWord}`;
+    const tagsWord = selectedCount === 1 ? "tag" : "tags";
+    return `${selectedCount} ${tagsWord}, ${resultCount} ${postsWord}`;
+  }
   return selectedCount ? `${selectedCount} 个标签，共 ${resultCount} 篇` : `共 ${resultCount} 篇`;
 }
+

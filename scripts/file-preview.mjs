@@ -68,14 +68,15 @@ export function rehypePreviewSafety() {
  * their language, outside links carry .ext. (Copy buttons, link cards and
  * favicons are article-only.)
  */
-export function rehypePreviewShape() {
+export function rehypePreviewShape({ lang = "zh" } = {}) {
+  const tableAriaLabel = lang === "en" ? "Scrollable table" : "表格，可横向滚动";
   return (tree) => {
     visit(tree, "element", (node, index, parent) => {
       if (node.tagName === "table" && !(parent?.type === "element" && parent.properties?.className?.includes?.("table-wrap"))) {
         parent.children[index] = {
           type: "element",
           tagName: "div",
-          properties: { className: ["table-wrap"], role: "region", ariaLabel: "表格，可横向滚动", tabIndex: 0 },
+          properties: { className: ["table-wrap"], role: "region", ariaLabel: tableAriaLabel, tabIndex: 0 },
           children: [node],
         };
         return "skip";
@@ -95,7 +96,7 @@ export function rehypePreviewShape() {
 }
 
 /** Markdown → the preview's HTML. `idPrefix` keeps heading ids apart from the article's own. */
-export function renderFilePreview(markdown, { idPrefix = "gf-" } = {}) {
+export function renderFilePreview(markdown, { idPrefix = "gf-", lang = "zh" } = {}) {
   return String(
     unified()
       .use(remarkParse)
@@ -106,7 +107,7 @@ export function renderFilePreview(markdown, { idPrefix = "gf-" } = {}) {
       .use(rehypeSlug, { prefix: idPrefix })
       .use(rehypeHighlight)
       .use(rehypePreviewSafety)
-      .use(rehypePreviewShape)
+      .use(rehypePreviewShape, { lang })
       .use(rehypeStringify)
       .processSync(markdown),
   );
@@ -201,14 +202,16 @@ export function previewStyleSheet() {
  * JavaScript who follows the 预览 link gets something readable. The drawer
  * takes only what is inside <main>.
  */
-export function previewDocument(html, { title = "预览" } = {}) {
+export function previewDocument(html, { title = "", lang = "zh" } = {}) {
+  const docTitle = title || (lang === "en" ? "Preview" : "预览");
+  const htmlLang = lang === "en" ? "en" : "zh-CN";
   return `<!doctype html>
-<html lang="zh-CN">
+<html lang="${htmlLang}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
-<title>${escapeText(title)}</title>
+<title>${escapeText(docTitle)}</title>
 <style>${previewStyleSheet()}</style>
 </head>
 <body><main class="gf-preview-doc">

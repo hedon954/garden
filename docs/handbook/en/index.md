@@ -113,7 +113,7 @@ Write ` | ` (with spaces on both sides) inside a title to split it across two li
 
 Transparent-background line drawings automatically get a warm paper backing in dark mode, so you do not need separate dark assets:
 
-![Diagram of the 740px reading column, 1040px wide figure zone, and 1340px wide table zone (transparent-background dark-line SVG, backed with #faf9f5 in dark mode).](../assets/reading-layout.svg)
+![Diagram of the 740px reading column, 1040px wide figure zone, and 1340px wide table zone (transparent-background dark-line SVG, backed with #faf9f5 in dark mode).](../assets/reading-layout-en.svg)
 
 ## Wide Tables Expand Symmetrically
 

@@ -1,5 +1,5 @@
 // Server component: the card for `garden file`. Only the 预览 control is a client island.
-import { ui, type UiLang } from "../../lib/i18n";
+import { siteLang, ui, type UiLang } from "../../lib/i18n";
 import { blockFiles, fileMeta } from "../../../ui/garden/file-block.mjs";
 import { ActionGlyph, FileGlyph, safeFileHref } from "./file-icons";
 import { FilePreview, type PreviewFile } from "./FilePreview";
@@ -22,7 +22,7 @@ const PREVIEWS = new Set(["md", "html", "pdf"]);
 
 export function GardenFile({ props, lang }: { props: Record<string, unknown>; lang?: UiLang }) {
   const t = ui(lang);
-  const block = blockFiles(props) as { layout?: string; title?: string; files: FileEntry[] };
+  const block = blockFiles(props, lang ?? siteLang) as { layout?: string; title?: string; files: FileEntry[] };
   const files = block.files.filter((file) => safeFileHref(file.url));
   if (!files.length) return null;
   const group = block.layout === "group";

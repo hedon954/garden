@@ -225,7 +225,7 @@ function Grid({ node, env }: { node: UiNode; env: Env }) {
                       className={`garden-ui-cell garden-ui-tone-${row.tones[colIndex]}`}
                       tabIndex={isFocus ? 0 : -1}
                       aria-pressed={selected?.row === rowIndex && selected?.col === colIndex}
-                      aria-label={`${row.label ?? ""} ${cols[colIndex] ?? ""}：${formatValue(cell)}${row.tones[colIndex] !== "plain" ? `，${asString(legend[row.tones[colIndex]], TONE_LABELS[row.tones[colIndex] as keyof typeof TONE_LABELS])}` : ""}`}
+                      aria-label={tx.cellAria(row.label ?? "", cols[colIndex] ?? "", formatValue(cell), row.tones[colIndex] !== "plain" ? asString(legend[row.tones[colIndex]], TONE_LABELS[row.tones[colIndex] as keyof typeof TONE_LABELS]) : "")}
                       onFocus={() => setFocus({ row: rowIndex, col: colIndex })}
                       onClick={() => setSelected({ row: rowIndex, col: colIndex })}
                       onKeyDown={(event) => {

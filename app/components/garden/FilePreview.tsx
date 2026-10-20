@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useId, useRef, useState, type FocusEvent, type MouseEvent } from "react";
 import { createPortal } from "react-dom";
-import { ui, type UiLang } from "../../lib/i18n";
+import { siteLang, ui, type UiLang } from "../../lib/i18n";
 import { previewBody, previewFrameProps } from "../../../ui/garden/file-block.mjs";
 import { ActionGlyph, FileGlyph } from "./file-icons";
 
@@ -119,7 +119,7 @@ export function FilePreview({ file, compact, lang }: { file: PreviewFile; compac
     if (file.preview === "md" && loaded.state !== "ready" && loaded.state !== "loading") load();
   };
 
-  const frame = previewFrameProps(file) as { src: string; title: string; referrerPolicy: "no-referrer"; sandbox?: string } | null;
+  const frame = previewFrameProps(file, lang ?? siteLang) as { src: string; title: string; referrerPolicy: "no-referrer"; sandbox?: string } | null;
   const drawer = open
     ? createPortal(
         <div className="gf-layer">

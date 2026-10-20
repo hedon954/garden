@@ -25,6 +25,7 @@ function day(value: string) {
 }
 
 export default function Home() {
+  const t = ui();
   const recentAll = [...posts].sort((left, right) => Date.parse(right.date) - Date.parse(left.date));
   const feature = recentAll[0];
   const recent = recentAll.filter((post) => post.path !== feature?.path);
@@ -38,7 +39,6 @@ export default function Home() {
     }, new Map<string, typeof columns>()),
   );
 
-  const t = ui();
   return (
     <main className="sh-main" id="content">
       <section className="sh-intro">

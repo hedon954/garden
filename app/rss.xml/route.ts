@@ -5,6 +5,7 @@ import { configuredSiteUrl, siteDescription, siteName } from "../lib/site";
 import { contentForFeed } from "../../ui/core/transform.mjs";
 import { stripCardMarkers } from "../../ui/garden/markdown-links.mjs";
 import { withTrailingSlash } from "../../ui/garden/site-href.mjs";
+import { htmlLang, siteLang } from "../lib/i18n";
 
 const escapeXml = (value: string) =>
   value
@@ -72,7 +73,7 @@ export async function GET() {
     <link>${origin}</link>
     <atom:link href="${origin}/rss.xml" rel="self" type="application/rss+xml" />
     <description>${escapeXml(siteDescription)}</description>
-    <language>zh-CN</language>
+    <language>${htmlLang(siteLang)}</language>
     <lastBuildDate>${lastBuildDate}</lastBuildDate>
     ${items}
   </channel>

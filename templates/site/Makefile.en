@@ -1,0 +1,45 @@
+MESSAGE ?= Update blog
+
+.DEFAULT_GOAL := help
+
+.PHONY: help new embed skill prepare dev check build update
+
+unexport TITLE SLUG DIR URL
+export GARDEN_NEW_TITLE := $(value TITLE)
+export GARDEN_NEW_SLUG := $(value SLUG)
+export GARDEN_NEW_DIR := $(value DIR)
+export GARDEN_EMBED_URL := $(value URL)
+
+help:
+	@printf "%s\n" "Common Garden commands:" "  make new                 Create a post draft with the engine" '  make new TITLE="Post title" SLUG=my-post DIR=writing' '  make embed URL="https://example.com"  Fetch external page metadata' "  make skill               Install interactive chart skills" "  make dev                 Install dependencies and preview locally" "  make build               Build the public site" "  make update              Check, commit, and push to publish"
+
+new: prepare
+	npx garden new
+
+embed:
+	@npx garden embed
+
+skill: prepare
+	npx garden skill
+
+prepare:
+	@if [ ! -d node_modules ]; then npm install; fi
+
+dev: prepare
+	npx garden dev
+
+check: prepare
+	npx garden sync && npx garden build
+
+build: prepare
+	npx garden build
+
+update:
+	@if git diff --quiet && git diff --cached --quiet && [ -z "$$(git ls-files --others --exclude-standard)" ]; then \
+		echo "No changes to publish"; \
+	else \
+		$(MAKE) check && \
+		git add -A && \
+		git commit -m "$(MESSAGE)" && \
+		git push origin HEAD; \
+	fi

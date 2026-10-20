@@ -21,7 +21,7 @@ import { unified } from "unified";
 import { visit } from "unist-util-visit";
 import { articleUsesHeadingNumbers, autoNumbersHeadings, splitHeadingNumber } from "./heading-number";
 import { siteHref } from "./site-href";
-import { ui } from "./i18n";
+import { siteLang, ui } from "./i18n";
 
 export { columns, gardenDocs, gardenDocsEn, gardenIndexDoc, gardenIndexDocEn, posts, thoughts };
 export type { ContentEntry, GardenDocEntry, MediaItem };
@@ -44,7 +44,7 @@ export const columnIndexHref = (slug: string) => siteHref(`/columns/#${slug}`);
 export const thoughtHref = (slug: string) => siteHref(`/thoughts/${slug}`);
 
 export const formatDate = (value: string, withTime = false) => {
-  if (!withTime) return demoDateLabel(value);
+  if (!withTime) return demoDateLabel(value, siteLang);
   const canonical = canonicalSiteDate(value) ?? value;
   const date = new Date(canonical);
   if (Number.isNaN(date.getTime())) return value;

@@ -1,15 +1,24 @@
 import Image from "next/image";
 import { ParityInteractions } from "../../ui/react/parity";
+import { siteLang } from "../lib/i18n";
 
 // Internal comparison page (docs/intelligent-ui-parity.md): Garden's renders next
 // to the ChatGPT originals. Kept out of search, so it has no canonical address.
 export const metadata = { robots: { index: false, follow: false } };
 
-const slices = [
+const zhSlices = [
   { label: "商品销售", value: 78.2, color: "#539af8" },
   { label: "平台与营销服务", value: 9.4, color: "#6bc67f" },
   { label: "物流及其他服务", value: 12.4, color: "#ef8b57" },
 ];
+
+const enSlices = [
+  { label: "Product sales", value: 78.2, color: "#539af8" },
+  { label: "Marketplace & marketing", value: 9.4, color: "#6bc67f" },
+  { label: "Logistics & other services", value: 12.4, color: "#ef8b57" },
+];
+
+const slices = siteLang === "en" ? enSlices : zhSlices;
 
 function ring(start: number, sweep: number) {
   const cx = 371;
@@ -51,32 +60,39 @@ export default function UiParityPage() {
       items: [...state.items, { ...slice, path: ring(state.angle, sweep) }],
     };
   }, { angle: -Math.PI / 2, items: [] }).items;
-  const rows = [
-    ["消费者状态", "不选择拼多多的原因", "对应的经济学概念"],
-    ["不知道拼多多更便宜", "没有进行跨平台比价", "信息不对称、搜索成本"],
-    ["知道更便宜，但不放心", "怀疑商品品质、商家或售后", "感知风险、信任成本"],
-    ["知道更便宜，也相信是正品", "习惯使用天猫，不想迁移", "转换成本、消费惯性"],
-  ];
+  const rows = siteLang === "en"
+    ? [
+        ["Consumer state", "Reason not to choose PDD", "Economic concept"],
+        ["Unaware PDD is cheaper", "No cross-platform comparison", "Information asymmetry, search cost"],
+        ["Knows it is cheaper, but hesitant", "Doubts product quality or after-sales", "Perceived risk, trust cost"],
+        ["Knows it is cheaper and authentic", "Used to Tmall, reluctant to switch", "Switching cost, consumer inertia"],
+      ]
+    : [
+        ["消费者状态", "不选择拼多多的原因", "对应的经济学概念"],
+        ["不知道拼多多更便宜", "没有进行跨平台比价", "信息不对称、搜索成本"],
+        ["知道更便宜，但不放心", "怀疑商品品质、商家或售后", "感知风险、信任成本"],
+        ["知道更便宜，也相信是正品", "习惯使用天猫，不想迁移", "转换成本、消费惯性"],
+      ];
   return (
     <main className="garden-ui" lang="en-US" style={{ margin: 0, border: 0, background: "#fff", padding: 32 }}>
       <section id="parity-stat" className="garden-ui-card" style={{ width: 768, marginBottom: 32 }}>
-        <p className="garden-ui-kicker">2025 抖音电商发展数据报告</p>
+        <p className="garden-ui-kicker">{siteLang === "en" ? "2025 Douyin E-Commerce Report" : "2025 抖音电商发展数据报告"}</p>
         <p className="garden-ui-title-2xl">+49%</p>
-        <p className="garden-ui-subtitle">货架场景成交额同比增长</p>
-        <p className="garden-ui-text-sm">统计期为 2024 年 8 月至 2025 年 8 月。</p>
+        <p className="garden-ui-subtitle">{siteLang === "en" ? "Shelf-commerce GMV YoY growth" : "货架场景成交额同比增长"}</p>
+        <p className="garden-ui-text-sm">{siteLang === "en" ? "Measured from Aug 2024 to Aug 2025." : "统计期为 2024 年 8 月至 2025 年 8 月。"}</p>
         <p className="garden-ui-caption">
-          {"抖音电商官方报告，经新华社报道。该增速不能直接代表抖音电商整体 GMV 增速。"}<a id="parity-cite" className="garden-ui-cite" href="https://www.news.cn">
+          {siteLang === "en" ? "Official Douyin E-Commerce report via Xinhua. Does not represent overall GMV growth." : "抖音电商官方报告，经新华社报道。该增速不能直接代表抖音电商整体 GMV 增速。"}<a id="parity-cite" className="garden-ui-cite" href="https://www.news.cn">
             <Image src="https://www.google.com/s2/favicons?domain=www.news.cn&sz=32" alt="" width={12} height={12} unoptimized />
             Xinhua Net
           </a>
         </p>
       </section>
       <section id="parity-card" className="garden-ui-card" style={{ width: 378, marginBottom: 32 }}>
-        <p className="garden-ui-kicker">2025 年淘宝天猫商品索引规模</p>
-        <p className="garden-ui-title-2xl">20 亿+</p>
-        <p className="garden-ui-text-xs">商品条目</p>
+        <p className="garden-ui-kicker">{siteLang === "en" ? "2025 Taobao & Tmall Product Index Scale" : "2025 年淘宝天猫商品索引规模"}</p>
+        <p className="garden-ui-title-2xl">{siteLang === "en" ? "2B+" : "20 亿+"}</p>
+        <p className="garden-ui-text-xs">{siteLang === "en" ? "Product items" : "商品条目"}</p>
         <p className="garden-ui-caption">
-          {"阿里巴巴披露其 AI 搜索推荐系统索引了超过 20 亿商品条目。"}<a className="garden-ui-cite" href="https://www.alibabagroup.com">
+          {siteLang === "en" ? "Alibaba disclosed that its AI search and recommendation system indexes over 2 billion items." : "阿里巴巴披露其 AI 搜索推荐系统索引了超过 20 亿商品条目。"}<a className="garden-ui-cite" href="https://www.alibabagroup.com">
             <Image src="https://www.google.com/s2/favicons?domain=www.alibabagroup.com&sz=32" alt="" width={12} height={12} unoptimized />
             Alibaba Group
           </a>
@@ -84,7 +100,7 @@ export default function UiParityPage() {
       </section>
       <section id="parity-pie" className="garden-ui-pie" style={{ width: 742, marginBottom: 32 }}>
         <div className="garden-ui-pie-chart">
-          <svg viewBox="0 0 742 400" role="img" aria-label="收入结构">
+          <svg viewBox="0 0 742 400" role="img" aria-label={siteLang === "en" ? "Revenue mix" : "收入结构"}>
             {arcs.map((arc) => <path key={arc.label} d={arc.path} fill={arc.color} />)}
           </svg>
           <ul className="garden-ui-legend">
@@ -93,7 +109,7 @@ export default function UiParityPage() {
             ))}
           </ul>
         </div>
-        <p className="garden-ui-pie-note">京东集团2025财年；商品与服务收入的会计确认方式不同。</p>
+        <p className="garden-ui-pie-note">{siteLang === "en" ? "JD.com FY2025; product and service revenues use different accounting recognition." : "京东集团2025财年；商品与服务收入的会计确认方式不同。"}</p>
       </section>
       <section id="parity-table" style={{ width: 768, marginBottom: 32 }}>
         <table className="garden-ui-table" style={{ tableLayout: "fixed" }}>
@@ -113,16 +129,16 @@ export default function UiParityPage() {
         </table>
       </section>
       <section id="parity-flow" className="garden-ui-card garden-ui-flow" style={{ width: 768 }}>
-        <p>丰富的商家与商品供给</p>
+        <p>{siteLang === "en" ? "Broad merchant and product supply" : "丰富的商家与商品供给"}</p>
         <Arrow />
-        <p>吸引更多具有不同需求的消费者</p>
+        <p>{siteLang === "en" ? "Attracts consumers with diverse needs" : "吸引更多具有不同需求的消费者"}</p>
         <Arrow />
-        <p>更大的潜在成交机会吸引商家</p>
+        <p>{siteLang === "en" ? "Larger GMV opportunity attracts merchants" : "更大的潜在成交机会吸引商家"}</p>
         <Arrow />
-        <p>更丰富的供给与交易数据</p>
+        <p>{siteLang === "en" ? "Richer supply and transaction data" : "更丰富的供给与交易数据"}</p>
         <Loop />
       </section>
-      <ParityInteractions />
+      {siteLang === "en" ? <ParityInteractions lang="en" /> : <ParityInteractions />}
     </main>
   );
 }

@@ -29,7 +29,7 @@ import {
 import { githubUrl, siteConfig } from "../../../site.config";
 import { siteHref } from "../../../lib/site-href";
 import { isStaticPlaceholder, STATIC_PLACEHOLDER, staticParams } from "../../../../ui/garden/static-params.mjs";
-import { columnStatusLabel, ui } from "../../../lib/i18n";
+import { columnStatusLabel, siteLang, ui } from "../../../lib/i18n";
 
 export function generateStaticParams() {
   return staticParams(
@@ -96,15 +96,16 @@ export default async function ColumnEntryPage({
   const baseUrl = await getSiteUrl();
   const pathname = columnHref(entry);
   const canonicalUrl = absoluteUrl(pathname, baseUrl);
+  const t = ui();
 
   return (
     <main className="column-reading-page">
       <aside className="series-nav">
         <Link href={siteHref("/columns")} className="back-link">
           <ArrowLeft size={15} />
-          所有专栏
+          {t.allColumnsBack}
         </Link>
-        <p>主题专栏</p>
+        <p>{t.seriesEyebrow}</p>
         <h2>{entry.columnTitle}</h2>
         <ol>
           {listed.map((item) => (
@@ -118,7 +119,7 @@ export default async function ColumnEntryPage({
 
       <article className="article-column series-article h-entry">
         <Link className="u-url sr-only" href={pathname}>
-          {entry.title} 永久链接
+          {siteLang === "en" ? t.permalinkLabel(entry.title) : <>{entry.title} 永久链接</>}
         </Link>
         <a
           className="p-author h-card sr-only"
@@ -137,13 +138,13 @@ export default async function ColumnEntryPage({
               </time>
             </li>
             {originalUrl(entry) ? (
-              <li><a className="orig ext" href={originalUrl(entry)} target="_blank" rel="noopener noreferrer">原文 ↗</a></li>
+              <li><a className="orig ext" href={originalUrl(entry)} target="_blank" rel="noopener noreferrer">{t.originalLink}</a></li>
             ) : null}
           </ul>
           <ArticleTags tags={entry.tags} />
           {entry.cover && (
             <figure className="article-hero article-cover cover-img">
-              <CoverImage className="u-photo" src={entry.cover} image={entry.coverImage} alt={`${entry.title} 封面`} sizes="(max-width: 852px) calc(100vw - 40px), 812px" priority />
+              <CoverImage className="u-photo" src={entry.cover} image={entry.coverImage} alt={siteLang === "en" ? t.coverLabel(entry.title) : `${entry.title} 封面`} sizes="(max-width: 852px) calc(100vw - 40px), 812px" priority />
             </figure>
           )}
         </header>

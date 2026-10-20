@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { siteHref } from "../lib/site-href";
 import { a2Slugs, readA2Article } from "../lib/a2-preview";
+import { ui } from "../lib/i18n";
 
 export const metadata = {
-  title: "A2 对照",
+  title: ui().a2IndexTitle,
   robots: { index: false, follow: false },
 };
 
@@ -12,8 +13,8 @@ export default function A2Index() {
   return (
     <main className="page-shell index-page">
       <header className="sh-head">
-        <h1>A2 对照</h1>
-        <p className="sh-deck">对照参考文章的版式。正文没有改字。</p>
+        <h1>{ui().a2IndexTitle}</h1>
+        <p className="sh-deck">{ui().a2IndexDeck}</p>
       </header>
       <ul className="sh-rows">
         {articles.map((article) => (

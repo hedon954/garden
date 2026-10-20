@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2080" height="560" viewBox="0 0 1040 280" fill="none" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif">
+  <!-- Outer 1340px wide-table boundary -->
+  <rect x="20" y="20" width="1000" height="240" rx="14" stroke="#6e6b64" stroke-width="1.5" stroke-dasharray="6 5" />
+  <text x="44" y="48" fill="#4a4844" font-size="13" font-weight="600">Wide-table zone &#xB7; up to 1340px on article pages (extends up to 300px per side)</text>
+  <text x="996" y="48" text-anchor="end" fill="#6e6b64" font-size="12" font-family="ui-monospace, SFMono-Regular, Menlo, monospace">max 1340px</text>
+
+  <!-- Middle 1040px wide-figure boundary -->
+  <rect x="110" y="66" width="820" height="174" rx="12" stroke="#2d2c29" stroke-width="1.5" stroke-dasharray="4 4" />
+  <text x="132" y="92" fill="#2d2c29" font-size="13" font-weight="600">Wide-figure zone &#xB7; up to 1040px on article pages (retina screenshots render at half pixel width, expanding past 740px)</text>
+  <text x="908" y="92" text-anchor="end" fill="#6e6b64" font-size="12" font-family="ui-monospace, SFMono-Regular, Menlo, monospace">max 1040px</text>
+
+  <!-- Inner 740px reading column -->
+  <rect x="215" y="110" width="610" height="110" rx="10" fill="#f0eee6" fill-opacity="0.72" stroke="#1b1a18" stroke-width="2" />
+  <text x="520" y="146" text-anchor="middle" fill="#1b1a18" font-size="16" font-weight="700">Reading column &#xB7; 740px (var(--col))</text>
+  <text x="520" y="172" text-anchor="middle" fill="#2d2c29" font-size="13">Paragraphs, lists, blockquotes, code blocks, and formulas stay inside this column</text>
+  <text x="520" y="196" text-anchor="middle" fill="#6e6b64" font-size="12" font-family="ui-monospace, SFMono-Regular, Menlo, monospace">Transparent-background figures get var(--image-backing) #faf9f5 warm backing in dark mode</text>
+
+  <!-- Left & right expansion arrows -->
+  <path d="M210 165 H118" stroke="#2d2c29" stroke-width="1.5" />
+  <path d="M124 160 L116 165 L124 170" stroke="#2d2c29" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+  <text x="164" y="156" text-anchor="middle" fill="#4a4844" font-size="11" font-family="ui-monospace, SFMono-Regular, Menlo, monospace">&#x2264; 150px</text>
+
+  <path d="M830 165 H922" stroke="#2d2c29" stroke-width="1.5" />
+  <path d="M916 160 L924 165 L916 170" stroke="#2d2c29" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+  <text x="876" y="156" text-anchor="middle" fill="#4a4844" font-size="11" font-family="ui-monospace, SFMono-Regular, Menlo, monospace">&#x2264; 150px</text>
+</svg>

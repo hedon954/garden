@@ -1,5 +1,5 @@
 import { UiLangProvider } from "./UiLang";
-import { ui, type UiLang } from "../lib/i18n";
+import { siteLang, ui, type UiLang } from "../lib/i18n";
 import { markdownPlugins } from "../lib/markdown-plugins";
 import { remarkA2 } from "../lib/remark-a2.mjs";
 import { remarkLinkCard } from "../lib/remark-link-card.mjs";
@@ -273,7 +273,7 @@ export function MarkdownArticle({ content, numbering, lang }: { content: string;
     <UiLangProvider lang={lang}>
     <div className="markdown-body prose">
       <ReactMarkdown
-        remarkPlugins={[...markdownPlugins, [remarkLinkCard, { sameSite }], [remarkA2, { imageSize: (src: string) => lookupImageSize(imageSizes, src) }]]}
+        remarkPlugins={[...markdownPlugins, [remarkLinkCard, { sameSite }], [remarkA2, { imageSize: (src: string) => lookupImageSize(imageSizes, src), lang: lang ?? siteLang }]]}
         rehypePlugins={[
           rehypeRaw,
           rehypeKatex,

@@ -1,10 +1,10 @@
 /* eslint-disable @next/next/no-img-element -- static GitHub Pages assets must keep their exact paths. */
-import { columnStatusLabel, ui } from "../lib/i18n";
 import Link from "next/link";
 import { columnHref, columns } from "../lib/content";
 import { ContentEmptyState } from "../components/ContentEmptyState";
 import { siteConfig, siteDocumentTitle } from "../site.config";
 import { pageAlternates } from "../lib/page-alternates";
+import { columnStatusLabel, ui } from "../lib/i18n";
 
 export const metadata = {
   title: siteDocumentTitle,
@@ -24,6 +24,7 @@ function day(value: string) {
 }
 
 export default function ColumnsPage() {
+  const t = ui();
   const grouped = Array.from(
     columns.reduce((result, entry) => {
       const existing = result.get(entry.column ?? "");
@@ -37,7 +38,6 @@ export default function ColumnsPage() {
     entries: [...entries].sort((left, right) => Date.parse(right.date) - Date.parse(left.date)),
   }));
 
-  const t = ui();
   return (
     <main className="sh-main" id="content">
       <div className="sh-head">

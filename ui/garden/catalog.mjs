@@ -201,7 +201,90 @@ export function suggestName(name) {
   return best;
 }
 
-export function cheatSheet() {
+export const IDEA_EN = {
+  label: "Idea",
+  when: "When you are not sure which component to use yet, write one sentence about what you want the reader to see.",
+  whenNot: "Must be compiled before publishing. Fine to leave in drafts.",
+  example: `\`\`\`garden
+Let the reader see...; show how...
+\`\`\``,
+  triggers: ["gidea"],
+};
+
+export const CATALOG_EXAMPLES_EN = {
+  card: `\`\`\`garden card
+url: https://arxiv.org/abs/2309.06180
+title: PagedAttention
+description: Paged KV cache management in vLLM.
+\`\`\``,
+  stat: `\`\`\`garden stat
+items:
+  - label: Llama-2-13B · 4K context
+    value: 3.2
+    unit: GiB
+    source: https://arxiv.org/abs/2309.06180
+\`\`\``,
+  compare: `\`\`\`garden compare
+items:
+  - title: Spinlock
+    text: Busy-waits when the critical section is tiny; never sleeps.
+  - title: Mutex
+    text: Sleeps under contention to avoid burning CPU cycles.
+\`\`\``,
+  timeline: `\`\`\`garden timeline
+items:
+  - date: 2015
+    title: Concurrent mark
+    text: Pause times drop significantly.
+  - date: 2017
+    title: Stack rescan moved out of STW
+    text: Pauses typically stay under 100 microseconds.
+  - date: 2022
+    title: Soft memory limit
+    text: Runtime adds GOMEMLIMIT.
+\`\`\``,
+  chart: `\`\`\`garden chart
+type: bar
+title: Sample latency
+x: Option
+series:
+  - name: Latency
+    data: [120, 85]
+unit: ms
+\`\`\``,
+  figure: `\`\`\`garden figure
+image: ./figure.svg
+parts:
+  - name: All
+    text: The full diagram.
+  - name: Mark
+    text: This step only marks reachable objects.
+\`\`\``,
+  html: `\`\`\`garden html
+src: ./demo.html
+title: Diagram
+\`\`\``,
+  interactive: `\`\`\`garden interactive #kv-memory
+caption: KV memory scales linearly with both batch size and sequence length.
+intent: |
+  Let the reader adjust batch size and inspect KV memory.
+---
+<State batch={1} />
+\`\`\``,
+  file: `\`\`\`garden file
+src: ./post-name/spec.zip
+note: One-line summary of what is inside
+\`\`\``,
+};
+
+export function cheatSheet(lang = "zh") {
+  if (lang === "en") {
+    const blocks = [
+      IDEA_EN.example,
+      ...GARDEN_NAMES.map((name) => CATALOG_EXAMPLES_EN[name] ?? CATALOG[name].example),
+    ];
+    return ["<!-- Component cheat sheet. Copy the block you need and delete this comment.", ...blocks.flatMap((example) => ["", example]), "-->"].join("\n");
+  }
   const blocks = [
     IDEA.example,
     ...GARDEN_NAMES.map((name) => CATALOG[name].example),
