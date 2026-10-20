@@ -7,7 +7,7 @@ order: 36
 badge: figure
 ---
 
-TODO(copy:component-figure-opener)
+在 `garden` 想法块里写一句「用 `figure` 画一张静态发布流程的结构图，点到哪一步就高亮并显示那一步的说明」，Agent 会按 `garden-ui` skill 生成下面的 `garden figure`（手写格式附后）。
 
 ```garden figure
 caption: 点击上方按钮切换高亮各步骤

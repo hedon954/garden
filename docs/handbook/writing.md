@@ -53,7 +53,7 @@ references:
 
 ## 2. 代码块与「代码 / 对比上一版」切换
 
-TODO(copy:writing-diff-intro)
+普通代码块在右上角带有语言名称（如 `RUST`、`TS`、`PYTHON`、`SHELL`）和复制按钮。想展示一段代码和上一版相比改了什么，先放改好的完整代码，再紧跟着写一个 `garden` 想法块，用一句话写出改动内容：
 
 ````markdown
 ```go
@@ -67,7 +67,7 @@ func openStore(path string) (*Store, error) {
 ```
 ````
 
-TODO(copy:writing-diff-result)
+Agent 按 `garden-ui` skill 会通过 `npx garden ui apply` 把这段想法替换成紧挨着完整代码的 `diff` 围栏（详见 [用 AI 写作](/garden/ai-writing)）。页面渲染时会把这两段合成一个可切换 **「代码」** 和 **「对比上一版」** 的代码框，右上角的复制按钮始终复制新版完整代码：
 
 ```go
 func openStore(path string) (*Store, error) {
@@ -82,7 +82,7 @@ func openStore(path string) (*Store, error) {
  }
 ```
 
-TODO(copy:writing-diff-handwritten)
+**手写格式**：如果不使用 Agent，也可以直接在完整代码块正下方手写一段 `diff` 代码块（两段之间只隔空行）：
 
 ````markdown
 ```diff
@@ -94,7 +94,7 @@ TODO(copy:writing-diff-handwritten)
 ````
 
 > [!IMPORTANT]
-> TODO(copy:writing-diff-orphan-note)
+> `diff` 代码块必须紧跟在一段完整代码块后面；如果单独写一段 `diff` 而前面没有完整代码，`npx garden check` 会报 `diff-orphan` 错误。
 
 ## 3. 中文加粗、荧光笔高亮与提示框
 

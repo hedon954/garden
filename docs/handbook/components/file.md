@@ -7,7 +7,7 @@ order: 39
 badge: file
 ---
 
-TODO(copy:component-file-opener)
+在 `garden` 想法块里写一句「用 `file` 给读者一份可以下载和页内预览的发布前检查清单」，Agent 会按 `garden-ui` skill 生成下面的 `garden file`（手写格式附后）。
 
 ```garden file
 src: ./file/checklist.md

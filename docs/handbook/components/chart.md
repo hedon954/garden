@@ -7,7 +7,7 @@ order: 35
 badge: chart
 ---
 
-TODO(copy:component-chart-opener)
+在 `garden` 想法块里写一句「用 `chart` 画条形图比较正文列、宽图区和宽表区的宽度上限」，Agent 会按 `garden-ui` skill 生成下面的 `garden chart`（手写格式附后）。
 
 ```garden chart
 title: 三种版面区域的宽度上限

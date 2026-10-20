@@ -7,7 +7,7 @@ order: 34
 badge: timeline
 ---
 
-TODO(copy:component-timeline-opener)
+在 `garden` 想法块里写一句「用 `timeline` 按顺序列出静态发布流水线的三个步骤」，Agent 会按 `garden-ui` skill 生成下面的 `garden timeline`（手写格式附后）。
 
 ```garden timeline
 title: 静态发布流水线执行步骤

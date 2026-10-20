@@ -7,7 +7,7 @@ order: 32
 badge: stat
 ---
 
-TODO(copy:component-stat-opener)
+在 `garden` 想法块里写一句「用 `stat` 列出正文列、宽图区、宽表区三个宽度上限」，Agent 会按 `garden-ui` skill 生成下面的 `garden stat`（手写格式附后）。
 
 ```garden stat
 items:
