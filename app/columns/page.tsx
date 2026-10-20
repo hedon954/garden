@@ -45,10 +45,12 @@ export default function ColumnsPage() {
         {siteConfig.pages.columns.subtitle ? <p className="sh-deck">{siteConfig.pages.columns.subtitle}</p> : null}
       </div>
       {grouped.length ? grouped.map(({ slug, first, entries }) => (
-        <section className="sh-series" aria-labelledby={slug} key={slug}>
-          <div className="cover" style={{ background: "var(--well)" }}>
-            {first.columnCover ? <img className="column-feature-cover" src={first.columnCover} alt={first.columnCoverAlt ?? t.columnCoverAlt(first.columnTitle)} /> : null}
-          </div>
+        <section className={first.columnCover ? "sh-series" : "sh-series no-cover"} aria-labelledby={slug} key={slug}>
+          {first.columnCover ? (
+            <div className="cover" style={{ background: "var(--well)" }}>
+              <img className="column-feature-cover" src={first.columnCover} alt={first.columnCoverAlt ?? t.columnCoverAlt(first.columnTitle)} />
+            </div>
+          ) : null}
           <div className="body">
             <h2 id={slug}>{first.columnTitle}</h2>
             <p className="count">{t.columnReadingList(entries.length, columnStatusLabel(first.columnStatus))}</p>

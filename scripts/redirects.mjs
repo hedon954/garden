@@ -143,7 +143,11 @@ export function writeRedirects(options) {
  * warning (a page went missing without a reason).
  */
 export function runRedirectStep({ siteRoot, env = process.env, out = process.stdout, err = process.stderr, generate = generateRedirects }) {
-  const outDir = path.join(siteRoot, "dist", "client");
+  const baseDir = String(env.NEXT_PUBLIC_BASE_PATH ?? "").replace(/^\/+|\/+$/gu, "");
+  // A base-path build exports pages under dist/client/<base>/, so old paths and targets live there.
+  const outDir = baseDir && fs.existsSync(path.join(siteRoot, "dist", "client", baseDir))
+    ? path.join(siteRoot, "dist", "client", baseDir)
+    : path.join(siteRoot, "dist", "client");
   try {
     const config = parseYaml(fs.readFileSync(path.join(siteRoot, "site.config.yaml"), "utf8")) ?? {};
     const columnsFile = path.join(siteRoot, "content", "columns.yaml");

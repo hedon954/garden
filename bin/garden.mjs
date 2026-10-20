@@ -168,6 +168,16 @@ function vinextRoot() {
     }
   }
 
+  // English sites: the runtime manifest is a copy with the English description, not a link.
+  // Remove the link first so the write never goes through it into the engine's own package.json.
+  if (siteCliLang(siteRoot) === "en") {
+    const target = path.join(runtime, "package.json");
+    const manifest = JSON.parse(fs.readFileSync(path.join(gardenPackageRoot, "package.json"), "utf8"));
+    manifest.description = "A personal blog engine: write in Markdown, publish with GitHub Pages.";
+    fs.rmSync(target, { force: true });
+    fs.writeFileSync(target, `${JSON.stringify(manifest, null, 2)}\n`);
+  }
+
   return runtime;
 }
 
@@ -434,6 +444,9 @@ function installSkill(destinationRoot = siteRoot, { onlyMissing = false, lang = 
     const to = path.join(destinationRoot, ".agents", "skills", name);
     if (onlyMissing && fs.existsSync(path.join(to, "SKILL.md"))) continue;
     fs.cpSync(path.join(gardenPackageRoot, ".agents", "skills", name), to, { recursive: true });
+    // English sites get the English skill text; files without a translation keep the packaged copy.
+    const english = path.join(gardenPackageRoot, "templates", "skills-en", name);
+    if (lang === "en" && fs.existsSync(english)) fs.cpSync(english, to, { recursive: true, force: true });
     installed.push(name);
   }
   if (installed.length) {

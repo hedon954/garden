@@ -76,8 +76,9 @@ export default function Home() {
         <section className="sh-section" aria-labelledby="h-recent">
           <div className="sh-sec-head">
             <h2 id="h-recent">{t.homeRecentHeading}</h2>
-            <Link className="sh-more" href={siteHref("/blog")}>{t.homeAllPosts(posts.length)}</Link>
+            {posts.length > 0 ? <Link className="sh-more" href={siteHref("/blog")}>{t.homeAllPosts(posts.length)}</Link> : null}
           </div>
+          {posts.length === 0 ? <p className="sh-empty">{t.emptyPostsTitle}</p> : null}
           <ol className="sh-rows">
             {recent.slice(0, 6).map((post) => (
               <li className="sh-row" key={post.path}>

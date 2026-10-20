@@ -2,6 +2,7 @@ import crypto from "node:crypto";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
+import { langOf, siteCliLang } from "../ui/core/cli-locale.mjs";
 import { STATIC_PLACEHOLDER } from "../ui/garden/static-params.mjs";
 
 const forbiddenDirectoryNames = new Set([
@@ -30,8 +31,12 @@ const isPublishedFile = (relativePath) =>
   publishedExtensions[relativePath.split("/", 1)[0]]?.has(path.extname(relativePath)) === true;
 const deploymentVersionPlaceholder = "00000000-0000-4000-8000-000000000000";
 
+const cliLang = process.env.GARDEN_LOCALE ? langOf(process.env.GARDEN_LOCALE) : siteCliLang(process.env.GARDEN_SITE ?? process.cwd());
+/** Chinese or English CLI text, by the site's locale. */
+const msg = (zh, en) => (cliLang === "en" ? en : zh);
+
 function fail(message) {
-  throw new Error(`Pages 产物无效：${message}`);
+  throw new Error(msg(`Pages 产物无效：${message}`, `Invalid Pages output: ${message}`));
 }
 
 async function assertDirectory(directory, label) {
@@ -39,9 +44,9 @@ async function assertDirectory(directory, label) {
   try {
     stat = await fs.stat(directory);
   } catch {
-    fail(`${label}不存在：${directory}`);
+    fail(msg(`${label}不存在：${directory}`, `${label} does not exist: ${directory}`));
   }
-  if (!stat.isDirectory()) fail(`${label}不是目录：${directory}`);
+  if (!stat.isDirectory()) fail(msg(`${label}不是目录：${directory}`, `${label} is not a directory: ${directory}`));
 }
 
 async function inspectTree(root, directory = root) {
@@ -51,20 +56,20 @@ async function inspectTree(root, directory = root) {
     const relativePath = path.relative(root, absolutePath).split(path.sep).join("/");
     const stat = await fs.lstat(absolutePath);
 
-    if (stat.isSymbolicLink()) fail(`不允许软链接：${relativePath}`);
+    if (stat.isSymbolicLink()) fail(msg(`不允许软链接：${relativePath}`, `Symlinks are not allowed: ${relativePath}`));
     if (forbiddenDirectoryNames.has(entry.name)) {
-      fail(`不允许源码目录：${relativePath}`);
+      fail(msg(`不允许源码目录：${relativePath}`, `Source directories are not allowed: ${relativePath}`));
     }
-    if (entry.name.startsWith(".env")) fail(`不允许环境文件：${relativePath}`);
-    if (entry.name.startsWith(STATIC_PLACEHOLDER)) fail(`空动态路由的占位页没有删掉：${relativePath}`);
+    if (entry.name.startsWith(".env")) fail(msg(`不允许环境文件：${relativePath}`, `Environment files are not allowed: ${relativePath}`));
+    if (entry.name.startsWith(STATIC_PLACEHOLDER)) fail(msg(`空动态路由的占位页没有删掉：${relativePath}`, `Placeholder page for an empty dynamic route was not removed: ${relativePath}`));
     if (/^package(?:-lock)?\.json$/u.test(entry.name)) {
-      fail(`不允许依赖清单：${relativePath}`);
+      fail(msg(`不允许依赖清单：${relativePath}`, `Dependency manifests are not allowed: ${relativePath}`));
     }
     if (forbiddenFileNames.has(entry.name)) {
-      fail(`不允许源码配置：${relativePath}`);
+      fail(msg(`不允许源码配置：${relativePath}`, `Source config files are not allowed: ${relativePath}`));
     }
     if (entry.isFile() && forbiddenExtensions.has(path.extname(entry.name)) && !isPublishedFile(relativePath)) {
-      fail(`不允许源码或 Source Map：${relativePath}`);
+      fail(msg(`不允许源码或 Source Map：${relativePath}`, `Source files or source maps are not allowed: ${relativePath}`));
     }
     if (entry.isDirectory()) await inspectTree(root, absolutePath);
   }
@@ -163,9 +168,9 @@ async function stabilizeDeploymentVersion(root) {
 
 export async function validateStaticOutput(sourceDirectory) {
   const source = path.resolve(sourceDirectory);
-  await assertDirectory(source, "静态产物目录");
+  await assertDirectory(source, msg("静态产物目录", "Static output directory"));
   await fs.access(path.join(source, "index.html")).catch(() => {
-    fail(`缺少入口文件：${path.join(source, "index.html")}`);
+    fail(msg(`缺少入口文件：${path.join(source, "index.html")}`, `Missing entry file: ${path.join(source, "index.html")}`));
   });
   await inspectTree(source);
   return source;
@@ -174,14 +179,14 @@ export async function validateStaticOutput(sourceDirectory) {
 export async function preparePagesOutput(sourceDirectory, destinationDirectory, options = {}) {
   const source = await validateStaticOutput(sourceDirectory);
   const destination = path.resolve(destinationDirectory);
-  await assertDirectory(destination, "Pages 仓库目录");
+  await assertDirectory(destination, msg("Pages 仓库目录", "Pages repository directory"));
   await fs.access(path.join(destination, ".git")).catch(() => {
-    fail(`目标不是 Git 仓库：${destination}`);
+    fail(msg(`目标不是 Git 仓库：${destination}`, `Destination is not a Git repository: ${destination}`));
   });
 
   const relativeFromDestination = path.relative(destination, source);
   if (!relativeFromDestination.startsWith("..") && !path.isAbsolute(relativeFromDestination)) {
-    fail("静态产物目录不能位于目标仓库内部");
+    fail(msg("静态产物目录不能位于目标仓库内部", "The static output directory cannot be inside the destination repository"));
   }
 
   for (const entry of await fs.readdir(destination, { withFileTypes: true })) {
@@ -211,7 +216,7 @@ const invokedDirectly = process.argv[1] &&
 if (invokedDirectly) {
   const [, , sourceDirectory, destinationDirectory] = process.argv;
   if (!sourceDirectory || process.argv.length > 4) {
-    throw new Error("用法：node scripts/prepare-pages-output.mjs <静态产物目录> [Pages 仓库目录]");
+    throw new Error(msg("用法：node scripts/prepare-pages-output.mjs <静态产物目录> [Pages 仓库目录]", "Usage: node scripts/prepare-pages-output.mjs <static output directory> [Pages repository directory]"));
   }
   if (destinationDirectory) {
     await preparePagesOutput(sourceDirectory, destinationDirectory);

@@ -64,6 +64,9 @@ const includeDrafts = process.env.CONTENT_INCLUDE_DRAFTS === "1";
 const uiMode = includeDrafts || process.env.GARDEN_CONTENT_MODE === "preview" ? "preview" : "publish";
 const now = Date.now();
 const basePath = (process.env.NEXT_PUBLIC_BASE_PATH ?? "").replace(/\/+$/u, "");
+let previewIconCache;
+/** The site's base-path-aware icon for file previews, so they never fall back to /favicon.ico. */
+const previewIcon = () => (previewIconCache ??= resolveBrand(root, siteConfig, basePath, () => {}).favicon ?? "");
 const siteUrl = (process.env.SITE_URL ?? process.env.NEXT_PUBLIC_SITE_URL ?? "https://example.com")
   .replace(/\/+$/u, "");
 const publicBaseUrl = basePath && !siteUrl.endsWith(basePath)
@@ -336,7 +339,7 @@ function resolveFileEntry(file, markdownPath, sourcePath, options = {}) {
     const { content } = matter(fs.readFileSync(resolved.path, "utf8"));
     const html = renderFilePreview(rewriteMarkdownAssets(content.trim(), resolved.path, sourcePath, assetOptions), { lang });
     const { destination } = assetFiles.get(url.split(/[?#]/u, 1)[0]);
-    fs.writeFileSync(previewFileName(destination), previewDocument(html, { title: entry.title, lang }));
+    fs.writeFileSync(previewFileName(destination), previewDocument(html, { title: entry.title, lang, icon: previewIcon() }));
     next.previewSrc = previewFileName(url.split(/[?#]/u, 1)[0]);
   }
   return next;

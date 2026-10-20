@@ -30,7 +30,7 @@ export default function NotFound() {
   }, [fullTitle, lang, ogLocale, t.notFoundDeck]);
 
   return (
-    <main className="page-shell" id="garden-not-found">
+    <main className="sh-main" id="garden-not-found">
       <header className="sh-head">
         <h1>{t.notFoundTitle}</h1>
         <p className="sh-deck">{t.notFoundDeck}</p>

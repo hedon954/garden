@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { HANDBOOK_LANG_KEY, handbookBase, type HandbookLang } from "../lib/garden-docs-meta";
 import { siteHref } from "../lib/site-href";
 import { swapHandbookLang } from "../lib/handbook-path";
+import { siteLang } from "../lib/i18n";
 
 const noSubscribe = () => () => {};
 
@@ -39,7 +40,7 @@ export function HandbookLangSwitch() {
     </>
   );
   if (!href) {
-    return <span className="sh-lang is-disabled" title="No English version of this page yet">{label}</span>;
+    return <span className="sh-lang is-disabled" title={lang === "en" ? "No Chinese version of this page yet" : siteLang === "en" ? "No English version of this page yet" : "这一页还没有英文版"}>{label}</span>;
   }
   return (
     <a className="sh-lang" href={href} hrefLang={target === "en" ? "en" : "zh-CN"} lang={target === "en" ? "en" : undefined} onClick={remember} aria-label={target === "en" ? "Read in English" : "Switch to Chinese"}>

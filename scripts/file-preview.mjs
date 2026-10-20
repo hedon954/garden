@@ -202,7 +202,7 @@ export function previewStyleSheet() {
  * JavaScript who follows the 预览 link gets something readable. The drawer
  * takes only what is inside <main>.
  */
-export function previewDocument(html, { title = "", lang = "zh" } = {}) {
+export function previewDocument(html, { title = "", lang = "zh", icon = "" } = {}) {
   const docTitle = title || (lang === "en" ? "Preview" : "预览");
   const htmlLang = lang === "en" ? "en" : "zh-CN";
   return `<!doctype html>
@@ -211,7 +211,7 @@ export function previewDocument(html, { title = "", lang = "zh" } = {}) {
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
-<title>${escapeText(docTitle)}</title>
+<title>${escapeText(docTitle)}</title>${icon ? `\n<link rel="icon" href="${escapeText(icon).replace(/"/gu, "&quot;")}"${/\.svg(?:[?#]|$)/iu.test(icon) ? ' type="image/svg+xml"' : ""}>` : ""}
 <style>${previewStyleSheet()}</style>
 </head>
 <body><main class="gf-preview-doc">
