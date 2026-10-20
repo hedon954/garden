@@ -4,6 +4,7 @@ import {
   Star,
 } from "@phosphor-icons/react/ssr";
 import { githubUsername } from "../lib/site";
+import { hasRealGithubId } from "../lib/github-id.mjs";
 import { siteConfig } from "../site.config";
 import { ui } from "../lib/i18n";
 import { GithubLiveOverview, type GithubPublicProfile } from "./GithubLiveOverview";
@@ -234,6 +235,8 @@ function contributionLevelClass(level: string) {
 }
 
 export async function GithubProfile() {
+  // A new site still has the template id (or none): render the page without a profile and never call the API.
+  if (!hasRealGithubId(githubUsername)) return null;
   const t = ui();
   const token = process.env.GITHUB_TOKEN;
   const [{ profile, live }, graph, activity] = await Promise.all([

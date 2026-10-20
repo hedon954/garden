@@ -481,7 +481,10 @@ test("an en_US site from garden init --locale en builds a 100% English static si
   assert.match(postHtml, /<h2 id="article-references-heading">References<\/h2>/u);
 
   const aboutHtml = readFileSync(path.join(clientDir, "about/index.html"), "utf8");
-  assert.match(aboutHtml, /alt="[^"]*&#x27;s GitHub avatar"|alt="[^']*'s GitHub avatar"/u);
+  // The template GitHub id is a placeholder: the about page renders without the profile and never calls the API.
+  assert.doesNotMatch(aboutHtml, /GitHub avatar/u);
+  assert.doesNotMatch(aboutHtml, /api\.github\.com/u);
+  assert.match(aboutHtml, /<h1>/u);
 
   const notFoundHtml = readFileSync(path.join(clientDir, "404.html"), "utf8");
   assert.match(notFoundHtml, />Page not found</u);
