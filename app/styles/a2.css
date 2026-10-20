@@ -916,7 +916,8 @@ html[data-theme="dark"] .markdown-body > p > img:not([class]) {
 }
 
 .dx-wrap {
-  overflow: visible;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
   margin-top: 10px;
   max-width: 100%;
 }

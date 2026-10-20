@@ -66,7 +66,7 @@ Fence header: ` ```garden figure ` (snippet trigger `;gfigure`). Invalid YAML or
 | `alt` | Optional | `caption` (then `""`) | string | Alt text for `image` |
 | `mermaid` | One of `mermaid`, `svg`, or `image` | none | multiline string | Mermaid diagram source |
 | `parts` | Optional | `[]` (initial selection defaults to `parts[0].id` or `"all"`) | object[] | Interactive buttons above the diagram and matching explanations below |
-| `parts[].id` | Recommended | `parts[].name` or `parts[].label` | string | Matches `data-p` on SVG elements (`"all"` or `"全部"` highlights all regions) |
+| `parts[].id` | Recommended | `parts[].name` or `parts[].label` | string | Matches `data-p` on SVG elements (an id of `"all"`, or its Chinese alias `"全部"`, highlights every region) |
 | `parts[].label` | Required (or `name`) | `"Part N"` (1-based) | string | Button label |
 | `parts[].text` | Required | `""` | string | Explanation shown below the diagram when the button is active |
 | `caption` | Optional | none | string | Caption below the frame |
