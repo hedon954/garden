@@ -52,10 +52,10 @@ Authors and Agents run the same `garden ui` subcommands; when an idea fence has 
 On the first `npx garden sync` or `npx garden dev` run, Garden writes `exec npx --no-install garden ui check --staged --quiet` to `.git/hooks/pre-commit` (if a custom hook already exists, it leaves the file untouched and prints the line to add). `--staged` reads staged content directly via `git show :<path>` and, on failure, prints the line numbers, diagnostic codes, and a fix prompt:
 
 ```console
-content/posts/writing-pace.md:9  -  garden-idea  还有没编译的想法
+content/posts/writing-pace.md:9  -  garden-idea  uncompiled idea remaining
 
-──────────────────────── 发给 AI 的修复提示词 ────────────────────────
-请处理下面 Garden 博文里列出的块：没编译的想法要编译，有错误的交互块要修好。
+──────────────────────── Fix prompt for AI ────────────────────────
+Handle the Garden post blocks listed below: compile uncompiled ideas, and fix interactive blocks that have errors.
 ……
 ```
 

@@ -37,7 +37,7 @@ $ npx garden ui scan content/posts/writing-pace.md
       "lang": "garden-idea",
       "status": "uncompiled",
       "startLine": 9,
-      "intentHash": "cb3a3569",
+      "intentHash": "8866427a",
       "intent": "Let the reader drag daily word count and writing days per week to see how many weeks an 8,000-word article takes.",
       "section": "Writing Pace"
     }
@@ -48,7 +48,7 @@ $ npx garden ui scan content/posts/writing-pace.md
 Next, the Agent reads the component catalog from `npx garden ui prompt`, writes a `garden interactive` block, and runs `npx garden ui apply` with `--intent-hash` to replace only that fence while leaving the rest of the file byte-for-byte untouched:
 
 ```console
-$ npx garden ui apply content/posts/writing-pace.md --intent-hash cb3a3569 --file new.md
+$ npx garden ui apply content/posts/writing-pace.md --intent-hash 8866427a --file new.md
 {"ok":true,"file":"content/posts/writing-pace.md","kind":"garden","line":9}
 ```
 
@@ -58,22 +58,27 @@ On the first `garden sync` or `garden dev` run, Garden writes `exec npx --no-ins
 
 ```console
 $ git commit -m "Writing pace"
-content/posts/writing-pace.md:9  -  garden-idea  还有没编译的想法
+content/posts/writing-pace.md:9  -  garden-idea  uncompiled idea remaining
 
-──────────────────────── 发给 AI 的修复提示词 ────────────────────────
-请处理下面 Garden 博文里列出的块：没编译的想法要编译，有错误的交互块要修好。
+──────────────────────── Fix prompt for AI ────────────────────────
+Handle the Garden post blocks listed below: compile uncompiled ideas, and fix interactive blocks that have errors.
 
-要求：
-- 先运行 npx garden ui prompt，读组件目录和规则；仓库里有 garden-ui skill 时按它的流程做。
-- 只改列出的块，用 npx garden ui apply <稿件> --id <id> 写回（没有 id 的想法用 --intent-hash），不要直接编辑稿件。
-- 不改作者原话的意思。改完运行 npx garden ui check <稿件>，直到通过。
-- 如果你不能访问这个仓库，就只回复每块修好后的完整围栏。
+Rules:
+- First run npx garden ui prompt and read the component catalog and rules; if the repo has the garden-ui skill, follow its flow.
+- Change only the listed blocks. Write them back with npx garden ui apply <post> --id <id> (use --intent-hash for ideas without an id). Do not edit the post by hand.
+- Keep the author's meaning. When done, run npx garden ui check <post> until it passes.
+- If you cannot access this repository, reply with only the finished fence for each block.
 
-1. content/posts/writing-pace.md，第 9–11 行，intent-hash: cb3a3569
-   - garden-idea：这段想法还没编译，请按原话编译成 garden interactive 或其他 garden 组件（或判断后写回正文）。
-（后面附当前围栏原文）
+1. content/posts/writing-pace.md, lines 9–11, intent-hash: 8866427a
+   - garden-idea: this idea is not compiled yet; compile it into garden interactive or another garden component (or put the sentence back into the prose).
+
+Current fence:
+
+```garden
+Let the reader drag daily word count and writing days per week to see how many weeks an 8,000-word article takes.
+```
 ────────────────────────────────────────────────────────────
-已写入 .garden/ui-fix-prompt.md。确实要先提交，可以用 git commit --no-verify。
+Wrote .garden/ui-fix-prompt.md. To commit anyway, run git commit --no-verify.
 ```
 
 The same prompt is saved to `.garden/ui-fix-prompt.md` and copied to the clipboard when a clipboard command is available. Once the Agent applies the block and the author commits again, the hook exits silently with code `0`.

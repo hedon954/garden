@@ -56,9 +56,13 @@ test("garden check reports a broken component inside garden interactive", () => 
 
 test("the fix prompt asks to compile garden ideas", () => {
   const [idea] = scanMarkdown(post());
-  const prompt = buildFixPrompt([{ file: "content/posts/a.md", block: idea, diagnostics: [] }]);
-  assert.match(prompt, /garden-idea：这段想法还没编译/u);
-  assert.match(prompt, /npx garden ui apply/u);
+  const zh = buildFixPrompt([{ file: "content/posts/a.md", block: idea, diagnostics: [] }]);
+  assert.match(zh, /garden-idea：这段想法还没编译/u);
+  assert.match(zh, /npx garden ui apply/u);
+  const en = buildFixPrompt([{ file: "content/posts/a.md", block: idea, diagnostics: [] }], { lang: "en" });
+  assert.match(en, /garden-idea: this idea is not compiled yet/u);
+  assert.match(en, /Fix prompt for AI|Handle the Garden post blocks/u);
+  assert.match(en, /npx garden ui apply/u);
 });
 
 test("ui apply turns an idea into a garden interactive and leaves the rest byte-identical", () => {
@@ -115,6 +119,18 @@ test("garden ui check (the pre-commit hook's command) fails on garden blocks and
   assert.ok(fs.existsSync(path.join(dir, ".garden/ui-fix-prompt.md")));
 });
 
+test("garden ui check prints English messages when site locale is en", () => {
+  const dir = site(post());
+  fs.writeFileSync(path.join(dir, "site.config.yaml"), "name: T\nlocale: en_US\n");
+  const result = cli(dir, "check", "content/posts/a.md", "--no-copy");
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /content\/posts\/a\.md:9 {2}- {2}garden-idea {2}uncompiled idea remaining/u);
+  assert.match(result.stderr, /Fix prompt for AI/u);
+  assert.match(result.stderr, /Wrote \.garden\/ui-fix-prompt\.md/u);
+  assert.match(result.stderr, /kv {2}ui-component/u);
+  assert.ok(fs.existsSync(path.join(dir, ".garden/ui-fix-prompt.md")));
+});
+
 test("garden ui check --staged reads the staged version", () => {
   const dir = site(post());
   const git = (...args) => spawnSync("git", args, { cwd: dir, encoding: "utf8" });
@@ -159,4 +175,24 @@ test("the handbook's AI-writing example matches what the commands print", () => 
   // The hook command the pages quote is the one bin/garden.mjs installs.
   const hook = /exec npx --no-install garden ui check --staged --quiet/u;
   assert.match(fs.readFileSync(path.join(root, "bin/garden.mjs"), "utf8"), hook);
+
+  // English handbook quotes the same flow with locale en_US output.
+  const enOverview = read("en/index.md");
+  const enAi = read("en/ai-writing.md");
+  const enIdea = enOverview.match(/```garden\n(Let the reader[^\n]+)\n```/u)[1];
+  const enMarkdown = `---\ntitle: Writing pace\ndate: 2026-10-01\ndescription: How long.\n---\n\n## Writing Pace\n\n${fence}garden\n${enIdea}\n${fence}\n`;
+  const enDir = site(enMarkdown);
+  fs.writeFileSync(path.join(enDir, "site.config.yaml"), "name: T\nlocale: en_US\n");
+  fs.renameSync(path.join(enDir, "content/posts/a.md"), path.join(enDir, "content/posts/writing-pace.md"));
+  const enScan = JSON.parse(cli(enDir, "scan", "content/posts/writing-pace.md").stdout);
+  const [enBlock] = enScan.blocks;
+  assert.ok(enOverview.includes(`"intentHash": ${JSON.stringify(enBlock.intentHash)}`), enBlock.intentHash);
+  const enCheck = cli(enDir, "check", "content/posts/writing-pace.md", "--no-copy");
+  assert.match(enCheck.stderr, /uncompiled idea remaining/u);
+  assert.match(enCheck.stderr, /Fix prompt for AI/u);
+  const enDiagnostic = enCheck.stderr.split("\n")[0];
+  assert.ok(enOverview.includes(enDiagnostic) && enAi.includes(enDiagnostic), enDiagnostic);
+  for (const line of enCheck.stderr.split("\n").slice(2, 9)) {
+    if (line.trim()) assert.ok(enOverview.includes(line), `en overview prompt line: ${line}`);
+  }
 });

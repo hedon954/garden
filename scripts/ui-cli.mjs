@@ -6,12 +6,15 @@ import { parse as parseYaml } from "yaml";
 import { applyBlock, ApplyError } from "../ui/core/apply.mjs";
 import { catalogSchema } from "../ui/core/catalog.mjs";
 import { buildFixPrompt } from "../ui/core/fix-prompt.mjs";
+import { cliText, siteCliLang } from "../ui/core/cli-locale.mjs";
 import { scanMarkdown } from "../ui/core/scan.mjs";
 import { buildPrompt, RECIPE_FILES } from "../ui/prompt/build.mjs";
 import { canonicalSiteDate } from "./site-date.mjs";
 import { gardenPackageRoot, gardenSiteRoot } from "./garden-paths.mjs";
 
 const siteRoot = gardenSiteRoot();
+const cliLang = siteCliLang(siteRoot);
+const t = cliText(cliLang);
 const [command, ...rest] = process.argv.slice(2);
 
 function fail(message, code = 1) {
@@ -169,30 +172,30 @@ function commandCheck() {
       else if (errors.length) problems.push({ file: target.file, block, diagnostics: errors });
     }
   }
-  for (const line of warnings) process.stderr.write(`提醒  ${line}\n`);
+  for (const line of warnings) process.stderr.write(t.reminder(line));
   if (!problems.length) {
-    if (!flag("quiet")) process.stdout.write(`检查通过（${files.length} 个文件）\n`);
+    if (!flag("quiet")) process.stdout.write(t.checkPass(files.length));
     return;
   }
   for (const problem of problems) {
     if (problem.block.lang === "intent") {
-      process.stderr.write(`${problem.file}:${problem.block.startLine}  ${problem.block.id ?? "-"}  intent-uncompiled  还有没编译的 intent 块\n`);
+      process.stderr.write(t.intentUncompiled(problem.file, problem.block.startLine, problem.block.id));
     }
     if (problem.block.lang === "garden-idea") {
-      process.stderr.write(`${problem.file}:${problem.block.startLine}  -  garden-idea  还有没编译的想法\n`);
+      process.stderr.write(t.ideaUncompiled(problem.file, problem.block.startLine));
     }
     for (const item of problem.diagnostics) {
       process.stderr.write(`${problem.file}:${item.line}  ${problem.block.id ?? "-"}  ${item.code}  ${item.message}\n`);
     }
   }
-  const prompt = buildFixPrompt(problems, { standaloneReference: flag("standalone") ? promptText() : null });
+  const prompt = buildFixPrompt(problems, { standaloneReference: flag("standalone") ? promptText() : null, lang: cliLang });
   const separator = "─".repeat(24);
-  process.stderr.write(`\n${separator} 发给 AI 的修复提示词 ${separator}\n${prompt}${separator}${separator}${"─".repeat(12)}\n`);
+  process.stderr.write(`${t.promptBanner(separator)}${prompt}${separator}${separator}${"─".repeat(12)}\n`);
   const promptFile = path.join(siteRoot, ".garden", "ui-fix-prompt.md");
   fs.mkdirSync(path.dirname(promptFile), { recursive: true });
   fs.writeFileSync(promptFile, prompt);
   const copied = !flag("no-copy") && process.env.GARDEN_UI_NO_COPY !== "1" && copyToClipboard(prompt);
-  process.stderr.write(`已写入 ${toPosix(path.relative(siteRoot, promptFile))}${copied ? "，并已复制到剪贴板" : ""}。确实要先提交，可以用 git commit --no-verify。\n`);
+  process.stderr.write(t.promptWritten(toPosix(path.relative(siteRoot, promptFile)), copied));
   process.exit(1);
 }
 
