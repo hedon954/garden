@@ -12,6 +12,14 @@ import { RuntimeLangProvider, UiErrorCard, UiFigure, type Diagnostic, type UiPay
 import { FullscreenFrame, SandboxFrame } from "./chrome";
 import { SourceMark, VerdictIcon } from "./patterns";
 
+const BASE_PATH = (process.env.NEXT_PUBLIC_BASE_PATH ?? "").replace(/\/+$/u, "");
+
+/** A `/public` path (`/images/a.svg`) gets the site's basePath in front. */
+function publicSrc(src: string) {
+  if (!BASE_PATH || !src.startsWith("/") || src.startsWith("//") || src.startsWith(`${BASE_PATH}/`)) return src;
+  return `${BASE_PATH}${src}`;
+}
+
 function Rich({ text }: { text: string }) {
   return (
     <ReactMarkdown remarkPlugins={markdownPlugins} components={{ p: ({ children }) => <>{children}</> }}>
@@ -78,7 +86,7 @@ function GardenCardItem({ props, row = false }: { props: Record<string, unknown>
       {typeof props.image === "string" ? (
         <div className="g-entity-img">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={props.image} alt={String(props.alt ?? title)} />
+          <img src={publicSrc(props.image)} alt={String(props.alt ?? title)} />
         </div>
       ) : null}
       <div className="g-entity-b">
@@ -364,7 +372,7 @@ export function GardenFigure({ props, children }: { props: Record<string, unknow
       {typeof props.image === "string" ? (
         <div className="fig-card">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={props.image} alt={String(props.alt ?? props.caption ?? "")} />
+          <img src={publicSrc(props.image)} alt={String(props.alt ?? props.caption ?? "")} />
         </div>
       ) : null}
       {typeof props.mermaid === "string" ? <pre className="code"><code>{props.mermaid}</code></pre> : null}
