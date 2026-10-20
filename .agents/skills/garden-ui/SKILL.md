@@ -11,7 +11,7 @@ description: >-
 
 # 编译 Garden 交互块
 
-作者在稿里用不带名字的 `garden` 围栏写一句想法，这个 skill 把它变成 `garden interactive` 或别的 `garden` 组件。交互组件和设计规则在 `npx garden ui prompt` 的输出里，9 个 `garden` 组件的用途和示例在 `node_modules/hd-garden/templates/garden-blocks.md`（在引擎仓库里是 `templates/garden-blocks.md`），以这两份为准，不凭记忆写组件。
+作者在稿里用不带名字的 `garden` 围栏写一句想法，这个 skill 把它变成 `garden interactive` 或别的 `garden` 组件。交互组件和设计规则在 `npx garden ui prompt` 的输出里，12 个 `garden` 组件的用途和示例在 `node_modules/hd-garden/templates/garden-blocks.md`（在引擎仓库里是 `templates/garden-blocks.md`），以这两份为准，不凭记忆写组件。
 
 作者提交时，提交前钩子跑的是同一个 `npx garden ui check`。你用来找块、写回、自查的命令，和拦住作者提交的命令是同一套。
 

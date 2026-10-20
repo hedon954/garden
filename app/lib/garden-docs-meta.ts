@@ -82,6 +82,9 @@ export const COMPONENT_BADGE: Record<string, string> = {
   "components/html": "html",
   "components/interactive": "interactive",
   "components/file": "file",
+  "components/relations": "relations",
+  "components/list": "list",
+  "components/choice": "choice",
 };
 
 export const NAV_SHORT_TITLE: Record<string, string> = {
@@ -101,6 +104,9 @@ export const NAV_SHORT_TITLE: Record<string, string> = {
   "components/html": "嵌入网页片段",
   "components/interactive": "可调公式与参数",
   "components/file": "文件下载与预览",
+  "components/relations": "关系图",
+  "components/list": "图标列表",
+  "components/choice": "选择卡",
   workflow: "语法检查与快捷输入",
 };
 

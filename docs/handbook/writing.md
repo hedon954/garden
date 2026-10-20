@@ -110,10 +110,11 @@ func openStore(path string) (*Store, error) {
 > [!WARNING] 升级前先备份数据目录
 > 修改页大小后需要重建索引文件，不能直接原地回退。
 
-## 4. 本地图片与外部链接卡片
+## 4. 本地图片、来源胶囊与外部链接卡片
 
 - **本地图片与随文目录**：如果文章路径是 `content/posts/my-post.md`，把配图放在同名的 `content/posts/my-post/` 文件夹下，在文中以 `./my-post/diagram.svg` 相对路径引用。构建时会自动复制图片、读取像素宽高，并把 `alt` 文字（以 `image`、`截图`、`img` 开头的默认占位词除外）渲染成图注 `<figcaption>`。
-- **行内外部链接**：正文里的外部链接会自动加上目标站点的 Favicon 小图标，并保证图标与链接第一个字同行不折断。
+- **行内外部链接**：正文里的普通外部链接会自动加上目标站点的 Favicon 小图标与右上角 `↗` 箭头，并保证图标与链接第一个字同行不折断。
+- **行内来源胶囊（`{source}`）**：在行内外部链接的 `)` 后面紧跟 `{source}`（中间不加空格），例如 `[wikipedia.org](https://en.wikipedia.org/wiki/Book_discussion_club){source}`，会渲染成圆角来源胶囊：左侧是构建期抓到的站点 Favicon（未抓到时回退为可注册域名主体的首字母，如 `en.wikipedia.org` 显示 `W`），右侧是链接文字，**不带** `↗` 外链箭头。效果如：引自维基百科词条 [wikipedia.org](https://en.wikipedia.org/wiki/Book_discussion_club){source}。
 - **链接卡片**：有两种写法可以把外部链接渲染成带网站名、标题和简介的链接卡片：
   1. 把完整网址单独写成一行段落（前后空行）：`https://spec.commonmark.org/`
   2. 在段落内的链接末尾紧跟 `{card}`（中间不加空格）：`参见 [CommonMark 规范](https://spec.commonmark.org/){card}。`

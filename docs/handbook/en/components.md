@@ -1,26 +1,29 @@
 ---
 title: Components Overview
 navTitle: Overview
-description: What each of the 9 built-in garden components is for, its fence name, and its required fields.
+description: What each of the 12 built-in garden components is for, its fence name, and its required fields.
 section: components
 order: 30
 ---
 
-You can describe any of these 9 components in a single sentence inside a `garden` idea block and let your Agent generate the block with the `garden-ui` skill (see [Writing with AI](/garden/en/ai-writing)). When writing by hand, open a ```` ```garden <name> ```` code block with the English component name (`card`, `stat`, `compare`, `timeline`, `chart`, `figure`, `html`, `interactive`, or `file`); parameters use YAML, while `interactive` takes declarative tags below `---`.
+You can describe any of these 12 components in a single sentence inside a `garden` idea block and let your Agent generate the block with the `garden-ui` skill (see [Writing with AI](/garden/en/ai-writing)). When writing by hand, open a ```` ```garden <name> ```` code block with the English component name (`card`, `stat`, `compare`, `timeline`, `chart`, `figure`, `html`, `interactive`, `file`, `relations`, `list`, or `choice`); parameters use YAML, while `interactive` takes declarative tags below `---`. The composable components and interface patterns use ChatGPT's Intelligent UI as their visual reference.
 
 ## Component Quick Reference
 
 | Component | Code Fence | When to Use | Minimum Requirement |
 | :--- | :--- | :--- | :--- |
-| [card](/garden/en/components/card) | ```` ```garden card ```` | Summarize a paper, open-source project, or subsystem | Provide `description` or `points` |
+| [card](/garden/en/components/card) | ```` ```garden card ```` | Summarize a paper, open-source project, or list multiple resource rows with `cards` | Provide `description`, `points`, or `cards` |
 | [stat](/garden/en/components/stat) | ```` ```garden stat ```` | Place 2 to 4 key numbers and units side by side | Each item requires `label` and `value` |
-| [compare](/garden/en/components/compare) | ```` ```garden compare ```` | Compare 2 or 3 options or before/after tradeoffs side by side | At least 2 `items`, ~60 characters per cell |
+| [compare](/garden/en/components/compare) | ```` ```garden compare ```` | Compare 2 or 3 options side by side, or stack good vs. bad practices with `verdict: good\|bad` | At least 2 `items` (~60 characters per side-by-side cell) |
 | [timeline](/garden/en/components/timeline) | ```` ```garden timeline ```` | Walk through debugging steps or release stages in order | At least 2 `items` |
 | [chart](/garden/en/components/chart) | ```` ```garden chart ```` | Plot proportional bars from YAML rows (includes an expandable table) | At least 2 rows in `data` |
 | [figure](/garden/en/components/figure) | ```` ```garden figure ```` | Highlight regions of an SVG or image diagram with step buttons | Either `svg` or `image` |
 | [html](/garden/en/components/html) | ```` ```garden html ```` | Run a self-contained HTML/JS demo in a sandboxed `iframe` | Either `src` or `code` |
 | [interactive](/garden/en/components/interactive) | ```` ```garden interactive ```` | Let readers drag sliders or switches to evaluate a non-trivial formula | Must include an input control and a formula beyond a single multiplication |
 | [file](/garden/en/components/file) | ```` ```garden file ```` | Offer local or remote attachments for download and inline preview | Either `src` or `files` |
+| [relations](/garden/en/components/relations) | ```` ```garden relations ```` | Place 3 to 6 elements on a circle and connect them with solid/dashed, one/two-way labeled links | 3 to 6 entries in `items` |
+| [list](/garden/en/components/list) | ```` ```garden list ```` | Compact line-icon rows, or divided steps with headings and multi-paragraph notes | `items` array (with `icon`, `text`, or `title`) |
+| [choice](/garden/en/components/choice) | ```` ```garden choice ```` | Present 2 or 3 option cards with icons, values, preference tags, replies, and an optional `none` button | `items` array |
 
 ## Authoring Rules
 
