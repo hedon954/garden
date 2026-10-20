@@ -275,6 +275,52 @@ intent: |
 src: ./post-name/spec.zip
 note: One-line summary of what is inside
 \`\`\``,
+  relations: `\`\`\`garden relations
+items:
+  - title: Observe
+    text: Note what happened
+  - title: Hypothesize
+    text: Guess one cause
+  - title: Experiment
+    text: Change one variable
+  - title: Review
+    text: Keep a reusable lesson
+links:
+  - from: 1
+    to: 2
+  - from: 2
+    to: 3
+  - from: 3
+    to: 4
+  - from: 4
+    to: 1
+  - from: 4
+    to: 2
+    style: dashed
+    label: revises
+caption: The review revises the next round's hypothesis.
+\`\`\``,
+  list: `\`\`\`garden list
+items:
+  - icon: search
+    text: Searched for "noise-cancelling headphones"
+  - icon: eye
+    text: Viewed 5 product pages
+\`\`\``,
+  choice: `\`\`\`garden choice
+title: Which would you pick?
+items:
+  - icon: shield
+    value: $415
+    text: Original, a bit pricier
+    label: Reliability first
+  - icon: wallet
+    value: $345
+    text: Battery replaced, cheaper
+    label: Price first
+none:
+  label: Neither fits
+\`\`\``,
 };
 
 export function cheatSheet(lang = "zh") {
