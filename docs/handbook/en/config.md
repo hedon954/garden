@@ -107,7 +107,7 @@ Columns group multiple posts from `content/posts/` into an ordered reading serie
 columns:
   - slug: building-in-public
     title: Building in Public
-    status: Ongoing
+    status: ongoing
     description: Notes from initial prototype to production release.
     cover: windowsill-herbs.svg
     posts:
@@ -120,6 +120,6 @@ columns:
 | `slug` | Yes | Column identifier (lowercase letters, digits, and hyphens only), generating routes at `/columns/<slug>/<post>` |
 | `title` | Yes | Column title (also shown beside member posts on `/blog`) |
 | `description` | Yes | Column summary shown on `/columns` cards |
-| `status` | No | Status badge text |
+| `status` | No | Status value: `default` (or omitted, shown as "Active"), `ongoing` ("Ongoing"), or `completed` ("Completed"). Legacy Chinese values are still accepted, and any other text is shown verbatim |
 | `cover` | No | Cover image path relative to `content/covers/` |
 | `posts` | Yes | Ordered array of post paths relative to `content/posts/`, without the `.md` extension |

@@ -29,7 +29,7 @@ import {
 import { githubUrl, siteConfig } from "../../../site.config";
 import { siteHref } from "../../../lib/site-href";
 import { isStaticPlaceholder, STATIC_PLACEHOLDER, staticParams } from "../../../../ui/garden/static-params.mjs";
-import { ui } from "../../../lib/i18n";
+import { columnStatusLabel, ui } from "../../../lib/i18n";
 
 export function generateStaticParams() {
   return staticParams(
@@ -113,7 +113,7 @@ export default async function ColumnEntryPage({
             </li>
           ))}
         </ol>
-        <small>{series.length} 篇 · 持续更新</small>
+        <small>{ui().columnSideCount(series.length, columnStatusLabel(entry.columnStatus))}</small>
       </aside>
 
       <article className="article-column series-article h-entry">

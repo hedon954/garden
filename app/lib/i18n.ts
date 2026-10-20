@@ -13,6 +13,23 @@ export const siteLang: UiLang = langOf(siteConfig.locale);
 export const htmlLang = (lang: UiLang) => (lang === "en" ? "en" : "zh-CN");
 
 const zh = {
+  homeAbout: "关于我",
+  homeRss: "RSS 订阅",
+  homeLatest: "最新文章",
+  homeRecent: "最近更新",
+  homeAllPosts: (n: number) => `全部 ${n} 篇`,
+  homePinned: "置顶",
+  homeColumns: "专栏",
+  homeAllColumns: "全部专栏",
+  columnCount: (n: number, status: string) => `${n} 篇，${status}`,
+  columnDefault: "持续更新",
+  columnOngoing: "连载中",
+  columnCompleted: "已完结",
+  columnReadingList: (n: number, status: string) => `阅读清单，${n} 篇，${status}`,
+  columnSideCount: (n: number, status: string) => `${n} 篇 · ${status}`,
+  columnCoverAlt: (title: string | undefined) => `${title} 封面`,
+  columnFallbackDesc: "按顺序组织的专题文章系列。",
+  columnNewestFirst: (title: string | undefined) => `${title}，从新到旧`,
   toc: "本篇目录",
   tocShort: "目录",
   tocPage: "本页目录",
@@ -110,6 +127,23 @@ const zh = {
 };
 
 const en: typeof zh = {
+  homeAbout: "About",
+  homeRss: "RSS",
+  homeLatest: "Latest",
+  homeRecent: "Recent posts",
+  homeAllPosts: (n: number) => `All ${n} ${n === 1 ? "post" : "posts"}`,
+  homePinned: "Pinned",
+  homeColumns: "Columns",
+  homeAllColumns: "All columns",
+  columnCount: (n: number, status: string) => `${n} ${n === 1 ? "post" : "posts"} · ${status}`,
+  columnDefault: "Active",
+  columnOngoing: "Ongoing",
+  columnCompleted: "Completed",
+  columnReadingList: (n: number, status: string) => `Reading list · ${n} ${n === 1 ? "post" : "posts"} · ${status}`,
+  columnSideCount: (n: number, status: string) => `${n} ${n === 1 ? "post" : "posts"} · ${status}`,
+  columnCoverAlt: (title: string | undefined) => `${title} cover`,
+  columnFallbackDesc: "A series of posts in reading order.",
+  columnNewestFirst: (title: string | undefined) => `${title}, newest first`,
   toc: "Contents",
   tocShort: "Contents",
   tocPage: "On this page",
@@ -220,3 +254,12 @@ export function routeLang(pathname: string | null | undefined): UiLang {
   if (/^\/garden(\/|$)/u.test(path)) return "zh";
   return siteLang;
 }
+
+/** Label for a column status: the enum values are localized, any other author text is shown as written. */
+export const columnStatusLabel = (status: string | undefined, lang: UiLang = siteLang) => {
+  const t = ui(lang);
+  if (!status || status === "default") return t.columnDefault;
+  if (status === "ongoing") return t.columnOngoing;
+  if (status === "completed") return t.columnCompleted;
+  return status;
+};

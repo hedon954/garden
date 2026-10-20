@@ -53,7 +53,7 @@ const columnSource = `columns:
   - slug: writing-system
     title: 写作系统
     description: 记录从选题到发布的完整写作过程。
-    status: 持续更新
+    status: ongoing
     cover: /images/columns/writing-system.webp
     coverAlt: 桌面上的笔记本与钢笔
     posts:

@@ -107,7 +107,7 @@ footer: 持续记录。
 columns:
   - slug: building-in-public
     title: 一个人造产品
-    status: 连载中
+    status: ongoing
     description: 从最小闭环到验证发布的完整记录。
     cover: windowsill-herbs.svg
     posts:
@@ -120,6 +120,6 @@ columns:
 | `slug` | 是 | 专栏标识，只能包含小写字母、数字和连字符，生成路由 `/columns/<slug>/<post>` |
 | `title` | 是 | 专栏名称（同时会显示在 `/blog` 文章列表对应文章的右侧） |
 | `description` | 是 | 专栏简介，显示在 `/columns` 列表卡片上 |
-| `status` | 否 | 状态文字（如 `连载中` 或 `已完结`） |
+| `status` | 否 | 状态标识：`default`（或不写，显示为「持续更新」）、`ongoing`（「连载中」）、`completed`（「已完结」）；旧写法 `持续更新`、`连载中`、`已完结` 仍可识别，其他文字按原样显示 |
 | `cover` | 否 | 专栏封面图路径（相对 `content/covers/`） |
 | `posts` | 是 | 按阅读顺序排列的文章路径列表（相对于 `content/posts/`，不带 `.md` 后缀） |
