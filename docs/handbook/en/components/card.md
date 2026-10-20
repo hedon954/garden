@@ -64,7 +64,7 @@ List Open Library and Project Gutenberg as two cards, each with a source link an
 
 ## Fields
 
-Fence header: ` ```garden card ` (snippet trigger `;gcard`). Place fields at the top level for a single card, or pass a `cards` array for multiple horizontal row cards.
+Fence header: ` ```garden card ` (snippet trigger `;gcard`). Place fields at the top level for a single card, or pass a `cards` array for multiple horizontal row cards; invalid YAML or unknown top-level keys report `garden-yaml` on the block.
 
 | Field | Required | Default | Allowed Values & Limits | Description |
 | :--- | :--- | :--- | :--- | :--- |
@@ -72,10 +72,10 @@ Fence header: ` ```garden card ` (snippet trigger `;gcard`). Place fields at the
 | `url` | Optional | `""` | full `https://` or `http://` URL | External link on the heading; renders `title` as plain text if omitted |
 | `meta` | Optional | none | string | Subtitle or metadata line below the heading |
 | `description` | One of `description`, `points`, or `cards` | `""` | string (alias `text`) | Summary paragraph supporting inline bold and code |
-| `points` | One of `points`, `description`, or `cards` | `[]` | string[] or `{ title, text? }[]` (alias `items`; `2` to `4` points recommended; unknown top-level keys or invalid YAML report `garden-yaml`) | Numbered list of takeaways below the summary |
+| `points` | One of `points`, `description`, or `cards` | `[]` | string[] or `{ title, text? }[]` (alias `items`; `2` to `4` points recommended, not checked) | Numbered list of takeaways below the summary |
 | `image` | Optional | none | image path or Data URL | Card thumbnail |
 | `alt` | Optional | `title` | string | Thumbnail alt text |
 | `source` | Optional | none | URL, `{ url, site?, icon? }`, or array | Source chip appended to `description`; multiple sources collapse to the first domain plus `+N` (such as `gutenberg.org +1`). `icon` defaults to the build-time downloaded favicon, then the uppercase first letter of the registrable domain's main label (e.g. `en.wikipedia.org` uses `W`, `bbc.co.uk` uses `B`) |
 | `site` | Optional | hostname of `url` without `www.` | string | Display name for the source site |
 | `takeaway` | Optional | none | string | One-line takeaway separated by a top border at the bottom of the card (e.g. `"**Worth borrowing:** ..."`) |
-| `cards` | Required for multi-card mode | none | object[] (unknown top-level keys or invalid YAML report `garden-yaml`) | Stack of horizontal row cards, each supporting `url`, `title`, `description` (or `text`), `image`, `alt`, `meta`, `source`, and `takeaway` |
+| `cards` | Required for multi-card mode | none | object[] | Stack of horizontal row cards, each supporting `url`, `title`, `description` (or `text`), `image`, `alt`, `meta`, `source`, and `takeaway` |

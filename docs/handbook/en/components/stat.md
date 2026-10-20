@@ -36,11 +36,11 @@ Put the three width limits for the reading column, wide figures, and wide tables
 
 ## Fields
 
-Fence header: ` ```garden stat ` (snippet trigger `;gstat`). Place multiple figures in `items`; for a single figure, fields can be placed at the top level.
+Fence header: ` ```garden stat ` (snippet trigger `;gstat`). Place multiple figures in `items`, or place fields at the top level for a single figure; invalid YAML or unknown top-level keys report `garden-yaml` on the block.
 
 | Field | Required | Default | Allowed Values & Limits | Description |
 | :--- | :--- | :--- | :--- | :--- |
-| `items` | Required for multiple figures | `[top-level object]` | object[] (`2` to `4` items recommended; unknown top-level keys or invalid YAML report `garden-yaml`) | List of stat items displayed side by side; when omitted, top-level fields render as a single stat item |
+| `items` | Required for multiple figures | `[top-level object]` | object[] (`2` to `4` items recommended, not checked) | List of stat items displayed side by side; when omitted, top-level fields render as a single stat item |
 | `label` | Required | `""` | string | Metric name shown above the number |
 | `value` | Required | `""` | string or number | Primary figure rendered in large tabular type |
 | `unit` | Optional | none | string | Unit shown immediately to the right of `value` |

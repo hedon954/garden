@@ -92,11 +92,11 @@ On wide screens, elements sit evenly on an ellipse starting at the top (12 o'clo
 
 ## Fields
 
-Fence header: ` ```garden relations ` (snippet trigger `grel`). Nodes have no emphasis or accent option—every element carries equal visual weight; ` ```mermaid ` fences are supported for any other diagram, and `garden list` covers one-pass steps.
+Fence header: ` ```garden relations ` (snippet trigger `;grel`). Nodes have no emphasis or accent option—every element carries equal visual weight; ` ```mermaid ` fences are supported for any other diagram, and `garden list` covers one-pass steps. Invalid YAML or unknown top-level keys report `garden-yaml` on the block.
 
 | Field | Required | Default | Allowed Values & Limits | Description |
 | :--- | :--- | :--- | :--- | :--- |
-| `title` | Optional | `"Relationship diagram"` for `aria-label` (no visible heading) | string (unknown top-level keys or invalid YAML report `garden-yaml`) | Heading above the diagram |
+| `title` | Optional | `"Relationship diagram"` for `aria-label` (no visible heading) | string | Heading above the diagram |
 | `items` | Required | none | object[], strictly `3` to `6` items (fewer than `3` or more than `6` items reports `garden-relations`) | Elements in the diagram; when `center` is omitted, all items are spaced evenly on an ellipse starting at the top (12 o'clock), clockwise |
 | `items[].title` | Required | `""` | string | Node heading (`links` and `center` reference items by 1-based number or exact `title`) |
 | `items[].text` | Optional | `""` | string | Short note below the node heading |

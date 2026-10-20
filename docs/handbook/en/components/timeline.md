@@ -21,7 +21,7 @@ items:
     text: Run `npm run pages:validate` to confirm `index.html` exists and no `.env`, source directories, `.map` or `.md` files, or symlinks were included, then publish to GitHub Pages.
 ```
 
-- **When to use**: Walking through incident timestamps, evolution stages, or pipeline steps in chronological order (at least 2 items).
+- **When to use**: Walking through incident timestamps, evolution stages, or pipeline steps in chronological order.
 - **When to skip**: Listing unordered points with no sequence; use a regular bullet list or [`list`](/garden/en/components/list) instead.
 
 You can tell the AI:
@@ -34,12 +34,12 @@ List the three stages of static publishing in order as a timeline.
 
 ## Fields
 
-Fence header: ` ```garden timeline ` (snippet trigger `;gtimeline`).
+Fence header: ` ```garden timeline ` (snippet trigger `;gtimeline`). Invalid YAML or unknown top-level keys report `garden-yaml` on the block.
 
 | Field | Required | Default | Allowed Values & Limits | Description |
 | :--- | :--- | :--- | :--- | :--- |
 | `title` | Optional | none | string | Heading above the timeline |
-| `items` | Required | `[]` | object[] (at least `2` items; unknown top-level keys or invalid YAML report `garden-yaml`) | Ordered list of steps or milestones |
+| `items` | Required | `[]` | object[] (at least `2` items recommended, not checked) | Ordered list of steps or milestones |
 | `items[].date` | Optional | none | string | Timestamp, year, or stage label above the item title |
 | `items[].title` | Required | `""` | string | Step heading |
 | `items[].text` | Optional | none | string | Detailed explanation for the step |

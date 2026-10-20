@@ -107,7 +107,6 @@ parts:
 
 ```garden html
 title: Character Count Widget
-height: 156
 code: |
   <!doctype html>
   <html lang="en">

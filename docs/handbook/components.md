@@ -107,7 +107,6 @@ parts:
 
 ```garden html
 title: 字符长度小工具
-height: 156
 code: |
   <!doctype html>
   <html lang="zh-CN">

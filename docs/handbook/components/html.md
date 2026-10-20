@@ -9,7 +9,6 @@ badge: html
 
 ```garden html
 title: 字符长度与预计阅读耗时小工具
-height: 156
 code: |
   <!doctype html>
   <html lang="zh-CN">
@@ -47,11 +46,10 @@ code: |
 
 ## 字段说明
 
-围栏写 ` ```garden html `（编辑器代码片段触发词 `;ghtml`）。
+围栏写 ` ```garden html `（编辑器代码片段触发词 `;ghtml`）。YAML 语法错误或顶层含未知键名时整块报 `garden-yaml` 错误。
 
 | 字段 | 是否必填 | 默认值 | 取值与限制 | 说明 |
 | :--- | :--- | :--- | :--- | :--- |
-| `src` | 与 `code` 二选一 | 无 | 相对路径（如 `./demo.html`；顶层写未知键名或 YAML 格式错误时报 `garden-yaml` 错误） | 引用当前文章同名子目录下的独立 `.html` 文件 |
-| `code` | 与 `src` 二选一 | `---` 分隔线下的 HTML 正文或 `""` | 多行 HTML 字符串 | 直接内联的 HTML 源码（含 `<script>` 时运行在沙盒 `iframe` 中，也可以把 HTML 放在 `---` 分隔线下方） |
+| `src` | 与 `code` 二选一 | 无 | 相对路径（如 `./demo.html`） | 引用当前文章同名子目录下的独立 `.html` 文件 |
+| `code` | 与 `src` 二选一 | `---` 分隔线下的 HTML 正文或 `""` | 多行 HTML 字符串 | 直接内联的 HTML 源码（含 `<script>` 时运行在沙盒 `iframe` 中，并自动按内容高度调整；也可以把 HTML 放在 `---` 分隔线下方） |
 | `title` | 建议填写 | `"HTML"` | 字符串 | 框顶标题栏与无障碍 `iframe` 标题 |
-| `height` | 可选 | 按内容高度自适应 | 数字（像素） | 初始高度（加载后会根据内容高度自动调整） |
