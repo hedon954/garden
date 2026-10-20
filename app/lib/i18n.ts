@@ -22,6 +22,7 @@ const zh = {
   homeColumns: "专栏",
   homeAllColumns: "全部专栏",
   columnCount: (n: number, status: string) => `${n} 篇，${status}`,
+  columnDefault: "持续更新",
   columnOngoing: "连载中",
   columnCompleted: "已完结",
   columnReadingList: (n: number, status: string) => `阅读清单，${n} 篇，${status}`,
@@ -132,6 +133,7 @@ const en: typeof zh = {
   homeColumns: "Columns",
   homeAllColumns: "All columns",
   columnCount: (n: number, status: string) => `${n} ${n === 1 ? "post" : "posts"} · ${status}`,
+  columnDefault: "Updating",
   columnOngoing: "Ongoing",
   columnCompleted: "Completed",
   columnReadingList: (n: number, status: string) => `Reading list · ${n} ${n === 1 ? "post" : "posts"} · ${status}`,
@@ -250,7 +252,8 @@ export function routeLang(pathname: string | null | undefined): UiLang {
 /** Label for a column status: the enum values are localized, any other author text is shown as written. */
 export const columnStatusLabel = (status: string | undefined, lang: UiLang = siteLang) => {
   const t = ui(lang);
-  if (!status || status === "ongoing") return t.columnOngoing;
+  if (!status || status === "default") return t.columnDefault;
+  if (status === "ongoing") return t.columnOngoing;
   if (status === "completed") return t.columnCompleted;
   return status;
 };

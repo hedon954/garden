@@ -36,10 +36,11 @@ import { trailingSlashEnabled, withTrailingSlash } from "../ui/garden/site-href.
 const gardenPackageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
 /** Column status is a framework enum. Older sites wrote the Chinese label, so map those too. */
-const COLUMN_STATUS = { ongoing: "ongoing", completed: "completed", 连载中: "ongoing", 持续更新: "ongoing", 更新中: "ongoing", 已完结: "completed", 完结: "completed" };
+const COLUMN_STATUS = { ongoing: "ongoing", completed: "completed", default: "default", 持续更新: "default", 连载中: "ongoing", 更新中: "ongoing", 已完结: "completed", 完结: "completed" };
 function columnStatusOf(raw) {
-  if (raw === undefined) return "ongoing";
-  return COLUMN_STATUS[raw.trim().toLowerCase()] ?? raw.trim();
+  if (raw === undefined) return "default";
+  const key = raw.trim().toLowerCase();
+  return Object.hasOwn(COLUMN_STATUS, key) ? COLUMN_STATUS[key] : raw.trim();
 }
 
 function resolveSiteRoot() {
