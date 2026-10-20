@@ -15,6 +15,7 @@ import {
 import { githubUrl, siteConfig } from "../site.config";
 import { MarkdownArticle } from "./MarkdownArticle";
 import { siteHref } from "../lib/site-href";
+import { siteLang, ui } from "../lib/i18n";
 
 const icons = {
   image: ImageSquare,
@@ -66,11 +67,12 @@ export function ThoughtCard({
   const isMixed = media.length > 1;
   const Icon = isMixed ? SquaresFour : icons[thought.mediaType ?? "text"];
   const mediaGroups = groupMedia(media);
+  const t = ui();
 
   return (
     <article id={thought.slug} className="thought-card h-entry">
       <Link className="u-url sr-only" href={siteHref(`/thoughts/${thought.slug}`)}>
-        {thought.title} 永久链接
+        {siteLang === "en" ? t.permalinkLabel(thought.title) : <>{thought.title} 永久链接</>}
       </Link>
       <a
         className="p-author h-card sr-only"
@@ -83,16 +85,16 @@ export function ThoughtCard({
         <span className="thought-kind">
           <Icon size={16} />
           {isMixed
-            ? `混合记录 · ${media.length} 个附件`
+            ? t.thoughtMixedLabel(media.length)
             : thought.mediaType === "image"
-            ? "一张照片"
+            ? t.thoughtImageLabel
             : thought.mediaType === "audio"
-              ? "一段声音"
+              ? t.thoughtAudioLabel
               : thought.mediaType === "video"
-                ? "一段影像"
+                ? t.thoughtVideoLabel
                 : thought.mediaType === "link"
-                  ? "一个链接"
-                  : "随想"}
+                  ? t.thoughtLinkLabel
+                  : t.thoughtTextLabel}
         </span>
         <time className="dt-published" dateTime={thought.date}>
           {formatDate(thought.date, true)}
@@ -112,7 +114,7 @@ export function ThoughtCard({
                 <div
                   className={`thought-gallery thought-gallery-${Math.min(group.items.length, 3)}`}
                   key={`images-${groupIndex}`}
-                  aria-label={`${group.items.length} 张照片`}
+                  aria-label={t.thoughtGalleryLabel(group.items.length)}
                 >
                   {group.items.map((item, index) => (
                     // eslint-disable-next-line @next/next/no-img-element
@@ -120,7 +122,7 @@ export function ThoughtCard({
                       key={`${item.src}-${index}`}
                       className="thought-image u-photo"
                       src={item.src}
-                      alt={item.alt ?? `${thought.title} · 照片 ${index + 1}`}
+                      alt={item.alt ?? t.thoughtPhotoAlt(thought.title, index + 1)}
                       loading="lazy"
                     />
                   ))}
@@ -132,14 +134,14 @@ export function ThoughtCard({
                 <div className="audio-embed" key={`${group.item.src}-${groupIndex}`}>
                   <MusicNotes size={28} />
                   <div>
-                    <strong>{group.item.title ?? `当前播放 · ${thought.title}`}</strong>
+                    <strong>{group.item.title ?? t.thoughtNowPlaying(thought.title)}</strong>
                     <audio
                       className="u-audio"
                       controls
                       preload="none"
                       src={group.item.src}
                     >
-                      你的浏览器不支持音频播放。
+                      {t.audioFallback}
                     </audio>
                   </div>
                 </div>
@@ -194,14 +196,14 @@ export function ThoughtCard({
         <div className="audio-embed">
           <MusicNotes size={28} />
           <div>
-            <strong>当前播放 · {thought.title}</strong>
+            <strong>{t.thoughtNowPlaying(thought.title)}</strong>
             <audio
               className="u-audio"
               controls
               preload="none"
               src={thought.media}
             >
-              你的浏览器不支持音频播放。
+              {t.audioFallback}
             </audio>
           </div>
         </div>
@@ -234,7 +236,7 @@ export function ThoughtCard({
 
       {showPermalink && (
         <Link className="thought-permalink" href={siteHref(`/thoughts/${thought.slug}`)}>
-          永久链接
+          {t.thoughtPermalinkShort}
           <ArrowUpRight size={15} />
         </Link>
       )}

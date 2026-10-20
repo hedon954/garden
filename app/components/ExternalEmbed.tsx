@@ -7,6 +7,7 @@ import {
   YoutubeLogo,
 } from "@phosphor-icons/react/ssr";
 import { parse } from "yaml";
+import { ui, type UiLang } from "../lib/i18n";
 
 type EmbedData = {
   url: string;
@@ -70,23 +71,23 @@ function playableUrl(provider: EmbedProvider, url: URL) {
   return null;
 }
 
-const providerCopy = {
-  youtube: { label: "YouTube", Icon: YoutubeLogo },
-  bilibili: { label: "Bilibili", Icon: VideoCamera },
-  x: { label: "X", Icon: XLogo },
-  wechat: { label: "微信公众号", Icon: WechatLogo },
-  website: { label: "网页摘要", Icon: LinkSimple },
-};
-
-export function ExternalEmbed({ source }: { source: string }) {
+export function ExternalEmbed({ source, lang }: { source: string; lang?: UiLang }) {
+  const s = ui(lang);
   const data = readEmbedData(source);
   if (!data) {
-    return <p className="external-embed-error">无法解析这个嵌入块，请检查 URL 与 YAML 格式。</p>;
+    return <p className="external-embed-error">{s.embedParseError}</p>;
   }
 
   const url = new URL(data.url);
   const provider = providerFor(url);
   const playerUrl = playableUrl(provider, url);
+  const providerCopy = {
+    youtube: { label: "YouTube", Icon: YoutubeLogo },
+    bilibili: { label: "Bilibili", Icon: VideoCamera },
+    x: { label: "X", Icon: XLogo },
+    wechat: { label: s.embedProviderWechat, Icon: WechatLogo },
+    website: { label: s.embedProviderWeb, Icon: LinkSimple },
+  };
   const { Icon, label } = providerCopy[provider];
 
   if (playerUrl) {
@@ -95,7 +96,7 @@ export function ExternalEmbed({ source }: { source: string }) {
         <div className="external-embed-frame">
           <iframe
             src={playerUrl}
-            title={data.title ?? `${label} 嵌入内容`}
+            title={data.title ?? s.embedFrameTitle(label)}
             loading="lazy"
             allow="accelerometer; autoplay; encrypted-media; fullscreen; picture-in-picture"
             referrerPolicy="strict-origin-when-cross-origin"
@@ -104,7 +105,7 @@ export function ExternalEmbed({ source }: { source: string }) {
         </div>
         <figcaption>
           <span><Icon size={17} />{label}</span>
-          <a href={data.url} target="_blank" rel="noopener noreferrer">在原网站打开<ArrowUpRight size={14} /></a>
+          <a href={data.url} target="_blank" rel="noopener noreferrer">{s.embedOpenOriginal}<ArrowUpRight size={14} /></a>
         </figcaption>
       </figure>
     );
@@ -118,8 +119,8 @@ export function ExternalEmbed({ source }: { source: string }) {
       )}
       <span className="external-embed-copy">
         <small><Icon size={16} />{label} · {url.hostname}</small>
-        <strong>{data.title ?? "打开这条外部内容"}</strong>
-        <p>{data.description ?? (provider === "x" || provider === "wechat" ? "平台不提供稳定的无脚本嵌入，Garden 会保留清晰、可访问的原文入口。" : "查看原网页中的完整内容与上下文。")}</p>
+        <strong>{data.title ?? s.embedFallbackTitle}</strong>
+        <p>{data.description ?? (provider === "x" || provider === "wechat" ? s.embedFallbackNoScript : s.embedFallbackWeb)}</p>
       </span>
       <ArrowUpRight size={21} />
     </a>

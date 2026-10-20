@@ -171,7 +171,7 @@ export async function validateStaticOutput(sourceDirectory) {
   return source;
 }
 
-export async function preparePagesOutput(sourceDirectory, destinationDirectory) {
+export async function preparePagesOutput(sourceDirectory, destinationDirectory, options = {}) {
   const source = await validateStaticOutput(sourceDirectory);
   const destination = path.resolve(destinationDirectory);
   await assertDirectory(destination, "Pages 仓库目录");
@@ -191,9 +191,16 @@ export async function preparePagesOutput(sourceDirectory, destinationDirectory) 
 
   await fs.cp(source, destination, { recursive: true, force: true });
   await fs.writeFile(path.join(destination, ".nojekyll"), "");
+  let isEn = options.lang === "en" || /^en/iu.test(String(process.env.GARDEN_LOCALE ?? ""));
+  if (!isEn && options.lang !== "zh") {
+    const indexHtml = await fs.readFile(path.join(source, "index.html"), "utf8").catch(() => "");
+    if (/<html\b[^>]*\slang="en(?:-US)?"/iu.test(indexHtml)) isEn = true;
+  }
   await fs.writeFile(
     path.join(destination, "README.md"),
-    "# Garden 静态站点\n\n此仓库只保存 Garden 自动生成的公开静态文件，请勿手工编辑。\n",
+    isEn
+      ? "# Garden Static Site\n\nThis repository holds public static files generated automatically by Garden. Do not edit by hand.\n"
+      : "# Garden 静态站点\n\n此仓库只保存 Garden 自动生成的公开静态文件，请勿手工编辑。\n",
   );
   await stabilizeDeploymentVersion(destination);
 }

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
 import { getAdminUser } from "../lib/admin-auth";
+import { ui } from "../lib/i18n";
 
 const SECTIONS = [
   { href: "/admin", label: "总览" },
@@ -23,9 +24,9 @@ export function StaticAdminNotice() {
   return (
     <main className="admin-access-page">
       <div className="admin-access-card">
-        <h1>后台在另一个地址。</h1>
-        <p>公开博客上看不到这一页。写随想和改交互，去单独部署的后台。</p>
-        <Link href="/">返回公开博客</Link>
+        <h1>{ui().staticAdminHeading}</h1>
+        <p>{ui().staticAdminBody}</p>
+        <Link href="/">{ui().staticAdminBack}</Link>
       </div>
     </main>
   );

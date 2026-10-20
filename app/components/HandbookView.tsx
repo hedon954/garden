@@ -22,7 +22,7 @@ import {
   toHandbookNavItems,
   type HandbookLang,
 } from "../lib/garden-docs-meta";
-import { UI_STRINGS } from "../lib/i18n";
+import { UI_STRINGS, siteLang } from "../lib/i18n";
 import { siteConfig } from "../site.config";
 
 const other = (lang: HandbookLang): HandbookLang => (lang === "en" ? "zh" : "en");
@@ -30,6 +30,7 @@ const hreflang = (lang: HandbookLang) => (lang === "en" ? "en" : "zh-CN");
 
 /** canonical + hreflang links; the counterpart is listed only when it exists. */
 export function handbookLanguages(lang: HandbookLang, docPath: string) {
+  if (siteLang === "en") return undefined;
   if (!hasHandbookPage(other(lang), docPath)) return undefined;
   const zh = siteHref(handbookPath("zh", docPath));
   const en = siteHref(handbookPath("en", docPath));
@@ -147,7 +148,7 @@ export function HandbookOverview({ lang }: { lang: HandbookLang }) {
   const content = indexDoc?.content ?? "";
   const headings = extractHeadings(content);
   // The site config title/subtitle is written in the site's own language.
-  const configured = lang === "zh" ? siteConfig.pages.garden : { title: "", subtitle: "" };
+  const configured = lang === siteLang ? siteConfig.pages.garden : { title: "", subtitle: "" };
   const title = configured.title?.trim() || indexDoc?.title || t.name;
   const subtitle = configured.subtitle?.trim() || indexDoc?.description || "";
 
@@ -173,7 +174,7 @@ export function HandbookOverview({ lang }: { lang: HandbookLang }) {
           <MarkdownArticle content={content} lang={lang} />
         </div>
 
-        <ArticleReferences references={indexDoc?.references} />
+        <ArticleReferences references={indexDoc?.references} lang={lang} />
 
         {firstDoc ? (
           <nav className="gdoc-pager" aria-label={t.pager}>
@@ -230,7 +231,7 @@ export function HandbookDoc({ lang, doc }: { lang: HandbookLang; doc: GardenDocE
           <MarkdownArticle content={doc.content} lang={lang} />
         </div>
 
-        <ArticleReferences references={doc.references} />
+        <ArticleReferences references={doc.references} lang={lang} />
 
         <nav className="gdoc-pager" aria-label={t.pager}>
           {prev ? (

@@ -3,6 +3,7 @@
 import { ArrowUpRight, Browser, CaretDown, FilePdf } from "@phosphor-icons/react";
 import { useEffect, useRef, useState } from "react";
 import { parse } from "yaml";
+import { ui, type UiLang } from "../lib/i18n";
 
 type WidgetKind = "chart" | "html" | "pdf";
 
@@ -79,7 +80,8 @@ function DocumentThumb({ kind }: { kind: "html" | "pdf" }) {
   );
 }
 
-export function WidgetChart({ source }: { source: string }) {
+export function WidgetChart({ source, lang }: { source: string; lang?: UiLang }) {
+  const s = ui(lang);
   const data = readWidgetData(source);
   const src = data?.src;
   const kind = data?.kind;
@@ -132,7 +134,7 @@ export function WidgetChart({ source }: { source: string }) {
   if (!data) {
     return (
       <p className="external-embed-error">
-        无法解析这个嵌入块。请在与 Markdown 同名的目录里放一份 .html 或 .pdf，并在围栏中写 src 与 caption。
+        {s.widgetParseError}
       </p>
     );
   }
@@ -156,7 +158,7 @@ export function WidgetChart({ source }: { source: string }) {
         <figcaption>
           <span>{data.caption}</span>
           <a href={data.src} target="_blank" rel="noopener noreferrer">
-            打开页面
+            {s.widgetOpenPage}
           </a>
         </figcaption>
         <noscript>
@@ -167,8 +169,8 @@ export function WidgetChart({ source }: { source: string }) {
   }
 
   const Icon = data.kind === "pdf" ? FilePdf : Browser;
-  const kindLabel = data.kind === "pdf" ? "PDF" : "页面";
-  const openLabel = data.kind === "pdf" ? "打开 PDF" : "打开页面";
+  const kindLabel = data.kind === "pdf" ? "PDF" : s.widgetPageKind;
+  const openLabel = data.kind === "pdf" ? s.widgetOpenPdf : s.widgetOpenPage;
 
   return (
     <figure
@@ -197,7 +199,7 @@ export function WidgetChart({ source }: { source: string }) {
             <strong>{data.caption}</strong>
           </span>
           <span className="garden-doc-action">
-            {expanded ? "收起" : "展开"}
+            {expanded ? s.widgetCollapse : s.widgetExpand}
             <CaretDown size={14} className="garden-doc-caret" />
           </span>
         </button>

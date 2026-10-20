@@ -1,9 +1,10 @@
 import { readPayload } from "../../ui/core/compile.mjs";
 import { IntentCard, UiErrorCard, UiFigure, type Diagnostic, type UiPayload } from "../../ui/react";
+import { ui, type UiLang } from "../lib/i18n";
 
-export function UiBlock({ source }: { source: string }) {
+export function UiBlock({ source, lang }: { source: string; lang?: UiLang }) {
   const payload = readPayload(source) as UiPayload | null;
-  if (!payload) return <p className="external-embed-error">这块交互的数据损坏了，请重新运行 garden sync。</p>;
+  if (!payload) return <p className="external-embed-error">{ui(lang).uiBlockCorrupt}</p>;
   return <UiFigure payload={payload} />;
 }
 

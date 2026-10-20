@@ -115,11 +115,12 @@ function ensureEnv() {
   // CI injects the real values. Copying .env.example there would fill any
   // unset key with a sample, which used to turn comments on for owner/repository.
   if (process.env.GITHUB_ACTIONS === "true") return;
-  const example = path.join(gardenPackageRoot, ".env.example");
+  const lang = siteCliLang(siteRoot);
+  const example = path.join(gardenPackageRoot, lang === "en" ? ".env.en.example" : ".env.example");
   const local = path.join(siteRoot, ".env.local");
   if (!fs.existsSync(local) && fs.existsSync(example)) {
     fs.copyFileSync(example, local);
-    printGiscusGuide();
+    printGiscusGuide(lang);
   }
 }
 
@@ -187,22 +188,27 @@ function copyIfMissing(from, to) {
 
 function ensureSiteKit(destinationRoot = siteRoot) {
   if (samePath(destinationRoot, gardenPackageRoot)) return;
+  const lang = siteCliLang(destinationRoot);
 
   const added = [];
   if (
     copyIfMissing(
-      path.join(gardenPackageRoot, "templates", "site", "Makefile"),
+      path.join(gardenPackageRoot, "templates", "site", lang === "en" ? "Makefile.en" : "Makefile"),
       path.join(destinationRoot, "Makefile"),
     )
   ) {
     added.push("Makefile");
   }
   if (added.length) {
-    process.stdout.write(`已补齐站点文件：${added.join("、")}\n`);
+    process.stdout.write(
+      lang === "en"
+        ? `Added missing site files: ${added.join(", ")}\n`
+        : `已补齐站点文件：${added.join("、")}\n`,
+    );
   }
 
-  installSkill(destinationRoot, { onlyMissing: true });
-  if (process.env.GARDEN_SKIP_HOOKS !== "1") installHook(destinationRoot, { quiet: true });
+  installSkill(destinationRoot, { onlyMissing: true, lang });
+  if (process.env.GARDEN_SKIP_HOOKS !== "1") installHook(destinationRoot, { quiet: true, lang });
 }
 
 const HOOK_MARKER = "# garden: ui check";
@@ -214,30 +220,46 @@ if [ ! -d node_modules/hd-garden ]; then
 fi
 exec npx --no-install garden ui check --staged --quiet
 `;
+const HOOK_SCRIPT_EN = `#!/bin/sh
+${HOOK_MARKER}
+if [ ! -d node_modules/hd-garden ]; then
+  echo "garden is not installed yet (run npm install first); skipping ui check." >&2
+  exit 0
+fi
+exec npx --no-install garden ui check --staged --quiet
+`;
 
 /** Installs the pre-commit hook unless the repository already has one. */
-function installHook(destinationRoot = siteRoot, { quiet = false, force = false } = {}) {
+function installHook(destinationRoot = siteRoot, { quiet = false, force = false, lang = siteCliLang(destinationRoot) } = {}) {
   const result = spawnSync("git", ["rev-parse", "--git-path", "hooks/pre-commit"], { cwd: destinationRoot, encoding: "utf8" });
   if (result.status !== 0) {
-    if (!quiet) process.stdout.write("这里不是 git 仓库，没有安装提交前检查。\n");
+    if (!quiet) process.stdout.write(lang === "en" ? "Not a git repository; skipping pre-commit hook installation.\n" : "这里不是 git 仓库，没有安装提交前检查。\n");
     return;
   }
   const hookPath = path.resolve(destinationRoot, result.stdout.trim());
   if (fs.existsSync(hookPath)) {
     const current = fs.readFileSync(hookPath, "utf8");
     if (current.includes(HOOK_MARKER) && !force) {
-      if (!quiet) process.stdout.write("提交前检查已经装好了。\n");
+      if (!quiet) process.stdout.write(lang === "en" ? "Pre-commit hook is already installed.\n" : "提交前检查已经装好了。\n");
       return;
     }
     if (!current.includes(HOOK_MARKER)) {
-      process.stdout.write(`已有 pre-commit 钩子，没有覆盖。请把这一行加进 ${path.relative(destinationRoot, hookPath)}：\n  npx --no-install garden ui check --staged --quiet\n`);
+      process.stdout.write(
+        lang === "en"
+          ? `Existing pre-commit hook kept. Add this line to ${path.relative(destinationRoot, hookPath)}:\n  npx --no-install garden ui check --staged --quiet\n`
+          : `已有 pre-commit 钩子，没有覆盖。请把这一行加进 ${path.relative(destinationRoot, hookPath)}：\n  npx --no-install garden ui check --staged --quiet\n`,
+      );
       return;
     }
   }
   fs.mkdirSync(path.dirname(hookPath), { recursive: true });
-  fs.writeFileSync(hookPath, HOOK_SCRIPT, { mode: 0o755 });
+  fs.writeFileSync(hookPath, lang === "en" ? HOOK_SCRIPT_EN : HOOK_SCRIPT, { mode: 0o755 });
   fs.chmodSync(hookPath, 0o755);
-  process.stdout.write("已安装提交前检查：提交时会检查暂存稿件里的 ui 块。\n");
+  process.stdout.write(
+    lang === "en"
+      ? "Installed pre-commit hook: staged posts will be checked for valid ui blocks before commit.\n"
+      : "已安装提交前检查：提交时会检查暂存稿件里的 ui 块。\n",
+  );
 }
 
 function prepare() {
@@ -294,10 +316,12 @@ function runVinext(vinextArgs, { copyDist = false } = {}) {
   if (result.status !== 0) process.exit(result.status || 1);
 }
 
+const EN_TEMPLATE_VARIANTS = new Set(["site.config.en.yaml", "Makefile.en", "README.en.md"]);
+
 function copyTemplate(from, to) {
   fs.mkdirSync(to, { recursive: true });
   for (const entry of fs.readdirSync(from, { withFileTypes: true })) {
-    if (entry.name === ".git" || entry.name === "site.config.en.yaml") continue;
+    if (entry.name === ".git" || EN_TEMPLATE_VARIANTS.has(entry.name)) continue;
     const source = path.join(from, entry.name);
     const destination = path.join(to, entry.name);
     if (entry.isDirectory()) copyTemplate(source, destination);
@@ -353,9 +377,21 @@ function initSite() {
   }
   copyTemplate(template, destination);
   if (lang === "en") {
-    const enConfig = path.join(template, "site.config.en.yaml");
-    if (fs.existsSync(enConfig)) {
-      fs.copyFileSync(enConfig, path.join(destination, "site.config.yaml"));
+    for (const [srcName, destName] of [
+      ["site.config.en.yaml", "site.config.yaml"],
+      ["Makefile.en", "Makefile"],
+      ["README.en.md", "README.md"],
+    ]) {
+      const srcFile = path.join(template, srcName);
+      if (fs.existsSync(srcFile)) {
+        fs.copyFileSync(srcFile, path.join(destination, destName));
+      }
+    }
+    const enWorkflow = path.join(gardenPackageRoot, "templates", "workflows", "pages.en.yml");
+    if (fs.existsSync(enWorkflow)) {
+      const workflowDest = path.join(destination, ".github", "workflows", "pages.yml");
+      fs.mkdirSync(path.dirname(workflowDest), { recursive: true });
+      fs.copyFileSync(enWorkflow, workflowDest);
     }
   }
   writeEngineDependency(destination);

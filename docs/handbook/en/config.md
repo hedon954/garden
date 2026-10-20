@@ -77,7 +77,7 @@ footer: Keep writing.
 | `name` | Site name shown in the top-left header, browser title suffix, and RSS feed title |
 | `tagline` | Site tagline |
 | `description` | Site summary used for the home page SEO description and RSS channel description |
-| `locale` | Language and region tag (`zh_CN` by default; setting `en_US` switches the site chrome to English at build time) |
+| `locale` | Language and region tag (`zh_CN` by default; setting `en_US` switches all framework-rendered UI strings—navigation, home page, post list, post metadata and permalink label, Giscus prompts, tags, columns, About page, 404 page, pagination, RSS/sitemap, and meta/og—to English at build time) |
 | `url` | Public root URL of the site (such as `https://blog.example.com`). Full URLs pointing to this address inside posts are treated as internal links |
 | `author.name` | Author name displayed in article metadata, the About page, and the footer |
 | `author.github` | GitHub username (without the full URL), used to link your GitHub profile and fetch public activity for the About page |

@@ -3,35 +3,36 @@
 import Link from "next/link";
 import { ArrowRight, Article, Books, Quotes } from "@phosphor-icons/react/ssr";
 import { siteHref } from "../lib/site-href";
+import { ui } from "../lib/i18n";
 
-const emptyContent = {
-  posts: {
-    icon: Article,
-    eyebrow: "暂无博文",
-    title: "暂无博文。",
-    description: "文章会按时间排在这里。",
-    actionHref: "/",
-    actionLabel: "返回首页",
-  },
-  thoughts: {
-    icon: Quotes,
-    eyebrow: "暂无随想",
-    title: "暂无随想。",
-    description: "短笔记和链接会在这里。",
-    actionHref: "/blog",
-    actionLabel: "先读博文",
-  },
-  columns: {
-    icon: Books,
-    eyebrow: "暂无专栏",
-    title: "暂无专栏。",
-    description: "一组文章会按顺序列在这里。",
-    actionHref: "/blog",
-    actionLabel: "浏览全部博文",
-  },
-} as const;
-
-export function ContentEmptyState({ kind }: { kind: keyof typeof emptyContent }) {
+export function ContentEmptyState({ kind }: { kind: "posts" | "thoughts" | "columns" }) {
+  const s = ui();
+  const emptyContent = {
+    posts: {
+      icon: Article,
+      eyebrow: s.emptyPostsEyebrow,
+      title: s.emptyPostsTitle,
+      description: s.emptyPostsDesc,
+      actionHref: "/",
+      actionLabel: s.emptyPostsCta,
+    },
+    thoughts: {
+      icon: Quotes,
+      eyebrow: s.emptyThoughtsEyebrow,
+      title: s.emptyThoughtsTitle,
+      description: s.emptyThoughtsDesc,
+      actionHref: "/blog",
+      actionLabel: s.emptyThoughtsCta,
+    },
+    columns: {
+      icon: Books,
+      eyebrow: s.emptyColumnsEyebrow,
+      title: s.emptyColumnsTitle,
+      description: s.emptyColumnsDesc,
+      actionHref: "/blog",
+      actionLabel: s.emptyColumnsCta,
+    },
+  } as const;
   const content = emptyContent[kind];
   const Icon = content.icon;
 

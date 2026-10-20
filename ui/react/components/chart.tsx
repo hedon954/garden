@@ -379,7 +379,7 @@ function Chart({ node, env }: { node: UiNode; env: Env }) {
           >
             <strong>{xLabel(tooltipIndex)}</strong>
             {model.series.map((series, index) => (
-              <span key={index}>{model.series.length > 1 ? `${series.label}：` : ""}{formatValue(series.ys[tooltipIndex], series.format)}</span>
+              <span key={index}>{model.series.length > 1 ? tx.seriesTooltip(series.label) : ""}{formatValue(series.ys[tooltipIndex], series.format)}</span>
             ))}
           </div>
         ) : null}

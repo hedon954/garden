@@ -1,9 +1,10 @@
 import { AdminUiShell, isStaticExport, requireAdminPage, StaticAdminNotice } from "../../components/AdminUiShell";
 import { UiStudio } from "../../components/UiStudio";
+import { ui } from "../../lib/i18n";
 import { modelConfig, recipeSources, remainingDrafts } from "../../lib/ui-model";
 
 export const dynamic = process.env.STATIC_EXPORT === "1" ? "force-static" : "force-dynamic";
-export const metadata = { title: "写作台", robots: { index: false, follow: false } };
+export const metadata = { title: ui().adminTitleUi, robots: { index: false, follow: false } };
 
 export default async function UiStudioPage() {
   if (isStaticExport()) return <StaticAdminNotice />;

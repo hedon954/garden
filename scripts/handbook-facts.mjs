@@ -155,7 +155,7 @@ function deriveMakefileFacts(root = ROOT) {
   const targets = new Set();
   const variables = new Set(["MAKE"]);
 
-  for (const rel of ["templates/site/Makefile", "Makefile"]) {
+  for (const rel of ["templates/site/Makefile", "templates/site/Makefile.en", "Makefile"]) {
     const file = path.join(root, rel);
     if (!fs.existsSync(file)) continue;
     const text = fs.readFileSync(file, "utf8");
@@ -218,19 +218,21 @@ function deriveEnvVars(root = ROOT) {
     }
   }
 
-  // .env.example
-  const envExample = path.join(root, ".env.example");
-  if (fs.existsSync(envExample)) {
-    const text = fs.readFileSync(envExample, "utf8");
-    for (const match of text.matchAll(/^#?\s*([A-Z][A-Z0-9_]+)=/gmu)) {
-      envVars.add(match[1]);
+  // .env.example & .env.en.example
+  for (const envRel of [".env.example", ".env.en.example"]) {
+    const envExample = path.join(root, envRel);
+    if (fs.existsSync(envExample)) {
+      const text = fs.readFileSync(envExample, "utf8");
+      for (const match of text.matchAll(/^#?\s*([A-Z][A-Z0-9_]+)=/gmu)) {
+        envVars.add(match[1]);
+      }
     }
   }
 
   // GitHub workflows and template Makefiles
   const workflowFiles = [
     ...walkFiles(path.join(root, ".github/workflows"), (f) => /\.ya?ml$/u.test(f)),
-    ...walkFiles(path.join(root, "templates"), (f) => /\.ya?ml$|Makefile$/u.test(f)),
+    ...walkFiles(path.join(root, "templates"), (f) => /\.ya?ml$|Makefile(?:\.en)?$/u.test(f)),
   ];
   for (const file of workflowFiles) {
     const text = fs.readFileSync(file, "utf8");

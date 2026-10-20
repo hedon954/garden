@@ -73,7 +73,9 @@ const columnKey = (item) => item.sourcePath ?? columnEntryPath(item);
  * empty section. A column entry is only listed on its own when no post has
  * the same source (a column-only page).
  */
-function searchEntries({ posts = [], columns = [], thoughts = [] }, { length = EXCERPT_LENGTH } = {}) {
+function searchEntries({ posts = [], columns = [], thoughts = [] }, { length = EXCERPT_LENGTH, lang = "zh" } = {}) {
+  const defaultColumnSection = lang === "en" ? "Columns" : "专栏";
+  const defaultThoughtSection = lang === "en" ? "Thoughts" : "随想";
   const record = (item, extra) => {
     const text = searchableText(item.content ?? "");
     return {
@@ -89,14 +91,14 @@ function searchEntries({ posts = [], columns = [], thoughts = [] }, { length = E
   const columnOf = new Map();
   for (const item of columns) {
     const key = columnKey(item);
-    if (postKeys.has(key) && !columnOf.has(key)) columnOf.set(key, item.columnTitle ?? "专栏");
+    if (postKeys.has(key) && !columnOf.has(key)) columnOf.set(key, item.columnTitle ?? defaultColumnSection);
   }
   return [
     ...posts.map((item) => ({ item, record: record(item, () => ({ section: columnOf.get(entryKey(item)) ?? "", path: `/blog/${item.path}` })) })),
     ...columns
       .filter((item) => !postKeys.has(columnKey(item)))
-      .map((item) => ({ item, record: record(item, () => ({ section: item.columnTitle ?? "专栏", path: `/columns/${item.column}/${columnEntryPath(item)}` })) })),
-    ...thoughts.map((item) => ({ item, record: record(item, (text) => ({ section: "随想", path: `/thoughts/${item.slug}`, description: excerpt(text, length) })) })),
+      .map((item) => ({ item, record: record(item, () => ({ section: item.columnTitle ?? defaultColumnSection, path: `/columns/${item.column}/${columnEntryPath(item)}` })) })),
+    ...thoughts.map((item) => ({ item, record: record(item, (text) => ({ section: defaultThoughtSection, path: `/thoughts/${item.slug}`, description: excerpt(text, length) })) })),
   ];
 }
 

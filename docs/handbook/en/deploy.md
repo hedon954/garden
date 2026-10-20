@@ -6,7 +6,7 @@ section: getting-started
 order: 4
 ---
 
-`npx hd-garden init` does not create `.github/workflows/pages.yml` automatically. Add this file to your site repository when you are ready to publish to GitHub Pages. The same workflow supports both a **single public repository** and a **private source repository + public Pages repository**, switching automatically based on whether the `PAGES_REPOSITORY` variable is set.
+Initializing an English site (`npx hd-garden init --locale en` or `--locale en_US`) installs `templates/workflows/pages.en.yml` to `.github/workflows/pages.yml` automatically (default `zh_CN` initialization does not create it automatically). Review or add this file in your site repository when you are ready to publish to GitHub Pages. The same workflow supports both a **single public repository** and a **private source repository + public Pages repository**, switching automatically based on whether the `PAGES_REPOSITORY` variable is set.
 
 The workflow below matches Garden's own `.github/workflows/pages.yml` with two adjustments for a site repo: it omits `paths-ignore`, `npm run lint`, and `npm test` (which only apply to the engine repo), and its `publish-repository` job installs dependencies before running `npx garden pages:prepare static-site pages-repository` (the same `scripts/prepare-pages-output.mjs` script Garden calls directly). Commit `package-lock.json` after your first `npm install` so `npm ci` can run in CI.
 

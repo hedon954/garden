@@ -19,7 +19,7 @@ npm install
 make dev
 ```
 
-`npx hd-garden init` copies the site template into `my-blog` (generating an English `site.config.yaml` when `--locale en_US` is passed) and writes the helper skills under `.agents/skills/`. It does not run `npm install` automatically, and it does not create `.github/workflows/pages.yml` (see [Deploy to GitHub Pages](/garden/en/deploy) for the workflow file).
+`npx hd-garden init` copies the site template into `my-blog` and writes the helper skills under `.agents/skills/`. When `--locale en` or `--locale en_US` is passed, it generates an English `site.config.yaml`, `Makefile`, and `README.md`, and installs `.github/workflows/pages.yml` from `templates/workflows/pages.en.yml` (default `zh_CN` initialization does not create `.github/workflows/pages.yml`; see [Deploy to GitHub Pages](/garden/en/deploy)). It does not run `npm install` automatically.
 
 On the first `make dev` run, if `node_modules` is missing, `make prepare` in the `Makefile` runs `npm install` before invoking `npx garden dev` (which syncs content first) and starting the local dev server at `http://localhost:3000`.
 

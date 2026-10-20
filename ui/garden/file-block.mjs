@@ -69,10 +69,10 @@ export function fileName(src) {
   }
 }
 
-/** Format label: the extension in capitals (MD, HTML, PDF, ZIP, CSV …), or 文件 when there is none. */
-export function formatLabel(src) {
+/** Format label: the extension in capitals (MD, HTML, PDF, ZIP, CSV …), or 文件 / FILE when there is none. */
+export function formatLabel(src, lang = "zh") {
   const ext = fileExtension(src);
-  return ext ? ext.toUpperCase() : "文件";
+  return ext ? ext.toUpperCase() : lang === "en" ? "FILE" : "文件";
 }
 
 /** Icon family for the card: doc, code, archive or file. */
@@ -102,10 +102,11 @@ export const HTML_PREVIEW_SANDBOX = "allow-scripts allow-popups allow-forms";
  * on the server, no frame). HTML gets the sandbox; PDF gets none, because the
  * browser's PDF viewer does not run inside a sandboxed frame.
  */
-export function previewFrameProps(file) {
+export function previewFrameProps(file, lang = "zh") {
   const kind = file?.preview;
   if (kind !== "html" && kind !== "pdf") return null;
-  const props = { src: String(file.url ?? ""), title: `预览 ${file.name ?? ""}`.trim(), referrerPolicy: "no-referrer" };
+  const prefix = lang === "en" ? "Preview" : "预览";
+  const props = { src: String(file.url ?? ""), title: `${prefix} ${file.name ?? ""}`.trim(), referrerPolicy: "no-referrer" };
   return kind === "html" ? { ...props, sandbox: HTML_PREVIEW_SANDBOX } : props;
 }
 
@@ -174,7 +175,7 @@ export function readFileProps(props) {
 }
 
 /** Files of a built or authored block, whichever the fence holds. */
-export function blockFiles(props) {
+export function blockFiles(props, lang = "zh") {
   if (props?.resolved && Array.isArray(props.resolved.files)) return props.resolved;
   const read = readFileProps(props);
   return {
@@ -185,7 +186,7 @@ export function blockFiles(props) {
       name: fileName(file.src),
       title: file.title || fileName(file.src),
       url: file.src,
-      format: formatLabel(file.src),
+      format: formatLabel(file.src, lang),
       icon: fileIcon(file.src),
       remote: isRemoteSrc(file.src),
       preview: "",

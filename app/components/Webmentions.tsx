@@ -8,7 +8,7 @@ import {
   Quotes,
   Repeat,
 } from "@phosphor-icons/react";
-import { ui } from "../lib/i18n";
+import { siteLang, ui } from "../lib/i18n";
 
 type WebmentionEntry = {
   author?: {
@@ -102,26 +102,26 @@ export function Webmentions({
       {!endpoint && (
         <div className="integration-notice">
           <Quotes size={20} weight="fill" />
-          <p>接收与展示代码已经就绪，注册正式域名后即可开始收集回应。</p>
+          <p>{ui().webmentionIdleNote}</p>
         </div>
       )}
 
       {endpoint && loading && (
         <p className="integration-status" role="status">
-          正在读取开放网络回应…
+          {ui().webmentionLoading}
         </p>
       )}
 
       {endpoint && failed && (
         <p className="integration-status" role="status">
-          暂时无法读取回应，稍后会自动恢复。
+          {ui().webmentionUnavailable}
         </p>
       )}
 
       {endpoint && !loading && !failed && entries.length === 0 && (
         <div className="integration-notice">
           <Quotes size={20} weight="fill" />
-          <p>还没有站外回应。任何链接到这篇文章的网站都可以向它发送 Webmention。</p>
+          <p>{ui().webmentionEmpty}</p>
         </div>
       )}
 
@@ -130,15 +130,15 @@ export function Webmentions({
           <span>
             <Heart size={16} weight="fill" />
             <Repeat size={16} />
-            {reactions.length} 个喜欢、转发或收藏
+            {ui().webmentionReactionCount(reactions.length)}
           </span>
-          <div className="webmention-facepile" aria-label="回应者">
+          <div className="webmention-facepile" aria-label={ui().webmentionRespondersLabel}>
             {reactions.slice(0, 16).map((entry, index) => (
               <a
                 href={entry.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                aria-label={entry.author?.name ?? "查看站外回应"}
+                aria-label={entry.author?.name ?? ui().webmentionViewResponse}
                 key={`${entry.url}-${index}`}
               >
                 {entry.author?.photo ? (
@@ -165,10 +165,10 @@ export function Webmentions({
             return (
               <article key={`${entry.url}-${index}`}>
                 <header>
-                  <strong>{entry.author?.name ?? "开放网络访客"}</strong>
+                  <strong>{entry.author?.name ?? ui().webmentionAuthorFallback}</strong>
                   {received && (
                     <time dateTime={received}>
-                      {new Intl.DateTimeFormat("zh-CN", {
+                      {new Intl.DateTimeFormat(siteLang === "en" ? "en-US" : "zh-CN", {
                         year: "numeric",
                         month: "2-digit",
                         day: "2-digit",
@@ -182,7 +182,7 @@ export function Webmentions({
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  查看原文
+                  {ui().webmentionViewOriginal}
                   <ArrowSquareOut size={14} />
                 </a>
               </article>

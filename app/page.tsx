@@ -5,6 +5,7 @@ import { columns, formatDate, postHref, posts } from "./lib/content";
 import { githubUrl, siteConfig } from "./site.config";
 import { siteHref } from "./lib/site-href";
 import { pageAlternates } from "./lib/page-alternates";
+import { siteLang, ui } from "./lib/i18n";
 
 export const metadata = {
   title: { absolute: siteConfig.name },
@@ -24,6 +25,7 @@ function day(value: string) {
 }
 
 export default function Home() {
+  const t = ui();
   const recentAll = [...posts].sort((left, right) => Date.parse(right.date) - Date.parse(left.date));
   const feature = recentAll[0];
   const recent = recentAll.filter((post) => post.path !== feature?.path);
@@ -43,9 +45,9 @@ export default function Home() {
         <h1>{siteConfig.pages.home.title}</h1>
         <p>{siteConfig.pages.home.subtitle || siteConfig.description}</p>
         <div className="links">
-          <Link href={siteHref("/about")}>关于我</Link>
+          <Link href={siteHref("/about")}>{t.homeAbout}</Link>
           <a href={githubUrl} rel="me">GitHub</a>
-          <a href="/rss.xml">RSS 订阅</a>
+          <a href="/rss.xml">{t.homeRss}</a>
         </div>
       </section>
 
@@ -58,7 +60,7 @@ export default function Home() {
           ) : null}
           <div>
             <p className="kicker">
-              <span>最新文章</span>
+              <span>{t.homeLatestBadge}</span>
               <time className="num" dateTime={day(feature.date)}>{formatDate(feature.date)}</time>
             </p>
             <h2 id="ft"><Link href={postHref(feature)}>{feature.title}</Link></h2>
@@ -73,13 +75,13 @@ export default function Home() {
       <div className="sh-home-grid">
         <section className="sh-section" aria-labelledby="h-recent">
           <div className="sh-sec-head">
-            <h2 id="h-recent">最近更新</h2>
-            <Link className="sh-more" href={siteHref("/blog")}>全部 {posts.length} 篇</Link>
+            <h2 id="h-recent">{t.homeRecentHeading}</h2>
+            <Link className="sh-more" href={siteHref("/blog")}>{siteLang === "en" ? t.homeAllPostsCount(posts.length) : <>全部 {posts.length} 篇</>}</Link>
           </div>
           <ol className="sh-rows">
             {recent.slice(0, 6).map((post) => (
               <li className="sh-row" key={post.path}>
-                <time className="num" dateTime={day(post.date)}>{homeListDate(post.date)}</time>
+                <time className="num" dateTime={day(post.date)}>{homeListDate(post.date, new Date(), siteLang)}</time>
                 <h3><Link href={postHref(post)}>{post.title}</Link></h3>
                 {post.description ? <p>{post.description}</p> : null}
               </li>
@@ -88,7 +90,7 @@ export default function Home() {
         </section>
         {pinned.length > 0 ? (
           <section className="sh-section" aria-labelledby="h-pin">
-            <div className="sh-sec-head section-heading accent-heading"><h2 id="h-pin">置顶</h2></div>
+            <div className="sh-sec-head section-heading accent-heading"><h2 id="h-pin">{t.homePinnedHeading}</h2></div>
             <ul className="sh-side-list">
               {pinned.map((post) => (
                 <li key={post.path}>
@@ -104,8 +106,8 @@ export default function Home() {
       {columns[0] && series.length ? (
         <section className="sh-section" aria-labelledby="h-cols">
           <div className="sh-sec-head">
-            <h2 id="h-cols">专栏</h2>
-            <Link className="sh-more" href={siteHref("/columns")}>全部专栏</Link>
+            <h2 id="h-cols">{t.homeColumnsHeading}</h2>
+            <Link className="sh-more" href={siteHref("/columns")}>{t.homeAllColumns}</Link>
           </div>
           <div className="sh-cols">
             {series.map(([slug, entries]) => {
@@ -120,7 +122,7 @@ export default function Home() {
                   </div>
                   <div className="body">
                     <h3><Link href={siteHref(`/columns/#${slug}`)}>{first.columnTitle}</Link></h3>
-                    <p className="count">{entries.length} 篇，{first.columnStatus ?? "持续更新"}</p>
+                    <p className="count">{siteLang === "en" ? t.homeColumnCountStatus(entries.length, first.columnStatus ?? t.columnDefaultStatus) : <>{entries.length} 篇，{first.columnStatus ?? "持续更新"}</>}</p>
                     <p>{first.columnDescription ?? first.description}</p>
                   </div>
                 </article>

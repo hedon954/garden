@@ -35,20 +35,26 @@ export function redirectFile(from) {
   return /\.html?$/iu.test(clean) ? clean : path.posix.join(clean.replace(/\/+$/u, ""), "index.html");
 }
 
-export function redirectPage({ href, canonical, icon = "" }) {
+export function redirectPage({ href, canonical, icon = "", lang = "zh" }) {
   // The site's own icon, so the browser does not go looking for /favicon.ico.
   const iconLink = icon ? `\n<link rel="icon" href="${escapeHtml(icon)}"${/\.svg(?:[?#]|$)/iu.test(icon) ? ' type="image/svg+xml"' : ""}>` : "";
+  const isEn = lang === "en";
+  const htmlLang = isEn ? "en" : "zh-CN";
+  const title = isEn ? "Page moved" : "页面已移动";
+  const bodyText = isEn
+    ? `<p>This page has moved to <a href="${escapeHtml(href)}">${escapeHtml(canonical)}</a>.</p>`
+    : `<p>页面已移到 <a href="${escapeHtml(href)}">${escapeHtml(canonical)}</a>。</p>`;
   return `<!doctype html>
-<html lang="zh-CN">
+<html lang="${htmlLang}">
 <head>
 <meta charset="utf-8">
-<title>页面已移动</title>
+<title>${title}</title>
 <link rel="canonical" href="${escapeHtml(canonical)}">${iconLink}
 <meta http-equiv="refresh" content="0; url=${escapeHtml(href)}">
 <script>location.replace(${JSON.stringify(href).replace(/</gu, "\\u003c")}${href.includes("#") ? "" : " + location.hash"})</script>
 </head>
 <body>
-<p>页面已移到 <a href="${escapeHtml(href)}">${escapeHtml(canonical)}</a>。</p>
+${bodyText}
 </body>
 </html>
 `;
@@ -67,6 +73,7 @@ export function redirectPage({ href, canonical, icon = "" }) {
  */
 export function generateRedirects({ outDir, config = {}, env = {}, basePath = "", log = () => {}, extra = [], icon = "" }) {
   const base = String(basePath ?? "").replace(/\/+$/u, "");
+  const lang = /^en/iu.test(String(config?.locale ?? "")) ? "en" : "zh";
   let origin = "";
   try {
     const address = configuredSiteAddress(config, env);
@@ -118,7 +125,7 @@ export function generateRedirects({ outDir, config = {}, env = {}, basePath = ""
     const href = external ? to : withTrailingSlash(`${base}${to}`);
     const canonical = external || !origin ? href : `${origin}${href}`;
     fs.mkdirSync(path.dirname(file), { recursive: true });
-    fs.writeFileSync(file, redirectPage({ href, canonical, icon }));
+    fs.writeFileSync(file, redirectPage({ href, canonical, icon, lang }));
     written.push({ from, to: href, file });
   }
   return { written, expected: pairs.length, skipped };

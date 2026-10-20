@@ -3,12 +3,14 @@ import { lstat, mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { formatAuthorDate } from "./site-date.mjs";
 import { cheatSheet } from "../ui/garden/catalog.mjs";
+import { siteCliLang } from "../ui/core/cli-locale.mjs";
 
 const root = path.resolve(process.env.GARDEN_SITE || process.cwd());
 const option = (name) => (process.env[`GARDEN_NEW_${name}`] ?? "").trim();
 
 async function main() {
-  const title = option("TITLE") || "新文章";
+  const lang = siteCliLang(root);
+  const title = option("TITLE") || (lang === "en" ? "New Post" : "新文章");
   const date = formatAuthorDate();
   const titleSlug = title.toLowerCase().replace(/[^a-z0-9]+/gu, "-").replace(/^-|-$/gu, "");
   const slug = option("SLUG") || titleSlug || `post-${date.slice(0, 10)}-${randomUUID().slice(0, 8)}`;
@@ -41,16 +43,16 @@ async function main() {
     "---",
     `title: ${JSON.stringify(title)}`,
     `date: ${date}`,
-    `description: ${JSON.stringify("请填写一句话摘要。")}`,
+    `description: ${JSON.stringify(lang === "en" ? "Write a one-sentence summary." : "请填写一句话摘要。")}`,
     "tags: []",
     "draft: true",
     "---",
     "",
-    "## 起因",
+    lang === "en" ? "## Context" : "## 起因",
     "",
-    "从这里开始写正文。",
+    lang === "en" ? "Start writing here." : "从这里开始写正文。",
     "",
-    cheatSheet(),
+    cheatSheet(lang),
     "",
   ].join("\n");
   try {
@@ -62,10 +64,17 @@ async function main() {
     throw error;
   }
 
-  console.log(`已创建草稿：${path.relative(root, destination)}`);
-  console.log(`文章路径：/blog/${[...segments, slug].join("/")}/`);
-  console.log("预览：CONTENT_INCLUDE_DRAFTS=1 make dev");
-  console.log("发布前请完善摘要、标签与正文，并将 draft 改为 false，再运行 make update。");
+  if (lang === "en") {
+    console.log(`Created draft: ${path.relative(root, destination)}`);
+    console.log(`Post URL: /blog/${[...segments, slug].join("/")}/`);
+    console.log("Preview: CONTENT_INCLUDE_DRAFTS=1 make dev");
+    console.log("Before publishing, fill in description, tags, and body, set draft to false, then run make update.");
+  } else {
+    console.log(`已创建草稿：${path.relative(root, destination)}`);
+    console.log(`文章路径：/blog/${[...segments, slug].join("/")}/`);
+    console.log("预览：CONTENT_INCLUDE_DRAFTS=1 make dev");
+    console.log("发布前请完善摘要、标签与正文，并将 draft 改为 false，再运行 make update。");
+  }
 }
 
 main().catch((error) => {
