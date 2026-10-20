@@ -28,6 +28,8 @@ pages:
   thoughts:
     title: 随想
     subtitle: 短笔记、图片和链接。
+    # 每屏显示多少条，往下读时自动加载下一屏。默认 10。
+    # pageSize: 10
   columns:
     title: 专栏
     subtitle: 按顺序读的一组文章。

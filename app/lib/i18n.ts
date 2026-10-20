@@ -39,6 +39,12 @@ const zh = {
   handbook: "Garden 使用说明",
   overview: "总览",
   langSwitch: "切换语言",
+  nextPage: "下一页",
+  prevPage: "上一页",
+  loadingMore: "正在加载…",
+  loadFailed: "没能加载，点这里重试",
+  feedEnd: "已经到底了",
+  pageOf: (page: number, total: number) => `第 ${page} 页，共 ${total} 页`,
 };
 
 const en: typeof zh = {
@@ -68,6 +74,12 @@ const en: typeof zh = {
   handbook: "Garden Handbook",
   overview: "Overview",
   langSwitch: "Switch language",
+  nextPage: "Next page",
+  prevPage: "Previous page",
+  loadingMore: "Loading…",
+  loadFailed: "Could not load. Tap to retry",
+  feedEnd: "That is everything",
+  pageOf: (page: number, total: number) => `Page ${page} of ${total}`,
 };
 
 export const UI_STRINGS = { zh, en } as const;

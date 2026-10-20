@@ -47,6 +47,7 @@ description: >-
 3. 每块读原话和所在小节，三选一：
    - **写回正文**：一句话、一张表或一张 Mermaid 就能说清时。
    - **写 `garden interactive`**：读者需要拖、点、翻才能看懂时。
+   - **写一段 `diff`**：想法紧跟在一段完整代码后面，说的是「和上一版比改了什么」时。按原话写出 diff，用一段普通 Markdown 写回（只有这一个 `diff` 围栏）。写回后它紧挨着那段代码，页面会合成「代码 / 对比上一版」切换；diff 里的新行要和上面的完整代码一致。
    - **写别的 `garden` 组件**：一张资源卡、几个指标、两种做法并排、一条时间线、一张静态图表、一张结构图、一份下载文件。
    - **写 `garden html`**：目录表达不了的画布动画、音频、物理模拟等。按 [garden-interactive-chart](../garden-interactive-chart/SKILL.md) 在同名目录写 HTML，用 `title` 写下判断。
 

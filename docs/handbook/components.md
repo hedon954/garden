@@ -6,7 +6,7 @@ section: components
 order: 30
 ---
 
-当标准 Markdown 段落、列表或表格不够表达时，可以在文章里使用 ```` ```garden <name> ```` 代码块插入内置组件。所有组件名均使用英文，内部使用 YAML（`interactive` 在 `---` 下方使用声明式标签）编写参数。
+这些组件都可以用一句话描述，交给 Agent 生成，做法见 [用 AI 写作](/garden/ai-writing)。手写时用 ```` ```garden <name> ```` 代码块插入，组件名都是英文，参数用 YAML 写（`interactive` 在 `---` 下方写声明式标签）。
 
 ## 9 个组件速查表
 

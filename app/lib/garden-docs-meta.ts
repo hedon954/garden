@@ -86,6 +86,7 @@ export const COMPONENT_BADGE: Record<string, string> = {
 
 export const NAV_SHORT_TITLE: Record<string, string> = {
   start: "快速开始",
+  "ai-writing": "用 AI 写作",
   config: "站点与专栏配置",
   deploy: "发布到 GitHub Pages",
   writing: "写文章与随想",

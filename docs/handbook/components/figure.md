@@ -7,6 +7,8 @@ order: 36
 badge: figure
 ---
 
+不用记下面的写法：在 `garden` 想法块里写一句「画一张发布流程的结构图，点到哪一步就显示那一步的说明」，Agent 会按 `garden-ui` skill 生成这样的 `garden figure`。手写格式放在后面，供核对。
+
 ```garden figure
 caption: 点击上方按钮切换高亮各步骤
 svg: |

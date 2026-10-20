@@ -130,3 +130,34 @@ test("drafts may keep garden ideas", () => {
   const dir = site(post("draft: true\n").replace('<Slidr bind="batch" />', '<Slider bind="batch" min={1} max={8} label="batch" />'));
   assert.equal(cli(dir, "check", "content/posts/a.md", "--no-copy").status, 0);
 });
+
+// The handbook's end-to-end example (overview and 用 AI 写作) quotes real output.
+test("the handbook's AI-writing example matches what the commands print", () => {
+  const read = (name) => fs.readFileSync(path.join(root, "docs/handbook", name), "utf8");
+  const overview = read("index.md");
+  const aiPage = read("ai-writing.md");
+  const idea = overview.match(/```garden\n(让读者[^\n]+)\n```/u)[1];
+  const markdown = `---\ntitle: 慢慢写\ndate: 2026-10-01\ndescription: 一篇长文要写多久。\n---\n\n## 写作节奏\n\n${fence}garden\n${idea}\n${fence}\n`;
+  const dir = site(markdown);
+  fs.renameSync(path.join(dir, "content/posts/a.md"), path.join(dir, "content/posts/writing-pace.md"));
+  const scan = JSON.parse(cli(dir, "scan", "content/posts/writing-pace.md").stdout);
+  const [block] = scan.blocks;
+  for (const [key, value] of Object.entries({ lang: block.lang, status: block.status, startLine: block.startLine, intentHash: block.intentHash, section: block.section })) {
+    assert.ok(overview.includes(`"${key}": ${JSON.stringify(value)}`), `overview shows ${key} ${value}`);
+  }
+  const check = cli(dir, "check", "content/posts/writing-pace.md", "--no-copy");
+  const diagnostic = check.stderr.split("\n")[0];
+  assert.ok(overview.includes(diagnostic) && aiPage.includes(diagnostic), diagnostic);
+  for (const line of check.stderr.split("\n").slice(2, 9)) {
+    if (line.trim()) assert.ok(overview.includes(line), `overview prompt line: ${line}`);
+  }
+  const interactive = overview.match(/```garden interactive #writing-pace\n[\s\S]*?\n```/u)[0];
+  fs.writeFileSync(path.join(dir, "new.md"), interactive);
+  const apply = cli(dir, "apply", "content/posts/writing-pace.md", "--intent-hash", block.intentHash, "--file", path.join(dir, "new.md"));
+  assert.ok(overview.includes(apply.stdout.trim()), apply.stdout);
+  assert.equal(cli(dir, "check", "content/posts/writing-pace.md", "--quiet", "--no-copy").stdout, "");
+  // The hook command the pages quote is the one bin/garden.mjs installs.
+  const hook = /exec npx --no-install garden ui check --staged --quiet/u;
+  assert.match(fs.readFileSync(path.join(root, "bin/garden.mjs"), "utf8"), hook);
+  assert.match(aiPage, hook);
+});

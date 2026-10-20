@@ -7,6 +7,8 @@ order: 32
 badge: stat
 ---
 
+不用记下面的写法：在 `garden` 想法块里写一句「列出正文列、宽图区、宽表区三个宽度」，Agent 会按 `garden-ui` skill 生成这样的 `garden stat`。手写格式放在后面，供核对。
+
 ```garden stat
 items:
   - label: 正文列宽

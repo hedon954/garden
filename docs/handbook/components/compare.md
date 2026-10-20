@@ -7,25 +7,27 @@ order: 33
 badge: compare
 ---
 
+不用记下面的写法：在 `garden` 想法块里写一句「并排比较用一句话描述代码改动和手写 diff 两种做法」，Agent 会按 `garden-ui` skill 生成这样的 `garden compare`。手写格式放在后面，供核对。
+
 ```garden compare
 items:
-  - title: 只贴一段 diff
-    text: 读者只看到增删行；前面没有完整代码块时，garden check 报 diff-orphan 错误。
-    能否复制新版: 不能
-  - title: 完整代码 + 紧跟的 diff
-    text: 两段合成一个代码框，可在「代码」和「对比上一版」之间切换。
-    能否复制新版: 两个标签下都复制新版
+  - title: 写一句话说明改了什么
+    text: 想法块紧跟在完整代码下面，garden-ui 把它换成 diff，页面合成「代码 / 对比上一版」。
+    要记格式: 不用
+  - title: 手写 diff
+    text: 完整代码下面紧跟一段 diff；前面没有完整代码时，garden check 报 diff-orphan。
+    要记格式: 要
 ```
 
 ````markdown
 ```garden compare
 items:
-  - title: 只贴一段 diff
-    text: 读者只看到增删行；前面没有完整代码块时，garden check 报 diff-orphan 错误。
-    能否复制新版: 不能
-  - title: 完整代码 + 紧跟的 diff
-    text: 两段合成一个代码框，可在「代码」和「对比上一版」之间切换。
-    能否复制新版: 两个标签下都复制新版
+  - title: 写一句话说明改了什么
+    text: 想法块紧跟在完整代码下面，garden-ui 把它换成 diff，页面合成「代码 / 对比上一版」。
+    要记格式: 不用
+  - title: 手写 diff
+    text: 完整代码下面紧跟一段 diff；前面没有完整代码时，garden check 报 diff-orphan。
+    要记格式: 要
 ```
 ````
 

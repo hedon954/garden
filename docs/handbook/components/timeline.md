@@ -7,6 +7,8 @@ order: 34
 badge: timeline
 ---
 
+不用记下面的写法：在 `garden` 想法块里写一句「按顺序列出静态发布流水线的几个步骤」，Agent 会按 `garden-ui` skill 生成这样的 `garden timeline`。手写格式放在后面，供核对。
+
 ```garden timeline
 title: 静态发布流水线执行步骤
 items:

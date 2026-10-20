@@ -773,6 +773,10 @@ assertUnique(
   "专栏文章顺序",
 );
 assertUnique(thoughts, (item) => item.slug, "随想 slug");
+// /thoughts/page/<n>/ holds the static pages of the feed.
+for (const thought of thoughts) {
+  if (thought.slug === "page") fail(thought.sourcePath ?? "content/thoughts/page.md", "随想不能叫 page：/thoughts/page/ 留给分页");
+}
 assertUnique(gardenDocs, (item) => item.path, "Garden 文档路径");
 assertUnique(gardenDocsEn, (item) => item.path, "Garden English handbook path");
 

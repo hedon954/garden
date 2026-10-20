@@ -55,7 +55,7 @@ references:
 
 普通代码块在右上角带有语言名称（如 `RUST`、`TS`、`PYTHON`、`SHELL`）和复制按钮。
 
-如果你想展示某段代码修改前后的对比，**先放一段完整代码块，紧接着放一段 `diff` 代码块**。渲染器会自动把它们合并成一个带 **「代码」** 和 **「对比上一版」** 两个切换按钮的代码框：
+想展示一段代码改了什么，先放改好的完整代码，在它下面写一个 `garden` 想法块，用一句话说明和上一版比改了什么：
 
 ````markdown
 ```go
@@ -64,15 +64,12 @@ func openStore(path string) (*Store, error) {
 }
 ```
 
-```diff
- func openStore(path string) (*Store, error) {
--	return openWithMode(path, ModeJournal)
-+	return openWithMode(path, ModeWAL)
- }
+```garden
+和上一版比：打开存储时的模式从 ModeJournal 改成了 ModeWAL。
 ```
 ````
 
-实际渲染效果如下（点击右上角的 **「代码」** 与 **「对比上一版」** 可以切换，点击复制按钮始终复制前面的完整代码）：
+`garden-ui` skill 会把想法换成一段 `diff`（做法见 [用 AI 写作](/garden/ai-writing)）。这段 `diff` 紧挨着完整代码，页面会把两段合成一个可以切换 **「代码」** 和 **「对比上一版」** 的代码框，复制按钮始终复制完整代码：
 
 ```go
 func openStore(path string) (*Store, error) {
@@ -87,8 +84,19 @@ func openStore(path string) (*Store, error) {
  }
 ```
 
+**手写格式**：上面那段 `diff` 也可以自己写，放在完整代码块的正下方，中间只能隔空行：
+
+````markdown
+```diff
+ func openStore(path string) (*Store, error) {
+-	return openWithMode(path, ModeJournal)
++	return openWithMode(path, ModeWAL)
+ }
+```
+````
+
 > [!IMPORTANT]
-> `diff` 代码块前面必须紧挨着一段完整代码块（中间只能隔空行）；如果单独放一段 `diff` 而前面没有完整代码块，`npx garden check` 会报 `diff-orphan` 错误。
+> 单独放一段 `diff` 而前面没有完整代码块时，`npx garden check` 会报 `diff-orphan` 错误。
 
 ## 3. 中文加粗、荧光笔高亮与提示框
 

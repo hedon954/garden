@@ -3,7 +3,7 @@ title: 站点与专栏配置
 navTitle: 站点与专栏配置
 description: 配置 site.config.yaml 中的站点信息、各页标题、自定义品牌图标与 content/columns.yaml 专栏。
 section: getting-started
-order: 2
+order: 3
 ---
 
 站点的全局文字与外观信息集中在根目录的 `site.config.yaml`，专栏目录集中在 `content/columns.yaml`。修改后运行 `npx garden sync`（或直接 `make dev`）即可生效。

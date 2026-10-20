@@ -5,7 +5,102 @@ section: overview
 order: 0
 ---
 
-长篇技术文章除了段落，常常还有架构图、多列对比和改过的代码。在 Garden 里这些都用普通 Markdown 写，排版交给构建流程和页面脚本。下面每一节都附带实际效果。
+Garden 是一个 Claude 风格的博客框架：文章用 Markdown 写，图表、指标、交互这些组件不用记语法，写一句话说清想要什么，交给 Agent 生成。
+
+## 一个完整的例子
+
+下面四步是同一篇稿子的真实过程，命令输出都是实际运行的结果。
+
+### 1. 作者：写一句话
+
+在想放交互的地方写一个不带名字的 `garden` 围栏，里面只写想让读者做什么、看到什么：
+
+````markdown
+## 写作节奏
+
+```garden
+让读者拖动每天写的字数和每周写几天，看写完一篇 8000 字的长文要几周。
+```
+````
+
+### 2. Agent：拉出待转换的块，按 skill 转换
+
+对 Agent 说「编译这篇：content/posts/writing-pace.md」。它按站点里的 `garden-ui` skill 先运行 `npx garden ui scan`，拿到这一块的位置、原话和哈希（输出节选）：
+
+```console
+$ npx garden ui scan content/posts/writing-pace.md
+{
+  "file": "content/posts/writing-pace.md",
+  "draft": false,
+  "blocks": [
+    {
+      "lang": "garden-idea",
+      "status": "uncompiled",
+      "startLine": 9,
+      "intentHash": "cb3a3569",
+      "intent": "让读者拖动每天写的字数和每周写几天，看写完一篇 8000 字的长文要几周。",
+      "section": "写作节奏"
+    }
+  ]
+}
+```
+
+再读 `npx garden ui prompt` 里的组件目录，写出 `garden interactive`，用 `npx garden ui apply` 只替换这一块，围栏外的文字一个字节都不动：
+
+```console
+$ npx garden ui apply content/posts/writing-pace.md --intent-hash cb3a3569 --file new.md
+{"ok":true,"file":"content/posts/writing-pace.md","kind":"garden","line":9}
+```
+
+### 3. 提交：同一个脚本再查一遍
+
+`garden sync` 或 `garden dev` 第一次运行时会装好提交前钩子，它运行的是 `npx --no-install garden ui check --staged --quiet`，和 Agent 自查用的是同一条命令。如果作者在第 2 步之前就提交，钩子会拦下来，并打印一段可以直接发给 AI 的提示词：
+
+```console
+$ git commit -m "写作节奏"
+content/posts/writing-pace.md:9  -  garden-idea  还有没编译的想法
+
+──────────────────────── 发给 AI 的修复提示词 ────────────────────────
+请处理下面 Garden 博文里列出的块：没编译的想法要编译，有错误的交互块要修好。
+
+要求：
+- 先运行 npx garden ui prompt，读组件目录和规则；仓库里有 garden-ui skill 时按它的流程做。
+- 只改列出的块，用 npx garden ui apply <稿件> --id <id> 写回（没有 id 的想法用 --intent-hash），不要直接编辑稿件。
+- 不改作者原话的意思。改完运行 npx garden ui check <稿件>，直到通过。
+- 如果你不能访问这个仓库，就只回复每块修好后的完整围栏。
+
+1. content/posts/writing-pace.md，第 9–11 行，intent-hash: cb3a3569
+   - garden-idea：这段想法还没编译，请按原话编译成 garden interactive 或其他 garden 组件（或判断后写回正文）。
+（后面附当前围栏原文）
+────────────────────────────────────────────────────────────
+已写入 .garden/ui-fix-prompt.md。确实要先提交，可以用 git commit --no-verify。
+```
+
+提示词同时写进 `.garden/ui-fix-prompt.md`，能用剪贴板时也会自动复制。把它贴给 Agent，它就回到第 2 步。转换完再提交，钩子不再输出任何内容，提交照常完成。
+
+### 4. 结果
+
+第 2 步写回的块在页面上是这样，可以直接拖：
+
+```garden interactive #writing-pace
+caption: 每天多写几百字，比每周多写一天更快。
+intent: |
+  让读者拖动每天写的字数和每周写几天，看写完一篇 8000 字的长文要几周。
+---
+<State daily={500} days={3} />
+<Let weekly={daily * days} />
+<Let weeks={ceil(8000 / weekly)} />
+
+<Slider bind="daily" label="每天写" min={200} max={2000} step={100} unit="字" />
+<Slider bind="days" label="每周写" min={1} max={7} step={1} unit="天" />
+
+<Stat label="写完 8000 字需要" value={weeks} unit="周" hint="不足一周按一周算" />
+```
+
+> [!IMPORTANT] 人和 Agent 用同一套工具
+> 作者提交时跑的检查、Agent 找块用的扫描、写回用的命令，都是 `garden ui` 下的同一组子命令。检查不通过时给出的提示词，正好是 Agent 下一步要做的事。详见 [用 AI 写作](/garden/ai-writing)。
+
+下面几节是不用 Agent 也会自动生效的排版。
 
 ## 标题分行与 `740px` 正文列
 
@@ -27,7 +122,7 @@ order: 0
 
 ## 代码块与「对比上一版」切换
 
-把改好的完整代码块和一段 `diff` 紧挨着写，页面会把它们合成一个可以切换「代码」和「对比上一版」的代码框。复制按钮复制的总是新版完整代码。
+在改好的完整代码下面写一句话说明改了什么，Agent 会生成一段 `diff`；也可以自己写。完整代码和 `diff` 紧挨着时，页面会把它们合成一个可以切换「代码」和「对比上一版」的代码框，复制按钮复制的总是新版完整代码。
 
 ```yaml
 pages:

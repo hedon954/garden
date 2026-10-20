@@ -2261,3 +2261,40 @@ html[data-theme="dark"] .gf-scrim { background: rgb(0 0 0 / 45%); }
   border-top: 0;
   padding-top: 0;
 }
+
+/* 随想 feed: the 下一页 link doubles as the loading trigger. */
+.feed-more {
+  display: flex;
+  justify-content: center;
+  margin: 32px 0 8px;
+}
+
+.feed-more a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 0 18px;
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  color: var(--soft);
+  font: 400 14px/1 var(--sans);
+  text-decoration: none;
+}
+
+.feed-more a:hover {
+  border-color: var(--rule-strong);
+  color: var(--ink);
+}
+
+.feed-end {
+  color: var(--muted);
+  font: 400 13px/1 var(--sans);
+}
+
+.feed-prev {
+  display: flex;
+  justify-content: space-between;
+  margin: 24px 0 0;
+  color: var(--muted);
+  font: 400 13px/1.4 var(--sans);
+}

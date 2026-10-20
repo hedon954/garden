@@ -7,6 +7,8 @@ order: 31
 badge: card
 ---
 
+不用记下面的写法：在 `garden` 想法块里写一句「放一张卡片介绍 SQLite 的 WAL 文档，带标题、链接和一句说明」，Agent 会按 `garden-ui` skill 生成这样的 `garden card`。手写格式放在后面，供核对。
+
 ```garden card
 title: SQLite WAL 写入模式
 url: https://www.sqlite.org/wal.html
