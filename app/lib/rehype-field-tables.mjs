@@ -6,7 +6,8 @@
 import { toString } from "hast-util-to-string";
 import { visit } from "unist-util-visit";
 
-const FIELD = new Set(["字段", "field"]);
+// "字段", "字段或标签", "Field", "Field or Tag"…
+const FIELD = /^(字段|field\b)/iu;
 const REQUIRED = new Set(["是否必填", "required"]);
 
 const cells = (row) => (row?.children ?? []).filter((node) => node.type === "element" && (node.tagName === "th" || node.tagName === "td"));
@@ -22,7 +23,7 @@ const addClass = (node, name) => {
 };
 
 export function isFieldTableHeader(labels) {
-  return labels.length >= 3 && FIELD.has(labels[0].trim().toLowerCase()) && labels.some((label) => REQUIRED.has(label.trim().toLowerCase()));
+  return labels.length >= 3 && FIELD.test(labels[0].trim()) && labels.some((label) => REQUIRED.has(label.trim().toLowerCase()));
 }
 
 export function rehypeFieldTables() {

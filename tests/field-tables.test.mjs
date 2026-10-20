@@ -13,6 +13,9 @@ const html = (md) => String(unified().use(remarkParse).use(remarkGfm).use(remark
 test("field tables are recognised by their Field + Required headers, in zh and en", () => {
   assert.ok(isFieldTableHeader(["字段", "是否必填", "默认值", "说明"]));
   assert.ok(isFieldTableHeader(["Field", "Required", "Default", "Description"]));
+  assert.ok(isFieldTableHeader(["字段或标签", "是否必填", "默认值"]));
+  assert.ok(isFieldTableHeader(["Field or Tag", "Required", "Default"]));
+  assert.equal(isFieldTableHeader(["Fields", "Required", "Default"]), false);
   assert.equal(isFieldTableHeader(["周", "株高", "备注"]), false);
   assert.equal(isFieldTableHeader(["Field", "Type", "Notes"]), false, "needs a Required column");
 });
