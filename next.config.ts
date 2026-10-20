@@ -1,7 +1,13 @@
 import type { NextConfig } from "next";
 import { trailingSlashEnabled } from "./ui/garden/site-href.mjs";
 
+// A site served under a subpath (GitHub project pages, /repo/…) sets
+// NEXT_PUBLIC_BASE_PATH; the build, the search index and every page link
+// already read it, and the router and assets need the same prefix.
+const basePath = (process.env.NEXT_PUBLIC_BASE_PATH ?? "").replace(/\/+$/u, "");
+
 const nextConfig: NextConfig = {
+  ...(basePath ? { basePath } : {}),
   ...(process.env.STATIC_EXPORT === "1"
     ? {
         output: "export",

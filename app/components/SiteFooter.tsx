@@ -23,7 +23,7 @@ export function SiteFooter({ docs = false, lang }: { docs?: boolean; lang?: UiLa
             <GithubLogo size={16} aria-hidden="true" />
             GitHub
           </a>
-          <a href="/rss.xml">
+          <a href={`${(process.env.NEXT_PUBLIC_BASE_PATH ?? "").replace(/\/+$/u, "")}/rss.xml`}>
             <Rss size={16} aria-hidden="true" />
             RSS
           </a>

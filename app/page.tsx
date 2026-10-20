@@ -45,7 +45,7 @@ export default function Home() {
         <div className="links">
           <Link href={siteHref("/about")}>关于我</Link>
           <a href={githubUrl} rel="me">GitHub</a>
-          <a href="/rss.xml">RSS 订阅</a>
+          <a href={`${(process.env.NEXT_PUBLIC_BASE_PATH ?? "").replace(/\/+$/u, "")}/rss.xml`}>RSS 订阅</a>
         </div>
       </section>
 

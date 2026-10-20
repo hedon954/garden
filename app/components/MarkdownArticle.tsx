@@ -46,7 +46,7 @@ const sameSite = sameSiteMatcher(siteLinks?.address ?? "", siteLinks?.basePath ?
 
 // Links to other pages of the site render as Link. A link to an old address listed under
 // redirects is rewritten to the page it moved to; a link that lands on no known page stays a plain anchor.
-const internalRoute = internalLinkResolver({
+const siteRoute = internalLinkResolver({
   redirects: [
     ...readRedirects(siteConfig),
     ...columnRedirects({ columns: [...new Set(columns.map((entry) => entry.column).filter(Boolean))].map((slug) => ({ slug })) }),
@@ -61,6 +61,18 @@ const internalRoute = internalLinkResolver({
   ],
   basePath: siteLinks?.basePath ?? "",
   // Same shape as every other address in the site (the slash follows trailingSlash).
+  format: siteHref,
+});
+
+// The handbook ships with the framework and its links are written without
+// any base path (/garden/…); Link adds the site's own prefix.
+const handbookRoute = internalLinkResolver({
+  redirects: [],
+  routes: [
+    "/garden", "/garden/en",
+    ...gardenDocs.map(gardenDocHref),
+    ...gardenDocsEn.map((doc) => siteHref(`/garden/en/${doc.path}`)),
+  ],
   format: siteHref,
 });
 
@@ -215,7 +227,8 @@ const headingText = (children: ReactNode) => {
   return parts.join("");
 };
 
-export function MarkdownArticle({ content, numbering, lang, fieldTables, refDemos }: { content: string; numbering?: boolean; lang?: UiLang; fieldTables?: boolean; refDemos?: boolean }) {
+export function MarkdownArticle({ content, numbering, lang, fieldTables, refDemos, handbook }: { content: string; numbering?: boolean; lang?: UiLang; fieldTables?: boolean; refDemos?: boolean; handbook?: boolean }) {
+  const internalRoute = handbook ? handbookRoute : siteRoute;
   const t = ui(lang);
   // Optional layer 2: a Worker that refreshes card text. Without it, cards stay as built.
   const cardWorker = content.includes("{card}") ? siteConfig.linkPreview?.worker : undefined;
