@@ -86,8 +86,8 @@ Following the `garden-ui` skill, the Agent replaces that idea fence with a `diff
 
 When writing components by hand without AI, you can use the templates and snippets shipped in the package:
 
-- Every draft created by `make new` includes an HTML comment at the bottom with copy-ready examples for idea fences and all 9 components; delete the comment whenever you are done.
-- `templates/garden-blocks.md` lists `when` / `whenNot` guidance and copyable templates for every block; macOS, Typora, and Alfred users can import `templates/garden-snippets.plist` to expand `;gidea`, `;gcard`, `;gstat`, `;gcompare`, `;gtimeline`, `;gchart`, `;gfigure`, `;ghtml`, `;ginteractive`, and `;gfile`.
+- Every draft created by `make new` includes an HTML comment at the bottom with copy-ready examples for idea fences and all 12 components; delete the comment whenever you are done.
+- `templates/garden-blocks.md` lists `when` / `whenNot` guidance and copyable templates for every block; macOS, Typora, and Alfred users can import `templates/garden-snippets.plist` to expand `;gidea`, `;gcard`, `;gstat`, `;gcompare`, `;gtimeline`, `;gchart`, `;gfigure`, `;ghtml`, `;ginteractive`, `;gfile`, `;grel`, `;glist`, and `;gchoice`.
 - The engine repository also ships editor integrations under `editors/vscode`, `editors/typora`, and `editors/obsidian`, and `npx garden ui catalog` generates an offline component catalog at `.garden/ui-catalog.html`.
 
 ## 7. Optional Standalone Admin

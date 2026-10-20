@@ -29,7 +29,7 @@ Where you want a component or interactive calculation, write an unnamed `garden`
 ```
 ````
 
-Ask your Agent to compile the post using the bundled `garden-ui` skill: it runs `npx garden ui scan` to locate uncompiled or broken blocks, reads the component catalog from `npx garden ui prompt`, generates a `garden interactive` block (or `card`, `stat`, `compare`, `timeline`, `chart`, `figure`, `html`, `file`, or a `diff` block right below a code snippet), and writes only that fence back via `npx garden ui apply`. If you run `git commit` before compiling, the pre-commit hook runs `npx --no-install garden ui check --staged --quiet`, stops the commit, and prints a ready-to-paste fix prompt for your AI.
+Ask your Agent to compile the post using the bundled `garden-ui` skill: it runs `npx garden ui scan` to locate uncompiled or broken blocks, reads the component catalog from `npx garden ui prompt`, generates a `garden interactive` block (or `card`, `stat`, `compare`, `timeline`, `chart`, `figure`, `html`, `file`, `relations`, `list`, `choice`, or a `diff` block right below a code snippet), and writes only that fence back via `npx garden ui apply`. If you run `git commit` before compiling, the pre-commit hook runs `npx --no-install garden ui check --staged --quiet`, stops the commit, and prints a ready-to-paste fix prompt for your AI.
 
 ## 3. Common commands
 
@@ -48,7 +48,7 @@ npx garden ui catalog                           # Generate an offline component 
 
 Start `make dev` and open `/garden/en` (Chinese at `/garden`), or read the markdown sources directly:
 
-- **[Garden Handbook (English)](docs/handbook/en/index.md)** · **[Garden 使用说明（中文）](docs/handbook/index.md)**: [Quick Start](docs/handbook/en/start.md), [Writing with AI](docs/handbook/en/ai-writing.md), [Site & Column Configuration](docs/handbook/en/config.md), [Deploy to GitHub Pages](docs/handbook/en/deploy.md), [Writing Posts & Thoughts](docs/handbook/en/writing.md), [How Reading Layout Works](docs/handbook/en/design.md), [9 Built-in Components](docs/handbook/en/components.md), and [Checking & Shortcuts](docs/handbook/en/workflow.md).
+- **[Garden Handbook (English)](docs/handbook/en/index.md)** · **[Garden 使用说明（中文）](docs/handbook/index.md)**: [Quick Start](docs/handbook/en/start.md), [Writing with AI](docs/handbook/en/ai-writing.md), [Site & Column Configuration](docs/handbook/en/config.md), [Deploy to GitHub Pages](docs/handbook/en/deploy.md), [Writing Posts & Thoughts](docs/handbook/en/writing.md), [How Reading Layout Works](docs/handbook/en/design.md), [12 Built-in Components](docs/handbook/en/components.md), and [Checking & Shortcuts](docs/handbook/en/workflow.md).
 - **[Quick Start Guide](docs/quick-start.md)** and **[GitHub Pages Deployment](docs/github-pages.md)**: single public repository or private source + public output repository setup, plus Giscus comments.
 - **[Admin Service](docs/admin-service.md)**: optional `/admin` server (local, Docker, or Cloudflare Workers) for posting thoughts from the web, uploading media to Alibaba Cloud OSS, and using the `/admin/ui` workbench.
 
