@@ -48,11 +48,11 @@ parts:
 
 ## 字段说明
 
-围栏写 ` ```garden figure `（编辑器代码片段触发词 `;gfigure`）。
+围栏写 ` ```garden figure `（编辑器代码片段触发词 `;gfigure`）。YAML 语法错误或顶层含未知键名时整块报 `garden-yaml` 错误。
 
 | 字段 | 是否必填 | 默认值 | 取值与限制 | 说明 |
 | :--- | :--- | :--- | :--- | :--- |
-| `svg` | 与 `image`、`mermaid` 三选一 | `---` 分隔线下的 `<svg>` 正文或 `""` | 多行 `<svg>` 字符串（顶层写未知键名或 YAML 格式错误时报 `garden-yaml` 错误） | 内联 SVG 源码；在需要随按钮高亮的图形元素上标注 `data-p="<id>"`（颜色建议使用 `var(--card)`、`var(--ink)`、`var(--muted)` 等主题变量以适配深色模式） |
+| `svg` | 与 `image`、`mermaid` 三选一 | `---` 分隔线下的 `<svg>` 正文或 `""` | 多行 `<svg>` 字符串 | 内联 SVG 源码；在需要随按钮高亮的图形元素上标注 `data-p="<id>"`（颜色建议使用 `var(--card)`、`var(--ink)`、`var(--muted)` 等主题变量以适配深色模式） |
 | `image` | 与 `svg`、`mermaid` 三选一 | 无 | 图片路径字符串 | 静态结构图路径 |
 | `alt` | 可选 | 同 `caption`（再回退为 `""`） | 字符串 | `image` 的替代文本 |
 | `mermaid` | 与 `svg`、`image` 三选一 | 无 | 多行字符串 | Mermaid 图源码 |

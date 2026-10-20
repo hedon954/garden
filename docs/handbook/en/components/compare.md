@@ -50,11 +50,11 @@ Contrast a poor question and a better question when welcoming a newcomer, marked
 
 ## Fields
 
-Fence header: ` ```garden compare ` (snippet trigger `;gcompare`).
+Fence header: ` ```garden compare ` (snippet trigger `;gcompare`). Invalid YAML or unknown top-level keys report `garden-yaml` on the block.
 
 | Field | Required | Default | Allowed Values & Limits | Description |
 | :--- | :--- | :--- | :--- | :--- |
-| `items` | Required | `[]` | array (at least `2` items, `2` to `3` recommended for side-by-side; unknown top-level keys or invalid YAML report `garden-yaml`) | Options to compare; each entry can be an object or a single `"Title: description"` string |
+| `items` | Required | `[]` | array (at least `2` items and `2` to `3` in side-by-side mode recommended, not checked) | Options to compare; each entry can be an object or a single `"Title: description"` string |
 | `items[].title` | Recommended | `""` (text before `:` in single-line string form) | string | Item heading |
 | `items[].text` | Recommended | `[]` | string or string[]; in side-by-side mode, combined `text` and extra string fields per cell must be at most `60` characters (exceeding this reports `compare-long`) | Item description; in single-line `"Title: description"` form only the text after `:` counts toward the `60`-character limit |
 | `items[].verdict` | Optional | none (side-by-side layout) | `"good"` \| `"bad"` | Marks the item as a recommended practice (green check) or anti-pattern (red cross); when any item has `verdict`, items stack vertically and the `60`-character `compare-long` limit does not apply |

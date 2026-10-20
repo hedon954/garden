@@ -62,12 +62,12 @@ Organize these three small experiments into an icon list with a heading and two 
 
 ## Fields
 
-Fence header: ` ```garden list ` (snippet trigger `;glist`).
+Fence header: ` ```garden list ` (snippet trigger `;glist`). Invalid YAML or unknown top-level keys report `garden-yaml` on the block.
 
 | Field | Required | Default | Allowed Values & Limits | Description |
 | :--- | :--- | :--- | :--- | :--- |
 | `title` | Optional | none | string | Heading above the list |
-| `items` | Required | `[]` | object or string array (unknown top-level keys or invalid YAML report `garden-yaml`) | List entries; renders as a compact icon card when no item has `title`, or a divided step list when any item has `title` |
+| `items` | Required | `[]` | object or string array | List entries; renders as a compact icon card when no item has `title`, or a divided step list when any item has `title` |
 | `items[].icon` | Optional | none (draws no icon) | one of the 23 built-in icon names: `search`, `eye`, `heart`, `chat`, `shield`, `wallet`, `bell`, `check`, `x`, `star`, `flag`, `clock`, `idea`, `book`, `link`, `user`, `chart`, `gear`, `file`, `pin`, `flask`, `target`, `question` | Line icon name (unknown names render nothing) |
 | `items[].title` | Optional | none (compact row layout) | string | Item heading; switches the block to the divided step layout |
 | `items[].text` | Recommended | `[]` | string or string[] | Item body text; each array element renders as its own paragraph |
