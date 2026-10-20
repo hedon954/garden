@@ -55,6 +55,7 @@ items:
     text: 咖啡馆或图书馆
   - title: 书单
     text: 大家轮流提名
+center: 组织者
 links:
   - from: 1
     to: 2

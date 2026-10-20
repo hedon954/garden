@@ -55,6 +55,7 @@ items:
     text: Café or library
   - title: Reading list
     text: Members take turns to nominate
+center: Organiser
 links:
   - from: 1
     to: 2

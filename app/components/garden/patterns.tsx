@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useId, useRef, useState, type ComponentType, type CSSProperties, type ReactNode } from "react";
 import { sourceIcon } from "../../../ui/garden/source-icon.mjs";
-import { relationEdges, relationLines, relationSpots, type RelationEdge as Edge } from "../../../ui/garden/relations.mjs";
+import { placeLabels, relationEdges, relationHeights, relationIndex, relationLayout, relationLines, type RelationEdge as Edge } from "../../../ui/garden/relations.mjs";
 import ReactMarkdown from "react-markdown";
 import {
   Bell,
@@ -195,51 +195,72 @@ export function GardenRelations({ props }: { props: Record<string, unknown> }) {
   const edges = relationEdges(props, titles);
   const lines = relationLines(edges, titles);
   const n = items.length;
-  const spots = relationSpots(n);
+  const centre = props.center == null ? -1 : relationIndex(props.center, titles);
+  const layout = relationLayout(n, centre);
   const ringRef = useRef<HTMLDivElement>(null);
   const [drawn, setDrawn] = useState<Drawn[]>([]);
   const [size, setSize] = useState({ w: 0, h: 0 });
   const base = useId().replace(/:/gu, "");
-  const edgeKey = JSON.stringify(edges);
+  const edgeKey = JSON.stringify({ edges, centre, n });
 
   useEffect(() => {
     const ring = ringRef.current;
     if (!ring) return;
-    const parsed = JSON.parse(edgeKey) as Edge[];
+    const { edges: parsed, centre: middle, n: count } = JSON.parse(edgeKey) as { edges: Edge[]; centre: number; n: number };
+    const { spots, outer } = relationLayout(count, middle);
+    let lastWidth = -1;
     const draw = () => {
       const nodes = [...ring.querySelectorAll<HTMLElement>(":scope > .g-rel-node")];
       // Narrow screens list the relations as text; nothing to draw.
-      if (!nodes.length || getComputedStyle(nodes[0]).position !== "absolute") { setDrawn([]); setSize({ w: 0, h: 0 }); return; }
+      if (!nodes.length || getComputedStyle(nodes[0]).position !== "absolute") {
+        ring.style.height = "";
+        nodes.forEach((node) => { node.style.top = ""; });
+        lastWidth = -1;
+        setDrawn([]);
+        setSize({ w: 0, h: 0 });
+        return;
+      }
+      const width = ring.clientWidth;
+      if (width === lastWidth) return;
+      lastWidth = width;
+      // The canvas is exactly as tall as the nodes need.
+      const { ys, height } = relationHeights(spots, nodes.map((node) => node.offsetHeight), 48, Math.min(200, Math.max(120, width * 0.2)) * (middle >= 0 ? 1.25 : 1));
+      nodes.forEach((node, i) => { node.style.top = `${ys[i]}px`; });
+      ring.style.height = `${Math.ceil(height)}px`;
       const frame = ring.getBoundingClientRect();
       const boxes = nodes.map((node) => {
         const r = node.getBoundingClientRect();
         return { x: r.left - frame.left, y: r.top - frame.top, w: r.width, h: r.height };
       });
       const hub = { x: frame.width / 2, y: frame.height / 2 };
-      const count = boxes.length;
-      setDrawn(parsed.map((link) => {
+      const geometry = parsed.map((link) => {
         const from = boxes[link.from];
         const to = boxes[link.to];
         const cf = center(from);
         const ct = center(to);
         const gapStart = link.both ? 10 : 6;
-        const neighbours = Math.abs(link.from - link.to) === 1 || Math.abs(link.from - link.to) === count - 1;
-        if (neighbours && count > 3) {
-          // Next to each other on the circle: a gentle arc that bows outward.
+        const rf = spots[link.from].ring;
+        const rt = spots[link.to].ring;
+        const neighbours = rf >= 0 && rt >= 0 && outer > 3 && (Math.abs(rf - rt) === 1 || Math.abs(rf - rt) === outer - 1);
+        if (neighbours) {
+          // Next to each other on the outer ring: a gentle arc that bows outward.
           const mid = { x: (cf.x + ct.x) / 2, y: (cf.y + ct.y) / 2 };
           const out = { x: mid.x - hub.x, y: mid.y - hub.y };
           const length = Math.hypot(out.x, out.y) || 1;
           const bow = Math.min(40, Math.hypot(ct.x - cf.x, ct.y - cf.y) / 4);
-          const control = { x: mid.x + (out.x / length) * bow, y: mid.y + (out.y / length) * bow };
-          const a = edge(from, control, gapStart);
-          const b = edge(to, control, 10);
-          const at = { x: 0.25 * a.x + 0.5 * control.x + 0.25 * b.x, y: 0.25 * a.y + 0.5 * control.y + 0.25 * b.y };
-          return { d: `M${a.x},${a.y} Q${control.x},${control.y} ${b.x},${b.y}`, dashed: link.dashed, both: link.both, label: link.label, at };
+          const c = { x: mid.x + (out.x / length) * bow, y: mid.y + (out.y / length) * bow };
+          const a = edge(from, c, gapStart);
+          const b = edge(to, c, 10);
+          const at = (k: number) => ({ x: (1 - k) ** 2 * a.x + 2 * (1 - k) * k * c.x + k ** 2 * b.x, y: (1 - k) ** 2 * a.y + 2 * (1 - k) * k * c.y + k ** 2 * b.y });
+          return { d: `M${a.x},${a.y} Q${c.x},${c.y} ${b.x},${b.y}`, a, b, at, link };
         }
         const a = edge(from, ct, gapStart);
         const b = edge(to, cf, 10);
-        return { d: `M${a.x},${a.y} L${b.x},${b.y}`, dashed: link.dashed, both: link.both, label: link.label, at: { x: a.x + (b.x - a.x) * 0.38, y: a.y + (b.y - a.y) * 0.38 } };
-      }));
+        const at = (k: number) => ({ x: a.x + (b.x - a.x) * k, y: a.y + (b.y - a.y) * k });
+        return { d: `M${a.x},${a.y} L${b.x},${b.y}`, a, b, at, link };
+      });
+      const labels = placeLabels(geometry.map((g) => ({ a: g.a, b: g.b, at: g.at, label: g.link.label })));
+      setDrawn(geometry.map((g, i) => ({ d: g.d, dashed: g.link.dashed, both: g.link.both, label: g.link.label, at: labels[i] ?? g.at(0.5) })));
       setSize({ w: frame.width, h: frame.height });
     };
     draw();
@@ -253,29 +274,33 @@ export function GardenRelations({ props }: { props: Record<string, unknown> }) {
   return (
     <figure className="g-rel" role="group" aria-label={label}>
       {typeof props.title === "string" ? <p className="g-rel-h"><Rich text={props.title} /></p> : null}
-      <div className="g-rel-ring" ref={ringRef} data-n={n}>
-        {items.map((item, index) => (
-          <div
-            className="g-rel-node"
-            key={index}
-            data-i={index + 1}
-            style={{ "--x": `${spots[index].x}%`, "--y": `${spots[index].y}%`, "--w": `${spots[index].w}%` } as CSSProperties}
-          >
-            <p className="g-rel-t"><Rich text={titles[index]} /></p>
-            {item.text ? <p className="g-rel-x"><Rich text={String(item.text)} /></p> : null}
-            {lines[index].length ? (
-              <p className="g-rel-out">
-                {lines[index].map((line, k) => (
-                  <span key={k} className={line.dashed ? "is-dashed" : undefined}>
-                    {k ? <span className="g-rel-sep" aria-hidden="true"> · </span> : null}
-                    <span className="g-rel-mark" aria-hidden="true">{line.mark}</span> {line.to}
-                    {line.label ? <span className="g-rel-l"> {line.label}</span> : null}
-                  </span>
-                ))}
-              </p>
-            ) : null}
-          </div>
-        ))}
+      <div className="g-rel-ring" ref={ringRef} data-n={n} data-center={layout.centre >= 0 ? "true" : undefined}>
+        {items.map((item, index) => {
+          const spot = layout.spots[index];
+          return (
+            <div
+              className="g-rel-node"
+              key={index}
+              data-i={index + 1}
+              data-center={index === layout.centre ? "true" : undefined}
+              style={{ "--x": `${spot.x}%`, "--y": `${50 + spot.s * 38}%`, "--w": `${spot.w}%` } as CSSProperties}
+            >
+              <p className="g-rel-t"><Rich text={titles[index]} /></p>
+              {item.text ? <p className="g-rel-x"><Rich text={String(item.text)} /></p> : null}
+              {lines[index].length ? (
+                <p className="g-rel-out">
+                  {lines[index].map((line, k) => (
+                    <span key={k} className={line.dashed ? "is-dashed" : undefined}>
+                      {k ? <span className="g-rel-sep" aria-hidden="true"> · </span> : null}
+                      <span className="g-rel-mark" aria-hidden="true">{line.mark}</span> {line.to}
+                      {line.label ? <span className="g-rel-l"> {line.label}</span> : null}
+                    </span>
+                  ))}
+                </p>
+              ) : null}
+            </div>
+          );
+        })}
         {size.w ? (
           <svg className="g-rel-svg" width={size.w} height={size.h} viewBox={`0 0 ${size.w} ${size.h}`} aria-hidden="true">
             <defs>
@@ -292,11 +317,11 @@ export function GardenRelations({ props }: { props: Record<string, unknown> }) {
                 markerStart={line.both ? `url(#${base}-a)` : undefined}
               />
             ))}
-            {drawn.map((line, index) => line.label ? (
-              <text key={`l${index}`} x={line.at.x} y={line.at.y} className="g-rel-label" textAnchor="middle" dominantBaseline="central">{line.label}</text>
-            ) : null)}
           </svg>
         ) : null}
+        {drawn.map((line, index) => line.label ? (
+          <span key={`l${index}`} className="g-rel-label" aria-hidden="true" style={{ left: `${line.at.x}px`, top: `${line.at.y}px` }}>{line.label}</span>
+        ) : null)}
       </div>
       {typeof props.caption === "string" ? <figcaption><Rich text={props.caption} /></figcaption> : null}
     </figure>

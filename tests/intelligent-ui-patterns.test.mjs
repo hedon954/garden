@@ -9,7 +9,7 @@ import { CATALOG, GARDEN_NAMES } from "../ui/garden/catalog.mjs";
 import { checkGardenMarkdown } from "../ui/garden/check.mjs";
 import { cardUrls, stripCardMarkers } from "../ui/garden/markdown-links.mjs";
 import { parseGardenBlock, scanFences } from "../ui/garden/parse.mjs";
-import { relationEdges, relationLines, relationSpots } from "../ui/garden/relations.mjs";
+import { crossing, placeLabels, relationEdges, relationHeights, relationLayout, relationLines } from "../ui/garden/relations.mjs";
 
 const parse = (info, body) => parseGardenBlock(info, body);
 
@@ -56,12 +56,14 @@ test("relations links are checked: targets, style, direction, keys", () => {
 
 test("relations: spots sit on a circle, edges resolve, narrow lines list outgoing edges", () => {
   for (const n of [3, 4, 5, 6]) {
-    const spots = relationSpots(n);
+    const { spots, ring } = relationLayout(n);
     assert.equal(spots.length, n);
-    assert.ok(Math.abs(spots[0].x - 50) < 1e-9 && spots[0].y < 20, "first node on top");
+    assert.deepEqual(ring, [...Array(n).keys()], "author order around the ring");
+    assert.ok(Math.abs(spots[0].x - 50) < 1e-9 && spots[0].s === -1, "first node on top");
     for (const spot of spots) {
       const rx = 50 - spot.w / 2 - 1;
-      assert.ok(Math.abs(((spot.x - 50) / rx) ** 2 + ((spot.y - 50) / 38) ** 2 - 1) < 1e-9, "on the ellipse");
+      const c = (spot.x - 50) / rx;
+      assert.ok(Math.abs(c * c + spot.s * spot.s - 1) < 1e-9, "on the ellipse");
       assert.ok(spot.x - spot.w / 2 >= 0 && spot.x + spot.w / 2 <= 100, "inside the ring");
     }
   }
@@ -169,4 +171,50 @@ test("relations accept 3 to 6 elements and point to mermaid outside that", () =>
   const diagnostics = checkGardenMarkdown(`\`\`\`garden relations\n${items(8)}\n\`\`\`\n`);
   assert.equal(diagnostics.find((d) => d.code === "garden-relations")?.severity, "error");
   assert.equal(checkGardenMarkdown("```garden cycle\nitems: []\n```\n")[0]?.code, "garden-name");
+});
+
+test("relations center: that node in the middle, the rest evenly on the ring", () => {
+  const { spots, ring, outer, centre } = relationLayout(5, 0);
+  assert.equal(centre, 0);
+  assert.deepEqual(spots[0], { x: 50, s: 0, w: 22, ring: -1 });
+  assert.deepEqual(ring, [1, 2, 3, 4]);
+  assert.equal(outer, 4);
+  assert.equal(spots[1].s, -1, "first outer node on top");
+  assert.equal(parse("garden relations", "items:\n  - title: A\n  - title: B\n  - title: C\ncenter: B").error, undefined);
+  assert.equal(parse("garden relations", "items:\n  - title: A\n  - title: B\n  - title: C\ncenter: 2").error, undefined);
+  assert.match(parse("garden relations", "items:\n  - title: A\n  - title: B\n  - title: C\ncenter: Z").error.message, /center/u);
+  assert.equal(relationLayout(3, -1).centre, -1, "no auto-detect");
+  for (const file of ["interface-patterns.md", "interface-patterns-en.md"]) {
+    const md = readFileSync(new URL(`../content/posts/${file}`, import.meta.url), "utf8");
+    assert.match(md, /\ncenter: (组织者|Organiser)\n/u);
+  }
+});
+
+test("relations canvas height follows the nodes; columns keep apart", () => {
+  const three = relationLayout(3).spots;
+  const { ys, height } = relationHeights(three, [80, 80, 80], 48);
+  assert.ok(Math.abs(ys[0] - 40) < 1e-9, "top node touches the top");
+  assert.ok(Math.abs(height - Math.max(...ys.map((y) => y + 40))) < 1e-9, "no slack below the lowest node");
+  assert.ok(height < 360, `3 nodes need less than the old fixed 360px (got ${height})`);
+  const six = relationLayout(6).spots;
+  const laid = relationHeights(six, Array(6).fill(90), 48);
+  for (let i = 0; i < 6; i += 1) for (let j = i + 1; j < 6; j += 1) {
+    const sameColumn = Math.abs(six[i].x - six[j].x) < six[i].w;
+    if (sameColumn) assert.ok(Math.abs(laid.ys[i] - laid.ys[j]) >= 90 + 48 - 1e-6, `${i} ${j}`);
+  }
+  const hub = relationLayout(5, 0).spots;
+  const hubLaid = relationHeights(hub, Array(5).fill(90), 48);
+  assert.ok(Math.abs(hubLaid.ys[0] - hubLaid.ys[1]) >= 138 - 1e-6, "centre clears the top node");
+});
+
+test("relations labels sit at the midpoint unless a crossing is near, then slide away", () => {
+  const line = (a, b, label) => ({ a, b, label, at: (t) => ({ x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t }) });
+  assert.deepEqual(crossing({ x: 0, y: 0 }, { x: 10, y: 10 }, { x: 0, y: 10 }, { x: 10, y: 0 }), { x: 5, y: 5 });
+  assert.equal(crossing({ x: 0, y: 0 }, { x: 10, y: 0 }, { x: 0, y: 5 }, { x: 10, y: 5 }), null);
+  const alone = placeLabels([line({ x: 0, y: 0 }, { x: 200, y: 0 }, "a")]);
+  assert.deepEqual(alone[0], { x: 100, y: 0 });
+  const crossed = placeLabels([line({ x: 0, y: 100 }, { x: 400, y: 100 }, "h"), line({ x: 200, y: 0 }, { x: 200, y: 200 }, "v")]);
+  for (const p of crossed) assert.ok(Math.hypot(p.x - 200, p.y - 100) >= 34, JSON.stringify(p));
+  assert.ok(Math.hypot(crossed[0].x - crossed[1].x, crossed[0].y - crossed[1].y) >= 34, "labels keep apart");
+  assert.equal(placeLabels([line({ x: 0, y: 0 }, { x: 1, y: 1 }, "")])[0], null);
 });

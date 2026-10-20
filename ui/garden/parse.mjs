@@ -100,6 +100,9 @@ function relationsProblem(props) {
   if (items.length < RELATIONS_MIN || items.length > RELATIONS_MAX) {
     return `relations 需要 ${RELATIONS_MIN} 到 ${RELATIONS_MAX} 个要素，现在是 ${items.length} 个。要素更多或有分支时改用 \`\`\`mermaid 流程图；只走一遍的步骤用 garden list。`;
   }
+  if (props.center != null && relationIndex(props.center, items.map((item) => String(item?.title ?? ""))) < 0) {
+    return "center 要写放在中间的那个要素的序号（1 起）或标题。";
+  }
   if (props.links == null) return "";
   if (!Array.isArray(props.links)) return "links 必须是列表。";
   const titles = items.map((item) => String(item?.title ?? ""));

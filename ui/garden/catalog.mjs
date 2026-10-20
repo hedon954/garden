@@ -151,7 +151,7 @@ note: 一句话说明里面有什么
     label: "关系图",
     when: "三到六个关键要素，读者需要看清谁影响谁、哪些是双向的；首尾相接的循环也用它，把每一步写成一条 link。",
     whenNot: "要素更多、有分支或先后顺序时，用 ```mermaid 流程图；只走一遍的步骤用 garden list。",
-    keys: ["title", "items", "links", "caption"],
+    keys: ["title", "items", "center", "links", "caption"],
     itemKeys: ["title", "text"],
     linkKeys: ["from", "to", "style", "direction", "label"],
     example: `\`\`\`garden relations

@@ -13,17 +13,6 @@ export function relationIndex(value, titles) {
   return titles.indexOf(text);
 }
 
-/** Node centres on the circle, in percent of the ring: the first node on top, then clockwise. */
-export function relationSpots(n) {
-  const w = n <= 4 ? 30 : 26;
-  const rx = 50 - w / 2 - 1;
-  const ry = 38;
-  return Array.from({ length: n }, (_, i) => {
-    const angle = -Math.PI / 2 + (i * 2 * Math.PI) / n;
-    return { x: 50 + rx * Math.cos(angle), y: 50 + ry * Math.sin(angle), w };
-  });
-}
-
 /** @returns {RelationEdge[]} */
 export function relationEdges(props, titles) {
   return (Array.isArray(props?.links) ? props.links : [])
@@ -49,4 +38,91 @@ export function relationLines(edges, titles) {
     if (link.both) lines[link.to].push({ mark, to: titles[link.from], label: link.label, dashed: link.dashed });
   }
   return lines;
+}
+
+/**
+ * Where each node goes: `center` (0-based, or -1) sits in the middle, the rest
+ * evenly on the outer ring, first on top, clockwise. Percent of the ring width;
+ * `s` is the sine of the angle (vertical position, -1 top .. 1 bottom), 0 for the centre.
+ */
+export function relationLayout(n, centre = -1) {
+  const hasCentre = centre >= 0 && centre < n;
+  const outer = hasCentre ? n - 1 : n;
+  // With a node in the middle, narrower nodes leave the spokes room for arrows and labels.
+  const w = hasCentre ? 22 : n <= 4 ? 30 : 26;
+  const rx = 50 - w / 2 - 1;
+  const ring = [];
+  let k = 0;
+  const spots = Array.from({ length: n }, (_, i) => {
+    if (i === centre && hasCentre) return { x: 50, s: 0, w, ring: -1 };
+    const angle = -Math.PI / 2 + (k * 2 * Math.PI) / outer;
+    ring.push(i);
+    const spot = { x: 50 + rx * Math.cos(angle), s: Math.sin(angle), w, ring: k };
+    k += 1;
+    return spot;
+  });
+  return { spots, ring, outer, centre: hasCentre ? centre : -1 };
+}
+
+/**
+ * Vertical placement from the measured node heights: the smallest radius that keeps
+ * nodes apart, then the canvas is exactly as tall as the nodes need.
+ * Only nodes whose columns overlap need vertical room between them.
+ * `minRy` keeps the ring round enough for arrows and labels to have room.
+ * @param {{ s: number, x: number, w: number }[]} spots @param {number[]} heights @param {number} gap @param {number} minRy
+ */
+export function relationHeights(spots, heights, gap = 36, minRy = 60) {
+  let ry = minRy;
+  for (let i = 0; i < spots.length; i += 1) {
+    for (let j = i + 1; j < spots.length; j += 1) {
+      const ds = Math.abs(spots[i].s - spots[j].s);
+      if (ds < 1e-6) continue;
+      if (Math.abs(spots[i].x - spots[j].x) >= (spots[i].w + spots[j].w) / 2 + 2) continue;
+      ry = Math.max(ry, ((heights[i] + heights[j]) / 2 + gap) / ds);
+    }
+  }
+  ry = Math.min(ry, 280);
+  const top = Math.min(...spots.map((spot, i) => spot.s * ry - heights[i] / 2));
+  const ys = spots.map((spot) => spot.s * ry - top);
+  const height = Math.max(...spots.map((spot, i) => ys[i] + heights[i] / 2));
+  return { ys, height, ry };
+}
+
+/** Intersection point of segments p1-p2 and q1-q2, or null. */
+export function crossing(p1, p2, q1, q2) {
+  const d = (p2.x - p1.x) * (q2.y - q1.y) - (p2.y - p1.y) * (q2.x - q1.x);
+  if (Math.abs(d) < 1e-9) return null;
+  const t = ((q1.x - p1.x) * (q2.y - q1.y) - (q1.y - p1.y) * (q2.x - q1.x)) / d;
+  const u = ((q1.x - p1.x) * (p2.y - p1.y) - (q1.y - p1.y) * (p2.x - p1.x)) / d;
+  if (t <= 0.02 || t >= 0.98 || u <= 0.02 || u >= 0.98) return null;
+  return { x: p1.x + t * (p2.x - p1.x), y: p1.y + t * (p2.y - p1.y) };
+}
+
+/**
+ * Label positions: the midpoint, unless a crossing with another line (or an earlier
+ * label) is within `clear` px; then slide along the line to the nearest clear spot.
+ * @param {{ at: (t: number) => { x: number, y: number }, a: object, b: object, label: string }[]} lines
+ */
+export function placeLabels(lines, clear = 34) {
+  const points = [];
+  lines.forEach((line, i) => lines.forEach((other, j) => {
+    if (j <= i) return;
+    const hit = crossing(line.a, line.b, other.a, other.b);
+    if (hit) points.push(hit);
+  }));
+  const placed = [];
+  const steps = [0.5, 0.42, 0.58, 0.34, 0.66, 0.27, 0.73, 0.2, 0.8];
+  return lines.map((line) => {
+    if (!line.label) return null;
+    let best = line.at(0.5);
+    let bestRoom = -1;
+    for (const t of steps) {
+      const p = line.at(t);
+      const room = Math.min(Infinity, ...points.map((q) => Math.hypot(p.x - q.x, p.y - q.y)), ...placed.map((q) => Math.hypot(p.x - q.x, p.y - q.y)));
+      if (room >= clear) { best = p; bestRoom = room; break; }
+      if (room > bestRoom) { best = p; bestRoom = room; }
+    }
+    placed.push(best);
+    return best;
+  });
 }

@@ -2375,14 +2375,28 @@ html[data-theme="dark"] .gf-scrim { background: rgb(0 0 0 / 45%); }
 .g-rel-svg path { fill: none; stroke: var(--muted); stroke-width: 2; stroke-linecap: round; }
 .g-rel-svg path.dash { stroke-dasharray: 5 6; stroke-width: 1.75; }
 .g-rel-svg marker path { fill: var(--muted); stroke: none; }
-.g-rel-label { font: 500 12.5px var(--sans); fill: var(--soft); paint-order: stroke; stroke: var(--paper); stroke-width: 6px; stroke-linejoin: round; }
+/* A label sits on its line with a page-coloured pad that hides the line under it. */
+.g-rel-label {
+  position: absolute;
+  z-index: 2;
+  transform: translate(-50%, -50%);
+  padding: 1px 6px;
+  border-radius: 6px;
+  background: var(--paper);
+  color: var(--soft);
+  font: 500 12.5px / 1.4 var(--sans);
+  white-space: nowrap;
+  pointer-events: none;
+}
 .g-rel figcaption { margin-top: 18px; font-size: 13px; color: var(--muted); text-align: center; }
 @container (max-width: 560px) {
-  .g-rel-ring, .g-rel-ring[data-n] { height: auto; display: flex; flex-direction: column; gap: 10px; }
-  .g-rel-node { position: static; width: auto; transform: none; text-align: left; padding: 12px 14px; }
+  .g-rel-label { display: none; }
+  .g-rel-ring, .g-rel-ring[data-n] { height: auto !important; display: flex; flex-direction: column; gap: 10px; }
+  .g-rel-node { position: static; width: auto; transform: none; top: auto !important; text-align: left; padding: 12px 14px; }
   .markdown-body .g-rel-t { font-size: 17px; }
   .markdown-body .g-rel-x { font-size: 14px; }
   .markdown-body .g-rel-out { position: static; width: auto; height: auto; overflow: visible; clip: auto; white-space: normal; margin: 6px 0 0; font: 400 13.5px / 1.6 var(--sans); color: var(--soft); }
+  .g-rel-out > span { white-space: nowrap; }
   .g-rel-mark { color: var(--ink); font-weight: 600; }
   .g-rel-l { color: var(--muted); }
 }
