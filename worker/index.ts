@@ -1,6 +1,7 @@
 /** Cloudflare Worker entry point for the vinext-starter template. */
 import { handleImageOptimization, DEFAULT_DEVICE_SIZES, DEFAULT_IMAGE_SIZES } from "vinext/server/image-optimization";
 import handler from "vinext/server/app-router-entry";
+import { handbookHtmlLang, withHtmlLang } from "../ui/garden/html-lang.mjs";
 
 interface Env {
   ASSETS: Fetcher;
@@ -46,7 +47,13 @@ const worker = {
       }, allowedWidths);
     }
 
-    return handler.fetch(request, env, ctx);
+    const response = await handler.fetch(request, env, ctx);
+    // The shared root layout renders the site language; the English handbook is lang="en".
+    const lang = handbookHtmlLang(url.pathname);
+    if (!lang || !/^text\/html\b/iu.test(response.headers.get("content-type") ?? "")) return response;
+    const headers = new Headers(response.headers);
+    headers.delete("content-length");
+    return new Response(withHtmlLang(await response.text(), lang), { status: response.status, statusText: response.statusText, headers });
   },
 };
 

@@ -81,3 +81,35 @@ test("the infinite-scroll link carries the basePath", async () => {
   const src = (await import("node:fs")).readFileSync(new URL("../app/components/FeedMore.tsx", import.meta.url), "utf8");
   assert.match(src, /useState\(next \? `\$\{base\}\$\{next\}` : null\)/u);
 });
+
+test("<html lang> is en on English handbook pages and zh-CN on Chinese ones (worker)", async () => {
+  const raw = async (path) => {
+    const url = new URL("../dist/server/index.js", import.meta.url);
+    url.searchParams.set("test", `${process.pid}-html-lang`);
+    const { default: worker } = await import(url.href);
+    const res = await worker.fetch(new Request(`http://localhost${path}`, { headers: { accept: "text/html", "user-agent": UA } }), { ASSETS: { fetch: async () => new Response("", { status: 404 }) } }, { waitUntil() {}, passThroughOnException() {} });
+    return res.text();
+  };
+  for (const path of ["/garden/en", "/garden/en/ai-writing", "/garden/en/components/compare"]) assert.match(await raw(path), /<html[^>]*\slang="en"/u, path);
+  for (const path of ["/garden", "/garden/ai-writing", "/blog", "/thoughts"]) assert.match(await raw(path), /<html[^>]*\slang="zh-CN"/u, path);
+});
+
+test("<html lang> in the static export: English handbook files only, basePath or not", async () => {
+  const fs = await import("node:fs");
+  const os = await import("node:os");
+  const path = await import("node:path");
+  const { setHandbookHtmlLang } = await import("../scripts/html-lang.mjs");
+  const { handbookHtmlLang } = await import("../ui/garden/html-lang.mjs");
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "html-lang-"));
+  const page = '<!DOCTYPE html><html lang="zh-CN" suppressHydrationWarning><head></head><body></body></html>';
+  for (const file of ["garden/en/index.html", "base/garden/en/start/index.html", "garden/start/index.html", "blog/x/index.html", "garden/index.html"]) {
+    fs.mkdirSync(path.dirname(path.join(root, file)), { recursive: true });
+    fs.writeFileSync(path.join(root, file), page);
+  }
+  assert.deepEqual(setHandbookHtmlLang(root), ["base/garden/en/start/index.html", "garden/en/index.html"]);
+  assert.match(fs.readFileSync(path.join(root, "garden/en/index.html"), "utf8"), /<html lang="en" suppressHydrationWarning>/u);
+  assert.match(fs.readFileSync(path.join(root, "garden/start/index.html"), "utf8"), /<html lang="zh-CN"/u);
+  assert.equal(handbookHtmlLang("/garden/english-notes/"), null);
+  const cli = fs.readFileSync(new URL("../bin/garden.mjs", import.meta.url), "utf8");
+  assert.match(cli, /runNode\("scripts\/html-lang\.mjs"\)/u);
+});
