@@ -60,9 +60,12 @@ declare module "@garden/generated-content" {
     references?: { title: string; url?: string; domain?: string }[];
     sourcePath: string;
     content: string;
+    lang?: "zh" | "en";
   };
   export const gardenDocs: GardenDocEntry[];
   export const gardenIndexDoc: GardenDocEntry | null;
+  export const gardenDocsEn: GardenDocEntry[];
+  export const gardenIndexDocEn: GardenDocEntry | null;
   export const a2WordCounts: Record<string, number>;
   export type LinkCardMeta = {
     title: string;

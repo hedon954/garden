@@ -16,7 +16,7 @@ const SECTION_PAGES = {
 test("section pages declare their canonical address and keep the feed link", () => {
   for (const [file, pathname] of Object.entries(SECTION_PAGES)) {
     const source = fs.readFileSync(new URL(`../${file}`, import.meta.url), "utf8");
-    assert.ok(source.includes(`alternates: pageAlternates("${pathname}")`), `${file} should set canonical ${pathname}`);
+    assert.ok(source.includes(`alternates: pageAlternates("${pathname}"`), `${file} should set canonical ${pathname}`);
   }
   const helper = fs.readFileSync(new URL("../app/lib/page-alternates.ts", import.meta.url), "utf8");
   assert.match(helper, /canonical: siteHref\(pathname\), types: FEED_ALTERNATES/u);
@@ -35,7 +35,7 @@ test("every page that sets its own alternates keeps the feed link (a page's alte
     const source = fs.readFileSync(new URL(`../app/${file}`, import.meta.url), "utf8");
     for (const [line] of source.matchAll(/alternates:[^\n]*/gu)) {
       setting.push(file);
-      assert.ok(/pageAlternates\(|types: FEED_ALTERNATES/u.test(line), `${file}: ${line.trim()} drops the RSS link`);
+      assert.ok(/pageAlternates\(|handbookAlternates\(|types: FEED_ALTERNATES/u.test(line), `${file}: ${line.trim()} drops the RSS link`);
     }
   }
   // Articles, column articles and thoughts included.

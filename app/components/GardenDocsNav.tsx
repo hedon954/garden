@@ -6,18 +6,26 @@ import { BookOpenText, CaretRight, List, X } from "@phosphor-icons/react";
 import {
   COMPONENT_BADGE,
   groupHandbookDocs,
+  HANDBOOK_SECTIONS,
+  HANDBOOK_UI,
   NAV_SHORT_TITLE,
+  handbookPath,
+  sectionTitle,
   type GardenDocNavItem,
+  type HandbookLang,
 } from "../lib/garden-docs-meta";
 import { siteHref } from "../lib/site-href";
 
 export function GardenDocsNav({
   docs,
   currentPath = "",
+  lang = "zh",
 }: {
   docs: GardenDocNavItem[];
   currentPath?: string;
+  lang?: HandbookLang;
 }) {
+  const t = HANDBOOK_UI[lang];
   const groups = groupHandbookDocs(docs);
   const currentDoc = docs.find((doc) => doc.path === currentPath);
   const currentSection = groups.find((group) =>
@@ -69,7 +77,7 @@ export function GardenDocsNav({
 
   return (
     <>
-      <div className="gdoc-mobile-bar" aria-label="说明书目录栏">
+      <div className="gdoc-mobile-bar" aria-label={t.mobileBar}>
         <button
           ref={triggerRef}
           type="button"
@@ -79,28 +87,28 @@ export function GardenDocsNav({
           onClick={() => setMobileOpen(true)}
         >
           <List size={16} weight="bold" aria-hidden="true" />
-          <span>说明目录</span>
+          <span>{t.sidebarShort}</span>
         </button>
         <a
           className="gdoc-nojs-trigger"
           id={`${drawerId}-open`}
           href={`#${drawerId}`}
-          aria-label="打开说明目录"
+          aria-label={t.openSidebar}
         >
           <List size={16} weight="bold" aria-hidden="true" />
-          <span>说明目录</span>
+          <span>{t.sidebarShort}</span>
         </a>
         <div className="gdoc-mobile-crumb" aria-hidden="true">
-          <span>{currentSection?.title ?? "Garden 使用说明"}</span>
+          <span>{sectionTitle(currentSection, lang) ?? t.name}</span>
           <CaretRight size={12} />
-          <strong>{currentDoc ? (NAV_SHORT_TITLE[currentDoc.path] ?? currentDoc.title) : "总览与快速入口"}</strong>
+          <strong>{currentDoc ? (lang === "en" ? currentDoc.navTitle ?? currentDoc.title : NAV_SHORT_TITLE[currentDoc.path] ?? currentDoc.title) : t.overviewHint}</strong>
         </div>
       </div>
 
       <button
         type="button"
         className="gdoc-backdrop"
-        aria-label="关闭说明目录"
+        aria-label={t.closeSidebar}
         tabIndex={mobileOpen ? 0 : -1}
         data-open={mobileOpen}
         onClick={() => closeMobile(true)}
@@ -109,27 +117,27 @@ export function GardenDocsNav({
       <aside
         id={drawerId}
         className="gdoc-sidebar"
-        aria-label="Garden 使用说明目录"
+        aria-label={t.sidebar}
         data-open={mobileOpen}
       >
         <div className="gdoc-sidebar-head">
           <Link
-            href={siteHref("/garden")}
+            href={siteHref(handbookPath(lang))}
             className="gdoc-overview-link"
             aria-current={isOverview ? "page" : undefined}
             onClick={() => closeMobile(false)}
           >
             <span className="gdoc-overview-mark">
               <BookOpenText size={16} weight="duotone" aria-hidden="true" />
-              <span>Garden 使用说明</span>
+              <span>{t.name}</span>
             </span>
-            <small>总览与快速入口</small>
+            <small>{t.overviewHint}</small>
           </Link>
           <button
             ref={closeRef}
             type="button"
             className="gdoc-mobile-close"
-            aria-label="关闭说明目录"
+            aria-label={t.closeSidebar}
             onClick={() => closeMobile(true)}
           >
             <X size={17} aria-hidden="true" />
@@ -137,28 +145,25 @@ export function GardenDocsNav({
           <a
             className="gdoc-nojs-close"
             href={`#${drawerId}-open`}
-            aria-label="关闭说明目录"
+            aria-label={t.closeSidebar}
           >
             <X size={17} aria-hidden="true" />
           </a>
         </div>
 
-        <nav className="gdoc-nav" aria-label="章节导航">
+        <nav className="gdoc-nav" aria-label={t.chapters}>
           {groups.map((group) => (
             <div key={group.id} className="gdoc-nav-group">
-              <div className="gdoc-nav-group-head">
-                <h2>{group.title}</h2>
-                {group.note ? <span>{group.note}</span> : null}
-              </div>
+              <h2 className="gdoc-nav-group-head">{sectionTitle(HANDBOOK_SECTIONS.find((sec) => sec.id === group.id), lang) ?? group.title}</h2>
               <ol className="gdoc-nav-list">
                 {group.items.map((item) => {
                   const active = item.path === currentPath;
                   const badge = COMPONENT_BADGE[item.path];
-                  const label = NAV_SHORT_TITLE[item.path] ?? item.title;
+                  const label = lang === "en" ? item.navTitle ?? item.title : NAV_SHORT_TITLE[item.path] ?? item.title;
                   return (
                     <li key={item.path} className={active ? "is-active" : undefined}>
                       <Link
-                        href={siteHref(`/garden/${item.path}`)}
+                        href={siteHref(handbookPath(lang, item.path))}
                         aria-current={active ? "page" : undefined}
                         onClick={() => closeMobile(false)}
                       >

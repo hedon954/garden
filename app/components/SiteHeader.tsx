@@ -17,6 +17,8 @@ import { createSearch } from "../../ui/garden/search-match.mjs";
 import { cropMatchedText, highlightParts, noResultsText } from "../../ui/garden/search-preview.mjs";
 import { resolveDark, themeSwitchProps } from "../../ui/garden/theme.mjs";
 import { SITE_NAV, isCurrentNav } from "../../ui/garden/site-nav.mjs";
+import { ui } from "../lib/i18n";
+import { HandbookLangSwitch } from "./HandbookLangSwitch";
 import { createIdbStore, loadFullIndex, saveDataOn, whenIdleAfterLoad } from "../../ui/garden/search-full.mjs";
 import { siteConfig } from "../site.config";
 import { siteHref } from "../lib/site-href";
@@ -321,21 +323,22 @@ export function SiteHeader() {
             ))}
           </nav>
           <div className="sh-tools">
-            <button ref={searchTriggerRef} className="sh-search" type="button" onClick={openSearch} onPointerEnter={prefetchSearch} onFocus={prefetchSearch} aria-label="搜索文章" aria-expanded={searchOpen} aria-controls="site-search-dialog">
+            <button ref={searchTriggerRef} className="sh-search" type="button" onClick={openSearch} onPointerEnter={prefetchSearch} onFocus={prefetchSearch} aria-label={ui().searchArticles} aria-expanded={searchOpen} aria-controls="site-search-dialog">
               <svg viewBox="0 0 20 20" aria-hidden="true">
                 <circle cx="9" cy="9" r="5.8" />
                 <path d="M13.3 13.3 17 17" />
               </svg>
-              <span className="lbl">搜索</span>
+              <span className="lbl">{ui().search}</span>
               <kbd><span className="kbd-mod kbd-mac">⌘</span><span className="kbd-mod kbd-other">Ctrl</span>{" "}K</kbd>
             </button>
-            <button className="sh-icon sh-search-m" type="button" onClick={openSearch} onPointerDown={prefetchSearch} aria-label="搜索文章">
+            <button className="sh-icon sh-search-m" type="button" onClick={openSearch} onPointerDown={prefetchSearch} aria-label={ui().searchArticles}>
               <svg viewBox="0 0 20 20" aria-hidden="true">
                 <circle cx="9" cy="9" r="5.8" />
                 <path d="M13.3 13.3 17 17" />
               </svg>
             </button>
-            <button className="sh-icon sh-theme" type="button" onClick={toggleTheme} aria-label={dark ? "切换到浅色模式" : "切换到深色模式"}>
+            {pathname?.startsWith("/garden") ? <HandbookLangSwitch /> : null}
+            <button className="sh-icon sh-theme" type="button" onClick={toggleTheme} aria-label={dark ? ui().toLight : ui().toDark}>
               <svg className="i-moon" viewBox="0 0 20 20" aria-hidden="true">
                 <path d="M16.5 12.2A6.8 6.8 0 0 1 7.8 3.5a6.8 6.8 0 1 0 8.7 8.7Z" />
               </svg>

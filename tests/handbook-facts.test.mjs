@@ -216,3 +216,25 @@ test("all docs/handbook/**/*.md and app/garden/** pass handbook fact-check", () 
     assert.fail(`Handbook fact-check found ${issues.length} issue(s):\n${formatted}`);
   }
 });
+
+test("English handbook pages need a Chinese twin with the same section and order", async () => {
+  const { checkHandbookPairs, checkAllHandbookFacts } = await import("../scripts/handbook-facts.mjs");
+  const fsMod = await import("node:fs");
+  const os = await import("node:os");
+  const pathMod = await import("node:path");
+  const dir = fsMod.mkdtempSync(pathMod.join(os.tmpdir(), "hb-pair-"));
+  fsMod.mkdirSync(pathMod.join(dir, "docs/handbook/en"), { recursive: true });
+  fsMod.writeFileSync(pathMod.join(dir, "docs/handbook/start.md"), "---\ntitle: 快速开始\nsection: getting-started\norder: 1\n---\n");
+  fsMod.writeFileSync(pathMod.join(dir, "docs/handbook/en/start.md"), "---\ntitle: Start\nsection: getting-started\norder: 2\n---\n");
+  fsMod.writeFileSync(pathMod.join(dir, "docs/handbook/en/orphan.md"), "---\ntitle: Orphan\n---\n");
+  const kinds = checkHandbookPairs(dir).map((issue) => `${issue.file}:${issue.message.split(" ")[0]}`);
+  assert.deepEqual(kinds.sort(), ["docs/handbook/en/orphan.md:no", "docs/handbook/en/start.md:order"]);
+  void checkAllHandbookFacts;
+});
+
+test("the fact gate reads English handbook pages too", async () => {
+  const { checkFileFacts, deriveHandbookFacts } = await import("../scripts/handbook-facts.mjs");
+  const facts = deriveHandbookFacts();
+  const issues = checkFileFacts("docs/handbook/en/start.md", "Run `npx garden no-such-command` first.\n", facts);
+  assert.ok(issues.length > 0);
+});

@@ -19,6 +19,8 @@ import { TableOfContents } from "../../components/TableOfContents";
 import { Comments } from "../../components/Comments";
 import { Webmentions } from "../../components/Webmentions";
 import { ArticleTags } from "../../components/ArticleTags";
+import { ArticlePager } from "../../components/ArticlePager";
+import { adjacentByDate } from "../../../ui/garden/adjacent.mjs";
 import {
   absoluteUrl,
   getSiteUrl,
@@ -26,6 +28,7 @@ import {
 } from "../../lib/site";
 import { githubUrl, siteConfig } from "../../site.config";
 import { isStaticPlaceholder, STATIC_PLACEHOLDER, staticParams } from "../../../ui/garden/static-params.mjs";
+import { ui } from "../../lib/i18n";
 
 export function generateStaticParams() {
   return staticParams(posts.map((post) => ({ path: post.path.split("/") })), { path: [STATIC_PLACEHOLDER] });
@@ -82,6 +85,7 @@ export default async function PostPage({
   const pathname = postHref(post);
   const canonicalUrl = absoluteUrl(pathname, baseUrl);
   const wordCount = estimateWordCount(post.content);
+  const { prev, next } = adjacentByDate(posts, (item: { path: string }) => item.path === post.path);
 
   return (
     <main className="reading-page post-reading-page">
@@ -106,7 +110,7 @@ export default async function PostPage({
               </time>
             </li>
             {post.updated ? <li>更新于 {formatDate(post.updated)}</li> : null}
-            <li>约 {wordCount.toLocaleString("en-US")} 字</li>
+            <li>{ui().wordCount(wordCount)}</li>
             {originalUrl(post) ? (
               <li>
                 <a className="orig ext" href={originalUrl(post)} target="_blank" rel="noopener noreferrer">原文 ↗</a>
@@ -131,6 +135,10 @@ export default async function PostPage({
             <Webmentions
               target={canonicalUrl}
               endpoint={webmentionApiEndpoint()}
+            />
+            <ArticlePager
+              prev={prev ? { href: postHref(prev), title: prev.title } : null}
+              next={next ? { href: postHref(next), title: next.title } : null}
             />
             <Comments slug={post.path} />
           </div>

@@ -437,3 +437,9 @@ html[data-theme="dark"] .sh-repos > li.sk::after{background:linear-gradient(90de
 @media (prefers-reduced-motion:reduce){
   .sh-col,.sh-repos > li,.sh-tagchip{transition:none}
 }
+/* Handbook language switch: plain text 「中 / EN」, the current one in ink. */
+.sh-lang{display:inline-flex;align-items:center;height:34px;padding:0 8px;color:var(--muted);font:400 14px/1 var(--sans);text-decoration:none;white-space:nowrap;border-radius:8px}
+.sh-lang [aria-current]{color:var(--ink);font-weight:600}
+a.sh-lang:hover{color:var(--ink)}
+a.sh-lang:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.sh-lang.is-disabled{opacity:.55;cursor:default}

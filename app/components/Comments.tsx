@@ -1,6 +1,7 @@
 import { ChatCircle, GithubLogo } from "@phosphor-icons/react/ssr";
 import { readGiscusConfig } from "../lib/giscus-config";
 import { GiscusComments } from "./GiscusComments";
+import { ui } from "../lib/i18n";
 
 export function Comments({ slug }: { slug: string }) {
   const config = readGiscusConfig();
@@ -10,7 +11,7 @@ export function Comments({ slug }: { slug: string }) {
       <div className="comments-heading">
         <ChatCircle size={23} />
         <div>
-          <h2 id={`comments-heading-${slug}`}>评论</h2>
+          <h2 id={`comments-heading-${slug}`}>{ui().comments}</h2>
           <p>
             {config
               ? "评论由 GitHub Discussions 保存和管理。"

@@ -716,9 +716,20 @@ const columns = readColumnReferences(posts).sort(
 const thoughts = readMarkdownTree(path.join(contentRoot, "thoughts"), "thought").sort(
   (a, b) => Date.parse(b.date) - Date.parse(a.date),
 );
-const allHandbookDocs = readHandbookDocs();
-const gardenIndexDoc = allHandbookDocs.find((doc) => doc.path === "index") ?? null;
-const gardenDocs = allHandbookDocs.filter((doc) => doc.path !== "index");
+// docs/handbook/en/** mirrors the Chinese handbook page for page: the same
+// relative path is the counterpart. Each entry carries its lang; English paths
+// drop the en/ prefix and are served under /garden/en/.
+const allHandbookDocs = readHandbookDocs().map((doc) =>
+  doc.path === "en" || doc.path.startsWith("en/")
+    ? { ...doc, lang: "en", path: doc.path === "en" ? "index" : doc.path.slice(3) }
+    : { ...doc, lang: "zh" },
+);
+const zhHandbookDocs = allHandbookDocs.filter((doc) => doc.lang === "zh");
+const enHandbookDocs = allHandbookDocs.filter((doc) => doc.lang === "en");
+const gardenIndexDoc = zhHandbookDocs.find((doc) => doc.path === "index") ?? null;
+const gardenDocs = zhHandbookDocs.filter((doc) => doc.path !== "index");
+const gardenIndexDocEn = enHandbookDocs.find((doc) => doc.path === "index") ?? null;
+const gardenDocsEn = enHandbookDocs.filter((doc) => doc.path !== "index");
 
 // Intrinsic image sizes for width/height on <img>: local files are read now,
 // remote ones come from image-sizes.json (written by scripts/image-sizes.mjs).
@@ -763,6 +774,7 @@ assertUnique(
 );
 assertUnique(thoughts, (item) => item.slug, "随想 slug");
 assertUnique(gardenDocs, (item) => item.path, "Garden 文档路径");
+assertUnique(gardenDocsEn, (item) => item.path, "Garden English handbook path");
 
 const parityDir = path.join(root, "parity", "articles");
 const a2WordCounts = fs.existsSync(parityDir)
@@ -857,6 +869,8 @@ export const columns = ${JSON.stringify(columns, null, 2)} as ContentEntry[];
 export const thoughts = ${JSON.stringify(thoughts, null, 2)} as ContentEntry[];
 export const gardenDocs = ${JSON.stringify(gardenDocs, null, 2)} as GardenDocEntry[];
 export const gardenIndexDoc = ${JSON.stringify(gardenIndexDoc, null, 2)} as GardenDocEntry | null;
+export const gardenDocsEn = ${JSON.stringify(gardenDocsEn, null, 2)} as GardenDocEntry[];
+export const gardenIndexDocEn = ${JSON.stringify(gardenIndexDocEn, null, 2)} as GardenDocEntry | null;
 export const a2WordCounts = ${JSON.stringify(a2WordCounts, null, 2)} as Record<string, number>;
 export const linkAssets = ${JSON.stringify(linkAssetsForRender(root, basePath), null, 2)} as LinkAssets;
 export const imageSizes: Record<string, { width: number; height: number }> = ${JSON.stringify(imageSizes)};
@@ -949,6 +963,8 @@ writeRssFeed(
 const sitemapEntries = [
   "/", "/blog/", "/thoughts/", "/columns/", "/about/", "/garden/",
   ...gardenDocs.map((entry) => `/garden/${entry.path}/`),
+  ...(gardenIndexDocEn ? ["/garden/en/"] : []),
+  ...gardenDocsEn.map((entry) => `/garden/en/${entry.path}/`),
   ...posts.map((entry) => `/blog/${entry.path}/`),
   ...columns.map((entry) => `/columns/${entry.column}/${columnEntryPath(entry)}/`),
   ...thoughts.map((entry) => `/thoughts/${entry.slug}/`),

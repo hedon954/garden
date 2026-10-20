@@ -8,6 +8,7 @@ import {
   Quotes,
   Repeat,
 } from "@phosphor-icons/react";
+import { ui } from "../lib/i18n";
 
 type WebmentionEntry = {
   author?: {
@@ -93,8 +94,8 @@ export function Webmentions({
       <div className="webmention-title">
         <LinkSimple size={21} />
         <div>
-          <h2 id="webmentions-heading">来自开放网络的回应</h2>
-          <p>引用、喜欢、转发和站外回复会通过 Webmention 回到这里。</p>
+          <h2 id="webmentions-heading">{ui().webmentions}</h2>
+          <p>{ui().webmentionsLead}</p>
         </div>
       </div>
 

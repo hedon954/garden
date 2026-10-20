@@ -1056,6 +1056,39 @@ export function checkFileFacts(filePath, content, facts, root = ROOT) {
 }
 
 /**
+ * English pages mirror the Chinese ones: docs/handbook/en/<path>.md must have
+ * docs/handbook/<path>.md with the same section and order. Chinese pages without
+ * an English twin are fine (not translated yet).
+ */
+export function checkHandbookPairs(root = ROOT) {
+  const handbook = path.join(root, "docs/handbook");
+  const enRoot = path.join(handbook, "en");
+  const issues = [];
+  const head = (text) => {
+    const m = text.match(/^---\n([\s\S]*?)\n---/u);
+    const field = (key) => m?.[1].match(new RegExp(`^${key}:\\s*(.+)$`, "mu"))?.[1].trim();
+    return { section: field("section"), order: field("order") };
+  };
+  for (const file of walkFiles(enRoot, (f) => f.endsWith(".md"))) {
+    const rel = path.relative(enRoot, file);
+    const zhFile = path.join(handbook, rel);
+    const relEn = path.relative(root, file).replace(/\\/g, "/");
+    if (!fs.existsSync(zhFile)) {
+      issues.push({ file: relEn, line: 1, kind: "handbook-pair", message: `no Chinese counterpart docs/handbook/${rel.replace(/\\/g, "/")}` });
+      continue;
+    }
+    const en = head(fs.readFileSync(file, "utf8"));
+    const zh = head(fs.readFileSync(zhFile, "utf8"));
+    for (const key of ["section", "order"]) {
+      if (en[key] !== zh[key]) {
+        issues.push({ file: relEn, line: 1, kind: "handbook-pair", message: `${key} is ${en[key] ?? "missing"}, the Chinese page has ${zh[key] ?? "missing"}` });
+      }
+    }
+  }
+  return issues;
+}
+
+/**
  * Scan all docs/handbook/ and app/garden/ files and return any fact-check failures.
  */
 export function checkAllHandbookFacts(root = ROOT) {
@@ -1069,6 +1102,7 @@ export function checkAllHandbookFacts(root = ROOT) {
     const content = fs.readFileSync(file, "utf8");
     issues.push(...checkFileFacts(file, content, facts, root));
   }
+  issues.push(...checkHandbookPairs(root));
   const svgFiles = walkFiles(path.join(root, "docs/handbook"), (f) => f.endsWith(".svg"));
   for (const svgFile of svgFiles) {
     const svgContent = fs.readFileSync(svgFile, "utf8");

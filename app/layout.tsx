@@ -13,6 +13,7 @@ import {
 import { githubUrl, siteConfig } from "./site.config";
 import { brand } from "@garden/site-config";
 import { FEED_ALTERNATES } from "./lib/page-alternates";
+import { htmlLang, siteLang } from "./lib/i18n";
 
 export async function generateMetadata(): Promise<Metadata> {
   const siteUrl = await getSiteUrl();
@@ -75,7 +76,7 @@ export default function RootLayout({
     "https://plausible.io/js/script.js";
 
   return (
-    <html lang="zh-CN" suppressHydrationWarning>
+    <html lang={htmlLang(siteLang)} suppressHydrationWarning>
       <head>
         <script
           dangerouslySetInnerHTML={{

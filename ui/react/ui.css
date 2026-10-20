@@ -6,10 +6,10 @@
 .garden-ui,
 .garden-catalog,
 .garden-ui-preview {
-  --gui-bg: var(--card, #fff);
+  --gui-bg: transparent;
   --gui-chart: var(--well);
   --gui-track: var(--rule, #e6e3dc);
-  --gui-thumb: var(--card, #fff);
+  --gui-thumb: var(--paper, #faf9f5);
   --gui-slider-track: var(--rule, #e6e3dc);
   --gui-slider-thumb: var(--ink, #1b1a18);
   --gui-text: var(--ink, #1b1a18);
@@ -21,7 +21,7 @@
   --gui-border-strong: var(--rule-strong, #d6d2c9);
   --gui-control-border: var(--rule-strong, #d6d2c9);
   --gui-check-border: var(--rule-strong, #d6d2c9);
-  --gui-control-bg: var(--card, #fff);
+  --gui-control-bg: transparent;
   --gui-surface: var(--well, #f0eee6);
   --gui-chip: var(--well, #f0eee6);
   --gui-hover: var(--well, #f0eee6);
@@ -29,7 +29,7 @@
   --gui-solid-hover: var(--soft, #4a4844);
   --gui-on-solid: var(--paper, #faf9f5);
   --gui-segment: var(--well, #f0eee6);
-  --gui-segment-selected: var(--card, #fff);
+  --gui-segment-selected: var(--paper, #faf9f5);
   --gui-segment-shadow: none;
   --gui-progress: var(--blue, #30302e);
   --gui-progress-track: var(--well, #f0eee6);
@@ -67,7 +67,7 @@
 .garden-ui[data-theme="dark"],
 .garden-catalog[data-theme="dark"],
 .garden-ui-preview[data-theme="dark"] {
-  --gui-bg: var(--card);
+  --gui-bg: transparent;
   --gui-chart: var(--well);
   --gui-text: var(--ink);
   --gui-muted: var(--muted);
@@ -78,7 +78,7 @@
   --gui-border-strong: var(--rule-strong);
   --gui-control-border: var(--rule-strong);
   --gui-check-border: var(--rule-strong);
-  --gui-control-bg: var(--card);
+  --gui-control-bg: transparent;
   --gui-surface: var(--well);
   --gui-chip: var(--well);
   --gui-hover: var(--tint);
@@ -86,10 +86,10 @@
   --gui-solid-hover: var(--soft);
   --gui-on-solid: var(--paper);
   --gui-segment: var(--well);
-  --gui-segment-selected: var(--card);
+  --gui-segment-selected: var(--paper);
   --gui-segment-shadow: none;
   --gui-track: var(--rule);
-  --gui-thumb: var(--card);
+  --gui-thumb: var(--paper);
   --gui-slider-track: var(--rule-strong);
   --gui-slider-thumb: var(--ink);
   --gui-progress: var(--blue);
@@ -835,7 +835,7 @@
 .garden-ui-chart-area { fill: var(--gui-series); fill-opacity: 0.1; stroke: none; }
 .garden-ui-chart-bar { fill: var(--gui-series); }
 .garden-ui-chart-point { fill: var(--gui-series); }
-.garden-ui-chart-dot { fill: var(--gui-bg); stroke: var(--gui-series); stroke-width: 2; }
+.garden-ui-chart-dot { fill: var(--paper, #faf9f5); stroke: var(--gui-series); stroke-width: 2; }
 .garden-ui-chart-marker { stroke: var(--gui-border-strong); stroke-dasharray: 3 3; }
 .garden-ui-chart-cross { stroke: var(--gui-border-strong); stroke-width: 1; }
 

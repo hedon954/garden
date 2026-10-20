@@ -48,7 +48,8 @@ test("the menu theme row is a keyboard-operable switch that stays in sync", () =
   const row = header.slice(header.indexOf('className="sh-menu-theme"'), header.indexOf("</button>", header.indexOf('className="sh-menu-theme"')));
   assert.doesNotMatch(row, /onKey(Down|Up|Press)|tabIndex|disabled/);
   // aria-checked comes from the same state the desktop button reads, and both call one toggle.
-  assert.match(header, /aria-label=\{dark \? "切换到浅色模式" : "切换到深色模式"\}/);
+  assert.match(header, /aria-label=\{dark \? ui\(\)\.toLight : ui\(\)\.toDark\}/);
+  assert.match(fs.readFileSync(new URL("../app/lib/i18n.ts", import.meta.url), "utf8"), /toLight: "切换到浅色模式",\n  toDark: "切换到深色模式",/);
   assert.equal(header.match(/onClick=\{toggleTheme\}/g)?.length, 1, "desktop button");
   assert.equal(header.match(/themeSwitchProps\(dark, toggleTheme\)/g)?.length, 1, "menu row");
   // The shared rule: a stored choice wins, otherwise the system.
