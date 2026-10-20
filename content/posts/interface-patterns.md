@@ -20,10 +20,8 @@ items:
     text: 定下这个月读什么
   - title: 共读
     text: 每周读完约定的章节
-    accent: true
   - title: 讨论
     text: 见面聊各自的看法
-    accent: true
   - title: 复盘
     text: 记下下次要改的地方
 links:
@@ -85,6 +83,9 @@ items:
     text: 社区图书馆活动室，需提前预约
     label: 更看重安静
     reply: 选了图书馆。我们会在月初提交预约。
+none:
+  label: 都不合适 / 说不清
+  reply: 没关系，我们会在群里再列几个场地。
 caption: 示意交互，场地和价格均为虚构。
 ```
 
@@ -106,8 +107,8 @@ cards:
     image: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 132 132'%3E%3Crect width='132' height='132' fill='%23E8EEF0'/%3E%3Ccircle cx='66' cy='60' r='30' fill='%239DB7A8'/%3E%3Crect x='30' y='98' width='72' height='8' rx='4' fill='%233F6B55'/%3E%3Crect x='44' y='112' width='44' height='6' rx='3' fill='%239DB7A8'/%3E%3C/svg%3E"
     alt: 一盏台灯
     source:
-      - https://www.gutenberg.org/
       - https://en.wikipedia.org/wiki/Project_Gutenberg
+      - https://www.gutenberg.org/
     takeaway: "**可借鉴：** 偶尔选一本公版书，没买书的人也能马上加入。"
   - url: https://en.wikipedia.org/wiki/Book_discussion_club
     title: 维基百科：读书会词条

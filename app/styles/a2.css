@@ -2377,7 +2377,6 @@ html[data-theme="dark"] .gf-scrim { background: rgb(0 0 0 / 45%); }
   background: var(--card-hover);
   text-align: center;
 }
-.g-cycle-node.is-accent { background: var(--well); border-color: var(--ink); }
 .markdown-body .g-cycle-t { margin: 0; font: 700 var(--fs-lead) / 1.35 var(--sans); color: var(--ink); }
 .markdown-body .g-cycle-x { margin: 4px 0 0; font: 400 15px / 1.5 var(--sans); color: var(--soft); }
 .g-cycle-svg { position: absolute; inset: 0; overflow: visible; pointer-events: none; }
@@ -2474,3 +2473,28 @@ html[data-theme="dark"] .g-verdict-ic.good { color: #7fbf8e; }
   .g-entity-row { grid-template-columns: 76px minmax(0, 1fr); gap: 14px; }
   .g-entity-row .g-entity-img img { width: 76px; height: 76px; border-radius: 10px; }
 }
+
+/* review fixes: chip gap, truncated hosts, the "none of these" choice */
+.markdown-body a.ext.g-src-chip > span,
+.markdown-body a.ext.g-src > span { overflow: hidden; text-overflow: ellipsis; }
+.markdown-body a.ext.g-src > span { max-width: 6.5em; }
+.markdown-body a.ext.g-src-chip,
+.markdown-body a.ext.g-src { gap: 6px; }
+.g-choice-group { display: grid; gap: 0; }
+.g-choice-none {
+  justify-self: center;
+  margin: 12px 0 0;
+  padding: 4px 10px;
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  color: var(--muted);
+  font: 500 14px / 1.6 var(--sans);
+  text-decoration: underline;
+  text-decoration-color: var(--rule);
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.g-choice-none:hover { color: var(--ink); }
+.g-choice-none:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+.g-choice-none[aria-checked="true"] { color: var(--ink); background: var(--well); text-decoration: none; }

@@ -22,10 +22,13 @@ test("cycle, list and choice are catalog blocks with English names", () => {
   }
 });
 
-test("cycle keeps items, accent and dashed links", () => {
-  const block = parse("garden cycle", "items:\n  - title: A\n    text: a\n  - title: B\n    accent: true\nlinks:\n  - from: 2\n    to: 1\ncaption: loop");
+test("cycle keeps items and dashed links; nodes have no emphasis", () => {
+  const block = parse("garden cycle", "items:\n  - title: A\n    text: a\n  - title: B\nlinks:\n  - from: 2\n    to: 1\ncaption: loop");
   assert.equal(block.error, undefined);
-  assert.equal(block.props.items[1].accent, true);
+  assert.deepEqual(CATALOG.cycle.itemKeys, ["title", "text"]);
+  const css = readFileSync(new URL("../app/styles/a2.css", import.meta.url), "utf8");
+  assert.doesNotMatch(css, /is-accent/u);
+  assert.doesNotMatch(readFileSync(new URL("../app/components/garden/patterns.tsx", import.meta.url), "utf8"), /is-accent/u);
   assert.deepEqual(block.props.links, [{ from: 2, to: 1 }]);
   assert.match(parse("garden cycle", "items: []\narrows: 1").error.message, /arrows/u);
 });
@@ -41,6 +44,15 @@ test("choice options carry icon, value, text, label and reply", () => {
   const block = parse("garden choice", "title: 选哪个？\nitems:\n  - icon: shield\n    value: ¥1\n    text: a\n    label: 可靠\n    reply: 好\ncaption: 示意");
   assert.equal(block.error, undefined);
   assert.equal(block.props.items[0].reply, "好");
+});
+
+test("choice takes an optional none option with label and reply", () => {
+  const block = parse("garden choice", "items:\n  - value: A\n  - value: B\nnone:\n  label: 都不合适\n  reply: 好的");
+  assert.equal(block.error, undefined);
+  assert.deepEqual(block.props.none, { label: "都不合适", reply: "好的" });
+  for (const file of ["interface-patterns.md", "interface-patterns-en.md"]) {
+    assert.match(readFileSync(new URL(`../content/posts/${file}`, import.meta.url), "utf8"), /\nnone:\n  label: /u);
+  }
 });
 
 test("compare accepts a good/bad verdict per item; card accepts a list of cards with takeaways", () => {

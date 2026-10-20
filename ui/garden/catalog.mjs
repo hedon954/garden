@@ -152,14 +152,13 @@ note: 一句话说明里面有什么
     when: "三到六个环节首尾相接、反复进行，读者需要看出它是一个圈而不是一条线。",
     whenNot: "步骤只走一遍时，用有序列表或 timeline。",
     keys: ["title", "items", "links", "caption"],
-    itemKeys: ["title", "text", "accent"],
+    itemKeys: ["title", "text"],
     example: `\`\`\`garden cycle
 items:
   - title: 观察
     text: 记下发生了什么
   - title: 假设
     text: 猜一个原因
-    accent: true
   - title: 实验
     text: 只改一个变量
   - title: 复盘
@@ -190,7 +189,7 @@ items:
     label: "选择卡",
     when: "给读者两三个具体选项让他选一个，每个选项有图标、一个醒目的数字和一句说明。",
     whenNot: "选项会改变后面的计算结果时，写成想法，编译成 interactive。",
-    keys: ["title", "items", "caption"],
+    keys: ["title", "items", "none", "caption"],
     itemKeys: ["icon", "value", "text", "label", "reply"],
     example: `\`\`\`garden choice
 title: 你更倾向哪一种？
@@ -203,6 +202,8 @@ items:
     value: ¥2,450
     text: 换过电池，价格更低
     label: 更看重价格
+none:
+  label: 都不合适
 \`\`\``,
     triggers: ["gchoice"],
   },

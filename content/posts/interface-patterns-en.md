@@ -20,10 +20,8 @@ items:
     text: Choose this month's book
   - title: Read
     text: Finish the agreed chapters each week
-    accent: true
   - title: Talk
     text: Meet and share views
-    accent: true
   - title: Review
     text: Note what to change next time
 links:
@@ -85,6 +83,9 @@ items:
     text: Library meeting room, booking needed
     label: Prefer the quiet
     reply: Library it is. We will book the room at the start of the month.
+none:
+  label: Neither / not sure
+  reply: No problem. We will share a few more venues in the group chat.
 caption: Illustrative only. Venues and prices are made up.
 ```
 
@@ -106,8 +107,8 @@ cards:
     image: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 132 132'%3E%3Crect width='132' height='132' fill='%23E8EEF0'/%3E%3Ccircle cx='66' cy='60' r='30' fill='%239DB7A8'/%3E%3Crect x='30' y='98' width='72' height='8' rx='4' fill='%233F6B55'/%3E%3Crect x='44' y='112' width='44' height='6' rx='3' fill='%239DB7A8'/%3E%3C/svg%3E"
     alt: A desk lamp
     source:
-      - https://www.gutenberg.org/
       - https://en.wikipedia.org/wiki/Project_Gutenberg
+      - https://www.gutenberg.org/
     takeaway: "**Worth borrowing:** pick a public-domain book now and then, so people without a copy can join at once."
   - url: https://en.wikipedia.org/wiki/Book_discussion_club
     title: "Wikipedia: book discussion club"

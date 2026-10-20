@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useId, useRef, useState, type ComponentType, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useId, useRef, useState, type ComponentType, type ReactNode } from "react";
+import { sourceIcon } from "../../../ui/garden/source-icon.mjs";
 import ReactMarkdown from "react-markdown";
 import {
   Bell,
@@ -107,15 +108,20 @@ export function GardenChoice({ props }: { props: Record<string, unknown> }) {
   const base = useId();
   const title = typeof props.title === "string" ? props.title : "";
   const move = (index: number, step: number) => {
-    const next = (index + step + items.length) % items.length;
+    const next = (index + step + count) % count;
     setPicked(next);
     document.getElementById(`${base}-${next}`)?.focus();
   };
-  const reply = picked === null ? "" : String(items[picked]?.reply ?? "");
+  const none = props.none && typeof props.none === "object" ? (props.none as Record<string, unknown>) : null;
+  const noneLabel = none && typeof none.label === "string" ? none.label : "";
+  const count = items.length + (noneLabel ? 1 : 0);
+  const chosen = picked === null ? null : picked < items.length ? items[picked] : none;
+  const reply = chosen ? String(chosen.reply ?? "") : "";
   return (
     <figure className="g-choice">
       {title ? <p className="g-choice-h" id={`${base}-h`}><Rich text={title} /></p> : null}
-      <div className="g-choice-opts" role="radiogroup" aria-labelledby={title ? `${base}-h` : undefined} data-n={items.length}>
+      <div className="g-choice-group" role="radiogroup" aria-labelledby={title ? `${base}-h` : undefined}>
+      <div className="g-choice-opts" data-n={items.length}>
         {items.map((item, index) => {
           const on = picked === index;
           return (
@@ -141,7 +147,23 @@ export function GardenChoice({ props }: { props: Record<string, unknown> }) {
           );
         })}
       </div>
-      {items.some((item) => item.reply) ? <p className="g-choice-reply" aria-live="polite" hidden={!reply}>{reply ? <Rich text={reply} /> : null}</p> : null}
+      {noneLabel ? (
+        <button
+          id={`${base}-${items.length}`}
+          type="button"
+          role="radio"
+          aria-checked={picked === items.length}
+          tabIndex={picked === items.length ? 0 : -1}
+          className="g-choice-none"
+          onClick={() => setPicked(items.length)}
+          onKeyDown={(event) => {
+            if (event.key === "ArrowRight" || event.key === "ArrowDown") { event.preventDefault(); move(items.length, 1); }
+            if (event.key === "ArrowLeft" || event.key === "ArrowUp") { event.preventDefault(); move(items.length, -1); }
+          }}
+        >{noneLabel}</button>
+      ) : null}
+      </div>
+      {items.some((item) => item.reply) || none?.reply ? <p className="g-choice-reply" aria-live="polite" hidden={!reply}>{reply ? <Rich text={reply} /> : null}</p> : null}
       {typeof props.caption === "string" ? <figcaption><Rich text={props.caption} /></figcaption> : null}
     </figure>
   );
@@ -264,7 +286,7 @@ export function GardenCycle({ props }: { props: Record<string, unknown> }) {
       {typeof props.title === "string" ? <p className="g-cycle-h"><Rich text={props.title} /></p> : null}
       <div className="g-cycle-ring" ref={ringRef} data-n={n}>
         {items.map((item, index) => (
-          <div className={`g-cycle-node${item.accent ? " is-accent" : ""}`} key={index} data-i={index + 1}>
+          <div className="g-cycle-node" key={index} data-i={index + 1}>
             <p className="g-cycle-t"><Rich text={String(item.title ?? "")} /></p>
             {item.text ? <p className="g-cycle-x"><Rich text={String(item.text)} /></p> : null}
           </div>
@@ -294,4 +316,21 @@ export function VerdictIcon({ verdict }: { verdict: string }): ReactNode {
   if (verdict === "good") return <CheckCircle className="g-ic g-verdict-ic good" size={20} aria-hidden="true" />;
   if (verdict === "bad") return <XCircle className="g-ic g-verdict-ic bad" size={20} aria-hidden="true" />;
   return null;
+}
+
+/** The site's mark: its build-time favicon, else the registrable domain's first letter. */
+type Favicons = Record<string, { file?: string } | string>;
+const FaviconContext = createContext<Favicons>({});
+
+/** The build-time favicons, handed down from the server so client blocks match inline links. */
+export function FaviconProvider({ favicons, children }: { favicons?: Favicons; children: ReactNode }) {
+  return <FaviconContext.Provider value={favicons ?? {}}>{children}</FaviconContext.Provider>;
+}
+
+export function SourceMark({ href, icon }: { href: string; icon?: string }) {
+  const mark = sourceIcon(href, useContext(FaviconContext), icon);
+  return mark.src
+    // eslint-disable-next-line @next/next/no-img-element -- a 14px site icon
+    ? <img className="g-src-fav" src={mark.src} alt="" width={14} height={14} loading="lazy" decoding="async" aria-hidden="true" />
+    : <span className="g-src-ic" aria-hidden="true">{mark.letter}</span>;
 }

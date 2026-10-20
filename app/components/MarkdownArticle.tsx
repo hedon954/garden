@@ -33,6 +33,7 @@ import { columnRedirects, internalLinkResolver, readRedirects } from "../../ui/g
 import { columnHref, columns, gardenDocHref, gardenDocs, gardenDocsEn, postHref, posts, thoughts } from "../lib/content";
 import { LinkCardRefresh } from "./LinkCardRefresh";
 import { linkHost } from "../../scripts/link-meta-core.mjs";
+import { FaviconProvider, SourceMark } from "./garden/patterns";
 import { cardDate } from "../../ui/garden/card-refresh.mjs";
 import { siteHref } from "../lib/site-href";
 import { codeLanguageLabel, fenceLanguage } from "../../ui/garden/code-language.mjs";
@@ -271,6 +272,7 @@ export function MarkdownArticle({ content, numbering, lang }: { content: string;
   };
   return (
     <UiLangProvider lang={lang}>
+    <FaviconProvider favicons={linkAssets?.favicons}>
     <div className="markdown-body prose">
       <ReactMarkdown
         remarkPlugins={[...markdownPlugins, [remarkLinkCard, { sameSite }], [remarkA2, { imageSize: (src: string) => lookupImageSize(imageSizes, src) }]]}
@@ -315,7 +317,9 @@ export function MarkdownArticle({ content, numbering, lang }: { content: string;
                   ? { ...(domProps.className ? { className: `ext ${domProps.className}` } : { className: "ext" }), target: "_blank", rel: "noopener noreferrer" }
                   : {})}
               >
-                {external && href ? <WithFavicon href={href}>{children}</WithFavicon> : children}
+                {external && href && /\bg-src-chip\b/u.test(String(domProps.className ?? ""))
+                  ? <><SourceMark href={href} /><span>{children}</span></>
+                  : <>{external && href ? <WithFavicon href={href}>{children}</WithFavicon> : children}</>}
               </a>
             );
           },
@@ -361,6 +365,7 @@ export function MarkdownArticle({ content, numbering, lang }: { content: string;
       </ReactMarkdown>
       {cardWorker ? <LinkCardRefresh endpoint={cardWorker} /> : null}
     </div>
+    </FaviconProvider>
     </UiLangProvider>
   );
 }

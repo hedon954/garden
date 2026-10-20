@@ -150,7 +150,6 @@ items:
     text: 记下发生了什么
   - title: 假设
     text: 猜一个原因
-    accent: true
   - title: 实验
     text: 只改一个变量
   - title: 复盘
@@ -192,4 +191,6 @@ items:
     value: ¥2,450
     text: 换过电池，价格更低
     label: 更看重价格
+none:
+  label: 都不合适
 ```

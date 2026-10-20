@@ -10,7 +10,7 @@ import { compileUiBlock } from "../../../ui/core/compile.mjs";
 import { splitCompareLine } from "../../../ui/garden/compare-line.mjs";
 import { RuntimeLangProvider, UiErrorCard, UiFigure, type Diagnostic, type UiPayload } from "../../../ui/react";
 import { FullscreenFrame, SandboxFrame } from "./chrome";
-import { VerdictIcon } from "./patterns";
+import { SourceMark, VerdictIcon } from "./patterns";
 
 function Rich({ text }: { text: string }) {
   return (
@@ -43,10 +43,7 @@ function SourceChip({ source }: { source: unknown }) {
   return (
     <span className="g-srcs">
       <a className="g-src ext" href={list[0].url} target="_blank" rel="noopener noreferrer">
-        {list[0].icon
-          // eslint-disable-next-line @next/next/no-img-element -- a 14px site icon the author points at
-          ? <img className="g-src-fav" src={list[0].icon} alt="" width={14} height={14} loading="lazy" decoding="async" />
-          : <span className="g-src-ic" aria-hidden="true">{[...list[0].site][0] || "·"}</span>}
+        <SourceMark href={list[0].url} icon={list[0].icon} />
         <span>{list[0].site}</span>
       </a>
       {list.length > 1 ? <span className="g-src-more">+{list.length - 1}</span> : null}
