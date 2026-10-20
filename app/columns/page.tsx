@@ -37,22 +37,23 @@ export default function ColumnsPage() {
     entries: [...entries].sort((left, right) => Date.parse(right.date) - Date.parse(left.date)),
   }));
 
+  const t = ui();
   return (
     <main className="sh-main" id="content">
       <div className="sh-head">
-        <h1>{siteConfig.pages.columns.title || "专栏"}</h1>
+        <h1>{siteConfig.pages.columns.title || t.homeColumns}</h1>
         {siteConfig.pages.columns.subtitle ? <p className="sh-deck">{siteConfig.pages.columns.subtitle}</p> : null}
       </div>
       {grouped.length ? grouped.map(({ slug, first, entries }) => (
         <section className="sh-series" aria-labelledby={slug} key={slug}>
           <div className="cover" style={{ background: "var(--well)" }}>
-            {first.columnCover ? <img className="column-feature-cover" src={first.columnCover} alt={first.columnCoverAlt ?? `${first.columnTitle} 封面`} /> : null}
+            {first.columnCover ? <img className="column-feature-cover" src={first.columnCover} alt={first.columnCoverAlt ?? t.columnCoverAlt(first.columnTitle)} /> : null}
           </div>
           <div className="body">
             <h2 id={slug}>{first.columnTitle}</h2>
-            <p className="count">{ui().columnReadingList(entries.length, columnStatusLabel(first.columnStatus))}</p>
-            <p className="desc">{first.columnDescription ?? first.description ?? "按顺序组织的专题文章系列。"}</p>
-            <ol aria-label={`${first.columnTitle}，从新到旧`}>
+            <p className="count">{t.columnReadingList(entries.length, columnStatusLabel(first.columnStatus))}</p>
+            <p className="desc">{first.columnDescription ?? first.description ?? t.columnFallbackDesc}</p>
+            <ol aria-label={t.columnNewestFirst(first.columnTitle)}>
               {entries.map((entry) => (
                 <li key={entry.path}>
                   <Link href={columnHref(entry)}>{entry.title}</Link>

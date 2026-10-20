@@ -1025,6 +1025,7 @@ test("column status is an enum with localized labels and Chinese back-compat", a
   assert.match(i18n, /columnCompleted: "Completed"/);
   const build = await readFile(new URL("../scripts/build-content.mjs", import.meta.url), "utf8");
   assert.match(i18n, /columnDefault: "持续更新"/);
+  assert.match(i18n, /columnDefault: "Active"/);
   assert.match(build, /持续更新: "default"/);
   assert.match(build, /连载中: "ongoing"/);
   assert.match(build, /已完结: "completed"/);
