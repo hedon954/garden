@@ -71,14 +71,14 @@ jobs:
               GISCUS_REPO_ID=
               GISCUS_CATEGORY=
               GISCUS_CATEGORY_ID=
-              echo "GISCUS_DISABLED=1，本次构建不开放评论。"
+              echo "GISCUS_DISABLED=1; building without comments."
             else
-              echo "评论还没有配置，构建已停止。"
-              echo "1. 准备一个公开 GitHub 仓库，并开启 Discussions。"
-              echo "2. 打开 https://giscus.app/zh-CN ，安装 Giscus App，选中该仓库和分类。"
-              echo "3. 在 Settings → Secrets and variables → Actions → Variables 写入："
-              echo "   GISCUS_REPO、GISCUS_REPO_ID、GISCUS_CATEGORY、GISCUS_CATEGORY_ID"
-              echo "确定不开放评论时，把 GISCUS_DISABLED 设为 1。留空和示例值 owner/repository 都不会通过。"
+              echo "Comments are not configured yet; stopping the build."
+              echo "1. Prepare a public GitHub repository and enable Discussions."
+              echo "2. Open https://giscus.app, install the Giscus App, and pick the repository and category."
+              echo "3. Under Settings -> Secrets and variables -> Actions -> Variables, set:"
+              echo "   GISCUS_REPO, GISCUS_REPO_ID, GISCUS_CATEGORY, GISCUS_CATEGORY_ID"
+              echo "To build without comments, set GISCUS_DISABLED to 1. Empty values and the placeholder owner/repository will not pass."
               exit 1
             fi
           fi
@@ -162,9 +162,9 @@ jobs:
           PAGES_DEPLOY_KEY: ${{ secrets.PAGES_DEPLOY_KEY }}
           TARGET_REPOSITORY: ${{ vars.PAGES_REPOSITORY }}
         run: |
-          test -n "$PAGES_DEPLOY_KEY" || { echo "缺少 PAGES_DEPLOY_KEY Secret"; exit 1; }
+          test -n "$PAGES_DEPLOY_KEY" || { echo "Missing PAGES_DEPLOY_KEY secret"; exit 1; }
           [[ "$TARGET_REPOSITORY" =~ ^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$ ]] || {
-            echo "PAGES_REPOSITORY 格式无效"
+            echo "Invalid PAGES_REPOSITORY format"
             exit 1
           }
 
@@ -189,7 +189,7 @@ jobs:
           expected_remote="git@github.com:$TARGET_REPOSITORY.git"
           actual_remote="$(git remote get-url origin)"
           test "$actual_remote" = "$expected_remote" || {
-            echo "拒绝发布到非目标仓库：$actual_remote"
+            echo "Refusing to publish to unexpected repository: $actual_remote"
             exit 1
           }
           echo "PAGES_PREVIOUS_TREE=$(git rev-parse 'HEAD^{tree}')" >> "$GITHUB_ENV"
@@ -207,7 +207,7 @@ jobs:
           git add -A
           new_tree="$(git write-tree)"
           if [ "$new_tree" = "$PAGES_PREVIOUS_TREE" ]; then
-            echo "静态产物没有变化，无需发布"
+            echo "Static output is unchanged; skipping publish"
             exit 0
           fi
           git commit -m "Deploy ${GITHUB_SHA}"

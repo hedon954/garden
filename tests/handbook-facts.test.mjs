@@ -238,3 +238,50 @@ test("the fact gate reads English handbook pages too", async () => {
   const issues = checkFileFacts("docs/handbook/en/start.md", "Run `npx garden no-such-command` first.\n", facts);
   assert.ok(issues.length > 0);
 });
+
+test("checkEnglishHandbookNoCjk fails on CJK in English handbook prose, fenced code, and included assets, while allowing the 丨 title-split explanation", async () => {
+  const { checkEnglishHandbookNoCjk } = await import("../scripts/handbook-facts.mjs");
+  const fsMod = await import("node:fs");
+  const os = await import("node:os");
+  const pathMod = await import("node:path");
+  const dir = fsMod.mkdtempSync(pathMod.join(os.tmpdir(), "hb-en-cjk-"));
+  try {
+    fsMod.mkdirSync(pathMod.join(dir, "docs/handbook/en/components/file"), { recursive: true });
+    fsMod.mkdirSync(pathMod.join(dir, "docs/handbook/assets"), { recursive: true });
+    fsMod.writeFileSync(
+      pathMod.join(dir, "docs/handbook/en/config.md"),
+      [
+        "---",
+        "title: Config",
+        "section: getting-started",
+        "---",
+        "",
+        "Split two-line headings with ` | ` or `丨`.",
+        "",
+        "```yaml",
+        "tagline: 写作 · 记录",
+        "```",
+        "",
+        "![Layout](../assets/diagram.svg)",
+        "",
+        "```garden file",
+        "src: ./components/file/note.md",
+        "```",
+      ].join("\n"),
+    );
+    fsMod.writeFileSync(pathMod.join(dir, "docs/handbook/assets/diagram.svg"), "<svg><text>正文阅读列</text></svg>\n");
+    fsMod.writeFileSync(pathMod.join(dir, "docs/handbook/en/components/file/note.md"), "# Note\n\n这里有一句中文。\n");
+
+    const issues = checkEnglishHandbookNoCjk(dir);
+    assert.deepEqual(
+      issues.map((i) => `${i.file}:${i.line}`).sort(),
+      [
+        "docs/handbook/assets/diagram.svg:1",
+        "docs/handbook/en/components/file/note.md:3",
+        "docs/handbook/en/config.md:9",
+      ],
+    );
+  } finally {
+    fsMod.rmSync(dir, { recursive: true, force: true });
+  }
+});

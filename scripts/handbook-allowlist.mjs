@@ -66,3 +66,13 @@ export const ALLOWED_NON_ENV_UPPER_SNAKE = {
   KB: "Kilobyte unit",
   GB: "Gigabyte unit",
 };
+
+/**
+ * Explicit allowlist of CJK characters permitted on English handbook pages:
+ * - "中": the "中 / EN" language switcher in the header
+ * - "丨" / "｜": the two-line title split delimiter character where explained in prose
+ */
+export const ALLOWED_EN_HANDBOOK_CJK = {
+  switcher: "中",
+  titleSplitChars: new Set(["丨", "｜"]),
+};

@@ -1,8 +1,12 @@
+import fs from "node:fs";
+import path from "node:path";
 import assert from "node:assert/strict";
 import test from "node:test";
+import { ALLOWED_EN_HANDBOOK_CJK } from "../scripts/handbook-allowlist.mjs";
 import "./workerd-modules.mjs";
 
 const UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36";
+const root = path.resolve(import.meta.dirname, "..");
 
 async function html(pathname) {
   const url = new URL("../dist/server/index.js", import.meta.url);
@@ -17,20 +21,53 @@ async function html(pathname) {
   return (await res.text()).replace(/<script[\s\S]*?<\/script>/gu, "").replace(/<style[\s\S]*?<\/style>/gu, "");
 }
 
-const HAN = /[\u4e00-\u9fff]/u;
+const HAN = /[\u3000-\u303f\u3400-\u9fff\uf900-\ufaff\uff00-\uffef]/u;
 // Chrome only: everything outside the article body (.e-content), plus attributes
 // and copy/tab controls inside it. The 「中 / EN」 switcher keeps its 中 on purpose.
 function chromeChinese(page) {
   const attrs = [...page.matchAll(/\s(?:aria-label|title|placeholder)="([^"]*)"/gu)].map((m) => m[1]).filter((v) => HAN.test(v));
   const outside = page.replace(/<div class="e-content">[\s\S]*?<\/article>/u, "");
-  const texts = [...outside.matchAll(/>([^<]+)</gu)].map((m) => m[1].trim()).filter((v) => HAN.test(v) && v !== "中");
+  const texts = [...outside.matchAll(/>([^<]+)</gu)].map((m) => m[1].trim()).filter((v) => HAN.test(v) && v !== ALLOWED_EN_HANDBOOK_CJK.switcher);
   const tabs = [...page.matchAll(/role="tab"[^>]*>([^<]*)</gu)].map((m) => m[1]).filter((v) => HAN.test(v));
   return [...attrs, ...texts, ...tabs];
 }
 
-for (const path of ["/garden/en", "/garden/en/ai-writing", "/garden/en/writing", "/garden/en/components/compare"]) {
-  test(`English handbook chrome has no Chinese: ${path}`, async () => {
-    assert.deepEqual(chromeChinese(await html(path)), []);
+function allEnglishHandbookRoutes() {
+  const enDir = path.join(root, "docs/handbook/en");
+  const files = fs.readdirSync(enDir, { recursive: true }).map(String).filter((f) => f.endsWith(".md"));
+  const routes = [];
+  for (const rel of files.sort()) {
+    const raw = fs.readFileSync(path.join(enDir, rel), "utf8");
+    if (!/^---\n[\s\S]*?\nsection:/mu.test(raw)) continue;
+    routes.push(rel === "index.md" ? "/garden/en" : `/garden/en/${rel.replace(/\.md$/u, "")}`);
+  }
+  return routes;
+}
+
+function bodyChinese(page) {
+  // Check visible text and attributes inside <main>, excluding the allowlisted 中 switcher and 丨 title-split explanation.
+  const mainMatch = /<main\b[\s\S]*?<\/main>/u.exec(page);
+  const mainHtml = mainMatch ? mainMatch[0] : page;
+  const attrs = [...mainHtml.matchAll(/\s(?:aria-label|title|placeholder|alt)="([^"]*)"/gu)]
+    .map((m) => m[1])
+    .filter((v) => HAN.test(v));
+  const texts = [...mainHtml.matchAll(/>([^<]+)</gu)]
+    .map((m) => m[1].trim())
+    .filter((v) => {
+      if (!HAN.test(v)) return false;
+      if (v === ALLOWED_EN_HANDBOOK_CJK.switcher) return false;
+      const chars = [...v].filter((ch) => HAN.test(ch));
+      if (chars.every((ch) => ALLOWED_EN_HANDBOOK_CJK.titleSplitChars.has(ch))) return false;
+      return true;
+    });
+  return [...attrs, ...texts];
+}
+
+for (const route of allEnglishHandbookRoutes()) {
+  test(`English handbook page has no CJK characters (chrome, body, fenced code): ${route}`, async () => {
+    const page = await html(route);
+    assert.deepEqual(chromeChinese(page), []);
+    assert.deepEqual(bodyChinese(page), []);
   });
 }
 

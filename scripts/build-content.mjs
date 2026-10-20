@@ -323,10 +323,11 @@ function resolveFileEntry(file, markdownPath, sourcePath, options = {}) {
   if (preview === "md") {
     // Rendered now into its own file next to the copy; the page only links to it and the
     // preview fetches it on demand. Images next to the Markdown file are copied too.
+    const lang = options.lang ?? (String(siteConfig.locale ?? "").startsWith("en") ? "en" : "zh");
     const { content } = matter(fs.readFileSync(resolved.path, "utf8"));
-    const html = renderFilePreview(rewriteMarkdownAssets(content.trim(), resolved.path, sourcePath, assetOptions));
+    const html = renderFilePreview(rewriteMarkdownAssets(content.trim(), resolved.path, sourcePath, assetOptions), { lang });
     const { destination } = assetFiles.get(url.split(/[?#]/u, 1)[0]);
-    fs.writeFileSync(previewFileName(destination), previewDocument(html, { title: entry.title }));
+    fs.writeFileSync(previewFileName(destination), previewDocument(html, { title: entry.title, lang }));
     next.previewSrc = previewFileName(url.split(/[?#]/u, 1)[0]);
   }
   return next;
@@ -674,6 +675,7 @@ function readHandbookDocs() {
         );
       }
 
+      const docLang = docPath === "en" || docPath.startsWith("en/") ? "en" : "zh";
       const content = rewriteFileFences(
         rewriteMarkdownAssets(
           rewriteUiFences(parsed.content.trim(), fullPath, sourcePath, frontMatterLines + leadingLines(parsed.content), assetOptions),
@@ -683,7 +685,7 @@ function readHandbookDocs() {
         ),
         fullPath,
         sourcePath,
-        fileOptions,
+        { ...fileOptions, lang: docLang },
       );
 
       return [{

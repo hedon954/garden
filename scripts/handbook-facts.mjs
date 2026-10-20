@@ -12,6 +12,7 @@ import { pathToFileURL } from "node:url";
 import { parse as parseYaml } from "yaml";
 import { CATALOG } from "../ui/garden/catalog.mjs";
 import {
+  ALLOWED_EN_HANDBOOK_CJK,
   ALLOWED_EXTERNAL_FLAGS,
   ALLOWED_NON_ENV_UPPER_SNAKE,
 } from "./handbook-allowlist.mjs";
@@ -1088,6 +1089,114 @@ export function checkHandbookPairs(root = ROOT) {
   return issues;
 }
 
+const CJK_RE = /[\u3000-\u303f\u3400-\u9fff\uf900-\ufaff\uff00-\uffef]/gu;
+
+function findDisallowedEnCjk(line, { allowTitleSplit = false } = {}) {
+  const disallowed = [];
+  for (const match of line.matchAll(CJK_RE)) {
+    const ch = match[0];
+    if (allowTitleSplit && ALLOWED_EN_HANDBOOK_CJK.titleSplitChars.has(ch)) continue;
+    disallowed.push(ch);
+  }
+  return disallowed;
+}
+
+/**
+ * Extract local relative file paths included or embedded by an English handbook Markdown page
+ * (Markdown images, HTML media tags, and `garden file` / `garden figure` / `garden html` fences).
+ */
+function extractIncludedHandbookFiles(markdown, mdFile, root = ROOT) {
+  const handbookRoot = path.join(root, "docs/handbook");
+  const baseDir = path.dirname(mdFile);
+  const included = new Set();
+
+  const addIfLocal = (rawRef) => {
+    if (!rawRef || typeof rawRef !== "string") return;
+    const cleaned = rawRef.trim().replace(/^<|>$/gu, "").split(/[?#]/u, 1)[0];
+    if (!cleaned || /^(?:[a-z]+:)?\/\//iu.test(cleaned) || cleaned.startsWith("/") || cleaned.startsWith("#") || cleaned.startsWith("data:")) {
+      return;
+    }
+    const resolved = path.resolve(baseDir, decodeURIComponent(cleaned));
+    const relToHandbook = path.relative(handbookRoot, resolved);
+    if (!relToHandbook.startsWith("..") && !path.isAbsolute(relToHandbook) && fs.existsSync(resolved) && fs.statSync(resolved).isFile()) {
+      included.add(resolved);
+    }
+  };
+
+  for (const match of markdown.matchAll(/!\[[^\]]*\]\(([^)]+)\)/gu)) {
+    addIfLocal(match[1].trim().split(/\s+/u, 1)[0]);
+  }
+  for (const match of markdown.matchAll(/<(?:img|audio|video|source)\b[^>]*\bsrc=["']([^"']+)["']/giu)) {
+    addIfLocal(match[1]);
+  }
+  const { fences } = parseMarkdownRegions(markdown);
+  for (const fence of fences) {
+    if (!fence.info.startsWith("garden ")) continue;
+    const bodyText = fence.bodyLines.map((l) => l.text).join("\n");
+    for (const srcMatch of bodyText.matchAll(/^\s*(?:-\s*)?(?:src|image)\s*:\s*(.+)$/gmu)) {
+      addIfLocal(srcMatch[1].replace(/^(["'])(.*)\1$/u, "$2"));
+    }
+  }
+  return [...included];
+}
+
+/**
+ * Every English handbook page under docs/handbook/en/ (including fenced code blocks and
+ * any included/embedded files) must not contain CJK characters, except the explicit allowlist.
+ */
+export function checkEnglishHandbookNoCjk(root = ROOT) {
+  const enRoot = path.join(root, "docs/handbook/en");
+  if (!fs.existsSync(enRoot)) return [];
+  const issues = [];
+  const checkedAssets = new Set();
+
+  const checkFileLines = (filePath, allowTitleSplit = false) => {
+    const relFile = path.relative(root, filePath).replace(/\\/g, "/");
+    const lines = fs.readFileSync(filePath, "utf8").split(/\r?\n/u);
+    for (let i = 0; i < lines.length; i += 1) {
+      const line = lines[i];
+      const lineAllowSplit = allowTitleSplit && /(?:title|split|delimiter|heading|two-line|` \| `)/iu.test(line);
+      const bad = findDisallowedEnCjk(line, { allowTitleSplit: lineAllowSplit });
+      if (bad.length > 0) {
+        const sample = [...new Set(bad)].slice(0, 8).join("");
+        issues.push({
+          file: relFile,
+          line: i + 1,
+          kind: "en-cjk",
+          message: `English handbook contains CJK character(s) "${sample}": ${line.trim().slice(0, 80)}`,
+        });
+      }
+    }
+  };
+
+  const enFiles = walkFiles(enRoot);
+  for (const file of enFiles) {
+    checkedAssets.add(file);
+    checkFileLines(file, file.endsWith(".md"));
+    if (file.endsWith(".md")) {
+      const content = fs.readFileSync(file, "utf8");
+      for (const asset of extractIncludedHandbookFiles(content, file, root)) {
+        if (checkedAssets.has(asset)) continue;
+        checkedAssets.add(asset);
+        if (/\.(?:md|markdown|svg|html|htm|txt|csv|tsv|json|ya?ml)$/iu.test(asset)) {
+          checkFileLines(asset, false);
+        }
+      }
+    }
+  }
+
+  const builtPreviewDir = path.join(root, "public/media/garden-docs/en");
+  for (const file of walkFiles(builtPreviewDir)) {
+    if (checkedAssets.has(file)) continue;
+    checkedAssets.add(file);
+    if (/\.(?:md|markdown|svg|html|htm|txt|csv|tsv|json|ya?ml)$/iu.test(file)) {
+      checkFileLines(file, false);
+    }
+  }
+
+  return issues;
+}
+
 /**
  * Scan all docs/handbook/ and app/garden/ files and return any fact-check failures.
  */
@@ -1103,6 +1212,7 @@ export function checkAllHandbookFacts(root = ROOT) {
     issues.push(...checkFileFacts(file, content, facts, root));
   }
   issues.push(...checkHandbookPairs(root));
+  issues.push(...checkEnglishHandbookNoCjk(root));
   const svgFiles = walkFiles(path.join(root, "docs/handbook"), (f) => f.endsWith(".svg"));
   for (const svgFile of svgFiles) {
     const svgContent = fs.readFileSync(svgFile, "utf8");
