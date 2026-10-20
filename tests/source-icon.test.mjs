@@ -32,11 +32,12 @@ test("only a source tag with +N truncates its host", async () => {
   assert.doesNotMatch(css, /^\.markdown-body a\.ext\.g-src > span \{ max-width/mu);
 });
 
-test("showcase cycle links join opposite nodes; Gutenberg cites itself first", async () => {
+test("showcase relations cross the middle; Gutenberg cites itself first", async () => {
   const { readFileSync } = await import("node:fs");
   for (const file of ["interface-patterns.md", "interface-patterns-en.md"]) {
     const md = readFileSync(new URL(`../content/posts/${file}`, import.meta.url), "utf8");
-    assert.match(md, /links:\n  - from: 3\n    to: 1\n  - from: 2\n    to: 4\n/u);
+    assert.match(md, /  - from: 3\n    to: 1\n    style: dashed\n/u);
+    assert.match(md, /  - from: 2\n    to: 4\n    style: dashed\n/u);
     assert.match(md, /source:\n      - https:\/\/www\.gutenberg\.org\/\n      - https:\/\/en\.wikipedia\.org\/wiki\/Project_Gutenberg/u);
   }
 });

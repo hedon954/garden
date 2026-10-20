@@ -1,5 +1,6 @@
 import { parse as parseYaml } from "yaml";
 import { CATALOG, knownName, legacyOf } from "./catalog.mjs";
+import { relationIndex } from "./relations.mjs";
 
 const FENCE_RE = /^( {0,3})(`{3,}|~{3,})(.*)$/u;
 
@@ -91,8 +92,33 @@ function asObject(value) {
  * An empty name is an idea. Invalid YAML or an unknown name is still returned,
  * with `error` set, so the checker and the renderer share one parse.
  */
-export const CYCLE_MIN = 3;
-export const CYCLE_MAX = 6;
+export const RELATIONS_MIN = 3;
+export const RELATIONS_MAX = 6;
+
+function relationsProblem(props) {
+  const items = Array.isArray(props.items) ? props.items : [];
+  if (items.length < RELATIONS_MIN || items.length > RELATIONS_MAX) {
+    return `relations 需要 ${RELATIONS_MIN} 到 ${RELATIONS_MAX} 个要素，现在是 ${items.length} 个。要素更多或有分支时改用 \`\`\`mermaid 流程图；只走一遍的步骤用 garden list。`;
+  }
+  if (props.links == null) return "";
+  if (!Array.isArray(props.links)) return "links 必须是列表。";
+  const titles = items.map((item) => String(item?.title ?? ""));
+  const allowed = CATALOG.relations.linkKeys;
+  for (const [index, link] of props.links.entries()) {
+    const where = `links 第 ${index + 1} 条`;
+    if (!link || typeof link !== "object") return `${where}要写 from 和 to。`;
+    const unknown = Object.keys(link).filter((key) => !allowed.includes(key));
+    if (unknown.length) return `${where}不支持 ${unknown.join("、")}（可用：${allowed.join("、")}）。`;
+    const from = relationIndex(link.from, titles);
+    const to = relationIndex(link.to, titles);
+    if (from < 0 || to < 0) return `${where}的 from/to 要写要素序号（1 起）或标题。`;
+    if (from === to) return `${where}的 from 和 to 是同一个要素。`;
+    if (link.style != null && !["solid", "dashed"].includes(link.style)) return `${where}的 style 只能是 solid 或 dashed。`;
+    if (link.direction != null && !["one", "both"].includes(link.direction)) return `${where}的 direction 只能是 one 或 both。`;
+    if (link.label != null && typeof link.label !== "string") return `${where}的 label 要写一小段文字。`;
+  }
+  return "";
+}
 
 export function parseGardenBlock(info, body) {
   const header = parseGardenInfo(info);
@@ -151,20 +177,16 @@ export function parseGardenBlock(info, body) {
       error: { code: "garden-yaml", message: `不支持的键 ${unknown.join("、")}`, unknown, allowed: spec.keys },
     };
   }
-  if (header.name === "cycle") {
-    const count = Array.isArray(props.items) ? props.items.length : 0;
-    if (count < CYCLE_MIN || count > CYCLE_MAX) {
+  if (header.name === "relations") {
+    const problem = relationsProblem(props);
+    if (problem) {
       return {
         name: header.name,
         props,
         children,
         id: header.id ?? props.id ?? null,
         legacy: Boolean(header.legacy),
-        error: {
-          code: "garden-cycle-count",
-          message: `cycle 需要 ${CYCLE_MIN} 到 ${CYCLE_MAX} 个环节，现在是 ${count} 个。环节更多或有分支时改用 \`\`\`mermaid 流程图；只走一遍的步骤用 garden list。`,
-          count,
-        },
+        error: { code: "garden-relations", message: problem },
       };
     }
   }

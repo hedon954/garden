@@ -1,6 +1,6 @@
 ---
 title: "Interface Patterns Sampler: Running a Small Book Club"
-description: One made-up neighbourhood book club, used to show the cycle diagram, icon list, good/bad contrast, choice cards, resource cards and icon steps on one page.
+description: One made-up neighbourhood book club, used to show the relationship diagram, icon list, good/bad contrast, choice cards, resource cards and icon steps on one page.
 date: 2026-10-20
 draft: true
 tags:
@@ -14,7 +14,7 @@ This is a component sampler. The story is made up: a few neighbours want to star
 
 Picking, reading, talking and looking back are not a one-way process. What you learn at the end changes the next pick.
 
-```garden cycle
+```garden relations
 items:
   - title: Pick
     text: Choose this month's book
@@ -25,11 +25,52 @@ items:
   - title: Review
     text: Note what to change next time
 links:
+  - from: 1
+    to: 2
+  - from: 2
+    to: 3
+  - from: 3
+    to: 4
+  - from: 4
+    to: 1
   - from: 3
     to: 1
+    style: dashed
+    label: shapes the pick
   - from: 2
     to: 4
+    style: dashed
 caption: The four steps feed each other instead of running once in a fixed order.
+```
+
+Some relations in a book club are not a loop. One organiser holds members, venue and reading list together:
+
+```garden relations
+items:
+  - title: Organiser
+    text: Sends one notice a month
+  - title: Members
+    text: Eight to ten neighbours
+  - title: Venue
+    text: Café or library
+  - title: Reading list
+    text: Members take turns to nominate
+links:
+  - from: 1
+    to: 2
+    label: invites
+  - from: 1
+    to: 3
+    label: books
+  - from: 1
+    to: 4
+    label: collects
+  - from: 2
+    to: 4
+    style: dashed
+    direction: both
+    label: nominate
+caption: The organiser links to the other three; members and the list shape each other.
 ```
 
 ## What a newcomer does first

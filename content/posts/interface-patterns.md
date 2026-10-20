@@ -1,6 +1,6 @@
 ---
 title: 界面模式样张：办一个小读书会
-description: 用一个虚构的社区读书会，把循环图、图标列表、好坏对比、选择卡、资源卡和图标步骤放在同一篇里。
+description: 用一个虚构的社区读书会，把关系图、图标列表、好坏对比、选择卡、资源卡和图标步骤放在同一篇里。
 date: 2026-10-20
 draft: true
 tags:
@@ -14,7 +14,7 @@ tags:
 
 选书、共读、讨论、复盘不是一次走完的流程，复盘的结论会改写下一次选书。
 
-```garden cycle
+```garden relations
 items:
   - title: 选书
     text: 定下这个月读什么
@@ -25,11 +25,52 @@ items:
   - title: 复盘
     text: 记下下次要改的地方
 links:
+  - from: 1
+    to: 2
+  - from: 2
+    to: 3
+  - from: 3
+    to: 4
+  - from: 4
+    to: 1
   - from: 3
     to: 1
+    style: dashed
+    label: 影响选书
   - from: 2
     to: 4
+    style: dashed
 caption: 四个环节互相提供信息，而不是按固定顺序走一遍。
+```
+
+读书会里也有不成圈的关系。组织者一个人牵着成员、场地和书单：
+
+```garden relations
+items:
+  - title: 组织者
+    text: 每月发一次通知
+  - title: 成员
+    text: 八到十个邻居
+  - title: 场地
+    text: 咖啡馆或图书馆
+  - title: 书单
+    text: 大家轮流提名
+links:
+  - from: 1
+    to: 2
+    label: 邀请
+  - from: 1
+    to: 3
+    label: 预约
+  - from: 1
+    to: 4
+    label: 汇总
+  - from: 2
+    to: 4
+    style: dashed
+    direction: both
+    label: 提名
+caption: 组织者连着其余三个；成员和书单互相影响。
 ```
 
 ## 想来的人会先做什么

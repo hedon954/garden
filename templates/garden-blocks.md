@@ -138,13 +138,13 @@ src: ./post-name/spec.zip
 note: 一句话说明里面有什么
 ```
 
-## cycle · 循环图
+## relations · 关系图
 
-三到六个环节首尾相接、反复进行，读者需要看出它是一个圈而不是一条线。
+三到六个关键要素，读者需要看清谁影响谁、哪些是双向的；首尾相接的循环也用它，把每一步写成一条 link。
 
-不该用：步骤只走一遍时，用有序列表或 timeline。
+不该用：要素更多、有分支或先后顺序时，用 ```mermaid 流程图；只走一遍的步骤用 garden list。
 
-```garden cycle
+```garden relations
 items:
   - title: 观察
     text: 记下发生了什么
@@ -155,8 +155,18 @@ items:
   - title: 复盘
     text: 留下能复用的结论
 links:
+  - from: 1
+    to: 2
+  - from: 2
+    to: 3
+  - from: 3
+    to: 4
+  - from: 4
+    to: 1
   - from: 4
     to: 2
+    style: dashed
+    label: 改写
 caption: 复盘的结论会改写下一轮的假设。
 ```
 

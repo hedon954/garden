@@ -1,7 +1,8 @@
 "use client";
 
-import { createContext, useContext, useEffect, useId, useRef, useState, type ComponentType, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useId, useRef, useState, type ComponentType, type CSSProperties, type ReactNode } from "react";
 import { sourceIcon } from "../../../ui/garden/source-icon.mjs";
+import { relationEdges, relationLines, relationSpots, type RelationEdge as Edge } from "../../../ui/garden/relations.mjs";
 import ReactMarkdown from "react-markdown";
 import {
   Bell,
@@ -169,15 +170,16 @@ export function GardenChoice({ props }: { props: Record<string, unknown> }) {
   );
 }
 
-/* ---------- cycle: nodes on a ring, curved arrows clockwise, optional dashed links ---------- */
+/* ---------- relations: 3-6 key elements on a circle, with explicit directed links ---------- */
 
 type Box = { x: number; y: number; w: number; h: number };
-type Arrow = { d: string; dashed: boolean };
+type Pt = { x: number; y: number };
+type Drawn = { d: string; dashed: boolean; both: boolean; label: string; at: Pt };
 
-const center = (box: Box) => ({ x: box.x + box.w / 2, y: box.y + box.h / 2 });
+const center = (box: Box): Pt => ({ x: box.x + box.w / 2, y: box.y + box.h / 2 });
 
 /** Where the ray from the box centre towards `to` leaves the box (plus a small gap). */
-function edge(box: Box, to: { x: number; y: number }, gap = 6) {
+function edge(box: Box, to: Pt, gap = 6): Pt {
   const c = center(box);
   const dx = to.x - c.x;
   const dy = to.y - c.y;
@@ -186,127 +188,116 @@ function edge(box: Box, to: { x: number; y: number }, gap = 6) {
   return { x: c.x + dx * scale, y: c.y + dy * scale };
 }
 
-function ringArrow(from: Box, to: Box, hub: { x: number; y: number }, stacked: boolean): string {
-  if (stacked) {
-    // One column: short straight arrow from the bottom of one node to the top of the next.
-    const a = { x: from.x + from.w / 2, y: from.y + from.h + 4 };
-    const b = { x: to.x + to.w / 2, y: to.y - 6 };
-    return `M${a.x},${a.y} L${b.x},${b.y}`;
-  }
-  const cf = center(from);
-  const ct = center(to);
-  // Leave from the side facing the next node along the ring, arrive on the side facing back.
-  const corner = { x: Math.abs(cf.x - hub.x) > Math.abs(ct.x - hub.x) ? cf.x : ct.x, y: Math.abs(cf.y - hub.y) > Math.abs(ct.y - hub.y) ? cf.y : ct.y };
-  const near = (p: { x: number; y: number }, q: { x: number; y: number }) => Math.hypot(p.x - q.x, p.y - q.y) < Math.max(from.h, to.h) / 2;
-  if (near(corner, cf) || near(corner, ct)) {
-    // Neighbours in one row or column: a gentle arc that bows away from the middle.
-    const a = edge(from, ct);
-    const b = edge(to, cf);
-    const mid = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
-    const out = { x: mid.x - hub.x, y: mid.y - hub.y };
-    const length = Math.hypot(out.x, out.y) || 1;
-    const bow = Math.min(36, Math.hypot(b.x - a.x, b.y - a.y) / 3);
-    return `M${a.x},${a.y} Q${mid.x + (out.x / length) * bow},${mid.y + (out.y / length) * bow} ${b.x},${b.y}`;
-  }
-  const a = edge(from, corner);
-  const b = edge(to, corner);
-  return `M${a.x},${a.y} Q${corner.x},${corner.y} ${b.x},${b.y}`;
-}
-
-function loopBack(last: Box, first: Box, width: number): string {
-  // One column: run down the right gutter from the last node back up to the first.
-  const x = Math.min(width - 6, Math.max(last.x + last.w, first.x + first.w) + 14);
-  const a = { x: last.x + last.w + 4, y: last.y + last.h / 2 };
-  const b = { x: first.x + first.w + 8, y: first.y + first.h / 2 };
-  return `M${a.x},${a.y} C${x},${a.y} ${x},${a.y} ${x},${a.y - 12} L${x},${b.y + 12} C${x},${b.y} ${x},${b.y} ${b.x},${b.y}`;
-}
-
-function linkIndex(value: unknown, titles: string[]) {
-  if (typeof value === "number") return value - 1;
-  const text = String(value ?? "").trim();
-  if (/^\d+$/u.test(text)) return Number(text) - 1;
-  return titles.indexOf(text);
-}
-
-export function GardenCycle({ props }: { props: Record<string, unknown> }) {
+export function GardenRelations({ props }: { props: Record<string, unknown> }) {
   const t = useUi();
   const items = itemsOf(props).slice(0, 6); // parse rejects counts outside 3..6
   const titles = items.map((item) => String(item.title ?? ""));
-  const links = (Array.isArray(props.links) ? props.links : [])
-    .map((link) => link as Record<string, unknown>)
-    .map((link) => ({ from: linkIndex(link.from, titles), to: linkIndex(link.to, titles) }))
-    .filter((link) => link.from >= 0 && link.to >= 0 && link.from < items.length && link.to < items.length && link.from !== link.to);
+  const edges = relationEdges(props, titles);
+  const lines = relationLines(edges, titles);
+  const n = items.length;
+  const spots = relationSpots(n);
   const ringRef = useRef<HTMLDivElement>(null);
-  const [arrows, setArrows] = useState<Arrow[]>([]);
+  const [drawn, setDrawn] = useState<Drawn[]>([]);
   const [size, setSize] = useState({ w: 0, h: 0 });
   const base = useId().replace(/:/gu, "");
-
-  const linkKey = JSON.stringify(links);
+  const edgeKey = JSON.stringify(edges);
 
   useEffect(() => {
     const ring = ringRef.current;
     if (!ring) return;
-    const parsedLinks = JSON.parse(linkKey) as { from: number; to: number }[];
+    const parsed = JSON.parse(edgeKey) as Edge[];
     const draw = () => {
+      const nodes = [...ring.querySelectorAll<HTMLElement>(":scope > .g-rel-node")];
+      // Narrow screens list the relations as text; nothing to draw.
+      if (!nodes.length || getComputedStyle(nodes[0]).position !== "absolute") { setDrawn([]); setSize({ w: 0, h: 0 }); return; }
       const frame = ring.getBoundingClientRect();
-      const boxes = [...ring.querySelectorAll<HTMLElement>(":scope > .g-cycle-node")].map((node) => {
+      const boxes = nodes.map((node) => {
         const r = node.getBoundingClientRect();
         return { x: r.left - frame.left, y: r.top - frame.top, w: r.width, h: r.height };
       });
-      if (boxes.length < 2) { setArrows([]); return; }
-      const stacked = getComputedStyle(ring).display !== "grid" || ring.dataset.stacked === "true" || boxes.every((box) => Math.abs(box.x - boxes[0].x) < 2);
       const hub = { x: frame.width / 2, y: frame.height / 2 };
-      const next: Arrow[] = boxes.map((box, index) => {
-        const to = boxes[(index + 1) % boxes.length];
-        if (stacked && index === boxes.length - 1) return { d: loopBack(box, to, frame.width), dashed: false };
-        return { d: ringArrow(box, to, hub, stacked), dashed: false };
-      });
-      if (!stacked) {
-        for (const link of parsedLinks) {
-          const from = boxes[link.from];
-          const to = boxes[link.to];
-          const a = edge(from, center(to), 8);
-          const b = edge(to, center(from), 10);
-          next.push({ d: `M${a.x},${a.y} L${b.x},${b.y}`, dashed: true });
+      const count = boxes.length;
+      setDrawn(parsed.map((link) => {
+        const from = boxes[link.from];
+        const to = boxes[link.to];
+        const cf = center(from);
+        const ct = center(to);
+        const gapStart = link.both ? 10 : 6;
+        const neighbours = Math.abs(link.from - link.to) === 1 || Math.abs(link.from - link.to) === count - 1;
+        if (neighbours && count > 3) {
+          // Next to each other on the circle: a gentle arc that bows outward.
+          const mid = { x: (cf.x + ct.x) / 2, y: (cf.y + ct.y) / 2 };
+          const out = { x: mid.x - hub.x, y: mid.y - hub.y };
+          const length = Math.hypot(out.x, out.y) || 1;
+          const bow = Math.min(40, Math.hypot(ct.x - cf.x, ct.y - cf.y) / 4);
+          const control = { x: mid.x + (out.x / length) * bow, y: mid.y + (out.y / length) * bow };
+          const a = edge(from, control, gapStart);
+          const b = edge(to, control, 10);
+          const at = { x: 0.25 * a.x + 0.5 * control.x + 0.25 * b.x, y: 0.25 * a.y + 0.5 * control.y + 0.25 * b.y };
+          return { d: `M${a.x},${a.y} Q${control.x},${control.y} ${b.x},${b.y}`, dashed: link.dashed, both: link.both, label: link.label, at };
         }
-      }
+        const a = edge(from, ct, gapStart);
+        const b = edge(to, cf, 10);
+        return { d: `M${a.x},${a.y} L${b.x},${b.y}`, dashed: link.dashed, both: link.both, label: link.label, at: { x: a.x + (b.x - a.x) * 0.38, y: a.y + (b.y - a.y) * 0.38 } };
+      }));
       setSize({ w: frame.width, h: frame.height });
-      setArrows(next);
     };
     draw();
     if (typeof ResizeObserver === "undefined") return;
     const observer = new ResizeObserver(() => draw());
     observer.observe(ring);
     return () => observer.disconnect();
-  }, [linkKey]);
+  }, [edgeKey]);
 
-  const n = items.length;
+  const label = typeof props.title === "string" ? props.title : t.relations;
   return (
-    <figure className="g-cycle" role="group" aria-label={typeof props.title === "string" ? props.title : t.cycle}>
-      {typeof props.title === "string" ? <p className="g-cycle-h"><Rich text={props.title} /></p> : null}
-      <div className="g-cycle-ring" ref={ringRef} data-n={n}>
+    <figure className="g-rel" role="group" aria-label={label}>
+      {typeof props.title === "string" ? <p className="g-rel-h"><Rich text={props.title} /></p> : null}
+      <div className="g-rel-ring" ref={ringRef} data-n={n}>
         {items.map((item, index) => (
-          <div className="g-cycle-node" key={index} data-i={index + 1}>
-            <p className="g-cycle-t"><Rich text={String(item.title ?? "")} /></p>
-            {item.text ? <p className="g-cycle-x"><Rich text={String(item.text)} /></p> : null}
+          <div
+            className="g-rel-node"
+            key={index}
+            data-i={index + 1}
+            style={{ "--x": `${spots[index].x}%`, "--y": `${spots[index].y}%`, "--w": `${spots[index].w}%` } as CSSProperties}
+          >
+            <p className="g-rel-t"><Rich text={titles[index]} /></p>
+            {item.text ? <p className="g-rel-x"><Rich text={String(item.text)} /></p> : null}
+            {lines[index].length ? (
+              <p className="g-rel-out">
+                {lines[index].map((line, k) => (
+                  <span key={k} className={line.dashed ? "is-dashed" : undefined}>
+                    {k ? <span className="g-rel-sep" aria-hidden="true"> · </span> : null}
+                    <span className="g-rel-mark" aria-hidden="true">{line.mark}</span> {line.to}
+                    {line.label ? <span className="g-rel-l"> {line.label}</span> : null}
+                  </span>
+                ))}
+              </p>
+            ) : null}
           </div>
         ))}
         {size.w ? (
-          <svg className="g-cycle-svg" width={size.w} height={size.h} viewBox={`0 0 ${size.w} ${size.h}`} aria-hidden="true">
+          <svg className="g-rel-svg" width={size.w} height={size.h} viewBox={`0 0 ${size.w} ${size.h}`} aria-hidden="true">
             <defs>
               <marker id={`${base}-a`} viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
                 <path d="M1,1 L9,5 L1,9 Z" />
               </marker>
             </defs>
-            {arrows.map((arrow, index) => (
-              <path key={index} d={arrow.d} className={arrow.dashed ? "dash" : undefined} markerEnd={`url(#${base}-a)`} />
+            {drawn.map((line, index) => (
+              <path
+                key={index}
+                d={line.d}
+                className={line.dashed ? "dash" : undefined}
+                markerEnd={`url(#${base}-a)`}
+                markerStart={line.both ? `url(#${base}-a)` : undefined}
+              />
             ))}
+            {drawn.map((line, index) => line.label ? (
+              <text key={`l${index}`} x={line.at.x} y={line.at.y} className="g-rel-label" textAnchor="middle" dominantBaseline="central">{line.label}</text>
+            ) : null)}
           </svg>
         ) : null}
       </div>
-      <ol className="sr-only">
-        {items.map((item, index) => <li key={index}>{String(item.title ?? "")}{index === n - 1 && n > 1 ? ` → ${String(items[0].title ?? "")}` : ""}</li>)}
-      </ol>
       {typeof props.caption === "string" ? <figcaption><Rich text={props.caption} /></figcaption> : null}
     </figure>
   );

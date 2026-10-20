@@ -128,7 +128,7 @@ note: 一句话说明里面有什么
   </dict>
   <dict>
     <key>phrase</key>
-    <string>```garden cycle
+    <string>```garden relations
 items:
   - title: 观察
     text: 记下发生了什么
@@ -139,12 +139,22 @@ items:
   - title: 复盘
     text: 留下能复用的结论
 links:
+  - from: 1
+    to: 2
+  - from: 2
+    to: 3
+  - from: 3
+    to: 4
+  - from: 4
+    to: 1
   - from: 4
     to: 2
+    style: dashed
+    label: 改写
 caption: 复盘的结论会改写下一轮的假设。
 ```</string>
     <key>shortcut</key>
-    <string>;gcycle</string>
+    <string>;grel</string>
   </dict>
   <dict>
     <key>phrase</key>

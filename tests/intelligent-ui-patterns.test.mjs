@@ -9,11 +9,14 @@ import { CATALOG, GARDEN_NAMES } from "../ui/garden/catalog.mjs";
 import { checkGardenMarkdown } from "../ui/garden/check.mjs";
 import { cardUrls, stripCardMarkers } from "../ui/garden/markdown-links.mjs";
 import { parseGardenBlock, scanFences } from "../ui/garden/parse.mjs";
+import { relationEdges, relationLines, relationSpots } from "../ui/garden/relations.mjs";
 
 const parse = (info, body) => parseGardenBlock(info, body);
 
-test("cycle, list and choice are catalog blocks with English names", () => {
-  for (const name of ["cycle", "list", "choice"]) {
+test("relations, list and choice are catalog blocks with English names; cycle is gone", () => {
+  assert.equal(GARDEN_NAMES.includes("cycle"), false);
+  assert.equal(CATALOG.cycle, undefined);
+  for (const name of ["relations", "list", "choice"]) {
     assert.ok(GARDEN_NAMES.includes(name), name);
     assert.ok(CATALOG[name].example.startsWith(`\`\`\`garden ${name}`), `${name} example`);
     const [fence] = scanFences(CATALOG[name].example);
@@ -22,15 +25,64 @@ test("cycle, list and choice are catalog blocks with English names", () => {
   }
 });
 
-test("cycle keeps items and dashed links; nodes have no emphasis", () => {
-  const block = parse("garden cycle", "items:\n  - title: A\n    text: a\n  - title: B\n  - title: C\nlinks:\n  - from: 2\n    to: 1\ncaption: loop");
+test("relations keep items and links; nodes have no emphasis", () => {
+  const block = parse("garden relations", "items:\n  - title: A\n    text: a\n  - title: B\n  - title: C\nlinks:\n  - from: 2\n    to: 1\n    style: dashed\n    direction: both\n    label: feeds\ncaption: c");
   assert.equal(block.error, undefined);
-  assert.deepEqual(CATALOG.cycle.itemKeys, ["title", "text"]);
+  assert.deepEqual(block.props.links, [{ from: 2, to: 1, style: "dashed", direction: "both", label: "feeds" }]);
+  assert.deepEqual(CATALOG.relations.itemKeys, ["title", "text"]);
+  assert.deepEqual(CATALOG.relations.linkKeys, ["from", "to", "style", "direction", "label"]);
+  assert.equal(CATALOG.relations.keys.includes("loop"), false);
+  assert.match(parse("garden relations", "items: []\nloop: true").error.message, /loop/u);
   const css = readFileSync(new URL("../app/styles/a2.css", import.meta.url), "utf8");
-  assert.doesNotMatch(css, /is-accent/u);
-  assert.doesNotMatch(readFileSync(new URL("../app/components/garden/patterns.tsx", import.meta.url), "utf8"), /is-accent/u);
-  assert.deepEqual(block.props.links, [{ from: 2, to: 1 }]);
-  assert.match(parse("garden cycle", "items: []\narrows: 1").error.message, /arrows/u);
+  assert.doesNotMatch(css, /is-accent|g-cycle/u);
+});
+
+test("relations links are checked: targets, style, direction, keys", () => {
+  const three = "items:\n  - title: A\n  - title: B\n  - title: C\nlinks:\n";
+  const bad = {
+    "  - from: 1\n    to: 9": /from\/to/u,
+    "  - from: 1\n    to: 1": /同一个/u,
+    "  - from: 1\n    to: 2\n    style: dotted": /style/u,
+    "  - from: 1\n    to: 2\n    direction: back": /direction/u,
+    "  - from: 1\n    to: 2\n    weight: 2": /weight/u,
+  };
+  for (const [links, message] of Object.entries(bad)) {
+    const block = parse("garden relations", three + links);
+    assert.equal(block.error?.code, "garden-relations", links);
+    assert.match(block.error.message, message);
+  }
+  assert.equal(parse("garden relations", `${three}  - from: A\n    to: C`).error, undefined, "titles work as ends");
+});
+
+test("relations: spots sit on a circle, edges resolve, narrow lines list outgoing edges", () => {
+  for (const n of [3, 4, 5, 6]) {
+    const spots = relationSpots(n);
+    assert.equal(spots.length, n);
+    assert.ok(Math.abs(spots[0].x - 50) < 1e-9 && spots[0].y < 20, "first node on top");
+    for (const spot of spots) {
+      const rx = 50 - spot.w / 2 - 1;
+      assert.ok(Math.abs(((spot.x - 50) / rx) ** 2 + ((spot.y - 50) / 38) ** 2 - 1) < 1e-9, "on the ellipse");
+      assert.ok(spot.x - spot.w / 2 >= 0 && spot.x + spot.w / 2 <= 100, "inside the ring");
+    }
+  }
+  const titles = ["选书", "共读", "讨论", "复盘"];
+  const edges = relationEdges({ links: [{ from: 1, to: 2 }, { from: 1, to: "复盘", style: "dashed" }, { from: 3, to: 2, direction: "both", label: "影响" }, { from: 9, to: 1 }] }, titles);
+  assert.equal(edges.length, 3);
+  const lines = relationLines(edges, titles);
+  assert.deepEqual(lines[0].map((l) => `${l.mark} ${l.to}`), ["→ 共读", "⇢ 复盘"]);
+  assert.deepEqual(lines[1].map((l) => `${l.mark} ${l.to} ${l.label}`), ["↔ 讨论 影响"]);
+  assert.deepEqual(lines[2].map((l) => `${l.mark} ${l.to}`), ["↔ 共读"]);
+  assert.deepEqual(lines[3], []);
+});
+
+test("showcase posts use relations with an explicit loop and a hub", () => {
+  for (const file of ["interface-patterns.md", "interface-patterns-en.md"]) {
+    const md = readFileSync(new URL(`../content/posts/${file}`, import.meta.url), "utf8");
+    assert.doesNotMatch(md, /garden cycle/u);
+    assert.equal(md.match(/```garden relations/gu).length, 2);
+    assert.match(md, /  - from: 4\n    to: 1\n/u);
+    assert.match(md, /direction: both/u);
+  }
 });
 
 test("list rows and list steps share one block", () => {
@@ -102,19 +154,19 @@ test("verdict compares stack, so the side-by-side length limit does not apply", 
   assert.equal(plain.filter((item) => item.code === "compare-long").length, 1);
 });
 
-test("cycle accepts 3 to 6 steps and points elsewhere outside that", () => {
-  const cycle = (n) => `items:\n${Array.from({ length: n }, (_, i) => `  - title: S${i + 1}`).join("\n")}`;
+test("relations accept 3 to 6 elements and point to mermaid outside that", () => {
+  const items = (n) => `items:\n${Array.from({ length: n }, (_, i) => `  - title: S${i + 1}`).join("\n")}`;
   for (const n of [3, 4, 5, 6]) {
-    const block = parse("garden cycle", `${cycle(n)}\nlinks:\n  - from: 1\n    to: ${n}`);
+    const block = parse("garden relations", `${items(n)}\nlinks:\n  - from: 1\n    to: ${n}`);
     assert.equal(block.error, undefined, `n=${n}`);
     assert.equal(block.props.items.length, n);
   }
   for (const n of [0, 1, 2, 7, 8]) {
-    const block = parse("garden cycle", cycle(n) || "items: []");
-    assert.equal(block.error?.code, "garden-cycle-count", `n=${n}`);
+    const block = parse("garden relations", items(n) || "items: []");
+    assert.equal(block.error?.code, "garden-relations", `n=${n}`);
     assert.match(block.error.message, /mermaid/u);
-    assert.match(block.error.message, /garden list/u);
   }
-  const diagnostics = checkGardenMarkdown(`\`\`\`garden cycle\n${cycle(8)}\n\`\`\`\n`);
-  assert.equal(diagnostics.find((d) => d.code === "garden-cycle-count")?.severity, "error");
+  const diagnostics = checkGardenMarkdown(`\`\`\`garden relations\n${items(8)}\n\`\`\`\n`);
+  assert.equal(diagnostics.find((d) => d.code === "garden-relations")?.severity, "error");
+  assert.equal(checkGardenMarkdown("```garden cycle\nitems: []\n```\n")[0]?.code, "garden-name");
 });

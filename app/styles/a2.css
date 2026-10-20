@@ -2340,57 +2340,54 @@ html[data-theme="dark"] .gf-scrim { background: rgb(0 0 0 / 45%); }
 .g-src-fav { width: 14px; height: 14px; border-radius: 3px; object-fit: contain; }
 .g-src-more { font: 400 12px / 1.7 var(--sans); color: var(--muted); }
 
-/* cycle */
-.g-cycle {
+/* relations: key elements on a circle; narrow screens list each node's links as text */
+.g-rel {
   margin: 28px 0;
   padding: 28px 24px 16px;
   border: 1px solid var(--rule);
   border-radius: var(--r-lg);
   container-type: inline-size;
 }
-.markdown-body .g-cycle-h { margin: 0 0 16px; font: 600 var(--fs-small) / 1.5 var(--sans); color: var(--ink); }
-.g-cycle-ring {
-  position: relative;
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  column-gap: 64px;
-  row-gap: 56px;
-  align-items: center;
-}
-.g-cycle-ring[data-n="2"] { grid-template-areas: "a a b b"; }
-.g-cycle-ring[data-n="3"] { grid-template-areas: ". a a ." "c c b b"; }
-.g-cycle-ring[data-n="4"] { grid-template-areas: ". a a ." "d d b b" ". c c ."; }
-.g-cycle-ring[data-n="5"] { grid-template-areas: ". a a ." "e e b b" "d d c c"; }
-.g-cycle-ring[data-n="6"] { grid-template-areas: "f f a a" "e e b b" "d d c c"; }
-.g-cycle-node[data-i="1"] { grid-area: a; }
-.g-cycle-node[data-i="2"] { grid-area: b; }
-.g-cycle-node[data-i="3"] { grid-area: c; }
-.g-cycle-node[data-i="4"] { grid-area: d; }
-.g-cycle-node[data-i="5"] { grid-area: e; }
-.g-cycle-node[data-i="6"] { grid-area: f; }
-.g-cycle-node {
-  position: relative;
+.markdown-body .g-rel-h { margin: 0 0 16px; font: 600 var(--fs-small) / 1.5 var(--sans); color: var(--ink); }
+.g-rel-ring { position: relative; height: 440px; }
+.g-rel-ring[data-n="3"] { height: 360px; }
+.g-rel-ring[data-n="4"] { height: 420px; }
+.g-rel-ring[data-n="6"] { height: 480px; }
+.g-rel-node {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  width: var(--w);
+  transform: translate(-50%, -50%);
   z-index: 1;
-  padding: 14px 16px;
+  box-sizing: border-box;
+  padding: 12px 14px;
   border: 1.5px solid var(--rule-strong);
   border-radius: 16px;
   background: var(--card-hover);
   text-align: center;
 }
-.markdown-body .g-cycle-t { margin: 0; font: 700 var(--fs-lead) / 1.35 var(--sans); color: var(--ink); }
-.markdown-body .g-cycle-x { margin: 4px 0 0; font: 400 15px / 1.5 var(--sans); color: var(--soft); }
-.g-cycle-svg { position: absolute; inset: 0; overflow: visible; pointer-events: none; }
-.g-cycle-svg path { fill: none; stroke: var(--muted); stroke-width: 2; stroke-linecap: round; }
-.g-cycle-svg path.dash { stroke-dasharray: 5 6; stroke-width: 1.75; }
-.g-cycle-svg marker path { fill: var(--muted); stroke: none; }
-.g-cycle figcaption { margin-top: 18px; font-size: 13px; color: var(--muted); text-align: center; }
+.markdown-body .g-rel-t { margin: 0; font: 700 var(--fs-lead) / 1.35 var(--sans); color: var(--ink); }
+.markdown-body .g-rel-x { margin: 4px 0 0; font: 400 15px / 1.5 var(--sans); color: var(--soft); }
+/* On the circle the arrows say it; the text lines stay for screen readers. */
+.markdown-body .g-rel-out { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; margin: 0; }
+.g-rel-svg { position: absolute; inset: 0; overflow: visible; pointer-events: none; }
+.g-rel-svg path { fill: none; stroke: var(--muted); stroke-width: 2; stroke-linecap: round; }
+.g-rel-svg path.dash { stroke-dasharray: 5 6; stroke-width: 1.75; }
+.g-rel-svg marker path { fill: var(--muted); stroke: none; }
+.g-rel-label { font: 500 12.5px var(--sans); fill: var(--soft); paint-order: stroke; stroke: var(--paper); stroke-width: 6px; stroke-linejoin: round; }
+.g-rel figcaption { margin-top: 18px; font-size: 13px; color: var(--muted); text-align: center; }
 @container (max-width: 560px) {
-  .g-cycle-ring { display: flex; flex-direction: column; align-items: stretch; gap: 30px; padding-right: 30px; }
-  .g-cycle-t { font-size: 17px; }
-  .g-cycle-x { font-size: 14px; }
+  .g-rel-ring, .g-rel-ring[data-n] { height: auto; display: flex; flex-direction: column; gap: 10px; }
+  .g-rel-node { position: static; width: auto; transform: none; text-align: left; padding: 12px 14px; }
+  .markdown-body .g-rel-t { font-size: 17px; }
+  .markdown-body .g-rel-x { font-size: 14px; }
+  .markdown-body .g-rel-out { position: static; width: auto; height: auto; overflow: visible; clip: auto; white-space: normal; margin: 6px 0 0; font: 400 13.5px / 1.6 var(--sans); color: var(--soft); }
+  .g-rel-mark { color: var(--ink); font-weight: 600; }
+  .g-rel-l { color: var(--muted); }
 }
 @media (max-width: 600px) {
-  .g-cycle { padding: 20px 14px 12px; }
+  .g-rel { padding: 16px 12px 10px; }
 }
 
 /* list: compact icon rows, or titled icon steps */

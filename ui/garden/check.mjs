@@ -86,8 +86,8 @@ export function checkGardenMarkdown(markdown, { draft = false, title = "", title
       push(fence.line, "garden-yaml", block.error.message, allowed.length ? `可用的键：${allowed.join("、")}` : "检查缩进和冒号。");
       return;
     }
-    if (block.error?.code === "garden-cycle-count") {
-      push(fence.line, "garden-cycle-count", block.error.message, "环节更多或有分支：```mermaid flowchart；一次走完的步骤：garden list。");
+    if (block.error?.code === "garden-relations") {
+      push(fence.line, "garden-relations", block.error.message, "要素更多或有分支：```mermaid flowchart；一次走完的步骤：garden list。");
       return;
     }
     if (block.name === "file") {
