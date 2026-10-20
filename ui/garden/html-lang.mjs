@@ -1,10 +1,34 @@
 /**
- * The <html lang> of a page, plus English 404 HTML rewriting for missing
+ * The <html lang> of a page, plus 404 language resolution for missing
  * /garden/en/* routes. The root layout is shared by every route and is
  * rendered once with the site language; the English handbook (/garden/en/)
  * gets lang="en" here: in the worker response and in the static export.
  */
 const EN_HANDBOOK = /(^|\/)garden\/en(\/|$)/u;
+
+/**
+ * Strip a configured basePath (e.g. "/garden-docs-v6") from the front of a
+ * browser pathname. Returns a leading-slash pathname.
+ */
+export function stripConfiguredBasePath(pathname, basePath = "") {
+  const raw = `/${String(pathname ?? "").replace(/^\/+/u, "")}`;
+  const base = String(basePath ?? "").replace(/\/+$/u, "").replace(/^\/+/u, "");
+  if (!base) return raw;
+  const prefix = `/${base}`;
+  if (raw === prefix) return "/";
+  if (raw.startsWith(`${prefix}/`)) return raw.slice(prefix.length);
+  return raw;
+}
+
+/**
+ * Pick the 404 page language ("en" or "zh") from a pathname after stripping
+ * the configured basePath. If the stripped path starts with /garden/en/ (or
+ * equals /garden/en), returns "en"; otherwise returns "zh".
+ */
+export function pickNotFoundLang(pathname, basePath = "") {
+  const stripped = stripConfiguredBasePath(pathname, basePath);
+  return /^\/garden\/en(\/|$)/u.test(stripped) ? "en" : "zh";
+}
 
 /** "en" for an English handbook path (with or without a basePath in front), else null. */
 export function handbookHtmlLang(pathname) {
@@ -61,6 +85,20 @@ export function toEnglishNotFoundHtml(html) {
     .replace(/aria-label="打开菜单"/gu, 'aria-label="Open menu"')
     .replace(/aria-label="关闭菜单"/gu, 'aria-label="Close menu"')
     .replace(/>深色模式</gu, ">Dark mode<")
+    .replace(
+      /<main\b[^>]*\bid="garden-not-found"[^>]*>[\s\S]*?<\/main>/u,
+      (mainHtml) =>
+        mainHtml
+          .replace(/<h1[^>]*>[\s\S]*?<\/h1>/u, "<h1>Page not found</h1>")
+          .replace(
+            /<p class="sh-deck"[^>]*>[\s\S]*?<\/p>/u,
+            '<p class="sh-deck" data-not-found-deck="">The address may be wrong, or the page has moved.</p>',
+          )
+          .replace(
+            /(<a\b[^>]*\bdata-not-found-home=""[^>]*>)[\s\S]*?(<\/a>)/u,
+            "$1Back to home$2",
+          ),
+    )
     .replace(/>找不到这一页</gu, ">Page not found<")
     .replace(/>地址可能写错了，或者这篇已经不在了。</gu, ">The address may be wrong, or the page has moved.<")
     .replace(/>返回首页</gu, ">Back to home<")
@@ -72,4 +110,42 @@ export function toEnglishNotFoundHtml(html) {
     );
 
   return out;
+}
+
+/**
+ * Rewrites a rendered 404 HTML document into the full Chinese 404 copy when
+ * loaded at a non-/garden/en/ path.
+ */
+export function toChineseNotFoundHtml(html) {
+  return String(html).replace(
+    /<main\b[^>]*\bid="garden-not-found"[^>]*>[\s\S]*?<\/main>/u,
+    (mainHtml) =>
+      mainHtml
+        .replace(/<h1[^>]*>[\s\S]*?<\/h1>/u, "<h1>找不到这一页</h1>")
+        .replace(
+          /<p class="sh-deck"[^>]*>[\s\S]*?<\/p>/u,
+          '<p class="sh-deck" data-not-found-deck="">地址可能写错了，或者这篇已经不在了。</p>',
+        )
+        .replace(
+          /(<a\b[^>]*\bdata-not-found-home=""[^>]*>)[\s\S]*?(<\/a>)/u,
+          "$1返回首页$2",
+        ),
+  );
+}
+
+/**
+ * Simulates loading the single root 404.html at `pathname` (with optional
+ * `basePath` override) and running its inline language-selection script.
+ */
+export function applyRoot404ForPath(html, pathname, basePath) {
+  const rawHtml = String(html);
+  const scriptBaseMatch = /data-not-found-script="[^"]*"[^>]*>[\s\S]*?var b=("[^"]*");/u.exec(rawHtml);
+  const configuredBase =
+    basePath !== undefined
+      ? basePath
+      : scriptBaseMatch
+        ? JSON.parse(scriptBaseMatch[1])
+        : "";
+  const lang = pickNotFoundLang(pathname, configuredBase);
+  return lang === "en" ? toEnglishNotFoundHtml(rawHtml) : toChineseNotFoundHtml(rawHtml);
 }

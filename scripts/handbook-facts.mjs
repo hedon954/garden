@@ -11,6 +11,7 @@ import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { parse as parseYaml } from "yaml";
 import { CATALOG } from "../ui/garden/catalog.mjs";
+import { applyRoot404ForPath } from "../ui/garden/html-lang.mjs";
 import {
   ALLOWED_EN_HANDBOOK_CJK,
   ALLOWED_EXTERNAL_FLAGS,
@@ -1257,16 +1258,26 @@ export function findBuiltEnglishHtmlCjk(html, pageLabel = "/garden/en") {
 
 /**
  * Check any static-export HTML files already present under dist/client/garden/en/
- * (including dist/client/garden/en/404.html).
+ * and verify the root dist/client/404.html when loaded at /garden/en/xxx.
  */
 export function checkBuiltEnglishHandbookHtmlFiles(root = ROOT) {
-  const clientEnDir = path.join(root, "dist/client/garden/en");
-  if (!fs.existsSync(clientEnDir)) return [];
+  const clientDir = path.join(root, "dist/client");
+  const clientEnDir = path.join(clientDir, "garden/en");
   const issues = [];
-  for (const file of walkFiles(clientEnDir, (f) => f.endsWith(".html"))) {
-    const rel = path.relative(root, file).replace(/\\/g, "/");
-    const html = fs.readFileSync(file, "utf8");
-    issues.push(...findBuiltEnglishHtmlCjk(html, rel));
+  if (fs.existsSync(clientEnDir)) {
+    for (const file of walkFiles(clientEnDir, (f) => f.endsWith(".html"))) {
+      const rel = path.relative(root, file).replace(/\\/g, "/");
+      const html = fs.readFileSync(file, "utf8");
+      issues.push(...findBuiltEnglishHtmlCjk(html, rel));
+    }
+  }
+  const root404 = path.join(clientDir, "404.html");
+  if (fs.existsSync(root404)) {
+    const raw404 = fs.readFileSync(root404, "utf8");
+    const en404 = applyRoot404ForPath(raw404, "/garden/en/xxx");
+    issues.push(...findBuiltEnglishHtmlCjk(en404, "dist/client/404.html@/garden/en/xxx"));
+    const enBase404 = applyRoot404ForPath(raw404, "/garden-docs-v6/garden/en/xxx", "/garden-docs-v6");
+    issues.push(...findBuiltEnglishHtmlCjk(enBase404, "dist/client/404.html@/garden-docs-v6/garden/en/xxx"));
   }
   return issues;
 }

@@ -32,4 +32,4 @@ jobs:
           ADMIN_URL: https://admin.example.com
         run: npm run build && npm run pages:validate
       - name: "Check the export: internal links end with a slash, every page names its canonical address, the feed keeps its guids, no markup the parser repairs, /favicon.ico is there"
-        run: node scripts/handbook-facts.mjs && node --test tests/static-links.test.mjs tests/canonical-links.test.mjs tests/rss-guids.test.mjs tests/html-nesting.test.mjs tests/static-params.test.mjs tests/static-export-payloads.test.mjs tests/favicon-ico.test.mjs tests/pages-output.test.mjs
+        run: node scripts/handbook-facts.mjs && node --experimental-strip-types --test tests/handbook-route-lang.test.mjs tests/static-links.test.mjs tests/canonical-links.test.mjs tests/rss-guids.test.mjs tests/html-nesting.test.mjs tests/static-params.test.mjs tests/static-export-payloads.test.mjs tests/favicon-ico.test.mjs tests/pages-output.test.mjs
