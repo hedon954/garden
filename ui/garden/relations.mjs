@@ -45,11 +45,12 @@ export function relationLines(edges, titles) {
  * evenly on the outer ring, first on top, clockwise. Percent of the ring width;
  * `s` is the sine of the angle (vertical position, -1 top .. 1 bottom), 0 for the centre.
  */
-export function relationLayout(n, centre = -1) {
+export function relationLayout(n, centre = -1, compact = false) {
   const hasCentre = centre >= 0 && centre < n;
   const outer = hasCentre ? n - 1 : n;
   // With a node in the middle, narrower nodes leave the spokes room for arrows and labels.
-  const w = hasCentre ? 22 : n <= 4 ? 30 : 26;
+  // Compact (narrow container): the same ring, with nodes a larger share of the width.
+  const w = compact ? (hasCentre ? 26 : n <= 4 ? 34 : 30) : hasCentre ? 22 : n <= 4 ? 30 : 26;
   const rx = 50 - w / 2 - 1;
   const ring = [];
   let k = 0;
@@ -125,4 +126,37 @@ export function placeLabels(lines, clear = 34) {
     placed.push(best);
     return best;
   });
+}
+
+/** Hard floors after scaling (px). */
+export const RELATION_NODE_FONT_MIN = 13;
+export const RELATION_LABEL_FONT_MIN = 12;
+/** Below this container width the graph uses the compact node size (same layout, scaled). */
+export const RELATION_COMPACT_WIDTH = 560;
+
+/** ①, ②, … ⑳ for edge labels that are moved under the graph. */
+export function circled(i) {
+  return i < 20 ? String.fromCharCode(0x2460 + i) : `(${i + 1})`;
+}
+
+/**
+ * Does a one-line label of `width` x `height` px fit on the segment a-b at point p?
+ * It must leave room for both arrowheads and must not touch any node box.
+ */
+export function labelFits({ width, height }, a, b, p, boxes, margin = 4) {
+  const length = Math.hypot(b.x - a.x, b.y - a.y);
+  // Measure along the line: the label's extent in the line's direction.
+  const ux = length ? Math.abs(b.x - a.x) / length : 1;
+  const uy = length ? Math.abs(b.y - a.y) / length : 0;
+  const along = width * ux + height * uy;
+  if (along + 2 * 14 > length) return false;
+  const box = { x: p.x - width / 2 - margin, y: p.y - height / 2 - margin, w: width + 2 * margin, h: height + 2 * margin };
+  return !boxes.some((n) => box.x < n.x + n.w && box.x + box.w > n.x && box.y < n.y + n.h && box.y + box.h > n.y);
+}
+
+/** "① 依赖：A → B" / "① depends: A → B" */
+export function legendLine(index, edge, titles, lang = "zh") {
+  const arrow = edge.both ? "↔" : "→";
+  const sep = lang === "en" ? ": " : "：";
+  return `${circled(index)} ${edge.label}${sep}${titles[edge.from]} ${arrow} ${titles[edge.to]}`;
 }

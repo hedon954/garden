@@ -2389,17 +2389,40 @@ html[data-theme="dark"] .gf-scrim { background: rgb(0 0 0 / 45%); }
   pointer-events: none;
 }
 .g-rel figcaption { margin-top: 18px; font-size: 13px; color: var(--muted); text-align: center; }
-@container (max-width: 560px) {
-  .g-rel-label { display: none; }
-  .g-rel-ring, .g-rel-ring[data-n] { height: auto !important; display: flex; flex-direction: column; gap: 10px; }
-  .g-rel-node { position: static; width: auto; transform: none; top: auto !important; text-align: left; padding: 12px 14px; }
-  .markdown-body .g-rel-t { font-size: 17px; }
-  .markdown-body .g-rel-x { font-size: 14px; }
-  .markdown-body .g-rel-out { position: static; width: auto; height: auto; overflow: visible; clip: auto; white-space: normal; margin: 6px 0 0; font: 400 13.5px / 1.6 var(--sans); color: var(--soft); }
-  .g-rel-out > span { white-space: nowrap; }
-  .g-rel-mark { color: var(--ink); font-weight: 600; }
-  .g-rel-l { color: var(--muted); }
+/* Same graph at every width. Below 560px the nodes take a larger share of the width,
+   show their title on at most two lines (>= 13px), and open the full text on tap. */
+.g-rel-node { font: inherit; color: inherit; cursor: default; appearance: none; -webkit-appearance: none; }
+.g-rel-node > span { display: block; }
+.g-rel[data-compact] .g-rel-node { cursor: pointer; padding: 8px 8px; border-radius: 12px; }
+.g-rel[data-compact] .g-rel-node:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+.g-rel[data-compact] .g-rel-node[aria-expanded="true"] { border-color: var(--ink); }
+.markdown-body .g-rel[data-compact] .g-rel-t {
+  font-size: 13.5px;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  overflow-wrap: anywhere;
 }
+.g-rel[data-compact] .g-rel-x { display: none; }
+.g-rel-badge {
+  display: inline-grid;
+  place-items: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0;
+  border-radius: 50%;
+  border: 1px solid var(--rule-strong);
+  color: var(--ink);
+  font: 600 13px / 1 var(--sans);
+}
+.g-rel-legend { list-style: none; margin: 12px 4px 0; padding: 0; font: 400 13px / 1.6 var(--sans); color: var(--soft); }
+.markdown-body .g-rel-legend { list-style: none; padding-left: 0; }
+.markdown-body .g-rel-legend li { margin: 0; padding-left: 0; }
+.g-rel-detail { margin: 12px 4px 0; padding: 10px 12px; border-radius: 12px; background: var(--well); font: 400 14px / 1.55 var(--sans); color: var(--text); }
+.g-rel-detail-t { display: block; font-weight: 700; color: var(--ink); }
+.g-rel-detail-x { display: block; color: var(--soft); }
 @media (max-width: 600px) {
   .g-rel { padding: 16px 12px 10px; }
 }

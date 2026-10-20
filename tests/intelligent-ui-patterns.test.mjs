@@ -9,7 +9,7 @@ import { CATALOG, GARDEN_NAMES } from "../ui/garden/catalog.mjs";
 import { checkGardenMarkdown } from "../ui/garden/check.mjs";
 import { cardUrls, stripCardMarkers } from "../ui/garden/markdown-links.mjs";
 import { parseGardenBlock, scanFences } from "../ui/garden/parse.mjs";
-import { crossing, placeLabels, relationEdges, relationHeights, relationLayout, relationLines } from "../ui/garden/relations.mjs";
+import { circled, crossing, labelFits, legendLine, placeLabels, RELATION_COMPACT_WIDTH, RELATION_LABEL_FONT_MIN, RELATION_NODE_FONT_MIN, relationEdges, relationHeights, relationLayout, relationLines } from "../ui/garden/relations.mjs";
 
 const parse = (info, body) => parseGardenBlock(info, body);
 
@@ -54,7 +54,7 @@ test("relations links are checked: targets, style, direction, keys", () => {
   assert.equal(parse("garden relations", `${three}  - from: A\n    to: C`).error, undefined, "titles work as ends");
 });
 
-test("relations: spots sit on a circle, edges resolve, narrow lines list outgoing edges", () => {
+test("relations: spots sit on a circle, edges resolve, screen-reader lines list outgoing edges", () => {
   for (const n of [3, 4, 5, 6]) {
     const { spots, ring } = relationLayout(n);
     assert.equal(spots.length, n);
@@ -220,4 +220,44 @@ test("relations labels sit at the midpoint unless a crossing is near, then slide
   for (const p of crossed) assert.ok(Math.hypot(p.x - 200, p.y - 100) >= 34, JSON.stringify(p));
   assert.ok(Math.hypot(crossed[0].x - crossed[1].x, crossed[0].y - crossed[1].y) >= 34, "labels keep apart");
   assert.equal(placeLabels([line({ x: 0, y: 0 }, { x: 1, y: 1 }, "")])[0], null);
+});
+
+test("relations narrow screens keep the graph: same layout scaled, no card-list fallback", () => {
+  const css = readFileSync(new URL("../app/styles/a2.css", import.meta.url), "utf8");
+  const rel = css.slice(css.indexOf("/* relations:"), css.indexOf("/* list: compact icon rows"));
+  assert.doesNotMatch(rel, /@container[^{]*\{[^}]*\.g-rel/u, "no container query that swaps the layout");
+  assert.doesNotMatch(rel, /\.g-rel-node \{[^}]*position: static/u, "nodes never fall back to a static list");
+  assert.doesNotMatch(rel, /overflow-x: (auto|scroll)/u, "never scroll sideways");
+  assert.match(rel, /-webkit-line-clamp: 2/u, "titles clamp to two lines");
+  const px = (re) => Number(re.exec(rel)?.[1]);
+  assert.ok(px(/\.g-rel\[data-compact\] \.g-rel-t \{[^}]*font-size: ([\d.]+)px/u) >= RELATION_NODE_FONT_MIN, "node text >= 13px");
+  assert.ok(px(/\.g-rel-label \{[^}]*font: 500 ([\d.]+)px/u) >= RELATION_LABEL_FONT_MIN, "edge labels >= 12px");
+  assert.ok(RELATION_NODE_FONT_MIN >= 13 && RELATION_LABEL_FONT_MIN >= 12);
+  // Six nodes fit across ~350px: every compact spot stays inside the ring, columns keep apart.
+  for (const n of [3, 4, 5, 6]) for (const centre of [-1, 0]) {
+    const { spots } = relationLayout(n, centre, true);
+    for (const spot of spots) assert.ok(spot.x - spot.w / 2 >= 0 && spot.x + spot.w / 2 <= 100, `n=${n} c=${centre}`);
+    const width = 326;
+    const outer = spots.filter((s) => s.ring >= 0);
+    for (const spot of outer) assert.ok((spot.w / 100) * width >= 80, "a node keeps room for a two-line title");
+  }
+  assert.equal(RELATION_COMPACT_WIDTH, 560);
+  const docs = ["docs/handbook/components/relations.md", "docs/handbook/en/components/relations.md", "ui/prompt/rules.md"].map((f) => readFileSync(new URL(`../${f}`, import.meta.url), "utf8"));
+  for (const doc of docs) assert.doesNotMatch(doc, /单列卡片|卡片下方的关系行|cards stack|card's relation line/u);
+});
+
+test("relations labels that do not fit become circled numbers with a legend", () => {
+  assert.equal(circled(0), "①");
+  assert.equal(circled(2), "③");
+  const a = { x: 0, y: 100 };
+  const b = { x: 300, y: 100 };
+  const mid = { x: 150, y: 100 };
+  assert.equal(labelFits({ width: 60, height: 20 }, a, b, mid, []), true);
+  assert.equal(labelFits({ width: 290, height: 20 }, a, b, mid, []), false, "too long for the line");
+  assert.equal(labelFits({ width: 60, height: 20 }, a, b, mid, [{ x: 140, y: 95, w: 40, h: 40 }]), false, "would sit on a node");
+  const vertical = labelFits({ width: 120, height: 20 }, { x: 0, y: 0 }, { x: 0, y: 70 }, { x: 0, y: 35 }, []);
+  assert.equal(vertical, true, "a vertical line only needs the label's height");
+  const titles = ["预算", "场地", "人数"];
+  assert.equal(legendLine(0, { from: 0, to: 1, both: false, label: "限制" }, titles, "zh"), "① 限制：预算 → 场地");
+  assert.equal(legendLine(1, { from: 2, to: 1, both: true, label: "constrain each other" }, ["Budget", "Venue", "Headcount"], "en"), "② constrain each other: Headcount ↔ Venue");
 });

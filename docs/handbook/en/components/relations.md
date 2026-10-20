@@ -88,7 +88,7 @@ Put the organiser in the center with members, venue, and reading list around the
 ```
 ````
 
-On wide screens, elements sit evenly on an ellipse starting at the top (12 o'clock) then clockwise (or with `center` in the middle and the remaining elements spaced evenly on the outer ring starting at the top, clockwise); links between neighbouring outer-ring elements bow gently outward, while non-neighbour or center links go straight through the middle. On narrow screens (container width `560px` or below), no arrows are drawn and the cards stack in a single column, listing outgoing links under each card as `→ Venue · ⇢ Headcount` (`→` solid one-way, `⇢` dashed one-way, `↔` solid both ways, `⇠⇢` dashed both ways); link labels are not dropped—they move off the lines into each card's relation line (for example, `→ Venue limits` or `⇠⇢ Reading list nominate`, with `direction: both` links listed under both endpoint cards).
+Elements sit evenly on an ellipse starting at the top (12 o'clock) then clockwise (or with `center` in the middle and the remaining elements spaced evenly on the outer ring starting at the top, clockwise); links between neighbouring outer-ring elements bow gently outward, while non-neighbour or center links go straight through the middle.
 
 ## Fields
 
@@ -106,5 +106,5 @@ Fence header: ` ```garden relations ` (snippet trigger `;grel`). Nodes have no e
 | `links[].to` | Required | none | `1..N` (1-based number) or exact item `title`, cannot equal `from` (missing, unknown target, or `from === to` reports `garden-relations`) | Target element |
 | `links[].style` | Optional | `"solid"` | `"solid"` \| `"dashed"` (any other value reports `garden-relations`) | Solid line (`→` / `↔`) or dashed line (`⇢` / `⇠⇢`) |
 | `links[].direction` | Optional | `"one"` | `"one"` \| `"both"` (any other value reports `garden-relations`) | One-way arrow toward `to` or arrowheads on both ends |
-| `links[].label` | Optional | `""` | short string (non-string value reports `garden-relations`) | Short label along the line (dodges line crossings on wide screens, and moves off the line into each card's relation line on narrow screens, e.g. `→ Venue limits`) |
+| `links[].label` | Optional | `""` | short string (non-string value reports `garden-relations`) | Short label along the line (dodges line crossings; when it does not fit on its line it becomes a circled number listed under the graph, e.g. `① limits: Budget → Venue`) |
 | `caption` | Optional | none | string | Caption below the diagram |

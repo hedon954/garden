@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useId, useRef, useState, type ComponentType, type CSSProperties, type ReactNode } from "react";
 import { sourceIcon } from "../../../ui/garden/source-icon.mjs";
-import { placeLabels, relationEdges, relationHeights, relationIndex, relationLayout, relationLines, type RelationEdge as Edge } from "../../../ui/garden/relations.mjs";
+import { circled, crossing, labelFits, legendLine, placeLabels, RELATION_COMPACT_WIDTH, RELATION_LABEL_FONT_MIN, relationEdges, relationHeights, relationIndex, relationLayout, relationLines, type RelationEdge as Edge } from "../../../ui/garden/relations.mjs";
 import ReactMarkdown from "react-markdown";
 import {
   Bell,
@@ -30,7 +30,7 @@ import {
   XCircle,
   type IconProps,
 } from "@phosphor-icons/react/ssr";
-import { useUi } from "../UiLang";
+import { useUi, useUiLang } from "../UiLang";
 import { markdownPlugins } from "../../lib/markdown-plugins";
 
 function Rich({ text }: { text: string }) {
@@ -188,8 +188,20 @@ function edge(box: Box, to: Pt, gap = 6): Pt {
   return { x: c.x + dx * scale, y: c.y + dy * scale };
 }
 
+type Placed = Drawn & { badge: number };
+
+let measureCanvas: HTMLCanvasElement | null = null;
+function textWidth(text: string, font: string) {
+  measureCanvas ??= document.createElement("canvas");
+  const ctx = measureCanvas.getContext("2d");
+  if (!ctx) return text.length * 7;
+  ctx.font = font;
+  return ctx.measureText(text).width;
+}
+
 export function GardenRelations({ props }: { props: Record<string, unknown> }) {
   const t = useUi();
+  const lang = useUiLang();
   const items = itemsOf(props).slice(0, 6); // parse rejects counts outside 3..6
   const titles = items.map((item) => String(item.title ?? ""));
   const edges = relationEdges(props, titles);
@@ -198,8 +210,10 @@ export function GardenRelations({ props }: { props: Record<string, unknown> }) {
   const centre = props.center == null ? -1 : relationIndex(props.center, titles);
   const layout = relationLayout(n, centre);
   const ringRef = useRef<HTMLDivElement>(null);
-  const [drawn, setDrawn] = useState<Drawn[]>([]);
+  const [drawn, setDrawn] = useState<Placed[]>([]);
   const [size, setSize] = useState({ w: 0, h: 0 });
+  const [compact, setCompact] = useState(false);
+  const [open, setOpen] = useState<number | null>(null);
   const base = useId().replace(/:/gu, "");
   const edgeKey = JSON.stringify({ edges, centre, n });
 
@@ -207,24 +221,23 @@ export function GardenRelations({ props }: { props: Record<string, unknown> }) {
     const ring = ringRef.current;
     if (!ring) return;
     const { edges: parsed, centre: middle, n: count } = JSON.parse(edgeKey) as { edges: Edge[]; centre: number; n: number };
-    const { spots, outer } = relationLayout(count, middle);
     let lastWidth = -1;
     const draw = () => {
-      const nodes = [...ring.querySelectorAll<HTMLElement>(":scope > .g-rel-node")];
-      // Narrow screens list the relations as text; nothing to draw.
-      if (!nodes.length || getComputedStyle(nodes[0]).position !== "absolute") {
-        ring.style.height = "";
-        nodes.forEach((node) => { node.style.top = ""; });
-        lastWidth = -1;
-        setDrawn([]);
-        setSize({ w: 0, h: 0 });
-        return;
-      }
       const width = ring.clientWidth;
-      if (width === lastWidth) return;
+      if (!width || width === lastWidth) return;
       lastWidth = width;
-      // The canvas is exactly as tall as the nodes need.
-      const { ys, height } = relationHeights(spots, nodes.map((node) => node.offsetHeight), 48, Math.min(200, Math.max(120, width * 0.2)) * (middle >= 0 ? 1.25 : 1));
+      const small = width < RELATION_COMPACT_WIDTH;
+      // Apply the compact styles before measuring, so node sizes match what React renders next.
+      const figure = ring.closest("figure");
+      if (small) figure?.setAttribute("data-compact", "true");
+      else figure?.removeAttribute("data-compact");
+      setCompact(small);
+      const { spots, outer } = relationLayout(count, middle, small);
+      const nodes = [...ring.querySelectorAll<HTMLElement>(":scope > .g-rel-node")];
+      // Same layout at every width: place each node by percent of the width, then size the canvas to the nodes.
+      nodes.forEach((node, i) => { node.style.left = `${spots[i].x}%`; node.style.width = `${spots[i].w}%`; });
+      const minRy = small ? Math.max(90, width * 0.26) : Math.min(200, Math.max(120, width * 0.2)) * (middle >= 0 ? 1.25 : 1);
+      const { ys, height } = relationHeights(spots, nodes.map((node) => node.offsetHeight), small ? 40 : 48, minRy);
       nodes.forEach((node, i) => { node.style.top = `${ys[i]}px`; });
       ring.style.height = `${Math.ceil(height)}px`;
       const frame = ring.getBoundingClientRect();
@@ -242,12 +255,12 @@ export function GardenRelations({ props }: { props: Record<string, unknown> }) {
         const rf = spots[link.from].ring;
         const rt = spots[link.to].ring;
         const neighbours = rf >= 0 && rt >= 0 && outer > 3 && (Math.abs(rf - rt) === 1 || Math.abs(rf - rt) === outer - 1);
-        if (neighbours) {
+        if (neighbours && !small) {
           // Next to each other on the outer ring: a gentle arc that bows outward.
           const mid = { x: (cf.x + ct.x) / 2, y: (cf.y + ct.y) / 2 };
           const out = { x: mid.x - hub.x, y: mid.y - hub.y };
           const length = Math.hypot(out.x, out.y) || 1;
-          const bow = Math.min(40, Math.hypot(ct.x - cf.x, ct.y - cf.y) / 4);
+          const bow = Math.min(small ? 24 : 40, Math.hypot(ct.x - cf.x, ct.y - cf.y) / 4);
           const c = { x: mid.x + (out.x / length) * bow, y: mid.y + (out.y / length) * bow };
           const a = edge(from, c, gapStart);
           const b = edge(to, c, 10);
@@ -259,8 +272,33 @@ export function GardenRelations({ props }: { props: Record<string, unknown> }) {
         const at = (k: number) => ({ x: a.x + (b.x - a.x) * k, y: a.y + (b.y - a.y) * k });
         return { d: `M${a.x},${a.y} L${b.x},${b.y}`, a, b, at, link };
       });
-      const labels = placeLabels(geometry.map((g) => ({ a: g.a, b: g.b, at: g.at, label: g.link.label })));
-      setDrawn(geometry.map((g, i) => ({ d: g.d, dashed: g.link.dashed, both: g.link.both, label: g.link.label, at: labels[i] ?? g.at(0.5) })));
+      const spots2 = placeLabels(geometry.map((g) => ({ a: g.a, b: g.b, at: g.at, label: g.link.label })));
+      // A label that does not fit on its line at 12px becomes a circled number with a legend line under the graph.
+      const font = `500 ${RELATION_LABEL_FONT_MIN + 0.5}px ${getComputedStyle(ring).fontFamily}`;
+      let badge = 0;
+      setDrawn(geometry.map((g, i) => {
+        const at = spots2[i] ?? g.at(0.5);
+        let number = -1;
+        if (g.link.label) {
+          const fits = labelFits({ width: textWidth(g.link.label, font) + 12, height: 20 }, g.a, g.b, at, boxes);
+          if (!fits) { number = badge; badge += 1; }
+        }
+        let spot = at;
+        if (number >= 0) {
+          // A badge must not sit on a node either: slide it along its line to the first clear point.
+          const crossings = geometry.flatMap((o, j) => (j === i ? [] : [crossing(g.a, g.b, o.a, o.b)])).filter((c): c is { x: number; y: number } => c !== null);
+          const clear = (p: { x: number; y: number }) =>
+            !boxes.some((n) => p.x + 13 > n.x && p.x - 13 < n.x + n.w && p.y + 13 > n.y && p.y - 13 < n.y + n.h) &&
+            !crossings.some((c) => Math.hypot(c.x - p.x, c.y - p.y) < 22);
+          const length = Math.hypot(g.b.x - g.a.x, g.b.y - g.a.y);
+          if (length < 64) {
+            // Too short to carry a badge without hiding the arrow: sit it just beside the line.
+            const mid = g.at(0.5);
+            spot = { x: mid.x + (-(g.b.y - g.a.y) / (length || 1)) * 18, y: mid.y + ((g.b.x - g.a.x) / (length || 1)) * 18 };
+          } else spot = [0.5, 0.42, 0.58, 0.34, 0.66, 0.26, 0.74, 0.18, 0.82].map((k) => g.at(k)).find(clear) ?? at;
+        }
+        return { d: g.d, dashed: g.link.dashed, both: g.link.both, label: g.link.label, at: spot, badge: number };
+      }));
       setSize({ w: frame.width, h: frame.height });
     };
     draw();
@@ -271,34 +309,39 @@ export function GardenRelations({ props }: { props: Record<string, unknown> }) {
   }, [edgeKey]);
 
   const label = typeof props.title === "string" ? props.title : t.relations;
+  const legend = drawn.map((line, index) => ({ line, edge: edges[index] })).filter(({ line }) => line.badge >= 0);
   return (
-    <figure className="g-rel" role="group" aria-label={label}>
+    <figure className="g-rel" role="group" aria-label={label} data-compact={compact ? "true" : undefined}>
       {typeof props.title === "string" ? <p className="g-rel-h"><Rich text={props.title} /></p> : null}
       <div className="g-rel-ring" ref={ringRef} data-n={n} data-center={layout.centre >= 0 ? "true" : undefined}>
         {items.map((item, index) => {
           const spot = layout.spots[index];
           return (
-            <div
+            <button
+              type="button"
               className="g-rel-node"
               key={index}
               data-i={index + 1}
               data-center={index === layout.centre ? "true" : undefined}
+              aria-expanded={compact ? open === index : undefined}
+              aria-controls={compact ? `${base}-d` : undefined}
+              tabIndex={compact ? 0 : -1}
+              onClick={() => { if (compact) setOpen(open === index ? null : index); }}
               style={{ "--x": `${spot.x}%`, "--y": `${50 + spot.s * 38}%`, "--w": `${spot.w}%` } as CSSProperties}
             >
-              <p className="g-rel-t"><Rich text={titles[index]} /></p>
-              {item.text ? <p className="g-rel-x"><Rich text={String(item.text)} /></p> : null}
+              <span className="g-rel-t"><Rich text={titles[index]} /></span>
+              {item.text ? <span className="g-rel-x"><Rich text={String(item.text)} /></span> : null}
               {lines[index].length ? (
-                <p className="g-rel-out">
+                <span className="g-rel-out">
                   {lines[index].map((line, k) => (
-                    <span key={k} className={line.dashed ? "is-dashed" : undefined}>
-                      {k ? <span className="g-rel-sep" aria-hidden="true"> · </span> : null}
-                      <span className="g-rel-mark" aria-hidden="true">{line.mark}</span> {line.to}
-                      {line.label ? <span className="g-rel-l"> {line.label}</span> : null}
+                    <span key={k}>
+                      {k ? " · " : null}
+                      {line.mark} {line.to}{line.label ? ` ${line.label}` : ""}
                     </span>
                   ))}
-                </p>
+                </span>
               ) : null}
-            </div>
+            </button>
           );
         })}
         {size.w ? (
@@ -320,9 +363,25 @@ export function GardenRelations({ props }: { props: Record<string, unknown> }) {
           </svg>
         ) : null}
         {drawn.map((line, index) => line.label ? (
-          <span key={`l${index}`} className="g-rel-label" aria-hidden="true" style={{ left: `${line.at.x}px`, top: `${line.at.y}px` }}>{line.label}</span>
+          <span
+            key={`l${index}`}
+            className={line.badge >= 0 ? "g-rel-label g-rel-badge" : "g-rel-label"}
+            aria-hidden="true"
+            style={{ left: `${line.at.x}px`, top: `${line.at.y}px` }}
+          >{line.badge >= 0 ? circled(line.badge) : line.label}</span>
         ) : null)}
       </div>
+      {compact && open !== null ? (
+        <div className="g-rel-detail" id={`${base}-d`} aria-live="polite">
+          <span className="g-rel-detail-t"><Rich text={titles[open]} /></span>
+          {items[open]?.text ? <span className="g-rel-detail-x"><Rich text={String(items[open].text)} /></span> : null}
+        </div>
+      ) : null}
+      {legend.length ? (
+        <ol className="g-rel-legend" aria-label={t.relationsLegend}>
+          {legend.map(({ line, edge: e }) => <li key={line.badge}>{legendLine(line.badge, e, titles, lang === "en" ? "en" : "zh")}</li>)}
+        </ol>
+      ) : null}
       {typeof props.caption === "string" ? <figcaption><Rich text={props.caption} /></figcaption> : null}
     </figure>
   );

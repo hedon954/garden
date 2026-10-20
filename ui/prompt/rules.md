@@ -33,7 +33,7 @@
 - `garden relations`：可选 `title`、`caption`，必填 `items`（3～6 项，每项含 `title`、`text`，节点无强调色选项），在 `items` 与 `links` 之间可选 `center: <序号|标题>`，可选 `links` 数组。
   - `center`：把指定要素（1..N 序号或节点 `title`）放在正中，其余要素从正上方起顺时针均布在外圈；不做自动识别，写了不存在的 `center` 会使构建与检查失败（报 `garden-relations`）。
   - `links` 每项必填 `from`、`to`（1..N 序号或节点 `title`，不能相同），可选 `style: solid | dashed`、`direction: one | both`、`label`。
-  - 首尾相接的循环把每一步写成一条 `link`（`1->2`、`2->3`、`3->4`、`4->1`）。窄屏（`<= 560px`）下不画圆环与 SVG 连线，改为单列卡片；连线上的 `label` 不会丢掉，而是从连线移入每张卡片下方的关系行（如「`→ 场地 限制`」「`⇠⇢ 书单 提名`」）。
+  - 首尾相接的循环把每一步写成一条 `link`（`1->2`、`2->3`、`3->4`、`4->1`）。任何宽度都画同一张关系图；`label` 写短一些，放不下时会变成圆圈序号并在图下列出。
   - 要素不在 3～6 个之间、`center` 找不到对应要素或 `links` 不合法时报 `garden-relations` 错误（要素更多或有分支改用 ```mermaid 流程图，只走一遍的步骤用 `garden list`）。
 - `garden list`：可选 `title`、`caption`，必填 `items` 数组（每项含 `icon`、可选 `title`、`text` 字符串或字符串数组）。全不带 `title` 时为紧凑图标列表；任一项带 `title` 时为带分隔线的步骤列表。
   - 可用 `icon` 名（23 个）：`search`、`eye`、`heart`、`chat`、`shield`、`wallet`、`bell`、`check`、`x`、`star`、`flag`、`clock`、`idea`、`book`、`link`、`user`、`chart`、`gear`、`file`、`pin`、`flask`、`target`、`question`。
