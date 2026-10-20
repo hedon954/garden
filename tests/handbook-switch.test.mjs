@@ -21,3 +21,17 @@ test("built-HTML tooltip names the missing counterpart language, matching the hy
   assert.equal(handbookSwitchTitle("zh", "zh"), "这一页还没有英文版");
   assert.equal(handbookSwitchTitle("zh", "en"), "No English version of this page yet");
 });
+
+import fs from "node:fs";
+import path from "node:path";
+
+test("every Chinese handbook page has an English counterpart (the switch on English sites relies on it)", () => {
+  const root = path.resolve(import.meta.dirname, "../docs/handbook");
+  const walk = (dir, base = "") => fs.readdirSync(dir, { withFileTypes: true }).flatMap((entry) =>
+    entry.isDirectory() ? (base === "" && entry.name === "en" ? [] : walk(path.join(dir, entry.name), path.join(base, entry.name)))
+      : entry.name.endsWith(".md") ? [path.join(base, entry.name)] : []);
+  const zh = walk(root);
+  assert.ok(zh.length > 10);
+  const missing = zh.filter((file) => !fs.existsSync(path.join(root, "en", file)));
+  assert.deepEqual(missing, []);
+});

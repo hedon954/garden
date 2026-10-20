@@ -14,6 +14,8 @@ const noSubscribe = () => () => {};
 function counterpartHref(target: HandbookLang) {
   const link = document.querySelector<HTMLLinkElement>(`link[rel="alternate"][hreflang="${target === "en" ? "en" : "zh-CN"}"]`);
   if (link?.href) return swapHandbookLang(location.pathname, target);
+  // English sites leave hreflang out of <head>; the handbook ships every page in both languages there.
+  if (siteLang === "en") return swapHandbookLang(location.pathname, target);
   return target === "zh" ? siteHref(`${handbookBase("zh")}/`) : null;
 }
 
