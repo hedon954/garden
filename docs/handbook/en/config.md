@@ -10,7 +10,7 @@ Global site copy and appearance settings live in `site.config.yaml` at the repos
 
 ## 1. Full `site.config.yaml` Structure
 
-Here is an English `site.config.yaml` example:
+Below are the default `site.config.yaml` fields generated for an English site (`npx hd-garden init --locale en_US`):
 
 ```yaml
 name: Garden
@@ -43,6 +43,8 @@ pages:
   thoughts:
     title: Thoughts
     subtitle: Short notes, images, and links.
+    # How many items to show per screen; the next screen loads automatically as you scroll. Default: 10.
+    # pageSize: 10
   columns:
     title: Columns
     subtitle: Series of posts meant to be read in order.

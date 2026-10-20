@@ -285,3 +285,29 @@ test("checkEnglishHandbookNoCjk fails on CJK in English handbook prose, fenced c
     fsMod.rmSync(dir, { recursive: true, force: true });
   }
 });
+
+test("checkHandbookTemplates enforces verbatim matching between handbook config/deploy pages and templates", async () => {
+  const { checkHandbookTemplates } = await import("../scripts/handbook-facts.mjs");
+  assert.deepEqual(checkHandbookTemplates(root), []);
+
+  const fsMod = await import("node:fs");
+  const os = await import("node:os");
+  const pathMod = await import("node:path");
+  const dir = fsMod.mkdtempSync(pathMod.join(os.tmpdir(), "hb-tpl-"));
+  try {
+    fsMod.mkdirSync(pathMod.join(dir, "docs/handbook/en"), { recursive: true });
+    fsMod.mkdirSync(pathMod.join(dir, "templates/site"), { recursive: true });
+    fsMod.mkdirSync(pathMod.join(dir, "templates/workflows"), { recursive: true });
+    fsMod.writeFileSync(pathMod.join(dir, "templates/site/site.config.en.yaml"), "name: Garden\nlocale: en_US\n");
+    fsMod.writeFileSync(
+      pathMod.join(dir, "docs/handbook/en/config.md"),
+      "---\ntitle: Config\n---\n\n```yaml\nname: Drifted\nlocale: en_US\n```\n",
+    );
+    const issues = checkHandbookTemplates(dir);
+    assert.equal(issues.length, 1);
+    assert.equal(issues[0].file, "docs/handbook/en/config.md");
+    assert.equal(issues[0].kind, "template-drift");
+  } finally {
+    fsMod.rmSync(dir, { recursive: true, force: true });
+  }
+});

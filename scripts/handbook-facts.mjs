@@ -273,7 +273,7 @@ function deriveSiteConfigKeys(root = ROOT) {
     }
   }
 
-  for (const rel of ["templates/site/site.config.yaml", "site.config.yaml"]) {
+  for (const rel of ["templates/site/site.config.yaml", "templates/site/site.config.en.yaml", "site.config.yaml"]) {
     const file = path.join(root, rel);
     if (!fs.existsSync(file)) continue;
     const text = fs.readFileSync(file, "utf8");
@@ -1197,6 +1197,75 @@ export function checkEnglishHandbookNoCjk(root = ROOT) {
   return issues;
 }
 
+const HANDBOOK_EMBEDDED_TEMPLATES = [
+  {
+    handbookFile: "docs/handbook/config.md",
+    templateFile: "templates/site/site.config.yaml",
+    label: "site.config.yaml",
+  },
+  {
+    handbookFile: "docs/handbook/en/config.md",
+    templateFile: "templates/site/site.config.en.yaml",
+    label: "site.config.en.yaml",
+  },
+  {
+    handbookFile: "docs/handbook/deploy.md",
+    templateFile: "templates/workflows/pages.yml",
+    label: "pages.yml",
+  },
+  {
+    handbookFile: "docs/handbook/en/deploy.md",
+    templateFile: "templates/workflows/pages.en.yml",
+    label: "pages.en.yml",
+  },
+];
+
+/**
+ * Verify that the Chinese and English handbook config/deploy pages embed their
+ * corresponding site.config.yaml and pages.yml templates verbatim.
+ */
+export function checkHandbookTemplates(root = ROOT) {
+  const issues = [];
+  for (const { handbookFile, templateFile, label } of HANDBOOK_EMBEDDED_TEMPLATES) {
+    const fullHandbook = path.join(root, handbookFile);
+    const fullTemplate = path.join(root, templateFile);
+    if (!fs.existsSync(fullHandbook) || !fs.existsSync(fullTemplate)) continue;
+    const expected = fs.readFileSync(fullTemplate, "utf8").replace(/\r\n/gu, "\n").trimEnd();
+    const { fences } = parseMarkdownRegions(fs.readFileSync(fullHandbook, "utf8"));
+    const yamlFence = fences.find((f) => f.lang === "yaml" || f.lang === "yml");
+    if (!yamlFence) {
+      issues.push({
+        file: handbookFile,
+        line: 1,
+        kind: "template-drift",
+        message: `Missing YAML fence for template ${templateFile} (${label})`,
+      });
+      continue;
+    }
+    const actual = yamlFence.bodyLines.map((l) => l.text).join("\n").replace(/\r\n/gu, "\n").trimEnd();
+    if (actual !== expected) {
+      const actualLines = actual.split("\n");
+      const expectedLines = expected.split("\n");
+      let diffIdx = 0;
+      while (
+        diffIdx < actualLines.length &&
+        diffIdx < expectedLines.length &&
+        actualLines[diffIdx] === expectedLines[diffIdx]
+      ) {
+        diffIdx += 1;
+      }
+      const line = yamlFence.bodyLines[diffIdx]?.lineNumber ?? yamlFence.startLine;
+      issues.push({
+        file: handbookFile,
+        line,
+        kind: "template-drift",
+        message: `Embedded ${label} fence does not match ${templateFile} verbatim (first difference at template line ${diffIdx + 1})`,
+      });
+    }
+  }
+  return issues;
+}
+
 /**
  * Scan all docs/handbook/ and app/garden/ files and return any fact-check failures.
  */
@@ -1212,6 +1281,7 @@ export function checkAllHandbookFacts(root = ROOT) {
     issues.push(...checkFileFacts(file, content, facts, root));
   }
   issues.push(...checkHandbookPairs(root));
+  issues.push(...checkHandbookTemplates(root));
   issues.push(...checkEnglishHandbookNoCjk(root));
   const svgFiles = walkFiles(path.join(root, "docs/handbook"), (f) => f.endsWith(".svg"));
   for (const svgFile of svgFiles) {

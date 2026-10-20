@@ -9,11 +9,14 @@ import { fileURLToPath } from "node:url";
 const root = fileURLToPath(new URL("../", import.meta.url));
 const engine = JSON.parse(readFileSync(path.join(root, "package.json"), "utf8"));
 
-function initSite() {
+function initSite(extraArgs = []) {
   const parent = mkdtempSync(path.join(tmpdir(), "garden-init-"));
   const site = path.join(parent, "my-blog");
-  execFileSync(process.execPath, [path.join(root, "bin/garden.mjs"), "init", site], { cwd: parent, stdio: "pipe" });
-  return { parent, site };
+  const stdout = execFileSync(process.execPath, [path.join(root, "bin/garden.mjs"), "init", site, ...extraArgs], {
+    cwd: parent,
+    encoding: "utf8",
+  });
+  return { parent, site, stdout };
 }
 
 test("the site template's package.json is valid JSON and pins no engine version of its own", () => {
@@ -32,6 +35,24 @@ test("garden init writes a site whose package.json parses and pins the current e
   }
   const makefile = readFileSync(path.join(site, "Makefile"), "utf8");
   for (const target of ["new", "dev", "update"]) assert.match(makefile, new RegExp(`^${target}:`, "m"));
+  assert.equal(
+    readFileSync(path.join(site, "site.config.yaml"), "utf8"),
+    readFileSync(path.join(root, "templates/site/site.config.yaml"), "utf8"),
+  );
+  assert.ok(!existsSync(path.join(site, "site.config.en.yaml")));
+});
+
+test("garden init with locale en_US writes the English site.config.yaml template and English Giscus guide", (t) => {
+  const { parent, site, stdout } = initSite(["--locale", "en_US"]);
+  t.after(() => rmSync(parent, { recursive: true, force: true }));
+  const siteConfig = readFileSync(path.join(site, "site.config.yaml"), "utf8");
+  const enTemplate = readFileSync(path.join(root, "templates/site/site.config.en.yaml"), "utf8");
+  assert.equal(siteConfig, enTemplate);
+  assert.match(siteConfig, /^locale:\s*en_US$/mu);
+  assert.doesNotMatch(siteConfig, /[\u3000-\u303f\u3400-\u9fff\uf900-\ufaff\uff00-\uffef]/u);
+  assert.ok(!existsSync(path.join(site, "site.config.en.yaml")));
+  assert.match(stdout, /https:\/\/giscus\.app\b/u);
+  assert.doesNotMatch(stdout, /giscus\.app\/zh-CN/u);
 });
 
 // Installs the packed engine into a fresh site and builds it. Slow and needs the
