@@ -160,3 +160,90 @@ export function legendLine(index, edge, titles, lang = "zh") {
   const sep = lang === "en" ? ": " : "：";
   return `${circled(index)} ${edge.label}${sep}${titles[edge.from]} ${arrow} ${titles[edge.to]}`;
 }
+
+/** Where a line from the centre of `box` towards `to` leaves the box, `gap` px outside it. */
+export function edgePoint(box, to, gap = 6) {
+  const c = { x: box.x + box.w / 2, y: box.y + box.h / 2 };
+  const dx = to.x - c.x;
+  const dy = to.y - c.y;
+  if (!dx && !dy) return c;
+  const scale = Math.min(dx ? (box.w / 2 + gap) / Math.abs(dx) : Infinity, dy ? (box.h / 2 + gap) / Math.abs(dy) : Infinity);
+  return { x: c.x + dx * scale, y: c.y + dy * scale };
+}
+
+export const BADGE_SIZE = 22;
+
+const hits = (r, s) => r.x < s.x + s.w && r.x + r.w > s.x && r.y < s.y + s.h && r.y + r.h > s.y;
+const rectAt = (p, w, h, pad) => ({ x: p.x - w / 2 - pad, y: p.y - h / 2 - pad, w: w + 2 * pad, h: h + 2 * pad });
+
+/**
+ * Place every edge mark so none overlaps a node or another mark.
+ * marks: [{ a, b, at(k), w, h }] with w/h of the text label, or w = 0 for "no label".
+ * A text label stays on its line (sliding along it) or, if no clear spot exists, becomes a badge.
+ * A badge sits on its line when clear, else beside it, else at the nearest clear spot in the frame.
+ * Returns [{ x, y, badge }] (null for marks without a label).
+ */
+export function placeMarks(marks, nodes, frame) {
+  const points = [];
+  marks.forEach((m, i) => marks.forEach((o, j) => {
+    if (j > i) { const hit = crossing(m.a, m.b, o.a, o.b); if (hit) points.push(hit); }
+  }));
+  const placed = [];
+  const free = (p, w, h, near = 0) => {
+    const r = rectAt(p, w, h, 0);
+    if (r.x < 0 || r.y < 0 || r.x + r.w > frame.w || r.y + r.h > frame.h) return false;
+    if (nodes.some((n) => hits(rectAt(p, w, h, 3), n))) return false;
+    if (placed.some((q) => hits(rectAt(p, w, h, 2), q))) return false;
+    return !points.some((c) => Math.hypot(c.x - p.x, c.y - p.y) < near);
+  };
+  const steps = [0.5, 0.42, 0.58, 0.34, 0.66, 0.27, 0.73, 0.2, 0.8];
+  return marks.map((m) => {
+    if (!m.w) return null;
+    const length = Math.hypot(m.b.x - m.a.x, m.b.y - m.a.y) || 1;
+    const nx = -(m.b.y - m.a.y) / length;
+    const ny = (m.b.x - m.a.x) / length;
+    let spot = null;
+    let badge = !!m.badge;
+    if (!badge) {
+      for (const near of [m.h + 14, 0]) {
+        spot = steps.map((k) => m.at(k)).find((p) => free(p, m.w, m.h, near)) ?? null;
+        if (spot) break;
+      }
+      if (!spot) badge = true;
+    }
+    const w = badge ? BADGE_SIZE : m.w;
+    const h = badge ? BADGE_SIZE : m.h;
+    if (badge) {
+      // On the line (unless it is too short to show its arrow too), then beside it, then anywhere clear.
+      const offsets = length < 64 ? [18, -18, 30, -30, 42, -42] : [0, 18, -18, 30, -30, 42, -42];
+      outer: for (const d of offsets) for (const near of d ? [0] : [24, 0]) for (const k of steps) {
+        const p = m.at(k);
+        const q = { x: p.x + nx * d, y: p.y + ny * d };
+        if (free(q, w, h, near)) { spot = q; break outer; }
+      }
+      if (!spot) {
+        const mid = m.at(0.5);
+        for (let r = 8; r < Math.max(frame.w, frame.h) && !spot; r += 6) {
+          for (let t = 0; t < 24; t++) {
+            const q = { x: mid.x + r * Math.cos((t * Math.PI) / 12), y: mid.y + r * Math.sin((t * Math.PI) / 12) };
+            if (free(q, w, h)) { spot = q; break; }
+          }
+        }
+      }
+      spot ??= m.at(0.5);
+    }
+    placed.push(rectAt(spot, w, h, 0));
+    return { x: spot.x, y: spot.y, badge };
+  });
+}
+
+/**
+ * Keyboard on a relations graph with an open details panel.
+ * @param {string} key
+ * @param {number | null} open index of the node whose details are open
+ * @returns {{ close: boolean, focus: number | null }} close the panel? which node gets focus back?
+ */
+export function relationKeyAction(key, open) {
+  if (key === "Escape" && open !== null && open >= 0) return { close: true, focus: open };
+  return { close: false, focus: null };
+}

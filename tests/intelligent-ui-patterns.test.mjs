@@ -261,3 +261,60 @@ test("relations labels that do not fit become circled numbers with a legend", ()
   assert.equal(legendLine(0, { from: 0, to: 1, both: false, label: "限制" }, titles, "zh"), "① 限制：预算 → 场地");
   assert.equal(legendLine(1, { from: 2, to: 1, both: true, label: "constrain each other" }, ["Budget", "Venue", "Headcount"], "en"), "② constrain each other: Headcount ↔ Venue");
 });
+
+test("relations: Esc closes the details panel and returns focus to the node that opened it", async () => {
+  const { relationKeyAction } = await import("../ui/garden/relations.mjs");
+  assert.deepEqual(relationKeyAction("Escape", 2), { close: true, focus: 2 });
+  assert.deepEqual(relationKeyAction("Escape", 0), { close: true, focus: 0 });
+  assert.deepEqual(relationKeyAction("Escape", null), { close: false, focus: null }, "nothing open: Esc is left alone");
+  assert.deepEqual(relationKeyAction("Enter", 1), { close: false, focus: null });
+  const src = readFileSync(new URL("../app/components/garden/patterns.tsx", import.meta.url), "utf8");
+  const fig = src.slice(src.indexOf('className="g-rel"'), src.indexOf('className="g-rel-ring"'));
+  assert.match(fig, /onKeyDown=/u, "the graph listens for keys");
+  assert.match(fig, /relationKeyAction\(event\.key, open\)/u);
+  assert.match(fig, /setOpen\(null\)/u);
+  assert.match(fig, /\.g-rel-node"\)\[action\.focus\]\?\.focus\(\)/u, "focus goes back to the opener node");
+});
+
+{
+  const { relationLayout: layout, relationHeights: heights, edgePoint, placeMarks, BADGE_SIZE } = await import("../ui/garden/relations.mjs");
+  // FD's long-title matrix: 3..6 nodes, ring and centre, at 390 (ring 324px) and 1440 (ring 690px).
+  const cases = [];
+  for (const centre of [-1, 0]) for (const n of [3, 4, 5, 6]) for (const [screen, width, nodeH] of [[390, 324, 54], [1440, 690, 120]]) cases.push({ centre, n, screen, width, nodeH });
+  const overlap = (r, s) => r.x < s.x + s.w && r.x + r.w > s.x && r.y < s.y + s.h && r.y + r.h > s.y;
+  for (const { centre, n, screen, width, nodeH } of cases) {
+    test(`relations marks never overlap a node or each other: ${n} nodes, ${centre >= 0 ? "centre" : "ring"}, ${screen}px, long titles`, () => {
+      const compact = screen < 560;
+      const { spots } = layout(n, centre, compact);
+      const minRy = compact ? Math.max(90, width * 0.26) : Math.min(200, Math.max(120, width * 0.2)) * (centre >= 0 ? 1.25 : 1);
+      const { ys, height } = heights(spots, spots.map(() => nodeH), compact ? 40 : 48, minRy);
+      const boxes = spots.map((s, i) => ({ x: (s.x / 100) * width - (s.w / 200) * width, y: ys[i] - nodeH / 2, w: (s.w / 100) * width, h: nodeH }));
+      const mid = (b) => ({ x: b.x + b.w / 2, y: b.y + b.h / 2 });
+      // Same links as FD's sheet: ring neighbours or spokes, plus one dashed both-way extra (a repeated pair when n = 3).
+      const pairs = centre < 0 ? Array.from({ length: n }, (_, i) => [i, (i + 1) % n]) : Array.from({ length: n - 1 }, (_, i) => [0, i + 1]);
+      pairs.push(n > 3 ? [1, n - 1] : [2, 0]);
+      const marks = pairs.map(([f, t]) => {
+        const a = edgePoint(boxes[f], mid(boxes[t]), 6);
+        const b = edgePoint(boxes[t], mid(boxes[f]), 10);
+        // Long labels: all become numbers.
+        return { a, b, at: (k) => ({ x: a.x + (b.x - a.x) * k, y: a.y + (b.y - a.y) * k }), w: 220, h: 20, badge: true };
+      });
+      const placed = placeMarks(marks, boxes, { w: width, h: height });
+      const rects = placed.map((p) => ({ x: p.x - BADGE_SIZE / 2, y: p.y - BADGE_SIZE / 2, w: BADGE_SIZE, h: BADGE_SIZE }));
+      rects.forEach((r, i) => {
+        boxes.forEach((b, k) => assert.equal(overlap(r, b), false, `number ${i + 1} overlaps node ${k + 1}`));
+        rects.forEach((s, j) => { if (j > i) assert.equal(overlap(r, s), false, `numbers ${i + 1} and ${j + 1} overlap`); });
+        assert.ok(r.x >= 0 && r.y >= 0 && r.x + r.w <= width && r.y + r.h <= height, "inside the graph");
+      });
+    });
+  }
+}
+
+test("relations: two links between the same pair keep their labels apart", async () => {
+  const { placeMarks } = await import("../ui/garden/relations.mjs");
+  const boxes = [{ x: 0, y: 80, w: 100, h: 40 }, { x: 400, y: 80, w: 100, h: 40 }];
+  const line = (a, b) => ({ a, b, at: (k) => ({ x: a.x + (b.x - a.x) * k, y: a.y + (b.y - a.y) * k }), w: 60, h: 20 });
+  const [p, q] = placeMarks([line({ x: 106, y: 100 }, { x: 390, y: 100 }), line({ x: 394, y: 100 }, { x: 110, y: 100 })], boxes, { w: 500, h: 200 });
+  assert.ok(Math.abs(p.x - q.x) >= 60 || Math.abs(p.y - q.y) >= 20, "labels do not sit on top of each other");
+  assert.equal(p.badge || q.badge, false, "both still fit as text");
+});

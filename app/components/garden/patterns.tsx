@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useId, useRef, useState, type ComponentType, type CSSProperties, type ReactNode } from "react";
 import { sourceIcon } from "../../../ui/garden/source-icon.mjs";
-import { circled, crossing, labelFits, legendLine, placeLabels, RELATION_COMPACT_WIDTH, RELATION_LABEL_FONT_MIN, relationEdges, relationHeights, relationIndex, relationLayout, relationLines, type RelationEdge as Edge } from "../../../ui/garden/relations.mjs";
+import { circled, labelFits, legendLine, placeMarks, relationKeyAction, RELATION_COMPACT_WIDTH, RELATION_LABEL_FONT_MIN, relationEdges, relationHeights, relationIndex, relationLayout, relationLines, type RelationEdge as Edge } from "../../../ui/garden/relations.mjs";
 import ReactMarkdown from "react-markdown";
 import {
   Bell,
@@ -272,32 +272,20 @@ export function GardenRelations({ props }: { props: Record<string, unknown> }) {
         const at = (k: number) => ({ x: a.x + (b.x - a.x) * k, y: a.y + (b.y - a.y) * k });
         return { d: `M${a.x},${a.y} L${b.x},${b.y}`, a, b, at, link };
       });
-      const spots2 = placeLabels(geometry.map((g) => ({ a: g.a, b: g.b, at: g.at, label: g.link.label })));
-      // A label that does not fit on its line at 12px becomes a circled number with a legend line under the graph.
+      // Labels that do not fit on their line at 12px become circled numbers listed under the graph.
+      // Every mark gets a spot that overlaps no node and no other mark.
       const font = `500 ${RELATION_LABEL_FONT_MIN + 0.5}px ${getComputedStyle(ring).fontFamily}`;
+      const marks = geometry.map((g) => {
+        if (!g.link.label) return { a: g.a, b: g.b, at: g.at, w: 0, h: 0, badge: false };
+        const size = { width: textWidth(g.link.label, font) + 12, height: 20 };
+        return { a: g.a, b: g.b, at: g.at, w: size.width, h: size.height, badge: !labelFits(size, g.a, g.b, g.at(0.5), []) };
+      });
+      const spots2 = placeMarks(marks, boxes, { w: frame.width, h: frame.height });
       let badge = 0;
       setDrawn(geometry.map((g, i) => {
-        const at = spots2[i] ?? g.at(0.5);
-        let number = -1;
-        if (g.link.label) {
-          const fits = labelFits({ width: textWidth(g.link.label, font) + 12, height: 20 }, g.a, g.b, at, boxes);
-          if (!fits) { number = badge; badge += 1; }
-        }
-        let spot = at;
-        if (number >= 0) {
-          // A badge must not sit on a node either: slide it along its line to the first clear point.
-          const crossings = geometry.flatMap((o, j) => (j === i ? [] : [crossing(g.a, g.b, o.a, o.b)])).filter((c): c is { x: number; y: number } => c !== null);
-          const clear = (p: { x: number; y: number }) =>
-            !boxes.some((n) => p.x + 13 > n.x && p.x - 13 < n.x + n.w && p.y + 13 > n.y && p.y - 13 < n.y + n.h) &&
-            !crossings.some((c) => Math.hypot(c.x - p.x, c.y - p.y) < 22);
-          const length = Math.hypot(g.b.x - g.a.x, g.b.y - g.a.y);
-          if (length < 64) {
-            // Too short to carry a badge without hiding the arrow: sit it just beside the line.
-            const mid = g.at(0.5);
-            spot = { x: mid.x + (-(g.b.y - g.a.y) / (length || 1)) * 18, y: mid.y + ((g.b.x - g.a.x) / (length || 1)) * 18 };
-          } else spot = [0.5, 0.42, 0.58, 0.34, 0.66, 0.26, 0.74, 0.18, 0.82].map((k) => g.at(k)).find(clear) ?? at;
-        }
-        return { d: g.d, dashed: g.link.dashed, both: g.link.both, label: g.link.label, at: spot, badge: number };
+        const spot = spots2[i];
+        const number = spot?.badge ? badge++ : -1;
+        return { d: g.d, dashed: g.link.dashed, both: g.link.both, label: g.link.label, at: spot ?? g.at(0.5), badge: number };
       }));
       setSize({ w: frame.width, h: frame.height });
     };
@@ -311,7 +299,20 @@ export function GardenRelations({ props }: { props: Record<string, unknown> }) {
   const label = typeof props.title === "string" ? props.title : t.relations;
   const legend = drawn.map((line, index) => ({ line, edge: edges[index] })).filter(({ line }) => line.badge >= 0);
   return (
-    <figure className="g-rel" role="group" aria-label={label} data-compact={compact ? "true" : undefined}>
+    <figure
+      className="g-rel"
+      role="group"
+      aria-label={label}
+      data-compact={compact ? "true" : undefined}
+      onKeyDown={(event) => {
+        // Esc closes the details panel and puts focus back on the node that opened it.
+        const action = relationKeyAction(event.key, open);
+        if (!action.close) return;
+        event.preventDefault();
+        setOpen(null);
+        if (action.focus !== null) ringRef.current?.querySelectorAll<HTMLElement>(":scope > .g-rel-node")[action.focus]?.focus();
+      }}
+    >
       {typeof props.title === "string" ? <p className="g-rel-h"><Rich text={props.title} /></p> : null}
       <div className="g-rel-ring" ref={ringRef} data-n={n} data-center={layout.centre >= 0 ? "true" : undefined}>
         {items.map((item, index) => {
