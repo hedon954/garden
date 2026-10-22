@@ -92,8 +92,11 @@ export function ArticleMeasure() {
       const articleBox = (article.querySelector(".markdown-body") ?? article).getBoundingClientRect();
       const viewport = root.clientWidth;
       let docMaxRoom: number | null = null;
-      if (docPage) {
-        const sidebar = docPage.querySelector<HTMLElement>(".gdoc-sidebar");
+      // A left rail (the doc sidebar, or a column's article list) bounds the
+      // breakout on both sides, so wide content never runs under it.
+      const columnNav = docPage ? null : document.querySelector<HTMLElement>(".series-nav");
+      if (docPage || columnNav) {
+        const sidebar = docPage ? docPage.querySelector<HTMLElement>(".gdoc-sidebar") : columnNav;
         let leftLimit = 24;
         if (sidebar && getComputedStyle(sidebar).position === "sticky") {
           const sbBox = sidebar.getBoundingClientRect();
@@ -102,7 +105,7 @@ export function ArticleMeasure() {
           }
         }
         let rightLimit = viewport - 24;
-        if (toc && getComputedStyle(toc).display !== "none") {
+        if (docPage && toc && getComputedStyle(toc).display !== "none") {
           const tocBox = toc.getBoundingClientRect();
           if (tocBox.width > 0 && tocBox.left >= articleBox.right - 1) {
             rightLimit = tocBox.left - translatedX(toc) - 16;
