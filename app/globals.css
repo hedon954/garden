@@ -2166,9 +2166,9 @@ button {
   margin: 0;
 }
 
-.markdown-body li > p + p,
-.markdown-body li > p + :is(pre, blockquote, figure, .table-wrap),
-.markdown-body li > :is(pre, blockquote, figure, .table-wrap) + p {
+.markdown-body :is(ol, ul):not(.g-steps) > li > p + p,
+.markdown-body :is(ol, ul):not(.g-steps) > li > p + :is(pre, blockquote, figure, .table-wrap),
+.markdown-body :is(ol, ul):not(.g-steps) > li > :is(pre, blockquote, figure, .table-wrap) + p {
   margin-top: 12px;
 }
 
