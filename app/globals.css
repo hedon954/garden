@@ -2160,6 +2160,22 @@ button {
   margin: 7px 0;
 }
 
+/* Loose lists (items separated by blank lines) render li > p. The item keeps
+   the list rhythm; paragraphs only space apart inside the same item. */
+.markdown-body :is(ol, ul):not(.g-steps) > li > p {
+  margin: 0;
+}
+
+.markdown-body li > p + p,
+.markdown-body li > p + :is(pre, blockquote, figure, .table-wrap),
+.markdown-body li > :is(pre, blockquote, figure, .table-wrap) + p {
+  margin-top: 12px;
+}
+
+.markdown-body li > p:empty {
+  display: none;
+}
+
 .markdown-body li::marker {
   color: var(--accent);
 }
@@ -2611,7 +2627,7 @@ button {
 
 .markdown-body .mermaid-block {
   margin: 34px 0;
-  background: var(--card);
+  background: transparent;
   border: 1px solid var(--line);
 }
 
@@ -5723,4 +5739,26 @@ html[data-theme="dark"] .search-footer {
     transform: translateY(0);
     transition: transform 220ms ease, visibility 0s;
   }
+}
+
+/* Mermaid sits on the page: no fills, body-text ink for lines and labels, so
+   it reads in both themes. !important beats the svg's own id-scoped styles. */
+.g-mermaid svg { background: transparent !important; }
+.g-mermaid svg :is(.node, .cluster, .actor, .labelBox, .edgeLabel, .labelBkg) :is(rect, polygon, circle, ellipse, path),
+.g-mermaid svg :is(rect.actor, .edgeLabel rect, .labelBkg, rect.background) {
+  fill: transparent !important;
+  stroke: var(--ink) !important;
+}
+.g-mermaid svg :is(.edgeLabel, .labelBkg) rect { stroke: none !important; }
+.g-mermaid svg :is(.edgeLabel, .labelBkg) { background: transparent !important; }
+.g-mermaid svg :is(.flowchart-link, .edgePath path, .messageLine0, .messageLine1, .relation, .transition, line) {
+  stroke: var(--ink) !important;
+}
+.g-mermaid svg :is(marker path, .arrowheadPath, .arrowMarkerPath, marker) {
+  fill: var(--ink) !important;
+  stroke: var(--ink) !important;
+}
+.g-mermaid svg :is(text, tspan, .nodeLabel, .edgeLabel, .label, .messageText, .actor > tspan) {
+  fill: var(--ink) !important;
+  color: var(--ink) !important;
 }
