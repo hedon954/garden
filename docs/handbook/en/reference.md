@@ -1,12 +1,14 @@
 ---
 title: Component reference
 navTitle: Overview
-description: Every field, default, limit and error code for the 12 built-in components, one page each.
+description: Every field, default, limit, and error code for the 12 garden fence components, one page each.
 section: reference
 order: 0
 ---
 
 Each page shows the code on the left and the real rendered result on the right; on narrow screens, switch with Preview / Code. For when to use a component, see its usage page.
+
+Link cards, source chips, and local images have no field pages. Their usage pages are linked from [Components Overview](/garden/en/components).
 
 For every component: invalid YAML, or a top-level key the component does not support, reports `garden-yaml` on the whole block; a misspelled fence name reports `garden-name`.
 

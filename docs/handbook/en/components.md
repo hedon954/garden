@@ -1,7 +1,7 @@
 ---
 title: Components Overview
 navTitle: Overview
-description: Live preview of all 12 built-in components.
+description: Live previews of the 12 garden fences, plus link cards, source chips, and local images.
 section: components
 order: 30
 ---
@@ -220,3 +220,15 @@ none:
   label: Neither / not sure
   reply: No problem. We will share a few more venues in the group chat.
 ```
+
+## [Link card · {card}](/garden/en/components/link-card)
+
+[Supported KaTeX functions](https://katex.org/docs/supported.html){card}
+
+## [Source chip · {source}](/garden/en/components/source)
+
+Cited from Wikipedia [wikipedia.org](https://en.wikipedia.org/wiki/Book_discussion_club){source}
+
+## [Local image](/garden/en/components/image)
+
+![Reading column, wide figure zone, and wide table zone](../assets/reading-layout-en.svg)

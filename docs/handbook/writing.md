@@ -1,7 +1,7 @@
 ---
 title: 写文章与随想
 navTitle: 写文章与随想
-description: 长文与随想的 Front Matter 字段、代码块对比、提示框、外链卡片、公式与流程图写法。
+description: 长文与随想的 Front Matter 字段、代码块对比、提示框、公式与流程图，以及配图、来源胶囊和链接卡片的入口。
 section: writing-and-reading
 order: 10
 ---
@@ -112,13 +112,10 @@ func openStore(path string) (*Store, error) {
 
 ## 4. 本地图片、来源胶囊与外部链接卡片
 
-- **本地图片与随文目录**：如果文章路径是 `content/posts/my-post.md`，把配图放在同名的 `content/posts/my-post/` 文件夹下，在文中以 `./my-post/diagram.svg` 相对路径引用。构建时会自动复制图片、读取像素宽高，并把 `alt` 文字（以 `image`、`截图`、`img` 开头的默认占位词除外）渲染成图注 `<figcaption>`。
-- **行内外部链接**：正文里的普通外部链接会自动加上目标站点的 Favicon 小图标与右上角 `↗` 箭头，并保证图标与链接第一个字同行不折断。
-- **行内来源胶囊（`{source}`）**：在行内外部链接的 `)` 后面紧跟 `{source}`（中间不加空格），例如 `[wikipedia.org](https://en.wikipedia.org/wiki/Book_discussion_club){source}`，会渲染成圆角来源胶囊：左侧是构建期抓到的站点 Favicon（未抓到时回退为可注册域名主体的首字母，如 `en.wikipedia.org` 显示 `W`），右侧是链接文字，**不带** `↗` 外链箭头。效果如：引自维基百科词条 [wikipedia.org](https://en.wikipedia.org/wiki/Book_discussion_club){source}。
-- **链接卡片**：有两种写法可以把外部链接渲染成带网站名、标题和简介的链接卡片：
-  1. 把完整网址单独写成一行段落（前后空行）：`https://spec.commonmark.org/`
-  2. 在段落内的链接末尾紧跟 `{card}`（中间不加空格）：`参见 [CommonMark 规范](https://spec.commonmark.org/){card}。`
-  也可以运行 `make embed URL="https://example.com"` 抓取目标网页的 Open Graph 标题、摘要和封面图。
+这三项写在 Markdown 正文里。渲染规则在组件页，这里只保留文件放哪：
+
+- **本地图片**：长文 `content/posts/my-post.md` 的配图放在同名目录 `content/posts/my-post/`，正文用 `./my-post/diagram.svg` 引用。图注见[本地图片](/garden/components/image)。
+- **来源胶囊**与**链接卡片**不另建文件。见[来源胶囊](/garden/components/source)和[链接卡片](/garden/components/link-card)。
 
 ## 5. 数学公式与 Mermaid 图表
 
@@ -154,4 +151,4 @@ media:
 记一段简短的想法，支持完整的 Markdown 语法。
 ```
 
-`media` 数组支持四类条目：`image`（多张图片自动拼成宫格图集）、`audio`（原生 `<audio>` 音频播放器）、`video`（原生 `<video>` 视频播放器，指向视频文件地址，可配 `poster` 封面）和 `link`（渲染为外部链接卡片，支持 `src`、`title`、`description`、`image`）。
+`media` 数组支持四类条目：`image`（多张图片自动拼成宫格图集）、`audio`（原生 `<audio>` 音频播放器）、`video`（原生 `<video>` 视频播放器，指向视频文件地址，可配 `poster` 封面）和 `link`（用你写的 `src`、`title`、`description`、`image` 做一张链接卡）。正文里的链接卡片见[链接卡片](/garden/components/link-card)。

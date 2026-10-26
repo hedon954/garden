@@ -1,7 +1,7 @@
 ---
 title: 组件总览
 navTitle: 组件总览
-description: 12 个内置组件的效果预览。
+description: 12 个 garden 围栏，以及链接卡片、来源胶囊和本地图片的效果预览。
 section: components
 order: 30
 ---
@@ -219,3 +219,15 @@ none:
   label: 都不合适 / 说不清
   reply: 没关系，我们会在群里再列几个场地。
 ```
+
+## [链接卡片 · {card}](/garden/components/link-card)
+
+[KaTeX 支持的函数](https://katex.org/docs/supported.html){card}
+
+## [来源胶囊 · {source}](/garden/components/source)
+
+引自维基百科 [wikipedia.org](https://en.wikipedia.org/wiki/Book_discussion_club){source}
+
+## [本地图片](/garden/components/image)
+
+![正文列、宽图区与宽表区](./assets/reading-layout.svg)

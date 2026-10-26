@@ -171,7 +171,7 @@ items:
     caption: Maximum width for wide multi-column tables expanding symmetrically on desktop
 ```
 
-See [Components Overview](/garden/en/components) in the sidebar for all 12 built-in components and their live examples.
+The component pages cover the 12 `garden` fences, plus link cards, source chips, and local images. See [Components Overview](/garden/en/components) for the live examples.
 
 <h2 id="garden-admin-title">From Init to Daily Writing</h2>
 
@@ -189,4 +189,4 @@ Run `make update` when a post is ready; it runs the full check and build before 
 - **[Quick Start](/garden/en/start)**: Directory layout, creating posts with `make new`, previewing drafts, and daily commands.
 - **[Site & Column Config](/garden/en/config)**: Every field in `site.config.yaml`, custom SVG icons, and ordering series in `content/columns.yaml`.
 - **[Deploy to GitHub Pages](/garden/en/deploy)**: A single GitHub Actions workflow that supports both one public repository and a private source repo paired with a public Pages repo.
-- **[Writing Posts & Thoughts](/garden/en/writing)** and **[How the Reading Layout Works](/garden/en/design)**: Front Matter fields, external link cards, three-tier adaptive widths, and color tokens.
+- **[Writing Posts & Thoughts](/garden/en/writing)** and **[How the Reading Layout Works](/garden/en/design)**: Front Matter fields, three-tier adaptive widths, and color tokens. Link cards, source chips, and local images are on [Components Overview](/garden/en/components).
