@@ -1,7 +1,7 @@
 ---
 title: Writing Posts & Thoughts
 navTitle: Writing Posts & Thoughts
-description: Front Matter fields for posts and thoughts, code diff toggles, callouts, link cards, math formulas, and Mermaid diagrams.
+description: Front Matter fields for posts and thoughts, code diff toggles, callouts, math formulas, and Mermaid diagrams, with links to local images, source chips, and link cards.
 section: writing-and-reading
 order: 10
 ---
@@ -112,13 +112,10 @@ func openStore(path string) (*Store, error) {
 
 ## 4. Local Images, Source Chips, and External Link Cards
 
-- **Local images and sidecar folders**: For a post at `content/posts/my-post.md`, place its images inside `content/posts/my-post/` and reference them with relative paths such as `./my-post/diagram.svg`. At build time, Garden copies the file, records its pixel dimensions, and renders the `alt` text (unless it starts with default placeholders like `image` or `img`) as a `<figcaption>`.
-- **Inline external links**: Regular external links in body text automatically display the target site's favicon and a trailing `↗` arrow, keeping the icon attached to the first word of the link so it never wraps alone.
-- **Inline source chips (`{source}`)**: Append `{source}` directly after the closing `)` of an external link (with no space), such as `[wikipedia.org](https://en.wikipedia.org/wiki/Book_discussion_club){source}`, to render it as an inline source chip: the site's build-time favicon (or the uppercase first letter of the registrable domain's main label, such as `W` for `en.wikipedia.org`) plus the link text, **without** the `↗` external-link arrow. For example: cited from Wikipedia [wikipedia.org](https://en.wikipedia.org/wiki/Book_discussion_club){source}.
-- **Link cards**: Turn an external URL into a preview card with site name, title, and description in either of two ways:
-  1. Put the full URL on its own paragraph line (surrounded by blank lines): `https://spec.commonmark.org/`
-  2. Append `{card}` directly to an inline link (with no space): `See the [CommonMark Spec](https://spec.commonmark.org/){card}.`
-  You can also run `make embed URL="https://example.com"` to fetch Open Graph metadata for a URL.
+These three are written in the Markdown body. Rendering rules live on the component pages. This section only records where the files go:
+
+- **Local images**: For a post at `content/posts/my-post.md`, put images in `content/posts/my-post/` and reference them as `./my-post/diagram.svg`. Captions are documented on [Local Image](/garden/en/components/image).
+- **Source chips** and **link cards** stay in the prose. See [Source Chip](/garden/en/components/source) and [Link Card](/garden/en/components/link-card).
 
 ## 5. Math Formulas and Mermaid Diagrams
 
@@ -154,4 +151,4 @@ media:
 A short note written in standard Markdown.
 ```
 
-The `media` array accepts four item types: `image` (multiple images automatically form a grid), `audio` (native `<audio>` player), `video` (native `<video>` player with optional `poster`), and `link` (rendered as an external link card supporting `src`, `title`, `description`, and `image`).
+The `media` array accepts four item types: `image` (multiple images automatically form a grid), `audio` (native `<audio>` player), `video` (native `<video>` player with optional `poster`), and `link` (a card built from the `src`, `title`, `description`, and `image` you write). Link cards in the body are documented on [Link Card](/garden/en/components/link-card).

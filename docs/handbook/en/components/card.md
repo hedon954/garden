@@ -19,7 +19,7 @@ points:
 ```
 
 - **When to use**: Introducing a paper, open-source project, or subsystem where a link and 2 to 4 numbered points belong together, or listing several tools or references with a takeaway line.
-- **When to skip**: A sentence or two of prose or a `[Title](url){card}` link card is enough.
+- **When to skip**: A sentence or two of prose, or a [link card](/garden/en/components/link-card), is enough.
 
 You can tell the AI:
 

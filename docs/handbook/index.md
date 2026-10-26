@@ -166,7 +166,7 @@ items:
     caption: 宽表格在桌面端向两侧对称外扩上限
 ```
 
-12 个内置组件的完整参数与实时示例见左侧导航的 [组件总览](/garden/components)。
+组件页包括 12 个 `garden` 围栏，以及链接卡片、来源胶囊和本地图片。效果见左侧导航的 [组件总览](/garden/components)。
 
 <h2 id="garden-admin-title">从初始化到日常写作</h2>
 
@@ -184,4 +184,4 @@ make dev
 - **[快速开始](/garden/start)**：目录结构、`make new` 新建长文、草稿预览与日常命令。
 - **[站点与专栏配置](/garden/config)**：`site.config.yaml` 各字段含义、自定义 SVG 图标与 `content/columns.yaml` 专栏编排。
 - **[发布到 GitHub Pages](/garden/deploy)**：单个公开仓库或「私有源码仓库 + 公开页面仓库」的完整 Actions 工作流。
-- **[写文章与随想](/garden/writing)** 与 **[阅读排版是怎么工作的](/garden/design)**：Front Matter 字段、外链卡片、三级自适应宽度与色彩变量。
+- **[写文章与随想](/garden/writing)** 与 **[阅读排版是怎么工作的](/garden/design)**：Front Matter 字段、三级自适应宽度与色彩变量。链接卡片、来源胶囊和本地图片见 [组件总览](/garden/components)。

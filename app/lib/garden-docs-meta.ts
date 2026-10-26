@@ -124,6 +124,9 @@ export const NAV_SHORT_TITLE: Record<string, string> = {
   "components/relations": "关系图",
   "components/list": "图标列表",
   "components/choice": "选择卡",
+  "components/link-card": "链接卡片",
+  "components/source": "来源胶囊",
+  "components/image": "本地图片",
   workflow: "语法检查与快捷输入",
   reference: "总览",
 };
