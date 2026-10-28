@@ -1870,6 +1870,9 @@ export function mountBookshelf(root, options = {}) {
           try { a.cancel(); } catch (_) {}
         });
       } catch (_) {}
+      // commitStyles does not keep the individual scale/translate pose. Park at
+      // the open spread so close shrinks from 672×504 instead of jumping there.
+      applyPathPose(dual, Tfull);
       dual.style.opacity = "0";
       dual.style.pointerEvents = "none";
       dual.style.visibility = "visible";
@@ -1955,6 +1958,79 @@ export function mountBookshelf(root, options = {}) {
       return;
     }
 
+    // Clock first. Shelf measure, freeze, and rAF used to run before this and
+    // the 0.12 Tfull keyframe then held 672×504 for ~240ms. Stash from open is
+    // enough to start the return; height pin is already in those samples.
+    const closeMotion = { duration: CLOSE_MS, easing: "linear", fill: "forwards" };
+    const closeOpts = { duration: CLOSE_MS, easing: "linear", fill: "forwards" };
+    const stashEarly = openBook.pathTs;
+    let earlyMove = null;
+    let earlyNote = null;
+    let earlyLeft = null;
+    let earlyRight = null;
+    const heldEarly = openBook.heldFlyer;
+    if (
+      heldEarly &&
+      heldEarly.isConnected &&
+      stashEarly &&
+      stashEarly.Tfull &&
+      stashEarly.T0 &&
+      stashEarly.Tp1 &&
+      stashEarly.Tp2 &&
+      stashEarly.Tp3
+    ) {
+      heldEarly.style.visibility = "visible";
+      heldEarly.style.zIndex = "70";
+      heldEarly.style.opacity = "1";
+      promote(heldEarly);
+      earlyMove = heldEarly.animate(
+        [
+          pathKey(0, stashEarly.Tfull),
+          pathKey(0.28, stashEarly.Tp3),
+          pathKey(0.44, stashEarly.Tp2),
+          pathKey(0.60, stashEarly.Tp1),
+          pathKey(0.78, stashEarly.T0),
+          pathKey(0.90, stashEarly.T0),
+          pathKey(1, stashEarly.T0),
+        ],
+        closeMotion
+      );
+      earlyNote = noteView.animate(
+        [
+          { offset: 0, opacity: 1 },
+          { offset: 0.06, opacity: 0.85 },
+          { offset: 0.12, opacity: 0.45 },
+          { offset: 0.22, opacity: 0 },
+          { offset: 1.0, opacity: 0 },
+        ],
+        closeOpts
+      );
+      if (heldEarly._left) {
+        earlyLeft = heldEarly._left.animate(
+          [
+            { offset: 0, transform: "rotateY(8deg)" },
+            { offset: 0.08, transform: "rotateY(20deg)" },
+            { offset: 0.16, transform: "rotateY(70deg)" },
+            { offset: 0.24, transform: "rotateY(140deg)" },
+            { offset: 0.32, transform: "rotateY(180deg)" },
+            { offset: 1.0, transform: "rotateY(180deg)" },
+          ],
+          closeMotion
+        );
+      }
+      if (heldEarly._right) {
+        earlyRight = heldEarly._right.animate(
+          [
+            { offset: 0, opacity: 1, transform: "rotateY(-8deg)" },
+            { offset: 0.20, opacity: 1, transform: "rotateY(-4deg)" },
+            { offset: 0.32, opacity: 0, transform: "rotateY(0deg)" },
+            { offset: 1.0, opacity: 0, transform: "rotateY(0deg)" },
+          ],
+          closeMotion
+        );
+      }
+    }
+
     const mid = midRect(book);
     const originX = mid.left + mid.width / 2;
     const originY = mid.top + mid.height / 2;
@@ -1978,8 +2054,13 @@ export function mountBookshelf(root, options = {}) {
       slot = $(slotSel);
     }
     if (!slot) {
+      try { earlyMove && earlyMove.cancel(); } catch (_) {}
+      try { earlyNote && earlyNote.cancel(); } catch (_) {}
+      try { earlyLeft && earlyLeft.cancel(); } catch (_) {}
+      try { earlyRight && earlyRight.cancel(); } catch (_) {}
       noteView.classList.remove("is-open", "is-preparing");
       noteView.hidden = true;
+      noteView.style.opacity = "";
       openBook = null;
       busy = false;
       document.body.classList.remove("is-busy");
@@ -2111,8 +2192,10 @@ export function mountBookshelf(root, options = {}) {
     }
     flyer.style.zIndex = "70";
     flyer.style.visibility = "visible";
-    flyer.style.opacity = "0"; // stay hidden under note until reverse clock
-    applyPathPose(flyer, Tfull); // start at open end pose (transform-aligned)
+    if (!earlyMove) {
+      flyer.style.opacity = "0";
+      applyPathPose(flyer, Tfull); // start at open end pose (transform-aligned)
+    }
     promote(flyer);
     if (flyer._cover) {
       flyer._cover.classList.add("is-cover-ready");
@@ -2182,13 +2265,10 @@ export function mountBookshelf(root, options = {}) {
         `translate3d(${spineOutClose.x.toFixed(2)}px, ${spineOutClose.y.toFixed(2)}px, 0)`;
     }
 
-    // One frame then start reverse clock — note still fully covering.
-    await Promise.race([
-      new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))),
-      wait(32),
-    ]);
+    // Start the reverse on this frame. A pre-clock rAF left the spread parked at
+    // 672×504 while the note was still up (the ~240ms close-start hitch).
     void readyPulse;
-    flyer.style.opacity = "1"; // book layer present under note as reverse begins
+    if (!earlyMove) flyer.style.opacity = "1";
 
     // ux14: TIME-REVERSE of open pathTs — ban separately computed return / end-segment seek.
     const PUT_MS = 380;
@@ -2197,13 +2277,11 @@ export function mountBookshelf(root, options = {}) {
     const xfadeFrom = 1 - XFADE_MS / CLOSE_MS; // ~0.89
     const slotInAt = Math.max(0.86, xfadeFrom - 0.04);
     const flyerFadeAt = Math.min(0.97, slotInAt + 0.06);
-    const closeOpts = { duration: CLOSE_MS, easing: "linear", fill: "forwards" };
-    const closeMotion = { duration: CLOSE_MS, easing: "linear", fill: "forwards" };
 
     resetVeil();
 
     // ux13: note fades ON the book layer while reverse shrink starts — ban instant note unmount.
-    const aNoteOut = noteView.animate(
+    const aNoteOut = earlyNote || noteView.animate(
       [
         { offset: 0, opacity: 1 },
         { offset: 0.06, opacity: 0.85 },
@@ -2214,13 +2292,10 @@ export function mountBookshelf(root, options = {}) {
       closeOpts
     );
 
-    // Open extract was 0→0.32 (T0→Tp1→Tp2→TdualClosed), grow 0.40→0.78.
-    // Close: reverse grow then reverse extract; end = T0 (frozen home) — no approach snap.
-    // TIME-REVERSE of open diagonal — same Ts, no L hang-then-drop.
-    const aFlyerMove = flyer.animate(
+    // Shrink starts at offset 0. The old 0.12 Tfull key was ~228ms parked at 672×504.
+    const aFlyerMove = earlyMove || flyer.animate(
       [
         pathKey(0, Tfull),
-        pathKey(0.12, Tfull),
         pathKey(0.28, Tp3),
         pathKey(0.44, Tp2),
         pathKey(0.60, Tp1),
@@ -2231,7 +2306,7 @@ export function mountBookshelf(root, options = {}) {
       closeMotion
     );
     // Reverse hinge on SAME layer while shrink (open was 0.32→0.68 hinge).
-    const aLeftClose = flyer._left
+    const aLeftClose = earlyLeft || (flyer._left
       ? flyer._left.animate(
           [
             { offset: 0, transform: "rotateY(8deg)" },
@@ -2243,8 +2318,8 @@ export function mountBookshelf(root, options = {}) {
           ],
           closeMotion
         )
-      : null;
-    const aRightClose = flyer._right
+      : null);
+    const aRightClose = earlyRight || (flyer._right
       ? flyer._right.animate(
           [
             { offset: 0, opacity: 1, transform: "rotateY(-8deg)" },
@@ -2254,7 +2329,7 @@ export function mountBookshelf(root, options = {}) {
           ],
           closeMotion
         )
-      : null;
+      : null);
     const closedFaceOut = [
       { offset: 0, opacity: 1 },
       { offset: 0.18, opacity: 0.7 },
