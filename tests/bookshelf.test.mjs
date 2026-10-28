@@ -31,21 +31,20 @@ test("flip places the cloth book on the slot it came from", () => {
   );
 });
 
-test("open and close clocks stay on one timeline, with the shorter motion pass", () => {
+test("ux16 tip clocks and the full-height slot spine are in the engine", () => {
   const engine = read("app/components/bookshelf/engine.ts");
-  assert.match(engine, /export const OPEN_MS = 2100/);
-  assert.match(engine, /export const CLOSE_MS = 1650/);
-  assert.match(engine, /export const EASE = "cubic-bezier\(0\.32, 0\.72, 0, 1\)"/);
-  assert.match(engine, /const PUT_MS = 340/);
-  assert.match(engine, /const XFADE_MS = 120/);
+  assert.match(engine, /const OPEN_MS = 2600/);
+  assert.match(engine, /const CLOSE_MS = 1900/);
+  assert.match(engine, /const EASE = "cubic-bezier\(0\.32, 0\.72, 0, 1\)"/);
+  assert.match(engine, /const PUT_MS = 380/);
+  assert.match(engine, /const XFADE_MS = 200/);
   assert.match(engine, /easing: "linear"/);
-  assert.match(engine, /cubic-bezier\(0\.22, 1, 0\.36, 1\)/);
-  assert.match(engine, /offset: 0\.48, transform: "rotateY\(-155deg\)"/);
-  assert.match(engine, /const NOTE_READY = 0\.86/);
-  assert.match(engine, /await Promise\.race\(\[Promise\.resolve\(loaded\)\.catch\(\(\) => \{\}\), wait\(400\)\]\)/);
-  assert.match(engine, /offset: 0\.45, transform: "translateZ\(0\) scale\(0\)", opacity: 0, easing: "ease-out"/);
-  assert.match(engine, /dupUntil = now \+ 80/);
-  assert.doesNotMatch(engine, /commitStyles\(/);
+  assert.match(engine, /function makeSpineSlotFlyer/);
+  assert.match(engine, /function buildSlotWaypoints/);
+  assert.match(engine, /heldFlyer/);
+  assert.match(engine, /homeRect/);
+  assert.match(engine, /const DECODE_MS = 400/);
+  assert.match(engine, /Math\.round\(OPEN_MS \* 0\.90\)/);
   assert.doesNotMatch(engine, /pointer-events: none/);
 });
 

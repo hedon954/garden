@@ -1,4 +1,18 @@
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500&family=Noto+Serif+SC:wght@500;600&display=swap');
+/* tip: ux16-full-spine-slot held-book-s10-ux16-20261028 */
+
+/* ux14: kill :hover / expand lift while extracting — freeze resting rect */
+.bookshelf-demo .cover.is-extracting,
+.bookshelf-demo .cover.is-extracting:hover,
+.bookshelf-demo .spine.is-extracting,
+.bookshelf-demo .spine.is-extracting:hover,
+.bookshelf-demo .spine.is-extracting.is-expanded {
+  transform: none !important;
+  box-shadow: none !important;
+  transition: none !important;
+}
+
+
 
 .bookshelf-demo {
   --wall: #faf9f5;
@@ -36,7 +50,6 @@
   background: var(--wall);
   color: var(--ink);
   font-family: "Noto Sans SC", "PingFang SC", sans-serif;
-  /* The demo page is the document. Isolate it from the garden shell's 15px / 1.72 body. */
   font-size: 16px;
   line-height: normal;
   -webkit-font-smoothing: antialiased;
@@ -179,8 +192,9 @@
   outline: none;
 }
 .bookshelf-demo .cover.is-placeholder {
-  opacity: 0.22;
-  filter: grayscale(0.15);
+  /* ux13: invisible seat — ban gray ghost plate */
+  opacity: 0;
+  filter: none;
   pointer-events: none;
   box-shadow: none;
   transform: none !important;
@@ -249,13 +263,14 @@
   outline: none;
 }
 .bookshelf-demo .spine.is-placeholder {
-  opacity: 0.22;
-  filter: grayscale(0.15);
+  /* ux13: invisible seat — ban gray ghost plate */
+  opacity: 0;
+  filter: none;
   pointer-events: none;
   box-shadow: none;
   transform: none !important;
 }
-.bookshelf-demo .spine.is-placeholder span { opacity: 0.55; }
+.bookshelf-demo .spine.is-placeholder span { opacity: 0; }
 .bookshelf-demo .cover.is-placeholder.is-landing,
 .bookshelf-demo .spine.is-placeholder.is-landing {
   opacity: 0;
@@ -426,11 +441,17 @@
   position: fixed;
   inset: 0;
   z-index: 60;
-  background: var(--wall);
+  background: #faf9f5; /* solid paper — never translucent wall flash */
   overflow: auto;
   opacity: 0;
   pointer-events: none;
-  /* opacity driven by WAAPI during open/close — no CSS transition */
+  /* opacity driven by WAAPI / inline — no CSS transition */
+  transition: none;
+}
+.bookshelf-demo .note-view.is-preparing,
+.bookshelf-demo .note-view.is-open {
+  /* Above stage so note can cover flyer without a kill-flash */
+  z-index: 75;
 }
 .bookshelf-demo .note-view.is-open {
   opacity: 1;
@@ -502,19 +523,36 @@
   font-style: italic;
 }
 
-/* —— Stage / fixed open + gradient veil (transform/clip only) —— */
+/* —— Stage / backdrop / veil / held-book flyer (§10) —— */
+.bookshelf-demo .open-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 58;
+  pointer-events: none;
+  background: #faf9f5;
+  opacity: 0;
+}
+.bookshelf-demo .open-backdrop.is-on {
+  /* Soft — shelf can still read through slightly; never the only visible layer */
+  opacity: 0.55;
+}
+.bookshelf-demo .open-backdrop.is-solid {
+  opacity: 1;
+}
+
 .bookshelf-demo .stage {
   position: fixed;
   inset: 0;
   z-index: 70;
   pointer-events: none;
-  perspective: 1600px;
+  perspective: 1800px;
+  perspective-origin: 50% 45%;
 }
 
 .bookshelf-demo .open-veil {
   position: fixed;
   inset: 0;
-  z-index: 65;
+  z-index: 80;
   pointer-events: none;
   overflow: hidden;
   opacity: 0;
@@ -536,7 +574,7 @@
       circle at center,
       #fffcf6 0%,
       #faf9f5 42%,
-      rgba(250, 249, 245, 0) 70%
+      #faf9f5 100%
     );
   transform: translateZ(0) scale(0);
   transform-origin: center center;
@@ -544,88 +582,105 @@
   opacity: 1;
 }
 
-
 .bookshelf-demo .flyer {
   position: fixed;
   left: 0;
   top: 0;
-  width: 132px;
-  height: 198px;
+  width: 680px;
+  height: 400px;
   margin: 0;
-  border-radius: 2px 3px 0 0;
   transform-origin: top left;
-  transform-style: preserve-3d;
+  /* FLAT: scaling a preserve-3d parent causes shimmer/jitter */
+  transform-style: flat;
   opacity: 1;
-  /* shadow is a sibling layer — not animated (avoids filter/shadow paints) */
-}
-.bookshelf-demo .flyer-shadow {
-  position: absolute;
-  inset: -8% -12% -18% -12%;
-  border-radius: 4px;
-  background: rgba(40, 30, 20, 0.14);
-  filter: blur(8px);
-  opacity: 0.28;
-  z-index: -1;
-  pointer-events: none;
-  transform: translateZ(0);
+  overflow: visible;
+  contain: layout style;
 }
 .bookshelf-demo .flyer.is-ready {
   will-change: transform, opacity;
 }
-.bookshelf-demo .flyer-inner {
+
+/* Soft oval foot shadow — no filter:blur (blur+anim = jitter) */
+.bookshelf-demo .flyer-shadow {
+  position: absolute;
+  left: 2%;
+  right: 2%;
+  bottom: -14%;
+  height: 36%;
+  border-radius: 50%;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(40, 30, 20, 0.22) 0%,
+    rgba(40, 30, 20, 0.10) 40%,
+    rgba(40, 30, 20, 0.03) 62%,
+    rgba(40, 30, 20, 0) 78%
+  );
+  opacity: 0.5;
+  z-index: 0;
+  pointer-events: none;
+  transform: translate3d(0, 0, 0) scale(1, 0.5);
+  will-change: auto;
+}
+
+.bookshelf-demo .flyer-book {
   position: absolute;
   inset: 0;
   transform-style: preserve-3d;
+  transform-origin: center center;
+  /* Static mild tilt — do NOT animate rotateX (competes with flyer scale) */
+  transform: rotateX(8deg) translate3d(0, 0, 0);
+  z-index: 1;
+  backface-visibility: hidden;
 }
-.bookshelf-demo .flyer-back {
+
+/* Thin cover board peeking under page block (thickness cue) */
+.bookshelf-demo .flyer-board {
   position: absolute;
-  inset: 0;
-  border-radius: 2px 3px 0 0;
-  background: linear-gradient(180deg, #fbf8f0 0%, #f3eee3 100%);
-  box-shadow: inset 0 0 0 1px rgba(60, 50, 30, 0.08);
-  overflow: hidden;
-  padding: 14px 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+  inset: -2% -1.2% -3.5% -1.2%;
+  border-radius: 3px 4px 2px 2px;
+  background: linear-gradient(180deg, #5a4a3c 0%, #3d3228 100%);
+  box-shadow: 0 1px 0 rgba(255,255,255,0.06) inset;
+  transform: translateZ(-8px);
+  z-index: 0;
 }
-.bookshelf-demo .flyer-page-title {
-  font-family: "Noto Serif SC", serif;
-  font-size: 11px;
-  font-weight: 600;
-  color: #2a261e;
-  line-height: 1.35;
-  margin-bottom: 4px;
-}
-.bookshelf-demo .flyer-page-line {
-  height: 5px;
-  border-radius: 2px;
-  background: rgba(60, 50, 30, 0.12);
-  width: 100%;
-}
-.bookshelf-demo .flyer-page-line.short { width: 62%; }
-.bookshelf-demo .flyer-page-line.mid { width: 78%; }
-.bookshelf-demo .flyer-front {
+
+.bookshelf-demo .flyer-leaf {
   position: absolute;
-  inset: 0;
-  border-radius: 2px 3px 0 0;
+  top: 0;
+  width: 50%;
+  height: 100%;
+  transform-style: preserve-3d;
+  z-index: 2;
+}
+.bookshelf-demo .flyer-leaf-left {
+  left: 0;
+  transform-origin: right center;
+}
+.bookshelf-demo .flyer-leaf-right {
+  left: 50%;
   transform-origin: left center;
-  transform-style: preserve-3d;
-  background-color: #4a3b2f;
-  background-image:
-    linear-gradient(90deg, rgba(0,0,0,0.18) 0%, transparent 10%),
-    linear-gradient(180deg, rgba(255,255,255,0.06), transparent 40%);
-  box-shadow:
-    inset -2px 0 0 rgba(0,0,0,0.18),
-    2px 0 12px rgba(40, 30, 20, 0.18);
+}
+
+.bookshelf-demo .flyer-face {
+  position: absolute;
+  inset: 0;
+  border-radius: 2px 3px 0 0;
   overflow: hidden;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
 }
-.bookshelf-demo .flyer-front.is-animating {
-  will-change: transform;
+
+/* Cover on BACK of left leaf — camera-facing when leaf folded (180°) */
+.bookshelf-demo .flyer-face-cover {
+  transform: rotateY(180deg);
+  background-color: #4a3b2f;
+  /* No background-image here — .img-* / inline applyCoverImage owns the photo.
+     Gradients-only used to override img classes → flat brown/gray close flash. */
+  box-shadow:
+    inset -2px 0 0 rgba(0,0,0,0.18),
+    2px 0 10px rgba(40, 30, 20, 0.14);
 }
-.bookshelf-demo .flyer-front.is-spine-face {
+.bookshelf-demo .flyer-face-cover.is-spine-face {
   writing-mode: vertical-rl;
   text-orientation: mixed;
   font-family: "Noto Serif SC", serif;
@@ -635,29 +690,283 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  background-image:
+    linear-gradient(90deg, rgba(0,0,0,0.18) 0%, transparent 10%),
+    linear-gradient(180deg, rgba(255,255,255,0.06), transparent 40%);
 }
 .bookshelf-demo .flyer-spine-label { pointer-events: none; }
-.bookshelf-demo .flyer-front.is-cover-ready {
-  writing-mode: horizontal-tb;
-}
-.bookshelf-demo .flyer-front.is-cover-ready .flyer-spine-label {
+
+/* ux15 plate kept inert; ux16 uses full-height .flyer-spine-slot instead */
+.bookshelf-demo .flyer-spine-land-plate {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  z-index: 1;
   display: none;
 }
+.bookshelf-demo .flyer-spine-land-plate:not([class*="bk-"]) {
+  background: linear-gradient(180deg, #5a4a3c 0%, #3d3228 100%);
+}
 
-/* Note pre-layout under veil: keep in flow, invisible until reveal */
+/* ux16: exact homeRect standing spine — full height, spine width, slides out/in */
+.bookshelf-demo .flyer.flyer-spine-slot {
+  position: fixed;
+  margin: 0;
+  padding: 10px 0;
+  box-sizing: border-box;
+  border-radius: 1px 2px 0 0;
+  box-shadow:
+    inset -1px 0 0 rgba(255,255,255,0.12),
+    inset 1px 0 0 rgba(0,0,0,0.18),
+    0 6px 14px rgba(40, 30, 20, 0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  pointer-events: none;
+  transform-origin: center center;
+  contain: layout style;
+  will-change: transform, opacity;
+}
+.bookshelf-demo .flyer-spine-slot-label {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  font-family: "Noto Serif SC", serif;
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  color: #F7F3EA;
+  pointer-events: none;
+  line-height: 1.2;
+  max-height: 100%;
+  overflow: hidden;
+}
+.bookshelf-demo .flyer-spine-slot.bk-sand .flyer-spine-slot-label,
+.bookshelf-demo .flyer-spine-slot.bk-cream .flyer-spine-slot-label {
+  color: #2A261E;
+  font-size: 10px;
+}
+.bookshelf-demo .flyer-face-cover.is-cover-ready {
+  writing-mode: horizontal-tb;
+}
+.bookshelf-demo .flyer-face-cover.is-cover-ready[class*="img-"] {
+  background-size: cover !important;
+  background-position: center top !important;
+  background-repeat: no-repeat !important;
+}
+.bookshelf-demo .flyer-face-cover.is-cover-ready .flyer-spine-label {
+  display: none;
+}
+.bookshelf-demo .flyer-cover-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+  display: block;
+  pointer-events: none;
+  border-radius: inherit;
+  /* Sit under optional spine label; above empty board fill */
+  z-index: 0;
+  transform: translateZ(0);
+}
+
+/* Cream page with gutter shade + micro-arch (radial) — not flat fill */
+.bookshelf-demo .flyer-face-page {
+  background-color: #fffcf6;
+  background-image:
+    /* micro-arch: slight top lift */
+    radial-gradient(120% 40% at 50% -5%, rgba(255,255,255,0.55) 0%, transparent 55%),
+    /* page body */
+    linear-gradient(180deg, #fffcf6 0%, #faf9f5 55%, #f3eee6 100%);
+  padding: 16px 14px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  box-shadow: inset 0 0 0 1px rgba(60, 50, 30, 0.06);
+}
+.bookshelf-demo .flyer-leaf-left .flyer-face-page {
+  /* gutter on right edge of left page */
+  background-image:
+    radial-gradient(120% 40% at 50% -5%, rgba(255,255,255,0.5) 0%, transparent 55%),
+    linear-gradient(90deg, transparent 55%, rgba(60, 45, 25, 0.07) 82%, rgba(40, 30, 18, 0.22) 100%),
+    linear-gradient(180deg, #fffcf6 0%, #faf9f5 55%, #f3eee6 100%);
+  border-radius: 3px 0 0 2px;
+  padding-right: 18px;
+}
+.bookshelf-demo .flyer-leaf-right .flyer-face-page {
+  /* gutter on left edge of right page */
+  background-image:
+    radial-gradient(120% 40% at 50% -5%, rgba(255,255,255,0.5) 0%, transparent 55%),
+    linear-gradient(270deg, transparent 55%, rgba(60, 45, 25, 0.07) 82%, rgba(40, 30, 18, 0.22) 100%),
+    linear-gradient(180deg, #fffcf6 0%, #faf9f5 55%, #f3eee6 100%);
+  border-radius: 0 3px 2px 0;
+  padding-left: 18px;
+}
+
+/* Page-block thickness strips on outer fore-edges */
+.bookshelf-demo .flyer-thickness {
+  position: absolute;
+  top: 1%;
+  bottom: 2%;
+  width: 7px;
+  pointer-events: none;
+  z-index: 3;
+  background:
+    repeating-linear-gradient(
+      180deg,
+      #f7f1e6 0px,
+      #efe6d6 1px,
+      #e4d9c6 2px,
+      #f7f1e6 3px
+    );
+  box-shadow: 0 0 0 1px rgba(60, 50, 30, 0.08);
+  opacity: 0.9;
+  transform: translateZ(1px);
+}
+.bookshelf-demo .flyer-leaf-left .flyer-thickness {
+  left: -5px;
+  border-radius: 1px 0 0 1px;
+}
+.bookshelf-demo .flyer-leaf-right .flyer-thickness {
+  right: -5px;
+  border-radius: 0 1px 1px 0;
+}
+
+/* Center gutter accent (binding dip) */
+.bookshelf-demo .flyer-gutter {
+  position: absolute;
+  top: 2%;
+  bottom: 3%;
+  left: 50%;
+  width: 14px;
+  margin-left: -7px;
+  z-index: 4;
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    rgba(40, 30, 18, 0) 0%,
+    rgba(40, 30, 18, 0.18) 35%,
+    rgba(30, 22, 12, 0.32) 50%,
+    rgba(40, 30, 18, 0.18) 65%,
+    rgba(40, 30, 18, 0) 100%
+  );
+  opacity: 0;
+  transform: translateZ(2px);
+}
+
+.bookshelf-demo .flyer-page-title {
+  font-family: "Noto Serif SC", serif;
+  font-size: 11px;
+  font-weight: 600;
+  color: #2a261e;
+  line-height: 1.35;
+  margin-bottom: 4px;
+}
+.bookshelf-demo .flyer-page-title {
+  opacity: 0; /* no early fake “notes” on pages — real note comes late */
+}
+.bookshelf-demo .flyer-page-line {
+  height: 5px;
+  border-radius: 2px;
+  background: rgba(60, 50, 30, 0.12);
+  width: 100%;
+  opacity: 0;
+}
+.bookshelf-demo .flyer-page-line.short { width: 62%; }
+.bookshelf-demo .flyer-page-line.mid { width: 78%; }
+
+/* Note pre-layout: no scrollbar until open (scrollbar on cream void looked like a flash) */
 .bookshelf-demo .note-view.is-preparing {
   display: block !important;
-  opacity: 0;
   pointer-events: none;
   transition: none;
+  overflow: hidden;
 }
 .bookshelf-demo .note-view.is-open {
-  opacity: 1;
   pointer-events: auto;
+  overflow: auto;
 }
 
-.bookshelf-demo .shelf-view.is-dim { opacity: 0.4; }
-.bookshelf-demo .shelf-view { /* opacity via WAAPI during open */ }
+.bookshelf-demo .shelf-view.is-dim {
+  /* Backdrop covers shelf — dim is unused during open; keep inert */
+  opacity: 1;
+}
+.bookshelf-demo .shelf-view.is-frozen {
+  pointer-events: none !important;
+}
+/* Freeze cover/spine interactions — keep resting min-height (do NOT inherit/collapse;
+   inherit was collapsing .covers 210→~178 and causing +~30px end-frame shelf jump). */
+.bookshelf-demo .shelf-view.is-frozen .cover,
+.bookshelf-demo .shelf-view.is-frozen .spine {
+  transition: none !important;
+  transform: none !important;
+  filter: none !important;
+}
+.bookshelf-demo .shelf-view.is-frozen .cover:hover,
+.bookshelf-demo .shelf-view.is-frozen .cover:focus-visible,
+.bookshelf-demo .shelf-view.is-frozen .spine:hover,
+.bookshelf-demo .shelf-view.is-frozen .spine:focus-visible {
+  transform: none !important;
+  box-shadow: inherit;
+  z-index: auto;
+}
+.bookshelf-demo .shelf-view.is-frozen .spine.is-expanded,
+.bookshelf-demo .shelf-view.is-frozen .spine.is-collapsing {
+  /* Lock expanded footprint — no collapse animation mid-close */
+  transition: none !important;
+}
+
+
+/* Park shelf without display:none — preserves geometry, kills close-end bounce */
+.bookshelf-demo .shelf-view.is-parked {
+  visibility: hidden !important;
+  pointer-events: none !important;
+  /* stay in document flow (no height collapse) */
+}
+.bookshelf-demo .shelf-view,
+.bookshelf-demo .spines,
+.bookshelf-demo .covers {
+  overflow-anchor: none;
+}
+
+/* Close path: flat single cover card — durable <img>, no cream/board mid-flight */
+.bookshelf-demo .flyer.flyer-close-cover {
+  transform-style: flat;
+  overflow: hidden;
+  border-radius: 2px 3px 0 0;
+  box-shadow:
+    0 14px 32px rgba(40, 30, 20, 0.2),
+    0 1px 0 rgba(255, 255, 255, 0.06) inset;
+  contain: layout style paint;
+}
+.bookshelf-demo .flyer-close-face {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  overflow: hidden;
+  background-color: #4a3b2f;
+  background-size: cover;
+  background-position: center top;
+  background-repeat: no-repeat;
+  transform: translateZ(0);
+}
+.bookshelf-demo .flyer-close-face .flyer-cover-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+  display: block;
+  pointer-events: none;
+  z-index: 1;
+  transform: translateZ(0);
+}
+.bookshelf-demo .flyer-close-face .flyer-spine-label {
+  z-index: 2;
+}
 
 /* reduced motion */
 @media (prefers-reduced-motion: reduce) {
@@ -676,9 +985,12 @@
 .bookshelf-demo .note-view,
 .bookshelf-demo .shelf-view,
 .bookshelf-demo .flyer,
-.bookshelf-demo .flyer-front,
-.bookshelf-demo .flyer-back,
+.bookshelf-demo .open-backdrop,
+.bookshelf-demo .flyer-leaf,
+.bookshelf-demo .flyer-face,
+.bookshelf-demo .flyer-face-cover,
 .bookshelf-demo .flyer-spine-label,
+.bookshelf-demo .flyer-gutter,
 .bookshelf-demo .open-veil,
 .bookshelf-demo .open-veil-blob {
     transition: none !important;

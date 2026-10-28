@@ -43,6 +43,7 @@ const SHELL = `
       </article>
     </div>
 
+    <div class="open-backdrop" id="openBackdrop" aria-hidden="true"></div>
     <div class="open-veil" id="openVeil" aria-hidden="true">
       <div class="open-veil-blob" id="openVeilBlob"></div>
     </div>
