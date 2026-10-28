@@ -948,6 +948,27 @@ export function mountBookshelf(root, options = {}) {
     });
   }
 
+  // Pose for the flyer move. Same tx/ty/sx/sy as the ux26 string, but on the
+  // individual translate and scale properties. A combined transform matrix
+  // decomposes badly when sx ≠ sy (slot height pin) and the flight stutters.
+  function pathPose(transform) {
+    const p = parseTS(transform);
+    return {
+      translate: `${p.tx.toFixed(2)}px ${p.ty.toFixed(2)}px`,
+      scale: `${p.sx.toFixed(4)} ${p.sy.toFixed(4)}`,
+    };
+  }
+  function applyPathPose(el, transform) {
+    if (!el) return;
+    const pose = pathPose(transform);
+    el.style.transform = "none";
+    el.style.translate = pose.translate;
+    el.style.scale = pose.scale;
+  }
+  function pathKey(offset, transform) {
+    return { offset, ...pathPose(transform) };
+  }
+
   // ux14 geometric core: ONE diagonal arc slot-center ↔ screen-center.
   // X, Y, AND scale on the SAME beat — ban L-path (lift-only then slide-only).
   // Transforms are lerpTS(T0→Tfull) samples so WAAPI stays collinear in tx/ty/s.
@@ -1372,7 +1393,7 @@ export function mountBookshelf(root, options = {}) {
       right.style.transform = "rotateY(-8deg)";
       bookEl.style.transform = "rotateX(8deg) translate3d(0,0,0)";
       gutter.style.opacity = "1";
-      flyer.style.transform = "translate3d(0px, -4px, 0) scale(1)";
+      applyPathPose(flyer, "translate(0.00px, -4.00px) scale(1)");
       flyer.style.opacity = "1";
     } else {
       // ux10: closed extract must look like ONE cover/spine — hide board + right page
@@ -1385,7 +1406,7 @@ export function mountBookshelf(root, options = {}) {
       rightThick.style.opacity = "0";
       bookEl.style.transform = "rotateX(8deg) translate3d(0,0,0)";
       gutter.style.opacity = "0";
-      flyer.style.transform = closedCoverTransform(atRect, mid);
+      applyPathPose(flyer, closedCoverTransform(atRect, mid));
       flyer.style.opacity = "1";
     }
     stage.appendChild(flyer);
@@ -1395,7 +1416,7 @@ export function mountBookshelf(root, options = {}) {
   function promote(el) {
     if (!el) return;
     el.classList.add("is-ready");
-    el.style.willChange = "transform, opacity";
+    el.style.willChange = "translate, scale, opacity";
   }
 
   function demote(el) {
@@ -1683,13 +1704,13 @@ export function mountBookshelf(root, options = {}) {
     // Same dual: single diagonal to full — no hold-then-slide second segment.
     const aDualMove = dual.animate(
       [
-        { offset: 0, transform: T0 },
-        { offset: 0.12, transform: Tp1 },
-        { offset: 0.28, transform: Tp2 },
-        { offset: 0.44, transform: Tp3 },
-        { offset: 0.58, transform: Tfull },
-        { offset: 0.78, transform: Tfull },
-        { offset: 1.0, transform: Tfull },
+        pathKey(0, T0),
+        pathKey(0.12, Tp1),
+        pathKey(0.28, Tp2),
+        pathKey(0.44, Tp3),
+        pathKey(0.58, Tfull),
+        pathKey(0.78, Tfull),
+        pathKey(1, Tfull),
       ],
       optsMotion
     );
@@ -2091,7 +2112,7 @@ export function mountBookshelf(root, options = {}) {
     flyer.style.zIndex = "70";
     flyer.style.visibility = "visible";
     flyer.style.opacity = "0"; // stay hidden under note until reverse clock
-    flyer.style.transform = Tfull; // start at open end pose (transform-aligned)
+    applyPathPose(flyer, Tfull); // start at open end pose (transform-aligned)
     promote(flyer);
     if (flyer._cover) {
       flyer._cover.classList.add("is-cover-ready");
@@ -2198,14 +2219,14 @@ export function mountBookshelf(root, options = {}) {
     // TIME-REVERSE of open diagonal — same Ts, no L hang-then-drop.
     const aFlyerMove = flyer.animate(
       [
-        { offset: 0, transform: Tfull },
-        { offset: 0.12, transform: Tfull },
-        { offset: 0.28, transform: Tp3 },
-        { offset: 0.44, transform: Tp2 },
-        { offset: 0.60, transform: Tp1 },
-        { offset: 0.78, transform: T0 },
-        { offset: 0.90, transform: T0 },
-        { offset: 1.0, transform: T0 },
+        pathKey(0, Tfull),
+        pathKey(0.12, Tfull),
+        pathKey(0.28, Tp3),
+        pathKey(0.44, Tp2),
+        pathKey(0.60, Tp1),
+        pathKey(0.78, T0),
+        pathKey(0.90, T0),
+        pathKey(1, T0),
       ],
       closeMotion
     );
@@ -2410,7 +2431,7 @@ export function mountBookshelf(root, options = {}) {
           try { a.cancel(); } catch (_) {}
         });
       } catch (_) {}
-      flyer.style.transform = T0; // stay locked on frozen home until slot fully owns pixels
+      applyPathPose(flyer, T0); // stay locked on frozen home until slot fully owns pixels
       flyer.style.opacity = "0";
       slot.style.opacity = "1";
       slot.style.transform = "none";

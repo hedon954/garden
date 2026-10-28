@@ -677,7 +677,7 @@
   contain: layout style;
 }
 .bookshelf-demo .flyer.is-ready {
-  will-change: transform, opacity;
+  will-change: translate, scale, opacity;
 }
 
 /* Soft oval foot shadow — no filter:blur (blur+anim = jitter) */
