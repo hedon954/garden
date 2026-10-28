@@ -31,12 +31,20 @@ export default function BookshelfPage() {
   const shelf = bookshelf;
   if (shelf) {
     return (
-      <Bookshelf
-        catalog={shelf.catalog}
-        notes={shelf.notes}
-        title={shelf.title}
-        eyebrow={shelf.eyebrow ?? siteConfig.name}
-      />
+      <main className="sh-main bookshelf-page" id="content">
+        <header className="sh-head">
+          {shelf.eyebrow ? <p className="sh-kicker">{shelf.eyebrow}</p> : null}
+          <h1 id="sh-title">{shelf.title}</h1>
+          {shelf.description ? <p className="sh-deck">{shelf.description}</p> : null}
+        </header>
+        <Bookshelf
+          embedded
+          catalog={shelf.catalog}
+          notes={shelf.notes}
+          title={shelf.title}
+          eyebrow={shelf.eyebrow ?? siteConfig.name}
+        />
+      </main>
     );
   }
   if (siteLang !== "zh") return null;

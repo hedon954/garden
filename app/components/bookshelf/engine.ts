@@ -177,6 +177,9 @@ export function mountBookshelf(root, options = {}) {
   function noteSummaryText(book) {
     const key = book && book.note;
     const note = key ? NOTES[key] : null;
+    if (note && typeof note.summary === "string" && note.summary.trim()) {
+      return note.summary.trim().replace(/\s+/g, " ");
+    }
     if (note && note.body) {
       let text = plainFromHtml(note.body);
       // Prefer first real sentence-ish chunk after stripping headings noise
@@ -197,7 +200,11 @@ export function mountBookshelf(root, options = {}) {
 
   function rightPageHtml(book) {
     const summary = escapeHtml(noteSummaryText(book));
-    return `<div class="flyer-page-kicker">读书笔记</div><p class="flyer-page-summary">${summary}</p>`;
+    const href = book && typeof book.href === "string" ? book.href : "";
+    const more = href
+      ? `<a class="flyer-page-more" href="${escapeHtml(href)}">阅读全文</a>`
+      : "";
+    return `<div class="flyer-page-kicker">读书笔记</div><p class="flyer-page-summary">${summary}</p>${more}`;
   }
 
 
@@ -680,6 +687,16 @@ export function mountBookshelf(root, options = {}) {
     const coverEl = $("#noteCover");
     coverEl.className = `note-cover ${bkClass(book)} ${coverClass(book)}`;
     const note = NOTES[book.note];
+    const read = $("#noteRead");
+    if (read) {
+      if (book.href) {
+        read.href = book.href;
+        read.hidden = false;
+      } else {
+        read.hidden = true;
+        read.removeAttribute("href");
+      }
+    }
     if (note) {
       $("#noteBody").innerHTML = note.body;
     } else if (usingDemo) {
@@ -2453,6 +2470,47 @@ export function mountBookshelf(root, options = {}) {
   });
 
   listen($("#backBtn"), "click", () => closeBookFlow());
+
+  // Browser Back from the full note restores this page from bfcache, still open.
+  // Land on the shelf at the scroll we saved, without replaying the close clock.
+  listen(window, "pageshow", (event) => {
+    if (!event.persisted || !openBook) return;
+    const home = scrollLock
+      ? { x: scrollLock.x, y: scrollLock.y }
+      : { x: scrollHome.x, y: scrollHome.y };
+    try { releaseScrollLock(); } catch (_) {}
+    openBook = null;
+    openFromExpanded = false;
+    expandedId = null;
+    touchExpandedId = null;
+    busy = false;
+    flowSeq += 1;
+    document.body.classList.remove("is-busy");
+    noteView.classList.remove("is-open", "is-preparing");
+    noteView.hidden = true;
+    noteView.style.opacity = "";
+    noteView.style.zIndex = "";
+    if (stage) stage.replaceChildren();
+    resetVeil();
+    resetBackdrop();
+    unparkShelf();
+    shelfView.classList.remove("is-frozen", "is-dim", "is-parked");
+    shelfView.style.opacity = "";
+    try { shelfView.style.removeProperty("min-height"); } catch (_) {}
+    renderShelf();
+    writeScroll(home);
+    requestAnimationFrame(() => writeScroll(home));
+  });
+
+  // Leaving for the post page: remember the shelf scroll so Back lands on it.
+  listen(root, "click", (event) => {
+    const target = event.target;
+    if (!target || !target.closest) return;
+    const link = target.closest("a.flyer-page-more, a.note-read");
+    if (!link || !root.contains(link)) return;
+    const y = scrollLock ? scrollLock.y : readScroll().y;
+    try { sessionStorage.setItem("garden-bookshelf-scroll", String(y)); } catch (_) {}
+  });
 
   // Escape closes note
   listen(window, "keydown", (e) => {

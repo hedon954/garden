@@ -20,6 +20,10 @@ export type BookshelfBook = {
   filler?: BookshelfFiller;
   /** Key into the notes map. Null means the demo placeholder paragraph. */
   note?: string | null;
+  /** `content/posts` path without `.md`, when the note is a post. */
+  post?: string;
+  /** Full-note address, shaped for this build. Set when `post` is set. */
+  href?: string;
 };
 
 export type BookshelfShelf = {
@@ -31,6 +35,8 @@ export type BookshelfShelf = {
 export type BookshelfNote = {
   title: string;
   body: string;
+  /** The post's front matter description. The open book's right page. */
+  summary?: string;
 };
 
 export type BookshelfProps = {
@@ -41,4 +47,9 @@ export type BookshelfProps = {
   title?: string;
   /** Small line above the heading. Omit for the package-demo brand. */
   eyebrow?: string;
+  /**
+   * Site page: the shelf sits in the blog column. The package demo leaves this
+   * unset and keeps its own full-viewport frame.
+   */
+  embedded?: boolean;
 };

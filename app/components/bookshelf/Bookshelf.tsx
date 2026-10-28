@@ -1,9 +1,34 @@
 "use client";
 
 import { useLayoutEffect, useRef } from "react";
+import { siteHref } from "../../lib/site-href";
 import { mountBookshelf } from "./engine";
-import type { BookshelfProps } from "./types";
+import type { BookshelfProps, BookshelfShelf } from "./types";
 import "./bookshelf.css";
+
+const SHELF_SCROLL_KEY = "garden-bookshelf-scroll";
+
+function withNoteLinks(catalog: BookshelfShelf[] | undefined) {
+  if (!catalog) return catalog;
+  return catalog.map((row) => ({
+    ...row,
+    books: row.books.map((book) =>
+      book.post ? { ...book, href: siteHref(`/blog/${book.post}`) } : book,
+    ),
+  }));
+}
+
+function readSavedScroll() {
+  try {
+    const raw = sessionStorage.getItem(SHELF_SCROLL_KEY);
+    if (raw == null) return null;
+    sessionStorage.removeItem(SHELF_SCROLL_KEY);
+    const y = Number(raw);
+    return Number.isFinite(y) ? y : null;
+  } catch {
+    return null;
+  }
+}
 
 const DEMO_BRAND = "花园 · 读书笔记";
 const DEMO_TITLE = "读书笔记";
@@ -49,6 +74,7 @@ function shelfShell(brand: string, title: string) {
             <p class="note-cat" id="noteCat"></p>
             <h1 id="noteTitle"></h1>
             <p class="note-author" id="noteAuthor"></p>
+            <a class="note-read" id="noteRead" hidden>阅读全文</a>
           </div>
         </div>
         <div class="note-body" id="noteBody"></div>
@@ -64,16 +90,26 @@ function shelfShell(brand: string, title: string) {
 }
 
 /** Approved bookshelf. Pass `catalog` and `notes` for a site shelf; omit them for the package demo. */
-export function Bookshelf({ catalog, notes, title, eyebrow }: BookshelfProps) {
+export function Bookshelf({ catalog, notes, title, eyebrow, embedded = false }: BookshelfProps) {
   const ref = useRef<HTMLDivElement>(null);
   useLayoutEffect(() => {
     const root = ref.current;
     if (!root) return;
-    return mountBookshelf(root, { catalog, notes });
-  }, [catalog, notes, title, eyebrow]);
+    const saved = embedded ? readSavedScroll() : null;
+    const applyScroll = () => {
+      if (saved != null) window.scrollTo(0, saved);
+    };
+    applyScroll();
+    const unmount = mountBookshelf(root, { catalog: withNoteLinks(catalog), notes });
+    const frame = window.requestAnimationFrame(applyScroll);
+    return () => {
+      window.cancelAnimationFrame(frame);
+      unmount?.();
+    };
+  }, [catalog, notes, title, eyebrow, embedded]);
   return (
     <div
-      className="bookshelf-demo"
+      className={embedded ? "bookshelf-demo is-site" : "bookshelf-demo"}
       ref={ref}
       dangerouslySetInnerHTML={{ __html: shelfShell(eyebrow || DEMO_BRAND, title || DEMO_TITLE) }}
     />
