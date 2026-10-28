@@ -4,9 +4,10 @@ export type { BookshelfFiller, BookshelfSize };
 
 /**
  * One volume on the shelf.
- * `cover: true` uses the approved jacket at `/covers/<id>.jpg`.
- * A string is a cover URL (Douban). Falsy covers are text spines and are omitted in state A.
- * `color` is the spine cloth. It should be sampled from the cover.
+ * `cover: true` uses the package-demo jacket at `/covers/<id>.jpg`.
+ * A string is a cover URL (`/media/covers/…` for a site shelf, or any absolute URL).
+ * Falsy covers are text spines and are omitted in state A.
+ * `color` is the spine cloth and the open-page palette. Sample it from the cover.
  */
 export type BookshelfBook = {
   id: string;
@@ -33,6 +34,11 @@ export type BookshelfNote = {
 };
 
 export type BookshelfProps = {
+  /** Site shelf. Omit both `catalog` and `notes` for the package demo. */
   catalog?: BookshelfShelf[];
   notes?: Record<string, BookshelfNote>;
+  /** Heading on the shelf. Omit for the package-demo title. */
+  title?: string;
+  /** Small line above the heading. Omit for the package-demo brand. */
+  eyebrow?: string;
 };

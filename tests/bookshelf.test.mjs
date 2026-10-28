@@ -1,6 +1,11 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
 import test from "node:test";
+import { loadBookshelf } from "../app/bookshelf/load.mjs";
+import { resolveBookshelfCover } from "../app/components/bookshelf/catalog.mjs";
+import { DEMO_CATALOG } from "../app/components/bookshelf/demo-data.ts";
 import { BookshelfConfigError, parseBookshelfConfig } from "../app/components/bookshelf/schema.ts";
 import { flipTransform, pageDensity } from "../app/components/bookshelf/density.ts";
 
@@ -95,3 +100,162 @@ test("bookshelf.yaml rejects a broken shelf and keeps a valid one", () => {
     assert.throws(() => parseBookshelfConfig(input), (error) => error instanceof BookshelfConfigError && error.code === code);
   }
 });
+
+test("a cover file name is published at /media/covers, and a full URL is kept", () => {
+  assert.equal(resolveBookshelfCover("ddia.jpg"), "/media/covers/ddia.jpg");
+  assert.equal(resolveBookshelfCover("covers/ddia.jpg"), "/media/covers/ddia.jpg");
+  assert.equal(resolveBookshelfCover("My File.JPG"), "/media/covers/My-File.jpg");
+  assert.equal(resolveBookshelfCover("https://img.example/a.jpg"), "https://img.example/a.jpg");
+  assert.equal(resolveBookshelfCover("/media/covers/ddia.jpg"), "/media/covers/ddia.jpg");
+  assert.equal(resolveBookshelfCover("//cdn.example/a.png"), "//cdn.example/a.png");
+  assert.throws(
+    () => resolveBookshelfCover("../secret.jpg"),
+    (error) => error instanceof BookshelfConfigError && error.code === "cover",
+  );
+});
+
+test("bookshelf.yaml becomes that site's catalog and notes, never the demo set", () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "garden-shelf-"));
+  try {
+    fs.mkdirSync(path.join(dir, "content", "posts", "note"), { recursive: true });
+    fs.writeFileSync(path.join(dir, "content", "posts", "note", "window.md"), `---
+title: 窗边的位置
+description: 把阅读位置记成连续体验的锚点，而不是页码。
+cover: window-book.jpg
+---
+
+打开书先看这一页。
+
+## 带走的
+
+位置比页码重要。
+
+\`\`\`garden chart
+type: bar
+title: 不要出现在笔记里
+x: ["a"]
+series:
+  - name: n
+    data: [1]
+\`\`\`
+`);
+    fs.writeFileSync(path.join(dir, "content", "posts", "note", "fallback.md"), `---
+title: 文内封面
+description: 这份摘要来自博文，不来自 demo。
+cover: from-post.jpg
+---
+
+正文只有这一段，足够做成笔记。
+`);
+    fs.writeFileSync(path.join(dir, "content", "bookshelf.yaml"), `title: 架上的真笔记
+description: 站点自己的书架。
+eyebrow: 书房
+shelves:
+  - id: desk
+    name: 书桌
+    books:
+      - id: window-book
+        title: 窗边
+        author: 一位读者
+        cover: window-book.jpg
+        color: "#8b3a2f"
+        post: note/window
+      - id: fallback-book
+        title: 沿用文内封面
+        post: note/fallback
+      - id: remote-book
+        title: 远端封面
+        cover: https://img.example/remote.jpg
+        note: |
+          ## 短记
+          这是 yaml 里的笔记，不是 demo。
+      - id: spacer
+        title: 札记
+        filler: sand
+`);
+
+    const shelf = loadBookshelf(dir);
+    assert.ok(shelf);
+    assert.equal(shelf.title, "架上的真笔记");
+    assert.equal(shelf.eyebrow, "书房");
+    const books = shelf.catalog[0]?.books ?? [];
+    assert.deepEqual(books.map((book) => book.id), ["window-book", "fallback-book", "remote-book", "spacer"]);
+    assert.equal(books[0]?.title, "窗边");
+    assert.equal(books[0]?.cover, "/media/covers/window-book.jpg");
+    assert.equal(books[0]?.color, "#8b3a2f");
+    assert.equal(books[0]?.size, "s-mid");
+    assert.equal(books[0]?.note, "window-book");
+    const note = shelf.notes["window-book"];
+    assert.ok(note);
+    assert.match(note.body, /把阅读位置记成连续体验的锚点，而不是页码。/);
+    assert.match(note.body, /<h2>带走的<\/h2>/);
+    assert.match(note.body, /位置比页码重要。/);
+    assert.equal(note.body.includes("不要出现在笔记里"), false);
+    assert.equal(note.body.includes("代码整洁之道"), false);
+    assert.equal(books[1]?.cover, "/media/covers/from-post.jpg");
+    assert.match(shelf.notes["fallback-book"]?.body ?? "", /这份摘要来自博文，不来自 demo。/);
+    assert.equal(books[2]?.cover, "https://img.example/remote.jpg");
+    assert.match(shelf.notes["remote-book"]?.body ?? "", /这是 yaml 里的笔记，不是 demo。/);
+    assert.equal(books[3]?.size, "thin");
+    assert.equal(books[3]?.cover, false);
+    assert.equal(books[3]?.note, null);
+    const demoIds = new Set(DEMO_CATALOG.flatMap((row) => row.books.map((book) => book.id)));
+    assert.equal(books.some((book) => demoIds.has(book.id)), false);
+    assert.equal(JSON.stringify(shelf.notes).includes("DRY 不是少敲几行字"), false);
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("a missing post or a cover that leaves the site fails the shelf", () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "garden-shelf-bad-"));
+  try {
+    fs.mkdirSync(path.join(dir, "content"), { recursive: true });
+    fs.writeFileSync(path.join(dir, "content", "bookshelf.yaml"), `title: 坏架
+shelves:
+  - id: a
+    name: 行
+    books:
+      - id: missing
+        title: 没有稿
+        post: note/missing
+`);
+    assert.throws(() => loadBookshelf(dir), (error) => error instanceof BookshelfConfigError && error.code === "post");
+
+    fs.writeFileSync(path.join(dir, "content", "bookshelf.yaml"), `title: 坏架
+shelves:
+  - id: a
+    name: 行
+    books:
+      - id: leak
+        title: 坏封面
+        cover: ../secret.jpg
+`);
+    assert.throws(() => loadBookshelf(dir), (error) => error instanceof BookshelfConfigError && error.code === "cover");
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("without bookshelf.yaml the loader stays empty so the package demo can mount", () => {
+  assert.equal(loadBookshelf(projectRoot()), null);
+  const page = read("app/bookshelf/page.tsx");
+  const engine = read("app/components/bookshelf/engine.ts");
+  const chrome = read("app/components/SiteChrome.tsx");
+  const layout = read("app/layout.tsx");
+  assert.match(page, /from "@garden\/bookshelf"/);
+  assert.match(page, /catalog=\{shelf\.catalog\}/);
+  assert.match(page, /notes=\{shelf\.notes\}/);
+  assert.match(page, /return <Bookshelf \/>/);
+  assert.match(engine, /options\.catalog \?\? DEMO_CATALOG/);
+  assert.match(engine, /options\.catalog \? \{\} : DEMO_NOTES/);
+  assert.match(engine, /book\.color/);
+  assert.match(chrome, /bookshelfSite/);
+  assert.match(layout, /bookshelfSite=\{bookshelf != null\}/);
+  assert.match(read("scripts/build-content.mjs"), /loadBookshelf\(root, posts\)/);
+  assert.equal(DEMO_CATALOG[0]?.books[0]?.id, "clean-code");
+});
+
+function projectRoot() {
+  return path.resolve(new URL("..", import.meta.url).pathname);
+}

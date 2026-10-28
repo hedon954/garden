@@ -38,8 +38,11 @@ function injectExtraCovers(catalog) {
 }
 
 export function mountBookshelf(root, options = {}) {
+  // A passed catalog is a site shelf. Demo notes and demo copy stay on the
+  // package preview, which mounts this with no catalog.
   const CATALOG = options.catalog ?? DEMO_CATALOG;
-  const NOTES = options.notes ?? DEMO_NOTES;
+  const NOTES = options.notes ?? (options.catalog ? {} : DEMO_NOTES);
+  const usingDemo = !options.catalog;
   const removeExtraCovers = injectExtraCovers(CATALOG);
 
   // ux26: per-book cover dominant (= existing bk-* spine colors) for open-shell + page wash
@@ -100,8 +103,11 @@ export function mountBookshelf(root, options = {}) {
 
   function bookShellHex(book) {
     if (!book) return "#5a6a88";
-    if (book.filler === "sand") return COVER_SHELL.sand;
+    if (book.filler === "sand" || book.filler === true) return COVER_SHELL.sand;
     if (book.filler === "cream") return COVER_SHELL.cream;
+    // Site books carry the sampled cover color. Demo jackets keep COVER_SHELL.
+    const color = typeof book.color === "string" ? book.color.trim() : "";
+    if (/^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(color)) return color;
     return COVER_SHELL[book.id] || "#5a6a88";
   }
 
@@ -179,6 +185,7 @@ export function mountBookshelf(root, options = {}) {
       if (text.length >= 24) return text;
     }
     const who = book && book.author ? ` · ${book.author}` : "";
+    if (!usingDemo) return (book && (book.author || book.title)) || "";
     return `《${book.title}》的读书笔记摘要${who}。正式站会换成完整笔记；Demo 先占这一页。`;
   }
 
@@ -675,8 +682,10 @@ export function mountBookshelf(root, options = {}) {
     const note = NOTES[book.note];
     if (note) {
       $("#noteBody").innerHTML = note.body;
-    } else {
+    } else if (usingDemo) {
       $("#noteBody").innerHTML = `<p class="placeholder">这本还没有完整笔记正文。Demo 占位：返回书架继续抽翻验收。</p><p>${book.title}${book.author ? " · " + book.author : ""}</p>`;
+    } else {
+      $("#noteBody").innerHTML = `<p class="placeholder">这本还没有笔记正文。</p><p>${escapeHtml(book.title)}${book.author ? " · " + escapeHtml(book.author) : ""}</p>`;
     }
   }
 
