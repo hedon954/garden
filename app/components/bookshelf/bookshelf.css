@@ -6,7 +6,10 @@
 .bookshelf-demo .cover.is-extracting:hover,
 .bookshelf-demo .spine.is-extracting,
 .bookshelf-demo .spine.is-extracting:hover,
-.bookshelf-demo .spine.is-extracting.is-expanded {
+.bookshelf-demo .spine.is-extracting.is-expanded,
+.bookshelf-demo .spine.is-seat,
+.bookshelf-demo .spine.is-seat:hover,
+.bookshelf-demo .spine.is-seat:focus-visible {
   transform: none !important;
   box-shadow: none !important;
   transition: none !important;

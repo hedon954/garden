@@ -754,15 +754,23 @@ export function mountBookshelf(root, options = {}) {
     return `translate(${tx}px, ${ty}px) scale(${sx}, ${sy})${extra ? " " + extra : ""}`;
   }
 
-  // Closed book: cover on RIGHT half. Uniform scale only (non-uniform sx/sy = stretch jitter).
+  // Closed book: cover on RIGHT half.
+  // Covers stay uniform (sx ≈ sy). A narrow spine must NOT share that one scale:
+  // min(spineW / halfSpread, spineH / spreadH) ≈ 0.09 crushes height to ~45px.
+  // Spine slot: scale X and Y apart so the flyer box height stays the resting spine.
   function closedCoverTransform(slotRect, mid) {
     const halfW = mid.width / 2;
     const sx = slotRect.width / halfW;
     const sy = slotRect.height / mid.height;
+    const narrow = slotRect.width / Math.max(1, slotRect.height) < 0.42;
+    if (narrow) {
+      const tx = slotRect.left - mid.left - halfW * sx;
+      const ty = slotRect.top - mid.top;
+      return `translate(${tx.toFixed(2)}px, ${ty.toFixed(2)}px) scale(${sx.toFixed(4)}, ${sy.toFixed(4)})`;
+    }
     const s = Math.min(sx, sy);
     const scaledHalfW = halfW * s;
     const scaledH = mid.height * s;
-    // Center scaled right-half over slot
     const tx = slotRect.left - mid.left - halfW * s + (slotRect.width - scaledHalfW) / 2;
     const ty = slotRect.top - mid.top + (slotRect.height - scaledH) / 2;
     return `translate(${tx.toFixed(2)}px, ${ty.toFixed(2)}px) scale(${s.toFixed(4)})`;
@@ -906,19 +914,27 @@ export function mountBookshelf(root, options = {}) {
   // Parse translate/scale from our path strings; lerp components so grow ≠ hard jump (PATH-SHAKE ~2.2s).
   function parseTS(transform) {
     const s = String(transform || "");
-    let tx = 0, ty = 0, sc = 1;
+    let tx = 0, ty = 0, sx = 1, sy = 1;
     let m = s.match(/translate3d\(\s*([\d.-]+)px\s*,\s*([\d.-]+)px/);
     if (m) { tx = +m[1]; ty = +m[2]; }
     else {
       m = s.match(/translate\(\s*([\d.-]+)px\s*,\s*([\d.-]+)px/);
       if (m) { tx = +m[1]; ty = +m[2]; }
     }
-    m = s.match(/scale\(\s*([\d.-]+)\s*(?:,\s*[\d.-]+)?\s*\)/);
-    if (m) sc = +m[1];
-    return { tx, ty, s: sc };
+    m = s.match(/scale\(\s*([\d.-]+)(?:\s*,\s*([\d.-]+))?\s*\)/);
+    if (m) {
+      sx = +m[1];
+      sy = m[2] != null ? +m[2] : sx;
+    }
+    return { tx, ty, sx, sy };
   }
   function formatTS(p) {
-    return `translate(${p.tx.toFixed(2)}px, ${p.ty.toFixed(2)}px) scale(${p.s.toFixed(4)})`;
+    const sx = p.sx != null ? p.sx : p.s;
+    const sy = p.sy != null ? p.sy : sx;
+    const scale = Math.abs(sx - sy) < 1e-4
+      ? `scale(${sx.toFixed(4)})`
+      : `scale(${sx.toFixed(4)}, ${sy.toFixed(4)})`;
+    return `translate(${p.tx.toFixed(2)}px, ${p.ty.toFixed(2)}px) ${scale}`;
   }
   function lerpTS(a, b, t) {
     const u = Math.max(0, Math.min(1, t));
@@ -927,7 +943,8 @@ export function mountBookshelf(root, options = {}) {
     return formatTS({
       tx: pa.tx + (pb.tx - pa.tx) * u,
       ty: pa.ty + (pb.ty - pa.ty) * u,
-      s: pa.s + (pb.s - pa.s) * u,
+      sx: pa.sx + (pb.sx - pa.sx) * u,
+      sy: pa.sy + (pb.sy - pa.sy) * u,
     });
   }
 
@@ -2422,6 +2439,21 @@ export function mountBookshelf(root, options = {}) {
       openFromExpanded = false;
       restoreSlot(slot, book);
       try { slot.classList.remove("is-extracting"); } catch (_) {}
+      // Pointer is often still over the returned spine. :hover is translateY(-8px)
+      // scale(1.06), which measures ~8–11px taller than neighbors. Hold that off
+      // until the pointer leaves; drop immediately if it is not hovering.
+      if (targetMode === "spines" && slot) {
+        slot.classList.add("is-seat");
+        const releaseSeat = () => {
+          slot.classList.remove("is-seat");
+          slot.removeEventListener("pointerleave", releaseSeat);
+        };
+        slot.addEventListener("pointerleave", releaseSeat);
+        requestAnimationFrame(() => {
+          if (!slot.isConnected) return;
+          if (!slot.matches(":hover")) releaseSeat();
+        });
+      }
       // ux23: drop close-path inline cover pin; resting .img-* CSS owns the seat again
       if (targetMode === "covers" && slot) {
         ["background-image", "background-size", "background-position", "background-repeat", "background-color"].forEach((p) => {
