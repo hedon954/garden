@@ -337,10 +337,14 @@ export function mountBookshelf(root, options = {}) {
     return null;
   }
 
-  // ux21 lock: touch / hover:none resting = all covers (全封面).
-  // hover:none alone — do not also require pointer:coarse (DevTools 窄屏/部分真机否则会掉回立脊).
+  // ux21 lock: mobile resting = all covers (全封面).
+  // Match CSS mobile shelf: (hover:none) OR max-width 640.
+  // DevTools「手机 393」often keeps hover:hover — width gate is required or autoDecide→spines.
   function isMobilePrimary() {
-    return window.matchMedia("(hover: none)").matches;
+    return (
+      window.matchMedia("(hover: none)").matches ||
+      window.matchMedia("(max-width: 640px)").matches
+    );
   }
 
   // Density: compute once on enter (pin), unless ?force= QA or explicit B spines.
