@@ -31,17 +31,20 @@ test("flip places the cloth book on the slot it came from", () => {
   );
 });
 
-test("open and close clocks stay on the approved timeline", () => {
+test("open and close clocks stay on one timeline, with the shorter motion pass", () => {
   const engine = read("app/components/bookshelf/engine.ts");
-  assert.match(engine, /export const OPEN_MS = 2600/);
-  assert.match(engine, /export const CLOSE_MS = 2600/);
+  assert.match(engine, /export const OPEN_MS = 2100/);
+  assert.match(engine, /export const CLOSE_MS = 1650/);
   assert.match(engine, /export const EASE = "cubic-bezier\(0\.32, 0\.72, 0, 1\)"/);
-  assert.match(engine, /const PUT_MS = 425/);
-  assert.match(engine, /const XFADE_MS = 150/);
+  assert.match(engine, /const PUT_MS = 340/);
+  assert.match(engine, /const XFADE_MS = 120/);
   assert.match(engine, /easing: "linear"/);
   assert.match(engine, /cubic-bezier\(0\.22, 1, 0\.36, 1\)/);
-  assert.match(engine, /offset: 0\.78/);
+  assert.match(engine, /offset: 0\.48, transform: "rotateY\(-155deg\)"/);
+  assert.match(engine, /const NOTE_READY = 0\.86/);
+  assert.match(engine, /dupUntil = now \+ 80/);
   assert.doesNotMatch(engine, /commitStyles\(/);
+  assert.doesNotMatch(engine, /pointer-events: none/);
 });
 
 test("the veil is a scaled circle, scoped under the shelf, with the approved jackets", () => {
@@ -50,6 +53,11 @@ test("the veil is a scaled circle, scoped under the shelf, with the approved jac
   assert.match(css, /\.bookshelf-demo \.open-veil-blob \{[^}]*border-radius:\s*50%/s);
   assert.match(css, /scale\(0\)/);
   assert.match(css, /url\("\/covers\/clean-code\.jpg"\)/);
+  assert.match(css, /#fffcf6/);
+  assert.match(css, /#faf9f5/);
+  assert.doesNotMatch(css, /#e8e0d0|#f5f0e6/);
+  assert.doesNotMatch(css, /cursor:\s*wait/);
+  assert.doesNotMatch(css, /body\.is-busy/);
   assert.doesNotMatch(css, /(^|\n):root \{/);
   assert.doesNotMatch(css, /(^|\n)\.cover \{/);
   assert.doesNotMatch(css, /(^|\n)h1 \{/);

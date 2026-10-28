@@ -6,8 +6,8 @@ import { DEMO_CATALOG, DEMO_NOTES } from "./demo-data";
 import { flipTransform, MID_H, MID_W, pageDensity } from "./density";
 
 export const EASE = "cubic-bezier(0.32, 0.72, 0, 1)";
-export const OPEN_MS = 2600;
-export const CLOSE_MS = 2600;
+export const OPEN_MS = 2100;
+export const CLOSE_MS = 1650;
 
 function cssIdent(id) {
   return String(id).replace(/[^a-zA-Z0-9_-]/g, "");
@@ -57,7 +57,43 @@ export function mountBookshelf(root, options = {}) {
 
   let pageMode = "spines"; // covers | spines
   let modeOverride = null; // auto | covers | spines | null→from query
-  let busy = false;
+  let flight = 0;
+  let dupUntil = 0;
+
+  function beginFlight() {
+    const now = performance.now();
+    if (now < dupUntil) return 0;
+    dupUntil = now + 80;
+    flight += 1;
+    return flight;
+  }
+
+  function superseded(token) {
+    return token !== flight;
+  }
+
+  function stopAnimations() {
+    for (const node of [openVeilBlob, openVeil, shelfView, noteView, stage]) {
+      if (!node) continue;
+      try {
+        node.getAnimations({ subtree: true }).forEach((anim) => {
+          try { anim.cancel(); } catch (_) {}
+        });
+      } catch (_) {}
+    }
+    if (stage) stage.querySelectorAll(".flyer").forEach((node) => disposeFlyer(node));
+    $$(".cover, .spine").forEach((el) => restoreSlot(el));
+    if (shelfView) {
+      shelfView.hidden = false;
+      shelfView.style.opacity = "";
+      shelfView.classList.remove("is-dim");
+    }
+    resetVeil();
+  }
+
+  function releasePointer() {
+    document.body.classList.remove("is-busy");
+  }
   let expandedId = null;
   let openBook = null;
   let openFromExpanded = false;
@@ -224,7 +260,7 @@ export function mountBookshelf(root, options = {}) {
             });
             btn.addEventListener("pointerleave", (e) => {
               if (e.pointerType === "touch") return;
-              if (!busy) collapseSpine(book.id);
+              collapseSpine(book.id);
             });
           }
 
@@ -249,7 +285,7 @@ export function mountBookshelf(root, options = {}) {
   }
 
   function expandSpine(id) {
-    if (busy || pageMode !== "spines") return;
+    if (pageMode !== "spines") return;
     const found = bookById(id);
     if (!found || !found.book.cover || found.book.filler) return;
     cancelCollapse();
@@ -288,14 +324,12 @@ export function mountBookshelf(root, options = {}) {
   }
 
   async function onCoverClick(id, el) {
-    if (busy) return;
     const found = bookById(id);
     if (!found || found.book.filler) return;
     await openBookFlow(found.book, found.cat, el, { fromExpanded: false, asSpine: false });
   }
 
   async function onSpineClick(id, el, ev) {
-    if (busy) return;
     const found = bookById(id);
     if (!found) return;
     if (found.book.filler || !found.book.cover) return;
@@ -557,13 +591,15 @@ export function mountBookshelf(root, options = {}) {
   }
 
   async function openBookFlow(book, cat, sourceEl, { fromExpanded, asSpine }) {
-    if (busy) return;
-    busy = true;
+    const token = beginFlight();
+    if (!token) return;
+    stopAnimations();
     document.body.classList.add("is-busy");
     openBook = { book, cat, asSpine, fromExpanded: !!fromExpanded };
     openFromExpanded = !!fromExpanded;
 
     await prepareNote(book, cat);
+    if (superseded(token)) return;
 
     if (reduceMotion()) {
       sourceEl.classList.add("is-placeholder");
@@ -575,8 +611,7 @@ export function mountBookshelf(root, options = {}) {
       noteView.classList.add("is-open");
       noteView.style.opacity = "1";
       shelfView.hidden = true;
-      busy = false;
-      document.body.classList.remove("is-busy");
+      releasePointer();
       return;
     }
 
@@ -664,29 +699,30 @@ export function mountBookshelf(root, options = {}) {
       // After timeline we'll force cover face; during flight keep spine face visual fading label
     }
 
+    // Flip finishes near-flat before the veil grows. Same eased clock as the pull.
     const aHinge = flyer._front.animate(
       [
         { offset: 0, transform: "rotateY(0deg)" },
         { offset: 0.18, transform: "rotateY(0deg)" },
-        { offset: 0.32, transform: "rotateY(-35deg)" },
-        { offset: 0.48, transform: "rotateY(-95deg)" },
-        { offset: 0.62, transform: "rotateY(-140deg)" },
-        { offset: 0.72, transform: "rotateY(-155deg)" },
+        { offset: 0.26, transform: "rotateY(-50deg)" },
+        { offset: 0.34, transform: "rotateY(-110deg)" },
+        { offset: 0.42, transform: "rotateY(-145deg)" },
+        { offset: 0.48, transform: "rotateY(-155deg)" },
         { offset: 1.0, transform: "rotateY(-155deg)" },
       ],
       opts
     );
 
-    // Veil: scale only (no clip-path). Grows across mid phase, then fades to reveal article.
+    // Veil: scale only (no clip-path). Stays small through the flip, then a light cream wash.
     const aVeil = openVeilBlob.animate(
       [
-        { offset: 0, transform: "translateZ(0) scale(0)", opacity: 1 },
-        { offset: 0.28, transform: "translateZ(0) scale(0.05)", opacity: 1 },
-        { offset: 0.42, transform: "translateZ(0) scale(0.25)", opacity: 1 },
-        { offset: 0.55, transform: "translateZ(0) scale(0.55)", opacity: 1 },
-        { offset: 0.68, transform: "translateZ(0) scale(0.85)", opacity: 1 },
-        { offset: 0.78, transform: "translateZ(0) scale(1)", opacity: 1 },
-        { offset: 0.88, transform: "translateZ(0) scale(1)", opacity: 0.35 },
+        { offset: 0, transform: "translateZ(0) scale(0)", opacity: 0.55 },
+        { offset: 0.42, transform: "translateZ(0) scale(0.03)", opacity: 0.6 },
+        { offset: 0.52, transform: "translateZ(0) scale(0.1)", opacity: 0.65 },
+        { offset: 0.64, transform: "translateZ(0) scale(0.35)", opacity: 0.72 },
+        { offset: 0.76, transform: "translateZ(0) scale(0.7)", opacity: 0.78 },
+        { offset: 0.86, transform: "translateZ(0) scale(1)", opacity: 0.82 },
+        { offset: 0.93, transform: "translateZ(0) scale(1)", opacity: 0.22 },
         { offset: 1.0, transform: "translateZ(0) scale(1)", opacity: 0 },
       ],
       opts
@@ -696,8 +732,8 @@ export function mountBookshelf(root, options = {}) {
     const aNote = noteView.animate(
       [
         { offset: 0, opacity: 0 },
-        { offset: 0.72, opacity: 0 },
-        { offset: 0.82, opacity: 1 },
+        { offset: 0.84, opacity: 0 },
+        { offset: 0.92, opacity: 1 },
         { offset: 1.0, opacity: 1 },
       ],
       opts
@@ -705,30 +741,48 @@ export function mountBookshelf(root, options = {}) {
 
     const group = [aFlyer, aHinge, aVeil, aNote];
     if (aLabel) group.push(aLabel);
+    const openShadow = flyer.querySelector(".flyer-shadow");
+    if (openShadow) {
+      group.push(openShadow.animate(
+        [
+          { offset: 0, opacity: 0.4 },
+          { offset: 0.22, opacity: 0.22 },
+          { offset: 0.42, opacity: 0.08 },
+          { offset: 1, opacity: 0.06 },
+        ],
+        opts
+      ));
+    }
 
     // Hide shelf under note near reveal (opacity only, no layout) via WAAPI on shelf
     const aShelf = shelfView.animate(
       [
         { offset: 0, opacity: 1 },
-        { offset: 0.7, opacity: 0.35 },
-        { offset: 0.82, opacity: 0 },
+        { offset: 0.82, opacity: 0.4 },
+        { offset: 0.92, opacity: 0 },
         { offset: 1, opacity: 0 },
       ],
       opts
     );
     group.push(aShelf);
 
-    // REMOVE flyer the instant eased progress hits veil-full / article-visible.
-    // Do NOT use linear setTimeout(OPEN_MS*0.78) — ease-out reaches offset 0.78 much earlier
-    // in wall-clock (article readable ~1.4s while linear kill was ~2.0s → linger).
+    // Flyer leaves when the veil is full and the note is readable (eased progress, not a timeout).
+    const NOTE_READY = 0.86;
     let flyerAlive = true;
+    const revealNote = () => {
+      if (superseded(token)) return;
+      noteView.classList.remove("is-preparing");
+      noteView.classList.add("is-open");
+      releasePointer();
+    };
     const killFlyerNow = () => {
       if (!flyerAlive) return;
       flyerAlive = false;
       disposeFlyer(flyer);
+      revealNote();
     };
     const watchKill = () => {
-      if (!flyerAlive) return;
+      if (!flyerAlive || superseded(token)) return;
       try {
         const pNote = aNote.effect && aNote.effect.getComputedTiming
           ? aNote.effect.getComputedTiming().progress
@@ -737,7 +791,7 @@ export function mountBookshelf(root, options = {}) {
           ? aVeil.effect.getComputedTiming().progress
           : null;
         const noteOp = parseFloat(getComputedStyle(noteView).opacity) || 0;
-        if ((pNote != null && pNote >= 0.78) || (pVeil != null && pVeil >= 0.78) || noteOp >= 0.2) {
+        if ((pNote != null && pNote >= NOTE_READY) || (pVeil != null && pVeil >= NOTE_READY) || noteOp >= 0.2) {
           killFlyerNow();
           return;
         }
@@ -749,23 +803,24 @@ export function mountBookshelf(root, options = {}) {
     try {
       await runGroup(group, OPEN_MS + 400);
     } finally {
+      if (superseded(token)) return;
       killFlyerNow();
-      noteView.classList.remove("is-preparing");
-      noteView.classList.add("is-open");
+      revealNote();
       noteView.style.opacity = "1";
       shelfView.hidden = true;
       shelfView.style.opacity = "";
       shelfView.classList.remove("is-dim");
       resetVeil();
       restoreSlot(sourceEl);
-      busy = false;
-      document.body.classList.remove("is-busy");
+      releasePointer();
     }
   }
 
   async function closeBookFlow() {
-    if (busy || !openBook) return;
-    busy = true;
+    if (!openBook) return;
+    const token = beginFlight();
+    if (!token) return;
+    stopAnimations();
     document.body.classList.add("is-busy");
 
     const { book, asSpine } = openBook;
@@ -783,8 +838,7 @@ export function mountBookshelf(root, options = {}) {
           : $(`.spine[data-book-id="${book.id}"]`)
       );
       openBook = null;
-      busy = false;
-      document.body.classList.remove("is-busy");
+      releasePointer();
       return;
     }
 
@@ -805,8 +859,7 @@ export function mountBookshelf(root, options = {}) {
       noteView.classList.remove("is-open", "is-preparing");
       noteView.hidden = true;
       openBook = null;
-      busy = false;
-      document.body.classList.remove("is-busy");
+      releasePointer();
       return;
     }
     // Landing rect after shelf is shown; scroll slot into view (mobile scroll restore)
@@ -814,6 +867,7 @@ export function mountBookshelf(root, options = {}) {
       slot.scrollIntoView({ block: "nearest", inline: "nearest" });
     } catch (_) {}
     await new Promise((r) => requestAnimationFrame(r));
+    if (superseded(token)) return;
     const endRect = rectOf(slot);
     // Invisible seat (correct size) — real spine crossfades in near land; no placeholder class
     // (avoids opacity:0 leftovers). Hold opacity 0 until put-back crossfade.
@@ -850,13 +904,11 @@ export function mountBookshelf(root, options = {}) {
     promote(openVeilBlob);
 
     const Tend = flipTransform(endRect, mid);
-    // Spec: whole close clock = linear; segment feel via per-keyframe easing.
-    // Put-back ≈425ms (offset 0.837→1) with decel — no long ease-out crawl.
-    // Crossfade: real spine fades in ~150ms before land, overlaps flyer fade ~150ms.
-    const PUT_MS = 425;
-    const XFADE_MS = 150;
-    const putFrom = 1 - PUT_MS / CLOSE_MS;       // ~0.837
-    const xfadeFrom = 1 - XFADE_MS / CLOSE_MS;   // ~0.942
+    // Whole close clock stays linear. Put-back and crossfade are the tail of that clock.
+    const PUT_MS = 340;
+    const XFADE_MS = 120;
+    const putFrom = 1 - PUT_MS / CLOSE_MS;
+    const xfadeFrom = 1 - XFADE_MS / CLOSE_MS;
     const DECEL = "cubic-bezier(0.22, 1, 0.36, 1)";
     const EASE_IO = "cubic-bezier(0.45, 0, 0.55, 1)";
     const closeOpts = { duration: CLOSE_MS, easing: "linear", fill: "forwards" };
@@ -865,11 +917,10 @@ export function mountBookshelf(root, options = {}) {
     const aVeil = openVeilBlob.animate(
       [
         { offset: 0, transform: "translateZ(0) scale(1)", opacity: 1, easing: EASE_IO },
-        { offset: 0.12, transform: "translateZ(0) scale(0.85)", opacity: 1, easing: EASE_IO },
-        { offset: 0.28, transform: "translateZ(0) scale(0.55)", opacity: 1, easing: EASE_IO },
-        { offset: 0.42, transform: "translateZ(0) scale(0.25)", opacity: 1, easing: EASE_IO },
-        { offset: 0.55, transform: "translateZ(0) scale(0.05)", opacity: 1, easing: EASE_IO },
-        { offset: 0.65, transform: "translateZ(0) scale(0)", opacity: 1, easing: "ease-out" },
+        { offset: 0.08, transform: "translateZ(0) scale(0.55)", opacity: 0.9, easing: EASE_IO },
+        { offset: 0.2, transform: "translateZ(0) scale(0.22)", opacity: 0.7, easing: EASE_IO },
+        { offset: 0.34, transform: "translateZ(0) scale(0.05)", opacity: 0.35, easing: EASE_IO },
+        { offset: 0.48, transform: "translateZ(0) scale(0)", opacity: 0, easing: "ease-out" },
         { offset: 1.0, transform: "translateZ(0) scale(0)", opacity: 0 },
       ],
       closeOpts
@@ -878,11 +929,11 @@ export function mountBookshelf(root, options = {}) {
     const aHinge = flyer._front.animate(
       [
         { offset: 0, transform: "rotateY(-155deg)", easing: "linear" },
-        { offset: 0.08, transform: "rotateY(-155deg)", easing: EASE_IO },
-        { offset: 0.22, transform: "rotateY(-140deg)", easing: EASE_IO },
-        { offset: 0.36, transform: "rotateY(-95deg)", easing: EASE_IO },
-        { offset: 0.5, transform: "rotateY(-35deg)", easing: DECEL },
-        { offset: 0.62, transform: "rotateY(0deg)", easing: "linear" },
+        { offset: 0.06, transform: "rotateY(-155deg)", easing: EASE_IO },
+        { offset: 0.16, transform: "rotateY(-140deg)", easing: EASE_IO },
+        { offset: 0.28, transform: "rotateY(-90deg)", easing: EASE_IO },
+        { offset: 0.4, transform: "rotateY(-30deg)", easing: DECEL },
+        { offset: 0.52, transform: "rotateY(0deg)", easing: "linear" },
         { offset: 1.0, transform: "rotateY(0deg)" },
       ],
       closeOpts
@@ -891,8 +942,8 @@ export function mountBookshelf(root, options = {}) {
     const aFlyer = flyer.animate(
       [
         { offset: 0, transform: "translate(0px, -8px) scale(1, 1) rotateZ(0deg)", easing: EASE_IO },
-        { offset: 0.5, transform: "translate(0px, -14px) scale(1, 1) rotateZ(-1deg)", easing: EASE_IO },
-        { offset: 0.7, transform: "translate(0px, -10px) scale(1.02, 1.02) rotateZ(2deg)", easing: EASE_IO },
+        { offset: 0.28, transform: "translate(0px, -14px) scale(1, 1) rotateZ(-1deg)", easing: EASE_IO },
+        { offset: 0.48, transform: "translate(0px, -10px) scale(1.02, 1.02) rotateZ(2deg)", easing: EASE_IO },
         // Put-back segment: ~425ms decel into the slot (no whole-timeline crawl)
         {
           offset: putFrom,
@@ -945,12 +996,28 @@ export function mountBookshelf(root, options = {}) {
       closeOpts
     );
 
+    const closeShadow = flyer.querySelector(".flyer-shadow");
+    const aShadow = closeShadow
+      ? closeShadow.animate(
+          [
+            { offset: 0, opacity: 0.08 },
+            { offset: 0.48, opacity: 0.1 },
+            { offset: putFrom, opacity: 0.35 },
+            { offset: xfadeFrom, opacity: 0.15 },
+            { offset: 1, opacity: 0 },
+          ],
+          closeOpts
+        )
+      : null;
+
     const group = [aVeil, aHinge, aFlyer, aFlyerFade, aSlotIn];
     if (aLabel) group.push(aLabel);
+    if (aShadow) group.push(aShadow);
 
     try {
       await runGroup(group, CLOSE_MS + 400);
     } finally {
+      if (superseded(token)) return;
       // Lock spine visible BEFORE cancel/clear so removeProperty does not flash a gap
       slot.style.opacity = "1";
       disposeFlyer(flyer);
@@ -961,8 +1028,7 @@ export function mountBookshelf(root, options = {}) {
       shelfView.style.opacity = "";
       openBook = null;
       openFromExpanded = false;
-      busy = false;
-      document.body.classList.remove("is-busy");
+      releasePointer();
     }
   }
 
@@ -991,7 +1057,7 @@ export function mountBookshelf(root, options = {}) {
 
   // Escape closes note
   listen(window, "keydown", (e) => {
-    if (e.key === "Escape" && openBook && !busy) closeBookFlow();
+    if (e.key === "Escape" && openBook) closeBookFlow();
   });
 
   let resizeTimer;

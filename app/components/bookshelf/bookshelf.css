@@ -42,7 +42,6 @@
   -webkit-font-smoothing: antialiased;
   min-height: 100vh;
 }
-body.is-busy .bookshelf-demo .shelf-view { pointer-events: none; }
 
 .bookshelf-demo { position: relative; min-height: 100vh; }
 
@@ -536,10 +535,8 @@ body.is-busy .bookshelf-demo .shelf-view { pointer-events: none; }
     radial-gradient(
       circle at center,
       #fffcf6 0%,
-      #f5f0e6 32%,
-      #e8e0d0 52%,
-      #faf9f5 68%,
-      #faf9f5 100%
+      #faf9f5 42%,
+      rgba(250, 249, 245, 0) 70%
     );
   transform: translateZ(0) scale(0);
   transform-origin: center center;
@@ -565,9 +562,9 @@ body.is-busy .bookshelf-demo .shelf-view { pointer-events: none; }
   position: absolute;
   inset: -8% -12% -18% -12%;
   border-radius: 4px;
-  background: rgba(40, 30, 20, 0.28);
-  filter: blur(18px);
-  opacity: 0.9;
+  background: rgba(40, 30, 20, 0.14);
+  filter: blur(8px);
+  opacity: 0.28;
   z-index: -1;
   pointer-events: none;
   transform: translateZ(0);
