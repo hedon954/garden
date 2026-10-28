@@ -1167,6 +1167,16 @@
 body:not(.debug-on) .bookshelf-demo .is-debug { display: none !important; }
 
 /* Site shelf: same column, type, and header as the blog. Motion rules above stay. */
+.bookshelf-page.sh-main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.bookshelf-page .sh-head {
+  width: 100%;
+  max-width: var(--col);
+  margin-inline: auto;
+}
 .bookshelf-page .sh-kicker {
   margin: 0 0 12px;
   font-size: var(--fs-meta);
@@ -1175,6 +1185,9 @@ body:not(.debug-on) .bookshelf-demo .is-debug { display: none !important; }
 }
 .bookshelf-demo.is-site {
   --site-sans: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Segoe UI", system-ui, sans-serif;
+  width: 100%;
+  max-width: var(--col);
+  margin-inline: auto;
   background: transparent;
   min-height: 0;
   color: inherit;
@@ -1184,7 +1197,7 @@ body:not(.debug-on) .bookshelf-demo .is-debug { display: none !important; }
 }
 .bookshelf-demo.is-site .page {
   width: 100%;
-  max-width: var(--list);
+  max-width: none;
   margin: 0;
   padding: 0 0 8px;
 }
@@ -1215,15 +1228,15 @@ body:has(.bookshelf-demo.is-site) .sh-header .sh-word {
 .bookshelf-demo.is-site .note-view.is-open { z-index: 34; }
 .bookshelf-demo.is-site .open-veil { z-index: 36; }
 .bookshelf-demo.is-site .note {
-  width: min(100%, var(--shell));
+  width: min(100%, var(--col));
   margin: 0 auto;
-  padding: 28px 32px 80px;
+  padding: 28px 0 80px;
 }
 .bookshelf-demo.is-site .back-btn,
 .bookshelf-demo.is-site .note-hero,
 .bookshelf-demo.is-site .note-body,
 .bookshelf-demo.is-site .note-read {
-  max-width: var(--list);
+  max-width: none;
   font-family: var(--site-sans);
 }
 .bookshelf-demo.is-site .note-body {
