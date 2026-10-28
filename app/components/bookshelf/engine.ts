@@ -177,6 +177,9 @@ export function mountBookshelf(root, options = {}) {
   function noteSummaryText(book) {
     const key = book && book.note;
     const note = key ? NOTES[key] : null;
+    if (note && typeof note.summary === "string" && note.summary.trim()) {
+      return note.summary.trim().replace(/\s+/g, " ");
+    }
     if (note && note.body) {
       let text = plainFromHtml(note.body);
       // Prefer first real sentence-ish chunk after stripping headings noise
@@ -197,7 +200,11 @@ export function mountBookshelf(root, options = {}) {
 
   function rightPageHtml(book) {
     const summary = escapeHtml(noteSummaryText(book));
-    return `<div class="flyer-page-kicker">读书笔记</div><p class="flyer-page-summary">${summary}</p>`;
+    const href = book && typeof book.href === "string" ? book.href : "";
+    const more = href
+      ? `<a class="flyer-page-more" href="${escapeHtml(href)}">阅读全文</a>`
+      : "";
+    return `<div class="flyer-page-kicker">读书笔记</div><p class="flyer-page-summary">${summary}</p>${more}`;
   }
 
 
@@ -330,12 +337,13 @@ export function mountBookshelf(root, options = {}) {
     return null;
   }
 
-  // ux21: mobile/touch-primary = (hover:none) AND (pointer:coarse).
-  // Prefer this over max-width so a narrow desktop window still uses density pin.
+  // ux21 lock: mobile resting = all covers (全封面).
+  // Match CSS mobile shelf: (hover:none) OR max-width 640.
+  // DevTools「手机 393」often keeps hover:hover — width gate is required or autoDecide→spines.
   function isMobilePrimary() {
     return (
-      window.matchMedia("(hover: none)").matches &&
-      window.matchMedia("(pointer: coarse)").matches
+      window.matchMedia("(hover: none)").matches ||
+      window.matchMedia("(max-width: 640px)").matches
     );
   }
 
@@ -680,6 +688,16 @@ export function mountBookshelf(root, options = {}) {
     const coverEl = $("#noteCover");
     coverEl.className = `note-cover ${bkClass(book)} ${coverClass(book)}`;
     const note = NOTES[book.note];
+    const read = $("#noteRead");
+    if (read) {
+      if (book.href) {
+        read.href = book.href;
+        read.hidden = false;
+      } else {
+        read.hidden = true;
+        read.removeAttribute("href");
+      }
+    }
     if (note) {
       $("#noteBody").innerHTML = note.body;
     } else if (usingDemo) {
@@ -736,15 +754,23 @@ export function mountBookshelf(root, options = {}) {
     return `translate(${tx}px, ${ty}px) scale(${sx}, ${sy})${extra ? " " + extra : ""}`;
   }
 
-  // Closed book: cover on RIGHT half. Uniform scale only (non-uniform sx/sy = stretch jitter).
+  // Closed book: cover on RIGHT half.
+  // Covers stay uniform (sx ≈ sy). A narrow spine must NOT share that one scale:
+  // min(spineW / halfSpread, spineH / spreadH) ≈ 0.09 crushes height to ~45px.
+  // Spine slot: scale X and Y apart so the flyer box height stays the resting spine.
   function closedCoverTransform(slotRect, mid) {
     const halfW = mid.width / 2;
     const sx = slotRect.width / halfW;
     const sy = slotRect.height / mid.height;
+    const narrow = slotRect.width / Math.max(1, slotRect.height) < 0.42;
+    if (narrow) {
+      const tx = slotRect.left - mid.left - halfW * sx;
+      const ty = slotRect.top - mid.top;
+      return `translate(${tx.toFixed(2)}px, ${ty.toFixed(2)}px) scale(${sx.toFixed(4)}, ${sy.toFixed(4)})`;
+    }
     const s = Math.min(sx, sy);
     const scaledHalfW = halfW * s;
     const scaledH = mid.height * s;
-    // Center scaled right-half over slot
     const tx = slotRect.left - mid.left - halfW * s + (slotRect.width - scaledHalfW) / 2;
     const ty = slotRect.top - mid.top + (slotRect.height - scaledH) / 2;
     return `translate(${tx.toFixed(2)}px, ${ty.toFixed(2)}px) scale(${s.toFixed(4)})`;
@@ -888,19 +914,27 @@ export function mountBookshelf(root, options = {}) {
   // Parse translate/scale from our path strings; lerp components so grow ≠ hard jump (PATH-SHAKE ~2.2s).
   function parseTS(transform) {
     const s = String(transform || "");
-    let tx = 0, ty = 0, sc = 1;
+    let tx = 0, ty = 0, sx = 1, sy = 1;
     let m = s.match(/translate3d\(\s*([\d.-]+)px\s*,\s*([\d.-]+)px/);
     if (m) { tx = +m[1]; ty = +m[2]; }
     else {
       m = s.match(/translate\(\s*([\d.-]+)px\s*,\s*([\d.-]+)px/);
       if (m) { tx = +m[1]; ty = +m[2]; }
     }
-    m = s.match(/scale\(\s*([\d.-]+)\s*(?:,\s*[\d.-]+)?\s*\)/);
-    if (m) sc = +m[1];
-    return { tx, ty, s: sc };
+    m = s.match(/scale\(\s*([\d.-]+)(?:\s*,\s*([\d.-]+))?\s*\)/);
+    if (m) {
+      sx = +m[1];
+      sy = m[2] != null ? +m[2] : sx;
+    }
+    return { tx, ty, sx, sy };
   }
   function formatTS(p) {
-    return `translate(${p.tx.toFixed(2)}px, ${p.ty.toFixed(2)}px) scale(${p.s.toFixed(4)})`;
+    const sx = p.sx != null ? p.sx : p.s;
+    const sy = p.sy != null ? p.sy : sx;
+    const scale = Math.abs(sx - sy) < 1e-4
+      ? `scale(${sx.toFixed(4)})`
+      : `scale(${sx.toFixed(4)}, ${sy.toFixed(4)})`;
+    return `translate(${p.tx.toFixed(2)}px, ${p.ty.toFixed(2)}px) ${scale}`;
   }
   function lerpTS(a, b, t) {
     const u = Math.max(0, Math.min(1, t));
@@ -909,8 +943,30 @@ export function mountBookshelf(root, options = {}) {
     return formatTS({
       tx: pa.tx + (pb.tx - pa.tx) * u,
       ty: pa.ty + (pb.ty - pa.ty) * u,
-      s: pa.s + (pb.s - pa.s) * u,
+      sx: pa.sx + (pb.sx - pa.sx) * u,
+      sy: pa.sy + (pb.sy - pa.sy) * u,
     });
+  }
+
+  // Pose for the flyer move. Same tx/ty/sx/sy as the ux26 string, but on the
+  // individual translate and scale properties. A combined transform matrix
+  // decomposes badly when sx ≠ sy (slot height pin) and the flight stutters.
+  function pathPose(transform) {
+    const p = parseTS(transform);
+    return {
+      translate: `${p.tx.toFixed(2)}px ${p.ty.toFixed(2)}px`,
+      scale: `${p.sx.toFixed(4)} ${p.sy.toFixed(4)}`,
+    };
+  }
+  function applyPathPose(el, transform) {
+    if (!el) return;
+    const pose = pathPose(transform);
+    el.style.transform = "none";
+    el.style.translate = pose.translate;
+    el.style.scale = pose.scale;
+  }
+  function pathKey(offset, transform) {
+    return { offset, ...pathPose(transform) };
   }
 
   // ux14 geometric core: ONE diagonal arc slot-center ↔ screen-center.
@@ -1337,7 +1393,7 @@ export function mountBookshelf(root, options = {}) {
       right.style.transform = "rotateY(-8deg)";
       bookEl.style.transform = "rotateX(8deg) translate3d(0,0,0)";
       gutter.style.opacity = "1";
-      flyer.style.transform = "translate3d(0px, -4px, 0) scale(1)";
+      applyPathPose(flyer, "translate(0.00px, -4.00px) scale(1)");
       flyer.style.opacity = "1";
     } else {
       // ux10: closed extract must look like ONE cover/spine — hide board + right page
@@ -1350,7 +1406,7 @@ export function mountBookshelf(root, options = {}) {
       rightThick.style.opacity = "0";
       bookEl.style.transform = "rotateX(8deg) translate3d(0,0,0)";
       gutter.style.opacity = "0";
-      flyer.style.transform = closedCoverTransform(atRect, mid);
+      applyPathPose(flyer, closedCoverTransform(atRect, mid));
       flyer.style.opacity = "1";
     }
     stage.appendChild(flyer);
@@ -1360,7 +1416,7 @@ export function mountBookshelf(root, options = {}) {
   function promote(el) {
     if (!el) return;
     el.classList.add("is-ready");
-    el.style.willChange = "transform, opacity";
+    el.style.willChange = "translate, scale, opacity";
   }
 
   function demote(el) {
@@ -1514,18 +1570,21 @@ export function mountBookshelf(root, options = {}) {
     sourceEl.classList.add("is-extracting"); // CSS: suppress :hover transform while extracting
     if (fromExpanded) {
       sourceEl.classList.remove("is-expanded", "is-collapsing");
-      [
-        "width",
-        "height",
-        "min-width",
-        "min-height",
-        "flex-shrink",
-      ].forEach((p) => {
+      // Drop the expanded cover's width. Do NOT drop a resting spine's height:
+      // clearing it falls through to .s-mid/.s-short (152/136), shorter than the
+      // face height the shelf is already showing, and that short box becomes
+      // homeRect for extract and put-back.
+      ["width", "min-width", "min-height", "flex-shrink"].forEach((p) => {
         try { sourceEl.style.removeProperty(p); } catch (_) {}
       });
+      if (sourceEl.classList.contains("spine") && book && book.cover && !book.filler) {
+        applyFaceSize(sourceEl, book);
+      } else {
+        try { sourceEl.style.removeProperty("height"); } catch (_) {}
+      }
       expandedId = null;
       touchExpandedId = null;
-      void sourceEl.offsetWidth; // reflow to natural spine (transform already none)
+      void sourceEl.offsetWidth; // reflow to resting spine (transform already none)
     } else {
       // Even spine-direct: pointer may still be hovering → :hover lift would skew freeze.
       void sourceEl.offsetWidth;
@@ -1645,13 +1704,13 @@ export function mountBookshelf(root, options = {}) {
     // Same dual: single diagonal to full — no hold-then-slide second segment.
     const aDualMove = dual.animate(
       [
-        { offset: 0, transform: T0 },
-        { offset: 0.12, transform: Tp1 },
-        { offset: 0.28, transform: Tp2 },
-        { offset: 0.44, transform: Tp3 },
-        { offset: 0.58, transform: Tfull },
-        { offset: 0.78, transform: Tfull },
-        { offset: 1.0, transform: Tfull },
+        pathKey(0, T0),
+        pathKey(0.12, Tp1),
+        pathKey(0.28, Tp2),
+        pathKey(0.44, Tp3),
+        pathKey(0.58, Tfull),
+        pathKey(0.78, Tfull),
+        pathKey(1, Tfull),
       ],
       optsMotion
     );
@@ -1811,6 +1870,9 @@ export function mountBookshelf(root, options = {}) {
           try { a.cancel(); } catch (_) {}
         });
       } catch (_) {}
+      // commitStyles does not keep the individual scale/translate pose. Park at
+      // the open spread so close shrinks from 672×504 instead of jumping there.
+      applyPathPose(dual, Tfull);
       dual.style.opacity = "0";
       dual.style.pointerEvents = "none";
       dual.style.visibility = "visible";
@@ -1896,6 +1958,79 @@ export function mountBookshelf(root, options = {}) {
       return;
     }
 
+    // Clock first. Shelf measure, freeze, and rAF used to run before this and
+    // the 0.12 Tfull keyframe then held 672×504 for ~240ms. Stash from open is
+    // enough to start the return; height pin is already in those samples.
+    const closeMotion = { duration: CLOSE_MS, easing: "linear", fill: "forwards" };
+    const closeOpts = { duration: CLOSE_MS, easing: "linear", fill: "forwards" };
+    const stashEarly = openBook.pathTs;
+    let earlyMove = null;
+    let earlyNote = null;
+    let earlyLeft = null;
+    let earlyRight = null;
+    const heldEarly = openBook.heldFlyer;
+    if (
+      heldEarly &&
+      heldEarly.isConnected &&
+      stashEarly &&
+      stashEarly.Tfull &&
+      stashEarly.T0 &&
+      stashEarly.Tp1 &&
+      stashEarly.Tp2 &&
+      stashEarly.Tp3
+    ) {
+      heldEarly.style.visibility = "visible";
+      heldEarly.style.zIndex = "70";
+      heldEarly.style.opacity = "1";
+      promote(heldEarly);
+      earlyMove = heldEarly.animate(
+        [
+          pathKey(0, stashEarly.Tfull),
+          pathKey(0.28, stashEarly.Tp3),
+          pathKey(0.44, stashEarly.Tp2),
+          pathKey(0.60, stashEarly.Tp1),
+          pathKey(0.78, stashEarly.T0),
+          pathKey(0.90, stashEarly.T0),
+          pathKey(1, stashEarly.T0),
+        ],
+        closeMotion
+      );
+      earlyNote = noteView.animate(
+        [
+          { offset: 0, opacity: 1 },
+          { offset: 0.06, opacity: 0.85 },
+          { offset: 0.12, opacity: 0.45 },
+          { offset: 0.22, opacity: 0 },
+          { offset: 1.0, opacity: 0 },
+        ],
+        closeOpts
+      );
+      if (heldEarly._left) {
+        earlyLeft = heldEarly._left.animate(
+          [
+            { offset: 0, transform: "rotateY(8deg)" },
+            { offset: 0.08, transform: "rotateY(20deg)" },
+            { offset: 0.16, transform: "rotateY(70deg)" },
+            { offset: 0.24, transform: "rotateY(140deg)" },
+            { offset: 0.32, transform: "rotateY(180deg)" },
+            { offset: 1.0, transform: "rotateY(180deg)" },
+          ],
+          closeMotion
+        );
+      }
+      if (heldEarly._right) {
+        earlyRight = heldEarly._right.animate(
+          [
+            { offset: 0, opacity: 1, transform: "rotateY(-8deg)" },
+            { offset: 0.20, opacity: 1, transform: "rotateY(-4deg)" },
+            { offset: 0.32, opacity: 0, transform: "rotateY(0deg)" },
+            { offset: 1.0, opacity: 0, transform: "rotateY(0deg)" },
+          ],
+          closeMotion
+        );
+      }
+    }
+
     const mid = midRect(book);
     const originX = mid.left + mid.width / 2;
     const originY = mid.top + mid.height / 2;
@@ -1919,8 +2054,13 @@ export function mountBookshelf(root, options = {}) {
       slot = $(slotSel);
     }
     if (!slot) {
+      try { earlyMove && earlyMove.cancel(); } catch (_) {}
+      try { earlyNote && earlyNote.cancel(); } catch (_) {}
+      try { earlyLeft && earlyLeft.cancel(); } catch (_) {}
+      try { earlyRight && earlyRight.cancel(); } catch (_) {}
       noteView.classList.remove("is-open", "is-preparing");
       noteView.hidden = true;
+      noteView.style.opacity = "";
       openBook = null;
       busy = false;
       document.body.classList.remove("is-busy");
@@ -1943,7 +2083,12 @@ export function mountBookshelf(root, options = {}) {
     });
     slot.classList.remove("is-collapsing", "is-placeholder", "is-expanded");
     expandedId = null;
-    void slot.offsetWidth; // reflow to natural spine after class/inline clear
+    // Spines: re-pin the resting face BEFORE reading the seat. A cleared inline
+    // height is the shorter size-class box, and put-back would keep it.
+    if (targetMode === "spines" && book && book.cover && !book.filler) {
+      applyFaceSize(slot, book);
+    }
+    void slot.offsetWidth; // reflow to resting spine after class/inline clear
     const naturalW = slot.offsetWidth;
     const naturalH = slot.offsetHeight;
     slot.style.flexShrink = "0";
@@ -1999,6 +2144,17 @@ export function mountBookshelf(root, options = {}) {
       frozenHome.width = natW;
       frozenHome.height = natH;
       frozenHome.top = Math.round(bottom - natH);
+    } else if (targetMode === "spines" && naturalH > 0) {
+      // Seat and flyer use the resting spine just measured, not a short
+      // cover-frame stash from extract.
+      const bottom = frozenHome.top + frozenHome.height;
+      frozenHome.width = naturalW;
+      frozenHome.height = naturalH;
+      frozenHome.top = Math.round(bottom - naturalH);
+      if (openBook) {
+        openBook.homeRect = copyRect(frozenHome);
+        openBook.spineHome = copyRect(frozenHome);
+      }
     }
     slot.style.width = frozenHome.width + "px";
     slot.style.minWidth = frozenHome.width + "px";
@@ -2036,8 +2192,10 @@ export function mountBookshelf(root, options = {}) {
     }
     flyer.style.zIndex = "70";
     flyer.style.visibility = "visible";
-    flyer.style.opacity = "0"; // stay hidden under note until reverse clock
-    flyer.style.transform = Tfull; // start at open end pose (transform-aligned)
+    if (!earlyMove) {
+      flyer.style.opacity = "0";
+      applyPathPose(flyer, Tfull); // start at open end pose (transform-aligned)
+    }
     promote(flyer);
     if (flyer._cover) {
       flyer._cover.classList.add("is-cover-ready");
@@ -2107,13 +2265,10 @@ export function mountBookshelf(root, options = {}) {
         `translate3d(${spineOutClose.x.toFixed(2)}px, ${spineOutClose.y.toFixed(2)}px, 0)`;
     }
 
-    // One frame then start reverse clock — note still fully covering.
-    await Promise.race([
-      new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))),
-      wait(32),
-    ]);
+    // Start the reverse on this frame. A pre-clock rAF left the spread parked at
+    // 672×504 while the note was still up (the ~240ms close-start hitch).
     void readyPulse;
-    flyer.style.opacity = "1"; // book layer present under note as reverse begins
+    if (!earlyMove) flyer.style.opacity = "1";
 
     // ux14: TIME-REVERSE of open pathTs — ban separately computed return / end-segment seek.
     const PUT_MS = 380;
@@ -2122,13 +2277,11 @@ export function mountBookshelf(root, options = {}) {
     const xfadeFrom = 1 - XFADE_MS / CLOSE_MS; // ~0.89
     const slotInAt = Math.max(0.86, xfadeFrom - 0.04);
     const flyerFadeAt = Math.min(0.97, slotInAt + 0.06);
-    const closeOpts = { duration: CLOSE_MS, easing: "linear", fill: "forwards" };
-    const closeMotion = { duration: CLOSE_MS, easing: "linear", fill: "forwards" };
 
     resetVeil();
 
     // ux13: note fades ON the book layer while reverse shrink starts — ban instant note unmount.
-    const aNoteOut = noteView.animate(
+    const aNoteOut = earlyNote || noteView.animate(
       [
         { offset: 0, opacity: 1 },
         { offset: 0.06, opacity: 0.85 },
@@ -2139,24 +2292,21 @@ export function mountBookshelf(root, options = {}) {
       closeOpts
     );
 
-    // Open extract was 0→0.32 (T0→Tp1→Tp2→TdualClosed), grow 0.40→0.78.
-    // Close: reverse grow then reverse extract; end = T0 (frozen home) — no approach snap.
-    // TIME-REVERSE of open diagonal — same Ts, no L hang-then-drop.
-    const aFlyerMove = flyer.animate(
+    // Shrink starts at offset 0. The old 0.12 Tfull key was ~228ms parked at 672×504.
+    const aFlyerMove = earlyMove || flyer.animate(
       [
-        { offset: 0, transform: Tfull },
-        { offset: 0.12, transform: Tfull },
-        { offset: 0.28, transform: Tp3 },
-        { offset: 0.44, transform: Tp2 },
-        { offset: 0.60, transform: Tp1 },
-        { offset: 0.78, transform: T0 },
-        { offset: 0.90, transform: T0 },
-        { offset: 1.0, transform: T0 },
+        pathKey(0, Tfull),
+        pathKey(0.28, Tp3),
+        pathKey(0.44, Tp2),
+        pathKey(0.60, Tp1),
+        pathKey(0.78, T0),
+        pathKey(0.90, T0),
+        pathKey(1, T0),
       ],
       closeMotion
     );
     // Reverse hinge on SAME layer while shrink (open was 0.32→0.68 hinge).
-    const aLeftClose = flyer._left
+    const aLeftClose = earlyLeft || (flyer._left
       ? flyer._left.animate(
           [
             { offset: 0, transform: "rotateY(8deg)" },
@@ -2168,8 +2318,8 @@ export function mountBookshelf(root, options = {}) {
           ],
           closeMotion
         )
-      : null;
-    const aRightClose = flyer._right
+      : null);
+    const aRightClose = earlyRight || (flyer._right
       ? flyer._right.animate(
           [
             { offset: 0, opacity: 1, transform: "rotateY(-8deg)" },
@@ -2179,7 +2329,7 @@ export function mountBookshelf(root, options = {}) {
           ],
           closeMotion
         )
-      : null;
+      : null);
     const closedFaceOut = [
       { offset: 0, opacity: 1 },
       { offset: 0.18, opacity: 0.7 },
@@ -2356,7 +2506,7 @@ export function mountBookshelf(root, options = {}) {
           try { a.cancel(); } catch (_) {}
         });
       } catch (_) {}
-      flyer.style.transform = T0; // stay locked on frozen home until slot fully owns pixels
+      applyPathPose(flyer, T0); // stay locked on frozen home until slot fully owns pixels
       flyer.style.opacity = "0";
       slot.style.opacity = "1";
       slot.style.transform = "none";
@@ -2385,6 +2535,21 @@ export function mountBookshelf(root, options = {}) {
       openFromExpanded = false;
       restoreSlot(slot, book);
       try { slot.classList.remove("is-extracting"); } catch (_) {}
+      // Pointer is often still over the returned spine. :hover is translateY(-8px)
+      // scale(1.06), which measures ~8–11px taller than neighbors. Hold that off
+      // until the pointer leaves; drop immediately if it is not hovering.
+      if (targetMode === "spines" && slot) {
+        slot.classList.add("is-seat");
+        const releaseSeat = () => {
+          slot.classList.remove("is-seat");
+          slot.removeEventListener("pointerleave", releaseSeat);
+        };
+        slot.addEventListener("pointerleave", releaseSeat);
+        requestAnimationFrame(() => {
+          if (!slot.isConnected) return;
+          if (!slot.matches(":hover")) releaseSeat();
+        });
+      }
       // ux23: drop close-path inline cover pin; resting .img-* CSS owns the seat again
       if (targetMode === "covers" && slot) {
         ["background-image", "background-size", "background-position", "background-repeat", "background-color"].forEach((p) => {
@@ -2453,6 +2618,47 @@ export function mountBookshelf(root, options = {}) {
   });
 
   listen($("#backBtn"), "click", () => closeBookFlow());
+
+  // Browser Back from the full note restores this page from bfcache, still open.
+  // Land on the shelf at the scroll we saved, without replaying the close clock.
+  listen(window, "pageshow", (event) => {
+    if (!event.persisted || !openBook) return;
+    const home = scrollLock
+      ? { x: scrollLock.x, y: scrollLock.y }
+      : { x: scrollHome.x, y: scrollHome.y };
+    try { releaseScrollLock(); } catch (_) {}
+    openBook = null;
+    openFromExpanded = false;
+    expandedId = null;
+    touchExpandedId = null;
+    busy = false;
+    flowSeq += 1;
+    document.body.classList.remove("is-busy");
+    noteView.classList.remove("is-open", "is-preparing");
+    noteView.hidden = true;
+    noteView.style.opacity = "";
+    noteView.style.zIndex = "";
+    if (stage) stage.replaceChildren();
+    resetVeil();
+    resetBackdrop();
+    unparkShelf();
+    shelfView.classList.remove("is-frozen", "is-dim", "is-parked");
+    shelfView.style.opacity = "";
+    try { shelfView.style.removeProperty("min-height"); } catch (_) {}
+    renderShelf();
+    writeScroll(home);
+    requestAnimationFrame(() => writeScroll(home));
+  });
+
+  // Leaving for the post page: remember the shelf scroll so Back lands on it.
+  listen(root, "click", (event) => {
+    const target = event.target;
+    if (!target || !target.closest) return;
+    const link = target.closest("a.flyer-page-more, a.note-read");
+    if (!link || !root.contains(link)) return;
+    const y = scrollLock ? scrollLock.y : readScroll().y;
+    try { sessionStorage.setItem("garden-bookshelf-scroll", String(y)); } catch (_) {}
+  });
 
   // Escape closes note
   listen(window, "keydown", (e) => {

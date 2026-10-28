@@ -131,7 +131,7 @@ const zh = {
   fuzzy: "支持模糊匹配",
   escToClose: "关闭",
   noResults: (q: string) => (q ? `没有找到和「${q}」相关的文章` : "还没有可以搜索的内容"),
-  navLabels: { "/blog/": "文章", "/thoughts/": "随想", "/columns/": "专栏", "/tags/": "标签", "/about/": "关于" } as Record<string, string>,
+  navLabels: { "/blog/": "文章", "/thoughts/": "随想", "/columns/": "专栏", "/tags/": "标签", "/bookshelf/": "书架", "/about/": "关于" } as Record<string, string>,
   // Home page
   homeLatestBadge: "最新文章",
   homeRecentHeading: "最近更新",
@@ -414,7 +414,7 @@ const en: typeof zh = {
   fuzzy: "Fuzzy matching",
   escToClose: "to close",
   noResults: (q: string) => (q ? `No posts match “${q}”` : "Nothing to search yet"),
-  navLabels: { "/blog/": "Posts", "/thoughts/": "Thoughts", "/columns/": "Columns", "/tags/": "Tags", "/about/": "About" },
+  navLabels: { "/blog/": "Posts", "/thoughts/": "Thoughts", "/columns/": "Columns", "/tags/": "Tags", "/bookshelf/": "Shelf", "/about/": "About" },
   // Home page
   homeLatestBadge: "Latest post",
   homeRecentHeading: "Recent updates",

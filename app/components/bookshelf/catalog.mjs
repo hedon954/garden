@@ -75,7 +75,7 @@ function toCatalogBook(book, byPath, notes) {
       ? renderNoteHtml(book.note)
       : "";
   const note = body ? book.id : null;
-  if (note) notes[book.id] = { title: book.title, body };
+  if (note) notes[book.id] = { title: book.title, body, summary: post?.description };
   return {
     id: book.id,
     title: book.title,
@@ -85,6 +85,7 @@ function toCatalogBook(book, byPath, notes) {
     cover: cover ?? false,
     color: book.color,
     filler: book.filler,
+    post: book.post ? normalizeBookshelfPostPath(book.post) : undefined,
     note,
   };
 }

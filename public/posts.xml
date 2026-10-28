@@ -721,5 +721,165 @@ const shouldRemove = (friction: Friction) =&gt;
 <p>侧栏开关是离散变化，分隔线拖拽是连续变化。它们应该共享“保持锚点”的原则，但不应该共享完全相同的更新频率。</p>
 ]]></content:encoded>
     </item>
+    <item>
+      <title>悟道领域驱动设计</title>
+      <link>https://example.com/blog/note/note-ddd-awareness</link>
+      <guid isPermaLink="true">https://example.com/blog/note/note-ddd-awareness/</guid>
+      <pubDate>Sat, 06 Jun 2026 16:00:00 GMT</pubDate>
+      <description>领域模型先分清哪种变化会一起发生，再决定聚合怎么切。</description>
+      <category>读书笔记</category>
+      <content:encoded><![CDATA[<blockquote>
+<p>演示占位。这不是原书笔记，只为验收书架：打开后右页用上面的简介，这里是正文。</p>
+</blockquote>
+<h2>为什么还在读这本</h2>
+<p>聚合不是「把相关的表放一起」。它回答的是：哪几件事必须在同一次变化里同时成立，外面只能拿一个入口来改。</p>
+<h2>记下的几条</h2>
+<ul>
+<li>先找不变量，再画边界。不变量跨不过去的地方，才是聚合的边。</li>
+<li>名字用业务里的说法。技术分层的名字留在目录，不留在模型。</li>
+<li>一个聚合一次只改一处。需要同时改两处时，先问这是不是同一条规则。</li>
+</ul>
+<h2>先不做什么</h2>
+<p>不在这篇里展开完整的事件风暴。演示只保留切分时会用到的那一条问题。</p>
+<p><a href="/bookshelf/">返回书架</a></p>
+]]></content:encoded>
+    </item>
+    <item>
+      <title>Unit Testing 摘抄</title>
+      <link>https://example.com/blog/note/note-unit-testing-excerpt</link>
+      <guid isPermaLink="true">https://example.com/blog/note/note-unit-testing-excerpt/</guid>
+      <pubDate>Fri, 05 Jun 2026 16:00:00 GMT</pubDate>
+      <description>摘下来的是测试替身、样式和边界那几段，方便以后对照着写。</description>
+      <category>读书笔记</category><category>摘抄</category>
+      <content:encoded><![CDATA[<blockquote>
+<p>演示占位。这不是原书摘抄，只为验收书架：打开后右页用上面的简介，这里是正文。</p>
+</blockquote>
+<h2>几条带走的</h2>
+<p>下面按以后写测试时会翻到的顺序摘，不按书的章节。</p>
+<ul>
+<li>样式：一个测试只准备这一条规则需要的状态，名字写结果，不写实现步骤。</li>
+<li>替身：外部支付、邮件、队列可以替。仓库里的实体和纯函数不要替。</li>
+<li>边界：空集合、刚好达到上限、超过上限。中间那一档留给一条快乐路径就够。</li>
+</ul>
+<h2>和笔记正文怎么分</h2>
+<p>笔记写判断，摘抄留原句的位置。正式站会换成书里的原句；这篇演示只留下位置和取舍。</p>
+<p><a href="/bookshelf/">返回书架</a></p>
+]]></content:encoded>
+    </item>
+    <item>
+      <title>Unit Testing</title>
+      <link>https://example.com/blog/note/note-unit-testing</link>
+      <guid isPermaLink="true">https://example.com/blog/note/note-unit-testing/</guid>
+      <pubDate>Thu, 04 Jun 2026 16:00:00 GMT</pubDate>
+      <description>值得测的是领域规则和边界，不是把协作者的调用次数数一遍。</description>
+      <category>读书笔记</category>
+      <content:encoded><![CDATA[<blockquote>
+<p>演示占位。这不是原书笔记，只为验收书架：打开后右页用上面的简介，这里是正文。</p>
+</blockquote>
+<h2>整洁不是洁癖</h2>
+<p>测试会留下来。它要在实现换了一种写法之后仍然说明同一条规则，而不是跟着私有函数一起改名。</p>
+<h2>记下的几条</h2>
+<ul>
+<li>测状态和结果：给定这些输入，余额、权限或错误码应该是什么。</li>
+<li>领域对象用真的。只有出了进程的第三方才用替身，而且替身对的是外部契约，不是「被调用了一次」。</li>
+<li>断言对类型和字段，不对文案、不对序列化之后的字符串。</li>
+</ul>
+<h2>先不做什么</h2>
+<p>不为一个只做赋值的构造函数补测试。那条测试只会和实现长得一样，抓不住回归。</p>
+<p><a href="/bookshelf/">返回书架</a></p>
+]]></content:encoded>
+    </item>
+    <item>
+      <title>Rust Atomics and Locks</title>
+      <link>https://example.com/blog/note/note-rust-atomics-and-locks</link>
+      <guid isPermaLink="true">https://example.com/blog/note/note-rust-atomics-and-locks/</guid>
+      <pubDate>Wed, 03 Jun 2026 16:00:00 GMT</pubDate>
+      <description>原子操作和锁不是语法题，而是谁在什么顺序下看见哪一次写入。</description>
+      <category>读书笔记</category>
+      <content:encoded><![CDATA[<blockquote>
+<p>演示占位。这不是原书笔记，只为验收书架：打开后右页用上面的简介，这里是正文。</p>
+</blockquote>
+<h2>为什么这本难跳过</h2>
+<p>内存顺序的名字很短，后果很长。笔记只保留能拿去对代码的那一层：哪一次写入必须被另一次读取看见。</p>
+<h2>带走的框架</h2>
+<ul>
+<li><code>Ordering</code> 描述的是可见性，不是「快一点的锁」。Relaxed 只保证这一格原子，不保证旁边的数据已经写完。</li>
+<li>先用互斥锁把不变量说清楚，再考虑把它拆成原子。拆完以后，原来的不变量要还能指出来。</li>
+<li>自旋只适合临界区真的很短、而且等待的人不多的时候。其余情况，让出 CPU。</li>
+</ul>
+<h2>先不做什么</h2>
+<p>不在这篇里重写标准库的锁。能指出「这里必须用 Release/Acquire 配对」就够用了。</p>
+<p><a href="/bookshelf/">返回书架</a></p>
+]]></content:encoded>
+    </item>
+    <item>
+      <title>Fundamentals of Software Architecture</title>
+      <link>https://example.com/blog/note/note-fosa</link>
+      <guid isPermaLink="true">https://example.com/blog/note/note-fosa/</guid>
+      <pubDate>Tue, 02 Jun 2026 16:00:00 GMT</pubDate>
+      <description>架构决策先记下取舍和约束，再谈模式名字。</description>
+      <category>读书笔记</category>
+      <content:encoded><![CDATA[<blockquote>
+<p>演示占位。这不是原书笔记，只为验收书架：打开后右页用上面的简介，这里是正文。</p>
+</blockquote>
+<h2>为什么还在读这本</h2>
+<p>模式名字很好搜，当时为什么选它不好搜。这本把「特性、取舍、适应度函数」放在名字前面，适合拿来写决策记录。</p>
+<h2>记下的几条</h2>
+<ul>
+<li>先写约束：团队人数、发布节奏、哪一类故障不能发生。模式是这些约束的结果。</li>
+<li>每条架构决策留下一个可以自动检查的信号，而不是一句「我们是微服务」。</li>
+<li>特性之间会打架。可部署性和数据一致性同时拉满时，要写明让哪一边退。</li>
+</ul>
+<h2>先不做什么</h2>
+<p>不把书里的特性清单原样贴进评审。评审要看的是这一次让了什么。</p>
+<p><a href="/bookshelf/">返回书架</a></p>
+]]></content:encoded>
+    </item>
+    <item>
+      <title>从零构建大语言模型</title>
+      <link>https://example.com/blog/note/note-llm-from-scratch</link>
+      <guid isPermaLink="true">https://example.com/blog/note/note-llm-from-scratch/</guid>
+      <pubDate>Mon, 01 Jun 2026 16:00:00 GMT</pubDate>
+      <description>从分词、注意力到训练循环，把模型拆成可以亲手对上的步骤。</description>
+      <category>读书笔记</category>
+      <content:encoded><![CDATA[<blockquote>
+<p>演示占位。这不是原书笔记，只为验收书架：打开后右页用上面的简介，这里是正文。</p>
+</blockquote>
+<h2>为什么这本难跳过</h2>
+<p>名字很满，真正要带走的是一条能对上代码的顺序：文本怎么变成 token，注意力在看哪一段，损失怎么回到参数。</p>
+<h2>带走的框架</h2>
+<ol>
+<li>先固定词表和上下文长度，再谈模型大小。长度一变，后面的显存和批大小都要重算。</li>
+<li>注意力是「这一位能看见哪些位」，不是一个可以单独调参的黑盒。</li>
+<li>训练循环先跑通一个很小的语料。损失下降，才值得加数据。</li>
+</ol>
+<h2>先不做什么</h2>
+<p>不在笔记里抄一整份超参表。超参会过期，顺序不会。下次实现时从这三步往下对。</p>
+<p><a href="/bookshelf/">返回书架</a></p>
+]]></content:encoded>
+    </item>
+    <item>
+      <title>上头 Obsidian</title>
+      <link>https://example.com/blog/note/note-obsidian</link>
+      <guid isPermaLink="true">https://example.com/blog/note/note-obsidian/</guid>
+      <pubDate>Sun, 31 May 2026 16:00:00 GMT</pubDate>
+      <description>把笔记收成一张可以走回去的网，比再买一个插件更重要。</description>
+      <category>读书笔记</category>
+      <content:encoded><![CDATA[<blockquote>
+<p>演示占位。这不是原书笔记，只为验收书架：打开后右页用上面的简介，这里是正文。</p>
+</blockquote>
+<h2>为什么还在用它</h2>
+<p>双链的价值不是「看起来很密」，而是几个月后还能从一句判断走回当时的上下文。文件夹负责归档，链接负责想起。</p>
+<h2>记下的几条</h2>
+<ul>
+<li>一条笔记只回答一个问题，标题写成判断，不写成主题词。</li>
+<li>每天新增的链接比新增的插件有用。插件解决的是编辑器，链接解决的是以后的自己。</li>
+<li>附件和正文放在一起，换机器时不用先重建一套同步规则。</li>
+</ul>
+<h2>先不做什么</h2>
+<p>不把日记、项目和读书笔记合成一张无限画布。能用搜索和反向链接找到，就不必再画一张总图。</p>
+<p><a href="/bookshelf/">返回书架</a></p>
+]]></content:encoded>
+    </item>
   </channel>
 </rss>

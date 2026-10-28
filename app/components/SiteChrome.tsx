@@ -33,7 +33,7 @@ export function SiteChrome({
   return (
     <>
       {skip}
-      <SiteHeader />
+      <SiteHeader shelf={bookshelfSite} />
       <div id="main-content">{children}</div>
       <SiteFooter docs={isHandbookPath(pathname)} lang={lang} />
     </>

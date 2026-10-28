@@ -11,6 +11,18 @@ export const SITE_NAV = [
   { href: "/about/", label: "关于" },
 ];
 
+/**
+ * Header links. A site with `content/bookshelf.yaml` gains 书架; the package
+ * demo (no file) does not advertise a page it only click-tests.
+ */
+export function siteNav({ shelf = false } = {}) {
+  if (!shelf) return SITE_NAV;
+  const entry = { href: "/bookshelf/", label: "书架" };
+  const about = SITE_NAV.findIndex((item) => item.href === "/about/");
+  if (about < 0) return [...SITE_NAV, entry];
+  return [...SITE_NAV.slice(0, about), entry, ...SITE_NAV.slice(about)];
+}
+
 const trim = (value) => (value.length > 1 ? value.replace(/\/+$/u, "") : value);
 
 /**

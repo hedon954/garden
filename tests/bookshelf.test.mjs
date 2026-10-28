@@ -187,6 +187,8 @@ shelves:
     assert.equal(books[0]?.note, "window-book");
     const note = shelf.notes["window-book"];
     assert.ok(note);
+    assert.equal(note.summary, "把阅读位置记成连续体验的锚点，而不是页码。");
+    assert.equal(books[0]?.post, "note/window");
     assert.match(note.body, /把阅读位置记成连续体验的锚点，而不是页码。/);
     assert.match(note.body, /<h2>带走的<\/h2>/);
     assert.match(note.body, /位置比页码重要。/);
@@ -238,7 +240,13 @@ shelves:
 });
 
 test("without bookshelf.yaml the loader stays empty so the package demo can mount", () => {
-  assert.equal(loadBookshelf(projectRoot()), null);
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "garden-shelf-empty-"));
+  try {
+    fs.mkdirSync(path.join(dir, "content"));
+    assert.equal(loadBookshelf(dir), null);
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
   const page = read("app/bookshelf/page.tsx");
   const engine = read("app/components/bookshelf/engine.ts");
   const chrome = read("app/components/SiteChrome.tsx");
@@ -255,7 +263,3 @@ test("without bookshelf.yaml the loader stays empty so the package demo can moun
   assert.match(read("scripts/build-content.mjs"), /loadBookshelf\(root, posts\)/);
   assert.equal(DEMO_CATALOG[0]?.books[0]?.id, "clean-code");
 });
-
-function projectRoot() {
-  return path.resolve(new URL("..", import.meta.url).pathname);
-}

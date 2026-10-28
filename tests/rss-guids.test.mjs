@@ -4,7 +4,16 @@ import test from "node:test";
 
 const baseline = JSON.parse(fs.readFileSync(new URL("./fixtures/rss-guids-0.5.14.json", import.meta.url), "utf8"));
 // Posts added to the example site after 0.5.14: new guids, in the same shape.
-const ADDED_SINCE = ["/blog/windowsill-herbs-kit/"];
+const ADDED_SINCE = [
+  "/blog/windowsill-herbs-kit/",
+  "/blog/note/note-ddd-awareness/",
+  "/blog/note/note-unit-testing-excerpt/",
+  "/blog/note/note-unit-testing/",
+  "/blog/note/note-rust-atomics-and-locks/",
+  "/blog/note/note-fosa/",
+  "/blog/note/note-llm-from-scratch/",
+  "/blog/note/note-obsidian/",
+];
 
 function feed(xml) {
   const origin = xml.match(/<channel>\s*<title>[^<]*<\/title>\s*<link>([^<]+)<\/link>/u)?.[1];
