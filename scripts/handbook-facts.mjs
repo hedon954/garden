@@ -743,13 +743,14 @@ export function checkFileFacts(filePath, content, facts, root = ROOT) {
       const isWorkflow =
         /\b(?:runs-on|steps|jobs|workflow_dispatch|actions\/checkout)\b/u.test(bodyText);
       const isColumnsYaml = /^columns:\s*$/mu.test(bodyText) && /^\s*-\s+slug:/mu.test(bodyText);
+      const isBookshelfYaml = /^shelves:\s*$/mu.test(bodyText) && /^\s*-\s+id:/mu.test(bodyText) && /\bbooks:/u.test(bodyText);
       const isFrontmatter = /^\s*---\s*$/mu.test(bodyText) || (/\bdraft:/u.test(bodyText) && /\btags:/u.test(bodyText));
 
       if (isWorkflow) {
         checkWorkflowRunLines(fence, relFile, facts, issues);
       }
 
-      if (!isWorkflow && !isColumnsYaml && !isFrontmatter) {
+      if (!isWorkflow && !isColumnsYaml && !isBookshelfYaml && !isFrontmatter) {
         try {
           const parsed = parseYaml(bodyText);
           if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {

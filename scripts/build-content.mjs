@@ -1,7 +1,7 @@
 import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import matter from "gray-matter";
 import { marked } from "marked";
 import { parse as parseYaml, stringify as stringifyYaml } from "yaml";
@@ -32,7 +32,6 @@ import {
 } from "../ui/garden/file-block.mjs";
 import { resolveRepoFile } from "../ui/garden/file-paths.mjs";
 import { trailingSlashEnabled, withTrailingSlash } from "../ui/garden/site-href.mjs";
-import { loadBookshelf } from "../app/bookshelf/load.mjs";
 
 const gardenPackageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -998,6 +997,12 @@ const sitemapEntries = [
 // A site shelf is a public page. The package demo (no content/bookshelf.yaml) is not.
 // The app imports this module instead of reading the yaml at request time, so the
 // worker preview and the static export both see the same shelf.
+// Forked script copies (pipeline tests) do not ship app/bookshelf; a missing loader
+// means there is no site shelf, same as a package without the file.
+const bookshelfLoaderPath = path.join(gardenPackageRoot, "app", "bookshelf", "load.mjs");
+const loadBookshelf = fs.existsSync(bookshelfLoaderPath)
+  ? (await import(pathToFileURL(bookshelfLoaderPath).href)).loadBookshelf
+  : () => null;
 const bookshelf = loadBookshelf(root, posts);
 fs.mkdirSync(gardenDir, { recursive: true });
 fs.writeFileSync(
