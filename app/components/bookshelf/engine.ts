@@ -1532,18 +1532,21 @@ export function mountBookshelf(root, options = {}) {
     sourceEl.classList.add("is-extracting"); // CSS: suppress :hover transform while extracting
     if (fromExpanded) {
       sourceEl.classList.remove("is-expanded", "is-collapsing");
-      [
-        "width",
-        "height",
-        "min-width",
-        "min-height",
-        "flex-shrink",
-      ].forEach((p) => {
+      // Drop the expanded cover's width. Do NOT drop a resting spine's height:
+      // clearing it falls through to .s-mid/.s-short (152/136), shorter than the
+      // face height the shelf is already showing, and that short box becomes
+      // homeRect for extract and put-back.
+      ["width", "min-width", "min-height", "flex-shrink"].forEach((p) => {
         try { sourceEl.style.removeProperty(p); } catch (_) {}
       });
+      if (sourceEl.classList.contains("spine") && book && book.cover && !book.filler) {
+        applyFaceSize(sourceEl, book);
+      } else {
+        try { sourceEl.style.removeProperty("height"); } catch (_) {}
+      }
       expandedId = null;
       touchExpandedId = null;
-      void sourceEl.offsetWidth; // reflow to natural spine (transform already none)
+      void sourceEl.offsetWidth; // reflow to resting spine (transform already none)
     } else {
       // Even spine-direct: pointer may still be hovering → :hover lift would skew freeze.
       void sourceEl.offsetWidth;
@@ -1961,7 +1964,12 @@ export function mountBookshelf(root, options = {}) {
     });
     slot.classList.remove("is-collapsing", "is-placeholder", "is-expanded");
     expandedId = null;
-    void slot.offsetWidth; // reflow to natural spine after class/inline clear
+    // Spines: re-pin the resting face BEFORE reading the seat. A cleared inline
+    // height is the shorter size-class box, and put-back would keep it.
+    if (targetMode === "spines" && book && book.cover && !book.filler) {
+      applyFaceSize(slot, book);
+    }
+    void slot.offsetWidth; // reflow to resting spine after class/inline clear
     const naturalW = slot.offsetWidth;
     const naturalH = slot.offsetHeight;
     slot.style.flexShrink = "0";
@@ -2017,6 +2025,17 @@ export function mountBookshelf(root, options = {}) {
       frozenHome.width = natW;
       frozenHome.height = natH;
       frozenHome.top = Math.round(bottom - natH);
+    } else if (targetMode === "spines" && naturalH > 0) {
+      // Seat and flyer use the resting spine just measured, not a short
+      // cover-frame stash from extract.
+      const bottom = frozenHome.top + frozenHome.height;
+      frozenHome.width = naturalW;
+      frozenHome.height = naturalH;
+      frozenHome.top = Math.round(bottom - naturalH);
+      if (openBook) {
+        openBook.homeRect = copyRect(frozenHome);
+        openBook.spineHome = copyRect(frozenHome);
+      }
     }
     slot.style.width = frozenHome.width + "px";
     slot.style.minWidth = frozenHome.width + "px";
