@@ -944,7 +944,7 @@ export function mountBookshelf(root, options = {}) {
         { offset: 0, transform: "translate(0px, -8px) scale(1, 1) rotateZ(0deg)", easing: EASE_IO },
         { offset: 0.28, transform: "translate(0px, -14px) scale(1, 1) rotateZ(-1deg)", easing: EASE_IO },
         { offset: 0.48, transform: "translate(0px, -10px) scale(1.02, 1.02) rotateZ(2deg)", easing: EASE_IO },
-        // Put-back segment: ~425ms decel into the slot (no whole-timeline crawl)
+        // Put-back is the last PUT_MS of the linear clock (decel into the slot).
         {
           offset: putFrom,
           transform: flipTransform(
