@@ -5,12 +5,24 @@ import { mountBookshelf } from "./engine";
 import type { BookshelfProps } from "./types";
 import "./bookshelf.css";
 
-const SHELL = `
+const DEMO_BRAND = "花园 · 读书笔记";
+const DEMO_TITLE = "读书笔记";
+
+function escapeHtml(value: string) {
+  return value
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;");
+}
+
+function shelfShell(brand: string, title: string) {
+  return `
     <div class="shelf-view" id="shelfView">
       <div class="page">
         <header class="top">
-          <div class="brand">花园 · 读书笔记</div>
-          <h1>读书笔记</h1>
+          <div class="brand">${escapeHtml(brand)}</div>
+          <h1>${escapeHtml(title)}</h1>
           <p class="lede is-debug" id="lede" hidden>调试说明：页级疏密；悬停/点按展一本；再点进笔记。</p>
           <div class="qa-bar is-debug" id="qaBar" role="group" aria-label="演示控制" hidden>
             <span class="qa-label">页级态</span>
@@ -49,14 +61,21 @@ const SHELL = `
     </div>
     <div class="stage" id="stage" aria-hidden="true"></div>
 `;
+}
 
-/** Approved bookshelf. Pass `catalog` and `notes` to mount another shelf on the same motion. */
-export function Bookshelf({ catalog, notes }: BookshelfProps) {
+/** Approved bookshelf. Pass `catalog` and `notes` for a site shelf; omit them for the package demo. */
+export function Bookshelf({ catalog, notes, title, eyebrow }: BookshelfProps) {
   const ref = useRef<HTMLDivElement>(null);
   useLayoutEffect(() => {
     const root = ref.current;
     if (!root) return;
     return mountBookshelf(root, { catalog, notes });
-  }, [catalog, notes]);
-  return <div className="bookshelf-demo" ref={ref} dangerouslySetInnerHTML={{ __html: SHELL }} />;
+  }, [catalog, notes, title, eyebrow]);
+  return (
+    <div
+      className="bookshelf-demo"
+      ref={ref}
+      dangerouslySetInnerHTML={{ __html: shelfShell(eyebrow || DEMO_BRAND, title || DEMO_TITLE) }}
+    />
+  );
 }

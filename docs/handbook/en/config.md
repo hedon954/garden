@@ -1,12 +1,12 @@
 ---
 title: Site & Column Config
 navTitle: Site & Column Config
-description: Configure site metadata, page headings, and brand icons in site.config.yaml, and organize series in content/columns.yaml.
+description: Configure site metadata, page headings, and brand icons in site.config.yaml, series in content/columns.yaml, and the bookshelf in content/bookshelf.yaml.
 section: getting-started
 order: 3
 ---
 
-Global site copy and appearance settings live in `site.config.yaml` at the repository root, while series definitions live in `content/columns.yaml`. Run `npx garden sync` (or `make dev`) after editing to apply changes.
+Global site copy and appearance settings live in `site.config.yaml` at the repository root, series definitions live in `content/columns.yaml`, and the reading-note shelf lives in `content/bookshelf.yaml`. Run `npx garden sync` (or `make dev`) after editing to apply changes.
 
 ## 1. Full `site.config.yaml` Structure
 
@@ -125,3 +125,42 @@ columns:
 | `status` | No | Status value: `default` (or omitted, shown as "Active"), `ongoing` ("Ongoing"), or `completed` ("Completed"). Legacy Chinese values are still accepted, and any other text is shown verbatim |
 | `cover` | No | Cover image path relative to `content/covers/` |
 | `posts` | Yes | Ordered array of post paths relative to `content/posts/`, without the `.md` extension |
+
+## 3. Configuring the bookshelf (`content/bookshelf.yaml`)
+
+When a site has `content/bookshelf.yaml`, `/bookshelf` renders those books inside the site header and is indexed with the other pages. Without that file, `/bookshelf` is only the package's built-in demo (Chinese click-test, no header, not indexed). A production site supplies the file.
+
+`post` is a path under `content/posts/`, without `.md`. The open book shows the title on the left page and that post's front matter `description` on the right; the note view shows the body. A cover file name is published at `/media/covers/<file>`, the same URL a post's `cover` uses for a file in `content/covers/`. A value that is already `https://…` or starts with `/` is used as written. Omit `cover` to reuse the post's own cover. `color` (`#rgb` or `#rrggbb`) is the spine cloth and the open-page palette, sampled from the cover.
+
+```yaml
+title: Reading notes
+description: Books I have read, and the notes I kept.
+eyebrow: Library
+shelves:
+  - id: recent
+    name: Recent
+    books:
+      - id: ddia
+        title: Designing Data-Intensive Applications
+        author: Martin Kleppmann
+        cover: ddia.jpg
+        color: "#8b3a2f"
+        post: note/ddia
+```
+
+| Field | Required | Description |
+| :--- | :--- | :--- |
+| `title` | Yes | Page title |
+| `description` | No | Page summary |
+| `eyebrow` | No | Small line above the title. Falls back to the site name |
+| `shelves` | Yes | Non-empty list. Each shelf needs `id`, `name`, and a non-empty `books` list |
+| `books[].id` | Yes | Unique across the shelf |
+| `books[].title` | Yes | Title on the left page and the note view |
+| `books[].author` | No | Author |
+| `books[].spine` | No | Spine label. Defaults to `title` |
+| `books[].size` | No | `thin`, `s-short`, `s-mid`, or `s-tall`. Real books default to `s-mid`; filler spines default to `thin` |
+| `books[].cover` | No | File name, or a full URL |
+| `books[].color` | No | Spine and open-page color |
+| `books[].filler` | No | `true`, `sand`, or `cream`. A thin spacer that does not open |
+| `books[].post` | No | Post that supplies the note |
+| `books[].note` | No | Markdown note used only when `post` is absent |
