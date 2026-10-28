@@ -337,13 +337,10 @@ export function mountBookshelf(root, options = {}) {
     return null;
   }
 
-  // ux21: mobile/touch-primary = (hover:none) AND (pointer:coarse).
-  // Prefer this over max-width so a narrow desktop window still uses density pin.
+  // ux21 lock: touch / hover:none resting = all covers (全封面).
+  // hover:none alone — do not also require pointer:coarse (DevTools 窄屏/部分真机否则会掉回立脊).
   function isMobilePrimary() {
-    return (
-      window.matchMedia("(hover: none)").matches &&
-      window.matchMedia("(pointer: coarse)").matches
-    );
+    return window.matchMedia("(hover: none)").matches;
   }
 
   // Density: compute once on enter (pin), unless ?force= QA or explicit B spines.
