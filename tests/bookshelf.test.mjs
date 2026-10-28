@@ -42,6 +42,8 @@ test("open and close clocks stay on one timeline, with the shorter motion pass",
   assert.match(engine, /cubic-bezier\(0\.22, 1, 0\.36, 1\)/);
   assert.match(engine, /offset: 0\.48, transform: "rotateY\(-155deg\)"/);
   assert.match(engine, /const NOTE_READY = 0\.86/);
+  assert.match(engine, /await Promise\.race\(\[Promise\.resolve\(loaded\)\.catch\(\(\) => \{\}\), wait\(400\)\]\)/);
+  assert.match(engine, /offset: 0\.45, transform: "translateZ\(0\) scale\(0\)", opacity: 0, easing: "ease-out"/);
   assert.match(engine, /dupUntil = now \+ 80/);
   assert.doesNotMatch(engine, /commitStyles\(/);
   assert.doesNotMatch(engine, /pointer-events: none/);

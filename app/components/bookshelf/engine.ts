@@ -555,24 +555,39 @@ export function mountBookshelf(root, options = {}) {
     }
   }
 
+  let prepGen = 0;
+
+  function dropPrep(gen) {
+    if (gen !== prepGen) return;
+    noteView.classList.remove("is-preparing");
+    releasePointer();
+  }
+
   async function prepareNote(book, cat) {
-    fillNote(book, cat);
-    noteView.hidden = false;
-    noteView.classList.add("is-preparing");
-    noteView.classList.remove("is-open");
-    noteView.style.opacity = "0";
-    const coverEl = $("#noteCover");
-    const bg = coverEl && getComputedStyle(coverEl).backgroundImage;
-    const m = bg && bg.match(/url\(["']?([^"')]+)["']?\)/);
-    if (m) {
-      try {
+    const gen = ++prepGen;
+    try {
+      fillNote(book, cat);
+      noteView.hidden = false;
+      noteView.classList.add("is-preparing");
+      noteView.classList.remove("is-open");
+      noteView.style.opacity = "0";
+      const coverEl = $("#noteCover");
+      const bg = coverEl && getComputedStyle(coverEl).backgroundImage;
+      const m = bg && bg.match(/url\(["']?([^"')]+)["']?\)/);
+      if (m) {
         const img = new Image();
         img.src = m[1];
-        if (img.decode) await img.decode();
-        else await new Promise((res) => { img.onload = res; img.onerror = res; });
-      } catch (_) {}
+        const loaded = img.decode
+          ? img.decode()
+          : new Promise((res) => { img.onload = res; img.onerror = res; });
+        await Promise.race([Promise.resolve(loaded).catch(() => {}), wait(400)]);
+      }
+      void noteView.offsetWidth;
+      return gen;
+    } catch (_) {
+      dropPrep(gen);
+      return 0;
     }
-    void noteView.offsetWidth;
   }
 
   function preloadCovers() {
@@ -598,8 +613,11 @@ export function mountBookshelf(root, options = {}) {
     openBook = { book, cat, asSpine, fromExpanded: !!fromExpanded };
     openFromExpanded = !!fromExpanded;
 
-    await prepareNote(book, cat);
-    if (superseded(token)) return;
+    const prep = await prepareNote(book, cat);
+    if (!prep || superseded(token)) {
+      dropPrep(prep);
+      return;
+    }
 
     if (reduceMotion()) {
       sourceEl.classList.add("is-placeholder");
@@ -913,14 +931,14 @@ export function mountBookshelf(root, options = {}) {
     const EASE_IO = "cubic-bezier(0.45, 0, 0.55, 1)";
     const closeOpts = { duration: CLOSE_MS, easing: "linear", fill: "forwards" };
 
-    // CLOSE = OPEN reverse. Veil already full; contract starts THIS tick (no hold / refill).
+    // Veil retracts in the first half of the linear close. The rest is hinge shut and put-back.
     const aVeil = openVeilBlob.animate(
       [
-        { offset: 0, transform: "translateZ(0) scale(1)", opacity: 1, easing: EASE_IO },
-        { offset: 0.08, transform: "translateZ(0) scale(0.55)", opacity: 0.9, easing: EASE_IO },
-        { offset: 0.2, transform: "translateZ(0) scale(0.22)", opacity: 0.7, easing: EASE_IO },
-        { offset: 0.34, transform: "translateZ(0) scale(0.05)", opacity: 0.35, easing: EASE_IO },
-        { offset: 0.48, transform: "translateZ(0) scale(0)", opacity: 0, easing: "ease-out" },
+        { offset: 0, transform: "translateZ(0) scale(1)", opacity: 0.85, easing: EASE_IO },
+        { offset: 0.08, transform: "translateZ(0) scale(0.55)", opacity: 0.75, easing: EASE_IO },
+        { offset: 0.18, transform: "translateZ(0) scale(0.22)", opacity: 0.5, easing: EASE_IO },
+        { offset: 0.32, transform: "translateZ(0) scale(0.06)", opacity: 0.22, easing: EASE_IO },
+        { offset: 0.45, transform: "translateZ(0) scale(0)", opacity: 0, easing: "ease-out" },
         { offset: 1.0, transform: "translateZ(0) scale(0)", opacity: 0 },
       ],
       closeOpts
