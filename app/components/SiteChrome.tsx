@@ -14,7 +14,13 @@ export function SiteChrome({ children }: { children: React.ReactNode }) {
       {ui(lang).skipToContent}
     </a>
   );
-  if (inAppPath(pathname).startsWith("/admin")) return <>{skip}{children}</>;
+  // The shelf preview is the approved demo viewport, not a page inside the site header.
+  // Static export serves /bookshelf/ ; an exact "/bookshelf" check leaves the chrome on.
+  const path = inAppPath(pathname);
+  const shelfPreview = path === "/bookshelf" || path.startsWith("/bookshelf/");
+  if (path.startsWith("/admin") || shelfPreview) {
+    return <>{skip}{children}</>;
+  }
 
   return (
     <>
