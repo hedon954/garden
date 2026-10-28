@@ -1,6 +1,6 @@
 /* eslint-disable */
 // @ts-nocheck
-// Tip ux16 held-book-s10-ux16-20261028. Motion copied from that app.js. Do not retune it.
+// Tip ux26 held-book-s10-ux26-20261028. Motion copied from that app.js. Do not retune it.
 import { DEMO_CATALOG, DEMO_NOTES } from "./demo-data";
 
 function cssIdent(id) {
@@ -42,6 +42,158 @@ export function mountBookshelf(root, options = {}) {
   const NOTES = options.notes ?? DEMO_NOTES;
   const removeExtraCovers = injectExtraCovers(CATALOG);
 
+  // ux26: per-book cover dominant (= existing bk-* spine colors) for open-shell + page wash
+  const COVER_SHELL = {
+    "clean-code": "#0d1b2a",
+    "refactoring": "#7a0d1b",
+    "design-patterns": "#0d1b1b",
+    "continuous-delivery": "#be2828",
+    "phoenix-project": "#3a7ab8",
+    "mythical-man-month": "#1b3688",
+    "pragmatic-programmer": "#1a1a1a",
+    "tdd": "#513688",
+    "lean-startup": "#3a3a3a",
+    "release-it": "#5a6a88",
+    "sre": "#00367a",
+    "team-topologies": "#2a6a88",
+    "accelerate": "#36445f",
+    "ddd": "#1e4a7a",
+    "microservices": "#a38851",
+    "eaa": "#950d1b",
+    "ddia": "#8b3a2f",
+    "fundamentals-sa": "#44881b",
+    "implementing-ddd": "#b03644",
+    "systems-performance": "#00447a",
+    "clean-architecture": "#0d1b44",
+    sand: "#c4b7a2",
+    cream: "#d2c4ae",
+  };
+
+  function hexToRgb(hex) {
+    const h = String(hex || "").replace("#", "").trim();
+    if (h.length === 3) {
+      const r = parseInt(h[0] + h[0], 16);
+      const g = parseInt(h[1] + h[1], 16);
+      const b = parseInt(h[2] + h[2], 16);
+      return { r, g, b };
+    }
+    if (h.length !== 6) return { r: 90, g: 106, b: 136 };
+    return {
+      r: parseInt(h.slice(0, 2), 16),
+      g: parseInt(h.slice(2, 4), 16),
+      b: parseInt(h.slice(4, 6), 16),
+    };
+  }
+
+  function rgbToHex({ r, g, b }) {
+    const c = (n) => Math.max(0, Math.min(255, Math.round(n))).toString(16).padStart(2, "0");
+    return `#${c(r)}${c(g)}${c(b)}`;
+  }
+
+  function mixRgb(a, b, t) {
+    return {
+      r: a.r + (b.r - a.r) * t,
+      g: a.g + (b.g - a.g) * t,
+      b: a.b + (b.b - a.b) * t,
+    };
+  }
+
+  function bookShellHex(book) {
+    if (!book) return "#5a6a88";
+    if (book.filler === "sand") return COVER_SHELL.sand;
+    if (book.filler === "cream") return COVER_SHELL.cream;
+    return COVER_SHELL[book.id] || "#5a6a88";
+  }
+
+  function bookPagePalette(book) {
+    const shell = bookShellHex(book);
+    const s = hexToRgb(shell);
+    const cream = { r: 255, g: 252, b: 246 };
+    const paper = { r: 247, g: 244, b: 239 };
+    const paperLo = { r: 239, g: 232, b: 220 };
+    // Soft tint: mostly paper, hint of cover
+    const pageHi = mixRgb(cream, s, 0.08);
+    const page = mixRgb(paper, s, 0.12);
+    const pageLo = mixRgb(paperLo, s, 0.18);
+    const shellHi = mixRgb(s, { r: 255, g: 255, b: 255 }, 0.22);
+    const shellLo = mixRgb(s, { r: 0, g: 0, b: 0 }, 0.28);
+    const edgeA = mixRgb(cream, s, 0.28);
+    const edgeB = mixRgb(paper, s, 0.38);
+    const edgeC = mixRgb(paperLo, s, 0.48);
+    // Dark ink on tinted page (pages stay light)
+    const ink = mixRgb({ r: 32, g: 28, b: 22 }, s, 0.18);
+    const inkMuted = mixRgb({ r: 90, g: 83, b: 72 }, s, 0.12);
+    return {
+      shell,
+      shellHi: rgbToHex(shellHi),
+      shellLo: rgbToHex(shellLo),
+      page: rgbToHex(page),
+      pageHi: rgbToHex(pageHi),
+      pageLo: rgbToHex(pageLo),
+      edgeA: rgbToHex(edgeA),
+      edgeB: rgbToHex(edgeB),
+      edgeC: rgbToHex(edgeC),
+      ink: rgbToHex(ink),
+      inkMuted: rgbToHex(inkMuted),
+    };
+  }
+
+  function applyFlyerPalette(flyer, book) {
+    if (!flyer) return;
+    const p = bookPagePalette(book);
+    flyer.style.setProperty("--shell", p.shell);
+    flyer.style.setProperty("--shell-hi", p.shellHi);
+    flyer.style.setProperty("--shell-lo", p.shellLo);
+    flyer.style.setProperty("--page", p.page);
+    flyer.style.setProperty("--page-hi", p.pageHi);
+    flyer.style.setProperty("--page-lo", p.pageLo);
+    flyer.style.setProperty("--edge-a", p.edgeA);
+    flyer.style.setProperty("--edge-b", p.edgeB);
+    flyer.style.setProperty("--edge-c", p.edgeC);
+    flyer.style.setProperty("--ink", p.ink);
+    flyer.style.setProperty("--ink-muted", p.inkMuted);
+  }
+
+  function escapeHtml(s) {
+    return String(s || "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+
+  function plainFromHtml(html) {
+    const tmp = document.createElement("div");
+    tmp.innerHTML = String(html || "");
+    return (tmp.textContent || tmp.innerText || "").replace(/\s+/g, " ").trim();
+  }
+
+  function noteSummaryText(book) {
+    const key = book && book.note;
+    const note = key ? NOTES[key] : null;
+    if (note && note.body) {
+      let text = plainFromHtml(note.body);
+      // Prefer first real sentence-ish chunk after stripping headings noise
+      text = text.replace(/^(为什么还在读这本|整洁不是洁癖|为什么这本难跳过|几条带走的|记下的几条|带走的框架)\s*/g, "");
+      if (text.length > 140) text = text.slice(0, 138).replace(/\s+\S*$/, "") + "…";
+      if (text.length >= 24) return text;
+    }
+    const who = book && book.author ? ` · ${book.author}` : "";
+    return `《${book.title}》的读书笔记摘要${who}。正式站会换成完整笔记；Demo 先占这一页。`;
+  }
+
+  function leftPageHtml(book) {
+    const title = escapeHtml(book.title || "");
+    const author = book.author ? `<p class="flyer-page-author">${escapeHtml(book.author)}</p>` : "";
+    return `<div class="flyer-page-title">${title}</div>${author}`;
+  }
+
+  function rightPageHtml(book) {
+    const summary = escapeHtml(noteSummaryText(book));
+    return `<div class="flyer-page-kicker">读书笔记</div><p class="flyer-page-summary">${summary}</p>`;
+  }
+
+
   const $ = (sel, scope = root) => scope.querySelector(sel);
   const $$ = (sel, scope = root) => [...scope.querySelectorAll(sel)];
 
@@ -63,6 +215,9 @@ export function mountBookshelf(root, options = {}) {
   const footMode = $("#footMode");
 
   let pageMode = "spines"; // covers | spines
+  // Hedon lock: density decided once on enter; resize must not flip covers↔spines.
+  // ux21: mobile-primary enter pins covers (全封面); desktop keeps ux19 autoDecide pin.
+  let densityPinned = null;
   let modeOverride = null; // auto | covers | spines | null→from query
   let busy = false;
   let expandedId = null;
@@ -98,10 +253,108 @@ export function mountBookshelf(root, options = {}) {
     return `img-${book.id}`;
   }
 
+
+  // Natural cover aspect (width/height). Seeded from demo JPGs; refined on preload.
+  const COVER_NAT = {
+    "accelerate": [299, 300],
+    "clean-architecture": [506, 685],
+    "clean-code": [1080, 1357],
+    "continuous-delivery": [394, 500],
+    "ddd": [600, 754],
+    "ddia": [1080, 1080],
+    "design-patterns": [408, 576],
+    "eaa": [720, 1024],
+    "fundamentals-sa": [800, 800],
+    "implementing-ddd": [1080, 1401],
+    "lean-startup": [1080, 1401],
+    "microservices": [1080, 1368],
+    "mythical-man-month": [408, 580],
+    "phoenix-project": [700, 992],
+    "pragmatic-programmer": [398, 500],
+    "refactoring": [1080, 1404],
+    "release-it": [417, 500],
+    "sre": [374, 500],
+    "systems-performance": [1080, 1382],
+    "tdd": [432, 544],
+    "team-topologies": [800, 800],
+  };
+
+  function coverWidthPx() {
+    return window.innerWidth <= 640 ? 102 : 118;
+  }
+
+  function bookNat(book) {
+    if (!book || !book.cover) return null;
+    const pair = COVER_NAT[book.id];
+    if (!pair || !pair[0] || !pair[1]) return null;
+    return { w: pair[0], h: pair[1] };
+  }
+
+  // Fixed width; height from real cover aspect. Fallback ~2:3 if unknown.
+  function bookFaceHeight(book) {
+    const w = coverWidthPx();
+    const nat = bookNat(book);
+    if (!nat) return Math.round(w / 0.68);
+    return Math.max(96, Math.round(w * (nat.h / nat.w)));
+  }
+
+  function applyFaceSize(el, book, { expanded = false } = {}) {
+    if (!el || !book) return;
+    const faceH = bookFaceHeight(book);
+    if (el.classList.contains("cover") || expanded) {
+      const w = coverWidthPx();
+      el.style.width = w + "px";
+      el.style.height = faceH + "px";
+      el.style.backgroundSize = "contain";
+      el.style.backgroundPosition = "center top";
+      el.style.backgroundRepeat = "no-repeat";
+    } else if (el.classList.contains("spine")) {
+      // Resting spine: same height as that book's cover face; width from size class.
+      el.style.height = faceH + "px";
+      el.style.removeProperty("width"); // keep CSS size class width
+      el.dataset.faceH = String(faceH);
+    }
+  }
+
+  function parseForceMode() {
+    const q = new URLSearchParams(location.search);
+    const f = q.get("force");
+    if (f === "covers" || f === "spines") return f;
+    return null;
+  }
+
+  // ux21: mobile/touch-primary = (hover:none) AND (pointer:coarse).
+  // Prefer this over max-width so a narrow desktop window still uses density pin.
+  function isMobilePrimary() {
+    return (
+      window.matchMedia("(hover: none)").matches &&
+      window.matchMedia("(pointer: coarse)").matches
+    );
+  }
+
+  // Density: compute once on enter (pin), unless ?force= QA or explicit B spines.
+  // ux21: mobile-primary → pin "covers" (skip fit→spines autoDecide).
+  // Desktop → autoDecide once (ux19). Resize must NOT re-classify device class.
+  function pinnedDensityMode({ recompute = false } = {}) {
+    if (recompute || !densityPinned) {
+      densityPinned = isMobilePrimary() ? "covers" : autoDecideMode();
+    }
+    return densityPinned;
+  }
+
+  function resolveRestingMode(pref, { recompute = false } = {}) {
+    const force = parseForceMode();
+    if (force) return force;
+    if (pref === "spines") return "spines";
+    // covers / auto / default: pinned resting (mobile→covers; desktop→density)
+    return pinnedDensityMode({ recompute });
+  }
+
   function applyCoverImage(el, book) {
     if (!el || !book) return;
-    el.style.backgroundColor = "#4a3b2f";
-    el.style.backgroundSize = "cover";
+    // ux24: NEVER preset wood/brown plate behind cover — transparent only
+    el.style.backgroundColor = "transparent";
+    el.style.backgroundSize = "contain";
     el.style.backgroundPosition = "center top";
     el.style.backgroundRepeat = "no-repeat";
     // Durable <img> — CSS multi-layer background often drops inside preserve-3d mid-flip
@@ -186,8 +439,17 @@ export function mountBookshelf(root, options = {}) {
     } else {
       $("#modeSpines")?.classList.add("is-active");
     }
-    const label = pageMode === "covers" ? "A · 全封面" : "B · 全立脊";
-    modeHint.textContent = label + (modeOverride === "auto" ? "（自动）" : "（手动）");
+    const force = parseForceMode();
+    const auto = autoDecideMode();
+    let label = pageMode === "covers" ? "A · 全封面" : "B · 全立脊";
+    let tag = "";
+    if (force) tag = "（强制对照）";
+    else if (modeOverride === "auto") tag = "（自动）";
+    else if (modeOverride === "covers") tag = auto === "covers" ? "（封面优先）" : "（放不下→立脊）";
+    else if (modeOverride === "spines") tag = "（手动）";
+    else if (densityPinned === "covers" && isMobilePrimary() && pageMode === "covers") tag = "（手机默认）";
+    else tag = pageMode === "spines" ? "（默认）" : "";
+    modeHint.textContent = label + tag;
     footMode.textContent = label;
   }
 
@@ -206,21 +468,13 @@ export function mountBookshelf(root, options = {}) {
   }
 
   function applyModePreference() {
-    if (modeOverride === "covers" || modeOverride === "spines") {
-      setMode(modeOverride);
-      return;
+    let pref = modeOverride;
+    if (!pref) {
+      const q = parseQuery();
+      if (q) pref = q;
     }
-    if (modeOverride === "auto") {
-      setMode(autoDecideMode());
-      return;
-    }
-    const q = parseQuery();
-    if (q) {
-      setMode(q);
-      return;
-    }
-    // default demo: spines (B) so C expand is testable
-    setMode("spines");
+    const mode = resolveRestingMode(pref);
+    setMode(mode);
   }
 
   function renderShelf() {
@@ -249,6 +503,14 @@ export function mountBookshelf(root, options = {}) {
           btn.className = `cover ${coverClass(book)} ${bkClass(book)}`;
           btn.dataset.bookId = book.id;
           btn.setAttribute("aria-label", book.title);
+          applyFaceSize(btn, book);
+          // ux24: durable cover art — ban resting bk-* solid shells if CSS bg drops
+          const art = document.createElement("img");
+          art.className = "cover-art";
+          art.src = coverSrc(book);
+          art.alt = "";
+          art.draggable = false;
+          btn.appendChild(art);
           btn.addEventListener("click", () => onCoverClick(book.id, btn));
           row.appendChild(btn);
         }
@@ -265,6 +527,8 @@ export function mountBookshelf(root, options = {}) {
           btn.dataset.bookId = book.id;
           btn.setAttribute("aria-label", book.title);
           btn.innerHTML = `<span>${book.spine}</span>`;
+          if (book.cover && !book.filler) applyFaceSize(btn, book);
+          else if (book.filler) { /* thin filler keeps CSS height */ }
 
           if (book.cover && !book.filler) {
             btn.addEventListener("pointerenter", (e) => {
@@ -297,21 +561,51 @@ export function mountBookshelf(root, options = {}) {
     }
   }
 
+  // ux18: resting after expand — drop class + inline face width (inline beats CSS collapse).
+  function restoreRestingSpine(el, bookId) {
+    if (!el) return;
+    el.classList.remove("is-expanded", "is-collapsing");
+    const found = bookById(bookId);
+    if (found && found.book.cover && !found.book.filler) {
+      applyFaceSize(el, found.book, { expanded: false });
+    } else {
+      el.style.removeProperty("width");
+      el.style.removeProperty("height");
+    }
+  }
+
+  function clearOrphanExpandedFaces(exceptId) {
+    $$(".spine[data-book-id]").forEach((el) => {
+      const id = el.dataset.bookId;
+      if (!id || id === exceptId) return;
+      if (
+        el.classList.contains("is-expanded") ||
+        el.classList.contains("is-collapsing") ||
+        el.style.width
+      ) {
+        restoreRestingSpine(el, id);
+      }
+    });
+  }
+
   function expandSpine(id) {
     if (busy || pageMode !== "spines") return;
     pinScrollHome();
     const found = bookById(id);
     if (!found || !found.book.cover || found.book.filler) return;
     cancelCollapse();
+    // Sweep orphans first — rapid hover left inline widths under ux17.
+    clearOrphanExpandedFaces(id);
     if (expandedId && expandedId !== id) {
       const prev = $(`.spine[data-book-id="${expandedId}"]`);
-      if (prev) prev.classList.remove("is-expanded", "is-collapsing");
+      if (prev) restoreRestingSpine(prev, expandedId);
     }
     expandedId = id;
     const el = $(`.spine[data-book-id="${id}"]`);
     if (el) {
       el.classList.remove("is-collapsing");
       el.classList.add("is-expanded");
+      applyFaceSize(el, found.book, { expanded: true });
     }
   }
 
@@ -323,14 +617,16 @@ export function mountBookshelf(root, options = {}) {
     const el = $(`.spine[data-book-id="${id}"]`);
     touchExpandedId = null;
     if (!el) return;
-    // Keep is-expanded + expandedId during shrink so a click mid-collapse still takes C path
+    // Keep is-expanded + expandedId during shrink so a click mid-collapse still takes C path.
+    // Drop inline width FIRST — ux17 face size would otherwise beat .is-collapsing CSS width.
+    el.style.removeProperty("width");
     el.classList.add("is-collapsing");
     const token = ++collapseToken;
     await wait(cssMs("--t-collapse", 230));
     if (token !== collapseToken) return; // cancelled by open or re-expand
     if (expandedId !== id) return;
     expandedId = null;
-    el.classList.remove("is-expanded", "is-collapsing");
+    restoreRestingSpine(el, id);
     // Restore home before unpin — undoes SIV that fired during hover/click.
     writeScroll(scrollHome);
     unpinScrollHome();
@@ -355,16 +651,11 @@ export function mountBookshelf(root, options = {}) {
 
     const isTouch = ev && (ev.pointerType === "touch" || ("ontouchstart" in window && window.matchMedia("(hover: none)").matches));
 
-    // Mobile: first tap expands; second tap (or tap on already expanded) opens
+    // Mobile (Hedon Oct 28): one tap → open animation. No cover-peek then second tap.
     if (isTouch || window.matchMedia("(hover: none)").matches) {
-      if (expandedId !== id) {
-        if (expandedId) await collapseSpine(expandedId);
-        expandSpine(id);
-        touchExpandedId = id;
-        return;
-      }
-      // already expanded → open (must collapse first)
-      await openBookFlow(found.book, found.cat, el, { fromExpanded: true, asSpine: true });
+      touchExpandedId = null;
+      if (expandedId) await collapseSpine(expandedId);
+      await openBookFlow(found.book, found.cat, el, { fromExpanded: false, asSpine: true });
       return;
     }
 
@@ -406,16 +697,20 @@ export function mountBookshelf(root, options = {}) {
   const CLOSE_MS = 1900; // §12 ux12: close wall ~1.8–2.2s; no center full-size dwell
   let flowSeq = 0; // invalidate open finally when close starts
 
-  function midSize() {
-    // Each page ~2:3 so closed half matches shelf cover aspect → uniform scale, less stretch-jitter.
+  function midSize(book) {
+    // ux25: page aspect = THIS book's natural cover — ban fixed 2:3 preset taller plate
+    // behind shorter/square covers (object-fit:contain letterbox ghost).
     const col = Math.min(window.innerWidth - 48, 700);
     const pageW = Math.round(Math.min(col * 0.48, window.innerWidth * 0.4, 340));
-    const pageH = Math.round(Math.min(pageW * 1.45, window.innerHeight * 0.68));
-    return { w: pageW * 2, h: pageH };
+    let aspect = 1.45; // fallback ~2:3 only when nat unknown
+    const nat = bookNat(book);
+    if (nat && nat.w > 0 && nat.h > 0) aspect = nat.h / nat.w;
+    const pageH = Math.round(Math.min(pageW * aspect, window.innerHeight * 0.68));
+    return { w: pageW * 2, h: Math.max(120, pageH) };
   }
 
-  function midRect() {
-    const { w, h } = midSize();
+  function midRect(book) {
+    const { w, h } = midSize(book);
     return {
       left: Math.round(window.innerWidth / 2 - w / 2),
       top: Math.round(window.innerHeight / 2 - h / 2 - 16),
@@ -548,18 +843,20 @@ export function mountBookshelf(root, options = {}) {
 
   // Readable CLOSED book footprint (cover aspect). Used as MORPH TARGET only — never
   // snap frame-0 to this size (ux14: gradual across lift→extract).
-  function closedBookRect(slotRect) {
+  function closedBookRect(slotRect, book) {
     const w0 = Math.round(slotRect.width);
     const h0 = Math.round(slotRect.height);
     const ratio = w0 / Math.max(1, h0);
+    // Already cover-shaped (covers path or expanded): keep footprint.
     if (ratio >= 0.42) {
       return { left: Math.round(slotRect.left), top: Math.round(slotRect.top), width: w0, height: h0 };
     }
-    const h = h0;
-    const w = Math.round(Math.min(Math.max(h * 0.68, 72), 120));
+    // Spine seat → morph to that book's natural cover face (fixed width, nat height).
+    const w = coverWidthPx();
+    const h = book ? bookFaceHeight(book) : Math.round(Math.min(Math.max(h0, 120), 180));
     return {
       left: Math.round(slotRect.left + w0 / 2 - w / 2),
-      top: Math.round(slotRect.top),
+      top: Math.round(slotRect.top + h0 - h), // sit on same rail
       width: w,
       height: h,
     };
@@ -610,9 +907,9 @@ export function mountBookshelf(root, options = {}) {
   // ux14 geometric core: ONE diagonal arc slot-center ↔ screen-center.
   // X, Y, AND scale on the SAME beat — ban L-path (lift-only then slide-only).
   // Transforms are lerpTS(T0→Tfull) samples so WAAPI stays collinear in tx/ty/s.
-  function buildSlotWaypoints(homeRect, mid) {
+  function buildSlotWaypoints(homeRect, mid, book) {
     const home = copyRect(homeRect);
-    const closedTarget = closedBookRect(home);
+    const closedTarget = closedBookRect(home, book || (openBook && openBook.book));
     const centerClosed = centerClosedRect(closedTarget);
     const T0 = pathTransform(home, mid);
     const Tfull = "translate(0.00px, -4.00px) scale(1.0000)";
@@ -645,7 +942,8 @@ export function mountBookshelf(root, options = {}) {
     const img = face.querySelector(":scope > .flyer-cover-img");
     if (coverImgReady(img)) {
       face.style.backgroundImage = "none";
-      face.style.backgroundColor = "#4a3b2f";
+      // ux24: transparent under img — ban #4a3b2f wood plate
+      face.style.backgroundColor = "transparent";
       img.style.opacity = "1";
       img.style.visibility = "visible";
     }
@@ -902,7 +1200,7 @@ export function mountBookshelf(root, options = {}) {
     if (stage) stage.innerHTML = "";
   }
 
-  function restoreSlot(el) {
+  function restoreSlot(el, book) {
     if (!el) return;
     try {
       el.getAnimations({ subtree: true }).forEach((a) => {
@@ -934,20 +1232,17 @@ export function mountBookshelf(root, options = {}) {
     ].forEach((prop) => {
       try { el.style.removeProperty(prop); } catch (_) {}
     });
+    // ux25: after clearing height, re-pin natural cover face — ban CSS 154/178 taller plate
+    if (book && el.classList.contains("cover") && book.cover) {
+      applyFaceSize(el, book);
+    } else if (book && el.classList.contains("spine") && book.cover && !book.filler) {
+      applyFaceSize(el, book);
+    }
   }
 
   function pageLinesHtml(title) {
-    const safe = String(title || "").replace(/</g, "&lt;");
-    return `
-      <div class="flyer-page-title">${safe}</div>
-      <div class="flyer-page-line"></div>
-      <div class="flyer-page-line mid"></div>
-      <div class="flyer-page-line"></div>
-      <div class="flyer-page-line short"></div>
-      <div class="flyer-page-line mid"></div>
-      <div class="flyer-page-line"></div>
-      <div class="flyer-page-line short"></div>
-    `;
+    // ux26: kept as thin alias — dual pages use leftPageHtml / rightPageHtml
+    return leftPageHtml({ title: title || "" });
   }
 
   // §10 held-book flyer: board + dual leaves + gutter + thickness + foot shadow.
@@ -971,7 +1266,7 @@ export function mountBookshelf(root, options = {}) {
     leftThick.className = "flyer-thickness";
     const leftPage = document.createElement("div");
     leftPage.className = "flyer-face flyer-face-page";
-    leftPage.innerHTML = pageLinesHtml(book.title);
+    leftPage.innerHTML = leftPageHtml(book);
     const cover = document.createElement("div");
     cover.className = ("flyer-face flyer-face-cover " + bkClass(book) + " " + coverClass(book)).trim();
     if (spineShape) {
@@ -994,7 +1289,7 @@ export function mountBookshelf(root, options = {}) {
     rightThick.className = "flyer-thickness";
     const rightPage = document.createElement("div");
     rightPage.className = "flyer-face flyer-face-page";
-    rightPage.innerHTML = pageLinesHtml(book.title);
+    rightPage.innerHTML = rightPageHtml(book);
     right.appendChild(rightThick);
     right.appendChild(rightPage);
 
@@ -1018,8 +1313,11 @@ export function mountBookshelf(root, options = {}) {
     flyer._board = board;
     flyer._leftThick = leftThick;
     flyer._rightThick = rightThick;
+    flyer._leftPage = leftPage;
+    flyer._rightPage = rightPage;
+    applyFlyerPalette(flyer, book);
 
-    const mid = midRect();
+    const mid = midRect(book);
     flyer.style.width = mid.width + "px";
     flyer.style.height = mid.height + "px";
     flyer.style.left = mid.left + "px";
@@ -1136,7 +1434,22 @@ export function mountBookshelf(root, options = {}) {
         if (!book.cover) continue;
         const img = new Image();
         img.src = coverSrc(book);
-        if (img.decode) img.decode().catch(() => {});
+        const capture = () => {
+          if (img.naturalWidth > 0 && img.naturalHeight > 0) {
+            COVER_NAT[book.id] = [img.naturalWidth, img.naturalHeight];
+          }
+        };
+        img.onload = () => {
+          capture();
+          // Re-apply resting sizes once we know real aspect (no mode flip).
+          if (!openBook && !busy) {
+            document.querySelectorAll(`.cover[data-book-id="${book.id}"], .spine[data-book-id="${book.id}"]`).forEach((el) => {
+              const expanded = el.classList.contains("is-expanded");
+              applyFaceSize(el, book, { expanded });
+            });
+          }
+        };
+        if (img.decode) img.decode().then(capture).catch(() => {});
       }
     }
   }
@@ -1208,14 +1521,26 @@ export function mountBookshelf(root, options = {}) {
       // Even spine-direct: pointer may still be hovering → :hover lift would skew freeze.
       void sourceEl.offsetWidth;
     }
+    // ux25: pin natural cover face BEFORE measure — frame height stable open→land
+    if (sourceEl.classList.contains("cover") && book && book.cover) {
+      sourceEl.style.transform = "none";
+      applyFaceSize(sourceEl, book);
+      void sourceEl.offsetWidth;
+    }
     const homeRect = copyRect(rectOf(sourceEl));
+    if (sourceEl.classList.contains("cover") && book && book.cover) {
+      // Force home to natural W×H (ignore hover scale / fallback CSS taller box)
+      homeRect.width = coverWidthPx();
+      homeRect.height = bookFaceHeight(book);
+      homeRect.top = Math.round(homeRect.top + (rectOf(sourceEl).height - homeRect.height));
+    }
     if (openBook) {
       openBook.homeRect = { ...homeRect };
       openBook.homeMode = sourceEl.classList.contains("spine") ? "spines" : "covers";
       openBook.openSeatRect = { ...homeRect };
     }
     const startRect = homeRect;
-    const mid = midRect();
+    const mid = midRect(book);
     const originX = mid.left + mid.width / 2;
     const originY = mid.top + mid.height / 2;
     void originX;
@@ -1237,7 +1562,8 @@ export function mountBookshelf(root, options = {}) {
     const spineLabel = dual._cover.querySelector(".flyer-spine-label");
     if (spineLabel) spineLabel.style.opacity = "0";
     applyCoverImage(dual._cover, book);
-    preferImgOverBg(dual._cover);
+    // ux24: covers keep bg url under img (no preferImg clear → no naked plate on lift)
+    if (startAsSpine) preferImgOverBg(dual._cover);
     // ux16: full-height spine-slot flyer at homeRect (not scaled dual stub).
     let spineSlot = null;
     let spineOut = { x: 0, y: 0 };
@@ -1254,8 +1580,13 @@ export function mountBookshelf(root, options = {}) {
         openBook.spineHome = copyRect(homeRect);
       }
     }
-    await awaitCloseCoverReady(dual._cover, book, 400);
-    preferImgOverBg(dual._cover);
+    // ux24: spines may clear to img-only; covers keep applyCoverImage (no wood flash)
+    if (startAsSpine) await awaitCloseCoverReady(dual._cover, book, 400);
+    else {
+      applyCoverImage(dual._cover, book);
+      const img = dual._cover && dual._cover.querySelector(":scope > .flyer-cover-img");
+      if (img) { img.style.opacity = "1"; img.style.visibility = "visible"; }
+    }
     if (startAsSpine) {
       if (extractCoverImg) extractCoverImg.style.opacity = "1"; // ready for morph-in
       // Dual still opacity 0 until spine slides out.
@@ -1500,7 +1831,7 @@ export function mountBookshelf(root, options = {}) {
         unlockNoteClicks();
         holdFlyerUnderNote();
         parkShelf();
-        restoreSlot(sourceEl);
+        restoreSlot(sourceEl, book);
         sourceEl.classList.remove("is-extracting");
         // Keep sourceEl as invisible reserved seat while note open (no gray plate).
         sourceEl.classList.add("is-placeholder");
@@ -1556,7 +1887,7 @@ export function mountBookshelf(root, options = {}) {
       return;
     }
 
-    const mid = midRect();
+    const mid = midRect(book);
     const originX = mid.left + mid.width / 2;
     const originY = mid.top + mid.height / 2;
 
@@ -1651,6 +1982,15 @@ export function mountBookshelf(root, options = {}) {
       (openBook && openBook.homeRect && openBook.homeRect.width > 0)
         ? copyRect(openBook.homeRect)
         : copyRect(rectOf(slot));
+    // ux25: covers seat = natural face only — never taller CSS/preset box at land
+    if (targetMode === "covers" && book && book.cover) {
+      const natW = coverWidthPx();
+      const natH = bookFaceHeight(book);
+      const bottom = frozenHome.top + frozenHome.height;
+      frozenHome.width = natW;
+      frozenHome.height = natH;
+      frozenHome.top = Math.round(bottom - natH);
+    }
     slot.style.width = frozenHome.width + "px";
     slot.style.minWidth = frozenHome.width + "px";
     slot.style.height = frozenHome.height + "px";
@@ -1694,7 +2034,15 @@ export function mountBookshelf(root, options = {}) {
       flyer._cover.classList.add("is-cover-ready");
       flyer._cover.classList.remove("is-spine-face");
       applyCoverImage(flyer._cover, book);
-      preferImgOverBg(flyer._cover);
+      // ux23: covers-mode keep CSS/bg url under <img> — fading img must not expose brown board
+      if (targetMode === "spines") preferImgOverBg(flyer._cover);
+      else {
+        const img = flyer._cover.querySelector(":scope > .flyer-cover-img");
+        if (img) {
+          img.style.opacity = "1";
+          img.style.visibility = "visible";
+        }
+      }
     }
     // Ensure open-spread leaf pose at Tfull so reverse hinge is continuous (under note).
     if (flyer._left) flyer._left.style.transform = "rotateY(8deg)";
@@ -1708,7 +2056,18 @@ export function mountBookshelf(root, options = {}) {
     if (flyer._gutter) flyer._gutter.style.opacity = "1";
     const closeSpineLabel = flyer._cover && flyer._cover.querySelector(".flyer-spine-label");
     if (closeSpineLabel) closeSpineLabel.style.opacity = "0";
-    const readyPulse = awaitCloseCoverReady(flyer._cover, book, 150);
+    // ux23: spines may swap to img-only; covers keep applyCoverImage bg under img
+    const readyPulse =
+      targetMode === "spines"
+        ? awaitCloseCoverReady(flyer._cover, book, 150)
+        : (async () => {
+            applyCoverImage(flyer._cover, book);
+            const img = flyer._cover && flyer._cover.querySelector(":scope > .flyer-cover-img");
+            if (img) {
+              img.style.opacity = "1";
+              img.style.visibility = "visible";
+            }
+          })();
     const coverImgEl = flyer._cover && flyer._cover.querySelector(".flyer-cover-img");
     void coverImgEl;
     void reused;
@@ -1814,8 +2173,8 @@ export function mountBookshelf(root, options = {}) {
       : null;
     const closedFaceOut = [
       { offset: 0, opacity: 1 },
-      { offset: 0.28, opacity: 1 },
-      { offset: 0.36, opacity: 0 },
+      { offset: 0.18, opacity: 0.7 },
+      { offset: 0.28, opacity: 0 },
       { offset: 1.0, opacity: 0 },
     ];
     const aBoardClose = flyer._board ? flyer._board.animate(closedFaceOut, closeOpts) : null;
@@ -1826,6 +2185,31 @@ export function mountBookshelf(root, options = {}) {
           [
             { offset: 0, opacity: 1 },
             { offset: 0.24, opacity: 0 },
+            { offset: 1.0, opacity: 0 },
+          ],
+          closeOpts
+        )
+      : null;
+    // ux17: foot shadow must be gone by ~50% close — no dark plate on the rail.
+    // Kill leftover open-path shadows (can leave a second .flyer-shadow stuck at 0.4).
+    const closeShadowEl =
+      flyer._shadow ||
+      (flyer.querySelector && flyer.querySelector(":scope > .flyer-shadow"));
+    try {
+      document.querySelectorAll(".flyer-shadow").forEach((sh) => {
+        if (sh !== closeShadowEl) {
+          try { sh.getAnimations().forEach((a) => a.cancel()); } catch (_) {}
+          sh.style.opacity = "0";
+        }
+      });
+    } catch (_) {}
+    const aShadowClose = closeShadowEl
+      ? closeShadowEl.animate(
+          [
+            { offset: 0, opacity: 0.4 },
+            { offset: 0.22, opacity: 0.22 },
+            { offset: 0.42, opacity: 0.06 },
+            { offset: 0.50, opacity: 0 },
             { offset: 1.0, opacity: 0 },
           ],
           closeOpts
@@ -1851,7 +2235,14 @@ export function mountBookshelf(root, options = {}) {
       if (myFlow !== flowSeq) return;
       try {
         applyCoverImage(flyer._cover, book);
-        preferImgOverBg(flyer._cover);
+        if (targetMode === "spines") preferImgOverBg(flyer._cover);
+        else {
+          const img = flyer._cover && flyer._cover.querySelector(":scope > .flyer-cover-img");
+          if (img) {
+            img.style.opacity = "1";
+            img.style.visibility = "visible";
+          }
+        }
       } catch (_) {}
     });
 
@@ -1873,17 +2264,34 @@ export function mountBookshelf(root, options = {}) {
     const aLabel = null;
     const aLandPlate = null;
     const coverImg = flyer._cover && flyer._cover.querySelector(".flyer-cover-img");
+    // ux23: covers-mode keep real cover opaque until seat handover (no mid-close brown plate)
     const aCoverOut = coverImg
       ? coverImg.animate(
-          [
-            { offset: 0, opacity: 1 },
-            { offset: 0.50, opacity: 1 },
-            { offset: 0.58, opacity: 0 },
-            { offset: 1, opacity: 0 },
-          ],
+          targetMode === "spines"
+            ? [
+                { offset: 0, opacity: 1 },
+                { offset: 0.50, opacity: 1 },
+                { offset: 0.58, opacity: 0 },
+                { offset: 1, opacity: 0 },
+              ]
+            : [
+                { offset: 0, opacity: 1 },
+                { offset: flyerFadeAt, opacity: 1 },
+                { offset: 1, opacity: 0 },
+              ],
           closeOpts
         )
       : null;
+
+    // ux23: covers seat must show real cover at handover — never naked #brown board
+    if (targetMode === "covers" && book && book.cover) {
+      const src = coverSrc(book);
+      slot.style.backgroundImage = `url("${src}")`;
+      slot.style.backgroundSize = "contain";
+      slot.style.backgroundPosition = "center top";
+      slot.style.backgroundRepeat = "no-repeat";
+      slot.style.backgroundColor = "";
+    }
 
     const aSlotIn = slot.animate(
       [
@@ -1915,6 +2323,7 @@ export function mountBookshelf(root, options = {}) {
     if (aThickLClose) group.push(aThickLClose);
     if (aThickRClose) group.push(aThickRClose);
     if (aGutterClose) group.push(aGutterClose);
+    if (aShadowClose) group.push(aShadowClose);
     if (aLabel) group.push(aLabel);
     if (aLandPlate) group.push(aLandPlate);
     if (aCoverOut) group.push(aCoverOut);
@@ -1965,10 +2374,23 @@ export function mountBookshelf(root, options = {}) {
       ]);
       expandedId = null;
       openFromExpanded = false;
-      restoreSlot(slot);
+      restoreSlot(slot, book);
       try { slot.classList.remove("is-extracting"); } catch (_) {}
+      // ux23: drop close-path inline cover pin; resting .img-* CSS owns the seat again
+      if (targetMode === "covers" && slot) {
+        ["background-image", "background-size", "background-position", "background-repeat", "background-color"].forEach((p) => {
+          try { slot.style.removeProperty(p); } catch (_) {}
+        });
+      }
       const slot2 = $(slotSel);
-      if (slot2 && slot2 !== slot) restoreSlot(slot2);
+      if (slot2 && slot2 !== slot) {
+        restoreSlot(slot2, book);
+        if (targetMode === "covers") {
+          ["background-image", "background-size", "background-position", "background-repeat", "background-color"].forEach((p) => {
+            try { slot2.style.removeProperty(p); } catch (_) {}
+          });
+        }
+      }
       shelfView.querySelectorAll(".cover, .spine").forEach((el) => {
         ["transition", "transform", "opacity"].forEach((p) => {
           try { el.style.removeProperty(p); } catch (_) {}
@@ -1998,15 +2420,27 @@ export function mountBookshelf(root, options = {}) {
   // Mode buttons
   listen($("#modeAuto"), "click", () => {
     modeOverride = "auto";
-    setMode(autoDecideMode(), { push: true });
+    // Drop force so density wins
+    const url = new URL(location.href);
+    url.searchParams.delete("force");
+    history.replaceState(null, "", url);
+    densityPinned = null;
+    setMode(resolveRestingMode("auto", { recompute: true }), { push: true });
   });
   listen($("#modeCovers"), "click", () => {
     modeOverride = "covers";
-    setMode("covers", { push: true });
+    const url = new URL(location.href);
+    url.searchParams.delete("force");
+    history.replaceState(null, "", url);
+    densityPinned = null;
+    setMode(resolveRestingMode("covers", { recompute: true }), { push: true });
   });
   listen($("#modeSpines"), "click", () => {
     modeOverride = "spines";
-    setMode("spines", { push: true });
+    const url = new URL(location.href);
+    url.searchParams.delete("force");
+    history.replaceState(null, "", url);
+    setMode(resolveRestingMode("spines"), { push: true });
   });
 
   listen($("#backBtn"), "click", () => closeBookFlow());
@@ -2016,14 +2450,11 @@ export function mountBookshelf(root, options = {}) {
     if (e.key === "Escape" && openBook && !busy) closeBookFlow();
   });
 
-  let resizeTimer;
+  // Resize: density stays pinned (Hedon). No mode flip, no face re-measure.
+  // ux21: once enter classified mobile→covers (or desktop density), do not re-detect
+  // isMobilePrimary / autoDecide on rotate or window drag.
   listen(window, "resize", () => {
-    clearTimeout(resizeTimer);
-    resizeTimer = setTimeout(() => {
-      if (modeOverride === "auto" && !openBook) {
-        setMode(autoDecideMode());
-      }
-    }, 150);
+    /* intentionally empty — enter-time density + face sizes stay put */
   });
 
   // init
@@ -2035,7 +2466,6 @@ export function mountBookshelf(root, options = {}) {
 
   return () => {
     for (const fn of unlisten) fn();
-    clearTimeout(resizeTimer);
     clearTimeout(idleScrollTimer);
     try { releaseScrollLock(); } catch (_) {}
     try { disarmExpandedScrollGuard(); } catch (_) {}
