@@ -13,8 +13,8 @@ export function bookshelfConfigPath(root = gardenSiteRoot()) {
 /**
  * The site shelf, or null when `content/bookshelf.yaml` is absent.
  * Absent means the package demo (click-test only). A file here is the live shelf:
- * each book's `post` or `posts` is read from `content/posts`. One note becomes
- * the open-book HTML. Several notes stay on the book for `/bookshelf/<id>`.
+ * each book's `post` or `posts` is read from `content/posts`. One note's
+ * article is that post. Several notes stay on the book for `/bookshelf/<id>`.
  * `preparedPosts`, when passed, are the sync pipeline's posts (rewritten asset
  * URLs). Otherwise the markdown files are read directly.
  * Throws `BookshelfConfigError` when the file, a cover, or a post path is broken.

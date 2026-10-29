@@ -1297,8 +1297,7 @@ body:has(.bookshelf-demo.is-site) .sh-header .sh-word {
 }
 .bookshelf-demo.is-site .back-btn,
 .bookshelf-demo.is-site .note-hero,
-.bookshelf-demo.is-site .note-body,
-.bookshelf-demo.is-site .note-read {
+.bookshelf-demo.is-site .note-body {
   max-width: none;
   font-family: var(--site-sans);
 }
@@ -1321,32 +1320,10 @@ body:has(.bookshelf-demo.is-site) .sh-header .sh-word {
   line-height: 1.2;
   color: var(--ink);
 }
-.bookshelf-demo .flyer-page-more {
-  pointer-events: auto;
-  align-self: flex-start;
-  margin-top: 8px;
-  font-family: system-ui, sans-serif;
-  font-size: 9px;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  color: var(--ink, #2a261e);
-  text-decoration: underline;
-  text-underline-offset: 2px;
-}
-.bookshelf-demo .note-read {
-  display: inline-block;
-  margin: 12px 0 0;
-  font-size: 14px;
-  color: var(--ink);
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
-.bookshelf-demo .note-read[hidden] { display: none; }
 .bookshelf-demo .hub-panel[hidden] { display: none !important; }
 .bookshelf-demo .note-view.is-hub .note-hero,
 .bookshelf-demo .note-view.is-hub .note-body { display: none !important; }
 .bookshelf-demo .hub-panel .book-hub { width: 100%; padding: 0; }
-.bookshelf-demo.is-site .note-read { color: var(--blue); }
 @media (max-width: 820px) {
   .bookshelf-demo.is-site .note { padding: 16px 20px 64px; }
 }

@@ -45,8 +45,9 @@ export type BookshelfBook = {
   color?: string;
   filler?: BookshelfFiller;
   /**
-   * Key into the notes map for a single-note book.
+   * Key into the notes map when this book opens on the shelf.
    * Null on a multi-note book: that book opens `/bookshelf/<id>` instead.
+   * A book with `href` leaves for that article and does not open this note.
    */
   note?: string | null;
   /** Primary note path. Set only when the book has one note. */
@@ -56,7 +57,7 @@ export type BookshelfBook = {
   /** `/bookshelf/<id>`. Set only when `posts` has two or more notes. */
   hub?: string;
   sources?: BookshelfSource[];
-  /** Full-note address, shaped for this build. Set when `post` is set. */
+  /** Article address, shaped for this build. A shelf click goes here. Set when `post` is set. */
   href?: string;
 };
 

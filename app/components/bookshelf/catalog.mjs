@@ -7,9 +7,10 @@ import { BookshelfConfigError } from "./schema.mjs";
  * Built only from `content/bookshelf.yaml` and the posts it names.
  * The package demo is a separate path: this module never reads it.
  *
- * `post` is shorthand for one note. `posts` is the list. A single note still
- * becomes the open-book body. Two or more notes do not: the book carries `hub`
- * (`/bookshelf/<id>`) and the shelf navigates there instead of opening `posts[0]`.
+ * `post` is shorthand for one note. `posts` is the list. A single note's
+ * article stays at `/blog/<path>`: the shelf navigates there. The rendered
+ * note stays in `notes` for a book with no article address. Two or more notes
+ * fly onto the hub at `/bookshelf/<id>`.
  *
  * The jacket is yaml `cover` only. A post cover is that note's hero and is
  * copied onto the book only when yaml `cover` is omitted, and then only from

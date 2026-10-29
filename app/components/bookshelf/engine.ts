@@ -3,6 +3,7 @@
 // Tip ux26 held-book-s10-ux26-20261028. Motion copied from that app.js. Do not retune it.
 import { ui } from "../../lib/i18n";
 import { DEMO_CATALOG, DEMO_NOTES } from "./demo-data";
+import { shelfLeaveHref } from "./open-target";
 
 function cssIdent(id) {
   return String(id).replace(/[^a-zA-Z0-9_-]/g, "");
@@ -218,11 +219,7 @@ export function mountBookshelf(root, options = {}) {
 
   function rightPageHtml(book) {
     const summary = escapeHtml(noteSummaryText(book));
-    const href = book && typeof book.href === "string" ? book.href : "";
-    const more = href
-      ? `<a class="flyer-page-more" href="${escapeHtml(href)}">阅读全文</a>`
-      : "";
-    return `<div class="flyer-page-kicker">读书笔记</div><p class="flyer-page-summary">${summary}</p>${more}`;
+    return `<div class="flyer-page-kicker">读书笔记</div><p class="flyer-page-summary">${summary}</p>`;
   }
 
 
@@ -761,10 +758,22 @@ export function mountBookshelf(root, options = {}) {
     try { history.replaceState(history.state, "", shelfHref); } catch (_) {}
   }
 
+  // A single note with an article address leaves for that post. Hub books stay
+  // and fly onto the hub. Books with no article address still extract and return.
+  function leaveForArticle(book) {
+    const target = shelfLeaveHref(book);
+    if (!target || target.kind !== "article") return false;
+    const y = scrollLock ? scrollLock.y : readScroll().y;
+    try { sessionStorage.setItem("garden-bookshelf-scroll", String(y)); } catch (_) {}
+    window.location.assign(target.href);
+    return true;
+  }
+
   async function onCoverClick(id, el) {
     if (busy) return;
     const found = bookById(id);
     if (!found || found.book.filler) return;
+    if (leaveForArticle(found.book)) return;
     await openBookFlow(found.book, found.cat, el, {
       fromExpanded: false,
       asSpine: false,
@@ -776,6 +785,7 @@ export function mountBookshelf(root, options = {}) {
     if (busy) return;
     const found = bookById(id);
     if (!found || found.book.filler) return;
+    if (leaveForArticle(found.book)) return;
     if (!found.book.cover) return;
 
     const isTouch = ev && (ev.pointerType === "touch" || ("ontouchstart" in window && window.matchMedia("(hover: none)").matches));
@@ -886,11 +896,6 @@ export function mountBookshelf(root, options = {}) {
       <h2 class="book-hub-notes-head">${escapeHtml(t.bookHubNotes)}</h2>
       <ul class="book-hub-notes">${notes}</ul>
     </div>`;
-    const read = $("#noteRead");
-    if (read) {
-      read.hidden = true;
-      read.removeAttribute("href");
-    }
   }
 
   function fillNote(book, cat) {
@@ -914,16 +919,6 @@ export function mountBookshelf(root, options = {}) {
       coverEl.appendChild(img);
     }
     const note = NOTES[book.note];
-    const read = $("#noteRead");
-    if (read) {
-      if (book.href) {
-        read.href = book.href;
-        read.hidden = false;
-      } else {
-        read.hidden = true;
-        read.removeAttribute("href");
-      }
-    }
     if (note) {
       $("#noteBody").innerHTML = note.body;
     } else if (usingDemo) {
@@ -2956,11 +2951,11 @@ export function mountBookshelf(root, options = {}) {
     requestAnimationFrame(() => writeScroll(home));
   });
 
-  // Leaving for the post page: remember the shelf scroll so Back lands on it.
+  // Leaving the hub for a note: remember the shelf scroll so Back lands on it.
   listen(root, "click", (event) => {
     const target = event.target;
     if (!target || !target.closest) return;
-    const link = target.closest("a.flyer-page-more, a.note-read, a.book-hub-note");
+    const link = target.closest("a.book-hub-note");
     if (!link || !root.contains(link)) return;
     const y = scrollLock ? scrollLock.y : readScroll().y;
     try { sessionStorage.setItem("garden-bookshelf-scroll", String(y)); } catch (_) {}

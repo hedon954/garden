@@ -130,7 +130,7 @@ columns:
 
 When a site has `content/bookshelf.yaml`, `/bookshelf` renders those books inside the site header and is indexed with the other pages. Without that file, `/bookshelf` is only the package's built-in demo (Chinese click-test, no header, not indexed). A production site supplies the file.
 
-Each `books` entry is one volume. `post: note/ddia` is the one-note shorthand. Several notes use `posts`. Clicking that spine plays the extract animation and lands on `/bookshelf/<id>`. It does not open the first note. Returning from that page to the shelf plays the close animation. The book page shows a 148px-wide jacket (height follows the image), the title, the author, and only the Douban and PDF chips. The PDF chip is followed by a short sharing note. My notes lists the notes; each card is a normal link to the article and does not play the flyer. A single note still uses the extract and return animation.
+Each `books` entry is one volume. `post: note/ddia` is the one-note shorthand: clicking that spine opens the post at `/blog/…` and does not stop on a summary page. Several notes use `posts`. Clicking that spine plays the extract animation and lands on `/bookshelf/<id>`. It does not open the first note. Returning from that page to the shelf plays the close animation. The book page shows a 148px-wide jacket (height follows the image), the title, the author, and only the Douban and PDF chips. The PDF chip is followed by a short sharing note. My notes lists the notes; each card is a normal link to the article and does not play the flyer. A book with no article address (an inline `note`, or the package demo) still uses the extract and return animation.
 
 `cover` is the jacket for the shelf, the flyer, and the book page. The file lives in `content/covers/` and the build copies it to `/media/covers/`, even when no post front matter names that file. Crop a Douban scan's white margin before committing the file; the build does not change pixels. A note's hero stays that post's front matter `cover`. Omit the jacket and it falls back to the first note's cover. `color` (`#rgb` or `#rrggbb`) is the spine and the single-note open page.
 
@@ -178,7 +178,7 @@ shelves:
 | `books[].cover` | No | Jacket. File name or full URL. When set, it is the only jacket |
 | `books[].color` | No | Spine and single-note open-page color |
 | `books[].filler` | No | `true`, `sand`, or `cream`. A thin spacer that does not open |
-| `books[].post` | No | Shorthand for one note |
-| `books[].posts` | No | Notes on this volume. `kind` is `overview` or `excerpt`. Two or more open the book page |
+| `books[].post` | No | Shorthand for one note. A click opens that post |
+| `books[].posts` | No | Notes on this volume. `kind` is `overview` or `excerpt`. One note opens that post; two or more open the book page |
 | `books[].sources` | No | Sources. The book page shows Douban and PDF only |
 | `books[].note` | No | Markdown used only when the book names no posts |

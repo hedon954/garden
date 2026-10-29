@@ -7,8 +7,9 @@ import { siteConfig } from "../site.config";
 
 /**
  * `/bookshelf` contract:
- * - `content/bookshelf.yaml` present → that shelf, with each `post` rendered
- *   into `notes`, inside the site header. Indexed like the other pages.
+ * - `content/bookshelf.yaml` present → that shelf, inside the site header.
+ *   One note opens its post. Several notes open `/bookshelf/<id>`. Indexed
+ *   like the other pages.
  * - file absent → package demo (Chinese click-test only, noindex, no site chrome).
  *   English builds skip the demo so a locale=en site stays free of that markup.
  */
