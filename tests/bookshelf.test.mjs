@@ -3,8 +3,10 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
+import { fileURLToPath } from "node:url";
 import { loadBookshelf } from "../app/bookshelf/load.mjs";
 import { resolveBookshelfCover } from "../app/components/bookshelf/catalog.mjs";
+import { publishBookshelfJackets } from "../scripts/bookshelf-covers.mjs";
 import { DEMO_CATALOG } from "../app/components/bookshelf/demo-data.ts";
 import { BookshelfConfigError, parseBookshelfConfig } from "../app/components/bookshelf/schema.ts";
 import { flipTransform, pageDensity } from "../app/components/bookshelf/density.ts";
@@ -81,6 +83,41 @@ test("bookshelf.yaml rejects a broken shelf and keeps a valid one", () => {
   assert.equal(parsed.title, "读书笔记");
   assert.equal(parsed.shelves[0]?.books[0]?.cover, "https://img.example/a.jpg");
 
+  const several = parseBookshelfConfig({
+    title: "读书笔记",
+    shelves: [{
+      id: "desk",
+      name: "书桌",
+      books: [{
+        id: "unit-testing",
+        title: "Unit Testing",
+        post: "note/note-unit-testing",
+        posts: [
+          { path: "content/posts/note/note-unit-testing.md", kind: "overview" },
+          "note/note-unit-testing-excerpt",
+        ],
+        sources: [
+          { label: "豆瓣", href: "https://book.douban.com/subject/1/" },
+          { label: "PDF", href: "/media/books/unit-testing.pdf" },
+          { label: "原书站点", href: "https://example.com/book" },
+        ],
+      }],
+    }],
+  });
+  const volume = several.shelves[0]?.books[0];
+  assert.equal(volume?.post, "content/posts/note/note-unit-testing.md");
+  assert.deepEqual(volume?.posts, [
+    { path: "content/posts/note/note-unit-testing.md", kind: "overview" },
+    { path: "note/note-unit-testing-excerpt" },
+  ]);
+  assert.equal(volume?.sources?.length, 3);
+
+  const shorthand = parseBookshelfConfig({
+    title: "读书笔记",
+    shelves: [{ id: "desk", name: "书桌", books: [{ id: "one", title: "一本", post: "note/window" }] }],
+  });
+  assert.deepEqual(shorthand.shelves[0]?.books[0]?.posts, [{ path: "note/window" }]);
+
   for (const [input, code] of [
     [null, "invalid-root"],
     [{ shelves: [] }, "missing-title"],
@@ -96,8 +133,50 @@ test("bookshelf.yaml rejects a broken shelf and keeps a valid one", () => {
         books: [{ id: "x", title: "甲" }, { id: "x", title: "乙" }],
       }],
     }, "duplicate-id"],
+    [{ title: "架", shelves: [{ id: "a", name: "行", books: [{ id: "x", title: "甲", posts: [] }] }] }, "posts"],
+    [{ title: "架", shelves: [{ id: "a", name: "行", books: [{ id: "x", title: "甲", posts: "note/a" }] }] }, "posts"],
+    [{ title: "架", shelves: [{ id: "a", name: "行", books: [{ id: "x", title: "甲", posts: ["note/a", "note/a"] }] }] }, "posts"],
+    [{ title: "架", shelves: [{ id: "a", name: "行", books: [{ id: "x", title: "甲", post: "note/a", posts: ["note/b"] }] }] }, "posts"],
+    [{ title: "架", shelves: [{ id: "a", name: "行", books: [{ id: "x", title: "甲", posts: [{ path: "note/a", kind: "chapter" }] }] }] }, "posts"],
+    [{ title: "架", shelves: [{ id: "a", name: "行", books: [{ id: "x", title: "甲", sources: [{ label: "豆瓣", href: "javascript:alert(1)" }] }] }] }, "sources"],
   ]) {
     assert.throws(() => parseBookshelfConfig(input), (error) => error instanceof BookshelfConfigError && error.code === code);
+  }
+});
+
+test("a book jacket in content/covers is copied to /media/covers even when no post names it", () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "garden-jacket-"));
+  try {
+    const covers = path.join(dir, "content", "covers");
+    const media = path.join(dir, "public", "media", "covers");
+    fs.mkdirSync(covers, { recursive: true });
+    fs.writeFileSync(path.join(covers, "douban-unit.jpg"), "jacket-bytes");
+    fs.writeFileSync(path.join(covers, "My Jacket.JPG"), "spaced");
+    const config = parseBookshelfConfig({
+      title: "架",
+      shelves: [{
+        id: "a",
+        name: "行",
+        books: [
+          { id: "unit", title: "Unit", cover: "douban-unit.jpg" },
+          { id: "spaced", title: "Spaced", cover: "My Jacket.JPG" },
+          { id: "remote", title: "Remote", cover: "https://img.example/a.jpg" },
+          { id: "abs", title: "Abs", cover: "/media/covers/douban-unit.jpg" },
+        ],
+      }],
+    });
+    const copied = publishBookshelfJackets(config, { coversDir: covers, mediaDir: media });
+    assert.deepEqual([...new Set(copied)].sort(), ["My-Jacket.jpg", "douban-unit.jpg"]);
+    assert.equal(fs.readFileSync(path.join(media, "douban-unit.jpg"), "utf8"), "jacket-bytes");
+    assert.equal(fs.readFileSync(path.join(media, "My-Jacket.jpg"), "utf8"), "spaced");
+    assert.equal(fs.existsSync(path.join(media, "a.jpg")), false);
+    fs.rmSync(path.join(covers, "douban-unit.jpg"));
+    assert.throws(
+      () => publishBookshelfJackets(config, { coversDir: covers, mediaDir: media }),
+      (error) => error instanceof BookshelfConfigError && error.code === "cover",
+    );
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
   }
 });
 
@@ -189,6 +268,10 @@ shelves:
     assert.ok(note);
     assert.equal(note.summary, "把阅读位置记成连续体验的锚点，而不是页码。");
     assert.equal(books[0]?.post, "note/window");
+    assert.equal(books[0]?.hub, undefined);
+    assert.equal(books[0]?.posts?.[0]?.path, "note/window");
+    assert.equal(books[0]?.posts?.[0]?.title, "窗边的位置");
+    assert.ok((books[0]?.posts?.[0]?.words ?? 0) > 0);
     assert.match(note.body, /把阅读位置记成连续体验的锚点，而不是页码。/);
     assert.match(note.body, /<h2>带走的<\/h2>/);
     assert.match(note.body, /位置比页码重要。/);
@@ -207,6 +290,101 @@ shelves:
   } finally {
     fs.rmSync(dir, { recursive: true, force: true });
   }
+});
+
+test("one book with two notes keeps one jacket and does not open the first note", () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "garden-shelf-multi-"));
+  try {
+    fs.mkdirSync(path.join(dir, "content", "posts", "note"), { recursive: true });
+    fs.writeFileSync(path.join(dir, "content", "posts", "note", "note-unit-testing.md"), `---
+title: Unit Testing
+description: 正文摘要。
+date: 2026-06-05
+cover: wide-banner.jpg
+---
+
+正文在文章页，不在书衣上。
+`);
+    fs.writeFileSync(path.join(dir, "content", "posts", "note", "note-unit-testing-excerpt.md"), `---
+title: Unit Testing 摘抄
+description: 摘抄摘要。
+date: 2026-06-06
+cover: excerpt-banner.jpg
+---
+
+摘抄正文。
+`);
+    fs.writeFileSync(path.join(dir, "content", "bookshelf.yaml"), `title: 读书笔记
+shelves:
+  - id: book-note
+    name: 读书笔记
+    books:
+      - id: unit-testing
+        title: Unit Testing
+        author: 一位读者
+        cover: unit-testing.jpg
+        color: "#1a2744"
+        sources:
+          - label: 豆瓣
+            href: https://book.douban.com/subject/1/
+          - label: PDF
+            href: https://example.com/unit-testing.pdf
+          - label: 原书站点
+            href: https://example.com/original
+        posts:
+          - path: note/note-unit-testing
+            kind: overview
+          - path: note/note-unit-testing-excerpt
+            kind: excerpt
+      - id: solo
+        title: 单篇
+        post: note/note-unit-testing
+`);
+    const shelf = loadBookshelf(dir);
+    assert.ok(shelf);
+    const books = shelf.catalog[0]?.books ?? [];
+    assert.deepEqual(books.map((book) => book.id), ["unit-testing", "solo"]);
+    const book = books[0];
+    assert.equal(book?.cover, "/media/covers/unit-testing.jpg");
+    assert.equal(book?.note, null);
+    assert.equal(book?.post, undefined);
+    assert.equal(book?.hub, "/bookshelf/unit-testing");
+    assert.equal(shelf.notes["unit-testing"], undefined);
+    assert.deepEqual(book?.posts?.map((post) => post.kind), ["overview", "excerpt"]);
+    assert.equal(book?.posts?.[0]?.title, "Unit Testing");
+    assert.equal(book?.posts?.[0]?.summary, "正文摘要。");
+    assert.equal(book?.posts?.[1]?.summary, "摘抄摘要。");
+    assert.equal(book?.posts?.[1]?.path, "note/note-unit-testing-excerpt");
+    assert.ok(book?.posts?.[0]?.date);
+    assert.ok((book?.posts?.[0]?.words ?? 0) > 0);
+    assert.equal(book?.sources?.some((source) => source.label === "原书站点"), true);
+    assert.equal(books[1]?.note, "solo");
+    assert.equal(books[1]?.hub, undefined);
+    assert.equal(books[1]?.post, "note/note-unit-testing");
+    assert.match(shelf.notes.solo?.body ?? "", /正文在文章页/);
+    const engine = read("app/components/bookshelf/engine.ts");
+    const coverClick = engine.slice(engine.indexOf("async function onCoverClick"), engine.indexOf("async function onSpineClick"));
+    assert.ok(coverClick.indexOf("leaveForHub") >= 0 && coverClick.indexOf("leaveForHub") < coverClick.indexOf("openBookFlow"));
+    const spineClick = engine.slice(engine.indexOf("async function onSpineClick"), engine.indexOf("async function openBookFlow"));
+    assert.ok(spineClick.indexOf("leaveForHub") >= 0 && spineClick.indexOf("leaveForHub") < spineClick.indexOf("openBookFlow"));
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("the checked-in shelf is one Unit Testing volume with both notes", () => {
+  const shelf = loadBookshelf(fileURLToPath(root));
+  assert.ok(shelf);
+  const books = shelf.catalog.flatMap((row) => row.books);
+  const matches = books.filter((book) => book.id === "unit-testing" || book.id === "note-unit-testing" || book.id === "note-unit-testing-excerpt");
+  assert.deepEqual(matches.map((book) => book.id), ["unit-testing"]);
+  assert.deepEqual(matches[0]?.posts?.map((post) => [post.path, post.kind]), [
+    ["note/note-unit-testing", "overview"],
+    ["note/note-unit-testing-excerpt", "excerpt"],
+  ]);
+  assert.equal(matches[0]?.hub, "/bookshelf/unit-testing");
+  assert.equal(matches[0]?.cover, "/media/covers/note-unit-testing.jpg");
+  assert.equal(matches[0]?.note, null);
 });
 
 test("a missing post or a cover that leaves the site fails the shelf", () => {
@@ -261,5 +439,6 @@ test("without bookshelf.yaml the loader stays empty so the package demo can moun
   assert.match(chrome, /bookshelfSite/);
   assert.match(layout, /bookshelfSite=\{bookshelf != null\}/);
   assert.match(read("scripts/build-content.mjs"), /loadBookshelf\(root, posts\)/);
+  assert.match(read("scripts/build-content.mjs"), /publishBookshelfJackets/);
   assert.equal(DEMO_CATALOG[0]?.books[0]?.id, "clean-code");
 });

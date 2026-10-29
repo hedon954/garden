@@ -677,18 +677,31 @@ export function mountBookshelf(root, options = {}) {
     collapseToken += 1;
   }
 
+  // Multi-note books leave the shelf for /bookshelf/<id>. No extract flyer.
+  function leaveForHub(book) {
+    const posts = book && Array.isArray(book.posts) ? book.posts : [];
+    const href = book && typeof book.hub === "string" ? book.hub : "";
+    if (posts.length < 2 || !href) return false;
+    const y = scrollLock ? scrollLock.y : readScroll().y;
+    try { sessionStorage.setItem("garden-bookshelf-scroll", String(y)); } catch (_) {}
+    window.location.assign(href);
+    return true;
+  }
+
   async function onCoverClick(id, el) {
     if (busy) return;
     const found = bookById(id);
     if (!found || found.book.filler) return;
+    if (leaveForHub(found.book)) return;
     await openBookFlow(found.book, found.cat, el, { fromExpanded: false, asSpine: false });
   }
 
   async function onSpineClick(id, el, ev) {
     if (busy) return;
     const found = bookById(id);
-    if (!found) return;
-    if (found.book.filler || !found.book.cover) return;
+    if (!found || found.book.filler) return;
+    if (leaveForHub(found.book)) return;
+    if (!found.book.cover) return;
 
     const isTouch = ev && (ev.pointerType === "touch" || ("ontouchstart" in window && window.matchMedia("(hover: none)").matches));
 

@@ -12,9 +12,20 @@ function withNoteLinks(catalog: BookshelfShelf[] | undefined) {
   if (!catalog) return catalog;
   return catalog.map((row) => ({
     ...row,
-    books: row.books.map((book) =>
-      book.post ? { ...book, href: siteHref(`/blog/${book.post}`) } : book,
-    ),
+    books: row.books.map((book) => {
+      const posts = book.posts?.map((entry) => ({
+        ...entry,
+        href: siteHref(`/blog/${entry.path}`),
+      }));
+      const hub = book.hub ? siteHref(book.hub) : undefined;
+      if (!book.post && !posts?.length && !hub) return book;
+      return {
+        ...book,
+        ...(book.post ? { href: siteHref(`/blog/${book.post}`) } : {}),
+        ...(posts?.length ? { posts } : {}),
+        ...(hub ? { hub } : {}),
+      };
+    }),
   }));
 }
 

@@ -26,6 +26,7 @@ test("the current section is found with or without the trailing slash", () => {
   assert.deepEqual(active("/about/"), ["关于"]);
   assert.equal(isCurrentNav("/bookshelf", "/bookshelf/"), true);
   assert.equal(isCurrentNav("/bookshelf/", "/bookshelf/"), true);
+  assert.equal(isCurrentNav("/bookshelf/unit-testing", "/bookshelf/"), true);
   assert.equal(isCurrentNav("/blog/note/note-obsidian", "/bookshelf/"), false);
   assert.deepEqual(active("/"), []);
   assert.deepEqual(active(""), []);

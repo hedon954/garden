@@ -34,6 +34,9 @@ shelves:
         cover: /media/covers/note-fosa.jpg
         color: "#1e3a24"
         post: note/note-fosa
+        sources:
+          - label: 豆瓣
+            href: https://book.douban.com/subject/34464806/
       - id: note-rust-atomics-and-locks
         title: Rust Atomics and Locks
         spine: Rust Atomics and Locks
@@ -42,22 +45,18 @@ shelves:
         cover: /media/covers/note-rust-atomics-and-locks.jpeg
         color: "#6b2e1a"
         post: note/note-rust-atomics-and-locks
-      - id: note-unit-testing
+      - id: unit-testing
         title: Unit Testing
         spine: Unit Testing
         author: 读书笔记
         size: s-mid
         cover: /media/covers/note-unit-testing.jpg
         color: "#1a2744"
-        post: note/note-unit-testing
-      - id: note-unit-testing-excerpt
-        title: Unit Testing 摘抄
-        spine: Unit Testing 摘抄
-        author: 书籍摘抄
-        size: s-short
-        cover: /media/covers/note-unit-testing.jpg
-        color: "#1a2744"
-        post: note/note-unit-testing-excerpt
+        posts:
+          - path: note/note-unit-testing
+            kind: overview
+          - path: note/note-unit-testing-excerpt
+            kind: excerpt
       - id: note-ddd-awareness
         title: 悟道领域驱动设计
         spine: 悟道领域驱动设计

@@ -299,6 +299,11 @@ const zh = {
   adminTitlePreview: "草稿预览",
   a2IndexTitle: "A2 对照",
   a2IndexDeck: "对照参考文章的版式。正文没有改字。",
+  bookHubCurrent: "本书",
+  bookHubNotes: "我的笔记",
+  bookHubOverview: "总览",
+  bookHubExcerpt: "摘抄",
+  bookHubPdfNote: "（仅分享，侵权删）",
 };
 
 const en: typeof zh = {
@@ -582,6 +587,11 @@ const en: typeof zh = {
   adminTitlePreview: "Draft Preview",
   a2IndexTitle: "A2 Parity",
   a2IndexDeck: "Layout comparison against reference articles. Body text is unchanged.",
+  bookHubCurrent: "This book",
+  bookHubNotes: "My notes",
+  bookHubOverview: "Overview",
+  bookHubExcerpt: "Excerpt",
+  bookHubPdfNote: "(shared only — removed if it infringes)",
 };
 
 export const UI_STRINGS = { zh, en } as const;

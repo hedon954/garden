@@ -13,7 +13,8 @@ export function bookshelfConfigPath(root = gardenSiteRoot()) {
 /**
  * The site shelf, or null when `content/bookshelf.yaml` is absent.
  * Absent means the package demo (click-test only). A file here is the live shelf:
- * each book's `post` is read from `content/posts` and turned into note HTML.
+ * each book's `post` or `posts` is read from `content/posts`. One note becomes
+ * the open-book HTML. Several notes stay on the book for `/bookshelf/<id>`.
  * `preparedPosts`, when passed, are the sync pipeline's posts (rewritten asset
  * URLs). Otherwise the markdown files are read directly.
  * Throws `BookshelfConfigError` when the file, a cover, or a post path is broken.
@@ -35,10 +36,20 @@ export function loadBookshelf(root = gardenSiteRoot(), preparedPosts) {
       title: post.title,
       description: post.description,
       cover: post.cover,
+      date: typeof post.date === "string" ? post.date : undefined,
       content: post.content,
     }))
     : readReferencedPosts(root, config);
   return bookshelfMountFromFile(config, sources);
+}
+
+function referencedPostPaths(book) {
+  if (Array.isArray(book.posts) && book.posts.length > 0) {
+    return book.posts
+      .map((entry) => (typeof entry === "string" ? entry : entry?.path))
+      .filter((path) => typeof path === "string" && path.trim());
+  }
+  return book.post ? [book.post] : [];
 }
 
 function readReferencedPosts(root, config) {
@@ -46,11 +57,12 @@ function readReferencedPosts(root, config) {
   const posts = [];
   for (const shelf of config.shelves) {
     for (const book of shelf.books) {
-      if (!book.post) continue;
-      const relative = normalizeBookshelfPostPath(book.post);
-      if (seen.has(relative)) continue;
-      seen.add(relative);
-      posts.push(readPost(root, relative));
+      for (const entry of referencedPostPaths(book)) {
+        const relative = normalizeBookshelfPostPath(entry);
+        if (seen.has(relative)) continue;
+        seen.add(relative);
+        posts.push(readPost(root, relative));
+      }
     }
   }
   return posts;
@@ -85,6 +97,7 @@ function readPost(root, postPath) {
     title: optionalString(data.title),
     description: optionalString(data.description),
     cover: optionalString(data.cover),
+    date: optionalDate(data.date),
     content: parsed.content,
   };
 }
@@ -93,4 +106,9 @@ function optionalString(value) {
   if (typeof value !== "string") return undefined;
   const trimmed = value.trim();
   return trimmed ? trimmed : undefined;
+}
+
+function optionalDate(value) {
+  if (value instanceof Date && !Number.isNaN(value.getTime())) return value.toISOString();
+  return optionalString(value);
 }

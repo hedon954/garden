@@ -7,6 +7,7 @@ export class BookshelfConfigError extends Error {
 }
 
 const SIZES = new Set(["thin", "s-short", "s-mid", "s-tall"]);
+const NOTE_KINDS = new Set(["overview", "excerpt"]);
 
 function record(value, code, message) {
   if (!value || typeof value !== "object" || Array.isArray(value)) throw new BookshelfConfigError(code, message);
@@ -31,6 +32,71 @@ function parseSize(value, where) {
   throw new BookshelfConfigError("size", `${where} 的 size 只能是 thin、s-short、s-mid 或 s-tall。`);
 }
 
+/** Same path identity as the shelf loader: drop content/posts and .md. */
+function postKey(value) {
+  return value.trim().replaceAll("\\", "/").replace(/^(?:content\/)?posts\//u, "").replace(/\.md$/u, "");
+}
+
+function parsePostEntry(item, where, index) {
+  if (typeof item === "string") {
+    const path = optionalString(item);
+    if (!path) throw new BookshelfConfigError("posts", `${where} 的 posts[${index}] 必须是路径。`);
+    return { path };
+  }
+  const entry = record(item, "posts", `${where} 的 posts[${index}] 必须是路径或映射。`);
+  const path = optionalString(entry.path);
+  if (!path) throw new BookshelfConfigError("posts", `${where} 的 posts[${index}] 需要 path。`);
+  const kind = optionalString(entry.kind);
+  if (kind && !NOTE_KINDS.has(kind)) {
+    throw new BookshelfConfigError("posts", `${where} 的 posts[${index}] 的 kind 只能是 overview 或 excerpt。`);
+  }
+  return kind ? { path, kind } : { path };
+}
+
+/**
+ * `post` is shorthand for one note. `posts` is the list.
+ * When `posts` is set it is the list, and `post` may only repeat the first path.
+ */
+function parsePostList(book, where) {
+  const single = optionalString(book.post);
+  if (book.posts == null) {
+    return single ? { post: single, posts: [{ path: single }] } : { post: undefined, posts: undefined };
+  }
+  if (!Array.isArray(book.posts)) {
+    throw new BookshelfConfigError("posts", `${where} 的 posts 必须是路径数组。`);
+  }
+  const posts = book.posts.map((item, index) => parsePostEntry(item, where, index));
+  if (posts.length === 0) throw new BookshelfConfigError("posts", `${where} 的 posts 不能为空。`);
+  const seenPaths = new Set();
+  for (const entry of posts) {
+    const key = postKey(entry.path);
+    if (seenPaths.has(key)) throw new BookshelfConfigError("posts", `${where} 的 posts 重复引用「${entry.path}」。`);
+    seenPaths.add(key);
+  }
+  if (single && postKey(single) !== postKey(posts[0].path)) {
+    throw new BookshelfConfigError("posts", `${where} 的 post 与 posts 的第一篇不是同一路径。多篇笔记只写 posts。`);
+  }
+  return { post: posts[0].path, posts };
+}
+
+function parseSources(value, where) {
+  if (value == null) return undefined;
+  if (!Array.isArray(value)) throw new BookshelfConfigError("sources", `${where} 的 sources 必须是数组。`);
+  if (value.length === 0) return undefined;
+  return value.map((item, index) => {
+    const source = record(item, "sources", `${where} 的 sources[${index}] 必须是映射。`);
+    const label = optionalString(source.label);
+    const href = optionalString(source.href);
+    if (!label || !href) {
+      throw new BookshelfConfigError("sources", `${where} 的 sources[${index}] 需要 label 和 href。`);
+    }
+    if (!/^(?:https?:\/\/|\/\/|\/(?!\/))/iu.test(href)) {
+      throw new BookshelfConfigError("sources", `${where} 的 sources[${index}] 只接受 http(s) 或以 / 开头的地址。`);
+    }
+    return { label, href };
+  });
+}
+
 function parseBook(value, where, seen) {
   const book = record(value, "book", `${where} 必须是映射。`);
   const id = optionalString(book.id);
@@ -38,6 +104,7 @@ function parseBook(value, where, seen) {
   if (!id || !title) throw new BookshelfConfigError("book", `${where} 需要 id 和 title。`);
   if (seen.has(id)) throw new BookshelfConfigError("duplicate-id", `${where} 的 id「${id}」重复。`);
   seen.add(id);
+  const notes = parsePostList(book, where);
   return {
     id,
     title,
@@ -47,7 +114,9 @@ function parseBook(value, where, seen) {
     cover: optionalString(book.cover),
     color: optionalString(book.color),
     filler: parseFiller(book.filler, where),
-    post: optionalString(book.post),
+    post: notes.post,
+    posts: notes.posts,
+    sources: parseSources(book.sources, where),
     note: typeof book.note === "string" && book.note.trim() ? book.note.trim() : undefined,
   };
 }

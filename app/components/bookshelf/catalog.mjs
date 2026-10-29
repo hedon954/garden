@@ -1,4 +1,5 @@
 import { marked } from "marked";
+import { searchableText } from "../../../ui/garden/search-index.mjs";
 import { BookshelfConfigError } from "./schema.mjs";
 
 /**
@@ -6,10 +7,13 @@ import { BookshelfConfigError } from "./schema.mjs";
  * Built only from `content/bookshelf.yaml` and the posts it names.
  * The package demo is a separate path: this module never reads it.
  *
- * `post` is a `content/posts` path without `.md`. Its front matter description
- * leads the note HTML so the open book's right page is that summary.
- * A cover file name is published at `/media/covers/<file>` (same stem cleanup
- * as content sync). A full URL or a path starting with `/` is kept.
+ * `post` is shorthand for one note. `posts` is the list. A single note still
+ * becomes the open-book body. Two or more notes do not: the book carries `hub`
+ * (`/bookshelf/<id>`) and the shelf navigates there instead of opening `posts[0]`.
+ *
+ * The jacket is yaml `cover` only. A post cover is that note's hero and is
+ * copied onto the book only when yaml `cover` is omitted, and then only from
+ * the first note. A file name is published at `/media/covers/<file>`.
  */
 
 const WIDGET_FENCE = /```(?:garden|ui-error|ui|intent|widget)(?:[ \t]+[^\n]*)?\r?\n[\s\S]*?```/gu;
@@ -27,6 +31,14 @@ export function resolveBookshelfCover(cover, where = "cover") {
     throw new BookshelfConfigError("cover", `${where} 的 cover 必须是文件名或完整 URL。`);
   }
   return `/media/covers/${parts.map(publishCoverSegment).join("/")}`;
+}
+
+/** Book hub for a multi-note volume. One path segment, the book id. */
+export function bookshelfHubPath(id) {
+  if (typeof id !== "string" || !id || /[\\/]/.test(id) || id === "." || id === "..") {
+    throw new BookshelfConfigError("book", `本书页的 id「${id ?? ""}」必须是单一路径段。`);
+  }
+  return `/bookshelf/${encodeURIComponent(id)}`;
 }
 
 /** `content/posts` path, without `.md`. Rejects anything that leaves that directory. */
@@ -63,19 +75,64 @@ export function bookshelfMountFromFile(file, posts) {
   };
 }
 
-function toCatalogBook(book, byPath, notes) {
-  const post = book.post ? byPath.get(normalizeBookshelfPostPath(book.post)) : undefined;
-  if (book.post && !post) {
-    throw new BookshelfConfigError("post", `书架引用的博文 ${book.post} 没有读到。`);
+function bookPostRefs(book) {
+  if (Array.isArray(book.posts) && book.posts.length > 0) {
+    return book.posts.map((entry) => (
+      typeof entry === "string" ? { path: entry } : { path: entry?.path, kind: entry?.kind }
+    ));
   }
-  const cover = resolveBookshelfCover(book.cover, book.id) ?? (post ? resolveBookshelfCover(post.cover, book.id) : undefined);
-  const body = post
-    ? renderNoteHtml(post.content, post.description)
-    : book.note
+  if (typeof book.post === "string" && book.post.trim()) return [{ path: book.post.trim() }];
+  return [];
+}
+
+/** Same count the article page prints (`estimateWordCount`). */
+function noteWordCount(markdown) {
+  const text = searchableText(markdown ?? "");
+  const han = text.match(/[\u3400-\u9fff]/gu)?.length ?? 0;
+  const other = text.replace(/[\u3400-\u9fff]/gu, " ").match(/[\p{L}\p{N}]+/gu)?.length ?? 0;
+  return han + other;
+}
+
+/** Jacket: yaml cover when set. Otherwise the first note's cover, never a later note's. */
+function jacketFor(book, primary) {
+  if (book.cover) return resolveBookshelfCover(book.cover, book.id);
+  if (primary?.cover) return resolveBookshelfCover(primary.cover, book.id);
+  return undefined;
+}
+
+function toCatalogBook(book, byPath, notes) {
+  const refs = bookPostRefs(book);
+  const paths = refs.map((ref) => normalizeBookshelfPostPath(ref.path));
+  const sources = paths.map((relative, index) => {
+    const post = byPath.get(relative);
+    if (!post) throw new BookshelfConfigError("post", `书架引用的博文 ${refs[index].path} 没有读到。`);
+    return post;
+  });
+  const primary = sources[0];
+  const multi = sources.length > 1;
+  const cover = jacketFor(book, primary);
+  // A multi-note book opens on the hub. Its note bodies stay on the article pages.
+  const body = !multi && primary
+    ? renderNoteHtml(primary.content, primary.description)
+    : !multi && book.note
       ? renderNoteHtml(book.note)
       : "";
   const note = body ? book.id : null;
-  if (note) notes[book.id] = { title: book.title, body, summary: post?.description };
+  if (note) notes[book.id] = { title: book.title, body, summary: primary?.description };
+  const posts = sources.map((source, index) => {
+    const words = noteWordCount(source.content);
+    const title = (typeof source.title === "string" && source.title.trim()) || (index === 0 ? book.title : paths[index]);
+    const summary = typeof source.description === "string" ? source.description.trim() : "";
+    const date = typeof source.date === "string" ? source.date.trim() : "";
+    return {
+      path: paths[index],
+      title,
+      ...(refs[index].kind ? { kind: refs[index].kind } : {}),
+      ...(summary ? { summary } : {}),
+      ...(date ? { date } : {}),
+      ...(words > 0 ? { words } : {}),
+    };
+  });
   return {
     id: book.id,
     title: book.title,
@@ -85,7 +142,10 @@ function toCatalogBook(book, byPath, notes) {
     cover: cover ?? false,
     color: book.color,
     filler: book.filler,
-    post: book.post ? normalizeBookshelfPostPath(book.post) : undefined,
+    post: !multi && paths[0] ? paths[0] : undefined,
+    posts: posts.length ? posts : undefined,
+    hub: multi ? bookshelfHubPath(book.id) : undefined,
+    sources: Array.isArray(book.sources) && book.sources.length ? book.sources : undefined,
     note,
   };
 }
