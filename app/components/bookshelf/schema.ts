@@ -57,8 +57,12 @@ export type BookshelfFileSource = {
  *   hub card 总览 or 摘抄. A bare string is a path with no kind.
  * - when `posts` is set, `post` is optional. If both are set, `post` must be
  *   the same path as `posts[0]`. Otherwise the shelf is rejected.
- * - one note: the shelf opens that note as it does today (extract flyer, note,
- *   return flyer). There is no book hub.
+ * - one note with an article address (`post`, or a single `posts` entry): a
+ *   spine click leaves the shelf for that post (`/blog/…`). It does not open
+ *   the extract flyer, and it does not stop on a summary page.
+ * - one note with no article address (inline `note`, or the package demo):
+ *   the shelf still extracts the book, shows that note, and puts it back.
+ *   That flyer is the open/close motion only. It is not a second click.
  * - two or more notes: a spine click plays the same extract flyer and lands
  *   on `/bookshelf/<id>` (本书). It does not open `posts[0]`.
  *   The hub card is the locked book-multi layout: the jacket slot is 148px
@@ -68,7 +72,7 @@ export type BookshelfFileSource = {
  *   file into `/media/covers/` unchanged.
  *   「我的笔记」 lists the notes. A note card is an ordinary link to that
  *   article; article ↔ list does not play the flyer. Returning from the hub
- *   to the shelf plays the close flyer. A single note uses that same flyer.
+ *   to the shelf plays the close flyer.
  * - `sources` are optional `{ label, href }` chips. The hub shows 豆瓣 and PDF
  *   only. The PDF chip carries the caption 「（仅分享，侵权删）」. No chapter list.
  * - `note` is Markdown used only when the book has no posts.

@@ -86,7 +86,6 @@ function shelfShell(brand: string, title: string) {
             <p class="note-cat" id="noteCat"></p>
             <h1 id="noteTitle"></h1>
             <p class="note-author" id="noteAuthor"></p>
-            <a class="note-read" id="noteRead" hidden>阅读全文</a>
           </div>
         </div>
         <div class="note-body" id="noteBody"></div>

@@ -10,6 +10,7 @@ import { publishBookshelfJackets } from "../scripts/bookshelf-covers.mjs";
 import { DEMO_CATALOG } from "../app/components/bookshelf/demo-data.ts";
 import { BookshelfConfigError, parseBookshelfConfig } from "../app/components/bookshelf/schema.ts";
 import { flipTransform, pageDensity } from "../app/components/bookshelf/density.ts";
+import { shelfLeaveHref } from "../app/components/bookshelf/open-target.ts";
 
 const root = new URL("../", import.meta.url);
 const read = (file) => fs.readFileSync(new URL(file, root), "utf8");
@@ -364,16 +365,63 @@ shelves:
     assert.match(shelf.notes.solo?.body ?? "", /正文在文章页/);
     const engine = read("app/components/bookshelf/engine.ts");
     const coverClick = engine.slice(engine.indexOf("async function onCoverClick"), engine.indexOf("async function onSpineClick"));
+    assert.ok(coverClick.indexOf("leaveForArticle") >= 0 && coverClick.indexOf("leaveForArticle") < coverClick.indexOf("openBookFlow"));
     assert.match(coverClick, /isHubBook\(found\.book\)/);
-    assert.match(coverClick, /openBookFlow\(/);
     assert.doesNotMatch(coverClick, /location\.assign/);
     const spineClick = engine.slice(engine.indexOf("async function onSpineClick"), engine.indexOf("function fillHub"));
+    assert.ok(spineClick.indexOf("leaveForArticle") >= 0 && spineClick.indexOf("leaveForArticle") < spineClick.indexOf("openBookFlow"));
     assert.match(spineClick, /isHubBook\(found\.book\)/);
-    assert.match(spineClick, /openBookFlow\(/);
     assert.doesNotMatch(spineClick, /location\.assign/);
   } finally {
     fs.rmSync(dir, { recursive: true, force: true });
   }
+});
+
+test("a single note leaves for its article; several notes stay for the hub flight", () => {
+  assert.deepEqual(
+    shelfLeaveHref({
+      href: "/blog/note/note-rust-atomics-and-locks/",
+      posts: [{ path: "note/note-rust-atomics-and-locks", href: "/blog/note/note-rust-atomics-and-locks/" }],
+    }),
+    { kind: "article", href: "/blog/note/note-rust-atomics-and-locks/" },
+  );
+  assert.deepEqual(
+    shelfLeaveHref({ posts: [{ href: "/blog/note/solo/" }] }),
+    { kind: "article", href: "/blog/note/solo/" },
+  );
+  assert.equal(
+    shelfLeaveHref({
+      hub: "/bookshelf/unit-testing/",
+      href: "/blog/note/note-unit-testing/",
+      posts: [
+        { href: "/blog/note/note-unit-testing/" },
+        { href: "/blog/note/note-unit-testing-excerpt/" },
+      ],
+    }),
+    null,
+  );
+  assert.equal(shelfLeaveHref({ id: "clean-code", note: "clean-code" }), null);
+  assert.equal(shelfLeaveHref({ filler: "sand", href: "/blog/x/" }), null);
+  assert.equal(shelfLeaveHref({ href: "  " }), null);
+  assert.equal(
+    shelfLeaveHref({
+      href: "/blog/first/",
+      posts: [{ href: "/blog/first/" }, { href: "/blog/second/" }],
+    }),
+    null,
+  );
+
+  const shelfUi = [
+    "app/components/bookshelf/engine.ts",
+    "app/components/bookshelf/Bookshelf.tsx",
+    "app/components/bookshelf/BookHub.tsx",
+    "app/components/bookshelf/bookshelf.css",
+  ].map((file) => read(file)).join("\n");
+  assert.equal(shelfUi.includes("阅读全文"), false);
+  assert.equal(shelfUi.includes("查看正文"), false);
+  assert.equal(shelfUi.includes("flyer-page-more"), false);
+  assert.equal(shelfUi.includes("noteRead"), false);
+  assert.equal(shelfUi.includes("note-read"), false);
 });
 
 test("the checked-in shelf is one Unit Testing volume with both notes", () => {
