@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { columnHref, columns } from "../lib/content";
 import { ContentEmptyState } from "../components/ContentEmptyState";
+import { PageIntro } from "../components/PageIntro";
 import { siteConfig, siteDocumentTitle } from "../site.config";
 import { pageAlternates } from "../lib/page-alternates";
 import { columnStatusLabel, ui } from "../lib/i18n";
@@ -40,10 +41,11 @@ export default function ColumnsPage() {
 
   return (
     <main className="sh-main" id="content">
-      <div className="sh-head">
-        <h1>{siteConfig.pages.columns.title || t.homeColumns}</h1>
-        {siteConfig.pages.columns.subtitle ? <p className="sh-deck">{siteConfig.pages.columns.subtitle}</p> : null}
-      </div>
+      <PageIntro
+        eyebrow={t.columnsEyebrow}
+        title={siteConfig.pages.columns.title || t.homeColumns}
+        subtitle={siteConfig.pages.columns.subtitle}
+      />
       {grouped.length ? grouped.map(({ slug, first, entries }) => (
         <section className={first.columnCover ? "sh-series" : "sh-series no-cover"} aria-labelledby={slug} key={slug}>
           {first.columnCover ? (

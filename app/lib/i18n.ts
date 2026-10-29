@@ -141,6 +141,7 @@ const zh = {
   homeColumnCountStatus: (count: number, status: string) => `${count} 篇，${status}`,
   columnDefaultStatus: "持续更新",
   // Blog archive
+  blogEyebrow: "BLOG / 文章",
   blogHeading: "文章",
   blogDeck: (n: number) => `阶段性的完整沉淀，关于工程、架构与技术思考。共 ${n} 篇，按年份归档。`,
   unknownYear: "未知",
@@ -170,6 +171,7 @@ const zh = {
   seriesEyebrow: "主题专栏",
   seriesCountStatus: (count: number, status: string) => `${count} 篇 · ${status}`,
   // Columns index
+  columnsEyebrow: "COLUMNS / 专栏",
   columnsFallbackTitle: "专栏",
   columnsMeta: (count: number, status: string) => `阅读清单，${count} 篇，${status}`,
   columnsFallbackDesc: "按顺序组织的专题文章系列。",
@@ -195,7 +197,7 @@ const zh = {
   audioFallback: "你的浏览器不支持音频播放。",
   thoughtPermalinkShort: "永久链接",
   // About & GitHub profile
-  aboutEyebrow: "关于",
+  aboutEyebrow: "ABOUT / 关于",
   aboutFallbackHeading: "关于",
   aboutFallbackParagraphs: [
     "一名工程师。平时写代码，也把想清楚的问题记下来。",
@@ -424,6 +426,7 @@ const en: typeof zh = {
   homeColumnCountStatus: (count: number, status: string) => `${count} ${count === 1 ? "post" : "posts"}, ${status}`,
   columnDefaultStatus: "Ongoing",
   // Blog archive
+  blogEyebrow: "BLOG",
   blogHeading: "Posts",
   blogDeck: (n: number) => `Essays on engineering, architecture, and systems thinking. ${n} ${n === 1 ? "post" : "posts"}, archived by year.`,
   unknownYear: "Unknown",
@@ -453,6 +456,7 @@ const en: typeof zh = {
   seriesEyebrow: "Column",
   seriesCountStatus: (count: number, status: string) => `${count} ${count === 1 ? "post" : "posts"} · ${status}`,
   // Columns index
+  columnsEyebrow: "COLUMNS",
   columnsFallbackTitle: "Columns",
   columnsMeta: (count: number, status: string) => `Reading list · ${count} ${count === 1 ? "post" : "posts"} · ${status}`,
   columnsFallbackDesc: "A series of posts organized in reading order.",
@@ -478,7 +482,7 @@ const en: typeof zh = {
   audioFallback: "Your browser does not support audio playback.",
   thoughtPermalinkShort: "Permalink",
   // About & GitHub profile
-  aboutEyebrow: "About",
+  aboutEyebrow: "ABOUT",
   aboutFallbackHeading: "About",
   aboutFallbackParagraphs: [
     "An engineer who writes code and writes down problems once they are clear.",

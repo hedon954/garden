@@ -1,35 +1,21 @@
-import Link from "next/link";
-import { ArticlePager } from "../../../components/ArticlePager";
-import { CoverImage } from "../../../components/CoverImage";
 import type { Metadata } from "next";
 import { FEED_ALTERNATES } from "../../../lib/page-alternates";
 import { notFound } from "next/navigation";
-import { ArrowLeft } from "@phosphor-icons/react/ssr";
 import {
   columns,
-  extractHeadings,
   findColumnEntry,
-  formatDate,
   columnHref,
   columnEntryPath,
 } from "../../../lib/content";
-import { ArticleMeasure } from "../../../components/ArticleMeasure";
-import { ArticleReferences } from "../../../components/ArticleReferences";
-import { ArticleTitle, originalUrl } from "../../../components/ArticleTitle";
-import { MarkdownArticle } from "../../../components/MarkdownArticle";
-import { TableOfContents } from "../../../components/TableOfContents";
-import { Comments } from "../../../components/Comments";
-import { Webmentions } from "../../../components/Webmentions";
-import { ArticleTags } from "../../../components/ArticleTags";
+import { PostReadingView } from "../../../components/PostReadingView";
 import {
   absoluteUrl,
   getSiteUrl,
-  webmentionApiEndpoint,
 } from "../../../lib/site";
-import { githubUrl, siteConfig } from "../../../site.config";
-import { siteHref } from "../../../lib/site-href";
 import { isStaticPlaceholder, STATIC_PLACEHOLDER, staticParams } from "../../../../ui/garden/static-params.mjs";
-import { columnStatusLabel, siteLang, ui } from "../../../lib/i18n";
+import { columnStatusLabel, ui } from "../../../lib/i18n";
+
+const stripColumnIndex = (title: string) => title.replace(/^\d+\s*·\s*/u, "");
 
 export function generateStaticParams() {
   return staticParams(
@@ -51,14 +37,15 @@ export async function generateMetadata({
   if (!entry) return {};
   const baseUrl = await getSiteUrl();
   const pathname = columnHref(entry);
+  const title = stripColumnIndex(entry.title);
   return {
-    title: entry.title.replace(/^\d+\s*·\s*/u, ""),
+    title,
     description: entry.description,
     alternates: { canonical: pathname, types: FEED_ALTERNATES },
     openGraph: {
       type: "article",
       url: absoluteUrl(pathname, baseUrl),
-      title: entry.title.replace(/^\d+\s*·\s*/u, ""),
+      title,
       description: entry.description,
       publishedTime: new Date(entry.date).toISOString(),
       modifiedTime: entry.updated
@@ -69,7 +56,7 @@ export async function generateMetadata({
     },
     twitter: {
       card: "summary_large_image",
-      title: entry.title.replace(/^\d+\s*·\s*/u, ""),
+      title,
       description: entry.description,
       images: entry.cover ? [entry.cover] : ["/og.png"],
     },
@@ -92,81 +79,32 @@ export default async function ColumnEntryPage({
   const currentIndex = series.findIndex((item) => item.path === entry.path);
   const prev = series[currentIndex - 1] ?? null;
   const next = series[currentIndex + 1] ?? null;
-  const headings = extractHeadings(entry.content, { numbering: entry.numbering });
   const baseUrl = await getSiteUrl();
   const pathname = columnHref(entry);
   const canonicalUrl = absoluteUrl(pathname, baseUrl);
   const t = ui();
+  const displayTitle = stripColumnIndex(entry.title);
 
   return (
-    <main className="column-reading-page">
-      <aside className="series-nav">
-        <Link href={siteHref("/columns")} className="back-link">
-          <ArrowLeft size={15} />
-          {t.allColumnsBack}
-        </Link>
-        <p>{t.seriesEyebrow}</p>
-        <h2>{entry.columnTitle}</h2>
-        <ol>
-          {listed.map((item) => (
-            <li key={item.path} className={item.path === entry.path ? "active" : ""}>
-              <Link href={columnHref(item)}>{item.title}</Link>
-            </li>
-          ))}
-        </ol>
-        <small>{ui().columnSideCount(series.length, columnStatusLabel(entry.columnStatus))}</small>
-      </aside>
-
-      <article className="article-column series-article h-entry">
-        <Link className="u-url sr-only" href={pathname}>
-          {siteLang === "en" ? t.permalinkLabel(entry.title) : <>{entry.title} 永久链接</>}
-        </Link>
-        <a
-          className="p-author h-card sr-only"
-          href={githubUrl}
-          rel="author"
-        >
-          {siteConfig.author.name}
-        </a>
-        <header className="article-header hero">
-          <ArticleTitle title={entry.title.replace(/^\d+\s*·\s*/u, "")} />
-          <ul className="meta article-meta">
-            <li>{siteConfig.author.name}</li>
-            <li>
-              <time className="dt-published" dateTime={entry.date}>
-                {formatDate(entry.date)}
-              </time>
-            </li>
-            {originalUrl(entry) ? (
-              <li><a className="orig ext" href={originalUrl(entry)} target="_blank" rel="noopener noreferrer">{t.originalLink}</a></li>
-            ) : null}
-          </ul>
-          <ArticleTags tags={entry.tags} />
-          {entry.cover && (
-            <figure className="article-hero article-cover cover-img">
-              <CoverImage className="u-photo" src={entry.cover} image={entry.coverImage} alt={siteLang === "en" ? t.coverLabel(entry.title) : `${entry.title} 封面`} sizes="(max-width: 852px) calc(100vw - 40px), 812px" priority />
-            </figure>
-          )}
-        </header>
-        <ArticleMeasure />
-        <div className="e-content">
-          {entry.description ? <p className="lead p-summary">{entry.description}</p> : null}
-          <MarkdownArticle content={entry.content} numbering={entry.numbering} />
-        </div>
-        <ArticleReferences references={entry.references} />
-        <Webmentions
-          target={canonicalUrl}
-          endpoint={webmentionApiEndpoint()}
-        />
-        <ArticlePager
-          label={ui().columnPagerLabel}
-          prev={prev ? { href: columnHref(prev), title: prev.title } : null}
-          next={next ? { href: columnHref(next), title: next.title } : null}
-        />
-        <Comments slug={`${column}:${entry.path}`} />
-      </article>
-
-      <TableOfContents headings={headings} />
-    </main>
+    <PostReadingView
+      post={entry}
+      pathname={pathname}
+      canonicalUrl={canonicalUrl}
+      title={displayTitle}
+      commentsSlug={`${column}:${entry.path}`}
+      pagerLabel={t.columnPagerLabel}
+      prev={prev ? { href: columnHref(prev), title: stripColumnIndex(prev.title) } : null}
+      next={next ? { href: columnHref(next), title: stripColumnIndex(next.title) } : null}
+      series={{
+        columnTitle: entry.columnTitle ?? column,
+        statusLabel: t.columnSideCount(series.length, columnStatusLabel(entry.columnStatus)),
+        items: listed.map((item) => ({
+          path: item.path,
+          href: columnHref(item),
+          title: stripColumnIndex(item.title),
+          current: item.path === entry.path,
+        })),
+      }}
+    />
   );
 }

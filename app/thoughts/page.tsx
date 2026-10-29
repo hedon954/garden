@@ -16,7 +16,7 @@ export default function ThoughtsPage() {
   const thoughts = getPublishedThoughts();
 
   return (
-    <main className="page-shell thoughts-page">
+    <main className="sh-main thoughts-page" id="content">
       <PageIntro
         eyebrow={ui().thoughtsEyebrow}
         title={siteConfig.pages.thoughts.title}

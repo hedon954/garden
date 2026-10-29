@@ -280,15 +280,19 @@ test("collapses the reading table of contents per heading and keeps its active i
 });
 
 test("renders a column entry cover when its source article defines one", async () => {
-  const columnEntry = await readFile(
-    new URL("../app/columns/[column]/[...path]/page.tsx", import.meta.url),
-    "utf8",
-  );
+  const [columnEntry, view, i18n] = await Promise.all([
+    readFile(new URL("../app/columns/[column]/[...path]/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/components/PostReadingView.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/lib/i18n.ts", import.meta.url), "utf8"),
+  ]);
 
-  assert.match(columnEntry, /entry\.cover &&/);
-  assert.match(columnEntry, /className="article-hero article-cover/);
-  assert.match(columnEntry, /src=\{entry\.cover\}/);
-  assert.match(columnEntry, /\$\{entry\.title\} 封面/);
+  assert.match(columnEntry, /<PostReadingView[\s\S]*post=\{entry\}/);
+  assert.match(view, /post\.cover \?/);
+  assert.match(view, /className="article-hero article-cover/);
+  assert.match(view, /src=\{post\.cover\}/);
+  assert.match(view, /alt=\{t\.coverLabel\(displayTitle\)\}/);
+  assert.match(i18n, /coverLabel: \(title: string\) => `\$\{title\} 封面`/);
+  assert.doesNotMatch(view, /coverAlt/);
   assert.doesNotMatch(columnEntry, /coverAlt/);
 });
 
@@ -894,15 +898,16 @@ test("0.5.14: the header carries the no-JS menu links next to the ☰ button", a
 });
 
 test("header nav links follow trailingSlash (none in this server build) and still mark the current section", async () => {
-  for (const [pathname, label] of [["/", null], ["/blog", "文章"], ["/tags", "标签"], ["/columns", "专栏"]]) {
+  for (const [pathname, label] of [["/", null], ["/blog", "文章"], ["/tags", null], ["/columns", "专栏"]]) {
     const html = await (await render(pathname)).text();
     const bar = html.match(/<nav class="sh-nav"[\s\S]*?<\/nav>/)?.[0] ?? "";
     assert.ok(bar, `desktop nav on ${pathname}`);
     const links = [...bar.matchAll(/<a ([^>]*)>([^<]+)<\/a>/g)].map((m) => ({ attrs: m[1], text: m[2] }));
-    assert.deepEqual(links.map((link) => link.attrs.match(/href="([^"]+)"/)[1]), ["/blog", "/thoughts", "/columns", "/tags", "/about"], pathname);
+    assert.deepEqual(links.map((link) => link.attrs.match(/href="([^"]+)"/)[1]), ["/blog", "/thoughts", "/columns", "/about"], pathname);
     assert.deepEqual(links.filter((link) => /aria-current="page"/.test(link.attrs)).map((link) => link.text), label ? [label] : [], pathname);
     const menu = html.match(/<nav class="sh-menu" id="sh-menu"[\s\S]*?<\/nav>/)?.[0] ?? "";
-    assert.equal((menu.match(/href="\/(blog|thoughts|columns|tags|about)"/g) ?? []).length, 5, `mobile menu on ${pathname}`);
+    assert.equal((menu.match(/href="\/(blog|thoughts|columns|about)"/g) ?? []).length, 4, `mobile menu on ${pathname}`);
+    assert.doesNotMatch(bar, /href="\/tags"/);
   }
 });
 

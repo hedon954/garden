@@ -23,7 +23,7 @@ export const metadata = {
 
 export default function AboutPage() {
   return (
-    <main className="page-shell about-page">
+    <main className="sh-main about-page" id="content">
       <PageIntro
         eyebrow={t.aboutEyebrow}
         title={about.title}
