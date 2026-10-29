@@ -1,34 +1,18 @@
-import Link from "next/link";
-import { CoverImage } from "../../components/CoverImage";
 import type { Metadata } from "next";
 import { FEED_ALTERNATES } from "../../lib/page-alternates";
 import { notFound } from "next/navigation";
 import {
-  extractHeadings,
-  estimateWordCount,
   findPost,
-  formatDate,
   postHref,
   posts,
 } from "../../lib/content";
-import { ArticleMeasure } from "../../components/ArticleMeasure";
-import { ArticleReferences } from "../../components/ArticleReferences";
-import { ArticleTitle, originalUrl } from "../../components/ArticleTitle";
-import { MarkdownArticle } from "../../components/MarkdownArticle";
-import { TableOfContents } from "../../components/TableOfContents";
-import { Comments } from "../../components/Comments";
-import { Webmentions } from "../../components/Webmentions";
-import { ArticleTags } from "../../components/ArticleTags";
-import { ArticlePager } from "../../components/ArticlePager";
+import { PostReadingView } from "../../components/PostReadingView";
 import { adjacentByDate } from "../../../ui/garden/adjacent.mjs";
 import {
   absoluteUrl,
   getSiteUrl,
-  webmentionApiEndpoint,
 } from "../../lib/site";
-import { githubUrl, siteConfig } from "../../site.config";
 import { isStaticPlaceholder, STATIC_PLACEHOLDER, staticParams } from "../../../ui/garden/static-params.mjs";
-import { siteLang, ui } from "../../lib/i18n";
 
 export function generateStaticParams() {
   return staticParams(posts.map((post) => ({ path: post.path.split("/") })), { path: [STATIC_PLACEHOLDER] });
@@ -80,72 +64,19 @@ export default async function PostPage({
     if (isStaticPlaceholder(path)) return null;
     notFound();
   }
-  const headings = extractHeadings(post.content, { numbering: post.numbering });
   const baseUrl = await getSiteUrl();
   const pathname = postHref(post);
   const canonicalUrl = absoluteUrl(pathname, baseUrl);
-  const wordCount = estimateWordCount(post.content);
   const { prev, next } = adjacentByDate(posts, (item: { path: string }) => item.path === post.path);
-  const t = ui();
 
   return (
-    <main className="reading-page post-reading-page">
-      <article className="post-article h-entry">
-        <Link className="u-url sr-only" href={pathname}>
-          {siteLang === "en" ? t.permalinkLabel(post.title) : <>{post.title} 永久链接</>}
-        </Link>
-        <a
-          className="p-author h-card sr-only"
-          href={githubUrl}
-          rel="author"
-        >
-          {siteConfig.author.name}
-        </a>
-        <header className="article-header article-summary-row hero">
-          <ArticleTitle title={post.title} />
-          <ul className="meta article-meta">
-            <li>{siteConfig.author.name}</li>
-            <li>
-              <time className="dt-published" dateTime={post.date}>
-                {formatDate(post.date)}
-              </time>
-            </li>
-            {post.updated ? <li>{siteLang === "en" ? t.updatedOn(formatDate(post.updated)) : <>更新于 {formatDate(post.updated)}</>}</li> : null}
-            <li>{t.wordCount(wordCount)}</li>
-            {originalUrl(post) ? (
-              <li>
-                <a className="orig ext" href={originalUrl(post)} target="_blank" rel="noopener noreferrer">{t.originalLink}</a>
-              </li>
-            ) : null}
-          </ul>
-          <ArticleTags tags={post.tags} />
-          {post.cover && (
-            <figure className="article-hero article-cover cover-card cover-img">
-              <CoverImage className="u-photo" src={post.cover} image={post.coverImage} alt={t.coverLabel(post.title)} sizes="(max-width: 852px) calc(100vw - 40px), 812px" priority />
-            </figure>
-          )}
-        </header>
-        <div className="article-reading-layout">
-          <div className="article-reading-column">
-            <ArticleMeasure />
-            <div className="e-content">
-              {post.description ? <p className="lead quote-plain p-summary">{post.description}</p> : null}
-              <MarkdownArticle content={post.content} numbering={post.numbering} />
-            </div>
-            <ArticleReferences references={post.references} />
-            <Webmentions
-              target={canonicalUrl}
-              endpoint={webmentionApiEndpoint()}
-            />
-            <ArticlePager
-              prev={prev ? { href: postHref(prev), title: prev.title } : null}
-              next={next ? { href: postHref(next), title: next.title } : null}
-            />
-            <Comments slug={post.path} />
-          </div>
-          <TableOfContents headings={headings} />
-        </div>
-      </article>
-    </main>
+    <PostReadingView
+      post={post}
+      pathname={pathname}
+      canonicalUrl={canonicalUrl}
+      commentsSlug={post.path}
+      prev={prev ? { href: postHref(prev), title: prev.title } : null}
+      next={next ? { href: postHref(next), title: next.title } : null}
+    />
   );
 }

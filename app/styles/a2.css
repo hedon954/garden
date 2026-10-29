@@ -2636,3 +2636,207 @@ html[data-theme="dark"] .ref-demo { --rd-s: #262624; --rd-p: #1f1e1d; --rd-i: #e
   .ref-demo[data-name="figure"] .ref-pane[data-p="v"] { grid-column: 1; grid-row: 1; }
   .ref-demo[data-name="figure"] .ref-pane[data-p="c"] { grid-column: 1; grid-row: 2; background: var(--rd-s); border-top: 1px solid var(--rd-r); }
 }
+
+/* ===== v0.10.1 tip keep (after git checkout of a2.css from 9a80f7e5) ===== */
+
+/* List pages: PageIntro rides on .sh-head; keep eyebrow in the same vertical rhythm. */
+.page-intro.sh-head {
+  padding: 72px 0 36px;
+  max-width: var(--list);
+  width: 100%;
+}
+
+.page-intro.sh-head .eyebrow {
+  margin: 0 0 14px;
+  color: var(--muted);
+  font: 600 11px / 1.4 var(--sans);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.page-intro.sh-head h1 {
+  margin: 0;
+  font: 700 var(--fs-display) / 1.2 var(--sans);
+  color: var(--ink);
+  letter-spacing: 0;
+  text-wrap: balance;
+}
+
+.page-intro.sh-head .sh-deck {
+  margin: 14px 0 0;
+}
+
+.page-intro.sh-head .page-intro-actions {
+  margin-top: 22px;
+}
+
+.thoughts-page,
+.about-page {
+  width: auto;
+  max-width: none;
+}
+
+.about-page {
+  padding-bottom: 120px;
+}
+
+/* Keep PageIntro at --list; focus card sticks to the right edge. */
+.about-page .about-grid {
+  width: 100%;
+  max-width: none;
+  display: grid;
+  grid-template-columns: minmax(0, var(--list)) minmax(12rem, 17rem);
+  column-gap: 48px;
+  row-gap: 36px;
+  justify-content: space-between;
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .about-page .about-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* SeriesEdgeNav: fixed to viewport left on column posts that share PostReadingView.
+   post-reading-page already lays out article + TOC; ticks are position:fixed so
+   they do not need a grid track. */
+.post-reading-page > .series-edge {
+  --edge-window-inset: 12px;
+  position: fixed;
+  top: calc(var(--hdr) + 12px);
+  bottom: 16px;
+  left: max(var(--edge-window-inset), env(safe-area-inset-left, 0px));
+  z-index: 15;
+  display: flex;
+  align-items: center;
+  pointer-events: none;
+  transform: none;
+  margin: 0;
+  padding: 0;
+}
+
+.series-edge-ticks {
+  pointer-events: auto;
+  appearance: none;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 6px;
+  margin: 0;
+  cursor: pointer;
+  color: inherit;
+  font: inherit;
+  border-radius: 0;
+}
+
+.series-edge-ticks i {
+  display: block;
+  width: 11px;
+  height: 1.5px;
+  border-radius: 1px;
+  background: color-mix(in srgb, var(--ink) 32%, transparent);
+  transition: background 0.15s ease, width 0.15s ease;
+}
+
+.series-edge-ticks i.hot {
+  width: 15px;
+  background: color-mix(in srgb, var(--ink) 70%, transparent);
+}
+
+.series-edge[data-open="true"] .series-edge-ticks i,
+.series-edge:focus-within .series-edge-ticks i {
+  background: color-mix(in srgb, var(--ink) 52%, transparent);
+}
+
+.series-edge[data-open="true"] .series-edge-ticks i.hot,
+.series-edge:focus-within .series-edge-ticks i.hot {
+  background: var(--ink);
+}
+
+.series-edge-bridge {
+  pointer-events: auto;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 100%;
+  width: 28px;
+}
+
+.series-edge-fly {
+  pointer-events: none;
+  position: absolute;
+  top: 50%;
+  left: calc(100% + 4px);
+  transform: translate(0, -50%);
+  width: 16rem;
+  max-height: min(72vh, calc(100vh - var(--hdr) - 40px));
+  margin: 0;
+  padding: 0.7rem 0.85rem 0.75rem;
+  border: 0;
+  border-radius: 10px;
+  background: var(--paper);
+  box-shadow:
+    0 1px 2px color-mix(in srgb, var(--ink) 6%, transparent),
+    0 10px 28px color-mix(in srgb, var(--ink) 10%, transparent);
+  opacity: 0;
+  visibility: hidden;
+  overflow: auto;
+  transition: opacity 0.16s ease, visibility 0.16s ease;
+}
+
+.series-edge[data-open="true"],
+.series-edge:focus-within {
+  z-index: 28;
+}
+
+.series-edge[data-open="true"] .series-edge-fly,
+.series-edge:focus-within .series-edge-fly {
+  pointer-events: auto;
+  opacity: 1;
+  visibility: visible;
+}
+
+.series-edge-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.series-edge-list a {
+  display: block;
+  padding: 0.4rem 0.35rem;
+  margin: 0 -0.35rem;
+  border-radius: 7px;
+  color: var(--soft);
+  font-size: 13px;
+  line-height: 1.35;
+  text-decoration: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.series-edge-list a:hover {
+  background: color-mix(in srgb, var(--ink) 4%, transparent);
+  color: var(--ink);
+}
+
+.series-edge-list li.cur a {
+  background: color-mix(in srgb, var(--ink) 6%, transparent);
+  color: var(--ink);
+  font-weight: 600;
+}
+
+@media (max-width: 900px) {
+  /* The desktop rule is `.post-reading-page > .series-edge { display: flex }`.
+     Match that specificity so the rail stays off small screens. */
+  .post-reading-page > .series-edge {
+    display: none;
+  }
+}

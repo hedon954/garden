@@ -7,15 +7,20 @@ type PageIntroProps = {
   children?: ReactNode;
 };
 
-/** Shared heading treatment for every top-level public page. */
+/**
+ * Shared heading for top-level list pages (blog / thoughts / columns).
+ * Same eyebrow + h1 + deck typography and padding so tab switches do not jump.
+ * Empty subtitle reserves no space.
+ */
 export function PageIntro({
   eyebrow,
   title,
   subtitle,
   children,
 }: PageIntroProps) {
+  const deck = subtitle?.trim();
   return (
-    <header className="page-intro">
+    <header className="page-intro sh-head">
       {eyebrow ? <p className="eyebrow">{eyebrow}</p> : null}
       <h1>
         {title.split("\n").map((line, index) => (
@@ -25,8 +30,8 @@ export function PageIntro({
           </span>
         ))}
       </h1>
-      {subtitle && <p>{subtitle}</p>}
-      {children && <div className="page-intro-actions">{children}</div>}
+      {deck ? <p className="sh-deck">{deck}</p> : null}
+      {children ? <div className="page-intro-actions">{children}</div> : null}
     </header>
   );
 }

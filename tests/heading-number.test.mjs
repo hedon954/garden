@@ -41,21 +41,23 @@ test("front matter numbering: false turns off automatic heading numbers", () => 
 
 test("numbering reaches the TOC and the article on blog and column pages", async () => {
   const read = (file) => readFile(new URL(`../${file}`, import.meta.url), "utf8");
-  const [content, article, blog, column, build] = await Promise.all([
+  const [content, article, blog, column, view, build] = await Promise.all([
     read("app/lib/content.ts"),
     read("app/components/MarkdownArticle.tsx"),
     read("app/blog/[...path]/page.tsx"),
     read("app/columns/[column]/[...path]/page.tsx"),
+    read("app/components/PostReadingView.tsx"),
     read("scripts/build-content.mjs"),
   ]);
   assert.match(content, /const autoNumber = autoNumbersHeadings\(markdown, numbering\);/);
   assert.match(content, /\} else if \(autoNumber\) \{/);
   assert.match(article, /const autoNumber = autoNumbersHeadings\(content, numbering\);/);
   assert.match(article, /if \(!autoNumber\) return \{ no: "", children \};/);
-  assert.match(blog, /extractHeadings\(post\.content, \{ numbering: post\.numbering \}\)/);
-  assert.match(blog, /<MarkdownArticle content=\{post\.content\} numbering=\{post\.numbering\} \/>/);
-  assert.match(column, /extractHeadings\(entry\.content, \{ numbering: entry\.numbering \}\)/);
-  assert.match(column, /<MarkdownArticle content=\{entry\.content\} numbering=\{entry\.numbering\} \/>/);
+  assert.match(blog, /<PostReadingView[\s\S]*post=\{post\}/);
+  assert.match(column, /<PostReadingView[\s\S]*post=\{entry\}/);
+  assert.match(view, /const numbering = \(post as ContentEntry & \{ numbering\?: boolean \}\)\.numbering;/);
+  assert.match(view, /extractHeadings\(post\.content, \{ numbering \}\)/);
+  assert.match(view, /<MarkdownArticle content=\{post\.content\} numbering=\{numbering\} \/>/);
   // a typo such as `numbering: no` fails the build instead of being ignored
   assert.match(build, /typeof data\.numbering !== "boolean"/);
   assert.match(build, /numbering\?: boolean;/);

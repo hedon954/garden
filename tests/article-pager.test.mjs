@@ -29,12 +29,14 @@ test("a column follows its own order, not the dates", () => {
 });
 
 test("article pages put the pager between the Webmention section and the comments", () => {
+  const view = fs.readFileSync(new URL("../app/components/PostReadingView.tsx", import.meta.url), "utf8");
+  const webmentions = view.indexOf("<Webmentions");
+  const pager = view.indexOf("<ArticlePager");
+  const comments = view.indexOf("<Comments");
+  assert.ok(webmentions > 0 && webmentions < pager && pager < comments, "PostReadingView");
   for (const file of ["app/blog/[...path]/page.tsx", "app/columns/[column]/[...path]/page.tsx"]) {
     const source = fs.readFileSync(new URL(`../${file}`, import.meta.url), "utf8");
-    const webmentions = source.indexOf("<Webmentions");
-    const pager = source.indexOf("<ArticlePager");
-    const comments = source.indexOf("<Comments");
-    assert.ok(webmentions > 0 && webmentions < pager && pager < comments, file);
+    assert.match(source, /<PostReadingView/, file);
   }
 });
 

@@ -54,8 +54,11 @@ test("cover markup: one early cover per page, everything else lazy, sizes reserv
   assert.match(component, /decoding="async"/u);
   assert.match(component, /width=\{image\?\.width\}\s*height=\{image\?\.height\}/u);
   assert.match(component, /srcSet=\{image\?\.srcset\}/u);
-  for (const page of ["app/page.tsx", "app/blog/[...path]/page.tsx", "app/columns/[column]/[...path]/page.tsx"]) {
+  for (const page of ["app/page.tsx", "app/components/PostReadingView.tsx"]) {
     assert.equal((read(page).match(/<CoverImage[^>]*\bpriority\b/gu) ?? []).length, 1, page);
+  }
+  for (const page of ["app/blog/[...path]/page.tsx", "app/columns/[column]/[...path]/page.tsx"]) {
+    assert.equal((read(page).match(/<CoverImage/gu) ?? []).length, 0, `${page} uses PostReadingView for the cover`);
   }
   assert.doesNotMatch(read("app/components/BlogArchive.tsx"), /<img/u);
 });

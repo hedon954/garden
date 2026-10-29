@@ -2,12 +2,14 @@
  * The header's site navigation. Hrefs carry the trailing slash: a static
  * export serves these pages at /blog/ and so on, and the host answers /blog
  * with a 301 first (new tab, no JavaScript, crawlers).
+ *
+ * /tags/ stays as a deep route (article tag chips still link there) but is
+ * not listed in the primary nav.
  */
 export const SITE_NAV = [
   { href: "/blog/", label: "文章" },
   { href: "/thoughts/", label: "随想" },
   { href: "/columns/", label: "专栏" },
-  { href: "/tags/", label: "标签" },
   { href: "/about/", label: "关于" },
 ];
 

@@ -43,7 +43,9 @@ export default function Home() {
     <main className="sh-main" id="content">
       <section className="sh-intro">
         <h1>{siteConfig.pages.home.title}</h1>
-        <p>{siteConfig.pages.home.subtitle || siteConfig.description}</p>
+        {siteConfig.pages.home.subtitle?.trim() ? (
+          <p>{siteConfig.pages.home.subtitle}</p>
+        ) : null}
         <div className="links">
           <Link href={siteHref("/about")}>{t.homeAbout}</Link>
           <a href={githubUrl} rel="me">GitHub</a>
