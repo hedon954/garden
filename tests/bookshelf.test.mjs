@@ -364,9 +364,13 @@ shelves:
     assert.match(shelf.notes.solo?.body ?? "", /正文在文章页/);
     const engine = read("app/components/bookshelf/engine.ts");
     const coverClick = engine.slice(engine.indexOf("async function onCoverClick"), engine.indexOf("async function onSpineClick"));
-    assert.ok(coverClick.indexOf("leaveForHub") >= 0 && coverClick.indexOf("leaveForHub") < coverClick.indexOf("openBookFlow"));
-    const spineClick = engine.slice(engine.indexOf("async function onSpineClick"), engine.indexOf("async function openBookFlow"));
-    assert.ok(spineClick.indexOf("leaveForHub") >= 0 && spineClick.indexOf("leaveForHub") < spineClick.indexOf("openBookFlow"));
+    assert.match(coverClick, /isHubBook\(found\.book\)/);
+    assert.match(coverClick, /openBookFlow\(/);
+    assert.doesNotMatch(coverClick, /location\.assign/);
+    const spineClick = engine.slice(engine.indexOf("async function onSpineClick"), engine.indexOf("function fillHub"));
+    assert.match(spineClick, /isHubBook\(found\.book\)/);
+    assert.match(spineClick, /openBookFlow\(/);
+    assert.doesNotMatch(spineClick, /location\.assign/);
   } finally {
     fs.rmSync(dir, { recursive: true, force: true });
   }

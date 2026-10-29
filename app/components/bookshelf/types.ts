@@ -86,4 +86,9 @@ export type BookshelfProps = {
    * unset and keeps its own full-viewport frame.
    */
   embedded?: boolean;
+  /**
+   * Open `/bookshelf/<id>` already on the hub, with the shelf parked under it
+   * so the return flyer can run. A shelf click does not use this.
+   */
+  initialHub?: string;
 };

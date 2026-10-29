@@ -79,6 +79,7 @@ function shelfShell(brand: string, title: string) {
     <div class="note-view" id="noteView" hidden>
       <article class="note">
         <button type="button" class="back-btn" id="backBtn">← 返回书架</button>
+        <div class="hub-panel" id="hubPanel" hidden></div>
         <div class="note-hero">
           <div class="note-cover" id="noteCover"></div>
           <div class="note-meta">
@@ -101,7 +102,14 @@ function shelfShell(brand: string, title: string) {
 }
 
 /** Approved bookshelf. Pass `catalog` and `notes` for a site shelf; omit them for the package demo. */
-export function Bookshelf({ catalog, notes, title, eyebrow, embedded = false }: BookshelfProps) {
+export function Bookshelf({
+  catalog,
+  notes,
+  title,
+  eyebrow,
+  embedded = false,
+  initialHub,
+}: BookshelfProps) {
   const ref = useRef<HTMLDivElement>(null);
   useLayoutEffect(() => {
     const root = ref.current;
@@ -111,13 +119,18 @@ export function Bookshelf({ catalog, notes, title, eyebrow, embedded = false }: 
       if (saved != null) window.scrollTo(0, saved);
     };
     applyScroll();
-    const unmount = mountBookshelf(root, { catalog: withNoteLinks(catalog), notes });
+    const unmount = mountBookshelf(root, {
+      catalog: withNoteLinks(catalog),
+      notes,
+      initialHub,
+      shelfHref: siteHref("/bookshelf"),
+    });
     const frame = window.requestAnimationFrame(applyScroll);
     return () => {
       window.cancelAnimationFrame(frame);
       unmount?.();
     };
-  }, [catalog, notes, title, eyebrow, embedded]);
+  }, [catalog, notes, title, eyebrow, embedded, initialHub]);
   return (
     <div
       className={embedded ? "bookshelf-demo is-site" : "bookshelf-demo"}

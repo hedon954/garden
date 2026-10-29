@@ -1,6 +1,7 @@
 /* eslint-disable */
 // @ts-nocheck
 // Tip ux26 held-book-s10-ux26-20261028. Motion copied from that app.js. Do not retune it.
+import { ui } from "../../lib/i18n";
 import { DEMO_CATALOG, DEMO_NOTES } from "./demo-data";
 
 function cssIdent(id) {
@@ -10,6 +11,19 @@ function cssIdent(id) {
 function coverSrc(book) {
   if (typeof book.cover === "string" && book.cover) return book.cover;
   return `/covers/${book.id}.jpg`;
+}
+
+/** Site jackets are URL strings. Demo `cover: true` stays a cloth spine at rest. */
+function realCover(book) {
+  return !!(book && typeof book.cover === "string" && book.cover && !book.filler);
+}
+
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;");
 }
 
 function injectExtraCovers(catalog) {
@@ -43,6 +57,10 @@ export function mountBookshelf(root, options = {}) {
   const CATALOG = options.catalog ?? DEMO_CATALOG;
   const NOTES = options.notes ?? (options.catalog ? {} : DEMO_NOTES);
   const usingDemo = !options.catalog;
+  const initialHub = typeof options.initialHub === "string" ? options.initialHub : "";
+  const shelfHref = typeof options.shelfHref === "string" && options.shelfHref
+    ? options.shelfHref
+    : "/bookshelf/";
   const removeExtraCovers = injectExtraCovers(CATALOG);
 
   // ux26: per-book cover dominant (= existing bk-* spine colors) for open-shell + page wash
@@ -297,6 +315,24 @@ export function mountBookshelf(root, options = {}) {
     return window.innerWidth <= 640 ? 102 : 118;
   }
 
+  // Real jackets stand face-out. Width fits the row when it can (≥72);
+  // otherwise 72 and the row scrolls, so the art stays readable.
+  function jacketFaceWidth(count) {
+    const col = Math.min((window.innerWidth || 1280) - 32, 740);
+    const gap = 10;
+    const full = coverWidthPx();
+    const n = Math.max(1, count | 0);
+    const fit = Math.floor((col - 8 - gap * Math.max(0, n - 1)) / n);
+    if (fit >= 72) return Math.min(full, fit);
+    return Math.min(full, 72);
+  }
+
+  function faceHeightFor(book, w) {
+    const nat = bookNat(book);
+    if (!nat) return Math.max(96, Math.round(w / 0.68));
+    return Math.max(96, Math.round(w * (nat.h / nat.w)));
+  }
+
   function bookNat(book) {
     if (!book || !book.cover) return null;
     const pair = COVER_NAT[book.id];
@@ -306,10 +342,7 @@ export function mountBookshelf(root, options = {}) {
 
   // Fixed width; height from real cover aspect. Fallback ~2:3 if unknown.
   function bookFaceHeight(book) {
-    const w = coverWidthPx();
-    const nat = bookNat(book);
-    if (!nat) return Math.round(w / 0.68);
-    return Math.max(96, Math.round(w * (nat.h / nat.w)));
+    return faceHeightFor(book, coverWidthPx());
   }
 
   // Real jacket on the expanded spine. CSS background-image is stripped by
@@ -338,18 +371,21 @@ export function mountBookshelf(root, options = {}) {
 
   function applyFaceSize(el, book, { expanded = false } = {}) {
     if (!el || !book) return;
-    const faceH = bookFaceHeight(book);
-    if (el.classList.contains("cover") || expanded) {
-      const w = coverWidthPx();
+    const jacket = realCover(book) && el.classList.contains("spine");
+    const stored = jacket ? Number(el.dataset.jacketW) : 0;
+    const w = expanded ? coverWidthPx() : (stored > 0 ? stored : (jacket ? jacketFaceWidth(1) : coverWidthPx()));
+    const faceH = faceHeightFor(book, jacket || el.classList.contains("cover") || expanded ? w : coverWidthPx());
+    if (el.classList.contains("cover") || expanded || jacket) {
       el.style.width = w + "px";
       el.style.height = faceH + "px";
       el.style.backgroundSize = "contain";
       el.style.backgroundPosition = "center top";
       el.style.backgroundRepeat = "no-repeat";
+      el.dataset.faceH = String(faceH);
     } else if (el.classList.contains("spine")) {
-      // Resting spine: same height as that book's cover face; width from size class.
+      // Demo / filler spine: height tracks the cover face; width stays the cloth class.
       el.style.height = faceH + "px";
-      el.style.removeProperty("width"); // keep CSS size class width
+      el.style.removeProperty("width");
       el.dataset.faceH = String(faceH);
     }
   }
@@ -557,16 +593,24 @@ export function mountBookshelf(root, options = {}) {
       } else {
         const row = document.createElement("div");
         row.className = "spines";
+        const jacketCount = cat.books.filter(realCover).length;
+        if (jacketCount) row.classList.add("has-jackets");
+        const jacketW = jacketFaceWidth(Math.max(1, jacketCount));
         for (const book of cat.books) {
           const btn = document.createElement("button");
           btn.type = "button";
           const sizeCls = book.size === "thin" ? "thin dark-text" : `${book.size} light-text`;
           btn.className = `spine ${bkClass(book)} ${sizeCls}`;
           if (book.cover) btn.classList.add(coverClass(book));
+          if (realCover(book)) {
+            btn.classList.add("has-jacket");
+            btn.dataset.jacketW = String(jacketW);
+          }
           btn.dataset.bookId = book.id;
           btn.setAttribute("aria-label", book.title);
-          btn.innerHTML = `<span>${book.spine}</span>`;
+          btn.innerHTML = `<span>${escapeHtml(book.spine)}</span>`;
           if (book.cover && !book.filler) applyFaceSize(btn, book);
+          if (realCover(book)) mountSeatCover(btn, book);
           else if (book.filler) { /* thin filler keeps CSS height */ }
 
           if (book.cover && !book.filler) {
@@ -604,13 +648,19 @@ export function mountBookshelf(root, options = {}) {
   function restoreRestingSpine(el, bookId) {
     if (!el) return;
     el.classList.remove("is-expanded", "is-collapsing");
-    clearSeatCover(el);
     const found = bookById(bookId);
-    if (found && found.book.cover && !found.book.filler) {
+    if (found && realCover(found.book)) {
       applyFaceSize(el, found.book, { expanded: false });
+      mountSeatCover(el, found.book);
+      el.classList.add("has-jacket");
     } else {
-      el.style.removeProperty("width");
-      el.style.removeProperty("height");
+      clearSeatCover(el);
+      if (found && found.book.cover && !found.book.filler) {
+        applyFaceSize(el, found.book, { expanded: false });
+      } else {
+        el.style.removeProperty("width");
+        el.style.removeProperty("height");
+      }
     }
   }
 
@@ -618,13 +668,10 @@ export function mountBookshelf(root, options = {}) {
     $$(".spine[data-book-id]").forEach((el) => {
       const id = el.dataset.bookId;
       if (!id || id === exceptId) return;
-      if (
-        el.classList.contains("is-expanded") ||
-        el.classList.contains("is-collapsing") ||
-        el.style.width
-      ) {
-        restoreRestingSpine(el, id);
-      }
+      const expandedLike = el.classList.contains("is-expanded") || el.classList.contains("is-collapsing");
+      // Real jackets keep an inline face width at rest. That is not an orphan expand.
+      const strayWidth = !!el.style.width && !el.classList.contains("has-jacket");
+      if (expandedLike || strayWidth) restoreRestingSpine(el, id);
     });
   }
 
@@ -660,7 +707,10 @@ export function mountBookshelf(root, options = {}) {
     if (!el) return;
     // Keep is-expanded + expandedId during shrink so a click mid-collapse still takes C path.
     // Drop inline width FIRST — ux17 face size would otherwise beat .is-collapsing CSS width.
-    el.style.removeProperty("width");
+    // Real jackets keep their resting face; clearing width snaps them to a 28px cloth bar.
+    const found = bookById(id);
+    if (found && realCover(found.book)) applyFaceSize(el, found.book, { expanded: false });
+    else el.style.removeProperty("width");
     el.classList.add("is-collapsing");
     const token = ++collapseToken;
     await wait(cssMs("--t-collapse", 230));
@@ -677,30 +727,55 @@ export function mountBookshelf(root, options = {}) {
     collapseToken += 1;
   }
 
-  // Multi-note books leave the shelf for /bookshelf/<id>. No extract flyer.
-  function leaveForHub(book) {
+  // Two or more notes: the shelf extract lands on the book hub, not the first note.
+  // List → article is an ordinary link and does not use this.
+  function isHubBook(book) {
     const posts = book && Array.isArray(book.posts) ? book.posts : [];
-    const href = book && typeof book.hub === "string" ? book.hub : "";
-    if (posts.length < 2 || !href) return false;
-    const y = scrollLock ? scrollLock.y : readScroll().y;
-    try { sessionStorage.setItem("garden-bookshelf-scroll", String(y)); } catch (_) {}
-    window.location.assign(href);
-    return true;
+    return posts.length >= 2 && typeof book.hub === "string" && !!book.hub;
+  }
+
+  function samePath(a, b) {
+    const norm = (value) => String(value || "").replace(/\/+$/u, "") || "/";
+    return norm(a) === norm(b);
+  }
+
+  function rememberHubUrl() {
+    if (!openBook || !openBook.hubMode || !openBook.book || !openBook.book.hub) return;
+    if (openBook.hubEntry === "direct" || openBook.hubEntry === "pushed") return;
+    const url = openBook.book.hub;
+    if (samePath(location.pathname, url)) {
+      openBook.hubEntry = "direct";
+      return;
+    }
+    try {
+      history.pushState(history.state, "", url);
+      openBook.hubEntry = "pushed";
+    } catch (_) {
+      openBook.hubEntry = "direct";
+    }
+  }
+
+  function releaseHubUrl() {
+    if (!openBook || !openBook.hubMode || openBook.hubEntry === "history") return;
+    if (samePath(location.pathname, shelfHref)) return;
+    try { history.replaceState(history.state, "", shelfHref); } catch (_) {}
   }
 
   async function onCoverClick(id, el) {
     if (busy) return;
     const found = bookById(id);
     if (!found || found.book.filler) return;
-    if (leaveForHub(found.book)) return;
-    await openBookFlow(found.book, found.cat, el, { fromExpanded: false, asSpine: false });
+    await openBookFlow(found.book, found.cat, el, {
+      fromExpanded: false,
+      asSpine: false,
+      hub: isHubBook(found.book),
+    });
   }
 
   async function onSpineClick(id, el, ev) {
     if (busy) return;
     const found = bookById(id);
     if (!found || found.book.filler) return;
-    if (leaveForHub(found.book)) return;
     if (!found.book.cover) return;
 
     const isTouch = ev && (ev.pointerType === "touch" || ("ontouchstart" in window && window.matchMedia("(hover: none)").matches));
@@ -709,7 +784,11 @@ export function mountBookshelf(root, options = {}) {
     if (isTouch || window.matchMedia("(hover: none)").matches) {
       touchExpandedId = null;
       if (expandedId) await collapseSpine(expandedId);
-      await openBookFlow(found.book, found.cat, el, { fromExpanded: false, asSpine: true });
+      await openBookFlow(found.book, found.cat, el, {
+        fromExpanded: false,
+        asSpine: true,
+        hub: isHubBook(found.book),
+      });
       return;
     }
 
@@ -717,10 +796,105 @@ export function mountBookshelf(root, options = {}) {
     const fromExpanded =
       (expandedId === id && el.classList.contains("is-expanded")) ||
       el.classList.contains("is-collapsing");
-    await openBookFlow(found.book, found.cat, el, { fromExpanded, asSpine: true });
+    await openBookFlow(found.book, found.cat, el, {
+      fromExpanded,
+      asSpine: true,
+      hub: isHubBook(found.book),
+    });
+  }
+
+  function showNoteChrome() {
+    noteView.classList.remove("is-hub");
+    const hub = $("#hubPanel");
+    if (hub) {
+      hub.hidden = true;
+      hub.replaceChildren();
+    }
+  }
+
+  function showHubChrome() {
+    noteView.classList.add("is-hub");
+    const hub = $("#hubPanel");
+    if (hub) hub.hidden = false;
+  }
+
+  function hubKindLabel(kind) {
+    const t = ui();
+    switch (kind) {
+      case "overview":
+        return t.bookHubOverview;
+      case "excerpt":
+        return t.bookHubExcerpt;
+      case undefined:
+        return "";
+      default: {
+        const unexpected = kind;
+        return unexpected;
+      }
+    }
+  }
+
+  function hubDay(value) {
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return String(value).slice(0, 10);
+    return new Intl.DateTimeFormat("en-CA", {
+      timeZone: "Asia/Shanghai",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).format(date);
+  }
+
+  function hubSourceList(book) {
+    const list = Array.isArray(book.sources) ? book.sources : [];
+    const douban = list.filter((source) => source.label === "豆瓣" || /^douban$/iu.test(source.label));
+    const pdf = list.filter((source) => /pdf/iu.test(source.label));
+    return [...douban, ...pdf];
+  }
+
+  function fillHub(book) {
+    showHubChrome();
+    const t = ui();
+    const panel = $("#hubPanel");
+    if (!panel) return;
+    const jacket = realCover(book) ? coverSrc(book) : "";
+    const sources = hubSourceList(book).map((source) => {
+      const external = /^(?:https?:)?\/\//iu.test(source.href);
+      const pdf = /pdf/iu.test(source.label);
+      const attrs = external ? ` target="_blank" rel="noopener noreferrer"` : "";
+      return `<span class="book-hub-source"><a class="book-hub-chip" href="${escapeHtml(source.href)}"${attrs}>${escapeHtml(source.label)}<span class="ext" aria-hidden="true">↗</span></a>${pdf ? `<span class="book-hub-source-note">${escapeHtml(t.bookHubPdfNote)}</span>` : ""}</span>`;
+    }).join("");
+    const notes = (Array.isArray(book.posts) ? book.posts : []).map((entry) => {
+      const label = hubKindLabel(entry.kind);
+      const href = entry.href || `/blog/${entry.path}`;
+      const when = entry.date ? hubDay(entry.date) : "";
+      const count = entry.words ? t.wordCount(entry.words) : "";
+      const meta = when || count
+        ? `<p class="book-hub-note-meta">${escapeHtml(when)}${when && count ? " · " : ""}${escapeHtml(count)}</p>`
+        : "";
+      return `<li><a class="book-hub-note" href="${escapeHtml(href)}">${label ? `<p class="book-hub-note-label">${escapeHtml(label)}</p>` : ""}<h3>${escapeHtml(entry.title || book.title)}</h3>${entry.summary ? `<p class="book-hub-note-sum">${escapeHtml(entry.summary)}</p>` : ""}${meta}</a></li>`;
+    }).join("");
+    panel.innerHTML = `<div class="book-hub">
+      <section class="book-hub-card" aria-labelledby="book-hub-title">
+        ${jacket ? `<div class="book-hub-cover"><img src="${escapeHtml(jacket)}" alt="" width="148"></div>` : ""}
+        <div class="book-hub-meta">
+          <h1 id="book-hub-title">${escapeHtml(book.title)}</h1>
+          ${book.author ? `<p class="book-hub-author">${escapeHtml(book.author)}</p>` : ""}
+          ${sources ? `<div class="book-hub-sources">${sources}</div>` : ""}
+        </div>
+      </section>
+      <h2 class="book-hub-notes-head">${escapeHtml(t.bookHubNotes)}</h2>
+      <ul class="book-hub-notes">${notes}</ul>
+    </div>`;
+    const read = $("#noteRead");
+    if (read) {
+      read.hidden = true;
+      read.removeAttribute("href");
+    }
   }
 
   function fillNote(book, cat) {
+    showNoteChrome();
     $("#noteCat").textContent = cat.name;
     $("#noteTitle").textContent = book.title;
     $("#noteAuthor").textContent = book.author || "";
@@ -892,10 +1066,23 @@ export function mountBookshelf(root, options = {}) {
     el.style.opacity = String(opacity);
     el.style.zIndex = "80";
     el.style.pointerEvents = "none";
-    const label = document.createElement("span");
-    label.className = "flyer-spine-slot-label";
-    label.textContent = book.spine || book.title || "";
-    el.appendChild(label);
+    if (book && book.cover && !book.filler) {
+      el.classList.add("has-jacket", coverClass(book));
+      el.style.backgroundColor = "transparent";
+      el.style.backgroundImage = "none";
+      el.style.padding = "0";
+      const img = document.createElement("img");
+      img.className = "flyer-spine-slot-img";
+      img.alt = "";
+      img.draggable = false;
+      img.src = coverSrc(book);
+      el.appendChild(img);
+    } else {
+      const label = document.createElement("span");
+      label.className = "flyer-spine-slot-label";
+      label.textContent = book.spine || book.title || "";
+      el.appendChild(label);
+    }
     stage.appendChild(el);
     return el;
   }
@@ -1047,13 +1234,28 @@ export function mountBookshelf(root, options = {}) {
     ];
   }
 
-  // Article is gone by ~0.12 (230ms). Shrink has already started on frame 0.
+  // Close start must not composite the open spread on the note (double exposure).
+  // The article is gone within ~80ms. The flyer stays hidden until then, already
+  // collapsed to a single jacket, then flies home.
   function noteOutKeys() {
     return [
       { offset: 0, opacity: 1 },
-      { offset: 0.05, opacity: 0.35 },
-      { offset: 0.12, opacity: 0 },
+      { offset: 0.02, opacity: 0 },
       { offset: 1, opacity: 0 },
+    ];
+  }
+
+  function closedReturnLeftKeys() {
+    return [
+      { offset: 0, transform: "rotateY(180deg)" },
+      { offset: 1, transform: "rotateY(180deg)" },
+    ];
+  }
+
+  function closedReturnRightKeys() {
+    return [
+      { offset: 0, opacity: 0, transform: "rotateY(0deg)" },
+      { offset: 1, opacity: 0, transform: "rotateY(0deg)" },
     ];
   }
 
@@ -1367,7 +1569,7 @@ export function mountBookshelf(root, options = {}) {
       "is-expanded",
       "is-collapsing"
     );
-    clearSeatCover(el);
+    if (!(book && realCover(book))) clearSeatCover(el);
     // Explicit removeProperty — kills commitStyles leftovers like opacity:0 / transform
     [
       "width",
@@ -1391,6 +1593,10 @@ export function mountBookshelf(root, options = {}) {
       applyFaceSize(el, book);
     } else if (book && el.classList.contains("spine") && book.cover && !book.filler) {
       applyFaceSize(el, book);
+      if (realCover(book)) {
+        el.classList.add("has-jacket");
+        mountSeatCover(el, book);
+      }
     }
   }
 
@@ -1560,6 +1766,24 @@ export function mountBookshelf(root, options = {}) {
     }
   }
 
+  async function prepareHub(book) {
+    fillHub(book);
+    noteView.hidden = false;
+    noteView.classList.add("is-preparing", "is-hub");
+    noteView.classList.remove("is-open");
+    noteView.style.opacity = "0";
+    const img = $("#hubPanel") && $("#hubPanel").querySelector("img");
+    if (img && !coverImgReady(img)) {
+      try {
+        const decodeOrLoad = img.decode
+          ? img.decode()
+          : new Promise((res) => { img.onload = res; img.onerror = res; });
+        await Promise.race([decodeOrLoad.catch(() => {}), wait(400)]);
+      } catch (_) {}
+    }
+    void noteView.offsetWidth;
+  }
+
   async function prepareNote(book, cat) {
     fillNote(book, cat);
     noteView.hidden = false;
@@ -1610,13 +1834,22 @@ export function mountBookshelf(root, options = {}) {
     restoreSlot(el);
   }
 
-  async function openBookFlow(book, cat, sourceEl, { fromExpanded, asSpine }) {
+  async function openBookFlow(book, cat, sourceEl, { fromExpanded, asSpine, hub }) {
     if (busy) return;
     busy = true;
     const myFlow = ++flowSeq;
     document.body.classList.add("is-busy");
     root.classList.remove("is-return");
-    openBook = { book, cat, asSpine, fromExpanded: !!fromExpanded, openSeatRect: null };
+    const hubMode = !!hub && isHubBook(book);
+    openBook = {
+      book,
+      cat,
+      asSpine,
+      fromExpanded: !!fromExpanded,
+      hubMode,
+      hubEntry: hubMode ? "pending" : "",
+      openSeatRect: null,
+    };
     openFromExpanded = !!fromExpanded;
 
     // ux6b: freeze window scroll to idle/expand home (face-out stuck ~197px up).
@@ -1629,7 +1862,8 @@ export function mountBookshelf(root, options = {}) {
     } catch (_) {}
 
     try {
-      await prepareNote(book, cat);
+      if (hubMode) await prepareHub(book);
+      else await prepareNote(book, cat);
     } catch (_) {
       // Decode/prepare failed — still open; never leave is-busy hung.
     }
@@ -1644,6 +1878,7 @@ export function mountBookshelf(root, options = {}) {
       noteView.classList.add("is-open");
       noteView.style.opacity = "1";
       parkShelf();
+      rememberHubUrl();
       releaseScrollLock();
       busy = false;
       document.body.classList.remove("is-busy");
@@ -1989,6 +2224,7 @@ export function mountBookshelf(root, options = {}) {
         unlockNoteClicks();
         holdFlyerUnderNote();
         parkShelf();
+        rememberHubUrl();
         restoreSlot(sourceEl, book);
         sourceEl.classList.remove("is-extracting");
         // Keep sourceEl as invisible reserved seat while note open (no gray plate).
@@ -2026,13 +2262,14 @@ export function mountBookshelf(root, options = {}) {
     const targetMode = pageMode;
 
     if (reduceMotion()) {
-      noteView.classList.remove("is-open", "is-preparing");
+      noteView.classList.remove("is-open", "is-preparing", "is-hub");
       noteView.hidden = true;
       noteView.style.opacity = "";
       expandedId = null;
       openFromExpanded = false;
       unparkShelf();
       renderShelf();
+      releaseHubUrl();
       clearGhost(
         targetMode === "covers"
           ? $(`.cover[data-book-id="${book.id}"]`)
@@ -2069,47 +2306,36 @@ export function mountBookshelf(root, options = {}) {
       stashEarly.Tp2 &&
       stashEarly.Tp3
     ) {
+      // Hide the spread on the first frame. Shrinking starts now, but the
+      // open pages must not sit on top of the note.
       heldEarly.style.visibility = "visible";
       heldEarly.style.zIndex = "70";
-      heldEarly.style.opacity = "1";
+      heldEarly.style.opacity = "0";
       if (heldEarly._board) {
         heldEarly._board.style.opacity = "0";
         heldEarly._board.style.visibility = "hidden";
       }
+      if (heldEarly._right) heldEarly._right.style.opacity = "0";
+      if (heldEarly._left) heldEarly._left.style.transform = "rotateY(180deg)";
+      if (heldEarly._leftThick) heldEarly._leftThick.style.opacity = "0";
+      if (heldEarly._rightThick) heldEarly._rightThick.style.opacity = "0";
+      if (heldEarly._gutter) heldEarly._gutter.style.opacity = "0";
       promote(heldEarly);
       earlyMove = heldEarly.animate(
         returnMoveKeys(stashEarly.Tfull, stashEarly.Tp1, stashEarly.T0),
         closeMotion
       );
       earlyNote = noteView.animate(noteOutKeys(), closeOpts);
-      // Backup if the fade is dropped: the article must not still be up after ~230ms.
-      wait(Math.round(CLOSE_MS * 0.12)).then(() => {
+      // Backup if the fade is dropped: the article must not still be up.
+      wait(Math.round(CLOSE_MS * 0.05)).then(() => {
         if (myFlow !== flowSeq || !noteView) return;
         noteView.style.opacity = "0";
       });
       if (heldEarly._left) {
-        earlyLeft = heldEarly._left.animate(
-          [
-            { offset: 0, transform: "rotateY(8deg)" },
-            { offset: 0.08, transform: "rotateY(20deg)" },
-            { offset: 0.16, transform: "rotateY(70deg)" },
-            { offset: 0.24, transform: "rotateY(140deg)" },
-            { offset: 0.32, transform: "rotateY(180deg)" },
-            { offset: 1.0, transform: "rotateY(180deg)" },
-          ],
-          closeMotion
-        );
+        earlyLeft = heldEarly._left.animate(closedReturnLeftKeys(), closeMotion);
       }
       if (heldEarly._right) {
-        earlyRight = heldEarly._right.animate(
-          [
-            { offset: 0, opacity: 1, transform: "rotateY(-8deg)" },
-            { offset: 0.20, opacity: 1, transform: "rotateY(-4deg)" },
-            { offset: 0.32, opacity: 0, transform: "rotateY(0deg)" },
-            { offset: 1.0, opacity: 0, transform: "rotateY(0deg)" },
-          ],
-          closeMotion
-        );
+        earlyRight = heldEarly._right.animate(closedReturnRightKeys(), closeMotion);
       }
     }
 
@@ -2141,9 +2367,10 @@ export function mountBookshelf(root, options = {}) {
       try { earlyLeft && earlyLeft.cancel(); } catch (_) {}
       try { earlyRight && earlyRight.cancel(); } catch (_) {}
       root.classList.remove("is-return");
-      noteView.classList.remove("is-open", "is-preparing");
+      noteView.classList.remove("is-open", "is-preparing", "is-hub");
       noteView.hidden = true;
       noteView.style.opacity = "";
+      releaseHubUrl();
       openBook = null;
       busy = false;
       document.body.classList.remove("is-busy");
@@ -2297,19 +2524,20 @@ export function mountBookshelf(root, options = {}) {
         }
       }
     }
-    // Ensure open-spread leaf pose at Tfull so reverse hinge is continuous (under note).
-    if (flyer._left) flyer._left.style.transform = "rotateY(8deg)";
+    // Collapse to one jacket before the flyer is allowed to paint. An open
+    // spread here is the full-screen double exposure over the note.
+    if (flyer._left) flyer._left.style.transform = "rotateY(180deg)";
     if (flyer._right) {
-      flyer._right.style.transform = "rotateY(-8deg)";
-      flyer._right.style.opacity = "1";
+      flyer._right.style.transform = "rotateY(0deg)";
+      flyer._right.style.opacity = "0";
     }
     if (flyer._board) {
       flyer._board.style.opacity = "0";
       flyer._board.style.visibility = "hidden";
     }
-    if (flyer._leftThick) flyer._leftThick.style.opacity = "1";
-    if (flyer._rightThick) flyer._rightThick.style.opacity = "1";
-    if (flyer._gutter) flyer._gutter.style.opacity = "1";
+    if (flyer._leftThick) flyer._leftThick.style.opacity = "0";
+    if (flyer._rightThick) flyer._rightThick.style.opacity = "0";
+    if (flyer._gutter) flyer._gutter.style.opacity = "0";
     const closeSpineLabel = flyer._cover && flyer._cover.querySelector(".flyer-spine-label");
     if (closeSpineLabel) closeSpineLabel.style.opacity = "0";
     // ux23: spines may swap to img-only; covers keep applyCoverImage bg under img
@@ -2357,7 +2585,7 @@ export function mountBookshelf(root, options = {}) {
     // Start the reverse on this frame. A pre-clock rAF left the spread parked at
     // 672×504 while the note was still up (the ~240ms close-start hitch).
     void readyPulse;
-    if (!earlyMove) flyer.style.opacity = "1";
+    if (!earlyMove) flyer.style.opacity = "0";
 
     // ux14: TIME-REVERSE of open pathTs — ban separately computed return / end-segment seek.
     const PUT_MS = 380;
@@ -2380,33 +2608,13 @@ export function mountBookshelf(root, options = {}) {
     );
     // Reverse hinge on SAME layer while shrink (open was 0.32→0.68 hinge).
     const aLeftClose = earlyLeft || (flyer._left
-      ? flyer._left.animate(
-          [
-            { offset: 0, transform: "rotateY(8deg)" },
-            { offset: 0.08, transform: "rotateY(20deg)" },
-            { offset: 0.16, transform: "rotateY(70deg)" },
-            { offset: 0.24, transform: "rotateY(140deg)" },
-            { offset: 0.32, transform: "rotateY(180deg)" },
-            { offset: 1.0, transform: "rotateY(180deg)" },
-          ],
-          closeMotion
-        )
+      ? flyer._left.animate(closedReturnLeftKeys(), closeMotion)
       : null);
     const aRightClose = earlyRight || (flyer._right
-      ? flyer._right.animate(
-          [
-            { offset: 0, opacity: 1, transform: "rotateY(-8deg)" },
-            { offset: 0.20, opacity: 1, transform: "rotateY(-4deg)" },
-            { offset: 0.32, opacity: 0, transform: "rotateY(0deg)" },
-            { offset: 1.0, opacity: 0, transform: "rotateY(0deg)" },
-          ],
-          closeMotion
-        )
+      ? flyer._right.animate(closedReturnRightKeys(), closeMotion)
       : null);
     const closedFaceOut = [
-      { offset: 0, opacity: 1 },
-      { offset: 0.18, opacity: 0.7 },
-      { offset: 0.28, opacity: 0 },
+      { offset: 0, opacity: 0 },
       { offset: 1.0, opacity: 0 },
     ];
     const aBoardClose = null;
@@ -2415,8 +2623,7 @@ export function mountBookshelf(root, options = {}) {
     const aGutterClose = flyer._gutter
       ? flyer._gutter.animate(
           [
-            { offset: 0, opacity: 1 },
-            { offset: 0.24, opacity: 0 },
+            { offset: 0, opacity: 0 },
             { offset: 1.0, opacity: 0 },
           ],
           closeOpts
@@ -2450,15 +2657,19 @@ export function mountBookshelf(root, options = {}) {
     const aFlyerFade = flyer.animate(
       targetMode === "spines"
         ? [
-            // Stay through the shrink. Cutting at 0.58 dropped a still-large
-            // cover and made the first ~1.1s look like overlap, then a pop.
-            { offset: 0, opacity: 1 },
-            { offset: 0.68, opacity: 1 },
-            { offset: 0.80, opacity: 0 },
+            // Hidden while the note is still up, then the collapsed jacket
+            // flies home. Do not hold opacity 1 at the full spread.
+            { offset: 0, opacity: 0 },
+            { offset: 0.06, opacity: 0 },
+            { offset: 0.12, opacity: 1 },
+            { offset: 0.72, opacity: 1 },
+            { offset: 0.84, opacity: 0 },
             { offset: 1.0, opacity: 0 },
           ]
         : [
-            { offset: 0, opacity: 1 },
+            { offset: 0, opacity: 0 },
+            { offset: 0.06, opacity: 0 },
+            { offset: 0.12, opacity: 1 },
             { offset: flyerFadeAt, opacity: 1 },
             { offset: 1.0, opacity: 0 },
           ],
@@ -2503,13 +2714,17 @@ export function mountBookshelf(root, options = {}) {
       ? coverImg.animate(
           targetMode === "spines"
             ? [
-                { offset: 0, opacity: 1 },
-                { offset: 0.68, opacity: 1 },
-                { offset: 0.80, opacity: 0 },
+                { offset: 0, opacity: 0 },
+                { offset: 0.06, opacity: 0 },
+                { offset: 0.12, opacity: 1 },
+                { offset: 0.72, opacity: 1 },
+                { offset: 0.84, opacity: 0 },
                 { offset: 1, opacity: 0 },
               ]
             : [
-                { offset: 0, opacity: 1 },
+                { offset: 0, opacity: 0 },
+                { offset: 0.06, opacity: 0 },
+                { offset: 0.12, opacity: 1 },
                 { offset: flyerFadeAt, opacity: 1 },
                 { offset: 1, opacity: 0 },
               ],
@@ -2593,7 +2808,7 @@ export function mountBookshelf(root, options = {}) {
       slot.style.opacity = "1";
       slot.style.transform = "none";
       root.classList.remove("is-return");
-      noteView.classList.remove("is-open", "is-preparing");
+      noteView.classList.remove("is-open", "is-preparing", "is-hub");
       noteView.hidden = true;
       noteView.style.opacity = "";
       noteView.style.zIndex = "";
@@ -2664,6 +2879,7 @@ export function mountBookshelf(root, options = {}) {
       });
       try { shelfView.style.removeProperty("min-height"); } catch (_) {}
       shelfView.style.opacity = "";
+      releaseHubUrl();
       openBook = null;
       openFromExpanded = false;
       releaseScrollLock();
@@ -2702,6 +2918,13 @@ export function mountBookshelf(root, options = {}) {
 
   listen($("#backBtn"), "click", () => closeBookFlow());
 
+  listen(window, "popstate", () => {
+    if (!openBook || !openBook.hubMode || busy || !openBook.book) return;
+    if (samePath(location.pathname, openBook.book.hub)) return;
+    openBook.hubEntry = "history";
+    closeBookFlow();
+  });
+
   // Browser Back from the full note restores this page from bfcache, still open.
   // Land on the shelf at the scroll we saved, without replaying the close clock.
   listen(window, "pageshow", (event) => {
@@ -2717,7 +2940,7 @@ export function mountBookshelf(root, options = {}) {
     busy = false;
     flowSeq += 1;
     document.body.classList.remove("is-busy");
-    noteView.classList.remove("is-open", "is-preparing");
+    noteView.classList.remove("is-open", "is-preparing", "is-hub");
     noteView.hidden = true;
     noteView.style.opacity = "";
     noteView.style.zIndex = "";
@@ -2737,7 +2960,7 @@ export function mountBookshelf(root, options = {}) {
   listen(root, "click", (event) => {
     const target = event.target;
     if (!target || !target.closest) return;
-    const link = target.closest("a.flyer-page-more, a.note-read");
+    const link = target.closest("a.flyer-page-more, a.note-read, a.book-hub-note");
     if (!link || !root.contains(link)) return;
     const y = scrollLock ? scrollLock.y : readScroll().y;
     try { sessionStorage.setItem("garden-bookshelf-scroll", String(y)); } catch (_) {}
@@ -2755,12 +2978,73 @@ export function mountBookshelf(root, options = {}) {
     /* intentionally empty — enter-time density + face sizes stay put */
   });
 
+  // Direct /bookshelf/<id>: hub is already the page. Shelf sits underneath so
+  // 返回书架 can play the return flyer. No extract — there was no click.
+  function presentHubImmediate(book) {
+    const found = bookById(book.id);
+    const cat = found ? found.cat : { name: "" };
+    const slot = $(`.spine[data-book-id="${book.id}"]`) || $(`.cover[data-book-id="${book.id}"]`);
+    if (!slot) return;
+    fillHub(book);
+    noteView.hidden = false;
+    noteView.classList.add("is-open", "is-hub");
+    noteView.classList.remove("is-preparing");
+    noteView.style.opacity = "1";
+    const homeRect = copyRect(rectOf(slot));
+    const mid = midRect(book);
+    const wp = buildSlotWaypoints(homeRect, mid, book);
+    const startAsSpine = slot.classList.contains("spine");
+    const flyer = makeFlyer(book, homeRect, { spineShape: false, spreadOpen: true });
+    flyer.style.opacity = "0";
+    if (flyer._left) flyer._left.style.transform = "rotateY(180deg)";
+    if (flyer._right) flyer._right.style.opacity = "0";
+    if (flyer._board) {
+      flyer._board.style.opacity = "0";
+      flyer._board.style.visibility = "hidden";
+    }
+    slot.classList.add("is-placeholder");
+    slot.style.opacity = "0";
+    openBook = {
+      book,
+      cat,
+      asSpine: startAsSpine,
+      fromExpanded: false,
+      hubMode: true,
+      hubEntry: "direct",
+      openSeatRect: { ...homeRect },
+      homeRect: { ...homeRect },
+      homeMode: startAsSpine ? "spines" : "covers",
+      pathMid: copyRect(mid),
+      pathWp: wp,
+      pathTs: {
+        T0: wp.T0,
+        Tp1: wp.Tp1,
+        Tp2: wp.Tp2,
+        Tp3: wp.Tp3,
+        TdualClosed: wp.Tp2,
+        Tgrow: wp.Tp3,
+        Tnear: lerpTS(wp.Tp3, wp.Tfull, 0.5),
+        Tfull: wp.Tfull,
+      },
+      spineHome: copyRect(homeRect),
+      heldFlyer: flyer,
+    };
+    if (startAsSpine) openBook.spineOut = spineSlotOutDelta(homeRect, mid);
+    parkShelf();
+    rememberScrollHome();
+    armScrollLock();
+  }
+
   // init
   const q = parseQuery();
   if (q) modeOverride = q;
   enableDebugChrome();
   applyModePreference();
   preloadCovers();
+  if (initialHub) {
+    const found = bookById(initialHub);
+    if (found && isHubBook(found.book)) presentHubImmediate(found.book);
+  }
 
   return () => {
     for (const fn of unlisten) fn();

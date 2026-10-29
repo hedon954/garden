@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { bookshelf } from "@garden/bookshelf";
-import { BookHub } from "../../components/bookshelf/BookHub";
+import { Bookshelf } from "../../components/bookshelf";
 import { pageAlternates } from "../../lib/page-alternates";
+import { siteConfig } from "../../site.config";
 import { isStaticPlaceholder, STATIC_PLACEHOLDER, staticParams } from "../../../ui/garden/static-params.mjs";
 import type { BookshelfBook } from "../../components/bookshelf/types";
 
@@ -47,9 +48,25 @@ export default async function BookHubPage({
 }) {
   const { bookId } = await params;
   const found = hubBooks().find((item) => item.book.id === bookId);
-  if (!found) {
+  if (!found || !bookshelf) {
     if (isStaticPlaceholder(bookId)) return null;
     notFound();
   }
-  return <BookHub shelfTitle={found.shelfTitle} book={found.book} />;
+  return (
+    <main className="sh-main bookshelf-page" id="content">
+      <header className="sh-head">
+        {bookshelf.eyebrow ? <p className="sh-kicker">{bookshelf.eyebrow}</p> : null}
+        <h1 id="sh-title">{bookshelf.title}</h1>
+        {bookshelf.description ? <p className="sh-deck">{bookshelf.description}</p> : null}
+      </header>
+      <Bookshelf
+        embedded
+        catalog={bookshelf.catalog}
+        notes={bookshelf.notes}
+        title={bookshelf.title}
+        eyebrow={bookshelf.eyebrow ?? siteConfig.name}
+        initialHub={found.book.id}
+      />
+    </main>
+  );
 }
