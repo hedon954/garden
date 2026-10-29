@@ -131,7 +131,7 @@ const zh = {
   fuzzy: "支持模糊匹配",
   escToClose: "关闭",
   noResults: (q: string) => (q ? `没有找到和「${q}」相关的文章` : "还没有可以搜索的内容"),
-  navLabels: { "/blog/": "文章", "/thoughts/": "随想", "/columns/": "专栏", "/tags/": "标签", "/bookshelf/": "书架", "/about/": "关于" } as Record<string, string>,
+  navLabels: { "/blog/": "文章", "/thoughts/": "随想", "/columns/": "专栏", "/tags/": "标签", "/about/": "关于" } as Record<string, string>,
   // Home page
   homeLatestBadge: "最新文章",
   homeRecentHeading: "最近更新",
@@ -299,11 +299,6 @@ const zh = {
   adminTitlePreview: "草稿预览",
   a2IndexTitle: "A2 对照",
   a2IndexDeck: "对照参考文章的版式。正文没有改字。",
-  bookHubCurrent: "本书",
-  bookHubNotes: "我的笔记",
-  bookHubOverview: "总览",
-  bookHubExcerpt: "摘抄",
-  bookHubPdfNote: "（仅分享，侵权删）",
 };
 
 const en: typeof zh = {
@@ -419,7 +414,7 @@ const en: typeof zh = {
   fuzzy: "Fuzzy matching",
   escToClose: "to close",
   noResults: (q: string) => (q ? `No posts match “${q}”` : "Nothing to search yet"),
-  navLabels: { "/blog/": "Posts", "/thoughts/": "Thoughts", "/columns/": "Columns", "/tags/": "Tags", "/bookshelf/": "Shelf", "/about/": "About" },
+  navLabels: { "/blog/": "Posts", "/thoughts/": "Thoughts", "/columns/": "Columns", "/tags/": "Tags", "/about/": "About" },
   // Home page
   homeLatestBadge: "Latest post",
   homeRecentHeading: "Recent updates",
@@ -587,11 +582,6 @@ const en: typeof zh = {
   adminTitlePreview: "Draft Preview",
   a2IndexTitle: "A2 Parity",
   a2IndexDeck: "Layout comparison against reference articles. Body text is unchanged.",
-  bookHubCurrent: "This book",
-  bookHubNotes: "My notes",
-  bookHubOverview: "Overview",
-  bookHubExcerpt: "Excerpt",
-  bookHubPdfNote: "(shared only — removed if it infringes)",
 };
 
 export const UI_STRINGS = { zh, en } as const;

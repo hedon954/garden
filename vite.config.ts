@@ -14,11 +14,9 @@ const { d1, r2 } = hostingConfig;
 const siteRoot = gardenSiteRoot();
 const generatedContent = path.join(siteRoot, ".garden", "generated-content.ts");
 const generatedSiteConfig = path.join(siteRoot, ".garden", "site-config.ts");
-const generatedBookshelf = path.join(siteRoot, ".garden", "bookshelf.ts");
 const generatedAliases = {
   "@garden/generated-content": generatedContent,
   "@garden/site-config": generatedSiteConfig,
-  "@garden/bookshelf": generatedBookshelf,
 };
 
 // macOS Seatbelt blocks FSEvents, so Codex previews need polling for HMR.
@@ -69,11 +67,10 @@ function gardenContent() {
       const normalized = id.split("?")[0];
       if (normalized === "@garden/generated-content") return generatedContent;
       if (normalized === "@garden/site-config") return generatedSiteConfig;
-      if (normalized === "@garden/bookshelf") return generatedBookshelf;
       return undefined;
     },
     buildStart() {
-      if (!fs.existsSync(generatedContent) || !fs.existsSync(generatedSiteConfig) || !fs.existsSync(generatedBookshelf)) {
+      if (!fs.existsSync(generatedContent) || !fs.existsSync(generatedSiteConfig)) {
         sync();
       }
     },
@@ -81,19 +78,13 @@ function gardenContent() {
       const contentDir = path.join(siteRoot, "content");
       const configFile = path.join(siteRoot, "site.config.yaml");
       server.watcher.add([contentDir, configFile]);
-      const resyncContent = (file: string) => {
+      server.watcher.on("change", (file) => {
         if (file.startsWith(contentDir) || file === configFile) {
           // While editing, a broken ui block shows as an error card instead of stopping the server.
           sync("preview");
           server.ws.send({ type: "full-reload" });
         }
-      };
-      server.watcher.on("change", resyncContent);
-      // A new or removed bookshelf.yaml is not a "change". Sync so /bookshelf
-      // switches between the site shelf and the package demo without a restart.
-      const isBookshelf = (file: string) => file.endsWith(`${path.sep}bookshelf.yaml`) || file.endsWith("/bookshelf.yaml");
-      server.watcher.on("add", (file) => { if (isBookshelf(file)) resyncContent(file); });
-      server.watcher.on("unlink", (file) => { if (isBookshelf(file)) resyncContent(file); });
+      });
     },
   };
 }

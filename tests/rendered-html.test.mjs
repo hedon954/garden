@@ -611,7 +611,7 @@ test("/blog filters by several tags through the URL, and /tags is only an index"
   ]);
   const chips = archive.match(/<ul class="sh-tagchips" aria-label="按标签筛选">[\s\S]*?<\/ul>/)?.[0] ?? "";
   assert.match(chips, /<button type="button" class="sh-tagchip" aria-pressed="false">/);
-  assert.match(archive, /<span aria-live="polite">共 <!-- -->?17<!-- -->? 篇<\/span>|<span aria-live="polite">共 17 篇<\/span>/);
+  assert.match(archive, /<span aria-live="polite">共 <!-- -->?10<!-- -->? 篇<\/span>|<span aria-live="polite">共 10 篇<\/span>/);
   assert.match(source, /searchParams\.getAll\(TAG_PARAM\)/);
   assert.match(source, /filterByTags\(posts, selected\)/);
   assert.match(source, /router\.push\(tagFilterHref/);
@@ -894,15 +894,15 @@ test("0.5.14: the header carries the no-JS menu links next to the ☰ button", a
 });
 
 test("header nav links follow trailingSlash (none in this server build) and still mark the current section", async () => {
-  for (const [pathname, label] of [["/", null], ["/blog", "文章"], ["/tags", "标签"], ["/columns", "专栏"], ["/bookshelf", "书架"]]) {
+  for (const [pathname, label] of [["/", null], ["/blog", "文章"], ["/tags", "标签"], ["/columns", "专栏"]]) {
     const html = await (await render(pathname)).text();
     const bar = html.match(/<nav class="sh-nav"[\s\S]*?<\/nav>/)?.[0] ?? "";
     assert.ok(bar, `desktop nav on ${pathname}`);
     const links = [...bar.matchAll(/<a ([^>]*)>([^<]+)<\/a>/g)].map((m) => ({ attrs: m[1], text: m[2] }));
-    assert.deepEqual(links.map((link) => link.attrs.match(/href="([^"]+)"/)[1]), ["/blog", "/thoughts", "/columns", "/tags", "/bookshelf", "/about"], pathname);
+    assert.deepEqual(links.map((link) => link.attrs.match(/href="([^"]+)"/)[1]), ["/blog", "/thoughts", "/columns", "/tags", "/about"], pathname);
     assert.deepEqual(links.filter((link) => /aria-current="page"/.test(link.attrs)).map((link) => link.text), label ? [label] : [], pathname);
     const menu = html.match(/<nav class="sh-menu" id="sh-menu"[\s\S]*?<\/nav>/)?.[0] ?? "";
-    assert.equal((menu.match(/href="\/(blog|thoughts|columns|tags|bookshelf|about)"/g) ?? []).length, 6, `mobile menu on ${pathname}`);
+    assert.equal((menu.match(/href="\/(blog|thoughts|columns|tags|about)"/g) ?? []).length, 5, `mobile menu on ${pathname}`);
   }
 });
 
