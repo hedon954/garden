@@ -16,7 +16,7 @@ import { brand, searchFull, searchIndexUrl } from "@garden/site-config";
 import { createSearch } from "../../ui/garden/search-match.mjs";
 import { cropMatchedText, highlightParts } from "../../ui/garden/search-preview.mjs";
 import { resolveDark, themeSwitchProps } from "../../ui/garden/theme.mjs";
-import { siteNav, isCurrentNav } from "../../ui/garden/site-nav.mjs";
+import { SITE_NAV, isCurrentNav } from "../../ui/garden/site-nav.mjs";
 import { isHandbookPath, routeLang, ui } from "../lib/i18n";
 import { HandbookLangSwitch } from "./HandbookLangSwitch";
 import { createIdbStore, loadFullIndex, saveDataOn, whenIdleAfterLoad } from "../../ui/garden/search-full.mjs";
@@ -89,6 +89,7 @@ function loadSearchEngine() {
   return engineLoad;
 }
 
+const nav = SITE_NAV.map((item) => ({ ...item, key: item.href, href: siteHref(item.href) }));
 
 function rangesFor(
   matches: readonly SearchMatch[] | undefined,
@@ -139,8 +140,7 @@ function searchPreview(
   return { prefix: "", text: item.description, suffix: "", ranges: [] };
 }
 
-export function SiteHeader({ shelf = false }: { shelf?: boolean }) {
-  const nav = siteNav({ shelf }).map((item) => ({ ...item, key: item.href, href: siteHref(item.href) }));
+export function SiteHeader() {
   const pathname = usePathname() || "/";
   const t = ui(routeLang(pathname));
   const [menuOpen, setMenuOpen] = useState(false);

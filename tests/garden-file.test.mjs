@@ -382,11 +382,7 @@ test("the build copies repo files, writes the Markdown preview to its own file, 
     assert.match(published, /^<!doctype html>/u);
     assert.match(published, /<meta name="robots" content="noindex">/u);
     assert.equal(previewBody(published), '<h1 id="gf-指南">指南</h1>\n<p><img src="/media/posts/notes/kit/pic.png" alt="图"></p>\n<p>正文。</p>');
-    const postsExport = generated.slice(
-      generated.indexOf("export const posts = "),
-      generated.indexOf("export const columns = "),
-    );
-    assert.doesNotMatch(postsExport, /正文。/u, "the Markdown file's text is not in the page data");
+    assert.doesNotMatch(generated, /正文。/u, "the Markdown file's text is not in the page data");
     assert.equal(demo.preview, "html");
     assert.deepEqual([big.remote, big.size, big.preview], [true, 52428800, ""]);
     assert.equal(unknown.size, undefined);

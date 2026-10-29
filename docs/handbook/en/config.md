@@ -1,12 +1,12 @@
 ---
 title: Site & Column Config
 navTitle: Site & Column Config
-description: Configure site metadata, page headings, and brand icons in site.config.yaml, series in content/columns.yaml, and the bookshelf in content/bookshelf.yaml.
+description: Configure site metadata, page headings, and brand icons in site.config.yaml, and organize series in content/columns.yaml.
 section: getting-started
 order: 3
 ---
 
-Global site copy and appearance settings live in `site.config.yaml` at the repository root, series definitions live in `content/columns.yaml`, and the reading-note shelf lives in `content/bookshelf.yaml`. Run `npx garden sync` (or `make dev`) after editing to apply changes.
+Global site copy and appearance settings live in `site.config.yaml` at the repository root, while series definitions live in `content/columns.yaml`. Run `npx garden sync` (or `make dev`) after editing to apply changes.
 
 ## 1. Full `site.config.yaml` Structure
 
@@ -125,60 +125,3 @@ columns:
 | `status` | No | Status value: `default` (or omitted, shown as "Active"), `ongoing` ("Ongoing"), or `completed` ("Completed"). Legacy Chinese values are still accepted, and any other text is shown verbatim |
 | `cover` | No | Cover image path relative to `content/covers/` |
 | `posts` | Yes | Ordered array of post paths relative to `content/posts/`, without the `.md` extension |
-
-## 3. Configuring the bookshelf (`content/bookshelf.yaml`)
-
-When a site has `content/bookshelf.yaml`, `/bookshelf` renders those books inside the site header and is indexed with the other pages. Without that file, `/bookshelf` is only the package's built-in demo (Chinese click-test, no header, not indexed). A production site supplies the file.
-
-Each `books` entry is one volume. `post: note/ddia` is the one-note shorthand. Several notes use `posts`. Clicking that spine plays the extract animation and lands on `/bookshelf/<id>`. It does not open the first note. Returning from that page to the shelf plays the close animation. The book page shows a 148px-wide jacket (height follows the image), the title, the author, and only the Douban and PDF chips. The PDF chip is followed by a short sharing note. My notes lists the notes; each card is a normal link to the article and does not play the flyer. A single note still uses the extract and return animation.
-
-`cover` is the jacket for the shelf, the flyer, and the book page. The file lives in `content/covers/` and the build copies it to `/media/covers/`, even when no post front matter names that file. Crop a Douban scan's white margin before committing the file; the build does not change pixels. A note's hero stays that post's front matter `cover`. Omit the jacket and it falls back to the first note's cover. `color` (`#rgb` or `#rrggbb`) is the spine and the single-note open page.
-
-```yaml
-title: Reading notes
-description: Books I have read, and the notes I kept.
-eyebrow: Library
-shelves:
-  - id: recent
-    name: Recent
-    books:
-      - id: ddia
-        title: Designing Data-Intensive Applications
-        author: Martin Kleppmann
-        cover: ddia.jpg
-        color: "#8b3a2f"
-        post: note/ddia
-      - id: unit-testing
-        title: Unit Testing
-        cover: unit-testing.jpg
-        color: "#1a2744"
-        sources:
-          - label: Douban
-            href: https://book.douban.com/subject/00000000/
-          - label: PDF
-            href: https://example.com/unit-testing.pdf
-        posts:
-          - path: note/note-unit-testing
-            kind: overview
-          - path: note/note-unit-testing-excerpt
-            kind: excerpt
-```
-
-| Field | Required | Description |
-| :--- | :--- | :--- |
-| `title` | Yes | Page title |
-| `description` | No | Page summary |
-| `eyebrow` | No | Small line above the title. Falls back to the site name |
-| `shelves` | Yes | Non-empty list. Each shelf needs `id`, `name`, and a non-empty `books` list |
-| `books[].id` | Yes | Unique across the shelf |
-| `books[].title` | Yes | Title on the left page and the note view |
-| `books[].author` | No | Author |
-| `books[].spine` | No | Spine label. Defaults to `title` |
-| `books[].size` | No | `thin`, `s-short`, `s-mid`, or `s-tall`. Real books default to `s-mid`; filler spines default to `thin` |
-| `books[].cover` | No | Jacket. File name or full URL. When set, it is the only jacket |
-| `books[].color` | No | Spine and single-note open-page color |
-| `books[].filler` | No | `true`, `sand`, or `cream`. A thin spacer that does not open |
-| `books[].post` | No | Shorthand for one note |
-| `books[].posts` | No | Notes on this volume. `kind` is `overview` or `excerpt`. Two or more open the book page |
-| `books[].sources` | No | Sources. The book page shows Douban and PDF only |
-| `books[].note` | No | Markdown used only when the book names no posts |

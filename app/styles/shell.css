@@ -434,43 +434,6 @@ html[data-theme="dark"] .sh-repos > li.sk::after{background:linear-gradient(90de
   .sh-series.no-cover h2,.sh-series.no-cover .count{grid-column:1 / -1;grid-row:auto}
 }
 
-/* Book hub (本书), locked to tip book-multi-20261029c. Width is fixed; height follows the jacket. */
-.book-hub{width:min(100%,740px);padding:40px 0 72px}
-.book-hub-crumb{margin:0 0 28px;font-size:12px;color:var(--faint,#a09b91);letter-spacing:.06em}
-.book-hub-crumb a{color:inherit;text-decoration:none}
-.book-hub-crumb a:hover{color:var(--ink)}
-.book-hub-crumb [aria-current="page"]{color:var(--faint,#a09b91)}
-.book-hub-card{display:flex;gap:28px;align-items:flex-start;margin:0 0 40px}
-.book-hub-cover{width:148px;flex-shrink:0;height:auto;min-height:0;aspect-ratio:auto;border-radius:0;overflow:visible;background:none;box-shadow:none;line-height:0;padding:0}
-.book-hub-cover img{display:block;width:148px;max-width:none;height:auto;aspect-ratio:auto;object-fit:unset;background:none;border-radius:4px;box-shadow:0 10px 24px rgba(40,30,20,.10)}
-.book-hub-meta{flex:1;min-width:0;padding-top:4px}
-.book-hub-meta h1{margin:0 0 10px;font-family:var(--serif);font-size:clamp(26px,4vw,34px);font-weight:600;line-height:1.25;letter-spacing:-.01em;color:var(--ink)}
-.book-hub-author{margin:0 0 18px;font-size:14px;color:var(--muted)}
-.book-hub-sources{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
-.book-hub-source{display:inline-flex;align-items:center;gap:2px}
-.book-hub-chip{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:999px;background:#f3efe6;color:var(--muted);font-size:12px;line-height:1.4;text-decoration:none;border:1px solid transparent}
-html[data-theme="dark"] .book-hub-chip{background:var(--chip)}
-.book-hub-chip:hover{color:var(--ink);border-color:var(--rule)}
-.book-hub-chip .ext{font-size:11px;opacity:.7}
-.book-hub-source-note{font-size:11px;color:var(--faint,#a09b91);letter-spacing:.02em;line-height:1.4}
-.book-hub-notes-head{margin:0 0 14px;font:400 12px/1.4 var(--sans);color:var(--faint,#a09b91);letter-spacing:.12em}
-.book-hub-notes{display:flex;flex-direction:column;gap:12px;margin:0;padding:0;list-style:none}
-.book-hub-note{display:block;width:100%;text-align:left;padding:18px 20px;background:#fffcf7;border:1px solid var(--rule);border-radius:10px;text-decoration:none;color:inherit}
-html[data-theme="dark"] .book-hub-note{background:var(--card)}
-@media (hover:hover){
-  .book-hub-note:hover{border-color:#d5d0c4;box-shadow:0 6px 16px rgba(40,30,20,.05)}
-  html[data-theme="dark"] .book-hub-note:hover{border-color:var(--rule-strong);box-shadow:none}
-}
-.book-hub-note-label{margin:0 0 6px;font-size:11px;color:var(--faint,#a09b91);letter-spacing:.08em}
-.book-hub-note h3{margin:0 0 8px;font:500 16px/1.45 var(--sans);color:var(--ink)}
-.book-hub-note-sum{margin:0 0 12px;font-size:13px;line-height:1.65;color:var(--muted)}
-.book-hub-note-meta{margin:0;font-size:12px;color:var(--faint,#a09b91)}
-@media (max-width:560px){
-  .book-hub{padding:28px 0 64px}
-  .book-hub-card{flex-direction:column;gap:18px}
-  .book-hub-cover,.book-hub-cover img{width:120px}
-}
-
 .sh-row .incol{grid-column:2;justify-self:start;position:relative;z-index:1;margin-top:4px;font-size:var(--fs-meta);line-height:1.6;color:var(--muted);text-decoration:none}
 @media (hover:hover){.sh-row .incol:hover{color:var(--blue);text-decoration:underline;text-underline-offset:3px}}
 .is-compact .sh-row .incol{display:none}

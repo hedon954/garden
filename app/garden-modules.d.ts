@@ -103,9 +103,3 @@ declare module "@garden/site-config" {
   };
   export const githubUrl: string;
 }
-
-declare module "@garden/bookshelf" {
-  import type { BookshelfMount } from "./components/bookshelf/catalog";
-  /** Site shelf from content/bookshelf.yaml, or null when that file is absent. */
-  export const bookshelf: BookshelfMount | null;
-}

@@ -4,7 +4,6 @@ import "./globals.css";
 import "./styles/tokens.css";
 import "./styles/a2.css";
 import "./styles/shell.css";
-import { bookshelf } from "@garden/bookshelf";
 import { SiteChrome } from "./components/SiteChrome";
 import {
   getSiteUrl,
@@ -95,7 +94,7 @@ export default function RootLayout({
         )}
       </head>
       <body>
-        <SiteChrome bookshelfSite={bookshelf != null}>{children}</SiteChrome>
+        <SiteChrome>{children}</SiteChrome>
       </body>
     </html>
   );
