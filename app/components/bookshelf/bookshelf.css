@@ -235,18 +235,22 @@
     z-index: 2;
   }
 }
-.bookshelf-demo .cover.is-placeholder {
-  /* ux13+ux24: invisible seat — no gray/wood/bk plate while flyer is out */
+.bookshelf-demo .cover.is-placeholder,
+.bookshelf-demo .spine.is-placeholder {
+  /* Empty seat while the flyer owns the motion: shelf surface only.
+     A bk-* fill here is the gray/lavender plate behind the real cover. */
   opacity: 0 !important;
   visibility: hidden !important;
   background-color: transparent !important;
   background-image: none !important;
-  filter: none;
+  filter: none !important;
   pointer-events: none;
-  box-shadow: none;
+  box-shadow: none !important;
+  color: transparent !important;
   transform: none !important;
 }
-.bookshelf-demo .cover.is-placeholder > .cover-art {
+.bookshelf-demo .cover.is-placeholder > .cover-art,
+.bookshelf-demo .spine.is-placeholder > .cover-art {
   visibility: hidden !important;
   opacity: 0 !important;
 }
@@ -342,15 +346,7 @@
     z-index: 2;
   }
 }
-.bookshelf-demo .spine.is-placeholder {
-  /* ux13: invisible seat — ban gray ghost plate */
-  opacity: 0;
-  filter: none;
-  pointer-events: none;
-  box-shadow: none;
-  transform: none !important;
-}
-.bookshelf-demo .spine.is-placeholder span { opacity: 0; }
+.bookshelf-demo .spine.is-placeholder span { opacity: 0 !important; visibility: hidden !important; }
 .bookshelf-demo .cover.is-placeholder.is-landing,
 .bookshelf-demo .spine.is-placeholder.is-landing {
   opacity: 0;
@@ -359,6 +355,25 @@
 
 /* Mode C: temporary expand on spine wall */
 /* resting spines: solid hue only; cover image only when expanded */
+/* Expanded / extracting face must not fall back to bk-* (#513688 etc.).
+   The jacket is .cover-art. A missing image stays cream shelf, not a shell pad. */
+.bookshelf-demo .spine.is-expanded,
+.bookshelf-demo .spine.is-extracting {
+  background-color: transparent !important;
+}
+.bookshelf-demo .spine.is-expanded > .cover-art,
+.bookshelf-demo .spine.is-extracting > .cover-art {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center top;
+  display: block;
+  pointer-events: none;
+  z-index: 1;
+  border-radius: inherit;
+}
 .bookshelf-demo .spine[class*="img-"] {
   background-image: none !important;
 }
@@ -730,21 +745,16 @@
   backface-visibility: hidden;
 }
 
-/* Thin cover board peeking under page block (thickness cue) */
+/* ux27 plate ban: this used to be a full-spread shell (fallback #6a7a98 / #5a6a88,
+   and shell-hi of dark covers reads the same gray-lavender). It sat wider than
+   the jacket during lift and put-back. Fore-edge stays on .flyer-thickness. */
 .bookshelf-demo .flyer-board {
-  position: absolute;
-  inset: -2% -1.2% -3.5% -1.2%;
-  border-radius: 3px 4px 2px 2px;
-  /* ux26: shell = this book's cover dominant (via --shell); ban site-wide brown */
-  background: linear-gradient(
-    180deg,
-    var(--shell-hi, #6a7a98) 0%,
-    var(--shell, #5a6a88) 55%,
-    var(--shell-lo, #3a4a68) 100%
-  );
-  box-shadow: 0 1px 0 rgba(255,255,255,0.06) inset;
-  transform: translateZ(-8px);
-  z-index: 0;
+  display: none !important;
+  background: none !important;
+  background-color: transparent !important;
+  box-shadow: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
 }
 
 .bookshelf-demo .flyer-leaf {
@@ -776,7 +786,7 @@
 /* Cover on BACK of left leaf — camera-facing when leaf folded (180°) */
 .bookshelf-demo .flyer-face-cover {
   transform: rotateY(180deg);
-  background-color: transparent; /* ux24: no preset wood plate */
+  background-color: transparent !important; /* ux24/ux27: bk-* must not fill behind the img */
   /* No background-image here — .img-* / inline applyCoverImage owns the photo.
      Gradients-only used to override img classes → flat brown/gray close flash. */
   box-shadow:
@@ -799,17 +809,18 @@
 }
 .bookshelf-demo .flyer-spine-label { pointer-events: none; }
 
-/* ux15 plate kept inert; ux16 uses full-height .flyer-spine-slot instead */
+/* ux15 plate kept inert; ux16 uses full-height .flyer-spine-slot instead.
+   Never paint the lavender shell fallback if a leftover plate node is mounted. */
 .bookshelf-demo .flyer-spine-land-plate {
   position: absolute;
   inset: 0;
   pointer-events: none;
   border-radius: inherit;
   z-index: 1;
-  display: none;
-}
-.bookshelf-demo .flyer-spine-land-plate:not([class*="bk-"]) {
-  background: linear-gradient(180deg, var(--shell-hi, #6a7a98) 0%, var(--shell, #5a6a88) 100%);
+  display: none !important;
+  background: none !important;
+  background-color: transparent !important;
+  opacity: 0 !important;
 }
 
 /* ux16: exact homeRect standing spine — full height, spine width, slides out/in */
@@ -1019,6 +1030,18 @@
   overflow: auto;
 }
 
+/* Close: flyer owns the motion. The note used to stay at z-index 75, so the
+   article sat on top of the return for the whole fade and the shrink was hidden. */
+.bookshelf-demo.is-return .stage { z-index: 80; }
+.bookshelf-demo.is-return .note-view,
+.bookshelf-demo.is-return .note-view.is-preparing,
+.bookshelf-demo.is-return .note-view.is-open { z-index: 60; }
+.bookshelf-demo.is-site.is-return .stage { z-index: 36; }
+.bookshelf-demo.is-site.is-return .open-backdrop { z-index: 30; }
+.bookshelf-demo.is-site.is-return .note-view,
+.bookshelf-demo.is-site.is-return .note-view.is-preparing,
+.bookshelf-demo.is-site.is-return .note-view.is-open { z-index: 31; }
+
 .bookshelf-demo .shelf-view.is-dim {
   /* Backdrop covers shelf — dim is unused during open; keep inert */
   opacity: 1;
@@ -1076,7 +1099,7 @@
   inset: 0;
   border-radius: inherit;
   overflow: hidden;
-  background-color: transparent; /* ux24: no preset wood plate */
+  background-color: transparent !important; /* ux24/ux27: no solid shell behind the img */
   background-size: cover;
   background-position: center top;
   background-repeat: no-repeat;

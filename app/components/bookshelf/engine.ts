@@ -312,6 +312,30 @@ export function mountBookshelf(root, options = {}) {
     return Math.max(96, Math.round(w * (nat.h / nat.w)));
   }
 
+  // Real jacket on the expanded spine. CSS background-image is stripped by
+  // `.spine[class*="img-"] { background-image: none !important }` and by the
+  // collapse rule, which left bk-* (#513688) as a solid pad at extract start.
+  function mountSeatCover(el, book) {
+    if (!el || !book || !book.cover || book.filler) return;
+    el.style.backgroundColor = "transparent";
+    let art = el.querySelector(":scope > .cover-art");
+    if (!art) {
+      art = document.createElement("img");
+      art.className = "cover-art";
+      art.alt = "";
+      art.draggable = false;
+      el.appendChild(art);
+    }
+    const src = coverSrc(book);
+    if (art.getAttribute("src") !== src) art.src = src;
+  }
+
+  function clearSeatCover(el) {
+    if (!el || !el.classList.contains("spine")) return;
+    el.querySelectorAll(":scope > .cover-art").forEach((node) => node.remove());
+    try { el.style.removeProperty("background-color"); } catch (_) {}
+  }
+
   function applyFaceSize(el, book, { expanded = false } = {}) {
     if (!el || !book) return;
     const faceH = bookFaceHeight(book);
@@ -580,6 +604,7 @@ export function mountBookshelf(root, options = {}) {
   function restoreRestingSpine(el, bookId) {
     if (!el) return;
     el.classList.remove("is-expanded", "is-collapsing");
+    clearSeatCover(el);
     const found = bookById(bookId);
     if (found && found.book.cover && !found.book.filler) {
       applyFaceSize(el, found.book, { expanded: false });
@@ -621,6 +646,7 @@ export function mountBookshelf(root, options = {}) {
       el.classList.remove("is-collapsing");
       el.classList.add("is-expanded");
       applyFaceSize(el, found.book, { expanded: true });
+      mountSeatCover(el, found.book);
     }
   }
 
@@ -982,6 +1008,42 @@ export function mountBookshelf(root, options = {}) {
     return { offset, ...pathPose(transform) };
   }
 
+  // Close samples. T0 still carries the separate sx/sy height pin.
+  // The old first stop was Tp3 (only 25% of the way home) at 0.28, so the
+  // book was still nearly full-size for the first ~1s and read as overlap.
+  function returnMoveKeys(Tfull, Tp1, T0) {
+    return [
+      pathKey(0, Tfull),
+      pathKey(0.12, lerpTS(Tfull, T0, 0.35)),
+      pathKey(0.32, lerpTS(Tfull, T0, 0.62)),
+      pathKey(0.52, Tp1),
+      pathKey(0.74, T0),
+      pathKey(0.88, T0),
+      pathKey(1, T0),
+    ];
+  }
+
+  // Note stays out until the flyer leaves, then a short handoff.
+  // Rising from 0.65 while the flyer stayed solid until 0.90 was the double exposure.
+  function noteInKeys() {
+    return [
+      { offset: 0, opacity: 0 },
+      { offset: 0.82, opacity: 0 },
+      { offset: 0.90, opacity: 1 },
+      { offset: 1, opacity: 1 },
+    ];
+  }
+
+  // Article is gone by ~0.12 (230ms). Shrink has already started on frame 0.
+  function noteOutKeys() {
+    return [
+      { offset: 0, opacity: 1 },
+      { offset: 0.05, opacity: 0.35 },
+      { offset: 0.12, opacity: 0 },
+      { offset: 1, opacity: 0 },
+    ];
+  }
+
   // ux14 geometric core: ONE diagonal arc slot-center ↔ screen-center.
   // X, Y, AND scale on the SAME beat — ban L-path (lift-only then slide-only).
   // Transforms are lerpTS(T0→Tfull) samples so WAAPI stays collinear in tx/ty/s.
@@ -1292,6 +1354,7 @@ export function mountBookshelf(root, options = {}) {
       "is-expanded",
       "is-collapsing"
     );
+    clearSeatCover(el);
     // Explicit removeProperty — kills commitStyles leftovers like opacity:0 / transform
     [
       "width",
@@ -1337,6 +1400,9 @@ export function mountBookshelf(root, options = {}) {
 
     const board = document.createElement("div");
     board.className = "flyer-board";
+    // ux27: never a solid shell behind the jacket. CSS also forces this off.
+    board.style.opacity = "0";
+    board.style.visibility = "hidden";
 
     const left = document.createElement("div");
     left.className = "flyer-leaf flyer-leaf-left";
@@ -1414,7 +1480,6 @@ export function mountBookshelf(root, options = {}) {
       left.style.transform = "rotateY(180deg)";
       right.style.transform = "rotateY(0deg)";
       right.style.opacity = "0";
-      board.style.opacity = "0";
       leftThick.style.opacity = "0";
       rightThick.style.opacity = "0";
       bookEl.style.transform = "rotateX(8deg) translate3d(0,0,0)";
@@ -1537,6 +1602,7 @@ export function mountBookshelf(root, options = {}) {
     busy = true;
     const myFlow = ++flowSeq;
     document.body.classList.add("is-busy");
+    root.classList.remove("is-return");
     openBook = { book, cat, asSpine, fromExpanded: !!fromExpanded, openSeatRect: null };
     openFromExpanded = !!fromExpanded;
 
@@ -1577,6 +1643,11 @@ export function mountBookshelf(root, options = {}) {
     sourceEl.style.transition = "none";
     sourceEl.style.transform = "none"; // kill :hover translateY / is-expanded lift
     sourceEl.classList.add("is-extracting"); // CSS: suppress :hover transform while extracting
+    // Keep the real jacket on the seat until the flyer exists. Dropping
+    // is-expanded used to reveal the bk-* fill for the frames before the flyer.
+    if (sourceEl.classList.contains("spine") && book && book.cover) {
+      mountSeatCover(sourceEl, book);
+    }
     if (fromExpanded) {
       sourceEl.classList.remove("is-expanded", "is-collapsing");
       // Drop the expanded cover's width. Do NOT drop a resting spine's height:
@@ -1731,14 +1802,14 @@ export function mountBookshelf(root, options = {}) {
             { offset: 0, opacity: 0 },
             { offset: 0.14, opacity: 0 },
             { offset: 0.22, opacity: 1 },
-            { offset: 0.90, opacity: 1 },
-            { offset: 0.96, opacity: 0.35 },
+            { offset: 0.82, opacity: 1 },
+            { offset: 0.90, opacity: 0 },
             { offset: 1.0, opacity: 0 },
           ]
         : [
             { offset: 0, opacity: 1 },
-            { offset: 0.90, opacity: 1 },
-            { offset: 0.96, opacity: 0.35 },
+            { offset: 0.82, opacity: 1 },
+            { offset: 0.90, opacity: 0 },
             { offset: 1.0, opacity: 0 },
           ],
       opts
@@ -1764,6 +1835,7 @@ export function mountBookshelf(root, options = {}) {
     const aExtractCoverIn = null;
 
     // Pose fade on SAME layer while diagonal continues — ban origin-swapping phase.
+    // Board stays out: fading it in painted a wide shell behind the cover by ~1350ms.
     const closedFaceKf = [
       { offset: 0, opacity: 0 },
       { offset: 0.28, opacity: 0 },
@@ -1771,7 +1843,11 @@ export function mountBookshelf(root, options = {}) {
       { offset: 0.52, opacity: 1 },
       { offset: 1.0, opacity: 1 },
     ];
-    const aBoard = dual._board ? dual._board.animate(closedFaceKf, opts) : null;
+    if (dual._board) {
+      dual._board.style.opacity = "0";
+      dual._board.style.visibility = "hidden";
+    }
+    const aBoard = null;
     const aRightFace = dual._right.animate(
       [
         { offset: 0, opacity: 0, transform: "rotateY(0deg)" },
@@ -1812,20 +1888,9 @@ export function mountBookshelf(root, options = {}) {
         )
       : null;
 
-    // §12: note main rise offset 0.70–0.92 (≥1.80s clear). FORBIDDEN: ≥0.95 at 0.34.
-    const aNote = noteView.animate(
-      [
-        { offset: 0, opacity: 0 },
-        { offset: 0.65, opacity: 0 },
-        { offset: 0.70, opacity: 0.15 },
-        { offset: 0.78, opacity: 0.55 },
-        { offset: 0.85, opacity: 0.90 },
-        { offset: 0.90, opacity: 0.99 },
-        { offset: 0.92, opacity: 1 },
-        { offset: 1.0, opacity: 1 },
-      ],
-      opts
-    );
+    // Note stays at 0 while the flyer owns the flight, then hands off by unlock (0.90).
+    // FORBIDDEN: note body readable while the flyer is still solid (double exposure).
+    const aNote = noteView.animate(noteInKeys(), opts);
 
     const aBack = openBackdrop
       ? openBackdrop.animate(
@@ -1970,6 +2035,9 @@ export function mountBookshelf(root, options = {}) {
     // Clock first. Shelf measure, freeze, and rAF used to run before this and
     // the 0.12 Tfull keyframe then held 672×504 for ~240ms. Stash from open is
     // enough to start the return; height pin is already in those samples.
+    // is-return puts the stage above the note so the shrink is not hidden
+    // under an opaque article (that read as ~1s of overlap, then a jump).
+    root.classList.add("is-return");
     const closeMotion = { duration: CLOSE_MS, easing: "linear", fill: "forwards" };
     const closeOpts = { duration: CLOSE_MS, easing: "linear", fill: "forwards" };
     const stashEarly = openBook.pathTs;
@@ -1991,29 +2059,21 @@ export function mountBookshelf(root, options = {}) {
       heldEarly.style.visibility = "visible";
       heldEarly.style.zIndex = "70";
       heldEarly.style.opacity = "1";
+      if (heldEarly._board) {
+        heldEarly._board.style.opacity = "0";
+        heldEarly._board.style.visibility = "hidden";
+      }
       promote(heldEarly);
       earlyMove = heldEarly.animate(
-        [
-          pathKey(0, stashEarly.Tfull),
-          pathKey(0.28, stashEarly.Tp3),
-          pathKey(0.44, stashEarly.Tp2),
-          pathKey(0.60, stashEarly.Tp1),
-          pathKey(0.78, stashEarly.T0),
-          pathKey(0.90, stashEarly.T0),
-          pathKey(1, stashEarly.T0),
-        ],
+        returnMoveKeys(stashEarly.Tfull, stashEarly.Tp1, stashEarly.T0),
         closeMotion
       );
-      earlyNote = noteView.animate(
-        [
-          { offset: 0, opacity: 1 },
-          { offset: 0.06, opacity: 0.85 },
-          { offset: 0.12, opacity: 0.45 },
-          { offset: 0.22, opacity: 0 },
-          { offset: 1.0, opacity: 0 },
-        ],
-        closeOpts
-      );
+      earlyNote = noteView.animate(noteOutKeys(), closeOpts);
+      // Backup if the fade is dropped: the article must not still be up after ~230ms.
+      wait(Math.round(CLOSE_MS * 0.12)).then(() => {
+        if (myFlow !== flowSeq || !noteView) return;
+        noteView.style.opacity = "0";
+      });
       if (heldEarly._left) {
         earlyLeft = heldEarly._left.animate(
           [
@@ -2067,6 +2127,7 @@ export function mountBookshelf(root, options = {}) {
       try { earlyNote && earlyNote.cancel(); } catch (_) {}
       try { earlyLeft && earlyLeft.cancel(); } catch (_) {}
       try { earlyRight && earlyRight.cancel(); } catch (_) {}
+      root.classList.remove("is-return");
       noteView.classList.remove("is-open", "is-preparing");
       noteView.hidden = true;
       noteView.style.opacity = "";
@@ -2090,7 +2151,10 @@ export function mountBookshelf(root, options = {}) {
     ].forEach((p) => {
       try { slot.style.removeProperty(p); } catch (_) {}
     });
-    slot.classList.remove("is-collapsing", "is-placeholder", "is-expanded");
+    slot.classList.remove("is-collapsing", "is-expanded");
+    // Keep the seat empty until handover. Dropping is-placeholder here let the
+    // bk-* fill paint a solid rectangle under the returning cover.
+    slot.classList.add("is-placeholder");
     expandedId = null;
     // Spines: re-pin the resting face BEFORE reading the seat. A cleared inline
     // height is the shorter size-class box, and put-back would keep it.
@@ -2125,13 +2189,13 @@ export function mountBookshelf(root, options = {}) {
     });
     shelfView.classList.add("is-frozen");
 
-    // ux13: prepare shelf+flyer UNDER opaque note — ban route hard-cut then mid-air resume.
-    // Keep note is-open + opacity 1 until reverse clock starts.
+    // Note stays in the tree so its fade can finish, but must not cover the flyer.
+    // is-return (set before the clock) owns stacking. Do not pin z-index 75.
     noteView.classList.add("is-open");
     noteView.classList.remove("is-preparing");
     noteView.hidden = false;
-    noteView.style.opacity = "1";
-    noteView.style.zIndex = "75";
+    if (!earlyNote) noteView.style.opacity = "1";
+    noteView.style.zIndex = "";
 
     unparkShelf();
     shelfView.style.opacity = "1";
@@ -2226,7 +2290,10 @@ export function mountBookshelf(root, options = {}) {
       flyer._right.style.transform = "rotateY(-8deg)";
       flyer._right.style.opacity = "1";
     }
-    if (flyer._board) flyer._board.style.opacity = "1";
+    if (flyer._board) {
+      flyer._board.style.opacity = "0";
+      flyer._board.style.visibility = "hidden";
+    }
     if (flyer._leftThick) flyer._leftThick.style.opacity = "1";
     if (flyer._rightThick) flyer._rightThick.style.opacity = "1";
     if (flyer._gutter) flyer._gutter.style.opacity = "1";
@@ -2289,29 +2356,13 @@ export function mountBookshelf(root, options = {}) {
 
     resetVeil();
 
-    // ux13: note fades ON the book layer while reverse shrink starts — ban instant note unmount.
-    const aNoteOut = earlyNote || noteView.animate(
-      [
-        { offset: 0, opacity: 1 },
-        { offset: 0.06, opacity: 0.85 },
-        { offset: 0.12, opacity: 0.45 },
-        { offset: 0.22, opacity: 0 },
-        { offset: 1.0, opacity: 0 },
-      ],
-      closeOpts
-    );
+    // Note fades out in the first ~230ms. Shrink already started on frame 0.
+    const aNoteOut = earlyNote || noteView.animate(noteOutKeys(), closeOpts);
 
-    // Shrink starts at offset 0. The old 0.12 Tfull key was ~228ms parked at 672×504.
+    // Shrink starts at offset 0 and is already well under way by ~400ms.
+    // A first stop on Tp3 (25% home) at 0.28 left the book looking full for ~1s.
     const aFlyerMove = earlyMove || flyer.animate(
-      [
-        pathKey(0, Tfull),
-        pathKey(0.28, Tp3),
-        pathKey(0.44, Tp2),
-        pathKey(0.60, Tp1),
-        pathKey(0.78, T0),
-        pathKey(0.90, T0),
-        pathKey(1, T0),
-      ],
+      returnMoveKeys(Tfull, Tp1, T0),
       closeMotion
     );
     // Reverse hinge on SAME layer while shrink (open was 0.32→0.68 hinge).
@@ -2345,7 +2396,7 @@ export function mountBookshelf(root, options = {}) {
       { offset: 0.28, opacity: 0 },
       { offset: 1.0, opacity: 0 },
     ];
-    const aBoardClose = flyer._board ? flyer._board.animate(closedFaceOut, closeOpts) : null;
+    const aBoardClose = null;
     const aThickLClose = flyer._leftThick ? flyer._leftThick.animate(closedFaceOut, closeOpts) : null;
     const aThickRClose = flyer._rightThick ? flyer._rightThick.animate(closedFaceOut, closeOpts) : null;
     const aGutterClose = flyer._gutter
@@ -2386,9 +2437,11 @@ export function mountBookshelf(root, options = {}) {
     const aFlyerFade = flyer.animate(
       targetMode === "spines"
         ? [
+            // Stay through the shrink. Cutting at 0.58 dropped a still-large
+            // cover and made the first ~1.1s look like overlap, then a pop.
             { offset: 0, opacity: 1 },
-            { offset: 0.50, opacity: 1 },
-            { offset: 0.58, opacity: 0 },
+            { offset: 0.68, opacity: 1 },
+            { offset: 0.80, opacity: 0 },
             { offset: 1.0, opacity: 0 },
           ]
         : [
@@ -2420,10 +2473,10 @@ export function mountBookshelf(root, options = {}) {
       ? spineSlotClose.animate(
           [
             { offset: 0, transform: outClose, opacity: 0 },
-            { offset: 0.50, transform: outClose, opacity: 0 },
-            { offset: 0.58, transform: outClose, opacity: 1 },
-            { offset: 0.78, transform: "translate3d(0px, 0px, 0)", opacity: 1 },
-            { offset: 0.90, transform: "translate3d(0px, 0px, 0)", opacity: 1 },
+            { offset: 0.66, transform: outClose, opacity: 0 },
+            { offset: 0.74, transform: outClose, opacity: 1 },
+            { offset: 0.86, transform: "translate3d(0px, 0px, 0)", opacity: 1 },
+            { offset: 0.94, transform: "translate3d(0px, 0px, 0)", opacity: 1 },
             { offset: 1.0, transform: "translate3d(0px, 0px, 0)", opacity: 0 },
           ],
           closeMotion
@@ -2438,8 +2491,8 @@ export function mountBookshelf(root, options = {}) {
           targetMode === "spines"
             ? [
                 { offset: 0, opacity: 1 },
-                { offset: 0.50, opacity: 1 },
-                { offset: 0.58, opacity: 0 },
+                { offset: 0.68, opacity: 1 },
+                { offset: 0.80, opacity: 0 },
                 { offset: 1, opacity: 0 },
               ]
             : [
@@ -2460,6 +2513,13 @@ export function mountBookshelf(root, options = {}) {
       slot.style.backgroundRepeat = "no-repeat";
       slot.style.backgroundColor = "";
     }
+
+    // Seat may show its real face only as the flyer hands off. Until then the
+    // placeholder ban (transparent, invisible) blocks the solid bk plate.
+    wait(Math.round(CLOSE_MS * Math.max(0, slotInAt - 0.02))).then(() => {
+      if (myFlow !== flowSeq || !slot.isConnected) return;
+      slot.classList.remove("is-placeholder");
+    });
 
     const aSlotIn = slot.animate(
       [
@@ -2519,6 +2579,7 @@ export function mountBookshelf(root, options = {}) {
       flyer.style.opacity = "0";
       slot.style.opacity = "1";
       slot.style.transform = "none";
+      root.classList.remove("is-return");
       noteView.classList.remove("is-open", "is-preparing");
       noteView.hidden = true;
       noteView.style.opacity = "";
