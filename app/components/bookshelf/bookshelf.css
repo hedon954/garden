@@ -559,15 +559,32 @@
   align-items: flex-start;
   margin-bottom: 36px;
 }
+.bookshelf-demo .note-meta {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+/* Settled note header: size the box to the picture. A fixed 2:3 frame with
+   background-size:cover center-crops landscape heroes (Obsidian → "sid"). */
 .bookshelf-demo .note-cover {
-  width: 120px;
-  height: 180px;
-  flex-shrink: 0;
+  width: max-content;
+  max-width: min(420px, 46%);
+  height: auto;
+  flex: 0 0 auto;
   border-radius: 2px 3px 0 0;
-  background-size: cover;
-  background-position: center top;
-  background-color: #2a2a2a;
+  background-color: transparent;
+  background-image: none;
   box-shadow: 0 8px 20px rgba(40,30,20,0.12);
+  line-height: 0;
+}
+.bookshelf-demo .note-cover-img {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: 180px;
+  object-fit: contain;
+  object-position: center;
+  border-radius: inherit;
 }
 .bookshelf-demo .note-cat {
   margin: 0 0 8px;
@@ -1162,7 +1179,13 @@
   .bookshelf-demo .spine.is-expanded.is-collapsing.s-mid { width: 24px; height: 134px; }
   .bookshelf-demo .spine.is-expanded.is-collapsing.s-short { width: 20px; height: 120px; }
   .bookshelf-demo .note-hero { flex-direction: column; gap: 16px; }
-  .bookshelf-demo .note-cover { width: 100px; height: 150px; }
+  .bookshelf-demo .note-cover { width: max-content; max-width: 100%; }
+  .bookshelf-demo .note-cover-img {
+    width: auto;
+    max-width: 100%;
+    max-height: 180px;
+    height: auto;
+  }
   .bookshelf-demo .qa-hint { width: 100%; margin-left: 0; margin-top: 4px; }
 }
 
