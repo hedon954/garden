@@ -39,10 +39,14 @@ function isExternal(href: string) {
   return /^(?:https?:)?\/\//iu.test(href);
 }
 
-/** Hub chips are 豆瓣 and PDF. Anything else stays off the card. */
+/** Hub chips are Douban and PDF. The Chinese label is the zh shelf; English sites write Douban. */
+function isDoubanChip(label: string) {
+  return label === "豆瓣" || /^douban$/iu.test(label);
+}
+
 function hubSources(sources: readonly BookshelfSource[] | undefined) {
   const list = sources ?? [];
-  const douban = list.filter((source) => source.label === "豆瓣");
+  const douban = list.filter((source) => isDoubanChip(source.label));
   const pdf = list.filter((source) => /pdf/iu.test(source.label));
   return [...douban, ...pdf];
 }

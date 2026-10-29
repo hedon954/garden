@@ -588,7 +588,7 @@ const en: typeof zh = {
   a2IndexTitle: "A2 Parity",
   a2IndexDeck: "Layout comparison against reference articles. Body text is unchanged.",
   bookHubCurrent: "This book",
-  bookHubNotes: "Notes",
+  bookHubNotes: "My notes",
   bookHubOverview: "Overview",
   bookHubExcerpt: "Excerpt",
   bookHubPdfNote: "(shared only — removed if it infringes)",

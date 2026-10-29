@@ -46,8 +46,10 @@ export default async function BookHubPage({
   params: Promise<{ bookId: string }>;
 }) {
   const { bookId } = await params;
-  if (isStaticPlaceholder(bookId)) return null;
   const found = hubBooks().find((item) => item.book.id === bookId);
-  if (!found) notFound();
+  if (!found) {
+    if (isStaticPlaceholder(bookId)) return null;
+    notFound();
+  }
   return <BookHub shelfTitle={found.shelfTitle} book={found.book} />;
 }
