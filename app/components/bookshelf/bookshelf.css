@@ -249,7 +249,8 @@
   color: transparent !important;
   transform: none !important;
 }
-.bookshelf-demo .cover.is-placeholder > .cover-art {
+.bookshelf-demo .cover.is-placeholder > .cover-art,
+.bookshelf-demo .spine.is-placeholder > .cover-art {
   visibility: hidden !important;
   opacity: 0 !important;
 }
@@ -354,6 +355,25 @@
 
 /* Mode C: temporary expand on spine wall */
 /* resting spines: solid hue only; cover image only when expanded */
+/* Expanded / extracting face must not fall back to bk-* (#513688 etc.).
+   The jacket is .cover-art. A missing image stays cream shelf, not a shell pad. */
+.bookshelf-demo .spine.is-expanded,
+.bookshelf-demo .spine.is-extracting {
+  background-color: transparent !important;
+}
+.bookshelf-demo .spine.is-expanded > .cover-art,
+.bookshelf-demo .spine.is-extracting > .cover-art {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center top;
+  display: block;
+  pointer-events: none;
+  z-index: 1;
+  border-radius: inherit;
+}
 .bookshelf-demo .spine[class*="img-"] {
   background-image: none !important;
 }

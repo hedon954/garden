@@ -312,6 +312,30 @@ export function mountBookshelf(root, options = {}) {
     return Math.max(96, Math.round(w * (nat.h / nat.w)));
   }
 
+  // Real jacket on the expanded spine. CSS background-image is stripped by
+  // `.spine[class*="img-"] { background-image: none !important }` and by the
+  // collapse rule, which left bk-* (#513688) as a solid pad at extract start.
+  function mountSeatCover(el, book) {
+    if (!el || !book || !book.cover || book.filler) return;
+    el.style.backgroundColor = "transparent";
+    let art = el.querySelector(":scope > .cover-art");
+    if (!art) {
+      art = document.createElement("img");
+      art.className = "cover-art";
+      art.alt = "";
+      art.draggable = false;
+      el.appendChild(art);
+    }
+    const src = coverSrc(book);
+    if (art.getAttribute("src") !== src) art.src = src;
+  }
+
+  function clearSeatCover(el) {
+    if (!el || !el.classList.contains("spine")) return;
+    el.querySelectorAll(":scope > .cover-art").forEach((node) => node.remove());
+    try { el.style.removeProperty("background-color"); } catch (_) {}
+  }
+
   function applyFaceSize(el, book, { expanded = false } = {}) {
     if (!el || !book) return;
     const faceH = bookFaceHeight(book);
@@ -580,6 +604,7 @@ export function mountBookshelf(root, options = {}) {
   function restoreRestingSpine(el, bookId) {
     if (!el) return;
     el.classList.remove("is-expanded", "is-collapsing");
+    clearSeatCover(el);
     const found = bookById(bookId);
     if (found && found.book.cover && !found.book.filler) {
       applyFaceSize(el, found.book, { expanded: false });
@@ -621,6 +646,7 @@ export function mountBookshelf(root, options = {}) {
       el.classList.remove("is-collapsing");
       el.classList.add("is-expanded");
       applyFaceSize(el, found.book, { expanded: true });
+      mountSeatCover(el, found.book);
     }
   }
 
@@ -1328,6 +1354,7 @@ export function mountBookshelf(root, options = {}) {
       "is-expanded",
       "is-collapsing"
     );
+    clearSeatCover(el);
     // Explicit removeProperty — kills commitStyles leftovers like opacity:0 / transform
     [
       "width",
@@ -1616,6 +1643,11 @@ export function mountBookshelf(root, options = {}) {
     sourceEl.style.transition = "none";
     sourceEl.style.transform = "none"; // kill :hover translateY / is-expanded lift
     sourceEl.classList.add("is-extracting"); // CSS: suppress :hover transform while extracting
+    // Keep the real jacket on the seat until the flyer exists. Dropping
+    // is-expanded used to reveal the bk-* fill for the frames before the flyer.
+    if (sourceEl.classList.contains("spine") && book && book.cover) {
+      mountSeatCover(sourceEl, book);
+    }
     if (fromExpanded) {
       sourceEl.classList.remove("is-expanded", "is-collapsing");
       // Drop the expanded cover's width. Do NOT drop a resting spine's height:
