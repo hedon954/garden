@@ -686,7 +686,20 @@ export function mountBookshelf(root, options = {}) {
     $("#noteTitle").textContent = book.title;
     $("#noteAuthor").textContent = book.author || "";
     const coverEl = $("#noteCover");
-    coverEl.className = `note-cover ${bkClass(book)} ${coverClass(book)}`;
+    // Intrinsic <img>, not the .img-* background. That background is
+    // background-size:cover inside a fixed 2:3 frame and clips landscape art.
+    coverEl.className = "note-cover";
+    coverEl.style.backgroundImage = "none";
+    coverEl.style.backgroundColor = "transparent";
+    coverEl.replaceChildren();
+    if (book.cover) {
+      const img = document.createElement("img");
+      img.className = "note-cover-img";
+      img.alt = "";
+      img.draggable = false;
+      img.src = coverSrc(book);
+      coverEl.appendChild(img);
+    }
     const note = NOTES[book.note];
     const read = $("#noteRead");
     if (read) {
@@ -1475,13 +1488,9 @@ export function mountBookshelf(root, options = {}) {
     noteView.classList.add("is-preparing");
     noteView.classList.remove("is-open");
     noteView.style.opacity = "0";
-    const coverEl = $("#noteCover");
-    const bg = coverEl && getComputedStyle(coverEl).backgroundImage;
-    const m = bg && bg.match(/url\(["']?([^"')]+)["']?\)/);
-    if (m) {
+    const img = $("#noteCover") && $("#noteCover").querySelector(".note-cover-img");
+    if (img && !coverImgReady(img)) {
       try {
-        const img = new Image();
-        img.src = m[1];
         const DECODE_MS = 400;
         const decodeOrLoad = img.decode
           ? img.decode()
