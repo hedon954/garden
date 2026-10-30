@@ -98,6 +98,28 @@ test("excerpts, RSS and the search index never show the marker", () => {
   assert.deepEqual(markdownLinks(body).map((link) => link.card), [true, true]);
 });
 
+test("standalone URL paragraphs count as cards for the shared OG path", () => {
+  const body = [
+    "Intro.",
+    "",
+    "https://bare.dev/alone",
+    "",
+    "[https://jump.dev/x](https://jump.dev/x)",
+    "",
+    "See https://inline.dev/nope in a sentence.",
+    "",
+    "[titled](https://titled.dev/){card}",
+  ].join("\n");
+  assert.deepEqual(cardUrls(body), [
+    "https://jump.dev/x",
+    "https://titled.dev/",
+    "https://bare.dev/alone",
+  ]);
+  const links = markdownLinks(body);
+  assert.equal(links.find((link) => link.url === "https://inline.dev/nope")?.card, false);
+  assert.equal(links.find((link) => link.url === "https://jump.dev/x")?.card, true);
+});
+
 const PNG = new Uint8Array([0x89, 0x50, 0x4e, 0x47, 9, 9, 9, 9]);
 
 function fakeFetch(routes) {
@@ -169,4 +191,22 @@ test("link addresses in angle brackets or with parentheses are read whole, for c
     stripCardMarkers(md),
     "见 [Trie](<https://en.wikipedia.org/wiki/Trie_(data_structure)>)，[b](https://e.com/a_(b))，[空格](<https://e.com/a b>)，[本地](/blog/x){card}，![图](<https://o.com/a (1).png>)",
   );
+});
+
+test("site brand /og.png is omitted from card image assets", async () => {
+  const root = site("[Synctest](https://hedon.top/blog/go/go-lib-synctest/){card}");
+  const page = `<head><meta property="og:title" content="Go synctest">
+<meta property="og:description" content="Concurrency testing.">
+<meta property="og:site_name" content="Hedon Garden">
+<meta name="twitter:image" content="https://hedon.top/og.png"></head>`;
+  const fetch = fakeFetch({
+    "https://hedon.top/blog/go/go-lib-synctest/": { type: "text/html", body: page },
+    "https://hedon.top/og.png": { type: "image/png", body: PNG },
+  });
+  await refreshLinkAssets({ siteRoot: root, fetch, dnsCheck: false });
+  const card = readLinkCache(root).cards["https://hedon.top/blog/go/go-lib-synctest/"];
+  assert.equal(card.title, "Go synctest");
+  assert.equal(card.description, "Concurrency testing.");
+  assert.equal(card.image, undefined);
+  assert.equal(fs.existsSync(path.join(root, "public", "link-assets", "og")), false);
 });

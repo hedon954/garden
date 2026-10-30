@@ -16,7 +16,7 @@ import { isIP } from "node:net";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 import matter from "gray-matter";
-import { fetchFavicon, fetchImage, fetchPageMeta, isPublicUrl, linkHost } from "./link-meta-core.mjs";
+import { fetchFavicon, fetchImage, fetchPageMeta, isPublicUrl, isSiteBrandOgImage, linkHost } from "./link-meta-core.mjs";
 import { parse as parseYaml } from "yaml";
 import { markdownLinks } from "../ui/garden/markdown-links.mjs";
 import { gardenSourceUrls } from "../ui/garden/source-icon.mjs";
@@ -60,10 +60,11 @@ function readSiteConfig(siteRoot) {
   }
 }
 
-/** External links across every post: the sites (for favicons) and the URLs. */
+/** Jump links across every post: the sites (for favicons) and the URLs. */
 export function collectSiteLinks(siteRoot, env = process.env) {
   const config = readSiteConfig(siteRoot);
-  // Links back to this site are internal: no favicon, no card.
+  // Ordinary same-site prose links need no favicon fetch. Card URLs — same-site
+  // or external — share one OG/link-assets path.
   const sameSite = sameSiteMatcher(configuredSiteAddress(config, env), env.NEXT_PUBLIC_BASE_PATH ?? "");
   const hosts = new Map();
   const cards = new Set();
@@ -71,7 +72,8 @@ export function collectSiteLinks(siteRoot, env = process.env) {
   for (const file of markdownFiles(path.join(siteRoot, "content"))) {
     const { content } = matter(fs.readFileSync(file, "utf8"));
     for (const { url, card } of markdownLinks(content)) {
-      if (!isPublicUrl(url) || sameSite(url)) continue;
+      if (!isPublicUrl(url)) continue;
+      if (sameSite(url) && !card) continue;
       urls.add(url);
       if (card) cards.add(url);
       const host = linkHost(url);
@@ -184,7 +186,7 @@ export async function refreshLinkAssets({
       const meta = await fetchPageMeta(url, { fetch: fetchImpl, timeoutMs });
       if (!meta.title) return keepCachedCard(url);
       let image;
-      if (meta.image) {
+      if (meta.image && !isSiteBrandOgImage(meta.image)) {
         try {
           const picture = await shrinkImage(await fetchImage(meta.image, { fetch: fetchImpl, timeoutMs: timeoutMs * 2 }));
           const name = `${digest(Buffer.from(url))}-${digest(picture.bytes)}.${picture.ext}`;

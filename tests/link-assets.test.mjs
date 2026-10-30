@@ -6,7 +6,9 @@ import test from "node:test";
 import {
   fetchFavicon,
   fetchPageMeta,
+  metaRefreshTarget,
   isPublicUrl,
+  isSiteBrandOgImage,
   linkHost,
   parseHead,
   safeFetch,
@@ -73,6 +75,25 @@ test("parseHead reads Open Graph fields and ranks icon candidates", () => {
   assert.equal(parseHead('<head><meta name="author" content="https://x.com/me"></head>', "https://a.com/").author, "");
 });
 
+test("site brand /og.png is not treated as a card cover image", () => {
+  assert.equal(isSiteBrandOgImage("https://hedon.top/og.png"), true);
+  assert.equal(isSiteBrandOgImage("https://hedon.top/og.png?v=1"), true);
+  assert.equal(isSiteBrandOgImage("https://other.example/og.png"), true);
+  assert.equal(isSiteBrandOgImage("https://other.example/media/og.png"), false);
+  assert.equal(isSiteBrandOgImage("https://hedon.top/media/covers/x.jpg"), false);
+  assert.equal(isSiteBrandOgImage("https://hedon.top/og.pngx"), false);
+  assert.equal(isSiteBrandOgImage(""), false);
+
+  const brandOnly = `<head><meta property="og:title" content="Synctest">
+<meta property="og:description" content="A note.">
+<meta name="twitter:image" content="https://hedon.top/og.png"></head>`;
+  assert.equal(parseHead(brandOnly, "https://hedon.top/blog/x/").image, "");
+
+  const realCover = `<head><meta property="og:title" content="With cover">
+<meta property="og:image" content="https://hedon.top/media/covers/real.webp"></head>`;
+  assert.equal(parseHead(realCover, "https://hedon.top/blog/y/").image, "https://hedon.top/media/covers/real.webp");
+});
+
 test("only public http(s) addresses may be fetched", () => {
   for (const ok of ["https://huggingface.co/blog", "http://example.com:80/x", "https://[2606:4700::1111]/"]) {
     assert.equal(isPublicUrl(ok), true, ok);
@@ -116,6 +137,21 @@ test("redirects are followed by hand and a hop to a private address is refused",
   const meta = await fetchPageMeta("https://a.com/", { fetch: ok });
   assert.equal(meta.url, "https://a.com/final");
   assert.equal(meta.title, "KV Caching Explained");
+});
+
+test("HTML meta refresh is followed before reading Open Graph", async () => {
+  const stub = `<!doctype html><html><head><title>页面已移动</title>
+<meta http-equiv="refresh" content="0; url=/blog/go/final/">
+<link rel="canonical" href="https://a.com/blog/go/final/"></head><body></body></html>`;
+  assert.equal(metaRefreshTarget(stub, "https://a.com/old/"), "https://a.com/blog/go/final/");
+  const fetch = fakeFetch({
+    "https://a.com/old/": { type: "text/html", body: stub },
+    "https://a.com/blog/go/final/": { type: "text/html", body: HEAD },
+  });
+  const meta = await fetchPageMeta("https://a.com/old/", { fetch });
+  assert.equal(meta.url, "https://a.com/blog/go/final/");
+  assert.equal(meta.title, "KV Caching Explained");
+  assert.equal(meta.description, 'How the cache "works".');
 });
 
 test("non-HTML pages are not parsed", async () => {

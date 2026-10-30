@@ -184,6 +184,17 @@ const absolute = (value, base) => {
   }
 };
 
+
+/** Site brand OG path `/og.png` (any host) — not an article cover for link cards. */
+export function isSiteBrandOgImage(url) {
+  if (!url) return false;
+  try {
+    return new URL(url).pathname === "/og.png";
+  } catch {
+    return false;
+  }
+}
+
 /** Title, description, image, site name, author, date and icon candidates from a page's head. */
 export function parseHead(html, baseUrl) {
   const head = (/<head[\s>][\s\S]*?(<\/head>|$)/iu.exec(html)?.[0]) ?? html.slice(0, 200_000);
@@ -210,16 +221,29 @@ export function parseHead(html, baseUrl) {
   const published = meta["article:published_time"] || meta["og:published_time"] || meta.date || meta.datepublished || meta["parsely-pub-date"] || "";
   const publishedTime = published && !Number.isNaN(Date.parse(published)) ? new Date(Date.parse(published)).toISOString().slice(0, 10) : "";
   const author = meta["article:author"] || meta.author || meta["twitter:creator"] || "";
+  const imageCandidate = absolute(meta["og:image:secure_url"] || meta["og:image"] || meta["og:image:url"] || meta["twitter:image"], baseUrl);
   return {
     title: clean(meta["og:title"] || meta["twitter:title"] || title, 200),
     description: clean(meta["og:description"] || meta["twitter:description"] || meta.description, 300),
-    image: absolute(meta["og:image:secure_url"] || meta["og:image"] || meta["og:image:url"] || meta["twitter:image"], baseUrl),
+    image: isSiteBrandOgImage(imageCandidate) ? "" : imageCandidate,
     siteName: clean(meta["og:site_name"] || meta["application-name"], 80),
     // article:author is sometimes a profile URL; only keep readable names.
     author: /^https?:\/\//iu.test(author) ? "" : clean(author, 80),
     publishedTime,
     icons: icons.map((icon) => icon.href),
   };
+}
+
+/** Target of an HTML meta refresh, when the page asks the browser to move. */
+export function metaRefreshTarget(html, baseUrl) {
+  for (const tag of html.match(/<meta\b[^>]*>/giu) ?? []) {
+    const attrs = attributes(tag);
+    if ((attrs["http-equiv"] || "").toLowerCase() !== "refresh") continue;
+    const match = /(?:^|;)\s*url\s*=\s*["']?([^"'>\s]+)/iu.exec(attrs.content || "");
+    const target = absolute(match?.[1] ?? "", baseUrl);
+    if (target) return target;
+  }
+  return "";
 }
 
 /** A page's head, fetched safely: HTML only, at most maxBytes, stopping at </head>. */
@@ -232,9 +256,22 @@ export async function fetchHead(url, { fetch: fetcher, timeoutMs = DEFAULT_TIMEO
   return { html: new TextDecoder().decode(bytes), url: finalUrl };
 }
 
-/** Open Graph fields for a page. */
+/** Open Graph fields for a page. Follows HTML meta refresh the way a browser would. */
 export async function fetchPageMeta(url, options = {}) {
-  const { html, url: finalUrl } = await fetchHead(url, options);
+  let current = url;
+  const seen = new Set();
+  for (let hop = 0; hop <= MAX_REDIRECTS; hop += 1) {
+    if (seen.has(current)) break;
+    seen.add(current);
+    const { html, url: finalUrl } = await fetchHead(current, options);
+    const refresh = metaRefreshTarget(html, finalUrl);
+    if (refresh && refresh !== finalUrl && !seen.has(refresh)) {
+      current = refresh;
+      continue;
+    }
+    return { ...parseHead(html, finalUrl), url: finalUrl };
+  }
+  const { html, url: finalUrl } = await fetchHead(current, options);
   return { ...parseHead(html, finalUrl), url: finalUrl };
 }
 

@@ -88,7 +88,7 @@ test("article links: same-site links open in place, others are external", () => 
 });
 
 function cards(markdown) {
-  const processor = unified().use(remarkParse).use(remarkGfm).use(remarkLinkCard, { sameSite: site });
+  const processor = unified().use(remarkParse).use(remarkGfm).use(remarkLinkCard);
   const tree = processor.runSync(processor.parse(markdown), { value: markdown });
   const found = [];
   const walk = (node) => {
@@ -99,15 +99,19 @@ function cards(markdown) {
   return { found, text: JSON.stringify(tree) };
 }
 
-test("same-site links never get a link card; the marker is dropped", () => {
+test("same-site jump links get link cards through the shared path", () => {
   const { found, text } = cards(
     "见 [上一篇](https://blog.example.org/blog/a/){card} 和 [外站](https://docs.blog.example.org/a/){card}。\n\n[独立](http://www.blog.example.org/blog/b/?x=1#y){card}\n",
   );
-  assert.deepEqual(found, ["https://docs.blog.example.org/a/"]);
+  assert.deepEqual(found, [
+    "https://blog.example.org/blog/a/",
+    "https://docs.blog.example.org/a/",
+    "http://www.blog.example.org/blog/b/?x=1#y",
+  ]);
   assert.doesNotMatch(text, /\{card\}/u);
 });
 
-test("same-site links are left out of favicons, cards and the allowlist", async () => {
+test("same-site card URLs share the OG path; ordinary same-site prose skips favicons", async () => {
   const fixture = fs.mkdtempSync(path.join(os.tmpdir(), "garden-same-site-"));
   try {
     fs.mkdirSync(path.join(fixture, "content", "posts"), { recursive: true });
@@ -124,18 +128,32 @@ draft: false
 ---
 
 见 [上一篇](https://blog.example.org/blog/a/){card}、[旧地址](http://www.blog.example.org/blog/b/#h){card} 和 [外站](https://docs.blog.example.org/a/){card}。
+
+[https://blog.example.org/blog/standalone/](https://blog.example.org/blog/standalone/)
+
+普通站内：[目录](https://blog.example.org/blog/)。
 `,
     );
     const links = collectSiteLinks(fixture, {});
-    assert.deepEqual([...links.cards], ["https://docs.blog.example.org/a/"]);
-    assert.deepEqual([...links.hosts.keys()], ["docs.blog.example.org"]);
+    assert.deepEqual([...links.cards].sort(), [
+      "http://www.blog.example.org/blog/b/#h",
+      "https://blog.example.org/blog/a/",
+      "https://blog.example.org/blog/standalone/",
+      "https://docs.blog.example.org/a/",
+    ]);
+    assert.deepEqual([...links.hosts.keys()].sort(), ["blog.example.org", "docs.blog.example.org"]);
 
     await promisify(execFile)(process.execPath, [path.join(projectRoot, "scripts", "build-content.mjs")], {
       cwd: projectRoot,
       env: { ...process.env, GARDEN_SITE: fixture, CONTENT_INCLUDE_DRAFTS: "0", SITE_URL: "https://ignored.test" },
     });
     const allowlist = JSON.parse(fs.readFileSync(path.join(fixture, "public", "link-allowlist.json"), "utf8"));
-    assert.deepEqual(allowlist.urls, ["https://docs.blog.example.org/a/"]);
+    assert.deepEqual(allowlist.urls, [
+      "http://www.blog.example.org/blog/b/#h",
+      "https://blog.example.org/blog/a/",
+      "https://blog.example.org/blog/standalone/",
+      "https://docs.blog.example.org/a/",
+    ]);
     const siteConfig = fs.readFileSync(path.join(fixture, ".garden", "site-config.ts"), "utf8");
     assert.match(siteConfig, /export const siteLinks = \{"address":"https:\/\/blog\.example\.org\/","basePath":"","trailingSlash":(true|false)\}/u);
   } finally {

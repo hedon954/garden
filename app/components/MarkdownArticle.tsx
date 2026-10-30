@@ -292,7 +292,7 @@ export function MarkdownArticle({ content, numbering, lang, fieldTables, refDemo
     <FaviconProvider favicons={linkAssets?.favicons}>
     <div className="markdown-body prose">
       <ReactMarkdown
-        remarkPlugins={[...(refDemos ? [remarkRefDemos] : []), ...markdownPlugins, [remarkLinkCard, { sameSite }], [remarkA2, { imageSize: (src: string) => lookupImageSize(imageSizes, src), lang: lang ?? siteLang }]]}
+        remarkPlugins={[...(refDemos ? [remarkRefDemos] : []), ...markdownPlugins, remarkLinkCard, [remarkA2, { imageSize: (src: string) => lookupImageSize(imageSizes, src), lang: lang ?? siteLang }]]}
         rehypePlugins={[
           rehypeRaw,
           rehypeKatex,
@@ -311,11 +311,18 @@ export function MarkdownArticle({ content, numbering, lang, fieldTables, refDemo
             const only = nodes.length === 1 && isValidElement<{ href?: string; children?: ReactNode }>(nodes[0]) ? nodes[0] : null;
             const href = only?.props.href;
             const text = only ? headingText(only.props.children).trim() : "";
-            if (href && text === href && /^https?:\/\//iu.test(href) && !sameSite(href)) return <LinkCard href={href} />;
+            // Bare http(s) URL alone in a paragraph → link card (same path for every jump link).
+            if (href && text === href && /^https?:\/\//iu.test(href)) return <LinkCard href={href} />;
             return <p {...domProps}>{children}</p>;
           },
           a: ({ href: written, children, ...props }) => {
-            const { href, external } = articleLink(written, sameSite);
+            const label = headingText(children).trim();
+            // Bare URL jump links stay absolute so the paragraph card path is one pipeline
+            // for same-site and external alike. Titled same-site prose still uses Link.
+            const bareJump = Boolean(written && label === written && /^https?:\/\//iu.test(written));
+            const { href, external } = bareJump
+              ? { href: written as string, external: true }
+              : articleLink(written, sameSite);
             const domProps = { ...props };
             Reflect.deleteProperty(domProps, "node");
             // A link to another page of the site navigates in place, like the header and lists do.
