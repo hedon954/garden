@@ -11,7 +11,8 @@ import { toString } from "mdast-util-to-string";
  *   paragraph (inside the same list item or quote).
  *
  * Cards are `garden-linkcard` elements carrying `data-url`, `data-text` and,
- * for the standalone form, `data-standalone`.
+ * for the standalone form, `data-standalone`. Every http(s) jump link that
+ * asks for a card uses this same path — same-site and external alike.
  */
 
 const MARKER = "{card}";
@@ -32,7 +33,7 @@ const meaningful = (children) =>
   children.filter((child) => !(child.type === "text" && !child.value.trim()) && child.type !== "break");
 
 /** Take the markers out of one parent's inline children; return the marked links. */
-function takeMarkers(parent, source, sameSite) {
+function takeMarkers(parent, source) {
   const marked = [];
   const children = parent.children ?? [];
   for (let index = 0; index < children.length - 1; index += 1) {
@@ -41,14 +42,13 @@ function takeMarkers(parent, source, sameSite) {
     if (link.type !== "link" || next.type !== "text" || !next.value.startsWith(MARKER)) continue;
     if (!isHttp(link.url) || !writtenAsLink(link, source)) continue;
     next.value = next.value.slice(MARKER.length);
-    // A link back to this site is an ordinary internal link: the marker goes, no card.
-    if (!sameSite(link.url)) marked.push(link);
+    marked.push(link);
   }
   parent.children = children.filter((child) => !(child.type === "text" && child.value === ""));
   return marked;
 }
 
-function walk(parent, source, sameSite) {
+function walk(parent, source) {
   const children = parent.children ?? [];
   for (let index = 0; index < children.length; index += 1) {
     const node = children[index];
@@ -56,14 +56,14 @@ function walk(parent, source, sameSite) {
     if (node.type !== "paragraph") {
       if (node.children) {
         // Headings, table cells and the like: drop the marker, no card.
-        if (node.type === "heading" || node.type === "tableCell") takeMarkers(node, source, sameSite);
-        walk(node, source, sameSite);
+        if (node.type === "heading" || node.type === "tableCell") takeMarkers(node, source);
+        walk(node, source);
       }
       continue;
     }
     // Links nested in emphasis count too.
-    const marked = takeMarkers(node, source, sameSite);
-    for (const child of node.children) if (child.children && child.type !== "link") marked.push(...takeMarkers(child, source, sameSite));
+    const marked = takeMarkers(node, source);
+    for (const child of node.children) if (child.children && child.type !== "link") marked.push(...takeMarkers(child, source));
     if (!marked.length) continue;
     const rest = meaningful(node.children);
     if (marked.length === 1 && rest.length === 1 && rest[0] === marked[0]) {
@@ -97,11 +97,10 @@ function markSources(parent, source) {
   parent.children = children.filter((child) => !(child.type === "text" && child.value === ""));
 }
 
-export function remarkLinkCard(options = {}) {
-  const sameSite = typeof options?.sameSite === "function" ? options.sameSite : () => null;
+export function remarkLinkCard() {
   return (tree, file) => {
     const source = typeof file?.value === "string" ? file.value : String(file?.value ?? "");
     markSources(tree, source);
-    walk(tree, source, sameSite);
+    walk(tree, source);
   };
 }

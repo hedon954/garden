@@ -12,7 +12,7 @@ import { referenceDomain } from "../ui/garden/references.mjs";
 import { linkAssetsForRender } from "./link-assets.mjs";
 import { cardUrls } from "../ui/garden/markdown-links.mjs";
 import { formatInlineLink, replaceInlineLinks } from "../ui/garden/markdown-destination.mjs";
-import { configuredSiteAddress, sameSiteMatcher } from "../ui/garden/same-site.mjs";
+import { configuredSiteAddress } from "../ui/garden/same-site.mjs";
 import { resolveBrand } from "./brand.mjs";
 import { imageSources, readImageCache, sizeFromBytes } from "./image-sizes.mjs";
 import { buildFullIndex, buildSearchIndex } from "../ui/garden/search-index.mjs";
@@ -74,7 +74,6 @@ const publicBaseUrl = basePath && !siteUrl.endsWith(basePath)
   : siteUrl;
 // Full URLs to this address are internal links: no new tab, no card.
 const siteAddress = configuredSiteAddress(siteConfig, process.env);
-const sameSite = sameSiteMatcher(siteAddress, basePath);
 const siteName = process.env.SITE_NAME ?? siteConfig.name;
 const siteDescription = process.env.SITE_DESCRIPTION ?? siteConfig.description;
 const siteLang = /^en/iu.test(String(siteConfig.locale ?? "")) ? "en" : "zh";
@@ -997,7 +996,7 @@ const sitemapEntries = [
 // Card URLs in published entries: the only pages the link-card Worker may read.
 fs.writeFileSync(
   path.join(publicRoot, "link-allowlist.json"),
-  `${JSON.stringify({ urls: [...new Set([...posts, ...columns, ...thoughts].flatMap((entry) => cardUrls(entry.content)).filter((url) => !sameSite(url)))].sort() }, null, 2)}\n`,
+  `${JSON.stringify({ urls: [...new Set([...posts, ...columns, ...thoughts].flatMap((entry) => cardUrls(entry.content)))].sort() }, null, 2)}\n`,
 );
 fs.writeFileSync(path.join(publicRoot, "sitemap.xml"), `<?xml version="1.0" encoding="UTF-8" ?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${sitemapEntries.map((entry) => `

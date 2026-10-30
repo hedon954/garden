@@ -45,10 +45,10 @@ export async function generateMetadata({
       images: post.cover ? [{ url: post.cover, alt: post.title }] : undefined,
     },
     twitter: {
-      card: "summary_large_image",
+      card: post.cover ? "summary_large_image" : "summary",
       title: post.title,
       description: post.description,
-      images: post.cover ? [post.cover] : ["/og.png"],
+      images: post.cover ? [post.cover] : undefined,
     },
   } satisfies Metadata;
 }

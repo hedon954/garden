@@ -64,8 +64,8 @@ export async function handbookOverviewMetadata(lang: HandbookLang, indexDoc: Gar
       images: [
         {
           url: "/og.png",
-          width: 1731,
-          height: 909,
+          width: 1200,
+          height: 630,
           alt: imageAlt,
         },
       ],
@@ -94,8 +94,8 @@ export async function handbookDocMetadata(lang: HandbookLang, doc: GardenDocEntr
         images: [
           {
             url: "/og.png",
-            width: 1731,
-            height: 909,
+            width: 1200,
+            height: 630,
             alt: fullTitle,
           },
         ],
@@ -125,8 +125,8 @@ export async function handbookDocMetadata(lang: HandbookLang, doc: GardenDocEntr
       images: [
         {
           url: "/og.png",
-          width: 1731,
-          height: 909,
+          width: 1200,
+          height: 630,
           alt: `${siteConfig.name} · ${docTitle}`,
         },
       ],

@@ -50,32 +50,68 @@ function mapInline(text, visit) {
 
 // Inline links read as CommonMark reads them (ui/garden/markdown-destination.mjs):
 // `[t](<https://e.com/a (1)>)` and `[t](https://e.com/Trie_(x))` are whole addresses.
-// Groups: 1 `!`, 3 or 4 the address, 6 `{card}`.
+// Groups: 1 `!`, 2 label, 3 or 4 the address, 6 `{card}`.
 const LINK = new RegExp(`${INLINE_LINK_SOURCE}(\\{card\\}|\\{source\\})?`, "giu");
 const linkUrl = (match) => match[3] ?? match[4];
 const isWebUrl = (url) => /^https?:\/\//iu.test(url);
 const AUTOLINK = /<(https?:\/\/[^\s>]+)>/giu;
 const BARE = /(^|[\s(（：:，,。])(https?:\/\/[^\s<>()（）\]，。、]+[^\s<>()（）\].,;:!?，。、；：！？'"])/giu;
 
+/** The marker that asks for a link card: `[text](url){card}`, nothing in between. */
+export const CARD_MARKER = "{card}";
+/** The marker that draws a link as an inline source chip: `[site](url){source}`. */
+export const SOURCE_MARKER = "{source}";
+
+
+/**
+ * A single-line paragraph whose only content is a web URL: bare, <autolink>,
+ * or `[url](url)` (optional `{card}`). Those render as link cards and share
+ * the OG fetch path with `{card}` markers.
+ */
+function standaloneUrl(line) {
+  const trimmed = String(line ?? "").trim();
+  if (!trimmed || /\n/u.test(trimmed)) return "";
+  // Fresh regex: a shared /g lastIndex would skip later matchAll calls.
+  const link = new RegExp(LINK.source, LINK.flags).exec(trimmed);
+  if (link && link.index === 0 && link[0].length === trimmed.length && link[1] !== "!") {
+    const url = linkUrl(link);
+    const label = link[2] ?? "";
+    if (isWebUrl(url) && (link[6] === CARD_MARKER || label === url)) return url;
+    return "";
+  }
+  const auto = /^<(https?:\/\/[^\s>]+)>$/iu.exec(trimmed);
+  if (auto) return auto[1];
+  const bare = /^(https?:\/\/[^\s<>()（）]+)$/iu.exec(trimmed);
+  return bare && isWebUrl(bare[1]) ? bare[1] : "";
+}
+
 /** Every external link in the body, in order: `{ url, card }`. Images are left out. */
 export function markdownLinks(markdown) {
   const links = [];
+  const standalone = new Set();
   mapOutsideCode(markdown, (text) => {
+    for (const block of text.split(/\n{2,}/u)) {
+      const url = standaloneUrl(block);
+      if (url) standalone.add(url);
+    }
     for (const match of text.matchAll(LINK)) {
-      if (match[1] !== "!" && isWebUrl(linkUrl(match))) links.push({ url: linkUrl(match), card: match[6] === CARD_MARKER });
+      if (match[1] !== "!" && isWebUrl(linkUrl(match))) {
+        const url = linkUrl(match);
+        links.push({ url, card: match[6] === CARD_MARKER || standalone.has(url) });
+      }
     }
     const rest = text.replace(LINK, " ");
-    for (const match of rest.matchAll(AUTOLINK)) links.push({ url: match[1], card: false });
-    for (const match of rest.replace(AUTOLINK, " ").matchAll(BARE)) links.push({ url: match[2], card: false });
+    for (const match of rest.matchAll(AUTOLINK)) {
+      links.push({ url: match[1], card: standalone.has(match[1]) });
+    }
+    for (const match of rest.replace(AUTOLINK, " ").matchAll(BARE)) {
+      links.push({ url: match[2], card: standalone.has(match[2]) });
+    }
     return text;
   });
   return links;
 }
 
-/** The marker that asks for a link card: `[text](url){card}`, nothing in between. */
-export const CARD_MARKER = "{card}";
-/** The marker that draws a link as an inline source chip: `[site](url){source}`. */
-export const SOURCE_MARKER = "{source}";
 
 /**
  * The same Markdown without `{card}` markers, for excerpts, RSS and the search
