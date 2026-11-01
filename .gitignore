@@ -52,9 +52,12 @@ next-env.d.ts
 
 /public/media/
 
-# Editor plugins build into their own dist/; the preview bundle is rebuilt by `npm run ui:build` and on pack.
+# Editor plugins build into their own dist/; `npm run editors:pack` (and prepack)
+# writes the publishable VSIX and Typora plugin to /editors/dist/.
 /editors/*/node_modules/
 /editors/*/dist/
+/editors/dist/
+/editors/.pack-lock
 /editors/vscode/LICENSE
 *.vsix
 

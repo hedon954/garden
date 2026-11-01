@@ -16,6 +16,7 @@ const eslintConfig = defineConfig([
     // Bundled output of the editor preview and plugins.
     "ui/preview/dist/**",
     "editors/*/dist/**",
+    "editors/dist/**",
     "next-env.d.ts",
   ]),
 ]);

@@ -1,7 +1,7 @@
 ---
 title: Writing with AI
 navTitle: Writing with AI
-description: Describe components in one sentence for an Agent to compile, and validate staged files with the same CLI in the pre-commit hook.
+description: Insert and preview ideas with the editor plugins, let an Agent compile them, and validate staged files with the same CLI.
 section: getting-started
 order: 2
 ---
@@ -82,15 +82,35 @@ Compared with the previous version: split the title into two lines with " | " in
 
 Following the `garden-ui` skill, the Agent replaces that idea fence with a `diff` fence right below the code block. The page merges the adjacent code and `diff` fences into a single code frame with a toggle between the full code and the diff; see [Writing Posts & Thoughts](/garden/en/writing) for the hand-written `diff` format.
 
-## 6. Templates and Snippets Without an Agent
+## 6. Insert, Preview, and Compile from the Editor
+
+The VS Code, Cursor, and Typora Intelligent UI plugins put the flow above in the editor. They ship inside `hd-garden`. `npx hd-garden init` copies them to `.garden/editors/` and asks whether to install them when the terminal is interactive. The first `npx garden sync` asks again if that prompt has not happened yet. A non-interactive shell, `CI=1`, or `GARDEN_SKIP_EDITORS=1` prints the hint and does not block. Install later with:
+
+```bash
+npx garden editors install
+npx garden editors install --yes
+npx garden editors install --vscode
+npx garden editors install --typora
+```
+
+A component then takes four steps:
+
+1. **Insert an idea.** Where the component should go, run the Garden insert command (`Cmd+Alt+I` on macOS, `Ctrl+Alt+I` on Windows and Linux in VS Code / Cursor). Typora has the same command; Windows and Linux default to `Ctrl+Alt+I`, and macOS needs a shortcut recorded under Settings, Keyboard Shortcuts. Pick a starter sentence and rewrite it into what the reader should do. This is still an unnamed `garden` fence, not the finished component.
+2. **Preview.** Open the Markdown preview, or in Typora move the cursor out of the fence. An `intent` block shows as an idea card. After the skill writes a `ui` block, the preview matches the blog. VS Code / Cursor also report errors in Problems and in the CodeLens above the block.
+3. **Open the catalog.** Use the catalog command, or run `npx garden ui catalog` and open `.garden/ui-catalog.html`. Starting from a recipe inserts it at the cursor when you already know which component you want.
+4. **Compile.** Copy the compile prompt. On an English site the clipboard text is `Compile this post:` plus the post path. Paste it to the `garden-ui` skill. The Agent locates the block with `npx garden ui scan`, reads the rules with `npx garden ui prompt`, and writes it back with `npx garden ui apply`. The plugin does not call a model.
+
+**Typora prerequisite.** Install [typora-community-plugin](https://github.com/typora-community-plugin/typora-community-plugin/blob/main/docs/en-us/user-guide/1a-installation.md) first. `npx garden editors install --typora` copies the plugin to `~/.typora/community-plugins/plugins/hedon954.garden-intelligent-ui/`. Enable Garden Intelligent UI under Settings, Installed plugins. A Typora upgrade overwrites the community framework; reinstall the framework, then enable the plugin again. If `code` or `cursor` is not on `PATH`, use Install from VSIX in the Extensions view and select the file under `.garden/editors/vscode/`. Install details are in [Checks & Shortcuts](/garden/en/workflow).
+
+## 7. Templates and Snippets Without an Agent
 
 When writing components by hand without AI, you can use the templates and snippets shipped in the package:
 
 - Every draft created by `make new` includes an HTML comment at the bottom with copy-ready examples for idea fences and all 12 components; delete the comment whenever you are done.
 - `templates/garden-blocks.md` lists `when` / `whenNot` guidance and copyable templates for every block; macOS, Typora, and Alfred users can import `templates/garden-snippets.plist` to expand `;gidea`, `;gcard`, `;gstat`, `;gcompare`, `;gtimeline`, `;gchart`, `;gfigure`, `;ghtml`, `;ginteractive`, `;gfile`, `;grel`, `;glist`, and `;gchoice`.
-- The engine repository also ships editor integrations under `editors/vscode`, `editors/typora`, and `editors/obsidian`, and `npx garden ui catalog` generates an offline component catalog at `.garden/ui-catalog.html`.
+- Editor plugin usage is in the previous section. `npx garden ui catalog` writes an offline component catalog at `.garden/ui-catalog.html`.
 
-## 7. Optional Standalone Admin
+## 8. Optional Standalone Admin
 
 The Garden engine includes an optional `/admin` console (under `app/admin` and `worker/`) that can be deployed separately with `npm run admin:local`, `npm run admin:cloudflare`, or Docker. Once configured via environment variables, it provides:
 

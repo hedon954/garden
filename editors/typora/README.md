@@ -11,13 +11,15 @@ Typora 没有官方插件接口。这个插件跑在 [typora-community-plugin](h
 ## 安装顺序
 
 1. 先装 typora-community-plugin，按它的[安装说明](https://github.com/typora-community-plugin/typora-community-plugin/blob/main/docs/en-us/user-guide/1a-installation.md)操作。macOS 上它会修改 `Typora.app/Contents/Resources/TypeMark/index.html`。
-2. 构建本插件：
+2. 在 Garden 站点里安装本插件（`npx hd-garden init` 已把产物放进 `.garden/editors/typora/`）：
 
    ```bash
-   node editors/typora/build.mjs
+   npx garden editors install --typora
    ```
 
-3. 关闭 Typora，把 `editors/typora/dist/` 复制成 `~/.typora/community-plugins/plugins/hedon954.garden-intelligent-ui/`（全局），或 `<笔记目录>/.typora/plugins/hedon954.garden-intelligent-ui/`（只对这个目录生效）。
-4. 打开 Typora，在「设置 → 已安装插件」里勾选 Garden Intelligent UI。
+   命令把插件复制到 `~/.typora/community-plugins/plugins/hedon954.garden-intelligent-ui/`，并检查常见位置有没有 typora-community-plugin。
+3. 打开 Typora，在「设置 → 已安装插件」里勾选 Garden Intelligent UI。
 
-Typora 升级会覆盖 `index.html`，插件随之失效，需要重新执行第 1 步。失效期间围栏原文都还在，可以用 `make dev` 或后台的组件工作台预览。
+Typora 升级会覆盖社区框架改过的程序文件，插件随之失效，需要重新执行第 1 步，再勾选本插件。失效期间围栏原文都还在，可以用 `make dev` 或后台的组件工作台预览。
+
+引擎仓库里重新打包（发布前 `prepack` 也会跑）用 `npm run editors:pack`，产物在 `editors/dist/typora/`。源码仍在 `editors/typora/`。

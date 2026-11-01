@@ -52,6 +52,28 @@ function currentFile() {
   return typora.File?.bundle?.filePath || typora.File?.filePath || "";
 }
 
+function parentDir(file: string) {
+  const trimmed = file.replace(/[/\\]+$/u, "");
+  const index = Math.max(trimmed.lastIndexOf("/"), trimmed.lastIndexOf("\\"));
+  return index <= 0 ? "" : trimmed.slice(0, index);
+}
+
+/** English sites (`locale: en_US`) use the English garden-ui skill trigger. */
+async function compilePrompt(file: string) {
+  let dir = parentDir(file);
+  for (let i = 0; i < 8 && dir; i += 1) {
+    const sep = dir.includes("\\") && !dir.includes("/") ? "\\" : "/";
+    try {
+      const raw = await core.fs.readText(`${dir}${sep}site.config.yaml`);
+      const relative = file.startsWith(dir) ? file.slice(dir.length).replace(/^[/\\]/u, "") : file;
+      return /^locale:\s*en/imu.test(raw) ? `Compile this post: ${relative}` : `编译这篇：${relative}`;
+    } catch {
+      dir = parentDir(dir);
+    }
+  }
+  return `编译这篇：${file}`;
+}
+
 function codeMode(config: unknown) {
   try {
     return typora.CodeMirror?.getMode(config, "markdown") ?? { token: (stream: { skipToEnd(): void }) => (stream.skipToEnd(), null) };
@@ -231,7 +253,7 @@ export default class GardenTyporaPlugin extends core.Plugin {
   private async copyPrompt() {
     const file = currentFile();
     if (!file) return;
-    const prompt = `编译这篇：${file}`;
+    const prompt = await compilePrompt(file);
     await navigator.clipboard.writeText(prompt);
     core.Notice.success(`已复制：${prompt}`);
   }

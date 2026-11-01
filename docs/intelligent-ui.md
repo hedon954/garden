@@ -714,7 +714,7 @@ GardenUI.starters; GardenUI.intentFence(text);
 - 折叠：打开稿件时把 `ui` 块从块头结束的 `---` 折到正文最后一行，只露出块头。设置 `garden.foldUiBodies` 可以关掉。
 - 语法高亮：TextMate 注入让 `ui` 围栏的正文按 Markdown 高亮，组件标签按 HTML 标签着色。不按 JSX 高亮：正文里的行内代码有反引号，JSX 语法会把它当模板字符串，一路染到块尾。
 - 片段（`intent`）、命令、快捷键插入 `intent`。
-- 目录是 `editors/vscode/`。`npm run package` 打出 `.vsix`，可以直接装进 VS Code 或 Cursor；之后再发布到 VS Code Marketplace 和 Open VSX（Cursor 从 Open VSX 安装）。
+- 目录是 `editors/vscode/`。`npm run editors:pack` 把 VSIX 打进 `editors/dist/vscode/`（`prepack` 会跑它，随 `hd-garden` 发布）。站点 `init` / 首次 `sync` 把文件复制到 `.garden/editors/`，`garden editors install --vscode` 在有 `code` 或 `cursor` 时安装，否则提示用 Install from VSIX。这一轮不发布到 VS Code Marketplace 或 Open VSX。
 
 ### 12.4 Obsidian
 
@@ -750,7 +750,7 @@ Typora 没有官方插件 API，只能靠社区框架注入。两个候选：
 - 插入意图块用 `editor.UserOp.pasteHandler(editor, markdown, true)` 粘贴一段 Markdown。快捷键：Windows / Linux 默认 `Ctrl+Alt+I`；macOS 不预设，因为 Option 会改写 `event.key`（Option+I 是"ˆ"），框架按 `event.key` 匹配快捷键，`Cmd+Alt+I` 永远匹配不上。作者在设置页里录一个即可。
 - 预览里拿不到 `intent` 围栏信息串里的 id，想法卡片只显示"想法"。
 - `manifest.json` 要求 typora-community-plugin ≥ 2.10.52，这个版本的 `registerMode` 带 `render`。`CodeblockPostProcessor` 只在真机验证（16 节）发现 `render` 接管不生效时再接。
-- 目录是 `editors/typora/`，`node editors/typora/build.mjs` 生成 `main.js`、`manifest.json`、`style.css`。`README` 写清安装顺序：先装 typora-community-plugin（需要修改 `Typora.app/Contents/Resources/TypeMark/index.html`），再把构建结果放进 `~/.typora/community-plugins/plugins/` 并启用。
+- 目录是 `editors/typora/`。`npm run editors:pack` 把 `main.js`、`manifest.json`、`style.css` 放进 `editors/dist/typora/`，随包发布。`garden editors install --typora` 复制到 `~/.typora/community-plugins/plugins/hedon954.garden-intelligent-ui/`。先装 typora-community-plugin（需要修改 `Typora.app/Contents/Resources/TypeMark/index.html`），再在「设置 → 已安装插件」里勾选。升级 Typora 会覆盖社区框架，需要重装框架后再勾选。
 
 只承诺上面这些。Typora 升级会覆盖 `index.html`，插件随之失效，但围栏原文还在，预览可以退回 `make dev` 或工作台。插件不执行 `widget` 的 HTML。
 
@@ -870,7 +870,7 @@ caption: 显存与 batch、序列长度都成正比；batch 8、序列 32K 就�
 | `ui/prompt/recipes/` | 9 份配方，见 8.1 |
 | `ui/prompt/build.mjs` | 拼出 `garden ui prompt` 的输出：`rules.md` + 从 `catalog.mjs` 生成的组件参考 + 全部配方。工作台在此之后再接上 `studio.md` |
 | `ui/preview/` | 编辑器预览包入口（12.2）；`scripts/build-ui-preview.mjs` 用 esbuild 打包 |
-| `editors/vscode/`、`editors/obsidian/`、`editors/typora/` | 三个编辑器插件，各自有 `build.mjs`、`tsconfig.json` 和安装说明；根目录的 `tsconfig.json` 排除 `editors/`，它们按各自宿主的类型检查。`npm run editors:build` 一次构建三个 |
+| `editors/vscode/`、`editors/obsidian/`、`editors/typora/` | 三个编辑器插件的源码，各自有 `build.mjs`、`tsconfig.json` 和安装说明；根目录的 `tsconfig.json` 排除 `editors/`。`npm run editors:build` 构建三个源码目录；`npm run editors:pack` 只把 VS Code 与 Typora 的可安装产物打进 `editors/dist/`（Obsidian 这一轮不随包下发） |
 | `.agents/skills/garden-ui/` | 编译 skill（第 10 节），随 `garden skill` 装进站点 |
 | `ui/evals/cases.yaml` | 提示词回归集：20 段 `intent`，每段写明期望出现的组件、是否必须写 `expect`，或期望给出"提醒" |
 
@@ -884,7 +884,7 @@ caption: 显存与 batch、序列长度都成正比；batch 8、序列 32K 就�
 | `app/components/UiBlock.tsx` | `<figure id="ui-<id>">` + 客户端 `UiRuntime` + `figcaption` |
 | `app/lib/content.ts` | `toSearchableText` 与字数统计：`ui` 只取 `caption` 和快照文字，`widget` 只取 `caption` |
 | `app/rss.xml/route.ts` | 交给 `marked` 之前，把 `ui` 换成静态快照，把 `widget` 换成 `caption` 加链接 |
-| `bin/garden.mjs` | 新增 `garden ui scan` / `check` / `apply` / `prompt` / `schema` / `catalog` 和 `garden hooks`；`ensureSiteKit` 安装提交前钩子 |
+| `bin/garden.mjs` | `garden ui` 子命令、`garden hooks`、`garden editors install`；`ensureSiteKit` 安装提交前钩子，并把 `editors/dist` 复制到站点 `.garden/editors/` |
 | `scripts/ui-cli.mjs` | `garden ui` 子命令的实现；`check` 负责读暂存区、汇总诊断、生成修复提示词、写文件和剪贴板 |
 | `vite.config.ts` | `garden dev` 的内容监听按本地预览模式重建，坏块显示错误卡片而不是中断开发服务器 |
 | `package.json` | 新依赖；`files` 带上 `ui/`；脚本 `ui:build`、`editors:build`，`prepack` 构建预览包 |

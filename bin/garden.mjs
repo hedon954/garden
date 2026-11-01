@@ -4,6 +4,7 @@ import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import { createRequire } from "node:module";
+import { editorsInstall, offerEditorsOnce } from "../scripts/editors-kit.mjs";
 import { gardenPackageRoot, gardenSiteRoot } from "../scripts/garden-paths.mjs";
 import { langOf, siteCliLang } from "../ui/core/cli-locale.mjs";
 
@@ -196,29 +197,30 @@ function copyIfMissing(from, to) {
   return true;
 }
 
-function ensureSiteKit(destinationRoot = siteRoot) {
-  if (samePath(destinationRoot, gardenPackageRoot)) return;
+async function ensureSiteKit(destinationRoot = siteRoot) {
   const lang = siteCliLang(destinationRoot);
+  if (!samePath(destinationRoot, gardenPackageRoot)) {
+    const added = [];
+    if (
+      copyIfMissing(
+        path.join(gardenPackageRoot, "templates", "site", lang === "en" ? "Makefile.en" : "Makefile"),
+        path.join(destinationRoot, "Makefile"),
+      )
+    ) {
+      added.push("Makefile");
+    }
+    if (added.length) {
+      process.stdout.write(
+        lang === "en"
+          ? `Added missing site files: ${added.join(", ")}\n`
+          : `已补齐站点文件：${added.join("、")}\n`,
+      );
+    }
 
-  const added = [];
-  if (
-    copyIfMissing(
-      path.join(gardenPackageRoot, "templates", "site", lang === "en" ? "Makefile.en" : "Makefile"),
-      path.join(destinationRoot, "Makefile"),
-    )
-  ) {
-    added.push("Makefile");
+    installSkill(destinationRoot, { onlyMissing: true, lang });
+    if (process.env.GARDEN_SKIP_HOOKS !== "1") installHook(destinationRoot, { quiet: true, lang });
   }
-  if (added.length) {
-    process.stdout.write(
-      lang === "en"
-        ? `Added missing site files: ${added.join(", ")}\n`
-        : `已补齐站点文件：${added.join("、")}\n`,
-    );
-  }
-
-  installSkill(destinationRoot, { onlyMissing: true, lang });
-  if (process.env.GARDEN_SKIP_HOOKS !== "1") installHook(destinationRoot, { quiet: true, lang });
+  await offerEditorsOnce(destinationRoot, lang);
 }
 
 const HOOK_MARKER = "# garden: ui check";
@@ -272,19 +274,19 @@ function installHook(destinationRoot = siteRoot, { quiet = false, force = false,
   );
 }
 
-function prepare() {
+async function prepare() {
   ensureEnv();
   ensurePublic();
   fs.mkdirSync(path.join(siteRoot, "content", "posts"), { recursive: true });
   fs.mkdirSync(path.join(siteRoot, "content", "thoughts"), { recursive: true });
-  ensureSiteKit();
+  await ensureSiteKit();
 }
 
-function sync() {
+async function sync() {
   if (!fs.existsSync(path.join(siteRoot, "site.config.yaml"))) {
     fail(`当前目录不是 Garden 站点（缺少 site.config.yaml）：${siteRoot}`);
   }
-  prepare();
+  await prepare();
   runNode("scripts/build-content.mjs");
 }
 
@@ -313,8 +315,8 @@ function ensureDevGitHubLogin() {
   fs.writeFileSync(local, text.endsWith("\n") ? text : `${text}\n`);
 }
 
-function runVinext(vinextArgs, { copyDist = false } = {}) {
-  sync();
+async function runVinext(vinextArgs, { copyDist = false } = {}) {
+  await sync();
   const cwd = vinextRoot();
   const result = spawnSync(process.execPath, [resolveVinext(), ...vinextArgs], {
     cwd,
@@ -378,7 +380,7 @@ function writeEngineDependency(destination) {
   fs.writeFileSync(sitePkgPath, `${JSON.stringify(sitePkg, null, 2)}\n`);
 }
 
-function initSite() {
+async function initSite() {
   const { destination, lang } = parseInitArgs(rest);
   const template = path.join(gardenPackageRoot, "templates", "site");
   if (!fs.existsSync(template)) fail("Garden 包里缺少 templates/site。");
@@ -405,9 +407,10 @@ function initSite() {
     }
   }
   writeEngineDependency(destination);
+  process.stdout.write(lang === "en" ? `Created site: ${destination}\n` : `已创建站点：${destination}\n`);
+  installSkill(destination, { lang });
+  await offerEditorsOnce(destination, lang);
   if (lang === "en") {
-    process.stdout.write(`Created site: ${destination}\n`);
-    installSkill(destination, { lang });
     process.stdout.write("Next steps:\n");
     process.stdout.write(`  cd ${destination}\n`);
     process.stdout.write("  npm install\n");
@@ -417,8 +420,6 @@ function initSite() {
     printGiscusGuide("en");
     return;
   }
-  process.stdout.write(`已创建站点：${destination}\n`);
-  installSkill(destination);
   process.stdout.write("下一步：\n");
   process.stdout.write(`  cd ${destination}\n`);
   process.stdout.write("  npm install\n");
@@ -426,6 +427,35 @@ function initSite() {
   process.stdout.write("  make new TITLE=\"你好，世界\" SLUG=hello\n");
   process.stdout.write("  make dev\n");
   printGiscusGuide("zh");
+}
+
+function editorInstallFlags(argv) {
+  const known = new Set(["--vscode", "--typora", "--yes"]);
+  for (const arg of argv) {
+    if (!known.has(arg)) {
+      const lang = siteCliLang(siteRoot);
+      fail(lang === "en" ? `Unknown option: ${arg}` : `未知参数：${arg}`);
+    }
+  }
+  return {
+    vscode: argv.includes("--vscode"),
+    typora: argv.includes("--typora"),
+    yes: argv.includes("--yes"),
+  };
+}
+
+async function editorsCommand(argv) {
+  const lang = siteCliLang(siteRoot);
+  const sub = argv[0];
+  if (sub !== "install") {
+    fail(
+      lang === "en"
+        ? "Usage: garden editors install [--vscode] [--typora] [--yes]"
+        : "用法：garden editors install [--vscode] [--typora] [--yes]",
+    );
+  }
+  const status = await editorsInstall(siteRoot, lang, editorInstallFlags(argv.slice(1)));
+  if (status) process.exit(status);
 }
 
 function packagedSkills() {
@@ -473,6 +503,7 @@ function help() {
   garden check <文章.md>  检查一篇博文的硬性结构
   garden ui <子命令>      Intelligent UI：scan、check、apply、prompt、schema、catalog
   garden hooks            安装提交前检查（检查暂存稿件里的 ui 块）
+  garden editors install  安装 Intelligent UI 插件到 VS Code / Cursor 与 Typora（--vscode、--typora、--yes）
   garden skill            把引擎自带的 skill 装进当前站点
   garden pages:validate   检查 dist/client
   garden pages:prepare    写入公开产物仓库
@@ -480,85 +511,92 @@ function help() {
 `);
 }
 
-switch (command) {
-  case "help":
-  case "--help":
-  case "-h":
-    help();
-    break;
-  case "sync":
-    sync();
-    break;
-  case "dev":
-    ensureDevGitHubLogin();
-    runVinext(["dev", ...rest]);
-    break;
-  case "build":
-    // Favicons are refetched on every build; failures fall back to link-assets.json.
-    if (process.env.GARDEN_OFFLINE !== "1") runNode("scripts/link-assets.mjs");
-    // Remote image sizes: only new images are probed; the rest come from image-sizes.json.
-    if (process.env.GARDEN_OFFLINE !== "1") runNode("scripts/image-sizes.mjs");
-    // Sizes of remote files in garden file blocks; failures fall back to file-sizes.json.
-    if (process.env.GARDEN_OFFLINE !== "1") runNode("scripts/file-sizes.mjs");
-    runVinext(["build", ...rest], { copyDist: true });
-    // /favicon.ico from the site's own icon (brand.favicon).
-    runNode("scripts/favicon-ico.mjs");
-    // Pages for old addresses listed under redirects in site.config.yaml (static export only).
-    if (process.env.STATIC_EXPORT === "1") {
-      // What the export wrote for empty dynamic routes (ui/garden/static-params.mjs).
-      runNode("scripts/static-placeholders.mjs");
-      runNode("scripts/redirects.mjs");
-      // <html lang="en"> on the English handbook pages.
-      runNode("scripts/html-lang.mjs");
-      // 404.html also under basePath when the host serves that folder alone.
-      runNode("scripts/static-404.mjs");
-    }
-    break;
-  case "links":
-    runNode("scripts/link-assets.mjs");
-    break;
-  case "images":
-    runNode("scripts/image-sizes.mjs");
-    break;
-  case "files":
-    runNode("scripts/file-sizes.mjs");
-    break;
-  case "start":
-    runVinext(["start", ...rest]);
-    break;
-  case "new":
-    runNode("scripts/new-post.mjs", rest);
-    break;
-  case "embed":
-    runNode("scripts/fetch-embed.mjs", rest);
-    break;
-  case "check":
-    runNode("scripts/check-post.mjs", rest);
-    break;
-  case "ui":
-    runNode("scripts/ui-cli.mjs", rest, { cwd: process.cwd() });
-    break;
-  case "hooks":
-    installHook(siteRoot, { force: rest.includes("--force") });
-    break;
-  case "init":
-    initSite();
-    break;
-  case "skill":
-  case "skills":
-    installSkill();
-    break;
-  case "pages:validate":
-    runNode("scripts/prepare-pages-output.mjs", [
-      rest[0] ?? path.join(siteRoot, "dist", "client"),
-    ]);
-    break;
-  case "pages:prepare":
-    runNode("scripts/prepare-pages-output.mjs", rest);
-    break;
-  case "webmentions":
-    runNode("scripts/send-webmentions.mjs", rest);
-    break;
-  default:
-    fail(`未知命令：${command}`);
+async function main() {
+  switch (command) {
+    case "help":
+    case "--help":
+    case "-h":
+      help();
+      break;
+    case "sync":
+      await sync();
+      break;
+    case "dev":
+      ensureDevGitHubLogin();
+      await runVinext(["dev", ...rest]);
+      break;
+    case "build":
+      // Favicons are refetched on every build; failures fall back to link-assets.json.
+      if (process.env.GARDEN_OFFLINE !== "1") runNode("scripts/link-assets.mjs");
+      // Remote image sizes: only new images are probed; the rest come from image-sizes.json.
+      if (process.env.GARDEN_OFFLINE !== "1") runNode("scripts/image-sizes.mjs");
+      // Sizes of remote files in garden file blocks; failures fall back to file-sizes.json.
+      if (process.env.GARDEN_OFFLINE !== "1") runNode("scripts/file-sizes.mjs");
+      await runVinext(["build", ...rest], { copyDist: true });
+      // /favicon.ico from the site's own icon (brand.favicon).
+      runNode("scripts/favicon-ico.mjs");
+      // Pages for old addresses listed under redirects in site.config.yaml (static export only).
+      if (process.env.STATIC_EXPORT === "1") {
+        // What the export wrote for empty dynamic routes (ui/garden/static-params.mjs).
+        runNode("scripts/static-placeholders.mjs");
+        runNode("scripts/redirects.mjs");
+        // <html lang="en"> on the English handbook pages.
+        runNode("scripts/html-lang.mjs");
+        // 404.html also under basePath when the host serves that folder alone.
+        runNode("scripts/static-404.mjs");
+      }
+      break;
+    case "links":
+      runNode("scripts/link-assets.mjs");
+      break;
+    case "images":
+      runNode("scripts/image-sizes.mjs");
+      break;
+    case "files":
+      runNode("scripts/file-sizes.mjs");
+      break;
+    case "start":
+      await runVinext(["start", ...rest]);
+      break;
+    case "new":
+      runNode("scripts/new-post.mjs", rest);
+      break;
+    case "embed":
+      runNode("scripts/fetch-embed.mjs", rest);
+      break;
+    case "check":
+      runNode("scripts/check-post.mjs", rest);
+      break;
+    case "ui":
+      runNode("scripts/ui-cli.mjs", rest, { cwd: process.cwd() });
+      break;
+    case "hooks":
+      installHook(siteRoot, { force: rest.includes("--force") });
+      break;
+    case "editors":
+      await editorsCommand(rest);
+      break;
+    case "init":
+      await initSite();
+      break;
+    case "skill":
+    case "skills":
+      installSkill();
+      break;
+    case "pages:validate":
+      runNode("scripts/prepare-pages-output.mjs", [
+        rest[0] ?? path.join(siteRoot, "dist", "client"),
+      ]);
+      break;
+    case "pages:prepare":
+      runNode("scripts/prepare-pages-output.mjs", rest);
+      break;
+    case "webmentions":
+      runNode("scripts/send-webmentions.mjs", rest);
+      break;
+    default:
+      fail(`未知命令：${command}`);
+  }
 }
+
+await main();
