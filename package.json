@@ -85,7 +85,7 @@
     "github-slugger": "^2.0.0",
     "gray-matter": "^4.0.3",
     "image-size": "^2.0.4",
-    "katex": "^0.16.47",
+    "katex": "^0.19.1",
     "marked": "^16.4.2",
     "mdast-util-from-markdown": "^2.1.0",
     "mdast-util-mdx-expression": "^2.0.1",
