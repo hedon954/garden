@@ -1,8 +1,12 @@
 import assert from "node:assert/strict";
+import { execFile } from "node:child_process";
 import fs from "node:fs";
+import { cp, mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
+import { promisify } from "node:util";
 import test from "node:test";
+import { renderFilePreview } from "../scripts/file-preview.mjs";
 import {
   ensureExcalidrawSvg,
   ExcalidrawExportError,
@@ -11,8 +15,31 @@ import {
   sourceHash,
 } from "../scripts/excalidraw.mjs";
 
+const execFileAsync = promisify(execFile);
 const projectRoot = path.resolve(new URL("../", import.meta.url).pathname);
 const fixture = path.join(projectRoot, "tests", "fixtures", "excalidraw-note.excalidraw");
+
+async function siteFixture(name) {
+  const root = await mkdtemp(path.join(os.tmpdir(), name));
+  await mkdir(path.join(root, "content", "posts", "assets"), { recursive: true });
+  await mkdir(path.join(root, "public"), { recursive: true });
+  await cp(path.join(projectRoot, "site.config.yaml"), path.join(root, "site.config.yaml"));
+  return root;
+}
+
+function runContentBuild(root) {
+  return execFileAsync(process.execPath, [path.join(projectRoot, "scripts", "build-content.mjs")], {
+    cwd: root,
+    encoding: "utf8",
+    env: { ...process.env, GARDEN_SITE: root, CONTENT_INCLUDE_DRAFTS: "0" },
+  });
+}
+
+async function postBody(root, slug) {
+  const generated = await readFile(path.join(root, ".garden", "generated-content.ts"), "utf8");
+  const posts = JSON.parse(generated.match(/export const posts = ([\s\S]*?) as ContentEntry\[\];/u)[1]);
+  return posts.find((post) => post.slug === slug).content;
+}
 
 function tempDir(name) {
   return fs.mkdtempSync(path.join(os.tmpdir(), name));
@@ -198,5 +225,95 @@ test("article code does not import the Excalidraw editor", () => {
   assert.ok(files.length > 10);
   for (const file of files) {
     assert.doesNotMatch(fs.readFileSync(file, "utf8"), /@excalidraw\/excalidraw/u, file);
+  }
+});
+
+test("garden content build rewrites .excalidraw images to a flat SVG and replaces a stale one", { timeout: 180_000 }, async () => {
+  const root = await siteFixture("excal-build-");
+  try {
+    const source = path.join(root, "content", "posts", "assets", "note.excalidraw");
+    await cp(fixture, source);
+    await writeFile(path.join(root, "content", "posts", "sketch.md"), `---
+title: 草图
+description: Excalidraw 在构建时变成 SVG
+date: 2026-11-02
+---
+
+![说明](./assets/note.excalidraw)
+
+<img src="./assets/note.excalidraw" alt="说明">
+`);
+    await runContentBuild(root);
+    const body = await postBody(root, "sketch");
+    assert.match(body, /\/media\/posts\/assets\/note\.svg/u);
+    assert.doesNotMatch(body, /\.excalidraw/u);
+    const html = renderFilePreview(body);
+    const srcs = [...html.matchAll(/<img\b[^>]*\bsrc="([^"]+)"/gu)].map((match) => match[1]);
+    assert.deepEqual(srcs, ["/media/posts/assets/note.svg", "/media/posts/assets/note.svg"]);
+    const sibling = path.join(root, "content", "posts", "assets", "note.svg");
+    const published = path.join(root, "public", "media", "posts", "assets", "note.svg");
+    assert.match(await readFile(sibling, "utf8"), /园子/u);
+    assert.match(await readFile(published, "utf8"), /园子/u);
+
+    await writeFile(sibling, `<svg xmlns="http://www.w3.org/2000/svg"><text>STALE</text></svg>`);
+    await writeFile(source, (await readFile(source, "utf8")).replaceAll("园子", "新图"));
+    await runContentBuild(root);
+    const next = await readFile(sibling, "utf8");
+    assert.match(next, /新图/u);
+    assert.doesNotMatch(next, /STALE|园子/u);
+    const publishedNext = await readFile(published, "utf8");
+    assert.match(publishedNext, /新图/u);
+    assert.doesNotMatch(publishedNext, /STALE/u);
+    assert.doesNotMatch(await postBody(root, "sketch"), /\.excalidraw/u);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test("a missing .excalidraw fails the content build with the path", async () => {
+  const root = await siteFixture("excal-gone-");
+  try {
+    await writeFile(path.join(root, "content", "posts", "sketch.md"), `---
+title: 缺图
+description: 源文件不存在
+date: 2026-11-02
+---
+
+![说明](./assets/gone.excalidraw)
+`);
+    await assert.rejects(runContentBuild(root), (error) => {
+      const output = `${error.stderr ?? ""}\n${error.stdout ?? ""}`;
+      assert.match(output, /\[excalidraw:missing-source\]/u);
+      assert.match(output, /gone\.excalidraw/u);
+      return true;
+    });
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test("an unreadable .excalidraw fails the content build with the path and the exporter reason", { timeout: 180_000 }, async () => {
+  const root = await siteFixture("excal-bad-");
+  try {
+    const source = path.join(root, "content", "posts", "assets", "broken.excalidraw");
+    await writeFile(source, "{\n");
+    await writeFile(path.join(root, "content", "posts", "sketch.md"), `---
+title: 坏图
+description: 源文件不是场景
+date: 2026-11-02
+---
+
+![说明](./assets/broken.excalidraw)
+`);
+    await assert.rejects(runContentBuild(root), (error) => {
+      const output = `${error.stderr ?? ""}\n${error.stdout ?? ""}`;
+      assert.match(output, /\[excalidraw:export-failed\]/u);
+      assert.match(output, /broken\.excalidraw/u);
+      assert.match(output, /SyntaxError/u);
+      return true;
+    });
+    assert.equal(fs.existsSync(siblingSvgPath(source)), false);
+  } finally {
+    await rm(root, { recursive: true, force: true });
   }
 });

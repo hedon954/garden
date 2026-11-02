@@ -19,6 +19,7 @@ import { buildFullIndex, buildSearchIndex } from "../ui/garden/search-index.mjs"
 import { coverImageSet, loadSharp } from "./cover-images.mjs";
 import { readFileSizeCache } from "./file-sizes.mjs";
 import { previewDocument, previewFileName, renderFilePreview } from "./file-preview.mjs";
+import { ensureExcalidrawSvg, isExcalidrawPath } from "./excalidraw.mjs";
 import { parseGardenBlock, parseGardenInfo, scanFences } from "../ui/garden/parse.mjs";
 import { checkGardenMarkdown } from "../ui/garden/check.mjs";
 import {
@@ -160,15 +161,27 @@ function copyLocalAsset(value, markdownPath, sourcePath, options = {}) {
   const mediaPrefix = options.mediaPrefix ?? "";
   const [assetPath, suffix = ""] = value.split(/(?=[?#])/u, 2);
   const decodedPath = decodeURIComponent(assetPath.replace(/^<|>$/g, ""));
-  const absoluteSource = path.resolve(baseDir, decodedPath);
-  const relativeSource = path.relative(allowedRoot, absoluteSource);
+  let absoluteSource = path.resolve(baseDir, decodedPath);
+  let relativeSource = path.relative(allowedRoot, absoluteSource);
 
-  if (
-    relativeSource.startsWith("..") ||
-    path.isAbsolute(relativeSource) ||
-    !fs.existsSync(absoluteSource) ||
-    !fs.statSync(absoluteSource).isFile()
-  ) {
+  if (relativeSource.startsWith("..") || path.isAbsolute(relativeSource)) {
+    fail(sourcePath, options.missingMessage ?? `找不到本地媒体文件 ${value}`);
+  }
+
+  // `![说明](./foo.excalidraw)` publishes the sibling flat SVG, never the JSON scene.
+  if (isExcalidrawPath(decodedPath)) {
+    try {
+      absoluteSource = ensureExcalidrawSvg(absoluteSource);
+    } catch (error) {
+      fail(sourcePath, error instanceof Error ? error.message : String(error));
+    }
+    relativeSource = path.relative(allowedRoot, absoluteSource);
+    if (relativeSource.startsWith("..") || path.isAbsolute(relativeSource)) {
+      fail(sourcePath, `导出的 SVG 不在允许的目录内：${absoluteSource}`);
+    }
+  }
+
+  if (!fs.existsSync(absoluteSource) || !fs.statSync(absoluteSource).isFile()) {
     fail(sourcePath, options.missingMessage ?? `找不到本地媒体文件 ${value}`);
   }
 
