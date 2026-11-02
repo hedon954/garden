@@ -1,5 +1,5 @@
 import { resolveSidecarPath } from "../../../ui/core/fence.mjs";
-import { pickerItems, suggestHtml } from "../../../ui/garden/snippets.mjs";
+import { pickerItems, slashQuery, suggestHtml } from "../../../ui/garden/snippets.mjs";
 import { render, renderIntent } from "../../../ui/preview/index";
 import { parse as parseYaml } from "yaml";
 
@@ -85,26 +85,30 @@ function codeMode(config: unknown) {
   }
 }
 
-/** Slash menu for `/garden`. Each row is a thumbnail plus a label; picking one inserts a guidance fence. */
-class GardenSlashSuggest {
-  triggerText = "/garden";
-  private replaceLength = "/garden".length;
-  private lead = "";
+type SlashCommand = { kind: "command" };
+type SlashChoice = SlashCommand | PickerItem;
+type EditBus = { emit?(name: "edit"): void };
 
-  canTrigger(textBefore: string) {
-    return /\/garden/u.test(textBefore);
-  }
+/** `/` offers the `/garden` command. Accepting it opens the thumbnail picker. */
+class GardenSlashSuggest {
+  triggerText = "/";
+  private replaceLength = 1;
+  private lead = "";
+  private phase: "command" | "components" = "command";
+
+  constructor(private readonly edits: EditBus | undefined) {}
 
   findQuery(textBefore: string) {
-    const match = /(^|[\r\n]|[^\S\r\n])\/garden[ \t]*(\S*)$/u.exec(textBefore);
-    if (!match) return { isMatched: false };
-    const start = match.index + match[1].length;
-    this.replaceLength = textBefore.length - start;
-    this.lead = match[1] === "" || match[1] === "\n" || match[1] === "\r" ? "" : "\n";
-    return { isMatched: true, query: match[2] ?? "" };
+    const parsed = slashQuery(textBefore);
+    if (parsed.phase === "none") return { isMatched: false };
+    this.phase = parsed.phase;
+    this.replaceLength = parsed.replaceLength;
+    this.lead = parsed.lead;
+    return { isMatched: true, query: parsed.query };
   }
 
-  getSuggestions(query: string) {
+  getSuggestions(query: string): SlashChoice[] {
+    if (this.phase === "command") return [{ kind: "command" }];
     const needle = query.trim().toLowerCase();
     return pickerItems().filter((item) => {
       if (!needle) return true;
@@ -112,19 +116,35 @@ class GardenSlashSuggest {
     });
   }
 
-  getSuggestionId(item: PickerItem) {
-    return item.name || "idea";
+  getSuggestionId(item: SlashChoice) {
+    return "kind" in item ? "command" : item.name || "idea";
   }
 
-  getSuggestionById(id: string) {
+  getSuggestionById(id: string): SlashChoice | undefined {
+    if (id === "command") return { kind: "command" };
     return pickerItems().find((item) => (item.name || "idea") === id);
   }
 
-  renderSuggestion(item: PickerItem) {
+  renderSuggestion(item: SlashChoice) {
+    if ("kind" in item) {
+      return `<span class="garden-suggest garden-suggest-command"><span class="garden-suggest-label">/garden</span><span class="garden-suggest-hint">插入组件想法</span></span>`;
+    }
     return suggestHtml(item);
   }
 
-  beforeApply(item: PickerItem) {
+  beforeApply(item: SlashChoice) {
+    if ("kind" in item) {
+      const edits = this.edits;
+      // Paste `/garden`, then ask the editor to reopen suggestions on that text.
+      setTimeout(() => {
+        try {
+          edits?.emit?.("edit");
+        } catch {
+          // The editor's own edit observer still opens the component list.
+        }
+      }, 30);
+      return "/garden";
+    }
     return `${this.lead}${item.body}\n`;
   }
 
@@ -151,7 +171,7 @@ export default class GardenTyporaPlugin extends core.Plugin {
     });
     this.registerCommand({ id: "copy-compile-prompt", title: "Garden：复制编译提示词", scope: "editor", callback: () => void this.copyPrompt() });
     const registerSuggest = this.registerMarkdownSuggest?.bind(this) ?? this.registerMarkdownSugguest?.bind(this);
-    if (registerSuggest) registerSuggest(new GardenSlashSuggest());
+    if (registerSuggest) registerSuggest(new GardenSlashSuggest(this.app.features.markdownEditor));
     this.register(() => {
       for (const entry of this.mounted) entry.handle.destroy();
       this.mounted.clear();

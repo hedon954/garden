@@ -152,6 +152,35 @@ export function suggestHtml(item) {
   return `<span class="garden-suggest"><img class="garden-suggest-thumb" alt="" width="72" height="48" src="${item.preview}"><span class="garden-suggest-label">${escapeHtml(item.label)}</span></span>`;
 }
 
+const SLASH_COMMAND = "garden";
+
+/**
+ * Two steps of the Typora `/` menu. A strict prefix of `garden` (including `/`
+ * alone) is the command hint. `/garden` itself is the component picker.
+ */
+export function slashQuery(textBefore) {
+  const none = { phase: "none", query: "", replaceLength: 0, lead: "" };
+  const component = /(^|[\r\n]|[^\S\r\n])\/garden(?=$|[ \t])(?:[ \t]+(\S*))?$/u.exec(textBefore);
+  if (component) {
+    const boundary = component[1];
+    const start = component.index + boundary.length;
+    return {
+      phase: "components",
+      query: component[2] ?? "",
+      replaceLength: textBefore.length - start,
+      lead: boundary === "" || boundary === "\n" || boundary === "\r" ? "" : "\n",
+    };
+  }
+  const slash = /(^|[\r\n]|[^\S\r\n])\/(\S*)$/u.exec(textBefore);
+  if (!slash) return none;
+  const typed = slash[2];
+  const folded = typed.toLowerCase();
+  if (folded !== SLASH_COMMAND && SLASH_COMMAND.startsWith(folded)) {
+    return { phase: "command", query: typed, replaceLength: 1 + typed.length, lead: "" };
+  }
+  return none;
+}
+
 export function pickerItems() {
   return [
     { name: "", label: `想法 · ${IDEA.label}`, body: guidanceFence(""), preview: PREVIEWS.idea, when: IDEA.when, whenNot: IDEA.whenNot },

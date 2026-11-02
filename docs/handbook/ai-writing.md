@@ -95,7 +95,7 @@ npx garden editors install --typora
 
 装好之后，一篇组件通常是这四步：
 
-1. **插入想法。** 在要放组件的位置运行「插入 Garden 块」（VS Code / Cursor 的快捷键是 macOS `Cmd+Alt+I`，Windows / Linux `Ctrl+Alt+I`）。Typora 里还可以输入 `/garden`，列表每一项有一张小预览图；命令的快捷键在 Windows / Linux 是 `Ctrl+Alt+I`，macOS 需要在「设置 → 快捷键」里自己录。插入的是给 `garden-ui` skill 编译的想法围栏，例如选「资源卡」得到：
+1. **插入想法。** 在要放组件的位置运行「插入 Garden 块」（VS Code / Cursor 的快捷键是 macOS `Cmd+Alt+I`，Windows / Linux `Ctrl+Alt+I`）。Typora 里输入 `/` 后选 `/garden`，下一层列表每一项有一张小预览图；命令的快捷键在 Windows / Linux 是 `Ctrl+Alt+I`，macOS 需要在「设置 → 快捷键」里自己录。插入的是给 `garden-ui` skill 编译的想法围栏，例如选「资源卡」得到：
 
    ````markdown
    ```garden

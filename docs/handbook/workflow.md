@@ -108,7 +108,7 @@ Obsidian 插件这一轮不随包安装。
 
 ### 在编辑器里怎么用
 
-1. **插入想法。** VS Code / Cursor：macOS 用 `Cmd+Alt+I`，Windows / Linux 用 `Ctrl+Alt+I`，或命令「插入 Garden 块」。Typora：输入 `/garden`（列表里每一项有一张小预览图），或命令「插入 Garden 块」（Windows / Linux 默认 `Ctrl+Alt+I`，macOS 请到「设置 → 快捷键」里自己录，因为 Option 会改写按键）。插入的是不带组件名的 `garden` 围栏，正文说明要写成哪种组件、写上哪些事实，交给 `garden-ui` skill 编译。
+1. **插入想法。** VS Code / Cursor：macOS 用 `Cmd+Alt+I`，Windows / Linux 用 `Ctrl+Alt+I`，或命令「插入 Garden 块」。Typora：输入 `/` 后选 `/garden`（下一层列表每一项有一张小预览图），或命令「插入 Garden 块」直接打开组件列表（Windows / Linux 默认 `Ctrl+Alt+I`，macOS 请到「设置 → 快捷键」里自己录，因为 Option 会改写按键）。插入的是不带组件名的 `garden` 围栏，正文说明要写成哪种组件、写上哪些事实，交给 `garden-ui` skill 编译。
 2. **预览。** 打开 Markdown 预览（Typora 里光标离开围栏即可）。`ui` 块画成和博客一样的组件，`intent` 块显示成想法卡片。点滑杆、按钮不会跳回源码。
 3. **看组件清单。** VS Code / Cursor 里用「查看组件清单」，点「用它开始」把配方插进当前稿件。终端里的同一份清单：
 

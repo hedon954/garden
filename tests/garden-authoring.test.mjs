@@ -6,7 +6,7 @@ import { checkGardenMarkdown } from "../ui/garden/check.mjs";
 import { splitCompareLine } from "../ui/garden/compare-line.mjs";
 import { diffToNewCode, figureBreakout, figureImageWidth, imageDisplayWidth, protectMathIdentifiers, tableBreakout, tocShift } from "../ui/garden/enhance.mjs";
 import { parseGardenBlock, scanFences } from "../ui/garden/parse.mjs";
-import { gardenBlocksMarkdown, guidanceFence, pickerItems, suggestHtml, textReplacementPlist, vscodeSnippets } from "../ui/garden/snippets.mjs";
+import { gardenBlocksMarkdown, guidanceFence, pickerItems, slashQuery, suggestHtml, textReplacementPlist, vscodeSnippets } from "../ui/garden/snippets.mjs";
 import { splitTitle, titleLineScale, titleWidthUnits } from "../ui/garden/title.mjs";
 
 test("a title splits into two equal lines at one separator", () => {
@@ -294,6 +294,23 @@ test("every component's when and whenNot fit in one compare cell (60 characters)
     assert.ok([...spec.when].length <= 60, `${name}.when is ${[...spec.when].length} characters`);
     assert.ok([...spec.whenNot].length <= 60, `${name}.whenNot is ${[...spec.whenNot].length} characters`);
   }
+});
+
+test("typing / offers the garden command, and /garden is the component picker", () => {
+  assert.equal(slashQuery("/").phase, "command");
+  assert.equal(slashQuery("/").replaceLength, 1);
+  assert.equal(slashQuery("/g").phase, "command");
+  assert.equal(slashQuery("/ga").replaceLength, 3);
+  assert.equal(slashQuery("hello /").phase, "command");
+  assert.equal(slashQuery("/garden").phase, "components");
+  assert.equal(slashQuery("/garden").query, "");
+  assert.equal(slashQuery("/garden").replaceLength, "/garden".length);
+  assert.equal(slashQuery("/garden").lead, "");
+  assert.equal(slashQuery("hello /garden").lead, "\n");
+  assert.equal(slashQuery("/garden 资源").phase, "components");
+  assert.equal(slashQuery("/garden 资源").query, "资源");
+  assert.equal(slashQuery("/foo").phase, "none");
+  assert.equal(slashQuery("").phase, "none");
 });
 
 test("insert pickers paste a garden idea brief with a thumbnail, not a YAML example", () => {

@@ -3,7 +3,7 @@
 Typora 没有官方插件接口。这个插件跑在 [typora-community-plugin](https://github.com/typora-community-plugin/typora-community-plugin) 上，它在 macOS、Windows、Linux 上都能用。
 
 - **预览**：`ui` 围栏画成和博客一样的交互组件，`intent` 围栏显示成想法卡片。和 Mermaid 一样，光标离开围栏时显示组件，点进去编辑源码。点滑杆、按钮等控件不会跳进源码。
-- **插入想法**：输入 `/garden` 打开带小预览图的组件列表，或用命令「插入 Garden 块」（Windows / Linux 默认 `Ctrl+Alt+I`；macOS 的 Option 会改写按键，请在「设置 → 快捷键」里自己录）。选中的是一段给 `garden-ui` skill 编译的 `garden` 想法，不是写好的 YAML。
+- **插入想法**：输入 `/` 就能看到 `/garden`。选中后再出现带小预览图的组件列表。命令「插入 Garden 块」直接打开组件列表（Windows / Linux 默认 `Ctrl+Alt+I`；macOS 的 Option 会改写按键，请在「设置 → 快捷键」里自己录）。选中的是一段给 `garden-ui` skill 编译的 `garden` 想法，不是写好的 YAML。
 - **复制编译提示词**：把「编译这篇：路径」放进剪贴板，发给装了 `garden-ui` skill 的 AI。
 
 `Data` 引用的文件从稿件的同名目录读取。插件不执行 `widget` 的 HTML，不调用模型，也不保存密钥。
