@@ -90,3 +90,16 @@ CONTENT_INCLUDE_DRAFTS=1 make dev
 npm install
 make check
 ```
+
+## 5. 编辑器插件
+
+写交互组件时，可以在 VS Code、Cursor 或 Typora 里插入想法、预览组件、打开清单，再把编译交给 `garden-ui` skill。插件随 `hd-garden` 发布，不用自己编译。
+
+`npx hd-garden init` 会把产物放到 `.garden/editors/`。终端可交互时分别询问是否安装 VS Code / Cursor 和 Typora。第一次 `npx garden sync` 如果还没问过，会再问一次。没有 TTY、`CI=1` 或 `GARDEN_SKIP_EDITORS=1` 时只打印提示。之后运行：
+
+```bash
+npx garden editors install
+npx garden editors install --yes
+```
+
+Typora 需要先安装 typora-community-plugin，再在「设置 → 已安装插件」里勾选。没有 `code` 或 `cursor` 命令时，用 Install from VSIX 选择 `.garden/editors/vscode/` 里的文件。插入、预览、清单和编译的步骤见 [用 AI 写作](/garden/ai-writing) 与 [语法检查与快捷输入](/garden/workflow)。

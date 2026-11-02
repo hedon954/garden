@@ -1,4 +1,5 @@
 import * as fs from "node:fs";
+import * as path from "node:path";
 import * as vscode from "vscode";
 import {
   collectDataSources,
@@ -43,8 +44,26 @@ function readSidecar(markdownPath: string, src: string) {
   }
 }
 
+/** English sites (`locale: en_US`) use the English garden-ui skill trigger. */
+function englishSite(start: string) {
+  let dir = path.dirname(start);
+  for (let i = 0; i < 8; i += 1) {
+    try {
+      const raw = fs.readFileSync(path.join(dir, "site.config.yaml"), "utf8");
+      return /^locale:\s*en/imu.test(raw);
+    } catch {
+      const parent = path.dirname(dir);
+      if (parent === dir) break;
+      dir = parent;
+    }
+  }
+  return false;
+}
+
 function compilePrompt(uri: vscode.Uri) {
-  return `编译这篇：${vscode.workspace.asRelativePath(uri, false)}`;
+  const relative = vscode.workspace.asRelativePath(uri, false);
+  const file = uri.scheme === "file" ? uri.fsPath : "";
+  return file && englishSite(file) ? `Compile this post: ${relative}` : `编译这篇：${relative}`;
 }
 
 /* ---------- Markdown preview ---------- */

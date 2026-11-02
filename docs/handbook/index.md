@@ -182,6 +182,7 @@ make dev
 写完运行 `make update`，检查通过后会提交并推送。细节见各章：
 
 - **[快速开始](/garden/start)**：目录结构、`make new` 新建长文、草稿预览与日常命令。
+- **[用 AI 写作](/garden/ai-writing)** 与 **[语法检查与快捷输入](/garden/workflow)**：在 VS Code、Cursor、Typora 里插入想法、预览组件、打开清单，并用 `npx garden editors install` 安装插件。
 - **[站点与专栏配置](/garden/config)**：`site.config.yaml` 各字段含义、自定义 SVG 图标与 `content/columns.yaml` 专栏编排。
 - **[发布到 GitHub Pages](/garden/deploy)**：单个公开仓库或「私有源码仓库 + 公开页面仓库」的完整 Actions 工作流。
 - **[写文章与随想](/garden/writing)** 与 **[阅读排版是怎么工作的](/garden/design)**：Front Matter 字段、三级自适应宽度与色彩变量。链接卡片、来源胶囊和本地图片见 [组件总览](/garden/components)。

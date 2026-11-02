@@ -187,6 +187,7 @@ make dev
 Run `make update` when a post is ready; it runs the full check and build before committing and pushing. Read the chapters for details:
 
 - **[Quick Start](/garden/en/start)**: Directory layout, creating posts with `make new`, previewing drafts, and daily commands.
+- **[Writing with AI](/garden/en/ai-writing)** and **[Checks & Shortcuts](/garden/en/workflow)**: Insert an idea, preview the component, and open the catalog in VS Code, Cursor, or Typora, and install the plugins with `npx garden editors install`.
 - **[Site & Column Config](/garden/en/config)**: Every field in `site.config.yaml`, custom SVG icons, and ordering series in `content/columns.yaml`.
 - **[Deploy to GitHub Pages](/garden/en/deploy)**: A single GitHub Actions workflow that supports both one public repository and a private source repo paired with a public Pages repo.
 - **[Writing Posts & Thoughts](/garden/en/writing)** and **[How the Reading Layout Works](/garden/en/design)**: Front Matter fields, three-tier adaptive widths, and color tokens. Link cards, source chips, and local images are on [Components Overview](/garden/en/components).

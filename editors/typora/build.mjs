@@ -27,6 +27,10 @@ await build({
 const css = [
   fs.readFileSync(path.join(root, "ui", "react", "ui.css"), "utf8"),
   ".garden-ui-typora { margin: 0.25em 0; text-align: left; white-space: normal; }",
+  ".garden-suggest { display: flex; align-items: center; gap: 8px; }",
+  ".garden-suggest-thumb { width: 72px; height: 48px; object-fit: cover; border-radius: 4px; background: #f6f3ec; flex: none; }",
+  ".garden-suggest-label { font-size: 13px; line-height: 1.3; }",
+  ".garden-suggest-hint { opacity: 0.65; font-size: 12px; }",
 ];
 fs.writeFileSync(path.join(out, "style.css"), css.join("\n"));
 fs.copyFileSync(path.join(here, "manifest.json"), path.join(out, "manifest.json"));

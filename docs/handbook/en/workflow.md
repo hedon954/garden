@@ -1,7 +1,7 @@
 ---
 title: Checks & Shortcuts
 navTitle: Checks & Shortcuts
-description: Validate posts and diagnostic codes with npx garden check, install the Git pre-commit hook, and use editor snippets and Agent skills.
+description: Validate posts with npx garden check, install the VS Code and Typora plugins, and set up the Git pre-commit hook and Agent skills.
 section: workflow
 order: 40
 ---
@@ -80,3 +80,41 @@ Garden provides three ways to insert or generate components quickly:
    - `garden-ui`: Compiles natural-language `garden` idea fences into concrete component blocks.
    - `garden-interactive-chart`: Authors `interactive`, `chart`, `figure`, and `html` components from article data.
    - `garden-post-review`: Reviews an entire post against layout and component rules.
+
+## 5. VS Code, Cursor, and Typora Plugins
+
+The Intelligent UI plugins are the editor entry point for interactive components: insert a one-sentence idea, preview it, open the catalog, then hand compilation to the `garden-ui` skill. They ship inside `hd-garden`. A site does not compile `editors/vscode` or `editors/typora` from source.
+
+### Install
+
+`npx hd-garden init` copies the files to `.garden/editors/` (a VSIX for VS Code / Cursor, and the Typora plugin). An interactive terminal asks whether to install VS Code / Cursor, then whether to install Typora. The first `npx garden sync` or `npx garden dev` asks again when that prompt has not happened yet. `y` installs; Enter skips.
+
+With no TTY, when `CI` is `1`, or when `GARDEN_SKIP_EDITORS` is set, Garden does not wait for input and only prints how to install later. `GARDEN_SKIP_EDITORS` skips that automatic prompt. The commands below still install, and they are safe to run again:
+
+```bash
+npx garden editors install
+npx garden editors install --yes
+npx garden editors install --vscode
+npx garden editors install --typora
+```
+
+`garden help` lists `editors install`.
+
+**VS Code / Cursor.** When `code` or `cursor` is on `PATH`, install adds the VSIX to that editor. If both commands exist, it installs into both. Without a CLI, open the Extensions view, choose the `...` menu, then Install from VSIX, and select the file under `.garden/editors/vscode/`.
+
+**Typora.** Typora has no official plugin API. Install [typora-community-plugin](https://github.com/typora-community-plugin/typora-community-plugin/blob/main/docs/en-us/user-guide/1a-installation.md) first. The install command checks the usual locations. If the framework is missing, it still copies the plugin to `~/.typora/community-plugins/plugins/hedon954.garden-intelligent-ui/` and prints that prerequisite. On macOS it also copies to `~/Library/Application Support/abnerworks.Typora/plugins/plugins/hedon954.garden-intelligent-ui/`. Open Typora and enable Garden Intelligent UI under Settings, Installed plugins. A Typora upgrade overwrites the community framework inside the app. Reinstall typora-community-plugin, then enable this plugin again. The fences stay in the Markdown.
+
+The Obsidian plugin is not installed by this command.
+
+### Use the plugins while writing
+
+1. **Insert an idea.** In VS Code / Cursor, use `Cmd+Alt+I` on macOS or `Ctrl+Alt+I` on Windows and Linux, or the Garden insert command. In Typora, type `/` and choose `/garden` (the next list has a small preview image on each row), or use the insert command to open the component list directly; Windows and Linux default to `Ctrl+Alt+I`. On macOS, record a shortcut under Settings, Keyboard Shortcuts, because Option rewrites the key. The insertion is a plain `garden` fence: a short brief naming the component and the facts to mention, which the `garden-ui` skill compiles later.
+2. **Preview.** Open the Markdown preview. In Typora, move the cursor out of the fence. A `ui` block renders the same component as the blog. An `intent` block renders as an idea card. Clicks on sliders and buttons stay in the preview.
+3. **Open the catalog.** In VS Code / Cursor, the catalog command inserts a recipe at the cursor. The terminal builds the same page:
+
+   ```bash
+   npx garden ui catalog
+   ```
+
+   That writes `.garden/ui-catalog.html`.
+4. **Compile with the skill.** Copy compile prompt. On an English site (`locale: en_US`) the clipboard text is `Compile this post:` plus the post path. Paste it to an Agent that has the `garden-ui` skill. The skill runs `npx garden ui scan`, reads `npx garden ui prompt`, and replaces only that fence with `npx garden ui apply`. The plugin does not call a model. Check the result with `npx garden ui check` or the pre-commit hook.

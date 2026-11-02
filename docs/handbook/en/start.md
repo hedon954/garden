@@ -90,3 +90,16 @@ To upgrade the engine, edit `package.json` in your site root, update the `"hd-ga
 npm install
 make check
 ```
+
+## 5. Editor Plugins
+
+To write an interactive component, insert an idea in VS Code, Cursor, or Typora, preview it, open the catalog, and let the `garden-ui` skill compile it. The plugins ship inside `hd-garden`. You do not compile them yourself.
+
+`npx hd-garden init` copies the files to `.garden/editors/`. An interactive terminal asks whether to install VS Code / Cursor and whether to install Typora. The first `npx garden sync` asks again if that prompt has not happened yet. With no TTY, `CI=1`, or `GARDEN_SKIP_EDITORS=1`, Garden only prints the hint. Install later with:
+
+```bash
+npx garden editors install
+npx garden editors install --yes
+```
+
+Typora needs typora-community-plugin installed first; then enable the plugin under Settings, Installed plugins. If `code` or `cursor` is not available, use Install from VSIX and select the file under `.garden/editors/vscode/`. Insert, preview, catalog, and compile steps are in [Writing with AI](/garden/en/ai-writing) and [Checks & Shortcuts](/garden/en/workflow).

@@ -7,7 +7,10 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
+import { packEditors } from "../scripts/pack-editors.mjs";
 import { findBuiltEnglishHtmlCjk } from "../scripts/handbook-facts.mjs";
+
+await packEditors();
 
 const CJK_OR_FULLWIDTH_RE = /[\u3000-\u303f\u3400-\u9fff\uf900-\ufaff\uff00-\uffef]/u;
 
@@ -56,7 +59,9 @@ test("garden init writes a site whose package.json parses and pins the current e
     assert.ok(!existsSync(path.join(site, excluded)), `zh init should not write ${excluded}`);
   }
   const nonSkillFiles = listFiles(site).filter((f) => !f.startsWith(".agents/skills/"));
+  const editorFiles = listFiles(path.join(root, "editors/dist")).map((file) => `.garden/editors/${file}`);
   assert.deepEqual(nonSkillFiles, [
+    ".garden/editors/.install-offered",
     ".gitignore",
     "Makefile",
     "README.md",
@@ -65,9 +70,13 @@ test("garden init writes a site whose package.json parses and pins the current e
     "content/thoughts/.gitkeep",
     "package.json",
     "site.config.yaml",
-  ]);
+    ...editorFiles,
+  ].sort());
+  assert.ok(editorFiles.some((file) => file.endsWith(".vsix")));
+  assert.ok(editorFiles.includes(".garden/editors/typora/manifest.json"));
   assert.match(stdout, /已创建站点：/u);
   assert.match(stdout, /https:\/\/giscus\.app\/zh-CN/u);
+  assert.match(stdout, /npx garden editors install/u);
 });
 
 test("garden init with --locale en / en_US writes English site.config.yaml, Makefile, README.md, pages.yml workflow, and English Giscus guide", (t) => {
@@ -94,6 +103,9 @@ test("garden init with --locale en / en_US writes English site.config.yaml, Make
     assert.match(stdout, /Created site:/u);
     assert.match(stdout, /https:\/\/giscus\.app\b/u);
     assert.doesNotMatch(stdout, /giscus\.app\/zh-CN/u);
+    assert.match(stdout, /npx garden editors install/u);
+    assert.match(stdout, /GARDEN_SKIP_EDITORS=1/u);
+    assert.ok(existsSync(path.join(site, ".garden/editors/typora/manifest.json")));
   }
 });
 
@@ -542,6 +554,13 @@ test("a site from garden init installs the packed engine and builds", { skip: pr
   const packed = execFileSync("npm", ["pack", "--silent", "--pack-destination", parent], { cwd: root, encoding: "utf8" }).trim().split("\n").at(-1);
   const tarball = path.join(parent, packed);
   assert.ok(existsSync(tarball), `npm pack did not write ${tarball}`);
+  const packedFiles = execFileSync("tar", ["-tzf", tarball], { encoding: "utf8" });
+  assert.match(packedFiles, /package\/editors\/dist\/vscode\/.+\.vsix/u);
+  assert.match(packedFiles, /package\/editors\/dist\/typora\/manifest\.json/u);
+  assert.match(packedFiles, /package\/editors\/dist\/typora\/main\.js/u);
+  assert.doesNotMatch(packedFiles, /package\/editors\/vscode\/src\//u);
+  assert.doesNotMatch(packedFiles, /package\/editors\/obsidian\//u);
+  assert.doesNotMatch(packedFiles, /package\/editors\/typora\/src\//u);
   execFileSync("npm", ["install", "--no-audit", "--no-fund", tarball], { cwd: site, stdio: "inherit" });
   const env = {
     ...process.env,

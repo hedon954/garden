@@ -1,7 +1,7 @@
 ---
 title: 用 AI 写作
 navTitle: 用 AI 写作
-description: 用一句话描述想要的组件，交给 Agent 生成；提交前由同一个脚本检查，失败时打印可粘贴给 AI 的修复提示词。
+description: 用编辑器插件插入想法并预览，交给 Agent 编译；提交前由同一个脚本检查。
 section: getting-started
 order: 2
 ---
@@ -82,15 +82,41 @@ pages:
 
 Agent 按 `garden-ui` skill 会把这个想法块替换成一段紧挨着完整代码的 `diff` 围栏。页面渲染时会把完整代码和 `diff` 合成一个带「代码 / 对比上一版」切换按钮的代码框，手写 `diff` 的规则见 [写文章与随想](/garden/writing)。
 
-## 6. 不使用 Agent 时的快捷输入
+## 6. 在编辑器里插入、预览，再交给 skill 编译
+
+VS Code、Cursor 和 Typora 的 Intelligent UI 插件把上面的流程放到写稿的地方。插件随 `hd-garden` 发布。`npx hd-garden init` 把产物复制到 `.garden/editors/`，并在交互终端里询问要不要安装。第一次 `npx garden sync` 如果还没问过，会再问一次。非交互环境、`CI=1` 或 `GARDEN_SKIP_EDITORS=1` 只打印提示，不阻塞。手动安装：
+
+```bash
+npx garden editors install
+npx garden editors install --yes
+npx garden editors install --vscode
+npx garden editors install --typora
+```
+
+装好之后，一篇组件通常是这四步：
+
+1. **插入想法。** 在要放组件的位置运行「插入 Garden 块」（VS Code / Cursor 的快捷键是 macOS `Cmd+Alt+I`，Windows / Linux `Ctrl+Alt+I`）。Typora 里输入 `/` 后选 `/garden`，下一层列表每一项有一张小预览图；命令的快捷键在 Windows / Linux 是 `Ctrl+Alt+I`，macOS 需要在「设置 → 快捷键」里自己录。插入的是给 `garden-ui` skill 编译的想法围栏，例如选「资源卡」得到：
+
+   ````markdown
+   ```garden
+   做成资源卡。一篇论文、一个仓库或一本书，读者需要标题、链接和一句说明。请写上链接、标题、一句说明。
+   ```
+   ````
+2. **预览。** 打开 Markdown 预览，或在 Typora 里把光标移出围栏。`intent` 显示成想法卡片；skill 写回 `ui` 之后，预览画成和博客一样的组件。错误会标在源码上（VS Code / Cursor 的「问题」面板和 CodeLens）。
+3. **看清单。** 命令「查看组件清单」，或在终端运行 `npx garden ui catalog` 打开 `.garden/ui-catalog.html`。清单里的「用它开始」把配方插进当前稿件，适合已经知道要用哪一种组件的时候。
+4. **编译。** 「复制编译提示词」。中文站点得到 `编译这篇：<相对路径>`，英文站点得到 `Compile this post: <相对路径>`。把这句话发给 `garden-ui` skill。Agent 用 `npx garden ui scan` 定位，用 `npx garden ui prompt` 读规则，用 `npx garden ui apply` 写回。插件不调用模型。
+
+**Typora 的前提。** 先安装 [typora-community-plugin](https://github.com/typora-community-plugin/typora-community-plugin/blob/main/docs/en-us/user-guide/1a-installation.md)。`npx garden editors install --typora` 把插件复制到 `~/.typora/community-plugins/plugins/hedon954.garden-intelligent-ui/`（macOS 同时写到 `~/Library/Application Support/abnerworks.Typora/plugins/plugins/hedon954.garden-intelligent-ui/`），然后在「设置 → 已安装插件」里勾选 Garden Intelligent UI。升级 Typora 会覆盖社区框架，需要重装框架后再勾选。没找到 `code` 或 `cursor` 时，用扩展视图的 Install from VSIX 选择 `.garden/editors/vscode/` 里的文件。安装细节见 [语法检查与快捷输入](/garden/workflow)。
+
+## 7. 不使用 Agent 时的快捷输入
 
 不借助 AI 手写组件时，可以直接使用包内自带的模板与代码片段：
 
 - `make new` 创建的草稿底部自带一段 `<!-- 组件速查 ... -->` 注释，包含想法块和 12 个组件的示例，写完可直接删掉。
 - `templates/garden-blocks.md` 汇总了想法块与 12 个组件的适用场景（`when` / `whenNot`）和可复制示例；macOS 与 Typora / Alfred 用户可导入 `templates/garden-snippets.plist`，输入 `;gidea`（或 `;garden想法`）、`;gcard`、`;gstat`、`;gcompare`、`;gtimeline`、`;gchart`、`;gfigure`、`;ghtml`、`;ginteractive`、`;gfile`、`;grel`、`;glist`、`;gchoice` 即可展开对应围栏。
-- 引擎仓库的 `editors/vscode`、`editors/typora` 与 `editors/obsidian` 目录提供了对应的编辑器片段与插件支持，运行 `npx garden ui catalog` 则可在本地生成 `.garden/ui-catalog.html` 离线组件画廊。
+- 编辑器插件的用法见上一节。`npx garden ui catalog` 在本地生成 `.garden/ui-catalog.html` 离线组件画廊。
 
-## 7. 可选的独立管理后台
+## 8. 可选的独立管理后台
 
 Garden 引擎仓库内置了可选的 `/admin` 管理后台（位于 `app/admin` 与 `worker/`），可通过 `npm run admin:local`、`npm run admin:cloudflare` 或 Docker 单独部署。配置环境变量后，后台提供以下网页端功能：
 

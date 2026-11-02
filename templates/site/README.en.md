@@ -10,6 +10,8 @@ make dev
 
 Running `npx garden dev` for the first time fills in any missing `Makefile` or skills and creates `.env.local`. Cursor and Codex read `.agents/skills/` automatically when opening this repository. Run `npx garden skill` anytime to update the bundled skills.
 
+`npx hd-garden init` copies the VS Code / Cursor and Typora Intelligent UI plugins into `.garden/editors/` and asks whether to install them when the terminal is interactive. Run `npx garden editors install` later (`--yes` installs both, `--vscode` or `--typora` installs one). Typora needs typora-community-plugin first; then enable the plugin under Settings, Installed plugins. Use the plugins to insert a plain `garden` brief for the `garden-ui` skill to compile, preview a component, and open the catalog. In Typora, type `/` and choose `/garden` to list each component with a small preview image. Hand `Compile this post:` to the skill when you want it compiled.
+
 Comments are disabled by default. Before publishing, open [Giscus](https://giscus.app), write the repository, repository ID, category, and category ID into `.env.local`, and set the matching `GISCUS_REPO`, `GISCUS_REPO_ID`, `GISCUS_CATEGORY`, and `GISCUS_CATEGORY_ID` under GitHub Actions Variables. Leaving them empty fails the publish workflow. To publish without comments, set `GISCUS_DISABLED` to `1`.
 
 To upgrade the engine, update `hd-garden` in `package.json` to the new version and run `npm install`.

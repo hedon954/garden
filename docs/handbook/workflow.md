@@ -1,7 +1,7 @@
 ---
 title: 语法检查与快捷输入
 navTitle: 语法检查与快捷输入
-description: 使用 npx garden check 检查文章诊断码，配置 Git 提交前检查钩子、编辑器代码片段与 Agent 技能。
+description: 使用 npx garden check 检查文章诊断码，安装 VS Code 与 Typora 插件，配置 Git 提交前检查钩子与 Agent 技能。
 section: workflow
 order: 40
 ---
@@ -80,3 +80,41 @@ Garden 通过以下三种方式提供组件模板与智能辅助：
    - `garden-ui`：把文章里的 `garden` 想法描述编译成具体的组件围栏。
    - `garden-interactive-chart`：根据文章数据编写 `interactive`、`chart`、`figure` 与 `html` 组件。
    - `garden-post-review`：按排版与组件规范审阅整篇文章。
+
+## 5. VS Code、Cursor 与 Typora 插件
+
+Intelligent UI 插件是写交互组件的编辑器入口：插入一句想法、在编辑器里预览、打开组件清单，再把编译交给 `garden-ui` skill。插件随 `hd-garden` 发布，站点不用从 `editors/vscode` 或 `editors/typora` 源码编译。
+
+### 安装
+
+`npx hd-garden init` 把产物复制到 `.garden/editors/`（VS Code / Cursor 的 VSIX，以及 Typora 插件）。终端可交互时会分别询问要不要装进 VS Code / Cursor、要不要装进 Typora。第一次 `npx garden sync` 或 `npx garden dev` 如果还没问过，会再问一次。`y` 安装，直接回车跳过。
+
+没有 TTY、环境变量 `CI` 为 `1`，或设置了 `GARDEN_SKIP_EDITORS` 时，不会等待输入，只提示手动安装。`GARDEN_SKIP_EDITORS` 只跳过这次自动询问；下面的命令照常安装，并且可以重复执行：
+
+```bash
+npx garden editors install
+npx garden editors install --yes
+npx garden editors install --vscode
+npx garden editors install --typora
+```
+
+`garden help` 里也能看到 `editors install`。
+
+**VS Code / Cursor。** 本机有 `code` 或 `cursor` 时，安装会把 VSIX 装进那个编辑器。两个命令都在时各装一次。没有命令行时，打开扩展视图，点右上角「…」，选择 Install from VSIX，文件在 `.garden/editors/vscode/`。
+
+**Typora。** Typora 没有官方插件接口，要先安装 [typora-community-plugin](https://github.com/typora-community-plugin/typora-community-plugin/blob/main/docs/en-us/user-guide/1a-installation.md)。安装命令会检查常见位置；没找到时仍把插件复制到 `~/.typora/community-plugins/plugins/hedon954.garden-intelligent-ui/`。macOS 还会复制到 `~/Library/Application Support/abnerworks.Typora/plugins/plugins/hedon954.garden-intelligent-ui/`。然后打开 Typora，在「设置 → 已安装插件」里勾选 Garden Intelligent UI。升级 Typora 会覆盖社区框架改过的程序文件，需要重新安装 typora-community-plugin，再勾选本插件。围栏原文还在稿件里。
+
+Obsidian 插件这一轮不随包安装。
+
+### 在编辑器里怎么用
+
+1. **插入想法。** VS Code / Cursor：macOS 用 `Cmd+Alt+I`，Windows / Linux 用 `Ctrl+Alt+I`，或命令「插入 Garden 块」。Typora：输入 `/` 后选 `/garden`（下一层列表每一项有一张小预览图），或命令「插入 Garden 块」直接打开组件列表（Windows / Linux 默认 `Ctrl+Alt+I`，macOS 请到「设置 → 快捷键」里自己录，因为 Option 会改写按键）。插入的是不带组件名的 `garden` 围栏，正文说明要写成哪种组件、写上哪些事实，交给 `garden-ui` skill 编译。
+2. **预览。** 打开 Markdown 预览（Typora 里光标离开围栏即可）。`ui` 块画成和博客一样的组件，`intent` 块显示成想法卡片。点滑杆、按钮不会跳回源码。
+3. **看组件清单。** VS Code / Cursor 里用「查看组件清单」，点「用它开始」把配方插进当前稿件。终端里的同一份清单：
+
+   ```bash
+   npx garden ui catalog
+   ```
+
+   生成 `.garden/ui-catalog.html`。
+4. **交给 skill 编译。** 「复制编译提示词」在中文站点得到 `编译这篇：<相对路径>`，在 `locale: en_US` 的站点得到 `Compile this post: <相对路径>`。把这句话发给装了 `garden-ui` skill 的 Agent。它会运行 `npx garden ui scan`，阅读 `npx garden ui prompt`，再用 `npx garden ui apply` 只替换这一块。插件本身不调用模型。写完用 `npx garden ui check` 或提交前钩子再查一遍。

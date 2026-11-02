@@ -1,5 +1,5 @@
 import { resolveSidecarPath } from "../../../ui/core/fence.mjs";
-import { pickerItems } from "../../../ui/garden/snippets.mjs";
+import { pickerItems, slashQuery, suggestHtml } from "../../../ui/garden/snippets.mjs";
 import { render, renderIntent } from "../../../ui/preview/index";
 import { parse as parseYaml } from "yaml";
 
@@ -7,6 +7,7 @@ import { parse as parseYaml } from "yaml";
 type Dispose = () => void;
 type Command = { id: string; title: string; scope: "global" | "editor"; hotkey?: string | null; callback: () => void };
 type QuickPickItem = { label: string };
+type PickerItem = ReturnType<typeof pickerItems>[number];
 type Core = {
   Plugin: new (...args: never[]) => {
     app: {
@@ -18,6 +19,8 @@ type Core = {
     };
     register(dispose: Dispose): void;
     registerCommand(command: Command): void;
+    registerMarkdownSuggest?(suggest: object): void;
+    registerMarkdownSugguest?(suggest: object): void;
     onload?(): void;
     onunload?(): void;
   };
@@ -52,11 +55,101 @@ function currentFile() {
   return typora.File?.bundle?.filePath || typora.File?.filePath || "";
 }
 
+function parentDir(file: string) {
+  const trimmed = file.replace(/[/\\]+$/u, "");
+  const index = Math.max(trimmed.lastIndexOf("/"), trimmed.lastIndexOf("\\"));
+  return index <= 0 ? "" : trimmed.slice(0, index);
+}
+
+/** English sites (`locale: en_US`) use the English garden-ui skill trigger. */
+async function compilePrompt(file: string) {
+  let dir = parentDir(file);
+  for (let i = 0; i < 8 && dir; i += 1) {
+    const sep = dir.includes("\\") && !dir.includes("/") ? "\\" : "/";
+    try {
+      const raw = await core.fs.readText(`${dir}${sep}site.config.yaml`);
+      const relative = file.startsWith(dir) ? file.slice(dir.length).replace(/^[/\\]/u, "") : file;
+      return /^locale:\s*en/imu.test(raw) ? `Compile this post: ${relative}` : `编译这篇：${relative}`;
+    } catch {
+      dir = parentDir(dir);
+    }
+  }
+  return `编译这篇：${file}`;
+}
+
 function codeMode(config: unknown) {
   try {
     return typora.CodeMirror?.getMode(config, "markdown") ?? { token: (stream: { skipToEnd(): void }) => (stream.skipToEnd(), null) };
   } catch {
     return { token: (stream: { skipToEnd(): void }) => (stream.skipToEnd(), null) };
+  }
+}
+
+type SlashCommand = { kind: "command" };
+type SlashChoice = SlashCommand | PickerItem;
+type EditBus = { emit?(name: "edit"): void };
+
+/** `/` offers the `/garden` command. Accepting it opens the thumbnail picker. */
+class GardenSlashSuggest {
+  triggerText = "/";
+  private replaceLength = 1;
+  private lead = "";
+  private phase: "command" | "components" = "command";
+
+  constructor(private readonly edits: EditBus | undefined) {}
+
+  findQuery(textBefore: string) {
+    const parsed = slashQuery(textBefore);
+    if (parsed.phase === "none") return { isMatched: false };
+    this.phase = parsed.phase;
+    this.replaceLength = parsed.replaceLength;
+    this.lead = parsed.lead;
+    return { isMatched: true, query: parsed.query };
+  }
+
+  getSuggestions(query: string): SlashChoice[] {
+    if (this.phase === "command") return [{ kind: "command" }];
+    const needle = query.trim().toLowerCase();
+    return pickerItems().filter((item) => {
+      if (!needle) return true;
+      return item.label.toLowerCase().includes(needle) || item.name.toLowerCase().includes(needle);
+    });
+  }
+
+  getSuggestionId(item: SlashChoice) {
+    return "kind" in item ? "command" : item.name || "idea";
+  }
+
+  getSuggestionById(id: string): SlashChoice | undefined {
+    if (id === "command") return { kind: "command" };
+    return pickerItems().find((item) => (item.name || "idea") === id);
+  }
+
+  renderSuggestion(item: SlashChoice) {
+    if ("kind" in item) {
+      return `<span class="garden-suggest garden-suggest-command"><span class="garden-suggest-label">/garden</span><span class="garden-suggest-hint">插入组件想法</span></span>`;
+    }
+    return suggestHtml(item);
+  }
+
+  beforeApply(item: SlashChoice) {
+    if ("kind" in item) {
+      const edits = this.edits;
+      // Paste `/garden`, then ask the editor to reopen suggestions on that text.
+      setTimeout(() => {
+        try {
+          edits?.emit?.("edit");
+        } catch {
+          // The editor's own edit observer still opens the component list.
+        }
+      }, 30);
+      return "/garden";
+    }
+    return `${this.lead}${item.body}\n`;
+  }
+
+  lengthOfTextBeforeToBeReplaced() {
+    return this.replaceLength;
   }
 }
 
@@ -77,6 +170,8 @@ export default class GardenTyporaPlugin extends core.Plugin {
       callback: () => void this.insertIntent(),
     });
     this.registerCommand({ id: "copy-compile-prompt", title: "Garden：复制编译提示词", scope: "editor", callback: () => void this.copyPrompt() });
+    const registerSuggest = this.registerMarkdownSuggest?.bind(this) ?? this.registerMarkdownSugguest?.bind(this);
+    if (registerSuggest) registerSuggest(new GardenSlashSuggest(this.app.features.markdownEditor));
     this.register(() => {
       for (const entry of this.mounted) entry.handle.destroy();
       this.mounted.clear();
@@ -231,7 +326,7 @@ export default class GardenTyporaPlugin extends core.Plugin {
   private async copyPrompt() {
     const file = currentFile();
     if (!file) return;
-    const prompt = `编译这篇：${file}`;
+    const prompt = await compilePrompt(file);
     await navigator.clipboard.writeText(prompt);
     core.Notice.success(`已复制：${prompt}`);
   }

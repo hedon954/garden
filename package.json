@@ -1,6 +1,6 @@
 {
   "name": "hd-garden",
-  "version": "0.10.3",
+  "version": "0.10.4",
   "private": false,
   "description": "用 Markdown 写作、用 GitHub Pages 发布的个人博客引擎。",
   "license": "MIT",
@@ -27,6 +27,7 @@
     "bin",
     "build",
     "docs/handbook",
+    "editors/dist",
     "public/favicon.svg",
     "public/apple-touch-icon.png",
     "public/og.png",
@@ -68,7 +69,8 @@
     "test": "npm run build && node --experimental-strip-types --test tests/*.test.mjs",
     "ui:build": "node scripts/build-ui-preview.mjs",
     "editors:build": "node editors/vscode/build.mjs && node editors/obsidian/build.mjs && node editors/typora/build.mjs",
-    "prepack": "node scripts/build-ui-preview.mjs",
+    "editors:pack": "node scripts/pack-editors.mjs",
+    "prepack": "node scripts/pack-editors.mjs",
     "lint": "node bin/garden.mjs sync && eslint . --ignore-pattern dist --ignore-pattern .next --ignore-pattern .garden --ignore-pattern templates"
   },
   "dependencies": {
