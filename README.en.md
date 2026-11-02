@@ -44,7 +44,17 @@ npx garden ui check --staged                    # Check staged posts for uncompi
 npx garden ui catalog                           # Generate an offline component gallery at .garden/ui-catalog.html
 ```
 
-## 4. Handbook and reference docs
+## 4. Excalidraw
+
+Point a Markdown image at the `.excalidraw` source. `garden build` exports one light flat SVG beside that file, with a transparent background, and embeds that SVG in the article so its text can be selected. No separate export command.
+
+```markdown
+![A sketch](./assets/flow.excalidraw)
+```
+
+The first page that references `.excalidraw` downloads the exporter (Chromium is not required; fonts are embedded in the SVG). See [Local Image](docs/handbook/en/components/image.md).
+
+## 5. Handbook and reference docs
 
 Start `make dev` and open `/garden/en` (Chinese at `/garden`), or read the markdown sources directly:
 

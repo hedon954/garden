@@ -137,7 +137,7 @@ export function ArticleMeasure() {
       });
       // Images: as wide as they display (2x screenshots at half their pixels), up to 1040px in total.
       article.querySelectorAll<HTMLElement>(".fig").forEach((figure) => {
-        const image = figure.querySelector("img");
+        const image = figure.querySelector<HTMLImageElement>("img, svg.excalidraw");
         resetWide(figure);
         // From here on the browser decides; the build-time breakout CSS steps aside.
         figure.classList.remove("fig-wide");
@@ -148,8 +148,9 @@ export function ArticleMeasure() {
         if (baseWidth) image.style.width = `${baseWidth}px`;
         else image.style.removeProperty("width");
         // Sizes read at build time let this run before the file arrives; otherwise wait for load.
+        // An inline Excalidraw SVG has no naturalWidth; its width attribute is the scene size.
         const known = Number(image.dataset.nw) || 0;
-        const pixels = image.naturalWidth || known;
+        const pixels = image.naturalWidth || known || Number(image.getAttribute("width")) || 0;
         if (!pixels) return;
         // width="" written by the build is the pixel size, not an author's choice.
         const attrWidth = known ? Number(image.dataset.aw) || 0 : Number(image.getAttribute("width")) || 0;

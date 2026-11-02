@@ -88,6 +88,14 @@ cover: writing/first-post.jpg
 
 网页中的图片可以点击放大。构建时，本地附件会复制到公开目录；不要把大型音视频放进 Git，后台上传的多媒体应使用阿里云 OSS。
 
+Excalidraw 也用这张图片语法，地址写源文件而不是 SVG：
+
+```md
+![说明](./assets/flow.excalidraw)
+```
+
+`garden build` 或 `make dev` 会在旁边生成一张浅色 `flow.svg`（扁平 SVG，画布背景透明，字体在文件内），并把 SVG 嵌进正文，图里的文字可以选中。改完 `.excalidraw` 再构建一次即可。源文件缺失或导出失败时构建会停止。详见手册「本地图片」。
+
 ### 嵌入外部平台和网页摘要
 
 在正文中使用 `embed` 代码块。`url` 必填；`title`、`description` 和远程 `image` 可选：

@@ -33,7 +33,7 @@ test("content pipeline validates metadata, excludes drafts, and publishes Typora
       path.join(projectRoot, "scripts", "build-content.mjs"),
       path.join(fixture, "scripts", "build-content.mjs"),
     );
-    for (const script of ["site-date.mjs", "link-assets.mjs", "link-meta-core.mjs", "cover-images.mjs", "brand.mjs", "image-sizes.mjs", "file-sizes.mjs", "file-preview.mjs"]) {
+    for (const script of ["site-date.mjs", "link-assets.mjs", "link-meta-core.mjs", "cover-images.mjs", "brand.mjs", "image-sizes.mjs", "file-sizes.mjs", "file-preview.mjs", "excalidraw.mjs"]) {
       await cp(path.join(projectRoot, "scripts", script), path.join(fixture, "scripts", script));
     }
     await cp(
@@ -184,7 +184,7 @@ test("angle-bracket destinations survive the build: spaces and parentheses, loca
   try {
     await mkdir(path.join(fixture, "scripts"), { recursive: true });
     await mkdir(path.join(fixture, "content", "posts", "shots"), { recursive: true });
-    for (const script of ["build-content.mjs", "site-date.mjs", "link-assets.mjs", "link-meta-core.mjs", "cover-images.mjs", "brand.mjs", "image-sizes.mjs", "file-sizes.mjs", "file-preview.mjs"]) {
+    for (const script of ["build-content.mjs", "site-date.mjs", "link-assets.mjs", "link-meta-core.mjs", "cover-images.mjs", "brand.mjs", "image-sizes.mjs", "file-sizes.mjs", "file-preview.mjs", "excalidraw.mjs"]) {
       await cp(path.join(projectRoot, "scripts", script), path.join(fixture, "scripts", script));
     }
     await cp(path.join(projectRoot, "site.config.yaml"), path.join(fixture, "site.config.yaml"));
