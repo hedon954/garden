@@ -27,7 +27,7 @@ order: 45
 
 `.excalidraw` 和别的配图放在一起。正文仍用 Markdown 图片，地址指向源文件，例如 `./my-post/flow.excalidraw`。没有单独的 garden 组件。
 
-`garden build`、`make dev` 和 `garden sync` 会找出这些图片。源文件有改动，或旁边的 `.svg` 缺失、过期时，先删掉旧的 `.svg`，再导出一张新的扁平 SVG，里面不嵌可再编辑的场景。上面的例子会得到同目录的 `flow.svg`。只这一张浅色 SVG：画布背景透明，场景里的线条和填色保持绘制时的样子，不另出深色文件，也不做 CSS 反色。页面引用这张 SVG。读者看到的是普通图片，文章脚本不会加载 Excalidraw。
+`garden build`、`make dev` 和 `garden sync` 会找出这些图片。源文件有改动，或旁边的 `.svg` 缺失、过期时，先删掉旧的 `.svg`，再导出一张新的扁平 SVG，里面不嵌可再编辑的场景。上面的例子会得到同目录的 `flow.svg`。只这一张浅色 SVG：画布背景透明，场景里的线条和填色保持绘制时的样子，不另出深色文件，也不做 CSS 反色。页面把这张 SVG 嵌进正文，图里的文字可以选中复制；说明写在 SVG 的 `title` 里。文章脚本不会加载 Excalidraw。
 
 导出程序是 [excalidraw-image](https://github.com/rickardp/excalidraw-image) `0.2.0`，走的是 Excalidraw 自己的 SVG 导出。第一次遇到 `.excalidraw` 时，构建从 GitHub Releases 下载对应系统的可执行文件（压缩包约 48MB）并缓存在本机。不需要安装 Chromium。字体写进 SVG，页面不请求 excalidraw.com。已经下载过，或用 `GARDEN_EXCALIDRAW_IMAGE` 指向本机程序时，离线构建（`GARDEN_OFFLINE` 设为 `1`）不会再次下载。
 

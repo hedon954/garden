@@ -4,9 +4,14 @@ import fs from "node:fs";
 import { cp, mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
+import React from "react";
+import { renderToStaticMarkup } from "react-dom/server";
+import ReactMarkdown from "react-markdown";
+import rehypeRaw from "rehype-raw";
 import { promisify } from "node:util";
 import test from "node:test";
-import { renderFilePreview } from "../scripts/file-preview.mjs";
+import { contentToSearchText } from "../ui/core/transform.mjs";
+import { embedExcalidrawImages, inlineSvgDocument } from "../ui/garden/excalidraw-inline.mjs";
 import {
   ensureExcalidrawSvg,
   ExcalidrawExportError,
@@ -259,7 +264,32 @@ test("article code does not import the Excalidraw editor", () => {
   }
 });
 
-test("garden content build rewrites .excalidraw images to a flat SVG and replaces a stale one", { timeout: 180_000 }, async () => {
+function articleHtml(markdown) {
+  return renderToStaticMarkup(React.createElement(ReactMarkdown, { rehypePlugins: [rehypeRaw] }, markdown));
+}
+
+test("inline SVG keeps scene text, drops scripts, and leaves the rest of the post", () => {
+  const source = `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="8" onclick="alert(1)"><script>alert(1)</script><foreignObject><div>x</div></foreignObject><text>园子</text></svg>`;
+  const inlined = inlineSvgDocument(source, { alt: "说明" });
+  assert.match(inlined.html, /<text[^>]*>园子<\/text>/u);
+  assert.match(inlined.html, /<title[^>]*>说明<\/title>/u);
+  assert.match(inlined.html, /aria-labelledby=/u);
+  assert.doesNotMatch(inlined.html, /script|onclick|foreignObject/iu);
+  const markdown = "前文\n\n![说明](./assets/note.excalidraw)\n\n后文 ![别的](./plain.png)\n";
+  const embedded = embedExcalidrawImages(markdown, () => source);
+  assert.match(embedded, /^前文/u);
+  assert.match(embedded, /后文 !\[别的\]\(\.\/plain\.png\)/u);
+  assert.doesNotMatch(embedded, /!\[[^\]]*\]\([^)]*\.excalidraw\)/u);
+  const html = articleHtml(embedded.split("后文")[0]);
+  assert.match(html, /<svg[\s>]/u);
+  assert.match(html, /<text[^>]*>园子<\/text>/u);
+  assert.doesNotMatch(html, /<img\b/u);
+  const search = contentToSearchText(`<svg class="excalidraw" xmlns="http://www.w3.org/2000/svg"><style>@font-face{src:url(data:font/woff2;base64,AAAA)}</style><text>园子</text></svg>`);
+  assert.match(search, /园子/u);
+  assert.doesNotMatch(search, /woff2|AAAA/u);
+});
+
+test("garden content build inlines the exported SVG and replaces a stale one", { timeout: 180_000 }, async () => {
   const root = await siteFixture("excal-build-");
   try {
     const source = path.join(root, "content", "posts", "assets", "note.excalidraw");
@@ -276,20 +306,21 @@ date: 2026-11-02
 `);
     await runContentBuild(root);
     const body = await postBody(root, "sketch");
-    assert.match(body, /\/media\/posts\/assets\/note\.svg/u);
     assert.doesNotMatch(body, /\.excalidraw/u);
-    const html = renderFilePreview(body);
-    const srcs = [...html.matchAll(/<img\b[^>]*\bsrc="([^"]+)"/gu)].map((match) => match[1]);
-    assert.deepEqual(srcs, ["/media/posts/assets/note.svg", "/media/posts/assets/note.svg"]);
+    assert.doesNotMatch(body, /<img\b/u);
+    const html = articleHtml(body);
+    assert.equal([...html.matchAll(/<svg\b/gu)].length, 2);
+    assert.match(html, /<text[^>]*>园子<\/text>/u);
+    assert.match(html, /<title[^>]*>说明<\/title>/u);
+    assert.match(html, /#fff3bf/u);
+    assert.doesNotMatch(html, /<img\b/u);
+    assert.doesNotMatch(html, /<rect\b/u);
     const sibling = path.join(root, "content", "posts", "assets", "note.svg");
-    const published = path.join(root, "public", "media", "posts", "assets", "note.svg");
     const siblingSvg = await readFile(sibling, "utf8");
-    const publishedSvg = await readFile(published, "utf8");
     assert.match(siblingSvg, /园子/u);
     assert.match(siblingSvg, /#fff3bf/u);
     assert.doesNotMatch(siblingSvg, /<rect\b/u);
-    assert.match(publishedSvg, /园子/u);
-    assert.doesNotMatch(publishedSvg, /<rect\b/u);
+    assert.equal(fs.existsSync(path.join(root, "public", "media", "posts", "assets", "note.svg")), false);
 
     await writeFile(sibling, `<svg xmlns="http://www.w3.org/2000/svg"><text>STALE</text></svg>`);
     await writeFile(source, (await readFile(source, "utf8")).replaceAll("园子", "新图"));
@@ -297,10 +328,12 @@ date: 2026-11-02
     const next = await readFile(sibling, "utf8");
     assert.match(next, /新图/u);
     assert.doesNotMatch(next, /STALE|园子/u);
-    const publishedNext = await readFile(published, "utf8");
-    assert.match(publishedNext, /新图/u);
-    assert.doesNotMatch(publishedNext, /STALE/u);
-    assert.doesNotMatch(await postBody(root, "sketch"), /\.excalidraw/u);
+    const rebuilt = await postBody(root, "sketch");
+    assert.doesNotMatch(rebuilt, /\.excalidraw/u);
+    const rebuiltHtml = articleHtml(rebuilt);
+    assert.match(rebuiltHtml, /<text[^>]*>新图<\/text>/u);
+    assert.doesNotMatch(rebuiltHtml, /STALE|园子/u);
+    assert.doesNotMatch(rebuiltHtml, /<img\b/u);
   } finally {
     await rm(root, { recursive: true, force: true });
   }

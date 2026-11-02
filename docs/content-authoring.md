@@ -94,7 +94,7 @@ Excalidraw 也用这张图片语法，地址写源文件而不是 SVG：
 ![说明](./assets/flow.excalidraw)
 ```
 
-`garden build` 或 `make dev` 会在旁边生成一张浅色 `flow.svg`（扁平 SVG，画布背景透明，字体在文件内），网页引用这张 SVG。改完 `.excalidraw` 再构建一次即可。源文件缺失或导出失败时构建会停止。详见手册「本地图片」。
+`garden build` 或 `make dev` 会在旁边生成一张浅色 `flow.svg`（扁平 SVG，画布背景透明，字体在文件内），并把 SVG 嵌进正文，图里的文字可以选中。改完 `.excalidraw` 再构建一次即可。源文件缺失或导出失败时构建会停止。详见手册「本地图片」。
 
 ### 嵌入外部平台和网页摘要
 

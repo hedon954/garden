@@ -86,9 +86,17 @@ const absolute = (src, siteUrl) => (src && siteUrl && src.startsWith("/") ? `${s
 const escapeHtml = (value) =>
   String(value).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;");
 
+/** Text a reader can select inside an inlined Excalidraw SVG; path data and fonts stay out of search. */
+function excalidrawVisibleText(svg) {
+  const parts = [];
+  for (const match of svg.matchAll(/<(?:text|title)\b[^>]*>([^<]*)<\/(?:text|title)>/giu)) parts.push(match[1]);
+  return parts.join(" ");
+}
+
 /** Readable text for search and word count: captions and snapshot text, never intent. */
 export function contentToSearchText(content) {
-  return replaceFences(stripCardMarkers(content), (fence) => {
+  const withoutDiagramMarkup = String(content ?? "").replace(/<svg\b[^>]*class="[^"]*\bexcalidraw\b[^"]*"[\s\S]*?<\/svg>/giu, (svg) => ` ${excalidrawVisibleText(svg)} `);
+  return replaceFences(stripCardMarkers(withoutDiagramMarkup), (fence) => {
     if (fence.lang === "ui") {
       const payload = readPayload(fence.body);
       if (!payload) return " ";

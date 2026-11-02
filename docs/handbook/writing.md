@@ -115,7 +115,7 @@ func openStore(path string) (*Store, error) {
 这三项写在 Markdown 正文里。渲染规则在组件页，这里只保留文件放哪：
 
 - **本地图片**：长文 `content/posts/my-post.md` 的配图放在同名目录 `content/posts/my-post/`，正文用 `./my-post/diagram.svg` 引用。图注见[本地图片](/garden/components/image)。
-- **Excalidraw**：源文件和配图放在一起，用 Markdown 图片引用，地址以 `.excalidraw` 结尾，例如 `./my-post/flow.excalidraw`。构建生成旁边的一张浅色 `flow.svg`，画布背景透明，页面引用这张 SVG。见[本地图片](/garden/components/image)。
+- **Excalidraw**：源文件和配图放在一起，用 Markdown 图片引用，地址以 `.excalidraw` 结尾，例如 `./my-post/flow.excalidraw`。构建生成旁边的一张浅色 `flow.svg`，画布背景透明，并把 SVG 嵌进正文，图里的文字可以选中。见[本地图片](/garden/components/image)。
 - **来源胶囊**与**链接卡片**不另建文件。见[来源胶囊](/garden/components/source)和[链接卡片](/garden/components/link-card)。
 
 ## 5. 数学公式与 Mermaid 图表

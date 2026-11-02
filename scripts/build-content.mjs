@@ -20,6 +20,7 @@ import { coverImageSet, loadSharp } from "./cover-images.mjs";
 import { readFileSizeCache } from "./file-sizes.mjs";
 import { previewDocument, previewFileName, renderFilePreview } from "./file-preview.mjs";
 import { ensureExcalidrawSvg, isExcalidrawPath } from "./excalidraw.mjs";
+import { embedExcalidrawImages, embedExcalidrawImgTags } from "../ui/garden/excalidraw-inline.mjs";
 import { parseGardenBlock, parseGardenInfo, scanFences } from "../ui/garden/parse.mjs";
 import { checkGardenMarkdown } from "../ui/garden/check.mjs";
 import {
@@ -153,33 +154,38 @@ const assetCache = new Map();
 /** Published URL → original file and its copy, for making resized covers later. */
 const assetFiles = new Map();
 
-function copyLocalAsset(value, markdownPath, sourcePath, options = {}) {
-  if (!value || isExternalAsset(value)) return value;
-
+function locateLocalAsset(value, markdownPath, sourcePath, options = {}) {
+  if (!value || isExternalAsset(value)) return null;
   const baseDir = options.baseDir ?? path.dirname(markdownPath);
   const allowedRoot = options.allowedRoot ?? contentRoot;
-  const mediaPrefix = options.mediaPrefix ?? "";
   const [assetPath, suffix = ""] = value.split(/(?=[?#])/u, 2);
   const decodedPath = decodeURIComponent(assetPath.replace(/^<|>$/g, ""));
-  let absoluteSource = path.resolve(baseDir, decodedPath);
-  let relativeSource = path.relative(allowedRoot, absoluteSource);
-
+  const absoluteSource = path.resolve(baseDir, decodedPath);
+  const relativeSource = path.relative(allowedRoot, absoluteSource);
   if (relativeSource.startsWith("..") || path.isAbsolute(relativeSource)) {
     fail(sourcePath, options.missingMessage ?? `找不到本地媒体文件 ${value}`);
   }
+  return { absoluteSource, relativeSource, decodedPath, suffix, mediaPrefix: options.mediaPrefix ?? "" };
+}
 
-  // `![说明](./foo.excalidraw)` publishes the sibling flat SVG, never the JSON scene.
-  if (isExcalidrawPath(decodedPath)) {
-    try {
-      absoluteSource = ensureExcalidrawSvg(absoluteSource);
-    } catch (error) {
-      fail(sourcePath, error instanceof Error ? error.message : String(error));
-    }
-    relativeSource = path.relative(allowedRoot, absoluteSource);
-    if (relativeSource.startsWith("..") || path.isAbsolute(relativeSource)) {
-      fail(sourcePath, `导出的 SVG 不在允许的目录内：${absoluteSource}`);
-    }
+/** Export the sibling flat SVG and return its text. The page inlines this; it is not an image URL. */
+function readExportedSvg(value, markdownPath, sourcePath, options = {}) {
+  const located = locateLocalAsset(value, markdownPath, sourcePath, options);
+  if (!located || !isExcalidrawPath(located.decodedPath)) {
+    fail(sourcePath, `找不到 Excalidraw 源文件 ${value}`);
   }
+  try {
+    const svgPath = ensureExcalidrawSvg(located.absoluteSource);
+    return fs.readFileSync(svgPath, "utf8");
+  } catch (error) {
+    fail(sourcePath, error instanceof Error ? error.message : String(error));
+  }
+}
+
+function copyLocalAsset(value, markdownPath, sourcePath, options = {}) {
+  const located = locateLocalAsset(value, markdownPath, sourcePath, options);
+  if (!located) return value;
+  const { absoluteSource, relativeSource, suffix, mediaPrefix } = located;
 
   if (!fs.existsSync(absoluteSource) || !fs.statSync(absoluteSource).isFile()) {
     fail(sourcePath, options.missingMessage ?? `找不到本地媒体文件 ${value}`);
@@ -207,15 +213,21 @@ function copyLocalAsset(value, markdownPath, sourcePath, options = {}) {
 function rewriteMarkdownAssets(content, markdownPath, sourcePath, options = {}) {
   // `![alt](<a b (1).png>)` keeps its angle brackets: without them the space
   // and the parentheses would no longer be one destination.
-  const markdownImages = replaceInlineLinks(content, (link) =>
-    link.image ? formatInlineLink(link, copyLocalAsset(link.url, markdownPath, sourcePath, options)) : undefined,
+  // `.excalidraw` images stay in the source until the AST embed below, which
+  // swaps them for the inline SVG instead of an image URL.
+  const markdownImages = replaceInlineLinks(content, (link) => {
+    if (!link.image || isExcalidrawPath(link.url)) return undefined;
+    return formatInlineLink(link, copyLocalAsset(link.url, markdownPath, sourcePath, options));
+  });
+
+  const withAssets = markdownImages.replace(
+    /(<(?:img|audio|video|source)\b[^>]*\bsrc=["'])([^"']+)(["'])/giu,
+    (tag, prefix, src, suffix) =>
+      isExcalidrawPath(src) ? tag : `${prefix}${copyLocalAsset(src, markdownPath, sourcePath, options)}${suffix}`,
   );
 
-  return markdownImages.replace(
-    /(<(?:img|audio|video|source)\b[^>]*\bsrc=["'])([^"']+)(["'])/giu,
-    (_, prefix, src, suffix) =>
-      `${prefix}${copyLocalAsset(src, markdownPath, sourcePath, options)}${suffix}`,
-  );
+  const read = (url) => readExportedSvg(url, markdownPath, sourcePath, options);
+  return embedExcalidrawImgTags(embedExcalidrawImages(withAssets, read), read);
 }
 
 function markdownStem(markdownPath) {
