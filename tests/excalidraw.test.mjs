@@ -188,7 +188,33 @@ test("offline mode does not download a missing exporter", () => {
   }
 });
 
-test("a fixture .excalidraw exports a flat SVG with the label and inlined fonts", { timeout: 180_000 }, () => {
+test("a full-canvas background rectangle is not published", () => {
+  const dir = tempDir("excal-plate-");
+  try {
+    const source = path.join(dir, "box.excalidraw");
+    fs.writeFileSync(source, "{}\n");
+    assert.throws(
+      () => ensureExcalidrawSvg(source, {
+        render(_input, output) {
+          fs.writeFileSync(
+            output,
+            `<svg xmlns="http://www.w3.org/2000/svg" width="300" height="140"><rect x="0" y="0" width="300" height="140" fill="#ffffff"/><path fill="#fff3bf" d="M0 0"/></svg>`,
+          );
+        },
+      }),
+      (error) => {
+        assert.ok(error instanceof ExcalidrawExportError);
+        assert.equal(error.code, "canvas-background");
+        return true;
+      },
+    );
+    assert.equal(fs.existsSync(siblingSvgPath(source)), false);
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("a fixture .excalidraw exports one light SVG with a transparent canvas and inlined fonts", { timeout: 180_000 }, () => {
   const dir = tempDir("excal-smoke-");
   try {
     const source = path.join(dir, "note.excalidraw");
@@ -197,11 +223,16 @@ test("a fixture .excalidraw exports a flat SVG with the label and inlined fonts"
     const text = fs.readFileSync(svg, "utf8");
     assert.match(text, /<svg[\s>]/u);
     assert.match(text, /园子/u);
+    assert.match(text, /#fff3bf/u);
+    assert.match(text, /#1e1e1e/u);
+    assert.doesNotMatch(text, /<rect\b/u);
+    assert.doesNotMatch(text, /prefers-color-scheme|filter:\s*invert/u);
     assert.match(text, /data:font\/woff2/u);
     assert.doesNotMatch(text, /payload-start/u);
     assert.doesNotMatch(text, /application\/vnd\.excalidraw\+json/u);
     assert.doesNotMatch(text, /excalidraw\.com|unpkg\.com|jsdelivr\.net|fonts\.googleapis\.com/u);
-    assert.match(text, new RegExp(`garden-excalidraw-source:${sourceHash(fs.readFileSync(source))}`, "u"));
+    assert.match(text, new RegExp(`garden-excalidraw-source:${sourceHash(fs.readFileSync(source))} light-transparent`, "u"));
+    assert.deepEqual(fs.readdirSync(dir).sort(), ["note.excalidraw", "note.svg"]);
     const again = fs.readFileSync(svg, "utf8");
     ensureExcalidrawSvg(source);
     assert.equal(fs.readFileSync(svg, "utf8"), again);
@@ -252,8 +283,13 @@ date: 2026-11-02
     assert.deepEqual(srcs, ["/media/posts/assets/note.svg", "/media/posts/assets/note.svg"]);
     const sibling = path.join(root, "content", "posts", "assets", "note.svg");
     const published = path.join(root, "public", "media", "posts", "assets", "note.svg");
-    assert.match(await readFile(sibling, "utf8"), /园子/u);
-    assert.match(await readFile(published, "utf8"), /园子/u);
+    const siblingSvg = await readFile(sibling, "utf8");
+    const publishedSvg = await readFile(published, "utf8");
+    assert.match(siblingSvg, /园子/u);
+    assert.match(siblingSvg, /#fff3bf/u);
+    assert.doesNotMatch(siblingSvg, /<rect\b/u);
+    assert.match(publishedSvg, /园子/u);
+    assert.doesNotMatch(publishedSvg, /<rect\b/u);
 
     await writeFile(sibling, `<svg xmlns="http://www.w3.org/2000/svg"><text>STALE</text></svg>`);
     await writeFile(source, (await readFile(source, "utf8")).replaceAll("园子", "新图"));

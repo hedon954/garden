@@ -46,7 +46,7 @@ npx garden ui catalog                           # Generate an offline component 
 
 ## 4. Excalidraw
 
-Point a Markdown image at the `.excalidraw` source. `garden build` exports a flat SVG beside that file and the published page references only the SVG. No separate export command.
+Point a Markdown image at the `.excalidraw` source. `garden build` exports one light flat SVG beside that file, with a transparent background, and the published page references only that SVG. No separate export command.
 
 ```markdown
 ![A sketch](./assets/flow.excalidraw)

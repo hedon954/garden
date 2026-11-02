@@ -48,7 +48,7 @@ npx garden ui catalog                          # 在 .garden/ui-catalog.html 生
 
 ## 4. Excalidraw
 
-正文用 Markdown 图片指向 `.excalidraw` 源文件。`garden build` 会在同目录导出扁平 SVG，页面只引用这张 SVG，不需要单独的导出命令。
+正文用 Markdown 图片指向 `.excalidraw` 源文件。`garden build` 会在同目录导出一张浅色扁平 SVG，画布背景透明，页面只引用这张 SVG，不需要单独的导出命令。
 
 ```markdown
 ![说明](./assets/flow.excalidraw)

@@ -6,9 +6,11 @@
  * `foo.svg` and writes a new one. The SVG is what gets published.
  *
  * Rendering goes through the pinned `excalidraw-image` binary (the official
- * `@excalidraw/excalidraw` export path, fonts inlined as data URIs). There is
- * no Chromium step, and the article bundle never loads Excalidraw. The first
- * export downloads that binary from GitHub Releases into the user cache.
+ * `@excalidraw/excalidraw` export path, fonts inlined as data URIs). One light
+ * SVG is written: `--no-background` drops the canvas plate, and scene strokes
+ * and fills stay as drawn. There is no dark twin and no Chromium step. The
+ * article bundle never loads Excalidraw. The first export downloads that
+ * binary from GitHub Releases into the user cache.
  * `GARDEN_EXCALIDRAW_IMAGE` points at a local binary instead.
  * `GARDEN_OFFLINE=1` refuses to download.
  */
@@ -55,12 +57,14 @@ const REASONS = {
   "embedded-scene": "导出的 SVG 仍包含可编辑场景",
   "remote-asset": "导出的 SVG 引用了外部地址",
   "not-svg": "导出结果不是 SVG",
+  "canvas-background": "导出的 SVG 仍带画布底色",
   "unsupported-platform": "当前系统没有 excalidraw-image 预编译包",
   "binary-missing": "GARDEN_EXCALIDRAW_IMAGE 指向的文件不存在",
   "no-output": "导出程序没有写出 SVG",
 };
 
-const STAMP = /<!--\s*garden-excalidraw-source:([0-9a-f]{64})\s*-->/u;
+const EXPORT_POLICY = "light-transparent";
+const STAMP = /<!--\s*garden-excalidraw-source:([0-9a-f]{64})(?:\s+([a-z0-9-]+))?\s*-->/u;
 const LOCK_WAIT_MS = 5 * 60 * 1000;
 
 export class ExcalidrawExportError extends Error {
@@ -108,15 +112,30 @@ export function isExcalidrawPath(value) {
   return /\.excalidraw$/iu.test(clean);
 }
 
-function readStamp(svg) {
-  return STAMP.exec(svg)?.[1] ?? "";
-}
-
 function stampSvg(svg, hash) {
-  const stripped = svg.replace(/<!--\s*garden-excalidraw-source:[0-9a-f]{64}\s*-->/gu, "");
+  const stripped = svg.replace(/<!--\s*garden-excalidraw-source:[0-9a-f]{64}(?:\s+[a-z0-9-]+)?\s*-->/gu, "");
   const at = stripped.search(/<svg[\s>]/iu);
   if (at < 0) throw failExport("not-svg", "");
-  return `${stripped.slice(0, at)}<!-- garden-excalidraw-source:${hash} -->${stripped.slice(at)}`;
+  return `${stripped.slice(0, at)}<!-- garden-excalidraw-source:${hash} ${EXPORT_POLICY} -->${stripped.slice(at)}`;
+}
+
+/** A full-viewport `<rect>` is the exporter's canvas plate, not a scene shape. */
+function hasCanvasBackground(svg) {
+  const svgTag = /<svg\b[^>]*>/iu.exec(svg)?.[0] ?? "";
+  const attr = (tag, name) => new RegExp(`\\b${name}="([^"]*)"`, "iu").exec(tag)?.[1];
+  const width = Number(attr(svgTag, "width"));
+  const height = Number(attr(svgTag, "height"));
+  if (!(width > 0) || !(height > 0)) return false;
+  const same = (left, right) => Math.abs(left - right) < 0.01;
+  for (const match of svg.matchAll(/<rect\b[^>]*>/giu)) {
+    const tag = match[0];
+    const x = Number(attr(tag, "x") ?? 0);
+    const y = Number(attr(tag, "y") ?? 0);
+    const rectWidth = Number(attr(tag, "width"));
+    const rectHeight = Number(attr(tag, "height"));
+    if (same(x, 0) && same(y, 0) && same(rectWidth, width) && same(rectHeight, height)) return true;
+  }
+  return false;
 }
 
 /**
@@ -130,6 +149,7 @@ function assertFlatSvg(svg, svgPath) {
   if (/payload-start|application\/vnd\.excalidraw\+json/iu.test(svg)) {
     throw failExport("embedded-scene", svgPath);
   }
+  if (hasCanvasBackground(svg)) throw failExport("canvas-background", svgPath);
   const urls = [...svg.matchAll(/https?:\/\/[^"')\s]+/giu)]
     .map((match) => match[0])
     .filter((url) => !/^https?:\/\/www\.w3\.org\//iu.test(url));
@@ -137,7 +157,8 @@ function assertFlatSvg(svg, svgPath) {
 }
 
 function svgIsCurrent(svg, hash) {
-  if (readStamp(svg) !== hash) return false;
+  const stamp = STAMP.exec(svg);
+  if (!stamp || stamp[1] !== hash || stamp[2] !== EXPORT_POLICY) return false;
   try {
     assertFlatSvg(svg, "");
     return true;
@@ -307,7 +328,7 @@ function renderWithBinary(input, output, options = {}) {
   const custom = options.env !== undefined || options.homedir !== undefined;
   const bin = !custom && defaultBinary && fs.existsSync(defaultBinary) ? defaultBinary : resolveBinary(options);
   if (!custom) defaultBinary = bin;
-  const result = run(bin, [input, "--non-editable", "--format", "svg", "-o", output]);
+  const result = run(bin, [input, "--non-editable", "--no-background", "--format", "svg", "-o", output]);
   if (result.status !== 0) {
     throw failExport("export-failed", input, commandFailure(result, `退出码 ${result.status}`).slice(0, 800));
   }
