@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.10.3
+
+Markdown images that point at `.excalidraw` export one light flat SVG with a transparent canvas. The build inlines that SVG in the article so the figure text can be selected. Readers do not load Excalidraw.
+
 ## 0.10.2
 
 Same-site and external jump links share one link-card pipeline (bare URL paragraphs and `{card}`). Build marks standalone jump URLs as cards and follows HTML meta refresh when fetching OG. Pathname `/og.png` is never used as a card cover. Blog/column pages without a cover use twitter `summary` and omit the brand `/og.png` fallback. Site `public/og.png` refreshed (1200×630) with updated layout/handbook OG alt.
