@@ -95,12 +95,18 @@ npx garden editors install --typora
 
 装好之后，一篇组件通常是这四步：
 
-1. **插入想法。** 在要放组件的位置运行「插入 Garden 块」（VS Code / Cursor 的快捷键是 macOS `Cmd+Alt+I`，Windows / Linux `Ctrl+Alt+I`）。Typora 里是同一条命令；Windows / Linux 默认 `Ctrl+Alt+I`，macOS 需要在「设置 → 快捷键」里自己录。选一句起步语，改成读者要做的事。这一步写的是不带名字的 `garden` 围栏，还不是最终组件。
+1. **插入想法。** 在要放组件的位置运行「插入 Garden 块」（VS Code / Cursor 的快捷键是 macOS `Cmd+Alt+I`，Windows / Linux `Ctrl+Alt+I`）。Typora 里还可以输入 `/garden`，列表每一项有一张小预览图；命令的快捷键在 Windows / Linux 是 `Ctrl+Alt+I`，macOS 需要在「设置 → 快捷键」里自己录。插入的是给 `garden-ui` skill 编译的想法围栏，例如选「资源卡」得到：
+
+   ````markdown
+   ```garden
+   做成资源卡。一篇论文、一个仓库或一本书，读者需要标题、链接和一句说明。请写上链接、标题、一句说明。
+   ```
+   ````
 2. **预览。** 打开 Markdown 预览，或在 Typora 里把光标移出围栏。`intent` 显示成想法卡片；skill 写回 `ui` 之后，预览画成和博客一样的组件。错误会标在源码上（VS Code / Cursor 的「问题」面板和 CodeLens）。
 3. **看清单。** 命令「查看组件清单」，或在终端运行 `npx garden ui catalog` 打开 `.garden/ui-catalog.html`。清单里的「用它开始」把配方插进当前稿件，适合已经知道要用哪一种组件的时候。
 4. **编译。** 「复制编译提示词」。中文站点得到 `编译这篇：<相对路径>`，英文站点得到 `Compile this post: <相对路径>`。把这句话发给 `garden-ui` skill。Agent 用 `npx garden ui scan` 定位，用 `npx garden ui prompt` 读规则，用 `npx garden ui apply` 写回。插件不调用模型。
 
-**Typora 的前提。** 先安装 [typora-community-plugin](https://github.com/typora-community-plugin/typora-community-plugin/blob/main/docs/en-us/user-guide/1a-installation.md)。`npx garden editors install --typora` 把插件复制到 `~/.typora/community-plugins/plugins/hedon954.garden-intelligent-ui/`，然后在「设置 → 已安装插件」里勾选 Garden Intelligent UI。升级 Typora 会覆盖社区框架，需要重装框架后再勾选。没找到 `code` 或 `cursor` 时，用扩展视图的 Install from VSIX 选择 `.garden/editors/vscode/` 里的文件。安装细节见 [语法检查与快捷输入](/garden/workflow)。
+**Typora 的前提。** 先安装 [typora-community-plugin](https://github.com/typora-community-plugin/typora-community-plugin/blob/main/docs/en-us/user-guide/1a-installation.md)。`npx garden editors install --typora` 把插件复制到 `~/.typora/community-plugins/plugins/hedon954.garden-intelligent-ui/`（macOS 同时写到 `~/Library/Application Support/abnerworks.Typora/plugins/plugins/hedon954.garden-intelligent-ui/`），然后在「设置 → 已安装插件」里勾选 Garden Intelligent UI。升级 Typora 会覆盖社区框架，需要重装框架后再勾选。没找到 `code` 或 `cursor` 时，用扩展视图的 Install from VSIX 选择 `.garden/editors/vscode/` 里的文件。安装细节见 [语法检查与快捷输入](/garden/workflow)。
 
 ## 7. 不使用 Agent 时的快捷输入
 

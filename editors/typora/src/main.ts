@@ -1,5 +1,5 @@
 import { resolveSidecarPath } from "../../../ui/core/fence.mjs";
-import { pickerItems } from "../../../ui/garden/snippets.mjs";
+import { pickerItems, suggestHtml } from "../../../ui/garden/snippets.mjs";
 import { render, renderIntent } from "../../../ui/preview/index";
 import { parse as parseYaml } from "yaml";
 
@@ -7,6 +7,7 @@ import { parse as parseYaml } from "yaml";
 type Dispose = () => void;
 type Command = { id: string; title: string; scope: "global" | "editor"; hotkey?: string | null; callback: () => void };
 type QuickPickItem = { label: string };
+type PickerItem = ReturnType<typeof pickerItems>[number];
 type Core = {
   Plugin: new (...args: never[]) => {
     app: {
@@ -18,6 +19,8 @@ type Core = {
     };
     register(dispose: Dispose): void;
     registerCommand(command: Command): void;
+    registerMarkdownSuggest?(suggest: object): void;
+    registerMarkdownSugguest?(suggest: object): void;
     onload?(): void;
     onunload?(): void;
   };
@@ -82,6 +85,54 @@ function codeMode(config: unknown) {
   }
 }
 
+/** Slash menu for `/garden`. Each row is a thumbnail plus a label; picking one inserts a guidance fence. */
+class GardenSlashSuggest {
+  triggerText = "/garden";
+  private replaceLength = "/garden".length;
+  private lead = "";
+
+  canTrigger(textBefore: string) {
+    return /\/garden/u.test(textBefore);
+  }
+
+  findQuery(textBefore: string) {
+    const match = /(^|[\r\n]|[^\S\r\n])\/garden[ \t]*(\S*)$/u.exec(textBefore);
+    if (!match) return { isMatched: false };
+    const start = match.index + match[1].length;
+    this.replaceLength = textBefore.length - start;
+    this.lead = match[1] === "" || match[1] === "\n" || match[1] === "\r" ? "" : "\n";
+    return { isMatched: true, query: match[2] ?? "" };
+  }
+
+  getSuggestions(query: string) {
+    const needle = query.trim().toLowerCase();
+    return pickerItems().filter((item) => {
+      if (!needle) return true;
+      return item.label.toLowerCase().includes(needle) || item.name.toLowerCase().includes(needle);
+    });
+  }
+
+  getSuggestionId(item: PickerItem) {
+    return item.name || "idea";
+  }
+
+  getSuggestionById(id: string) {
+    return pickerItems().find((item) => (item.name || "idea") === id);
+  }
+
+  renderSuggestion(item: PickerItem) {
+    return suggestHtml(item);
+  }
+
+  beforeApply(item: PickerItem) {
+    return `${this.lead}${item.body}\n`;
+  }
+
+  lengthOfTextBeforeToBeReplaced() {
+    return this.replaceLength;
+  }
+}
+
 export default class GardenTyporaPlugin extends core.Plugin {
   private readonly mounted = new Set<{ host: HTMLElement; handle: { destroy(): void }; created: number }>();
 
@@ -99,6 +150,8 @@ export default class GardenTyporaPlugin extends core.Plugin {
       callback: () => void this.insertIntent(),
     });
     this.registerCommand({ id: "copy-compile-prompt", title: "Garden：复制编译提示词", scope: "editor", callback: () => void this.copyPrompt() });
+    const registerSuggest = this.registerMarkdownSuggest?.bind(this) ?? this.registerMarkdownSugguest?.bind(this);
+    if (registerSuggest) registerSuggest(new GardenSlashSuggest());
     this.register(() => {
       for (const entry of this.mounted) entry.handle.destroy();
       this.mounted.clear();

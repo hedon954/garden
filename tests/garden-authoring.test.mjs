@@ -1,12 +1,12 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
-import { CATALOG } from "../ui/garden/catalog.mjs";
+import { CATALOG, GARDEN_NAMES } from "../ui/garden/catalog.mjs";
 import { checkGardenMarkdown } from "../ui/garden/check.mjs";
 import { splitCompareLine } from "../ui/garden/compare-line.mjs";
 import { diffToNewCode, figureBreakout, figureImageWidth, imageDisplayWidth, protectMathIdentifiers, tableBreakout, tocShift } from "../ui/garden/enhance.mjs";
 import { parseGardenBlock, scanFences } from "../ui/garden/parse.mjs";
-import { gardenBlocksMarkdown, textReplacementPlist, vscodeSnippets } from "../ui/garden/snippets.mjs";
+import { gardenBlocksMarkdown, guidanceFence, pickerItems, suggestHtml, textReplacementPlist, vscodeSnippets } from "../ui/garden/snippets.mjs";
 import { splitTitle, titleLineScale, titleWidthUnits } from "../ui/garden/title.mjs";
 
 test("a title splits into two equal lines at one separator", () => {
@@ -294,6 +294,29 @@ test("every component's when and whenNot fit in one compare cell (60 characters)
     assert.ok([...spec.when].length <= 60, `${name}.when is ${[...spec.when].length} characters`);
     assert.ok([...spec.whenNot].length <= 60, `${name}.whenNot is ${[...spec.whenNot].length} characters`);
   }
+});
+
+test("insert pickers paste a garden idea brief with a thumbnail, not a YAML example", () => {
+  const items = pickerItems();
+  assert.deepEqual(items.map((item) => item.name), ["", ...GARDEN_NAMES]);
+  for (const item of items) {
+    assert.match(item.body, /^```garden\n/u);
+    assert.doesNotMatch(item.body, /```garden [a-z]/u);
+    assert.doesNotMatch(item.body, /^[a-z]+:/mu);
+    assert.match(item.preview, /^data:image\/svg\+xml,/u);
+    assert.match(decodeURIComponent(item.preview.slice("data:image/svg+xml,".length)), /<(?:rect|path|circle|text)\b/u);
+    assert.match(suggestHtml(item), /<img\b[^>]*class="garden-suggest-thumb"/u);
+  }
+  const card = items.find((item) => item.name === "card");
+  assert.equal(
+    card.body,
+    guidanceFence("card"),
+  );
+  assert.match(card.body, /做成资源卡。/u);
+  assert.match(card.label, /资源卡/u);
+  assert.doesNotMatch(card.body, /url:/u);
+  const idea = items.find((item) => item.name === "");
+  assert.match(idea.body, /让读者……；想让读者看出……/u);
 });
 
 test("editor snippets, Typora templates and text replacements come from one catalog", () => {

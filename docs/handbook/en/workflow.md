@@ -102,13 +102,13 @@ npx garden editors install --typora
 
 **VS Code / Cursor.** When `code` or `cursor` is on `PATH`, install adds the VSIX to that editor. If both commands exist, it installs into both. Without a CLI, open the Extensions view, choose the `...` menu, then Install from VSIX, and select the file under `.garden/editors/vscode/`.
 
-**Typora.** Typora has no official plugin API. Install [typora-community-plugin](https://github.com/typora-community-plugin/typora-community-plugin/blob/main/docs/en-us/user-guide/1a-installation.md) first. The install command checks the usual locations. If the framework is missing, it still copies the plugin to `~/.typora/community-plugins/plugins/hedon954.garden-intelligent-ui/` and prints that prerequisite. Open Typora and enable Garden Intelligent UI under Settings, Installed plugins. A Typora upgrade overwrites the community framework inside the app. Reinstall typora-community-plugin, then enable this plugin again. The fences stay in the Markdown.
+**Typora.** Typora has no official plugin API. Install [typora-community-plugin](https://github.com/typora-community-plugin/typora-community-plugin/blob/main/docs/en-us/user-guide/1a-installation.md) first. The install command checks the usual locations. If the framework is missing, it still copies the plugin to `~/.typora/community-plugins/plugins/hedon954.garden-intelligent-ui/` and prints that prerequisite. On macOS it also copies to `~/Library/Application Support/abnerworks.Typora/plugins/plugins/hedon954.garden-intelligent-ui/`. Open Typora and enable Garden Intelligent UI under Settings, Installed plugins. A Typora upgrade overwrites the community framework inside the app. Reinstall typora-community-plugin, then enable this plugin again. The fences stay in the Markdown.
 
 The Obsidian plugin is not installed by this command.
 
 ### Use the plugins while writing
 
-1. **Insert an idea.** In VS Code / Cursor, use `Cmd+Alt+I` on macOS or `Ctrl+Alt+I` on Windows and Linux, or the Garden insert command. In Typora, use the insert command; Windows and Linux default to `Ctrl+Alt+I`. On macOS, record a shortcut under Settings, Keyboard Shortcuts, because Option rewrites the key. Pick a starter sentence and rewrite it into what the reader should do and see.
+1. **Insert an idea.** In VS Code / Cursor, use `Cmd+Alt+I` on macOS or `Ctrl+Alt+I` on Windows and Linux, or the Garden insert command. In Typora, type `/garden` (each row has a small preview image) or use the insert command; Windows and Linux default to `Ctrl+Alt+I`. On macOS, record a shortcut under Settings, Keyboard Shortcuts, because Option rewrites the key. The insertion is a plain `garden` fence: a short brief naming the component and the facts to mention, which the `garden-ui` skill compiles later.
 2. **Preview.** Open the Markdown preview. In Typora, move the cursor out of the fence. A `ui` block renders the same component as the blog. An `intent` block renders as an idea card. Clicks on sliders and buttons stay in the preview.
 3. **Open the catalog.** In VS Code / Cursor, the catalog command inserts a recipe at the cursor. The terminal builds the same page:
 

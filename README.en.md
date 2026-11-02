@@ -36,7 +36,7 @@ npx garden editors install --typora        # Typora only
 
 ### VS Code / Cursor
 
-- **Insert an idea**: `Cmd+Alt+I` on macOS, `Ctrl+Alt+I` on Windows and Linux. The Command Palette and the editor context menu have the same Garden command. Pick a starter sentence and rewrite it into what the reader should do.
+- **Insert an idea**: `Cmd+Alt+I` on macOS, `Ctrl+Alt+I` on Windows and Linux. The Command Palette and the editor context menu have the same Garden command. It inserts a plain `garden` fence: a short brief for the `garden-ui` skill, which compiles it later. In Typora, type `/garden` to open a picker where each component has a small preview image.
 - **Preview**: Open the Markdown preview. A `ui` fence renders the same component as the blog. An `intent` fence renders as an idea card. The extension reads sidecar data files next to the post.
 - **Check**: Errors show up in the Problems panel and as squiggles in the source. A CodeLens above each block says whether it is ok, broken, stale, or not compiled yet.
 - **Catalog**: The Garden catalog command inserts a recipe at the cursor when you choose to start from it. The same catalog from the terminal is `npx garden ui catalog` (it writes `.garden/ui-catalog.html`).
@@ -48,9 +48,9 @@ When `code` or `cursor` is on `PATH`, `garden editors install` runs `--install-e
 
 Typora has no official plugin API. Install [typora-community-plugin](https://github.com/typora-community-plugin/typora-community-plugin/blob/main/docs/en-us/user-guide/1a-installation.md) first (on macOS it patches `index.html` inside `Typora.app`). `garden editors install` looks in the usual locations. If the framework is missing, it still copies the plugin and prints that prerequisite.
 
-The plugin is copied to `~/.typora/community-plugins/plugins/hedon954.garden-intelligent-ui/`. Open Typora and enable Garden Intelligent UI under Settings, Installed plugins.
+The plugin is copied to `~/.typora/community-plugins/plugins/hedon954.garden-intelligent-ui/`. On macOS it is also copied to `~/Library/Application Support/abnerworks.Typora/plugins/plugins/hedon954.garden-intelligent-ui/`, which is the directory the Installed Plugins list reads. Open Typora and enable Garden Intelligent UI under Settings, Installed plugins.
 
-Use it the same way as VS Code: leaving a fence previews `ui` / `intent` (as with Mermaid, click into the fence to edit the source; clicks on sliders and buttons stay in the preview). The insert command is `Ctrl+Alt+I` on Windows and Linux. On macOS, Option rewrites the key, so record a shortcut under Settings, Keyboard Shortcuts. Copy compile prompt hands the post to the `garden-ui` skill.
+Use it the same way as VS Code: leaving a fence previews `ui` / `intent` (as with Mermaid, click into the fence to edit the source; clicks on sliders and buttons stay in the preview). Type `/garden` or use the insert command (`Ctrl+Alt+I` on Windows and Linux; on macOS, Option rewrites the key, so record a shortcut under Settings, Keyboard Shortcuts). Copy compile prompt hands the post to the `garden-ui` skill.
 
 A Typora upgrade overwrites the community framework inside the app. Reinstall typora-community-plugin, then enable this plugin again. The fences stay in the Markdown, and `make dev` still previews them.
 

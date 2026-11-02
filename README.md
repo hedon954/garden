@@ -38,7 +38,7 @@ npx garden editors install --typora        # 只装 Typora
 
 ### VS Code / Cursor
 
-- **插入想法**：macOS 用 `Cmd+Alt+I`，Windows / Linux 用 `Ctrl+Alt+I`。也可以在命令面板或右键菜单里选「插入 Garden 块」，挑一句起步语，改成你想让读者做什么。
+- **插入想法**：macOS 用 `Cmd+Alt+I`，Windows / Linux 用 `Ctrl+Alt+I`，或命令「插入 Garden 块」。插入的是不带组件名的 `garden` 围栏，正文用中文告诉你要写什么，交给 `garden-ui` skill 编译。Typora 里输入 `/garden`，每一项带一张小预览图。
 - **预览**：打开 Markdown 预览。`ui` 围栏画成和博客一样的组件，`intent` 围栏显示成想法卡片。同名目录里的数据文件由扩展读取。
 - **检查**：错误进「问题」面板，并在源码上画波浪线。每个块上方的 CodeLens 标出正常、有错、过期或未编译。
 - **组件清单**：命令「查看组件清单」。点「用它开始」把配方插进当前稿件。终端里的同一份清单是 `npx garden ui catalog`（生成 `.garden/ui-catalog.html`）。
@@ -50,9 +50,9 @@ npx garden editors install --typora        # 只装 Typora
 
 Typora 没有官方插件接口。先按 [typora-community-plugin 的安装说明](https://github.com/typora-community-plugin/typora-community-plugin/blob/main/docs/en-us/user-guide/1a-installation.md) 装上社区框架（macOS 上它会修改 `Typora.app` 里的 `index.html`）。`garden editors install` 会检查常见安装位置；没找到时仍会复制插件，并打印这个前提。
 
-插件文件复制到 `~/.typora/community-plugins/plugins/hedon954.garden-intelligent-ui/`。打开 Typora，在「设置 → 已安装插件」里勾选 Garden Intelligent UI。
+插件文件复制到 `~/.typora/community-plugins/plugins/hedon954.garden-intelligent-ui/`。macOS 同时写到 `~/Library/Application Support/abnerworks.Typora/plugins/plugins/hedon954.garden-intelligent-ui/`。打开 Typora，在「设置 → 已安装插件」里勾选 Garden Intelligent UI。
 
-用法和 VS Code 同一套：光标离开围栏时预览 `ui` / `intent`（和 Mermaid 一样，点进围栏编辑源码；点滑杆或按钮不会跳进源码）；命令「插入 Garden 块」（Windows / Linux 默认 `Ctrl+Alt+I`，macOS 的 Option 会改写按键，请到「设置 → 快捷键」里自己录）；「Garden：复制编译提示词」交给 `garden-ui` skill。
+用法和 VS Code 同一套：光标离开围栏时预览 `ui` / `intent`（和 Mermaid 一样，点进围栏编辑源码；点滑杆或按钮不会跳进源码）；`/garden` 或命令「插入 Garden 块」插入想法围栏（Windows / Linux 默认 `Ctrl+Alt+I`，macOS 的 Option 会改写按键，请到「设置 → 快捷键」里自己录）；「Garden：复制编译提示词」交给 `garden-ui` skill。
 
 升级 Typora 会覆盖社区框架改过的程序文件，插件跟着失效。需要重新安装 typora-community-plugin，再勾选本插件。稿件里的围栏原文还在，也可以用 `make dev` 预览。
 

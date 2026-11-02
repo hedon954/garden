@@ -750,7 +750,7 @@ Typora 没有官方插件 API，只能靠社区框架注入。两个候选：
 - 插入意图块用 `editor.UserOp.pasteHandler(editor, markdown, true)` 粘贴一段 Markdown。快捷键：Windows / Linux 默认 `Ctrl+Alt+I`；macOS 不预设，因为 Option 会改写 `event.key`（Option+I 是"ˆ"），框架按 `event.key` 匹配快捷键，`Cmd+Alt+I` 永远匹配不上。作者在设置页里录一个即可。
 - 预览里拿不到 `intent` 围栏信息串里的 id，想法卡片只显示"想法"。
 - `manifest.json` 要求 typora-community-plugin ≥ 2.10.52，这个版本的 `registerMode` 带 `render`。`CodeblockPostProcessor` 只在真机验证（16 节）发现 `render` 接管不生效时再接。
-- 目录是 `editors/typora/`。`npm run editors:pack` 把 `main.js`、`manifest.json`、`style.css` 放进 `editors/dist/typora/`，随包发布。`garden editors install --typora` 复制到 `~/.typora/community-plugins/plugins/hedon954.garden-intelligent-ui/`。先装 typora-community-plugin（需要修改 `Typora.app/Contents/Resources/TypeMark/index.html`），再在「设置 → 已安装插件」里勾选。升级 Typora 会覆盖社区框架，需要重装框架后再勾选。
+- 目录是 `editors/typora/`。`npm run editors:pack` 把 `main.js`、`manifest.json`、`style.css` 放进 `editors/dist/typora/`，随包发布。`garden editors install --typora` 复制到 `~/.typora/community-plugins/plugins/hedon954.garden-intelligent-ui/`，macOS 同时复制到 `~/Library/Application Support/abnerworks.Typora/plugins/plugins/hedon954.garden-intelligent-ui/`。先装 typora-community-plugin（需要修改 `Typora.app/Contents/Resources/TypeMark/index.html`），再在「设置 → 已安装插件」里勾选。升级 Typora 会覆盖社区框架，需要重装框架后再勾选。
 
 只承诺上面这些。Typora 升级会覆盖 `index.html`，插件随之失效，但围栏原文还在，预览可以退回 `make dev` 或工作台。插件不执行 `widget` 的 HTML。
 

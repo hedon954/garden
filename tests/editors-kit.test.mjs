@@ -5,6 +5,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
+import { typoraPluginDirs } from "../scripts/editors-kit.mjs";
 import { packEditors } from "../scripts/pack-editors.mjs";
 
 const root = fileURLToPath(new URL("../", import.meta.url));
@@ -67,6 +68,17 @@ function siteEnv(parent, extra = {}) {
     log: path.join(parent, "install.log"),
   };
 }
+
+test("macOS Typora install includes the Application Support plugin directory", () => {
+  const dirs = typoraPluginDirs("/Users/demo", "darwin");
+  assert.deepEqual(dirs, [
+    "/Users/demo/.typora/community-plugins/plugins/hedon954.garden-intelligent-ui",
+    "/Users/demo/Library/Application Support/abnerworks.Typora/plugins/plugins/hedon954.garden-intelligent-ui",
+  ]);
+  assert.deepEqual(typoraPluginDirs("/home/demo", "linux"), [
+    "/home/demo/.typora/community-plugins/plugins/hedon954.garden-intelligent-ui",
+  ]);
+});
 
 test("package files publish editor artifacts without plugin sources", () => {
   const manifest = JSON.parse(readFileSync(path.join(root, "package.json"), "utf8"));

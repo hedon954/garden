@@ -36,8 +36,8 @@ const text = {
 `,
     noVsix: "没有找到 VSIX。先运行 npm run editors:pack，或确认站点 .garden/editors/vscode/ 里有 .vsix 文件。\n",
     noTypora: "没有找到 Typora 插件产物（manifest.json、main.js、style.css）。\n",
-    typoraCopied: (dir) => `已把 Typora 插件复制到：
-  ${dir}
+    typoraCopied: (dirs) => `已把 Typora 插件复制到：
+${dirs.map((dir) => `  ${dir}`).join("\n")}
 `,
     typoraMissingFramework: `没有在常见位置检测到 typora-community-plugin。Typora 没有官方插件接口；若还没装，请先安装这个社区框架：
   ${TYPORA_FRAMEWORK_URL}
@@ -70,8 +70,8 @@ Install one of them, or install from a script:
 `,
     noVsix: "No VSIX was found. Run npm run editors:pack, or check .garden/editors/vscode/ for a .vsix file.\n",
     noTypora: "Typora plugin files were not found (manifest.json, main.js, style.css).\n",
-    typoraCopied: (dir) => `Copied the Typora plugin to:
-  ${dir}
+    typoraCopied: (dirs) => `Copied the Typora plugin to:
+${dirs.map((dir) => `  ${dir}`).join("\n")}
 `,
     typoraMissingFramework: `typora-community-plugin was not found in the usual locations. Typora has no official plugin API; install that community framework if it is not already installed:
   ${TYPORA_FRAMEWORK_URL}
@@ -231,6 +231,7 @@ function fileHas(file, needle) {
 
 function typoraFrameworkFound(home) {
   if (fs.existsSync(path.join(home, ".typora", "community-plugins"))) return true;
+  if (fs.existsSync(path.join(home, "Library", "Application Support", "abnerworks.Typora", "plugins", "loader.js"))) return true;
   const apps = [];
   if (process.platform === "darwin") {
     apps.push(
@@ -256,8 +257,13 @@ function typoraFrameworkFound(home) {
   return apps.some((file) => fileHas(file, "typora-community-plugin"));
 }
 
-function typoraDestination(home) {
-  return path.join(home, ".typora", "community-plugins", "plugins", TYPORA_PLUGIN_ID);
+/** Directories Typora loads. Every platform gets ~/.typora; macOS core also reads Application Support. */
+export function typoraPluginDirs(home, platform = process.platform) {
+  const dirs = [path.join(home, ".typora", "community-plugins", "plugins", TYPORA_PLUGIN_ID)];
+  if (platform === "darwin") {
+    dirs.push(path.join(home, "Library", "Application Support", "abnerworks.Typora", "plugins", "plugins", TYPORA_PLUGIN_ID));
+  }
+  return dirs;
 }
 
 function installTypora(siteRoot, lang) {
@@ -268,13 +274,15 @@ function installTypora(siteRoot, lang) {
     return false;
   }
   const home = os.homedir();
-  // Check before copy: copying the plugin creates ~/.typora/community-plugins.
+  // Check before copy: copying the plugin creates the plugin directory the detector also looks at.
   const framework = typoraFrameworkFound(home);
-  const destination = typoraDestination(home);
-  fs.rmSync(destination, { recursive: true, force: true });
-  fs.cpSync(source, destination, { recursive: true });
+  const destinations = typoraPluginDirs(home);
+  for (const destination of destinations) {
+    fs.rmSync(destination, { recursive: true, force: true });
+    fs.cpSync(source, destination, { recursive: true });
+  }
   if (!framework) write(copy.typoraMissingFramework);
-  write(copy.typoraCopied(destination));
+  write(copy.typoraCopied(destinations));
   write(copy.typoraEnable);
   write(copy.typoraUpgrade);
   return true;

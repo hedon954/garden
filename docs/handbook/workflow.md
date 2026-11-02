@@ -102,13 +102,13 @@ npx garden editors install --typora
 
 **VS Code / Cursor。** 本机有 `code` 或 `cursor` 时，安装会把 VSIX 装进那个编辑器。两个命令都在时各装一次。没有命令行时，打开扩展视图，点右上角「…」，选择 Install from VSIX，文件在 `.garden/editors/vscode/`。
 
-**Typora。** Typora 没有官方插件接口，要先安装 [typora-community-plugin](https://github.com/typora-community-plugin/typora-community-plugin/blob/main/docs/en-us/user-guide/1a-installation.md)。安装命令会检查常见位置；没找到时仍把插件复制到 `~/.typora/community-plugins/plugins/hedon954.garden-intelligent-ui/`，并打印这个前提。然后打开 Typora，在「设置 → 已安装插件」里勾选 Garden Intelligent UI。升级 Typora 会覆盖社区框架改过的程序文件，需要重新安装 typora-community-plugin，再勾选本插件。围栏原文还在稿件里。
+**Typora。** Typora 没有官方插件接口，要先安装 [typora-community-plugin](https://github.com/typora-community-plugin/typora-community-plugin/blob/main/docs/en-us/user-guide/1a-installation.md)。安装命令会检查常见位置；没找到时仍把插件复制到 `~/.typora/community-plugins/plugins/hedon954.garden-intelligent-ui/`。macOS 还会复制到 `~/Library/Application Support/abnerworks.Typora/plugins/plugins/hedon954.garden-intelligent-ui/`。然后打开 Typora，在「设置 → 已安装插件」里勾选 Garden Intelligent UI。升级 Typora 会覆盖社区框架改过的程序文件，需要重新安装 typora-community-plugin，再勾选本插件。围栏原文还在稿件里。
 
 Obsidian 插件这一轮不随包安装。
 
 ### 在编辑器里怎么用
 
-1. **插入想法。** VS Code / Cursor：macOS 用 `Cmd+Alt+I`，Windows / Linux 用 `Ctrl+Alt+I`，或命令「插入 Garden 块」。Typora：命令「插入 Garden 块」；Windows / Linux 默认 `Ctrl+Alt+I`，macOS 请到「设置 → 快捷键」里自己录，因为 Option 会改写按键。选一句起步语，改成你想让读者做什么、看到什么。
+1. **插入想法。** VS Code / Cursor：macOS 用 `Cmd+Alt+I`，Windows / Linux 用 `Ctrl+Alt+I`，或命令「插入 Garden 块」。Typora：输入 `/garden`（列表里每一项有一张小预览图），或命令「插入 Garden 块」（Windows / Linux 默认 `Ctrl+Alt+I`，macOS 请到「设置 → 快捷键」里自己录，因为 Option 会改写按键）。插入的是不带组件名的 `garden` 围栏，正文说明要写成哪种组件、写上哪些事实，交给 `garden-ui` skill 编译。
 2. **预览。** 打开 Markdown 预览（Typora 里光标离开围栏即可）。`ui` 块画成和博客一样的组件，`intent` 块显示成想法卡片。点滑杆、按钮不会跳回源码。
 3. **看组件清单。** VS Code / Cursor 里用「查看组件清单」，点「用它开始」把配方插进当前稿件。终端里的同一份清单：
 
