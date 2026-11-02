@@ -23,4 +23,14 @@ The caption under this figure is its alt text:
 
 Images on a thought go in the `media` list in Front Matter and form a grid, without this caption. See [Writing Posts & Thoughts](/garden/en/writing).
 
+## Excalidraw
+
+Put the `.excalidraw` file with the post's other images. Keep using a Markdown image, and point the address at the source file, for example `./my-post/flow.excalidraw`. There is no separate garden component for this.
+
+`garden build`, `make dev`, and `garden sync` find those images. When the source has changed, or the sibling `.svg` is missing or out of date, the old `.svg` is deleted and a new flat SVG is exported, with no editable scene embedded. The example above produces `flow.svg` in the same directory. That is the only export: one light SVG with a transparent canvas. Strokes and fills stay as drawn. There is no dark file and no CSS invert. The page embeds that SVG in the article, so the text in the figure can be selected and copied. The alt text is the SVG `title`. The article never loads Excalidraw.
+
+The exporter is [excalidraw-image](https://github.com/rickardp/excalidraw-image) `0.2.0`, which runs Excalidraw's own SVG export. The first `.excalidraw` reference downloads the matching executable from GitHub Releases (about 48 MB compressed) and caches it on the machine. Chromium is not required. Fonts are written into the SVG, so the page does not request excalidraw.com. After that download, or when `GARDEN_EXCALIDRAW_IMAGE` points at a local binary, an offline build (`GARDEN_OFFLINE` set to `1`) does not download again.
+
+A missing source file or a failed export stops the build and reports the path and the reason.
+
 This is not a `garden` fence, so it has no field table.

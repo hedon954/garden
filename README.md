@@ -84,7 +84,17 @@ npx garden ui catalog                          # 在 .garden/ui-catalog.html 生
 npx garden editors install --yes               # 把 Intelligent UI 插件装进 VS Code / Cursor 与 Typora
 ```
 
-## 5. 使用说明与深入文档
+## 5. Excalidraw
+
+正文用 Markdown 图片指向 `.excalidraw` 源文件。`garden build` 会在同目录导出一张浅色扁平 SVG，画布背景透明，并把这张 SVG 嵌进正文，图里的文字可以选中。不需要单独的导出命令。
+
+```markdown
+![说明](./assets/flow.excalidraw)
+```
+
+页面里第一次出现 `.excalidraw` 时，构建会下载导出程序（不需要 Chromium；字体写进 SVG）。说明见[本地图片](docs/handbook/components/image.md)。
+
+## 6. 使用说明与深入文档
 
 本地运行 `make dev` 后访问 `/garden`（英文版在 `/garden/en`），或直接阅读仓库内的文档：
 

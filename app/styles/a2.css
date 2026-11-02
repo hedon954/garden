@@ -720,6 +720,19 @@ html[data-theme="dark"] .markdown-body > p > img:not([class]) {
   border-radius: 8px;
 }
 
+.markdown-body .fig-card > svg.excalidraw,
+.markdown-body svg.excalidraw {
+  display: block;
+  width: auto;
+  max-width: 100%;
+  height: auto;
+  margin: 0 auto;
+}
+
+.markdown-body svg.excalidraw text {
+  user-select: text;
+}
+
 .markdown-body .fig figcaption {
   margin-top: 12px;
   font-size: var(--fs-small);
