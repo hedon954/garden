@@ -46,7 +46,17 @@ npx garden ui check --staged                   # 检查暂存区稿件中的想�
 npx garden ui catalog                          # 在 .garden/ui-catalog.html 生成离线组件清单
 ```
 
-## 4. 使用说明与深入文档
+## 4. Excalidraw
+
+正文用 Markdown 图片指向 `.excalidraw` 源文件。`garden build` 会在同目录导出扁平 SVG，页面只引用这张 SVG，不需要单独的导出命令。
+
+```markdown
+![说明](./assets/flow.excalidraw)
+```
+
+第一次构建会下载导出程序（不需要 Chromium；字体写进 SVG）。说明见[本地图片](docs/handbook/components/image.md)。
+
+## 5. 使用说明与深入文档
 
 本地运行 `make dev` 后访问 `/garden`（英文版在 `/garden/en`），或直接阅读仓库内的文档：
 

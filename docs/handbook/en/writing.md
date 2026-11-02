@@ -115,6 +115,7 @@ func openStore(path string) (*Store, error) {
 These three are written in the Markdown body. Rendering rules live on the component pages. This section only records where the files go:
 
 - **Local images**: For a post at `content/posts/my-post.md`, put images in `content/posts/my-post/` and reference them as `./my-post/diagram.svg`. Captions are documented on [Local Image](/garden/en/components/image).
+- **Excalidraw**: Put the source with the other images and reference it with a Markdown image whose address ends in `.excalidraw`, for example `./my-post/flow.excalidraw`. The build writes `flow.svg` beside it, and the page uses the SVG. See [Local Image](/garden/en/components/image).
 - **Source chips** and **link cards** stay in the prose. See [Source Chip](/garden/en/components/source) and [Link Card](/garden/en/components/link-card).
 
 ## 5. Math Formulas and Mermaid Diagrams
