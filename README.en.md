@@ -52,7 +52,7 @@ Point a Markdown image at the `.excalidraw` source. `garden build` exports a fla
 ![A sketch](./assets/flow.excalidraw)
 ```
 
-The first build downloads the exporter (Chromium is not required; fonts are embedded in the SVG). See [Local Image](docs/handbook/en/components/image.md).
+The first page that references `.excalidraw` downloads the exporter (Chromium is not required; fonts are embedded in the SVG). See [Local Image](docs/handbook/en/components/image.md).
 
 ## 5. Handbook and reference docs
 

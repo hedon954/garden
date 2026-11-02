@@ -54,7 +54,7 @@ npx garden ui catalog                          # 在 .garden/ui-catalog.html 生
 ![说明](./assets/flow.excalidraw)
 ```
 
-第一次构建会下载导出程序（不需要 Chromium；字体写进 SVG）。说明见[本地图片](docs/handbook/components/image.md)。
+页面里第一次出现 `.excalidraw` 时，构建会下载导出程序（不需要 Chromium；字体写进 SVG）。说明见[本地图片](docs/handbook/components/image.md)。
 
 ## 5. 使用说明与深入文档
 
