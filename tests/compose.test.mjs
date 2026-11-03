@@ -166,12 +166,13 @@ test("the handbook gallery renders all six explanation diagrams", () => {
   assert.match(html, /g-compose-lanes/);
   assert.match(html, /data-tone="forward"/);
   assert.match(html, /data-tone="back"/);
-  assert.equal((html.match(/<path d="M16 4 L300 64 L584 4 L300 64 L300 8"/gu) || []).length, 1);
+  assert.equal((html.match(/<path d="M18 8 L300 66 L582 8 L300 66 L300 1"/gu) || []).length, 1);
   assert.doesNotMatch(html, /preserveAspectRatio="none"/u);
   assert.doesNotMatch(html, /preserveAspectRatio="none"/u);
   assert.match(html, /data-tone="tip"/);
   assert.match(html, /class="g-compose-join-label"/);
-  assert.match(html, /viewBox="0 0 10 12"/);
+  assert.match(html, /viewBox="0 0 12 16"/);
+  assert.match(html, /M6 1\.2 6 13\.2/);
   assert.match(html, /--span:2/);
   assert.match(html, /① 点击登录 \/ 授权/);
   assert.match(html, /class="g-compose-fan"/);

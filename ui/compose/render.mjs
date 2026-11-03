@@ -1,5 +1,5 @@
 const ARROW = (dir) =>
-  `<svg class="g-compose-arrow" data-dir="${dir}" viewBox="0 0 10 12" width="10" height="12" aria-hidden="true" focusable="false"><path d="M5 1v5.2M2.7 4.4 5 8 7.3 4.4" fill="none" stroke="currentColor" stroke-width="1.15" stroke-linecap="round" stroke-linejoin="round"></path></svg>`;
+  `<svg class="g-compose-arrow" data-dir="${dir}" viewBox="0 0 12 16" width="12" height="16" aria-hidden="true" focusable="false"><path d="M6 1.2 6 13.2 M3.15 10.2 6 13.2 8.85 10.2" fill="none" stroke="currentColor" stroke-width="1.05" stroke-linecap="round" stroke-linejoin="round"></path></svg>`;
 
 function esc(value) {
   return String(value ?? "")
@@ -139,9 +139,9 @@ function fanHtml(count) {
 }
 
 function joinHtml(text) {
-  // One path. The two arms meet in a single corner, then the same stroke returns to that
-  // vertex and runs up into the opening. The label stays above the svg.
-  return `<div class="g-compose-join"><div class="g-compose-join-label">${textHtml(text)}</div><svg class="g-compose-join-svg" viewBox="0 0 600 72" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false"><path d="M16 4 L300 64 L584 4 L300 64 L300 8" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/></svg></div>`;
+  // One path. Arms meet at the bottom vertex, then the same stroke runs up to a tip
+  // above the label. The label sits in the opening with its top on the arm line.
+  return `<div class="g-compose-join"><svg class="g-compose-join-svg" viewBox="0 0 600 72" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false"><path d="M18 8 L300 66 L582 8 L300 66 L300 1" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/></svg><div class="g-compose-join-label">${textHtml(text)}</div></div>`;
 }
 
 function lanesHtml(node) {

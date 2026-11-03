@@ -45,7 +45,7 @@
 .g-compose-body {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 6px;
 }
 
 .g-compose-body,
@@ -67,14 +67,14 @@
 .g-compose-stack[data-gap="0"] { gap: 0; }
 .g-compose-stack[data-gap="1"] { gap: 4px; }
 .g-compose-stack[data-gap="2"] { gap: 6px; }
-.g-compose-stack[data-gap="3"] { gap: 8px; }
+.g-compose-stack[data-gap="3"] { gap: 4px; }
 .g-compose-stack[data-gap="4"] { gap: 12px; }
 
 .g-compose-row {
   display: flex;
   flex-wrap: wrap;
   align-items: stretch;
-  gap: 12px;
+  gap: 8px;
 }
 
 .g-compose-row > .g-compose-card,
@@ -139,6 +139,13 @@
   width: 100%;
 }
 
+.g-compose-card > .g-compose-row:has(.g-compose-badge) {
+  align-self: center;
+  width: auto;
+  gap: 6px;
+  justify-content: center;
+}
+
 .g-compose-compare {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 11rem), 1fr));
@@ -170,7 +177,7 @@
   align-items: flex-start;
   gap: 4px;
   box-sizing: border-box;
-  padding: 8px 14px;
+  padding: 8px 12px;
   border: 1px solid var(--rule);
   border-radius: var(--r, 12px);
   background: var(--card);
@@ -257,10 +264,19 @@
 
 .g-compose-card[data-frame="band"] {
   width: 100%;
-  padding: 8px 16px;
+  padding: 3px 16px 4px;
   border: 0;
   background: var(--well);
   box-shadow: none;
+}
+
+.g-compose-row > .g-compose-stack {
+  padding-top: 3px;
+}
+
+.g-compose-row > .g-compose-stack > .g-compose-h {
+  margin: 0;
+  font: 600 16px/1.35 var(--sans);
 }
 
 .g-compose-card[data-frame="band"][data-tone="accent"] {
@@ -323,8 +339,9 @@
 .g-compose-fan {
   display: grid;
   grid-template-columns: repeat(var(--n, 3), minmax(0, 1fr));
-  gap: 12px;
+  gap: 8px;
   width: 100%;
+  margin-block: -2px;
 }
 
 .g-compose-fan .g-compose-arrow {
@@ -336,16 +353,18 @@
 .g-compose-fan[data-n="4"] { --n: 4; }
 
 .g-compose-join {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  display: grid;
   width: 100%;
-  margin: 2px 0 0;
+  margin: 0;
   color: var(--ink);
 }
 
+.g-compose-join-svg,
+.g-compose-join-label {
+  grid-area: 1 / 1;
+}
+
 .g-compose-join-svg {
-  align-self: stretch;
   display: block;
   width: 100%;
   height: auto;
@@ -354,19 +373,25 @@
 }
 
 .g-compose-join-label {
-  display: block;
+  position: relative;
+  top: 11.1%;
+  justify-self: center;
+  align-self: start;
   width: max-content;
-  max-width: 70%;
-  margin: 0 0 4px;
+  max-width: 72%;
+  margin: 0;
   padding: 0;
   background: transparent;
   color: var(--ink);
-  font: 700 16px/1.3 var(--sans);
+  font: 700 16px/1.15 var(--sans);
+  white-space: nowrap;
   text-align: center;
+  z-index: 1;
 }
 
 .g-compose-lanes {
-  --lane-gap: 28px;
+  --lane-gap: 40px;
+  --lane: var(--ink);
   width: 100%;
 }
 
@@ -381,21 +406,21 @@
   justify-self: center;
   width: max-content;
   max-width: 100%;
-  margin: 0 0 6px;
-  padding: 8px 14px;
+  margin: 0 0 8px;
+  padding: 5px 16px;
   border: 1px solid var(--rule-strong);
-  border-radius: 14px;
+  border-radius: 12px;
   background: var(--well);
   color: var(--ink);
-  font: 600 15px/1.3 var(--sans);
+  font: 600 14px/1.3 var(--sans);
   text-align: center;
 }
 
 .g-compose-lanes-stage {
   position: relative;
   display: grid;
-  row-gap: 14px;
-  padding: 10px 0 4px;
+  row-gap: 16px;
+  padding: 8px 0 2px;
 }
 
 .g-compose-lane-life {
@@ -416,17 +441,17 @@
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  gap: 3px;
+  gap: 1px;
   min-width: 0;
   color: var(--ink);
 }
 
-.g-compose-lane-msg[data-tone="forward"] .g-compose-lane-shaft {
-  color: var(--flow);
+.g-compose-lane-msg[data-tone="forward"] {
+  --lane: var(--flow);
 }
 
-.g-compose-lane-msg[data-tone="back"] .g-compose-lane-shaft {
-  color: var(--flow-back);
+.g-compose-lane-msg[data-tone="back"] {
+  --lane: var(--flow-back);
 }
 
 .g-compose-lane-label {
@@ -437,7 +462,7 @@
   padding: 0;
   background: transparent;
   color: var(--ink);
-  font: 600 13px/1.3 var(--sans);
+  font: 600 13px/1.25 var(--sans);
   text-align: center;
   white-space: nowrap;
 }
@@ -449,39 +474,47 @@
 .g-compose-lane-shaft {
   position: relative;
   display: block;
-  height: 0;
+  height: 8px;
   margin-top: 0;
   margin-left: calc((100% - (var(--span, 2) - 1) * var(--lane-gap)) / var(--span, 2) / 2);
   margin-right: calc((100% - (var(--span, 2) - 1) * var(--lane-gap)) / var(--span, 2) / 2);
-  border-top: 1.5px solid currentColor;
+  background: linear-gradient(var(--lane), var(--lane)) left center / calc(100% - 5px) 1.6px no-repeat;
 }
 
 .g-compose-lane-shaft::after {
   content: "";
   position: absolute;
-  top: -3px;
+  top: 0;
   width: 0;
   height: 0;
   border-style: solid;
 }
 
+.g-compose-lane-msg[data-way="right"] .g-compose-lane-shaft {
+  background-position: left center;
+}
+
 .g-compose-lane-msg[data-way="right"] .g-compose-lane-shaft::after {
-  right: -1px;
-  border-width: 3px 0 3px 6px;
-  border-color: transparent transparent transparent currentColor;
+  right: 0;
+  border-width: 4px 0 4px 8px;
+  border-color: transparent transparent transparent var(--lane);
+}
+
+.g-compose-lane-msg[data-way="left"] .g-compose-lane-shaft {
+  background-position: right center;
 }
 
 .g-compose-lane-msg[data-way="left"] .g-compose-lane-shaft::after {
-  left: -1px;
-  border-width: 3px 6px 3px 0;
-  border-color: transparent currentColor transparent transparent;
+  left: 0;
+  border-width: 4px 8px 4px 0;
+  border-color: transparent var(--lane) transparent transparent;
 }
 
 .g-compose-card-title,
 .g-compose-step-title,
 .g-compose-note-k {
   color: var(--ink);
-  font: 600 16px/1.4 var(--sans);
+  font: 600 16px/1.35 var(--sans);
 }
 
 .g-compose-card-text,
@@ -543,9 +576,9 @@
   display: block;
   flex: 0 0 auto;
   align-self: center;
-  width: 10px;
-  height: 12px;
-  margin: 1px auto;
+  width: 12px;
+  height: 16px;
+  margin: 0 auto;
   color: var(--muted);
 }
 
@@ -671,9 +704,12 @@
   }
 
   .g-compose-join-label {
+    position: static;
+    top: auto;
     width: auto;
     max-width: none;
     margin: 0;
+    white-space: normal;
   }
 
   .g-compose-lane-label {
