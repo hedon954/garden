@@ -178,27 +178,7 @@ test("the handbook gallery renders all six explanation diagrams", () => {
   assert.match(html, /class="g-compose-fan"/);
   assert.match(html, /data-align="start"/);
   assert.doesNotMatch(html, /<script/u);
-  const demo = fs.readFileSync(path.join(root, "content/posts/compose-compare.md"), "utf8");
-  assert.equal((demo.match(/!\[[^\]]*\]\(\.\/compose-compare\/[^)]+\)/gu) || []).length, 6);
-  for (const name of ["rbac", "sso", "auth-stack", "api-six", "agent-pep", "oauth-pkce"]) {
-    assert.equal(fs.existsSync(path.join(root, "content/posts/compose-compare", `${name}.png`)), true);
-  }
-});
-
-test("a ChatGPT original image beside a compose fence becomes a pair", () => {
-  const source = `![ChatGPT 原图](../assets/compose/rbac.png)\n\n${fence("title: RBAC\ntree:\n  - title: User\n")}`;
-  const processor = unified().use(remarkParse).use(remarkGarden);
-  const tree = processor.runSync(processor.parse(source));
-  const html = [];
-  const walk = (node) => {
-    if (node?.type === "html") html.push(node.value);
-    if (node?.data?.hProperties?.className?.includes("g-compose-pair")) html.push("pair");
-    for (const child of node?.children ?? []) walk(child);
-  };
-  walk(tree);
-  assert.ok(html.includes("pair"));
-  assert.match(html.join("\n"), /g-compose/);
-  assert.equal(html.filter((item) => item === "pair").length, 1);
+  assert.equal(fs.existsSync(path.join(root, "content/posts/compose-compare.md")), false);
 });
 
 test("the ui prompt catalog includes compose and forbids arbitrary HTML", () => {

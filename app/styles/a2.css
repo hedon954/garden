@@ -1952,18 +1952,6 @@ html[data-theme="dark"] .gf-scrim { background: rgb(0 0 0 / 45%); }
   width: 100%;
 }
 
-/* A compare post puts two wide diagrams side by side. Let that article use
-   the space beside the table of contents. */
-@media (min-width: 1260px) {
-  .post-reading-page:has(.g-compose-pair) .article-reading-layout {
-    grid-template-columns: 24px minmax(0, 1fr) var(--rail);
-  }
-
-  .post-reading-page:has(.g-compose-pair) .article-reading-column {
-    max-width: none;
-  }
-}
-
 .gdoc-article-head {
   padding: 4px 0 28px;
   margin-bottom: 32px;
