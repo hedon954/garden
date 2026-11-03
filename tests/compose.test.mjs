@@ -150,17 +150,24 @@ test("the host renders each compose fence as static HTML", () => {
   assert.match(html[1], /name="gc2"/u);
 });
 
-test("the handbook compose page teaches primitives and skips the acceptance set", () => {
+test("the handbook compose page shows the capability diagrams", () => {
   const markdown = fs.readFileSync(path.join(root, "docs/handbook/components/compose.md"), "utf8");
   const english = fs.readFileSync(path.join(root, "docs/handbook/en/components/compose.md"), "utf8");
   for (const page of [markdown, english, fs.readFileSync(path.join(root, "docs/handbook/components.md"), "utf8"), fs.readFileSync(path.join(root, "docs/handbook/reference.md"), "utf8")]) {
     assert.doesNotMatch(page, /ChatGPT|garden figure|已废弃|deprecated/u);
-    assert.doesNotMatch(page, /Policy Enforcement Point|角色连接用户和权限|两行流程/u);
   }
+  assert.match(markdown, /角色连接用户和权限/);
+  assert.match(markdown, /Policy Enforcement Point/);
+  assert.match(markdown, /## 两行流程/);
+  assert.match(english, /Role connects users and permissions/);
+  assert.match(english, /Policy Enforcement Point/);
+  assert.match(english, /## Two-row flow/);
   assert.equal(fs.existsSync(path.join(root, "docs/handbook/components/figure.md")), false);
   assert.equal(fs.existsSync(path.join(root, "docs/handbook/components/compose-gallery.md")), false);
   const fences = scanFences(markdown).map((fence) => classifyFence(fence)).filter((item) => item.kind === "garden");
-  assert.ok(fences.length >= 8);
+  const englishFences = scanFences(english).map((fence) => classifyFence(fence)).filter((item) => item.kind === "garden");
+  assert.equal(fences.length, 7);
+  assert.equal(englishFences.length, 7);
   assert.deepEqual(checkGardenMarkdown(markdown), []);
   assert.deepEqual(checkGardenMarkdown(english), []);
   const html = fences.map((item) => renderCompose(item.block.props, { scope: "ex" })).join("\n");
@@ -170,8 +177,8 @@ test("the handbook compose page teaches primitives and skips the acceptance set"
   assert.match(html, /g-compose-lanes/);
   assert.match(html, /g-compose-fan/);
   assert.match(html, /g-compose-divider/);
-  assert.match(html, /g-compose-kpi/);
-  assert.match(html, /g-compose-callout/);
+  assert.match(html, /data-tone="muted"/);
+  assert.doesNotMatch(html, /<script/u);
 });
 
 test("the compare post keeps the acceptance diagrams beside the originals", () => {

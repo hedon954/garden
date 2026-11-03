@@ -77,28 +77,44 @@ data:
 ## [Explanation diagram · compose](/garden/en/components/compose)
 
 ```garden compose
-title: Site publish pipeline
-caption: Click a step to read what it does
-steps:
-  - id: sync
-    title: sync
-    badge: "1"
-    text: Sync content and config
-  - id: build
-    title: build
-    badge: "2"
-    text: Emit static HTML
-  - id: validate
-    title: validate
-    badge: "3"
-    text: Check before shipping
-notes:
-  - for: sync
-    text: Line up remote and local material.
-  - for: build
-    text: The build renders compose into the page.
-  - for: validate
-    text: The hook stops an idea that is still prose.
+intent: |
+  Two rows. Plain titles first, then muted pills.
+tree:
+  - row:
+      align: center
+      children:
+        - title:
+            text: Understand
+            align: center
+        - arrow: right
+        - title:
+            text: Design
+            align: center
+        - arrow: right
+        - title:
+            text: Ship
+            align: center
+  - divider:
+  - row:
+      align: center
+      children:
+        - card:
+            frame: pill
+            tone: muted
+            align: center
+            title: Hypothesize
+        - arrow: right
+        - card:
+            frame: pill
+            tone: muted
+            align: center
+            title: Cheap test
+        - arrow: right
+        - card:
+            frame: pill
+            tone: muted
+            align: center
+            title: Iterate or stop
 ```
 
 ## [Embedded Web Snippet · html](/garden/en/components/html)

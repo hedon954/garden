@@ -1,251 +1,328 @@
 ---
 title: Explanation diagram (compose)
 navTitle: compose
-description: Explain a short flow with cards, arrows, and notes. Click a step to open its note.
+description: Explain a diagram with cards, arrows, lanes, and notes.
 section: components
 order: 36
 badge: compose
 ---
 
-```garden compose
-title: Site publish pipeline
-caption: Click a step to read what it does
-intent: |
-  Three cards and downward arrows for sync, build, then validate. Clicking a step opens its note.
-steps:
-  - id: sync
-    title: sync
-    badge: "1"
-    text: Sync content and config
-  - id: build
-    title: build
-    badge: "2"
-    text: Emit static HTML
-  - id: validate
-    title: validate
-    badge: "3"
-    text: Check before shipping
-notes:
-  - for: sync
-    text: Line up remote and local material.
-  - for: build
-    text: The build renders compose into the page.
-  - for: validate
-    text: The hook stops an idea that is still prose.
-```
-
-- **When to use**: A flow of two to eight steps, where clicking a step shows only that step's note.
-- **When to skip**: Use [interactive](/garden/en/components/interactive) when the reader should drag a parameter. Keep a real image or a Mermaid diagram when that already explains it.
-
 In the editor, type `/garden` and choose the compose item. That inserts a `garden compose` fence whose body is one sentence, not a YAML stub. After compile, the fence type stays `garden compose`: the sentence moves into `intent` and the body becomes a YAML tree.
 
-````markdown
-```garden compose
-Three cards and downward arrows for sync, build, then validate. Clicking a step opens its note.
-```
-````
+Open a note with `steps` and `notes`. Every field is in [Component reference · compose](/garden/en/reference/compose). A narrow screen stacks a row into one column. Color comes from theme tokens, so light and dark both stay readable.
 
-Narrow screens stack the diagram into one column. Color comes from theme tokens, so light and dark both stay readable. With JavaScript off, the cards and notes are still in the page.
+Each diagram below is built from those parts.
 
-Every field is in [Component reference · compose](/garden/en/reference/compose). Each section below is one small diagram. A narrow screen stacks a row into a column.
-
-## Band, pill, and plain title
+## RBAC
 
 ```garden compose
 intent: |
-  Three frames: a tinted band, a white pill, and a title with no frame.
-tree:
-  - stack:
-      align: center
-      children:
-        - card:
-            frame: band
-            tone: accent
-            align: center
-            title: Tinted band
-            text: Wraps only the layer you want to emphasize
-        - arrow: down
-        - card:
-            frame: pill
-            align: center
-            title: White pill
-        - arrow: down
-        - card:
-            frame: text
-            align: center
-            title: Plain title
-            text: A grey line can sit under the title
-```
-
-## A row with arrows
-
-```garden compose
-intent: |
-  Three cards linked by arrows pointing right.
+  Three columns: User, Role, Permission. Role sits on a tinted band. The join says a role connects users and permissions.
 tree:
   - row:
       align: center
       children:
-        - card:
+        - stack:
             align: center
-            title: Collect
-            text: Gather the material
-        - arrow: right
+            children:
+              - title: User
+              - text: Alice
+              - text: Bob
         - card:
+            frame: band
+            tone: accent
             align: center
-            title: Decide
-            text: Keep what is useful
-        - arrow: right
-        - card:
+            title: Role
+            children:
+              - text: Administrator
+              - text: Reviewer
+        - stack:
             align: center
-            title: Hand off
-            text: Pass it on
-```
-
-## Badge and metric
-
-```garden compose
-intent: |
-  One card carries an index badge and a metric.
-tree:
-  - card:
-      tone: accent
-      align: center
-      title: Align
-      badge: "1"
-      kpi:
-        value: 12
-        unit: ms
-        label: time
-      text: The badge and the number both sit on the card
-```
-
-## Divider
-
-```garden compose
-intent: |
-  Two titles split by a divider, then a footnote.
-tree:
-  - title:
-      text: The step above
-      align: center
-  - divider:
-  - title:
-      text: The step below
-      align: center
+            children:
+              - title: Permission
+              - text: "orders:read"
+              - text: "orders:approve"
+  - join: Role connects users and permissions
   - type: text
-    text: The footnote stays left and uses muted.
+    text: "Concept: User ↔ Role ↔ Permission"
+    align: center
     tone: muted
-    align: start
 ```
 
-## A fan of arrows
+## SSO
 
 ```garden compose
 intent: |
-  One title fans out through three arrows to three names.
+  The browser points at the identity provider, which fans out to HR, Finance, and Project. All three trust the same provider.
 tree:
   - stack:
       align: center
       children:
-        - title:
-            text: One point, three ways
+        - card:
+            frame: pill
+            title: Browser
+        - arrow: down
+        - card:
+            frame: band
+            tone: accent
             align: center
+            title: Identity Provider (IdP)
+            text: Verifies identity, keeps the session, and issues an assertion
         - fan: 3
         - row:
             align: center
             children:
-              - title:
-                  text: One
-                  align: center
-              - title:
-                  text: Two
-                  align: center
-              - title:
-                  text: Three
-                  align: center
+              - title: HR
+              - title: Finance
+              - title: Project
+        - type: text
+          text: All three systems trust the same identity provider
+          align: center
+          tone: muted
 ```
 
-## A V join
+## Authentication layers
 
 ```garden compose
 intent: |
-  Two titles meet on one shared line.
+  Five layers from top to bottom: browser, identity service, BFF, business service, authorization decision. The identity service and the decision layer use tinted bands.
 tree:
-  - row:
+  - stack:
       align: center
       children:
-        - title:
-            text: Left
+        - card:
+            frame: text
             align: center
-        - title:
-            text: Right
-            align: center
-  - join: Both meet here
-```
-
-## Two emphasis tones
-
-```garden compose
-intent: |
-  accent and tip are two tints. A muted pill is a neutral grey.
-tree:
-  - row:
-      align: center
-      children:
+            badge: "1"
+            title: Browser / App
+            text: Cookie, session, OAuth client
+        - arrow: down
         - card:
             frame: band
             tone: accent
             align: center
-            title: accent
-            text: First emphasis
+            badge: "2"
+            title: Identity service (IdP / IAM)
+            text: Passkey, MFA, OIDC, session management
+        - arrow: down
+        - card:
+            frame: text
+            align: center
+            badge: "3"
+            title: BFF / API Gateway
+            text: Session check, token check, entry authorization
+        - arrow: down
+        - card:
+            frame: text
+            align: center
+            badge: "4"
+            title: Business service
+            text: Orders, payments, accounts, resources
+        - arrow: down
         - card:
             frame: band
             tone: tip
             align: center
-            title: tip
-            text: Second emphasis
+            badge: "5"
+            title: Authorization decision
+            text: RBAC + ABAC + ReBAC + Policy Engine
+        - type: text
+          text: Duties, not a required hop order. The identity service is usually involved at login. The business service calls the decision system while handling the request.
+          align: start
+          tone: muted
+```
+
+## Six sides of an API
+
+```garden compose
+intent: |
+  One API request split into authentication, credential, authorization, and verification, then transport and confidentiality.
+tree:
+  - stack:
+      align: center
+      children:
+        - title: The user calls an API
+        - type: text
+          text: "Example: change an order address"
+          tone: muted
+  - arrow: down
+  - row:
+      children:
+        - card:
+            title: Authentication
+            children:
+              - text: Who are you?
+        - card:
+            title: Credential
+            children:
+              - text: How do you prove it?
+  - row:
+      children:
+        - card:
+            title: Authorization
+            children:
+              - text: May you change this order?
+        - card:
+            title: Verification
+            children:
+              - text: Is the payload valid?
+  - arrow: down
+  - stack:
+      align: center
+      children:
+        - title: Business operation and storage
+  - row:
+      children:
+        - card:
+            title: Transport
+            text: Can the network be read, changed, or spoofed?
+        - card:
+            title: Confidentiality
+            text: Can a leaked secret still be read?
+  - type: text
+    text: Not a strict sequence. Transport covers the whole connection, and confidentiality can sit on both client and server.
+    tone: muted
+```
+
+## Agent, policy point, and tools
+
+```garden compose
+intent: |
+  User intent goes through the agent, then a policy enforcement point, then the tool executor. The policy point holds four checks.
+tree:
+  - stack:
+      align: center
+      children:
+        - title: User Intent + Authorization
+        - type: text
+          text: Task, identity, and the scope that was granted
+          tone: muted
+        - arrow: down
+        - card:
+            frame: band
+            align: center
+            title: Agent / LLM
+            text: Understands, plans, and proposes an action
+            children:
+              - row:
+                  align: center
+                  children:
+                    - badge: Untrusted Context
+                    - badge: Memory
+                    - badge: Tool Results
+        - arrow: down
+        - card:
+            align: center
+            mark: shield
+            title: Policy Enforcement Point
+            children:
+              - type: text
+                text: Deterministic control, separate from the LLM
+                align: center
+                tone: muted
+              - row:
+                  align: center
+                  children:
+                    - text: Permission and resource scope
+                    - text: Argument checks
+              - row:
+                  align: center
+                  children:
+                    - text: Task-intent limits
+                    - text: Approval for risky actions
+        - arrow: down
+        - title: Tool Executor
+        - type: text
+          text: Least privilege, an audit record, and a way to stop
+          tone: muted
+```
+
+## OAuth authorization code + PKCE
+
+```garden compose
+intent: |
+  Three lanes (user, client, authorization server) and six steps for the authorization code with PKCE.
+tree:
+  - lanes:
+      actors:
+        - User
+        - Client
+        - Authorization server
+      messages:
+        - from: 1
+          to: 2
+          text: Click sign-in
+          tone: forward
+        - from: 2
+          to: 3
+          text: Authorization request + PKCE
+          tone: forward
+        - from: 3
+          to: 1
+          text: Authenticate and approve
+          tone: back
+        - from: 3
+          to: 2
+          text: Redirect back with a code
+          tone: back
+        - from: 2
+          to: 3
+          text: Code + verifier for a token
+          tone: forward
+        - from: 3
+          to: 2
+          text: Return the token
+          tone: back
+  - type: text
+    text: A sketch. The real flow also binds the browser redirect, the callback, and checks on the code and token.
+    tone: muted
+```
+
+## Two-row flow
+
+The top row is plain titles. The bottom row is pills. A divider sits between them.
+
+```garden compose
+intent: |
+  Two rows. The first is plain titles, the second is muted pills, and the footnote says the second row is the decision loop.
+tree:
+  - row:
+      align: center
+      children:
+        - title:
+            text: Understand
+            align: center
+        - arrow: right
+        - title:
+            text: Design
+            align: center
+        - arrow: right
+        - title:
+            text: Ship
+            align: center
+  - divider:
+  - row:
+      align: center
+      children:
         - card:
             frame: pill
             tone: muted
             align: center
-            title: muted
-```
-
-## Lanes
-
-```garden compose
-intent: |
-  Two actors, one message each way. The label sits above the arrow.
-tree:
-  - lanes:
-      actors:
-        - Caller
-        - Service
-      messages:
-        - from: 1
-          to: 2
-          text: Send a request
-          tone: forward
-        - from: 2
-          to: 1
-          text: Return a result
-          tone: back
-```
-
-## Compare and a tip
-
-```garden compose
-intent: |
-  A small comparison, then a tip.
-tree:
-  - compare:
-      items:
-        - title: Write it down first
-          text: Smaller scope, cheaper to change
-        - title: Build the whole thing
-          text: See the full shape once
-  - callout:
-      tone: tip
-      text: The comparison only names the difference.
+            title: Hypothesize
+        - arrow: right
+        - card:
+            frame: pill
+            tone: muted
+            align: center
+            title: Cheap test
+        - arrow: right
+        - card:
+            frame: pill
+            tone: muted
+            align: center
+            title: Iterate or stop
+  - type: text
+    text: The second row is the decision loop.
+    tone: muted
+    align: start
 ```

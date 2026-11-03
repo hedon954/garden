@@ -77,28 +77,44 @@ data:
 ## [说明图 · compose](/garden/components/compose)
 
 ```garden compose
-title: 站点发布流水线
-caption: 点一步，看这一步做什么
-steps:
-  - id: sync
-    title: sync
-    badge: "1"
-    text: 同步内容与配置
-  - id: build
-    title: build
-    badge: "2"
-    text: 生成静态 HTML
-  - id: validate
-    title: validate
-    badge: "3"
-    text: 检查后再上线
-notes:
-  - for: sync
-    text: 先对齐远程与本地材料。
-  - for: build
-    text: 构建期把 compose 画进页面。
-  - for: validate
-    text: 钩子拦住还没编译的想法。
+intent: |
+  两行流程。上面三步是白话，下面三步是胶囊。
+tree:
+  - row:
+      align: center
+      children:
+        - title:
+            text: 理解需求
+            align: center
+        - arrow: right
+        - title:
+            text: 设计方案
+            align: center
+        - arrow: right
+        - title:
+            text: 开发上线
+            align: center
+  - divider:
+  - row:
+      align: center
+      children:
+        - card:
+            frame: pill
+            tone: muted
+            align: center
+            title: 提出假设
+        - arrow: right
+        - card:
+            frame: pill
+            tone: muted
+            align: center
+            title: 低成本验证
+        - arrow: right
+        - card:
+            frame: pill
+            tone: muted
+            align: center
+            title: 迭代或放弃
 ```
 
 ## [嵌入网页片段 · html](/garden/components/html)

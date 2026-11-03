@@ -196,13 +196,28 @@
 .g-compose-disclosure {
   min-width: 0;
   max-width: 100%;
+  border: 1px solid color-mix(in srgb, var(--rule-strong) 72%, var(--card));
+  border-radius: 8px;
+  background: var(--card);
 }
 
 .g-compose-disclosure > summary {
   position: relative;
   list-style: none;
   cursor: pointer;
-  padding-right: 36px;
+  padding: 10px 36px 10px 14px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.g-compose-disclosure > summary.g-compose-step,
+.g-compose-disclosure > summary.g-compose-card {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
 }
 
 .g-compose-disclosure > summary::-webkit-details-marker {
@@ -216,7 +231,7 @@
 .g-compose-disclosure > summary::after {
   content: "";
   position: absolute;
-  top: 18px;
+  top: 16px;
   right: 16px;
   width: 8px;
   height: 8px;
@@ -226,8 +241,9 @@
 }
 
 .g-compose-disclosure[open] > summary {
-  border-color: var(--ink);
-  background: var(--well);
+  border: 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--rule) 70%, var(--card));
+  background: transparent;
 }
 
 .g-compose-disclosure[open] > summary::after {
@@ -235,7 +251,11 @@
 }
 
 .g-compose-disclosure > .g-compose-note {
-  margin-top: 8px;
+  margin-top: 0;
+  padding: 8px 14px 12px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
 }
 
 .g-compose-card[data-tone="accent"],
@@ -252,7 +272,9 @@
 
 .g-compose-card[data-tone="muted"],
 .g-compose-step[data-tone="muted"] {
-  color: var(--muted);
+  background: color-mix(in srgb, var(--ink) 6%, var(--card));
+  border-color: color-mix(in srgb, var(--ink) 16%, var(--card));
+  color: var(--ink);
 }
 
 .g-compose-card[data-align="center"] {
@@ -289,6 +311,10 @@
 
 .g-compose-card[data-frame="band"][data-tone="tip"] {
   background: color-mix(in srgb, var(--flow-back) 10%, var(--paper));
+}
+
+.g-compose-card[data-frame="band"][data-tone="muted"] {
+  background: color-mix(in srgb, var(--ink) 6%, var(--paper));
 }
 
 .g-compose-card[data-frame="band"] > .g-compose-card-text,
