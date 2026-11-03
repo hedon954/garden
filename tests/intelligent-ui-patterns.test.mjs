@@ -13,9 +13,14 @@ import { circled, crossing, labelFits, legendLine, placeLabels, RELATION_COMPACT
 
 const parse = (info, body) => parseGardenBlock(info, body);
 
-test("relations, list and choice are catalog blocks with English names; cycle is gone", () => {
+test("relations, list and choice are catalog blocks with English names; cycle and figure are gone", () => {
   assert.equal(GARDEN_NAMES.includes("cycle"), false);
   assert.equal(CATALOG.cycle, undefined);
+  assert.equal(GARDEN_NAMES.includes("figure"), false);
+  assert.equal(CATALOG.figure, undefined);
+  assert.equal(parse("garden figure", "image: ./diagram.svg\n").error?.code, "garden-name");
+  const css = readFileSync(new URL("../app/styles/a2.css", import.meta.url), "utf8");
+  assert.doesNotMatch(css, /\.g-figure|\.g-explore|data-name="figure"/u);
   for (const name of ["relations", "list", "choice"]) {
     assert.ok(GARDEN_NAMES.includes(name), name);
     assert.ok(CATALOG[name].example.startsWith(`\`\`\`garden ${name}`), `${name} example`);

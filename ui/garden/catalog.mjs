@@ -5,7 +5,7 @@
  */
 import { COMPOSE_EXAMPLE_BODY } from "../compose/examples.mjs";
 
-export const GARDEN_NAMES = ["card", "stat", "compare", "timeline", "chart", "compose", "html", "interactive", "file", "relations", "list", "choice", "figure"];
+export const GARDEN_NAMES = ["card", "stat", "compare", "timeline", "chart", "compose", "html", "interactive", "file", "relations", "list", "choice"];
 
 /** Names offered to authors. Deprecated names still parse in old posts. */
 export function offeredGardenNames() {
@@ -106,22 +106,6 @@ unit: ms
     keys: ["title", "caption", "intent", "steps", "notes", "tree", "children"],
     example: `\`\`\`garden compose\n${COMPOSE_EXAMPLE_BODY}\n\`\`\``,
     triggers: ["gcompose"],
-  },
-  figure: {
-    label: "结构图（废弃）",
-    deprecated: true,
-    when: "已废弃。新的说明图请写 compose。",
-    whenNot: "点选说明用 compose，不要再写新的 figure。",
-    keys: ["image", "alt", "mermaid", "svg", "parts", "caption"],
-    example: `\`\`\`garden figure
-image: ./figure.svg
-parts:
-  - name: 全部
-    text: 整张图。
-  - name: 标记
-    text: 这一步只做标记。
-\`\`\``,
-    triggers: ["gfigure"],
   },
   html: {
     label: "自定义 HTML",
@@ -361,14 +345,6 @@ notes:
     text: The build renders compose into the page
   - for: validate
     text: The hook stops an uncompiled idea
-\`\`\``,
-  figure: `\`\`\`garden figure
-image: ./figure.svg
-parts:
-  - name: All
-    text: The full diagram.
-  - name: Mark
-    text: This step only marks reachable objects.
 \`\`\``,
   html: `\`\`\`garden html
 src: ./demo.html

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useRef, useState, type ReactNode } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 import ReactMarkdown from "react-markdown";
 import { useUi, useUiLang } from "../UiLang";
 import { langOf, ui } from "../../lib/i18n";
@@ -263,120 +263,6 @@ export function GardenChart({ props }: { props: Record<string, unknown> }) {
       {typeof props.caption === "string" ? <figcaption><Rich text={props.caption} /></figcaption> : null}
     </figure>
   );
-}
-
-type Part = { id: string; label: string; text: string };
-
-function partsOf(props: Record<string, unknown>, partLabel: (n: number) => string): Part[] {
-  if (!Array.isArray(props.parts)) return [];
-  return props.parts.map((part, index) => {
-    const item = part as Record<string, unknown>;
-    const label = String(item.label ?? item.name ?? partLabel(index + 1));
-    return { id: String(item.id ?? item.name ?? label), label, text: String(item.text ?? "") };
-  });
-}
-
-function partOn(selected: string, token: string) {
-  if (selected === "all" || selected === "全部") return true;
-  const parts = token.trim().split(/\s+/u).filter(Boolean);
-  const has = (id: string) => parts.includes(id);
-  const starts = (prefix: string) => parts.some((part) => part === prefix || part.startsWith(prefix));
-  if (has(selected)) return true;
-  if (selected === "q") return has("attn");
-  if (selected === "k") return starts("k") || has("attn");
-  if (selected === "v") return starts("v") || has("out");
-  if (selected === "cache") return has("cache") || has("kn") || has("vn") || starts("k") || starts("v");
-  if (selected === "out") return has("out");
-  return false;
-}
-
-export function GardenFigure({ props, children }: { props: Record<string, unknown>; children?: string }) {
-  const t = useUi();
-  const parts = partsOf(props, t.part);
-  const [selected, setSelected] = useState(parts[0]?.id ?? "all");
-  const svgRef = useRef<HTMLDivElement>(null);
-  const base = useId();
-  const fromChild = typeof children === "string" && children.includes("<svg") ? children : "";
-  const svg = typeof props.svg === "string" && props.svg.includes("<svg") ? props.svg : fromChild;
-
-  useEffect(() => {
-    const root = svgRef.current;
-    const drawing = root?.querySelector("svg");
-    if (!drawing) return;
-    const shapes = [...drawing.querySelectorAll<SVGGraphicsElement>("rect[data-p], ellipse[data-p], circle[data-p]")];
-    drawing.querySelectorAll("text").forEach((text) => {
-      const x = Number(text.getAttribute("x"));
-      const y = Number(text.getAttribute("y"));
-      const shape = shapes.find((item) => {
-        const box = item.getBBox();
-        return x >= box.x && x <= box.x + box.width && y >= box.y && y <= box.y + box.height + 2;
-      });
-      if (!shape) return;
-      if (!text.hasAttribute("data-p")) text.setAttribute("data-p", shape.getAttribute("data-p") || "");
-      try {
-        const room = shape.getBBox().width - 12;
-        const width = text.getComputedTextLength();
-        if (width > room && room > 0) {
-          const size = Number.parseFloat(getComputedStyle(text).fontSize);
-          text.style.fontSize = `${(size * room / width).toFixed(2)}px`;
-        }
-      } catch {
-        /* getBBox can fail before layout */
-      }
-    });
-  }, [svg]);
-
-  useEffect(() => {
-    const root = svgRef.current;
-    if (!root) return;
-    root.querySelectorAll("[data-p]").forEach((element) => {
-      const token = ` ${element.getAttribute("data-p") || ""} `;
-      element.classList.toggle("on", partOn(selected, token));
-    });
-  }, [selected, svg]);
-
-  const body = (
-    <figure className="g-explore" data-g="explore" data-sel={selected} ref={svgRef}>
-      {parts.length ? (
-        <div role="tablist" aria-label={t.pickPart}>
-          {parts.map((part, index) => (
-            <button
-              key={part.id}
-              type="button"
-              role="tab"
-              aria-selected={selected === part.id}
-              tabIndex={selected === part.id ? 0 : -1}
-              data-sel={part.id}
-              onClick={() => setSelected(part.id)}
-              onKeyDown={(event) => {
-                if (event.key !== "ArrowRight" && event.key !== "ArrowLeft") return;
-                event.preventDefault();
-                const next = event.key === "ArrowRight" ? (index + 1) % parts.length : (index - 1 + parts.length) % parts.length;
-                setSelected(parts[next].id);
-              }}
-            >
-              {part.label}
-            </button>
-          ))}
-        </div>
-      ) : null}
-      {svg ? <div className="dx-wrap" dangerouslySetInnerHTML={{ __html: svg }} /> : null}
-      {typeof props.image === "string" ? (
-        <div className="fig-card">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={publicSrc(props.image)} alt={String(props.alt ?? props.caption ?? "")} />
-        </div>
-      ) : null}
-      {typeof props.mermaid === "string" ? <pre className="code"><code>{props.mermaid}</code></pre> : null}
-      <div className="dx-exp" aria-live="polite">
-        {parts.map((part) => (
-          <p key={part.id} id={`${base}-${part.id}`} hidden={selected !== part.id}><Rich text={part.text} /></p>
-        ))}
-      </div>
-      {typeof props.caption === "string" ? <figcaption><Rich text={props.caption} /></figcaption> : null}
-    </figure>
-  );
-  return parts.length || svg ? <FullscreenFrame label={t.diagram}>{body}</FullscreenFrame> : body;
 }
 
 function htmlHasScript(source: string) {

@@ -23,17 +23,14 @@
  *     emitted in `<noscript>` and is counted.
  *   - `garden html` that is already a widget fragment is inlined, so its text
  *     (including `<script>` text) is counted.
- *   - `garden figure` emits tab labels, part explanations, the caption, and
- *     SVG `<text>`. Prop keys and part ids stay in attributes and are excluded.
  *   - `garden compose` counts the title, caption, card text, and notes. The
  *     author's `intent` and ids stay out.
  * - A heading written `## 1.2 Title` keeps the digits (they move into
  *   `.sec-no`). The dot is dropped. The space was never going to be counted.
  *
- * The Go parity article comes out at 35,105. The demo page prints 35,234 for
- * the same prose and the same fenced code. The missing 129 characters are the
- * demo sandbox's `fallback:` paragraph, which that source renders in
- * `<noscript>` and this parity article does not contain.
+ * The Go parity article comes out at 34,714. Its diagrams are static SVG, so
+ * the count includes SVG text and the surrounding prose, and it does not
+ * include the old annotated-diagram tab labels.
  */
 import katex from "katex";
 import { Marked } from "marked";
@@ -131,14 +128,6 @@ function inline(value) {
   return marked.parseInline(String(value ?? ""), { async: false });
 }
 
-function figureHtml(data, svg) {
-  const parts = Array.isArray(data.parts) ? data.parts : [];
-  const tabs = parts.map((part) => `<button type="button" data-sel="${escapeHtml(part.id)}">${escapeHtml(part.label ?? "")}</button>`).join("");
-  const notes = parts.map((part) => `<p data-exp="${escapeHtml(part.id)}">${inline(part.text ?? "")}</p>`).join("");
-  const caption = data.caption ? `<figcaption>${inline(data.caption)}</figcaption>` : "";
-  return `<figure class="g-explore"><div role="tablist">${tabs}</div><div class="dx-wrap">${svg}</div><div class="dx-exp">${notes}</div>${caption}</figure>`;
-}
-
 function visibleStrings(value, html) {
   if (typeof value === "string") html.push(inline(value));
   else if (Array.isArray(value)) value.forEach((item) => visibleStrings(item, html));
@@ -168,11 +157,6 @@ function gardenHtml(info, body) {
     const result = parseCompose(body);
     if (!result.ok) return `<p>${escapeHtml(body)}</p>`;
     return `<p>${escapeHtml(composeText(result.doc))}</p>`;
-  }
-  if (name === "figure") {
-    const data = readYaml(yamlText);
-    if (!data) return `<pre class="code"><code>${escapeHtml(body)}</code></pre>`;
-    return figureHtml(data, children);
   }
   const data = readYaml(yamlText);
   if (!data) return `<pre class="code"><code>${escapeHtml(body)}</code></pre>`;

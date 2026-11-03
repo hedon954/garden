@@ -7,7 +7,6 @@ import {
   GardenCard,
   GardenChart,
   GardenCompare,
-  GardenFigure,
   GardenHtml,
   GardenIdea,
   GardenInteractive,
@@ -38,8 +37,6 @@ export function GardenBlock({ dataPayload }: { dataPayload?: string }) {
       return <GardenTimeline props={props} />;
     case "chart":
       return <GardenChart props={props} />;
-    case "figure":
-      return <GardenFigure props={props}>{String(block.children ?? "")}</GardenFigure>;
     case "compose":
       if (block.error?.code === "compose-uncompiled") return <GardenIdea text={String(block.idea || block.children || "")} />;
       if (block.error) return <GardenUnknown name="compose" />;

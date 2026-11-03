@@ -28,18 +28,6 @@ cover: ai-agent-react-vs-workflow.jpg
 
 Workflow 看名字就知道，它代表的是一个需要被前置定义好的工作流程。系统按照一个相对明确的执行图往下跑。它适合那些流程比较固定的场景，优点就是确定性高、稳定性强、好调试、好兜底，缺点也很明显：通用性较差，不太适合那种一开始就不知道要怎么做的开放性任务。
 
-```garden figure
-parts:
-  - id: all
-    label: 全部
-    text: Workflow 看名字就知道，它代表的是一个需要被前置定义好的工作流程。系统按照一个相对明确的执行图往下跑。
-  - id: flow
-    label: 控制流
-    text: Workflow 是人提前设计控制流
-  - id: node
-    label: 节点
-    text: 模型只是某些节点里的能力组件
----
 <svg viewBox="0 0 640 200" class="dx-svg g-flow" role="img" aria-label="Workflow：Input 到 Step 1，经 Gate 路由到 Step 2 或 Step 3，汇合到 Join 后输出 Output">
 <defs><marker id="ah1" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L8 4L0 8z" class="fl-ah"/></marker></defs>
 <rect x="8" y="22" width="624" height="170" rx="12" class="fl-group" data-p="flow"/><text x="20" y="40" class="dx-cap">Workflow（人提前设计的执行图）</text>
@@ -52,28 +40,10 @@ parts:
 <rect x="472" y="94" width="74" height="32" rx="6" class="fl-n" data-p="flow gate"/><text x="509" y="115" text-anchor="middle" class="dx-l">Join</text>
 <rect x="568" y="94" width="58" height="32" rx="6" class="fl-n" data-p="io"/><text x="597" y="115" text-anchor="middle" class="dx-l">Output</text>
 </svg>
-```
+
 
 ReAct 则不一样。ReAct 来自 `Reasoning and Acting`。在工程实现中，它通常被展开为 `Thought/Reasoning → Action → Observation` 的循环：模型先基于上下文生成下一步判断，再调用工具或执行动作，然后把外部观察结果重新放回上下文，继续下一轮决策。
 
-```garden figure
-parts:
-  - id: all
-    label: 全部
-    text: 在工程实现中，它通常被展开为 `Thought/Reasoning → Action → Observation` 的循环
-  - id: think
-    label: Reasoning
-    text: 模型先基于上下文生成下一步判断
-  - id: act
-    label: Action
-    text: 再调用工具或执行动作
-  - id: obs
-    label: Observation
-    text: 然后把外部观察结果重新放回上下文，继续下一轮决策。
-  - id: exit
-    label: 退出
-    text: 模型不再产生 Tool Call，或者返回了最终答案，或者触发了最大轮次、异常、业务停止条件。
----
 <svg viewBox="0 0 640 230" class="dx-svg g-flow" role="img" aria-label="ReAct：User task 进入 Prompt and tool schemas，模型推理后判断是否调用工具；是则得到工具结果或环境观察并回到推理，否则输出最终答案">
 <defs><marker id="ah2" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L8 4L0 8z" class="fl-ah"/></marker></defs>
 <rect x="8" y="10" width="13" height="13" rx="3" class="fl-n" data-p="io" style="display:none"/>
@@ -91,7 +61,7 @@ parts:
 <line x1="500" y1="95" x2="532" y2="95" class="fl-e1" marker-end="url(#ah2)" data-p="exit"/><text x="506" y="88" class="dx-cap">no</text>
 <rect x="534" y="78" width="90" height="34" rx="6" class="fl-n" data-p="exit"/><text x="579" y="100" text-anchor="middle" class="dx-l">Final answer</text>
 </svg>
-```
+
 
 从技术实现细节上看，很多 ReAct Agent 的退出条件都比较简单：模型不再产生 Tool Call，或者返回了最终答案，或者触发了最大轮次、异常、业务停止条件。也就是说，ReAct 的核心不是"固定执行哪几步"，而是"每一步都由模型根据当前上下文决定下一步"。
 
