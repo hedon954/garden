@@ -129,9 +129,9 @@ function attrIf(name, value, fallback) {
 
 function renderText(node, ctx, className) {
   const tag = ctx.phrasing ? "span" : "p";
-  const align = attrIf("align", node.align, "start");
+  const align = node.align === "center" ? "center" : "start";
   const tone = attrIf("tone", node.tone, "plain");
-  return `<${tag} class="${className}"${align}${tone}>${textHtml(node.text)}</${tag}>`;
+  return `<${tag} class="${className}" data-align="${align}"${tone}>${textHtml(node.text)}</${tag}>`;
 }
 
 function fanHtml(count) {
@@ -139,7 +139,7 @@ function fanHtml(count) {
 }
 
 function joinHtml(text) {
-  return `<div class="g-compose-join"><svg class="g-compose-join-svg" viewBox="0 0 600 56" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path d="M36 10 L300 40 L564 10" fill="none" stroke="currentColor" stroke-width="2" vector-effect="non-scaling-stroke"/><path d="M300 40 V54" fill="none" stroke="currentColor" stroke-width="2" vector-effect="non-scaling-stroke"/></svg><p class="g-compose-join-label">${textHtml(text)}</p></div>`;
+  return `<div class="g-compose-join"><p class="g-compose-join-label">${textHtml(text)}</p><svg class="g-compose-join-svg" viewBox="0 0 600 64" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path d="M8 12 L300 36" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" vector-effect="non-scaling-stroke"/><path d="M592 12 L300 36" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" vector-effect="non-scaling-stroke"/><path d="M300 36 V58" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" vector-effect="non-scaling-stroke"/></svg></div>`;
 }
 
 function lanesHtml(node) {
@@ -149,10 +149,11 @@ function lanesHtml(node) {
   const rows = node.messages.map((message, index) => {
     const start = Math.min(message.from, message.to);
     const end = Math.max(message.from, message.to) + 1;
+    const span = end - start;
     const way = message.from < message.to ? "right" : "left";
     const n = CIRCLED[index] ?? String(index + 1);
     const route = `${node.actors[message.from - 1]} → ${node.actors[message.to - 1]}`;
-    return `<div class="g-compose-lane-row"><div class="g-compose-lane-msg" data-tone="${esc(message.tone)}" data-way="${way}" style="grid-column:${start} / ${end}"><span class="g-compose-lane-label">${textHtml(`${n} ${message.text}`)}</span><span class="g-compose-lane-route">${textHtml(route)}</span><span class="g-compose-lane-shaft" aria-hidden="true"></span></div></div>`;
+    return `<div class="g-compose-lane-row"><div class="g-compose-lane-msg" data-tone="${esc(message.tone)}" data-way="${way}" style="grid-column:${start} / ${end};--span:${span}"><span class="g-compose-lane-shaft" aria-hidden="true"></span><span class="g-compose-lane-label">${textHtml(`${n} ${message.text}`)}</span><span class="g-compose-lane-route">${textHtml(route)}</span></div></div>`;
   }).join("");
   return `<div class="g-compose-lanes" style="--cols:${cols}"><div class="g-compose-lanes-head">${heads}</div><div class="g-compose-lanes-stage">${lives}${rows}</div></div>`;
 }

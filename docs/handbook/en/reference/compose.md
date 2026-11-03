@@ -87,7 +87,26 @@ Fence header: ` ```garden compose `. A body that is still prose reports `compose
 | `notes[].for` | Required | none | an existing `id` | Which card opens this note |
 | `notes[].text` | Required | none | string | The note itself |
 
-Nodes allowed under `tree`: `stack`, `row`, `card`, `title`, `text`, `steps`, `compare`, `callout`, `divider`, `badge`, `kpi`, `arrow`, `notes`.
+Nodes allowed under `tree`: `stack`, `row`, `card`, `title`, `text`, `steps`, `compare`, `callout`, `divider`, `badge`, `kpi`, `arrow`, `fan`, `join`, `lanes`, `notes`.
+
+Assemble a diagram from these atoms. Do not add a style that only one picture uses.
+
+| What you are drawing | Write |
+| --- | --- |
+| Soft full-width band | `card` + `frame: band` |
+| Small capsule | `card` + `frame: pill`. `tone: accent` fills it |
+| Plain title block | `card` + `frame: text` |
+| Bordered card | `card` |
+| Circled index | `badge: "①"` |
+| Shield | `mark: shield` |
+| Downward arrow | `arrow: down` |
+| A row of downward arrows | `fan: 3`, then a `row` with the same number of cells |
+| V connector with the label in the notch | `join: one sentence` |
+| Swimlane | `lanes` with `actors` and `messages`. `from` / `to` start at 1. `tone` is `forward` or `back` |
+| Footer | `text` + `tone: muted` |
+| Two-by-two | two `row` nodes, two cells each |
+
+The line under a title on `frame: band` or `frame: text` is the gray subtitle. Inside a centered `stack`, a left footer uses `align: start`.
 
 - `arrow` direction is `down` or `right`. On a narrow screen a rightward arrow points down.
 - `callout` tone is `note`, `tip`, or `warn`.

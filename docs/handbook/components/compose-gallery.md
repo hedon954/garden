@@ -7,9 +7,30 @@ order: 36.5
 badge: compose
 ---
 
-这些图都是 `garden compose` 围栏，构建时渲成静态 HTML。浅色和深色走同一套主题变量。窄屏收成一列。
+左边是 ChatGPT 原图，右边是同一套零件拼出来的 `garden compose`。颜色只走主题变量。窄屏先把对照收成上下，再把图里的横排收成一列。
+
+## 零件怎么拼
+
+| ChatGPT 里的零件 | compose |
+| --- | --- |
+| 浅底通栏（Role、IdP、第 ② 和 ⑤ 步、Agent） | `card`，`frame: band` |
+| 小胶囊（用户浏览器） | `card`，`frame: pill` |
+| 无框的标题加一句灰字 | `card`，`frame: text`，或 `title` + `text` |
+| 带边框的白卡 | `card` |
+| 圆圈序号 | `badge` 写成 ① |
+| 盾牌 | `mark: shield` |
+| 一根向下的箭头 | `arrow: down` |
+| 并排散开的几根箭头 | `fan`，后面接同样列数的 `row` |
+| 中间写字的 V 形连接 | `join` |
+| 泳道、虚线和来回箭头 | `lanes`，`tone: forward` 或 `back` |
+| 脚注 | `text`，`tone: muted` |
+| 两列两行 | 两个 `row`，每个里面两格 |
+
+浅底只包住被强调的那一层。居中的 `stack` 里，脚注要靠左就写 `align: start`。
 
 ## RBAC
+
+![ChatGPT 原图](../assets/compose/rbac.png)
 
 ```garden compose
 intent: |
@@ -47,6 +68,8 @@ tree:
 
 ## SSO
 
+![ChatGPT 原图](../assets/compose/sso.png)
+
 ```garden compose
 intent: |
   用户浏览器指向身份提供方，再散到 HR、Finance、Project。三个系统信任同一个身份提供方。
@@ -78,6 +101,8 @@ tree:
 ```
 
 ## 认证分层
+
+![ChatGPT 原图](../assets/compose/auth-stack.png)
 
 ```garden compose
 intent: |
@@ -129,6 +154,8 @@ tree:
 ```
 
 ## API 的六个维度
+
+![ChatGPT 原图](../assets/compose/api-six.png)
 
 ```garden compose
 intent: |
@@ -194,6 +221,8 @@ tree:
 
 ## Agent、策略点与工具
 
+![ChatGPT 原图](../assets/compose/agent-pep.png)
+
 ```garden compose
 intent: |
   用户意图经过 Agent，再经过策略执行点，最后到工具执行器。策略点里是四条约束。
@@ -223,13 +252,18 @@ tree:
             align: center
             mark: shield
             title: Policy Enforcement Point
-            text: 独立于 LLM 的确定性执行控制
             children:
+              - type: text
+                text: 独立于 LLM 的确定性执行控制
+                align: center
+                tone: muted
               - row:
+                  align: center
                   children:
                     - text: 权限与资源范围
                     - text: 操作参数校验
               - row:
+                  align: center
                   children:
                     - text: 任务意图约束
                     - text: 高风险操作审批
@@ -241,6 +275,8 @@ tree:
 ```
 
 ## OAuth 授权码 + PKCE
+
+![ChatGPT 原图](../assets/compose/oauth-pkce.png)
 
 ```garden compose
 intent: |

@@ -1952,6 +1952,18 @@ html[data-theme="dark"] .gf-scrim { background: rgb(0 0 0 / 45%); }
   width: 100%;
 }
 
+/* The compose gallery compares two wide diagrams. Give that article the
+   spare room between the handbook sidebar and the table of contents. */
+@media (min-width: 1260px) {
+  .garden-doc-page:has(.g-compose-pair) {
+    grid-template-columns: 220px minmax(0, 1fr) 180px;
+  }
+
+  .garden-doc-page:has(.g-compose-pair) .garden-doc-article {
+    max-width: none;
+  }
+}
+
 .gdoc-article-head {
   padding: 4px 0 28px;
   margin-bottom: 32px;

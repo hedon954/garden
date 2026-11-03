@@ -87,7 +87,26 @@ tree:
 | `notes[].for` | 必填 | 无 | 已有的 `id` | 点哪张卡展开这条 |
 | `notes[].text` | 必填 | 无 | 字符串 | 展开后的说明 |
 
-`tree` 里的零件只有这些：`stack`、`row`、`card`、`title`、`text`、`steps`、`compare`、`callout`、`divider`、`badge`、`kpi`、`arrow`、`notes`。
+`tree` 里的零件只有这些：`stack`、`row`、`card`、`title`、`text`、`steps`、`compare`、`callout`、`divider`、`badge`、`kpi`、`arrow`、`fan`、`join`、`lanes`、`notes`。
+
+拼法跟说明图的骨架一致，不按某一张图单独改样式。
+
+| 要画的东西 | 写法 |
+| --- | --- |
+| 浅底通栏 | `card` + `frame: band` |
+| 小胶囊 | `card` + `frame: pill`。`tone: accent` 是浅底胶囊 |
+| 无框标题 | `card` + `frame: text` |
+| 带边框的卡 | `card` |
+| 圆圈序号 | `badge: "①"` |
+| 盾牌 | `mark: shield` |
+| 向下的箭头 | `arrow: down` |
+| 并排的几根向下箭头 | `fan: 3`，下一行 `row` 的格数相同 |
+| V 形连接，字写在缺口里 | `join: 一句说明` |
+| 泳道 | `lanes`，`actors` 与 `messages`。`from` / `to` 从 1 起，`tone` 是 `forward` 或 `back` |
+| 脚注 | `text` + `tone: muted` |
+| 两列两行 | 两个 `row`，每个两格 |
+
+`frame: band` 和 `frame: text` 标题下的那一句是灰色说明。居中 `stack` 里的脚注要靠左，写 `align: start`。
 
 - `arrow` 的方向是 `down` 或 `right`。窄屏上向右的箭头会改成向下。
 - `callout` 的 `tone` 是 `note`、`tip`、`warn`。

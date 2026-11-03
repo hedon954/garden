@@ -10,9 +10,10 @@
 
 **零件（只能这些）：** `stack`、`row`、`card`、`title`、`text`、`steps`、`compare`、`callout`、`divider`、`badge`、`kpi`、`arrow`、`fan`、`join`、`lanes`、`notes`。
 
-- `stack` / `row` / `card` / `text` 可以写 `align: center`。
-- `card.frame` 是 `card`（默认边框）、`band`（通栏浅底）、`text`（无框）或 `pill`（小胶囊）。
-- `fan: 3` 是向下散开的箭头。`join: 一句说明` 是三列之间的连接线。`lanes` 是泳道：`actors` 加 `messages`（`from` / `to` 从 1 起，`tone: forward | back`）。
+- `stack` / `row` / `card` / `text` 可以写 `align: center`。居中的 `stack` 里，脚注要靠左就给那句 `text` 写 `align: start`。
+- `card.frame` 是 `card`（默认边框）、`band`（通栏浅底，用来强调中间一层）、`text`（无框）或 `pill`（小胶囊）。`band` 和 `text` 标题下的一句是灰色说明。
+- `fan: 3` 是并排向下的箭头，下一行 `row` 的格数要相同。`join: 一句说明` 是 V 形连接，字写在缺口里。`lanes` 是泳道：`actors` 加 `messages`（`from` / `to` 从 1 起，`tone: forward | back`）。
+- 两列两行写成两个 `row`，每个两格。不要为某一张图单独改样式。
 - 窄屏会收成一列。不要写色值、HTML、SVG、脚本、class 或宽度。
 
 - 说明图优先写顶层 `steps` + `notes`。`notes[].for` 对上 `steps[].id`。

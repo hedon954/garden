@@ -7,9 +7,30 @@ order: 36.5
 badge: compose
 ---
 
-Each diagram is a `garden compose` fence. Build turns it into static HTML. Light and dark share the theme tokens. A narrow screen uses one column.
+The left column is the ChatGPT original. The right column is the same skeleton built with `garden compose`. Color comes only from the theme tokens. A narrow screen stacks the original above the compose diagram, then stacks rows inside the diagram.
+
+## How the atoms fit together
+
+| ChatGPT atom | compose |
+| --- | --- |
+| Soft full-width band (Role, IdP, steps 2 and 5, Agent) | `card` with `frame: band` |
+| Small capsule (the browser) | `card` with `frame: pill` |
+| Plain title plus a gray line | `card` with `frame: text`, or `title` + `text` |
+| Bordered card | `card` |
+| Circled index | `badge` set to a circled number |
+| Shield | `mark: shield` |
+| One downward arrow | `arrow: down` |
+| Several downward arrows in a row | `fan`, then a `row` with the same count |
+| V connector with a label in the notch | `join` |
+| Swimlane, dashed lifelines, both arrow directions | `lanes`, `tone: forward` or `back` |
+| Footer line | `text` with `tone: muted` |
+| Two-by-two grid | two `row` nodes, two cells each |
+
+A band wraps only the highlighted layer. Inside a centered `stack`, a footer that should sit on the left uses `align: start`.
 
 ## RBAC
+
+![ChatGPT original](../../assets/compose/rbac.png)
 
 ```garden compose
 intent: |
@@ -47,6 +68,8 @@ tree:
 
 ## SSO
 
+![ChatGPT original](../../assets/compose/sso.png)
+
 ```garden compose
 intent: |
   The browser points at one identity provider, which then reaches HR, Finance, and Project.
@@ -78,6 +101,8 @@ tree:
 ```
 
 ## Auth stack
+
+![ChatGPT original](../../assets/compose/auth-stack.png)
 
 ```garden compose
 intent: |
@@ -129,6 +154,8 @@ tree:
 ```
 
 ## Six checks on an API call
+
+![ChatGPT original](../../assets/compose/api-six.png)
 
 ```garden compose
 intent: |
@@ -194,6 +221,8 @@ tree:
 
 ## Agent, policy point, and tool
 
+![ChatGPT original](../../assets/compose/agent-pep.png)
+
 ```garden compose
 intent: |
   Intent goes through the agent, then a policy enforcement point, then the tool executor. The policy point holds four constraints.
@@ -223,13 +252,18 @@ tree:
             align: center
             mark: shield
             title: Policy Enforcement Point
-            text: A deterministic check outside the LLM
             children:
+              - type: text
+                text: A deterministic check outside the LLM
+                align: center
+                tone: muted
               - row:
+                  align: center
                   children:
                     - text: Scope and resources
                     - text: Argument checks
               - row:
+                  align: center
                   children:
                     - text: Task limits
                     - text: High-risk review
@@ -241,6 +275,8 @@ tree:
 ```
 
 ## OAuth authorization code + PKCE
+
+![ChatGPT original](../../assets/compose/oauth-pkce.png)
 
 ```garden compose
 intent: |

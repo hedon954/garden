@@ -154,6 +154,7 @@ test("the handbook gallery renders all six explanation diagrams", () => {
   const markdown = fs.readFileSync(path.join(root, "docs/handbook/components/compose-gallery.md"), "utf8");
   const fences = scanFences(markdown).map((fence) => classifyFence(fence)).filter((item) => item.kind === "garden");
   assert.equal(fences.length, 6);
+  assert.equal((markdown.match(/!\[[^\]]*\]\([^)]+compose\/[^)]+\)/gu) || []).length, 6);
   assert.deepEqual(checkGardenMarkdown(markdown), []);
   const html = fences.map((item) => renderCompose(item.block.props, { scope: "gallery" })).join("\n");
   assert.match(html, /角色连接用户和权限/);
@@ -162,9 +163,32 @@ test("the handbook gallery renders all six explanation diagrams", () => {
   assert.match(html, /业务操作与数据存储/);
   assert.match(html, /Policy Enforcement Point/);
   assert.match(html, /g-compose-lanes/);
+  assert.match(html, /data-tone="forward"/);
+  assert.match(html, /data-tone="back"/);
+  assert.match(html, /--span:2/);
   assert.match(html, /① 点击登录 \/ 授权/);
   assert.match(html, /class="g-compose-fan"/);
+  assert.match(html, /data-align="start"/);
   assert.doesNotMatch(html, /<script/u);
+  for (const name of ["rbac", "sso", "auth-stack", "api-six", "agent-pep", "oauth-pkce"]) {
+    assert.equal(fs.existsSync(path.join(root, "docs/handbook/assets/compose", `${name}.png`)), true);
+  }
+});
+
+test("a ChatGPT original image beside a compose fence becomes a pair", () => {
+  const source = `![ChatGPT 原图](../assets/compose/rbac.png)\n\n${fence("title: RBAC\ntree:\n  - title: User\n")}`;
+  const processor = unified().use(remarkParse).use(remarkGarden);
+  const tree = processor.runSync(processor.parse(source));
+  const html = [];
+  const walk = (node) => {
+    if (node?.type === "html") html.push(node.value);
+    if (node?.data?.hProperties?.className?.includes("g-compose-pair")) html.push("pair");
+    for (const child of node?.children ?? []) walk(child);
+  };
+  walk(tree);
+  assert.ok(html.includes("pair"));
+  assert.match(html.join("\n"), /g-compose/);
+  assert.equal(html.filter((item) => item === "pair").length, 1);
 });
 
 test("the ui prompt catalog includes compose and forbids arbitrary HTML", () => {
