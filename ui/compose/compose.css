@@ -29,10 +29,14 @@
   margin: 0 0 14px;
 }
 
-.g-compose-title,
-.g-compose-h {
+.g-compose-title {
   color: var(--ink);
   font: 600 18px/1.4 var(--sans);
+}
+
+.g-compose-h {
+  color: var(--ink);
+  font: 600 16px/1.35 var(--sans);
 }
 
 .g-compose-caption {
@@ -129,7 +133,8 @@
 
 .g-compose-text[data-tone="muted"] {
   color: var(--muted);
-  font-size: 14px;
+  font-size: 13px;
+  line-height: 1.45;
 }
 
 .g-compose-card > .g-compose-row,
@@ -309,6 +314,13 @@
 .g-compose-card[data-frame="pill"][data-tone="tip"] {
   background: color-mix(in srgb, var(--flow-back) 9%, var(--paper));
   border-color: color-mix(in srgb, var(--flow-back) 24%, var(--paper));
+}
+
+.g-compose-card[data-frame="pill"][data-tone="muted"] {
+  background: color-mix(in srgb, var(--ink) 7%, var(--paper));
+  border-color: color-mix(in srgb, var(--ink) 14%, var(--paper));
+  color: var(--ink);
+  box-shadow: 0 1px 2px color-mix(in srgb, var(--ink) 8%, transparent);
 }
 
 .g-compose-card-line {
@@ -629,7 +641,7 @@
 .g-compose-divider {
   width: 100%;
   height: 0;
-  margin: 12px 0;
+  margin: 2px 0;
   border: 0;
   border-top: 1px solid var(--rule);
 }

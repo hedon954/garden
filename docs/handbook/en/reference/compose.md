@@ -94,7 +94,7 @@ Assemble a diagram from these atoms. Do not add a style that only one picture us
 | What you are drawing | Write |
 | --- | --- |
 | Soft full-width band | `card` + `frame: band`. `tone: accent` and `tone: tip` are the two emphasis fills, the same pair as lane `forward` and `back` |
-| Small capsule | `card` + `frame: pill`. `tone: accent` fills it |
+| Small capsule | `card` + `frame: pill`. `plain` is a white hairline capsule, `tone: muted` is the soft neutral fill, `tone: accent` is the emphasis fill |
 | Plain title block | `card` + `frame: text` |
 | Bordered card | `card` |
 | Circled index | `badge: "①"` |

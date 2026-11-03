@@ -14,7 +14,7 @@ badge: compose
 | 图上的结构 | 写法 |
 | --- | --- |
 | 浅底通栏（Role、IdP、第 ② 和 ⑤ 步、Agent） | `card`，`frame: band`。两种强调色是 `tone: accent` 和 `tone: tip` |
-| 小胶囊（用户浏览器） | `card`，`frame: pill` |
+| 小胶囊（用户浏览器） | `card`，`frame: pill`。`tone: muted` 是浅中性底 |
 | 无框的标题加一句灰字 | `card`，`frame: text`，或 `title` + `text` |
 | 带边框的白卡 | `card` |
 | 圆圈序号 | `badge` 写成 ① |
@@ -333,16 +333,19 @@ tree:
       children:
         - card:
             frame: pill
+            tone: muted
             align: center
             title: 提出假设
         - arrow: right
         - card:
             frame: pill
+            tone: muted
             align: center
             title: 低成本验证
         - arrow: right
         - card:
             frame: pill
+            tone: muted
             align: center
             title: 迭代或放弃
   - type: text

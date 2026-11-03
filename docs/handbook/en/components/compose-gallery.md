@@ -14,7 +14,7 @@ These seven diagrams are `garden compose`. Color comes only from the theme token
 | On the diagram | How to write it |
 | --- | --- |
 | Soft full-width band (Role, IdP, steps 2 and 5, Agent) | `card` with `frame: band`. The two emphasis fills are `tone: accent` and `tone: tip` |
-| Small capsule (the browser) | `card` with `frame: pill` |
+| Small capsule (the browser) | `card` with `frame: pill`. `tone: muted` is the soft neutral fill |
 | Plain title plus a gray line | `card` with `frame: text`, or `title` + `text` |
 | Bordered card | `card` |
 | Circled index | `badge` set to a circled number |
@@ -333,16 +333,19 @@ tree:
       children:
         - card:
             frame: pill
+            tone: muted
             align: center
             title: State a hypothesis
         - arrow: right
         - card:
             frame: pill
+            tone: muted
             align: center
             title: Test it cheaply
         - arrow: right
         - card:
             frame: pill
+            tone: muted
             align: center
             title: Iterate or drop it
   - type: text

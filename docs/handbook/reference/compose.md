@@ -94,7 +94,7 @@ tree:
 | 要画的东西 | 写法 |
 | --- | --- |
 | 浅底通栏 | `card` + `frame: band`。`tone: accent` 和 `tone: tip` 是两种强调底，和泳道的 `forward` / `back` 同一对颜色 |
-| 小胶囊 | `card` + `frame: pill`。`tone: accent` 是浅底胶囊 |
+| 小胶囊 | `card` + `frame: pill`。`plain` 是白底细边，`tone: muted` 是浅中性底，`tone: accent` 是强调浅底 |
 | 无框标题 | `card` + `frame: text` |
 | 带边框的卡 | `card` |
 | 圆圈序号 | `badge: "①"` |
