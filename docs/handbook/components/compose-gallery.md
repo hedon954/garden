@@ -7,11 +7,11 @@ order: 36.5
 badge: compose
 ---
 
-左边是 ChatGPT 原图，右边是同一套零件拼出来的 `garden compose`。颜色只走主题变量。窄屏先把对照收成上下，再把图里的横排收成一列。
+下面六张都是 `garden compose`。颜色只走主题变量。窄屏把图里的横排收成一列。
 
 ## 零件怎么拼
 
-| ChatGPT 里的零件 | compose |
+| 图上的结构 | 写法 |
 | --- | --- |
 | 浅底通栏（Role、IdP、第 ② 和 ⑤ 步、Agent） | `card`，`frame: band`。两种强调色是 `tone: accent` 和 `tone: tip` |
 | 小胶囊（用户浏览器） | `card`，`frame: pill` |
@@ -29,8 +29,6 @@ badge: compose
 浅底只包住被强调的那一层。居中的 `stack` 里，脚注要靠左就写 `align: start`。
 
 ## RBAC
-
-![ChatGPT 原图](../assets/compose/rbac.png)
 
 ```garden compose
 intent: |
@@ -68,8 +66,6 @@ tree:
 
 ## SSO
 
-![ChatGPT 原图](../assets/compose/sso.png)
-
 ```garden compose
 intent: |
   用户浏览器指向身份提供方，再散到 HR、Finance、Project。三个系统信任同一个身份提供方。
@@ -101,8 +97,6 @@ tree:
 ```
 
 ## 认证分层
-
-![ChatGPT 原图](../assets/compose/auth-stack.png)
 
 ```garden compose
 intent: |
@@ -154,8 +148,6 @@ tree:
 ```
 
 ## API 的六个维度
-
-![ChatGPT 原图](../assets/compose/api-six.png)
 
 ```garden compose
 intent: |
@@ -221,8 +213,6 @@ tree:
 
 ## Agent、策略点与工具
 
-![ChatGPT 原图](../assets/compose/agent-pep.png)
-
 ```garden compose
 intent: |
   用户意图经过 Agent，再经过策略执行点，最后到工具执行器。策略点里是四条约束。
@@ -275,8 +265,6 @@ tree:
 ```
 
 ## OAuth 授权码 + PKCE
-
-![ChatGPT 原图](../assets/compose/oauth-pkce.png)
 
 ```garden compose
 intent: |

@@ -154,7 +154,8 @@ test("the handbook gallery renders all six explanation diagrams", () => {
   const markdown = fs.readFileSync(path.join(root, "docs/handbook/components/compose-gallery.md"), "utf8");
   const fences = scanFences(markdown).map((fence) => classifyFence(fence)).filter((item) => item.kind === "garden");
   assert.equal(fences.length, 6);
-  assert.equal((markdown.match(/!\[[^\]]*\]\([^)]+compose\/[^)]+\)/gu) || []).length, 6);
+  assert.doesNotMatch(markdown, /ChatGPT/u);
+  assert.doesNotMatch(fs.readFileSync(path.join(root, "docs/handbook/en/components/compose-gallery.md"), "utf8"), /ChatGPT/u);
   assert.deepEqual(checkGardenMarkdown(markdown), []);
   const html = fences.map((item) => renderCompose(item.block.props, { scope: "gallery" })).join("\n");
   assert.match(html, /角色连接用户和权限/);
@@ -175,8 +176,10 @@ test("the handbook gallery renders all six explanation diagrams", () => {
   assert.match(html, /class="g-compose-fan"/);
   assert.match(html, /data-align="start"/);
   assert.doesNotMatch(html, /<script/u);
+  const demo = fs.readFileSync(path.join(root, "content/posts/compose-compare.md"), "utf8");
+  assert.equal((demo.match(/!\[[^\]]*\]\(\.\/compose-compare\/[^)]+\)/gu) || []).length, 6);
   for (const name of ["rbac", "sso", "auth-stack", "api-six", "agent-pep", "oauth-pkce"]) {
-    assert.equal(fs.existsSync(path.join(root, "docs/handbook/assets/compose", `${name}.png`)), true);
+    assert.equal(fs.existsSync(path.join(root, "content/posts/compose-compare", `${name}.png`)), true);
   }
 });
 

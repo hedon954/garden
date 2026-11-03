@@ -1952,14 +1952,14 @@ html[data-theme="dark"] .gf-scrim { background: rgb(0 0 0 / 45%); }
   width: 100%;
 }
 
-/* The compose gallery compares two wide diagrams. Give that article the
-   spare room between the handbook sidebar and the table of contents. */
+/* A compare post puts two wide diagrams side by side. Let that article use
+   the space beside the table of contents. */
 @media (min-width: 1260px) {
-  .garden-doc-page:has(.g-compose-pair) {
-    grid-template-columns: 220px minmax(0, 1fr) 180px;
+  .post-reading-page:has(.g-compose-pair) .article-reading-layout {
+    grid-template-columns: 24px minmax(0, 1fr) var(--rail);
   }
 
-  .garden-doc-page:has(.g-compose-pair) .garden-doc-article {
+  .post-reading-page:has(.g-compose-pair) .article-reading-column {
     max-width: none;
   }
 }
