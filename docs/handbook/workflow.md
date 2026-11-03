@@ -51,7 +51,7 @@ order: 40
 | `garden-idea` | 错误 | 非草稿文章里还有未编译的空白 `garden` 想法块 |
 | `compose-uncompiled` | 错误 | 非草稿里的 `garden compose` 还是白话，没有编译成 YAML 树 |
 | `compose-invalid` | 错误 | `garden compose` 的 YAML 树不合法：未知零件、对不上的 `for`，或重复的 `id` |
-| `garden-name` | 错误 | 未知的 `garden` 组件名（支持 `card`、`stat`、`compare`、`timeline`、`chart`、`compose`、`html`、`interactive`、`file`、`relations`、`list`、`choice`、`figure`；`figure` 已废弃） |
+| `garden-name` | 错误 | 未知的 `garden` 组件名（支持 `card`、`stat`、`compare`、`timeline`、`chart`、`compose`、`html`、`interactive`、`file`、`relations`、`list`、`choice`） |
 | `garden-yaml` | 错误 | `garden` 围栏内 YAML 语法错误、顶层不是键值/列表，或包含该组件不支持的键名 |
 | `garden-relations` | 错误 | `garden relations` 的要素数量不在 3～6 个之间，或 `links` 配置不合法（要素更多或有分支改用 `mermaid` 流程图，只走一遍的步骤用 `garden list`） |
 | `garden-file` / `file-outside` | 错误 | `garden file` 手写了 `resolved`、缺少有效的 `src` / `files`，或本地路径越出了 `content/` 目录 |
@@ -77,10 +77,10 @@ Garden 通过以下三种方式提供组件模板与智能辅助：
 1. **新建文章自动附带速查表**：运行 `make new SLUG=xxx TITLE="..."` 创建文章时，生成的 `.md` 文件底部会自动带有一段 `<!-- 组件速查 ... -->` HTML 注释，列出想法块和各个组件的示例写法，复制需要的那块即可。这段注释不会显示在页面上，写完可以删掉。
 2. **代码片段模板文件**：`hd-garden` 包内的 `templates/` 目录自带两份模板文件：
    - `templates/garden-blocks.md`：想法块和内置组件的可复制 Markdown 模板。
-   - `templates/garden-snippets.plist`：macOS 系统文本替换词条（可拖入「系统设置 → 键盘 → 文本替换」），触发词是 `;gidea`（也可以输入 `;garden想法`）、`;gcard`、`;gstat`、`;gcompare`、`;gtimeline`、`;gchart`、`;gcompose`、`;gfigure`、`;ghtml`、`;ginteractive`、`;gfile`、`;grel`、`;glist`、`;gchoice`。`;gcompose` 展开成带一句白话的 `garden compose`；其余展开成对应围栏。
+   - `templates/garden-snippets.plist`：macOS 系统文本替换词条（可拖入「系统设置 → 键盘 → 文本替换」），触发词是 `;gidea`（也可以输入 `;garden想法`）、`;gcard`、`;gstat`、`;gcompare`、`;gtimeline`、`;gchart`、`;gcompose`、`;ghtml`、`;ginteractive`、`;gfile`、`;grel`、`;glist`、`;gchoice`。`;gcompose` 展开成带一句白话的 `garden compose`；其余展开成对应围栏。
 3. **安装 AI Agent 技能（`npx garden skill`）**：在站点目录运行 `npx garden skill`（`npx hd-garden init` 时也会自动执行），会把三个技能复制到站点根目录下的 `.agents/skills/`：
    - `garden-ui`：把文章里的 `garden` 想法描述编译成具体的组件围栏。
-   - `garden-interactive-chart`：根据文章数据编写 `interactive`、`chart`、`compose` 与 `html` 组件。`figure` 已废弃。
+   - `garden-interactive-chart`：根据文章数据编写 `interactive`、`chart`、`compose` 与 `html` 组件。
    - `garden-post-review`：按排版与组件规范审阅整篇文章。
 
 ## 5. VS Code、Cursor 与 Typora 插件

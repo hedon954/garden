@@ -1,7 +1,7 @@
 ---
 title: 组件总览
 navTitle: 组件总览
-description: garden 围栏的效果预览，以及链接卡片、来源胶囊和本地图片。figure 已由 compose 接替。
+description: garden 围栏的效果预览，以及链接卡片、来源胶囊和本地图片。
 section: components
 order: 30
 ---
@@ -100,8 +100,6 @@ notes:
   - for: validate
     text: 钩子拦住还没编译的想法。
 ```
-
-[figure](/garden/components/figure) 已废弃，旧围栏仍能渲染。
 
 ## [嵌入网页片段 · html](/garden/components/html)
 

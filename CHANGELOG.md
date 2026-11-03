@@ -2,7 +2,7 @@
 
 ## 0.11.0
 
-`garden compose` is an explanation diagram: a YAML tree of cards, arrows, badges, and notes, rendered to static HTML at build time. The fence starts as one sentence and stays `garden compose` after compile. Light and dark both use the existing theme tokens, and a narrow screen stacks the diagram into one column. Clicking a step shows its note without a runtime. The handbook keeps a short compose example. Color stays on the theme tokens. `figure` is deprecated; handbook demos now use compose, and old `figure` fences still render. This release does not publish the package and does not bump garden-blog.
+`garden compose` is an explanation diagram: a YAML tree of cards, arrows, badges, and notes, rendered to static HTML at build time. The fence starts as one sentence and stays `garden compose` after compile. Light and dark both use the existing theme tokens, and a narrow screen stacks the diagram into one column. Clicking a step shows its note without a runtime. The handbook compose page shows short examples of the primitives. Color stays on the theme tokens. This release does not publish the package and does not bump garden-blog.
 
 ## 0.10.4
 

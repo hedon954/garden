@@ -47,6 +47,205 @@ notes:
 
 窄屏收成一列。颜色走主题变量，浅色和深色都能读。不打开 JavaScript 时，卡片和说明仍在页面里。
 
-全部字段见 [组件参考 · compose](/garden/reference/compose)。最小例子见 [说明图](/garden/components/compose-gallery)。
+全部字段见 [组件参考 · compose](/garden/reference/compose)。下面每段都是一张能单独看的小图。窄屏会把横排收成一列。
 
-[figure](/garden/components/figure) 已废弃。旧稿里的 `garden figure` 仍会渲染，新的说明图写 compose。
+## 浅底、胶囊、无框
+
+```garden compose
+intent: |
+  三种框：浅底通栏、白底胶囊、无框标题。
+tree:
+  - stack:
+      align: center
+      children:
+        - card:
+            frame: band
+            tone: accent
+            align: center
+            title: 浅底通栏
+            text: 只包住要强调的那一层
+        - arrow: down
+        - card:
+            frame: pill
+            align: center
+            title: 白底胶囊
+        - arrow: down
+        - card:
+            frame: text
+            align: center
+            title: 无框标题
+            text: 标题下面可以跟一句灰字
+```
+
+## 一行和向右箭头
+
+```garden compose
+intent: |
+  三个白卡用向右箭头连成一行。
+tree:
+  - row:
+      align: center
+      children:
+        - card:
+            align: center
+            title: 收集
+            text: 先把材料放齐
+        - arrow: right
+        - card:
+            align: center
+            title: 判断
+            text: 留下有用的
+        - arrow: right
+        - card:
+            align: center
+            title: 交付
+            text: 交给下一个人
+```
+
+## 徽标和指标
+
+```garden compose
+intent: |
+  一张卡上同时放序号徽标和一个指标。
+tree:
+  - card:
+      tone: accent
+      align: center
+      title: 对齐
+      badge: "1"
+      kpi:
+        value: 12
+        unit: ms
+        label: 耗时
+      text: 徽标和数字都写在卡片上
+```
+
+## 分隔线
+
+```garden compose
+intent: |
+  上下两行标题，中间一条分隔线，下面一行脚注。
+tree:
+  - title:
+      text: 上面这一步
+      align: center
+  - divider:
+  - title:
+      text: 下面这一步
+      align: center
+  - type: text
+    text: 脚注靠左，用 muted。
+    tone: muted
+    align: start
+```
+
+## 并排的箭头
+
+```garden compose
+intent: |
+  一个标题下面散开三根箭头，接到三个名字。
+tree:
+  - stack:
+      align: center
+      children:
+        - title:
+            text: 从一个点散开
+            align: center
+        - fan: 3
+        - row:
+            align: center
+            children:
+              - title:
+                  text: 甲
+                  align: center
+              - title:
+                  text: 乙
+                  align: center
+              - title:
+                  text: 丙
+                  align: center
+```
+
+## V 形连接
+
+```garden compose
+intent: |
+  两列标题收到同一句说明上。
+tree:
+  - row:
+      align: center
+      children:
+        - title:
+            text: 左支
+            align: center
+        - title:
+            text: 右支
+            align: center
+  - join: 两支收到这里
+```
+
+## 两种强调色
+
+```garden compose
+intent: |
+  accent 和 tip 是两种浅底。muted 胶囊是中性灰。
+tree:
+  - row:
+      align: center
+      children:
+        - card:
+            frame: band
+            tone: accent
+            align: center
+            title: accent
+            text: 第一种强调
+        - card:
+            frame: band
+            tone: tip
+            align: center
+            title: tip
+            text: 第二种强调
+        - card:
+            frame: pill
+            tone: muted
+            align: center
+            title: muted
+```
+
+## 泳道
+
+```garden compose
+intent: |
+  两个角色之间一来一回。字写在箭头上方。
+tree:
+  - lanes:
+      actors:
+        - 调用方
+        - 服务
+      messages:
+        - from: 1
+          to: 2
+          text: 发出请求
+          tone: forward
+        - from: 2
+          to: 1
+          text: 返回结果
+          tone: back
+```
+
+## 对照和提示
+
+```garden compose
+intent: |
+  图里可以放一块对照，再加一条提示。
+tree:
+  - compare:
+      items:
+        - title: 先写下来
+          text: 范围小，改起来便宜
+        - title: 先做完整
+          text: 一次看到全貌
+  - callout:
+      tone: tip
+      text: 对照只说明差别，不代替正文。
+```

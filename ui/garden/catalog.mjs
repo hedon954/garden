@@ -7,6 +7,11 @@ import { COMPOSE_EXAMPLE_BODY } from "../compose/examples.mjs";
 
 export const GARDEN_NAMES = ["card", "stat", "compare", "timeline", "chart", "compose", "html", "interactive", "file", "relations", "list", "choice", "figure"];
 
+/** Names offered to authors. Deprecated names still parse in old posts. */
+export function offeredGardenNames() {
+  return GARDEN_NAMES.filter((name) => !CATALOG[name]?.deprecated);
+}
+
 export const LEGACY_FENCES = {
   embed: { name: "card", suggestion: "`embed` 已改为 `garden card`" },
   widget: { name: "html", suggestion: "`widget` 已改为 `garden html`" },

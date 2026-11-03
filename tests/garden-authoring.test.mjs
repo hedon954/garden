@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
-import { CATALOG, GARDEN_NAMES } from "../ui/garden/catalog.mjs";
+import { CATALOG, offeredGardenNames } from "../ui/garden/catalog.mjs";
 import { checkGardenMarkdown } from "../ui/garden/check.mjs";
 import { splitCompareLine } from "../ui/garden/compare-line.mjs";
 import { diffToNewCode, figureBreakout, figureImageWidth, imageDisplayWidth, protectMathIdentifiers, tableBreakout, tocShift } from "../ui/garden/enhance.mjs";
@@ -315,7 +315,7 @@ test("typing / offers the garden command, and /garden is the component picker", 
 
 test("insert pickers paste a garden idea brief with a thumbnail, not a YAML example", () => {
   const items = pickerItems();
-  assert.deepEqual(items.map((item) => item.name), ["", ...GARDEN_NAMES]);
+  assert.deepEqual(items.map((item) => item.name), ["", ...offeredGardenNames()]);
   for (const item of items) {
     if (item.name === "compose") {
       assert.equal(item.label, "compose（想法）");

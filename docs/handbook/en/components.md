@@ -1,7 +1,7 @@
 ---
 title: Components Overview
 navTitle: Overview
-description: Live previews of the garden fences, plus link cards, source chips, and local images. figure is deprecated in favor of compose.
+description: Live previews of the garden fences, plus link cards, source chips, and local images.
 section: components
 order: 30
 ---
@@ -100,8 +100,6 @@ notes:
   - for: validate
     text: The hook stops an idea that is still prose.
 ```
-
-[figure](/garden/en/components/figure) is deprecated. Old fences still render.
 
 ## [Embedded Web Snippet · html](/garden/en/components/html)
 

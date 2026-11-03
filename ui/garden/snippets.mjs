@@ -1,5 +1,5 @@
 import { COMPOSE_INTENT } from "../compose/examples.mjs";
-import { CATALOG, GARDEN_NAMES, IDEA } from "./catalog.mjs";
+import { CATALOG, IDEA, offeredGardenNames } from "./catalog.mjs";
 
 function fenceLines(example) {
   return example.replace(/\\`/gu, "`").split("\n");
@@ -16,8 +16,8 @@ export function vscodeSnippets() {
   const snippets = {
     "Garden 块": {
       prefix: "garden",
-      body: [`\`\`\`garden \${1|${["idea", ...GARDEN_NAMES].join(",")}|}`, "$0", "```"],
-      description: `选择 Garden 块：想法 / ${GARDEN_NAMES.join(" / ")}`,
+      body: [`\`\`\`garden \${1|${["idea", ...offeredGardenNames()].join(",")}|}`, "$0", "```"],
+      description: `选择 Garden 块：想法 / ${offeredGardenNames().join(" / ")}`,
     },
   };
   for (const trigger of IDEA.triggers) {
@@ -27,7 +27,7 @@ export function vscodeSnippets() {
       description: IDEA.when,
     };
   }
-  for (const name of GARDEN_NAMES) {
+  for (const name of offeredGardenNames()) {
     const spec = CATALOG[name];
     for (const trigger of spec.triggers) {
       snippets[`Garden ${spec.label} ${trigger}`] = {
@@ -48,7 +48,7 @@ export function vscodeSnippets() {
 export function gardenBlocksMarkdown() {
   const sections = [
     ["想法", IDEA],
-    ...GARDEN_NAMES.map((name) => [name, CATALOG[name]]),
+    ...offeredGardenNames().map((name) => [name, CATALOG[name]]),
   ];
   return [
     "# Garden 块模板",
@@ -75,7 +75,7 @@ function xmlEscape(value) {
 export function textReplacementPlist() {
   const items = [
     ...IDEA.triggers.map((trigger) => ({ shortcut: `;${trigger}`, phrase: IDEA.example })),
-    ...GARDEN_NAMES.flatMap((name) => CATALOG[name].triggers.map((trigger) => ({
+    ...offeredGardenNames().flatMap((name) => CATALOG[name].triggers.map((trigger) => ({
       shortcut: `;${trigger}`,
       phrase: name === "compose" ? guidanceFence(name) : CATALOG[name].example,
     }))),
@@ -188,7 +188,7 @@ export function slashQuery(textBefore) {
 export function pickerItems() {
   return [
     { name: "", label: `想法 · ${IDEA.label}`, body: guidanceFence(""), preview: PREVIEWS.idea, when: IDEA.when, whenNot: IDEA.whenNot },
-    ...GARDEN_NAMES.map((name) => ({
+    ...offeredGardenNames().map((name) => ({
       name,
       label: name === "compose" ? "compose（想法）" : `${name} · ${CATALOG[name].label}`,
       body: guidanceFence(name),

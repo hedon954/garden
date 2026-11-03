@@ -182,18 +182,5 @@ none:
     <key>shortcut</key>
     <string>;gchoice</string>
   </dict>
-  <dict>
-    <key>phrase</key>
-    <string>```garden figure
-image: ./figure.svg
-parts:
-  - name: 全部
-    text: 整张图。
-  - name: 标记
-    text: 这一步只做标记。
-```</string>
-    <key>shortcut</key>
-    <string>;gfigure</string>
-  </dict>
 </array>
 </plist>

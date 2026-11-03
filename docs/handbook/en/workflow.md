@@ -51,7 +51,7 @@ Three commands check your content at different scopes:
 | `garden-idea` | Error | A non-draft post still contains an uncompiled `garden` idea fence |
 | `compose-uncompiled` | Error | A non-draft `garden compose` fence is still prose, not a YAML tree |
 | `compose-invalid` | Error | A `garden compose` YAML tree is invalid: unknown node, a `for` that matches nothing, or a repeated `id` |
-| `garden-name` | Error | Unknown `garden` component name (`card`, `stat`, `compare`, `timeline`, `chart`, `compose`, `html`, `interactive`, `file`, `relations`, `list`, `choice`, or deprecated `figure`) |
+| `garden-name` | Error | Unknown `garden` component name (`card`, `stat`, `compare`, `timeline`, `chart`, `compose`, `html`, `interactive`, `file`, `relations`, `list`, `choice`) |
 | `garden-yaml` | Error | Invalid YAML syntax, wrong top-level shape, or unsupported keys inside a `garden` fence |
 | `garden-relations` | Error | `garden relations` has fewer than 3 or more than 6 elements, or invalid `links` entries (use a `mermaid` flowchart for larger or branching diagrams, or `garden list` for one-pass steps) |
 | `garden-file` / `file-outside` | Error | `garden file` manually sets `resolved`, is missing a valid `src` / `files`, or points outside `content/` |
@@ -77,10 +77,10 @@ Garden provides three ways to insert or generate components quickly:
 1. **Draft cheat sheet comment**: Running `make new SLUG=xxx TITLE="..."` appends an HTML comment to the bottom of the new `.md` file with examples for idea fences and the built-in components. HTML comments are hidden from the rendered page and can be deleted when finished.
 2. **Snippet template files**: The `templates/` directory inside `hd-garden` includes two template files:
    - `templates/garden-blocks.md`: Copyable Markdown templates for idea fences and the built-in components.
-   - `templates/garden-snippets.plist`: macOS text replacements (drag into **System Settings → Keyboard → Text Replacements**) with triggers `;gidea`, `;gcard`, `;gstat`, `;gcompare`, `;gtimeline`, `;gchart`, `;gcompose`, `;gfigure`, `;ghtml`, `;ginteractive`, `;gfile`, `;grel`, `;glist`, and `;gchoice`. `;gcompose` expands to a `garden compose` fence with one sentence. The others expand to their fences.
+   - `templates/garden-snippets.plist`: macOS text replacements (drag into **System Settings → Keyboard → Text Replacements**) with triggers `;gidea`, `;gcard`, `;gstat`, `;gcompare`, `;gtimeline`, `;gchart`, `;gcompose`, `;ghtml`, `;ginteractive`, `;gfile`, `;grel`, `;glist`, and `;gchoice`. `;gcompose` expands to a `garden compose` fence with one sentence. The others expand to their fences.
 3. **Install AI Agent skills (`npx garden skill`)**: Running `npx garden skill` in a site repository (also run automatically during `npx hd-garden init`) copies three skills into `.agents/skills/`:
    - `garden-ui`: Compiles natural-language `garden` idea fences into concrete component blocks.
-   - `garden-interactive-chart`: Authors `interactive`, `chart`, `compose`, and `html` components from article data. `figure` is deprecated.
+   - `garden-interactive-chart`: Authors `interactive`, `chart`, `compose`, and `html` components from article data.
    - `garden-post-review`: Reviews an entire post against layout and component rules.
 
 ## 5. VS Code, Cursor, and Typora Plugins

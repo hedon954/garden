@@ -220,18 +220,3 @@ items:
 none:
   label: 都不合适
 ```
-
-## figure · 结构图（废弃）
-
-已废弃。新的说明图请写 compose。
-
-不该用：点选说明用 compose，不要再写新的 figure。
-
-```garden figure
-image: ./figure.svg
-parts:
-  - name: 全部
-    text: 整张图。
-  - name: 标记
-    text: 这一步只做标记。
-```

@@ -171,7 +171,7 @@ items:
     caption: Maximum width for wide multi-column tables expanding symmetrically on desktop
 ```
 
-The component pages cover the `garden` fences, plus link cards, source chips, and local images. Explanation diagrams are [compose](/garden/en/components/compose). `figure` is deprecated. See [Components Overview](/garden/en/components) for the live examples.
+The component pages cover the `garden` fences, plus link cards, source chips, and local images. Explanation diagrams are [compose](/garden/en/components/compose). See [Components Overview](/garden/en/components) for the live examples.
 
 <h2 id="garden-admin-title">From Init to Daily Writing</h2>
 
