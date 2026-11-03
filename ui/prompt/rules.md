@@ -27,7 +27,7 @@
   - 正反对照模式：给条目加 `verdict: bad` 或 `verdict: good`，改为上下堆叠并显示红叉或绿勾，不受 60 字 `compare-long` 限制。
 - `garden timeline`：可选 `title`，必填 `items` 数组（至少 2 项，每项含可选 `date`、必填 `title`、可选 `text`、`source`）。
 - `garden chart`：可选 `type`（`"bar"`）、`title`、`unit`、`x`、`xLabel`、`yLabel`、`caption`，必填 `data`（`{ x, y, label? }[]`，至少 2 项）或 `series`（配 `x` 标签数组）。自带可展开数据表，同节不要重复手写相同数据的 Markdown 表。
-- `garden compose`：YAML 树。顶层可写 `title`、`caption`、`intent`，再加 `steps` + `notes`，或 `tree`（`children` 是 `tree` 的别名）。零件只有 stack、row、card、title、text、steps、compare、callout、divider、badge、kpi、arrow、notes。颜色只用 `tone: plain | accent | muted`（callout 用 `note | tip | warn`）。不要写 HTML、SVG、脚本、颜色值或宽度。`figure` 不要再写。
+- `garden compose`：YAML 树。顶层可写 `title`、`caption`、`intent`，再加 `steps` + `notes`，或 `tree`（`children` 是 `tree` 的别名）。零件只有 stack、row、card、title、text、steps、compare、callout、divider、badge、kpi、arrow、notes。颜色只用 `tone: plain | accent | tip | muted`（`accent` 和 `tip` 是两种强调色；callout 用 `note | tip | warn`）。不要写 HTML、SVG、脚本、颜色值或宽度。`figure` 不要再写。
 - `garden figure`（已废弃，旧稿仍能渲染）：`svg`（内联 `<svg>`，在可切换元素上标 `data-p="<id>"`）、`image`（配可选 `alt`）或 `mermaid` 三选一，配 `parts`（`{ id, label, text }[]`，`label` 也支持写 `name`）与可选 `caption`。新的说明图写 `garden compose`。
 - `garden html`：`src`（同名子目录下的本地 `.html`）或 `code` 二选一，配 `title`、可选 `height`。
 - `garden file`：单文件填 `src`（可选 `title`、`note`），多文件填 `files` 数组（每项含 `src`、可选 `title`、`note`）。本地路径相对当前 Markdown 且不能越出 `content/`（否则报 `file-outside`），文件不存在报 `missing-asset`，单文件超过 `5 MB` 报 `file-large` 警告；不要手写 `resolved`（报 `garden-file`）。

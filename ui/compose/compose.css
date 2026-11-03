@@ -228,8 +228,14 @@
 
 .g-compose-card[data-tone="accent"],
 .g-compose-step[data-tone="accent"] {
-  background: var(--well);
-  border-color: var(--rule-strong);
+  background: color-mix(in srgb, var(--flow) 14%, var(--paper));
+  border-color: color-mix(in srgb, var(--flow) 34%, var(--paper));
+}
+
+.g-compose-card[data-tone="tip"],
+.g-compose-step[data-tone="tip"] {
+  background: color-mix(in srgb, var(--flow-back) 16%, var(--paper));
+  border-color: color-mix(in srgb, var(--flow-back) 36%, var(--paper));
 }
 
 .g-compose-card[data-tone="muted"],
@@ -256,6 +262,14 @@
   box-shadow: none;
 }
 
+.g-compose-card[data-frame="band"][data-tone="accent"] {
+  background: color-mix(in srgb, var(--flow) 14%, var(--paper));
+}
+
+.g-compose-card[data-frame="band"][data-tone="tip"] {
+  background: color-mix(in srgb, var(--flow-back) 16%, var(--paper));
+}
+
 .g-compose-card[data-frame="band"] > .g-compose-card-text,
 .g-compose-card[data-frame="text"] > .g-compose-card-text {
   color: var(--muted);
@@ -271,8 +285,13 @@
 }
 
 .g-compose-card[data-frame="pill"][data-tone="accent"] {
-  background: var(--well);
-  border-color: var(--rule-strong);
+  background: color-mix(in srgb, var(--flow) 14%, var(--paper));
+  border-color: color-mix(in srgb, var(--flow) 34%, var(--paper));
+}
+
+.g-compose-card[data-frame="pill"][data-tone="tip"] {
+  background: color-mix(in srgb, var(--flow-back) 16%, var(--paper));
+  border-color: color-mix(in srgb, var(--flow-back) 36%, var(--paper));
 }
 
 .g-compose-card-line {
@@ -318,26 +337,28 @@
 .g-compose-join {
   position: relative;
   width: 100%;
-  margin: 6px 0 0;
+  margin: 2px 0 0;
   color: var(--ink);
 }
 
 .g-compose-join-svg {
   display: block;
   width: 100%;
-  height: 40px;
-  margin-top: -8px;
+  height: auto;
+  aspect-ratio: 600 / 96;
 }
 
 .g-compose-join-label {
-  position: relative;
+  position: absolute;
   z-index: 1;
-  display: block;
+  left: 50%;
+  top: 62%;
+  transform: translate(-50%, -100%);
   width: max-content;
-  max-width: 72%;
-  margin: 0 auto;
-  padding: 0;
-  background: transparent;
+  max-width: 70%;
+  margin: 0;
+  padding: 0 8px 2px;
+  background: var(--paper);
   color: var(--ink);
   font: 700 16px/1.3 var(--sans);
   text-align: center;
@@ -491,6 +512,8 @@
 
 .g-compose-card[data-tone="accent"] .g-compose-badge,
 .g-compose-step[data-tone="accent"] .g-compose-badge,
+.g-compose-card[data-tone="tip"] .g-compose-badge,
+.g-compose-step[data-tone="tip"] .g-compose-badge,
 .g-compose-card[data-frame="band"] .g-compose-badge {
   background: var(--card);
   border: 1px solid var(--rule);
@@ -648,9 +671,13 @@
 
   .g-compose-join-label {
     position: static;
+    top: auto;
+    left: auto;
+    transform: none;
     width: auto;
     max-width: none;
     margin: 0;
+    background: transparent;
   }
 
   .g-compose-lane-label {

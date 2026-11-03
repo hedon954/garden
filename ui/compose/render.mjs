@@ -139,8 +139,9 @@ function fanHtml(count) {
 }
 
 function joinHtml(text) {
-  // One polyline: left arm into the vertex, out the right arm, then the stem. Same orientation in every locale.
-  return `<div class="g-compose-join"><p class="g-compose-join-label">${textHtml(text)}</p><svg class="g-compose-join-svg" viewBox="0 0 600 48" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path d="M2 2 L300 30 L598 2 L300 30 L300 46" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="miter" stroke-linecap="butt" vector-effect="non-scaling-stroke"/></svg></div>`;
+  // One polyline in a uniform viewBox: left arm, down the stem, back to the vertex, right arm.
+  // The label is a div so a host `p` margin cannot shove it off the vertex.
+  return `<div class="g-compose-join"><div class="g-compose-join-label">${textHtml(text)}</div><svg class="g-compose-join-svg" viewBox="0 0 600 96" aria-hidden="true" focusable="false"><path d="M1 4 L300 70 L300 92 L300 70 L599 4" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/></svg></div>`;
 }
 
 function lanesHtml(node) {

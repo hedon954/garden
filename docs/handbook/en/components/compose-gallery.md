@@ -13,7 +13,7 @@ The left column is the ChatGPT original. The right column is the same skeleton b
 
 | ChatGPT atom | compose |
 | --- | --- |
-| Soft full-width band (Role, IdP, steps 2 and 5, Agent) | `card` with `frame: band` |
+| Soft full-width band (Role, IdP, steps 2 and 5, Agent) | `card` with `frame: band`. The two emphasis fills are `tone: accent` and `tone: tip` |
 | Small capsule (the browser) | `card` with `frame: pill` |
 | Plain title plus a gray line | `card` with `frame: text`, or `title` + `text` |
 | Bordered card | `card` |
@@ -142,7 +142,7 @@ tree:
         - arrow: down
         - card:
             frame: band
-            tone: accent
+            tone: tip
             align: center
             badge: "⑤"
             title: Authorization decision

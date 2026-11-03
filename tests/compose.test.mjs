@@ -165,7 +165,10 @@ test("the handbook gallery renders all six explanation diagrams", () => {
   assert.match(html, /g-compose-lanes/);
   assert.match(html, /data-tone="forward"/);
   assert.match(html, /data-tone="back"/);
-  assert.equal((html.match(/<path d="M2 2 L300 30/gu) || []).length, 1);
+  assert.equal((html.match(/<path d="M1 4 L300 70 L300 92 L300 70 L599 4"/gu) || []).length, 1);
+  assert.doesNotMatch(html, /preserveAspectRatio="none"/u);
+  assert.match(html, /data-tone="tip"/);
+  assert.match(html, /class="g-compose-join-label"/);
   assert.match(html, /viewBox="0 0 10 12"/);
   assert.match(html, /--span:2/);
   assert.match(html, /① 点击登录 \/ 授权/);

@@ -18,7 +18,7 @@
 
 - 说明图优先写顶层 `steps` + `notes`。`notes[].for` 对上 `steps[].id`。
 - 要嵌套时写 `tree:`。每一项一个零件：`card:`、`stack:`、`row:`、`arrow: down|right`、`notes:`。
-- `tone` 只有 `plain`、`accent`、`muted`。`callout` 的 tone 是 `note`、`tip`、`warn`。
+- `tone` 只有 `plain`、`accent`、`tip`、`muted`。`accent` 和 `tip` 是两种强调底，和泳道 `forward` / `back` 同一对颜色。`callout` 的 tone 是 `note`、`tip`、`warn`。
 - 颜色只通过 tone。不要写色值、HTML、SVG、脚本、class 或宽度。
 - 徽章和指标可以写在卡片字段 `badge` / `kpi` 上，也可以作为子零件嵌进 `card.children`。
 - 手机上会强制成一列。不要自己排死列宽。

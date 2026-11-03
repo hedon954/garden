@@ -83,7 +83,7 @@ Fence header: ` ```garden compose `. A body that is still prose reports `compose
 | `steps[].text` | Optional | none | string | One line on the card |
 | `steps[].badge` | Optional | none | string or `{ text, tone }` | Badge |
 | `steps[].kpi` | Optional | none | `{ value, label?, unit? }` | One metric |
-| `steps[].tone` | Optional | `plain` | `plain`, `accent`, `muted` | Card fill |
+| `steps[].tone` | Optional | `plain` | `plain`, `accent`, `tip`, `muted` | Card fill. `accent` and `tip` are the two emphasis fills |
 | `notes[].for` | Required | none | an existing `id` | Which card opens this note |
 | `notes[].text` | Required | none | string | The note itself |
 
@@ -93,7 +93,7 @@ Assemble a diagram from these atoms. Do not add a style that only one picture us
 
 | What you are drawing | Write |
 | --- | --- |
-| Soft full-width band | `card` + `frame: band` |
+| Soft full-width band | `card` + `frame: band`. `tone: accent` and `tone: tip` are the two emphasis fills, the same pair as lane `forward` and `back` |
 | Small capsule | `card` + `frame: pill`. `tone: accent` fills it |
 | Plain title block | `card` + `frame: text` |
 | Bordered card | `card` |

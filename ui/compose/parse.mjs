@@ -21,7 +21,7 @@ export const PRIMITIVES = [
 
 const ROOT_META = ["title", "caption", "intent"];
 const ROOT_BODY = ["steps", "notes", "tree", "children"];
-const TONES = ["plain", "accent", "muted"];
+const TONES = ["plain", "accent", "tip", "muted"];
 const ALIGNS = ["start", "center"];
 const FRAMES = ["card", "band", "text", "pill"];
 const MARKS = ["shield"];

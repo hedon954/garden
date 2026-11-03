@@ -83,7 +83,7 @@ tree:
 | `steps[].text` | 可选 | 无 | 字符串 | 卡片里的一句说明 |
 | `steps[].badge` | 可选 | 无 | 字符串或 `{ text, tone }` | 徽标 |
 | `steps[].kpi` | 可选 | 无 | `{ value, label?, unit? }` | 一个指标 |
-| `steps[].tone` | 可选 | `plain` | `plain`、`accent`、`muted` | 卡片底色 |
+| `steps[].tone` | 可选 | `plain` | `plain`、`accent`、`tip`、`muted` | 卡片底色。`accent` 和 `tip` 是两种强调色 |
 | `notes[].for` | 必填 | 无 | 已有的 `id` | 点哪张卡展开这条 |
 | `notes[].text` | 必填 | 无 | 字符串 | 展开后的说明 |
 
@@ -93,7 +93,7 @@ tree:
 
 | 要画的东西 | 写法 |
 | --- | --- |
-| 浅底通栏 | `card` + `frame: band` |
+| 浅底通栏 | `card` + `frame: band`。`tone: accent` 和 `tone: tip` 是两种强调底，和泳道的 `forward` / `back` 同一对颜色 |
 | 小胶囊 | `card` + `frame: pill`。`tone: accent` 是浅底胶囊 |
 | 无框标题 | `card` + `frame: text` |
 | 带边框的卡 | `card` |

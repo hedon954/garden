@@ -13,7 +13,7 @@ badge: compose
 
 | ChatGPT 里的零件 | compose |
 | --- | --- |
-| 浅底通栏（Role、IdP、第 ② 和 ⑤ 步、Agent） | `card`，`frame: band` |
+| 浅底通栏（Role、IdP、第 ② 和 ⑤ 步、Agent） | `card`，`frame: band`。两种强调色是 `tone: accent` 和 `tone: tip` |
 | 小胶囊（用户浏览器） | `card`，`frame: pill` |
 | 无框的标题加一句灰字 | `card`，`frame: text`，或 `title` + `text` |
 | 带边框的白卡 | `card` |
@@ -142,7 +142,7 @@ tree:
         - arrow: down
         - card:
             frame: band
-            tone: accent
+            tone: tip
             align: center
             badge: "⑤"
             title: 授权决策系统
