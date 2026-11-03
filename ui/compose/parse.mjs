@@ -84,7 +84,7 @@ function asBool(value, path, fallback) {
 }
 
 function asAlign(value, path) {
-  return asEnum(value, ALIGNS, `${path}.align`, "start");
+  return asEnum(value, ALIGNS, `${path}.align`, "");
 }
 
 function asGap(value, path) {

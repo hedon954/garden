@@ -129,9 +129,9 @@ function attrIf(name, value, fallback) {
 
 function renderText(node, ctx, className) {
   const tag = ctx.phrasing ? "span" : "p";
-  const align = node.align === "center" ? "center" : "start";
+  const align = node.align === "center" || node.align === "start" ? ` data-align="${node.align}"` : "";
   const tone = attrIf("tone", node.tone, "plain");
-  return `<${tag} class="${className}" data-align="${align}"${tone}>${textHtml(node.text)}</${tag}>`;
+  return `<${tag} class="${className}"${align}${tone}>${textHtml(node.text)}</${tag}>`;
 }
 
 function fanHtml(count) {
