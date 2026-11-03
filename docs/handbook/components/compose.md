@@ -47,6 +47,6 @@ notes:
 
 窄屏收成一列。颜色走主题变量，浅色和深色都能读。不打开 JavaScript 时，卡片和说明仍在页面里。
 
-全部字段见 [组件参考 · compose](/garden/reference/compose)。
+全部字段见 [组件参考 · compose](/garden/reference/compose)。六张说明图的成品见 [说明图画廊](/garden/components/compose-gallery)。
 
 [figure](/garden/components/figure) 已废弃。旧稿里的 `garden figure` 仍会渲染，新的说明图写 compose。

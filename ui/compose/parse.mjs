@@ -13,12 +13,20 @@ export const PRIMITIVES = [
   "badge",
   "kpi",
   "arrow",
+  "fan",
+  "join",
+  "lanes",
   "notes",
 ];
 
 const ROOT_META = ["title", "caption", "intent"];
 const ROOT_BODY = ["steps", "notes", "tree", "children"];
 const TONES = ["plain", "accent", "muted"];
+const ALIGNS = ["start", "center"];
+const FRAMES = ["card", "band", "text", "pill"];
+const MARKS = ["shield"];
+const TEXT_TONES = ["plain", "muted"];
+const LANE_TONES = ["forward", "back"];
 const CALLOUT_TONES = ["note", "tip", "warn"];
 const MAX_TEXT = 800;
 const MAX_INTENT = 2000;
@@ -73,6 +81,10 @@ function asBool(value, path, fallback) {
   if (value == null) return fallback;
   if (typeof value !== "boolean") problem(`${path} 要写 true 或 false。`);
   return value;
+}
+
+function asAlign(value, path) {
+  return asEnum(value, ALIGNS, `${path}.align`, "start");
 }
 
 function asGap(value, path) {
@@ -166,12 +178,43 @@ function coerceShorthand(value, path) {
   if ((type === "stack" || type === "row") && Array.isArray(inner)) return { type, children: inner };
   if ((type === "steps" || type === "notes" || type === "compare") && Array.isArray(inner)) return { type, items: inner };
   if (type === "arrow" && (typeof inner === "string" || typeof inner === "number")) return { type, direction: String(inner) };
+  if (type === "fan" && (typeof inner === "number" || typeof inner === "string")) return { type, count: Number(inner) };
+  if (type === "join" && (typeof inner === "string" || typeof inner === "number")) return { type, text: inner };
   if ((type === "title" || type === "text" || type === "badge" || type === "callout") && (typeof inner === "string" || typeof inner === "number")) {
     return { type, text: inner };
   }
   if (typeof inner === "object" && !Array.isArray(inner)) return { type, ...inner };
   problem(`${path} 的 ${type} 写法规格不对。`);
   return { type };
+}
+
+function asLaneIndex(value, count, path) {
+  if (typeof value !== "number" || !Number.isInteger(value) || value < 1 || value > count) {
+    problem(`${path} 要写 1 到 ${count} 的序号。`);
+  }
+  return value;
+}
+
+function normalizeLanes(typed, path) {
+  if (!Array.isArray(typed.actors) || typed.actors.length < 2 || typed.actors.length > 4) {
+    problem(`${path}.actors 要写 2 到 4 个泳道。`);
+  }
+  const actors = typed.actors.map((actor, index) => asText(actor, `${path}.actors[${index + 1}]`));
+  const messages = asList(typed.messages, `${path}.messages`, (value, itemPath) => {
+    if (!value || typeof value !== "object" || Array.isArray(value)) problem(`${itemPath} 要写 from、to 和 text。`);
+    const unknown = unknownKeys(value, ["from", "to", "text", "tone"]);
+    if (unknown.length) problem(`${itemPath} 不支持 ${unknown.join("、")}。`);
+    const from = asLaneIndex(value.from, actors.length, `${itemPath}.from`);
+    const to = asLaneIndex(value.to, actors.length, `${itemPath}.to`);
+    if (from === to) problem(`${itemPath} 的 from 和 to 不能相同。`);
+    return {
+      from,
+      to,
+      text: asText(value.text, `${itemPath}.text`),
+      tone: asEnum(value.tone, LANE_TONES, `${itemPath}.tone`, "forward"),
+    };
+  }, { min: 1, max: 8 });
+  return { type: "lanes", actors, messages };
 }
 
 function normalizeNode(value, path, depth, state) {
@@ -183,11 +226,11 @@ function normalizeNode(value, path, depth, state) {
   const type = typed.type;
   if (!PRIMITIVES.includes(type)) problem(`${path} 不认识零件 ${String(type)}。`);
   const allowed = {
-    stack: ["gap", "children"],
-    row: ["children"],
-    card: ["id", "title", "text", "tone", "badge", "kpi", "children"],
-    title: ["text"],
-    text: ["text"],
+    stack: ["gap", "align", "children"],
+    row: ["align", "children"],
+    card: ["id", "title", "text", "tone", "align", "frame", "mark", "badge", "kpi", "children"],
+    title: ["text", "align"],
+    text: ["text", "align", "tone"],
     steps: ["direction", "arrow", "items", "notes"],
     compare: ["items"],
     callout: ["text", "tone"],
@@ -195,13 +238,31 @@ function normalizeNode(value, path, depth, state) {
     badge: ["text", "tone"],
     kpi: ["value", "label", "unit"],
     arrow: ["direction"],
+    fan: ["count"],
+    join: ["text"],
+    lanes: ["actors", "messages"],
     notes: ["items"],
   }[type];
   const unknown = unknownKeys(typed, ["type", ...allowed]);
   if (unknown.length) problem(`${path} 不支持 ${unknown.join("、")}。`);
   if (type === "divider") return { type };
   if (type === "arrow") return { type, direction: asEnum(typed.direction, ["down", "right"], `${path}.direction`, "down") };
-  if (type === "title" || type === "text") return { type, text: asText(typed.text, `${path}.text`) };
+  if (type === "fan") {
+    const count = typed.count == null ? 3 : typed.count;
+    if (typeof count !== "number" || !Number.isInteger(count) || count < 2 || count > 4) problem(`${path}.count 只能是 2 到 4。`);
+    return { type, count };
+  }
+  if (type === "join") return { type, text: asText(typed.text, `${path}.text`) };
+  if (type === "lanes") return normalizeLanes(typed, path);
+  if (type === "title") return { type, text: asText(typed.text, `${path}.text`), align: asAlign(typed.align, path) };
+  if (type === "text") {
+    return {
+      type,
+      text: asText(typed.text, `${path}.text`),
+      align: asAlign(typed.align, path),
+      tone: asEnum(typed.tone, TEXT_TONES, `${path}.tone`, "plain"),
+    };
+  }
   if (type === "badge") return { type, text: asText(typed.text, `${path}.text`), tone: asEnum(typed.tone, TONES, `${path}.tone`, "accent") };
   if (type === "kpi") return { type, ...asKpi({ value: typed.value, label: typed.label, unit: typed.unit }, path) };
   if (type === "callout") {
@@ -209,7 +270,8 @@ function normalizeNode(value, path, depth, state) {
   }
   if (type === "stack" || type === "row") {
     const children = asNodeList(typed.children, `${path}.children`, depth, state);
-    return type === "stack" ? { type, gap: asGap(typed.gap, `${path}.gap`), children } : { type, children };
+    const align = asAlign(typed.align, path);
+    return type === "stack" ? { type, gap: asGap(typed.gap, `${path}.gap`), align, children } : { type, align, children };
   }
   if (type === "card") {
     const children = typed.children == null ? [] : asNodeList(typed.children, `${path}.children`, depth, state);
@@ -218,12 +280,16 @@ function normalizeNode(value, path, depth, state) {
     const badge = asBadge(typed.badge, `${path}.badge`);
     const kpi = asKpi(typed.kpi, `${path}.kpi`);
     if (!title && !text && !badge && !kpi && children.length === 0) problem(`${path} 卡片里什么都没有。`);
+    const mark = typed.mark == null || typed.mark === "" ? "" : asEnum(typed.mark, MARKS, `${path}.mark`, "");
     return {
       type,
       id: asId(typed.id, `${path}.id`, false),
       title,
       text,
       tone: asEnum(typed.tone, TONES, `${path}.tone`, "plain"),
+      align: asAlign(typed.align, path),
+      frame: asEnum(typed.frame, FRAMES, `${path}.frame`, "card"),
+      mark,
       badge,
       kpi,
       children,

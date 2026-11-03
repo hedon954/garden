@@ -8,7 +8,12 @@
 
 **围栏：** 类型始终是 `garden compose`。作者原话放进 `intent`，一个字不改。不要改成别的组件。
 
-**零件（只能这些）：** `stack`、`row`、`card`、`title`、`text`、`steps`、`compare`、`callout`、`divider`、`badge`、`kpi`、`arrow`、`notes`。
+**零件（只能这些）：** `stack`、`row`、`card`、`title`、`text`、`steps`、`compare`、`callout`、`divider`、`badge`、`kpi`、`arrow`、`fan`、`join`、`lanes`、`notes`。
+
+- `stack` / `row` / `card` / `text` 可以写 `align: center`。
+- `card.frame` 是 `card`（默认边框）、`band`（通栏浅底）、`text`（无框）或 `pill`（小胶囊）。
+- `fan: 3` 是向下散开的箭头。`join: 一句说明` 是三列之间的连接线。`lanes` 是泳道：`actors` 加 `messages`（`from` / `to` 从 1 起，`tone: forward | back`）。
+- 窄屏会收成一列。不要写色值、HTML、SVG、脚本、class 或宽度。
 
 - 说明图优先写顶层 `steps` + `notes`。`notes[].for` 对上 `steps[].id`。
 - 要嵌套时写 `tree:`。每一项一个零件：`card:`、`stack:`、`row:`、`arrow: down|right`、`notes:`。

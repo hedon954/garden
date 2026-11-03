@@ -42,6 +42,12 @@
   line-height: 1.5;
 }
 
+.g-compose-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
 .g-compose-body,
 .g-compose-stack,
 .g-compose-row,
@@ -72,9 +78,58 @@
 }
 
 .g-compose-row > .g-compose-card,
-.g-compose-row > .g-compose-disclosure {
+.g-compose-row > .g-compose-disclosure,
+.g-compose-row > .g-compose-stack,
+.g-compose-row > .g-compose-h,
+.g-compose-row > .g-compose-text {
   flex: 1 1 11rem;
   min-width: min(100%, 11rem);
+}
+
+.g-compose-row > .g-compose-badge {
+  flex: 0 0 auto;
+}
+
+.g-compose-stack[data-align="center"] {
+  align-items: center;
+  text-align: center;
+}
+
+.g-compose-stack[data-align="center"] > .g-compose-card:not([data-frame="text"]):not([data-frame="pill"]),
+.g-compose-stack[data-align="center"] > .g-compose-row,
+.g-compose-stack[data-align="center"] > .g-compose-fan,
+.g-compose-stack[data-align="center"] > .g-compose-join,
+.g-compose-stack[data-align="center"] > .g-compose-lanes,
+.g-compose-stack[data-align="center"] > .g-compose-text {
+  align-self: stretch;
+}
+
+.g-compose-stack[data-align="center"] > .g-compose-card[data-frame="pill"],
+.g-compose-stack[data-align="center"] > .g-compose-card[data-frame="text"] {
+  align-self: center;
+  width: auto;
+}
+
+.g-compose-row[data-align="center"] {
+  justify-content: center;
+  text-align: center;
+}
+
+.g-compose-h[data-align="center"],
+.g-compose-text[data-align="center"] {
+  text-align: center;
+}
+
+.g-compose-text[data-tone="muted"] {
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.g-compose-card > .g-compose-row,
+.g-compose-card > .g-compose-text,
+.g-compose-card > .g-compose-h {
+  align-self: stretch;
+  width: 100%;
 }
 
 .g-compose-compare {
@@ -175,6 +230,183 @@
   color: var(--muted);
 }
 
+.g-compose-card[data-align="center"] {
+  align-items: center;
+  text-align: center;
+}
+
+.g-compose-card[data-frame="text"] {
+  border: 0;
+  background: transparent;
+  padding: 4px 8px;
+  box-shadow: none;
+}
+
+.g-compose-card[data-frame="band"] {
+  width: 100%;
+  border: 0;
+  background: var(--well);
+  box-shadow: none;
+}
+
+.g-compose-card[data-frame="pill"] {
+  width: auto;
+  align-self: center;
+  border-radius: 16px;
+  padding: 10px 22px;
+  background: var(--card);
+}
+
+.g-compose-card-line {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  max-width: 100%;
+}
+
+.g-compose-card[data-align="start"] .g-compose-card-line,
+.g-compose-card:not([data-align]) .g-compose-card-line {
+  justify-content: flex-start;
+}
+
+.g-compose-index {
+  color: var(--ink);
+  font: 600 15px/1 var(--sans);
+}
+
+.g-compose-mark {
+  display: inline-block;
+  margin-right: 6px;
+  color: var(--ink);
+  vertical-align: -2px;
+}
+
+.g-compose-fan {
+  display: grid;
+  grid-template-columns: repeat(var(--n, 3), minmax(0, 1fr));
+  width: 100%;
+}
+
+.g-compose-fan[data-n="2"] { --n: 2; }
+.g-compose-fan[data-n="3"] { --n: 3; }
+.g-compose-fan[data-n="4"] { --n: 4; }
+
+.g-compose-join {
+  position: relative;
+  width: 100%;
+  min-height: 56px;
+  margin: 4px 0 8px;
+  color: var(--ink);
+}
+
+.g-compose-join-svg {
+  display: block;
+  width: 100%;
+  height: 56px;
+}
+
+.g-compose-join-label {
+  position: absolute;
+  z-index: 1;
+  left: 50%;
+  top: 14px;
+  transform: translateX(-50%);
+  margin: 0;
+  padding: 0 10px;
+  background: var(--paper);
+  color: var(--ink);
+  font: 700 16px/1.4 var(--sans);
+  text-align: center;
+}
+
+.g-compose-lanes {
+  width: 100%;
+}
+
+.g-compose-lanes-head,
+.g-compose-lane-row {
+  display: grid;
+  grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
+  gap: 8px;
+}
+
+.g-compose-lane-pill {
+  justify-self: center;
+  margin: 0 0 8px;
+  padding: 12px 16px;
+  border: 1px solid var(--rule);
+  border-radius: 16px;
+  background: var(--well);
+  color: var(--ink);
+  font: 600 16px/1.3 var(--sans);
+  text-align: center;
+}
+
+.g-compose-lanes-stage {
+  position: relative;
+  display: grid;
+  gap: 18px;
+  padding: 8px 0 4px;
+}
+
+.g-compose-lane-life {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: calc((var(--i) + 0.5) / var(--cols) * 100%);
+  border-left: 1px dashed var(--rule-strong);
+  pointer-events: none;
+}
+
+.g-compose-lane-msg {
+  position: relative;
+  z-index: 1;
+  min-width: 0;
+  color: var(--ink);
+}
+
+.g-compose-lane-msg[data-tone="back"] {
+  color: var(--muted);
+}
+
+.g-compose-lane-label {
+  display: block;
+  margin: 0 8px 4px;
+  color: var(--ink);
+  font: 600 14px/1.4 var(--sans);
+  text-align: center;
+}
+
+.g-compose-lane-route {
+  display: none;
+}
+
+.g-compose-lane-shaft {
+  display: block;
+  height: 0;
+  margin: 0 2px;
+  border-top: 2px solid currentColor;
+  position: relative;
+}
+
+.g-compose-lane-shaft::after {
+  content: "";
+  position: absolute;
+  top: -5px;
+  border: 5px solid transparent;
+}
+
+.g-compose-lane-msg[data-way="right"] .g-compose-lane-shaft::after {
+  right: -1px;
+  border-left-color: currentColor;
+}
+
+.g-compose-lane-msg[data-way="left"] .g-compose-lane-shaft::after {
+  left: -1px;
+  border-right-color: currentColor;
+}
+
 .g-compose-card-title,
 .g-compose-step-title,
 .g-compose-note-k {
@@ -210,8 +442,10 @@
 }
 
 .g-compose-card[data-tone="accent"] .g-compose-badge,
-.g-compose-step[data-tone="accent"] .g-compose-badge {
+.g-compose-step[data-tone="accent"] .g-compose-badge,
+.g-compose-card[data-frame="band"] .g-compose-badge {
   background: var(--card);
+  border: 1px solid var(--rule);
 }
 
 .g-compose-kpi {
@@ -239,7 +473,7 @@
   align-self: center;
   width: 24px;
   height: 32px;
-  margin: 2px 0;
+  margin: 2px auto;
   color: var(--muted);
 }
 
@@ -305,6 +539,9 @@
 
   .g-compose-row > .g-compose-card,
   .g-compose-row > .g-compose-disclosure,
+  .g-compose-row > .g-compose-stack,
+  .g-compose-row > .g-compose-h,
+  .g-compose-row > .g-compose-text,
   .g-compose-steps[data-dir="row"] > .g-compose-step,
   .g-compose-steps[data-dir="row"] > .g-compose-disclosure {
     flex: none;
@@ -314,5 +551,51 @@
 
   .g-compose-arrow[data-dir="right"] {
     transform: none;
+  }
+
+  .g-compose-fan .g-compose-arrow ~ .g-compose-arrow {
+    display: none;
+  }
+
+  .g-compose-join-svg {
+    display: none;
+  }
+
+  .g-compose-join {
+    min-height: 0;
+  }
+
+  .g-compose-join-label {
+    position: static;
+    transform: none;
+    display: block;
+  }
+
+  .g-compose-lanes-head,
+  .g-compose-lane-row {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .g-compose-lane-life,
+  .g-compose-lane-shaft {
+    display: none;
+  }
+
+  .g-compose-lane-msg {
+    display: block;
+  }
+
+  .g-compose-lane-route {
+    display: block;
+    margin-bottom: 2px;
+    color: var(--muted);
+    font-size: 13px;
+    text-align: center;
+  }
+
+  .g-compose-lane-pill {
+    width: 100%;
+    box-sizing: border-box;
   }
 }

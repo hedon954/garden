@@ -12,6 +12,7 @@ import { composeText, renderCompose } from "../ui/compose/render.mjs";
 import { applyBlock, ApplyError } from "../ui/core/apply.mjs";
 import { scanMarkdown } from "../ui/core/scan.mjs";
 import { checkGardenMarkdown } from "../ui/garden/check.mjs";
+import { classifyFence, scanFences } from "../ui/garden/parse.mjs";
 import { RECIPE_FILES } from "../ui/prompt/build.mjs";
 
 const root = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
@@ -147,6 +148,23 @@ test("the host renders each compose fence as static HTML", () => {
   assert.equal(html.length, 2);
   assert.match(html[0], /name="gc1"/u);
   assert.match(html[1], /name="gc2"/u);
+});
+
+test("the handbook gallery renders all six explanation diagrams", () => {
+  const markdown = fs.readFileSync(path.join(root, "docs/handbook/components/compose-gallery.md"), "utf8");
+  const fences = scanFences(markdown).map((fence) => classifyFence(fence)).filter((item) => item.kind === "garden");
+  assert.equal(fences.length, 6);
+  assert.deepEqual(checkGardenMarkdown(markdown), []);
+  const html = fences.map((item) => renderCompose(item.block.props, { scope: "gallery" })).join("\n");
+  assert.match(html, /角色连接用户和权限/);
+  assert.match(html, /三个系统都信任同一个身份提供方/);
+  assert.match(html, /授权决策系统/);
+  assert.match(html, /业务操作与数据存储/);
+  assert.match(html, /Policy Enforcement Point/);
+  assert.match(html, /g-compose-lanes/);
+  assert.match(html, /① 点击登录 \/ 授权/);
+  assert.match(html, /class="g-compose-fan"/);
+  assert.doesNotMatch(html, /<script/u);
 });
 
 test("the ui prompt catalog includes compose and forbids arbitrary HTML", () => {

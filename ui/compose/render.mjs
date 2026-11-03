@@ -48,10 +48,16 @@ function notesById(doc) {
   return map;
 }
 
+const CIRCLED = ["①", "②", "③", "④", "⑤", "⑥", "⑦", "⑧"];
+
 function badgeHtml(badge) {
   if (!badge?.text) return "";
-  return `<span class="g-compose-badge" data-tone="${esc(badge.tone || "accent")}">${textHtml(badge.text)}</span>`;
+  const index = /^[①②③④⑤⑥⑦⑧⑨]$/u.test(badge.text);
+  const cls = index ? "g-compose-index" : "g-compose-badge";
+  return `<span class="${cls}" data-tone="${esc(badge.tone || "accent")}">${textHtml(badge.text)}</span>`;
 }
+
+const SHIELD = `<svg class="g-compose-mark" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false"><path d="M8 1.4l5.2 2.1v4.3c0 3.1-2.2 5.2-5.2 6.6-3-1.4-5.2-3.5-5.2-6.6V3.5L8 1.4z" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M5.4 8.1l1.7 1.7 3.5-3.6" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 
 function kpiHtml(kpi) {
   if (!kpi?.value) return "";
@@ -77,9 +83,9 @@ function disclosure(ctx, className, tone, face, notes, id) {
 function renderNode(node, ctx) {
   switch (node.type) {
     case "stack":
-      return `<div class="g-compose-stack" data-gap="${node.gap}">${node.children.map((child) => renderNode(child, ctx)).join("")}</div>`;
+      return `<div class="g-compose-stack" data-gap="${node.gap}"${attrIf("align", node.align, "start")}>${node.children.map((child) => renderNode(child, ctx)).join("")}</div>`;
     case "row":
-      return `<div class="g-compose-row">${node.children.map((child) => renderNode(child, ctx)).join("")}</div>`;
+      return `<div class="g-compose-row"${attrIf("align", node.align, "start")}>${node.children.map((child) => renderNode(child, ctx)).join("")}</div>`;
     case "card":
       return renderCard(node, ctx);
     case "title":
@@ -102,6 +108,12 @@ function renderNode(node, ctx) {
       return kpiHtml(node);
     case "arrow":
       return ARROW(node.direction === "right" ? "right" : "down");
+    case "fan":
+      return fanHtml(node.count);
+    case "join":
+      return joinHtml(node.text);
+    case "lanes":
+      return lanesHtml(node);
     case "notes":
       return "";
     default: {
@@ -111,26 +123,66 @@ function renderNode(node, ctx) {
   }
 }
 
-function renderText(node, ctx, className) {
-  const tag = ctx.phrasing ? "span" : "p";
-  return `<${tag} class="${className}">${textHtml(node.text)}</${tag}>`;
+function attrIf(name, value, fallback) {
+  return value && value !== fallback ? ` data-${name}="${esc(value)}"` : "";
 }
 
-function faceOf(node, ctx) {
+function renderText(node, ctx, className) {
+  const tag = ctx.phrasing ? "span" : "p";
+  const align = attrIf("align", node.align, "start");
+  const tone = attrIf("tone", node.tone, "plain");
+  return `<${tag} class="${className}"${align}${tone}>${textHtml(node.text)}</${tag}>`;
+}
+
+function fanHtml(count) {
+  return `<div class="g-compose-fan" data-n="${count}">${Array.from({ length: count }, () => ARROW("down")).join("")}</div>`;
+}
+
+function joinHtml(text) {
+  return `<div class="g-compose-join"><svg class="g-compose-join-svg" viewBox="0 0 600 56" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path d="M36 10 L300 40 L564 10" fill="none" stroke="currentColor" stroke-width="2" vector-effect="non-scaling-stroke"/><path d="M300 40 V54" fill="none" stroke="currentColor" stroke-width="2" vector-effect="non-scaling-stroke"/></svg><p class="g-compose-join-label">${textHtml(text)}</p></div>`;
+}
+
+function lanesHtml(node) {
+  const cols = node.actors.length;
+  const heads = node.actors.map((actor) => `<p class="g-compose-lane-pill">${textHtml(actor)}</p>`).join("");
+  const lives = node.actors.map((_, index) => `<i class="g-compose-lane-life" style="--i:${index}"></i>`).join("");
+  const rows = node.messages.map((message, index) => {
+    const start = Math.min(message.from, message.to);
+    const end = Math.max(message.from, message.to) + 1;
+    const way = message.from < message.to ? "right" : "left";
+    const n = CIRCLED[index] ?? String(index + 1);
+    const route = `${node.actors[message.from - 1]} → ${node.actors[message.to - 1]}`;
+    return `<div class="g-compose-lane-row"><div class="g-compose-lane-msg" data-tone="${esc(message.tone)}" data-way="${way}" style="grid-column:${start} / ${end}"><span class="g-compose-lane-label">${textHtml(`${n} ${message.text}`)}</span><span class="g-compose-lane-route">${textHtml(route)}</span><span class="g-compose-lane-shaft" aria-hidden="true"></span></div></div>`;
+  }).join("");
+  return `<div class="g-compose-lanes" style="--cols:${cols}"><div class="g-compose-lanes-head">${heads}</div><div class="g-compose-lanes-stage">${lives}${rows}</div></div>`;
+}
+
+function faceOf(node, ctx, phrasing) {
   const titleClass = node.type === "card" ? "g-compose-card-title" : "g-compose-step-title";
   const textClass = node.type === "card" ? "g-compose-card-text" : "g-compose-step-text";
-  const title = node.title ? `<span class="${titleClass}">${textHtml(node.title)}</span>` : "";
+  const mark = node.mark === "shield" ? SHIELD : "";
+  const title = node.title ? `<span class="${titleClass}">${mark}${textHtml(node.title)}</span>` : "";
   const text = node.text ? `<span class="${textClass}">${textHtml(node.text)}</span>` : "";
-  const children = (node.children ?? []).map((child) => renderNode(child, { ...ctx, phrasing: true })).join("");
-  return `${badgeHtml(node.badge)}${title}${kpiHtml(node.kpi)}${text}${children}`;
+  const head = badgeHtml(node.badge) || title
+    ? `<span class="g-compose-card-line">${badgeHtml(node.badge)}${title}</span>`
+    : "";
+  const children = (node.children ?? []).map((child) => renderNode(child, { ...ctx, phrasing })).join("");
+  return `${head}${kpiHtml(node.kpi)}${text}${children}`;
+}
+
+function cardAttrs(node) {
+  const tone = node.tone || "plain";
+  const frame = node.frame && node.frame !== "card" ? ` data-frame="${esc(node.frame)}"` : "";
+  const align = node.align === "center" ? ` data-align="center"` : "";
+  return ` data-tone="${esc(tone)}"${frame}${align}`;
 }
 
 function renderCard(node, ctx) {
   const notes = node.id ? ctx.notesById.get(node.id) ?? [] : [];
   const blocks = (node.children ?? []).some((child) => !PHRASING.has(child.type));
   const tone = node.tone || "plain";
-  if (notes.length && !blocks) return disclosure(ctx, "g-compose-card", tone, faceOf(node, ctx), notes, node.id);
-  const card = `<div class="g-compose-card" data-tone="${esc(tone)}">${faceOf(node, ctx)}</div>`;
+  if (notes.length && !blocks) return disclosure(ctx, "g-compose-card", tone, faceOf(node, ctx, true), notes, node.id);
+  const card = `<div class="g-compose-card"${cardAttrs(node)}>${faceOf(node, ctx, false)}</div>`;
   if (!notes.length) return card;
   const label = node.title || node.id;
   return `${card}${disclosure(ctx, "g-compose-step", "plain", `<span class="g-compose-step-title">${textHtml(label)}</span>`, notes, node.id)}`;
@@ -181,6 +233,8 @@ export function composeText(doc) {
     pushItem(node);
     for (const item of node.items ?? []) pushItem(item);
     for (const note of node.notes ?? []) pushItem(note);
+    for (const actor of node.actors ?? []) parts.push(actor);
+    for (const message of node.messages ?? []) if (message.text) parts.push(message.text);
   });
   return parts.filter(Boolean).join("\n");
 }
