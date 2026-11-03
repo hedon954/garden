@@ -101,8 +101,8 @@ Assemble a diagram from these atoms. Do not add a style that only one picture us
 | Shield | `mark: shield` |
 | Downward arrow | `arrow: down` |
 | A row of downward arrows | `fan: 3`, then a `row` with the same number of cells |
-| V connector with the label in the notch | `join: one sentence` |
-| Swimlane | `lanes` with `actors` and `messages`. `from` / `to` start at 1. `tone` is `forward` or `back` |
+| V connector with the label in the notch | `join: one sentence`. The arms and the short stem are one polyline, opening upward |
+| Swimlane | `lanes`. Header capsules shrink to their text. The label sits above the shaft. `tone: forward` and `back` use two emphasis colors |
 | Footer | `text` + `tone: muted` |
 | Two-by-two | two `row` nodes, two cells each |
 

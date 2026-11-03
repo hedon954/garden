@@ -165,6 +165,8 @@ test("the handbook gallery renders all six explanation diagrams", () => {
   assert.match(html, /g-compose-lanes/);
   assert.match(html, /data-tone="forward"/);
   assert.match(html, /data-tone="back"/);
+  assert.equal((html.match(/<path d="M2 2 L300 30/gu) || []).length, 1);
+  assert.match(html, /viewBox="0 0 10 12"/);
   assert.match(html, /--span:2/);
   assert.match(html, /① 点击登录 \/ 授权/);
   assert.match(html, /class="g-compose-fan"/);

@@ -33,6 +33,9 @@
   --accent-soft: var(--blue-tint);
   --selection: #e8e5db;
   --hl: #ffe58f;
+  /* Two lane-arrow emphases. Same hues as the note and tip callouts, not a second palette. */
+  --flow: #2c55b4;
+  --flow-back: #2d6a3e;
   --red: #d82d48;
   --red-text: #c2263f;
   --red-tint: #fbeef0;
@@ -94,6 +97,8 @@ html[data-theme="dark"] {
   --accent-soft: var(--blue-tint);
   --selection: rgb(238 236 231 / 18%);
   --hl: #5e4e17;
+  --flow: #93b2f4;
+  --flow-back: #8fcb9f;
   --red: #f29aab;
   --red-text: #f29aab;
   --red-tint: rgb(242 154 171 / 12%);

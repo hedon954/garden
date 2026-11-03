@@ -101,8 +101,8 @@ tree:
 | 盾牌 | `mark: shield` |
 | 向下的箭头 | `arrow: down` |
 | 并排的几根向下箭头 | `fan: 3`，下一行 `row` 的格数相同 |
-| V 形连接，字写在缺口里 | `join: 一句说明` |
-| 泳道 | `lanes`，`actors` 与 `messages`。`from` / `to` 从 1 起，`tone` 是 `forward` 或 `back` |
+| V 形连接，字写在缺口里 | `join: 一句说明`。两臂和短竖线是一条折线，开口朝上 |
+| 泳道 | `lanes`。表头胶囊按内容收缩。说明在箭头上方。`tone: forward` 和 `back` 用两种强调色 |
 | 脚注 | `text` + `tone: muted` |
 | 两列两行 | 两个 `row`，每个两格 |
 

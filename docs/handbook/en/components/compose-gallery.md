@@ -21,8 +21,8 @@ The left column is the ChatGPT original. The right column is the same skeleton b
 | Shield | `mark: shield` |
 | One downward arrow | `arrow: down` |
 | Several downward arrows in a row | `fan`, then a `row` with the same count |
-| V connector with a label in the notch | `join` |
-| Swimlane, dashed lifelines, both arrow directions | `lanes`, `tone: forward` or `back` |
+| V connector with a label in the notch | `join`. Both arms meet at one vertex, then a short stem |
+| Swimlane, dashed lifelines, both arrow directions | `lanes`. The label sits above the shaft. `forward` and `back` are two emphasis colors |
 | Footer line | `text` with `tone: muted` |
 | Two-by-two grid | two `row` nodes, two cells each |
 

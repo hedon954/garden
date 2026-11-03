@@ -21,8 +21,8 @@ badge: compose
 | 盾牌 | `mark: shield` |
 | 一根向下的箭头 | `arrow: down` |
 | 并排散开的几根箭头 | `fan`，后面接同样列数的 `row` |
-| 中间写字的 V 形连接 | `join` |
-| 泳道、虚线和来回箭头 | `lanes`，`tone: forward` 或 `back` |
+| 中间写字的 V 形连接 | `join`。两臂接到同一个顶点，再垂下一小段 |
+| 泳道、虚线和来回箭头 | `lanes`。字在线上方。`forward` 和 `back` 是两种强调色 |
 | 脚注 | `text`，`tone: muted` |
 | 两列两行 | 两个 `row`，每个里面两格 |
 

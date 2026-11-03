@@ -1,5 +1,5 @@
 const ARROW = (dir) =>
-  `<svg class="g-compose-arrow" data-dir="${dir}" viewBox="0 0 24 32" width="24" height="32" aria-hidden="true" focusable="false"><path d="M12 2v22M5 17l7 8 7-8" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"></path></svg>`;
+  `<svg class="g-compose-arrow" data-dir="${dir}" viewBox="0 0 10 12" width="10" height="12" aria-hidden="true" focusable="false"><path d="M5 1v5.2M2.7 4.4 5 8 7.3 4.4" fill="none" stroke="currentColor" stroke-width="1.15" stroke-linecap="round" stroke-linejoin="round"></path></svg>`;
 
 function esc(value) {
   return String(value ?? "")
@@ -139,7 +139,8 @@ function fanHtml(count) {
 }
 
 function joinHtml(text) {
-  return `<div class="g-compose-join"><p class="g-compose-join-label">${textHtml(text)}</p><svg class="g-compose-join-svg" viewBox="0 0 600 64" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path d="M8 12 L300 36" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" vector-effect="non-scaling-stroke"/><path d="M592 12 L300 36" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" vector-effect="non-scaling-stroke"/><path d="M300 36 V58" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" vector-effect="non-scaling-stroke"/></svg></div>`;
+  // One polyline: left arm into the vertex, out the right arm, then the stem. Same orientation in every locale.
+  return `<div class="g-compose-join"><p class="g-compose-join-label">${textHtml(text)}</p><svg class="g-compose-join-svg" viewBox="0 0 600 48" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path d="M2 2 L300 30 L598 2 L300 30 L300 46" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="miter" stroke-linecap="butt" vector-effect="non-scaling-stroke"/></svg></div>`;
 }
 
 function lanesHtml(node) {
@@ -153,7 +154,7 @@ function lanesHtml(node) {
     const way = message.from < message.to ? "right" : "left";
     const n = CIRCLED[index] ?? String(index + 1);
     const route = `${node.actors[message.from - 1]} → ${node.actors[message.to - 1]}`;
-    return `<div class="g-compose-lane-row"><div class="g-compose-lane-msg" data-tone="${esc(message.tone)}" data-way="${way}" style="grid-column:${start} / ${end};--span:${span}"><span class="g-compose-lane-shaft" aria-hidden="true"></span><span class="g-compose-lane-label">${textHtml(`${n} ${message.text}`)}</span><span class="g-compose-lane-route">${textHtml(route)}</span></div></div>`;
+    return `<div class="g-compose-lane-row"><div class="g-compose-lane-msg" data-tone="${esc(message.tone)}" data-way="${way}" style="grid-column:${start} / ${end};--span:${span}"><span class="g-compose-lane-label">${textHtml(`${n} ${message.text}`)}</span><span class="g-compose-lane-shaft" aria-hidden="true"></span><span class="g-compose-lane-route">${textHtml(route)}</span></div></div>`;
   }).join("");
   return `<div class="g-compose-lanes" style="--cols:${cols}"><div class="g-compose-lanes-head">${heads}</div><div class="g-compose-lanes-stage">${lives}${rows}</div></div>`;
 }
