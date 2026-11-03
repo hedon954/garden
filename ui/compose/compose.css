@@ -7,11 +7,11 @@
   max-width: 100%;
   min-width: 0;
   margin: 1.25em 0;
-  padding: 18px 18px 16px;
-  border: 1px solid var(--rule);
-  border-radius: var(--r-lg, 24px);
-  background: var(--paper);
-  box-shadow: var(--card-shadow);
+  padding: 18px 18px 14px;
+  border: 1px solid color-mix(in srgb, var(--rule-strong) 72%, var(--card));
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--ink) 2%, var(--card));
+  box-shadow: none;
   color: var(--text, var(--ink));
   overflow-wrap: break-word;
 }
@@ -36,7 +36,7 @@
 
 .g-compose-h {
   color: var(--ink);
-  font: 600 16px/1.35 var(--sans);
+  font: 500 14px/1.3 var(--sans);
 }
 
 .g-compose-caption {
@@ -280,7 +280,7 @@
 
 .g-compose-row > .g-compose-stack > .g-compose-h {
   margin: 0;
-  font: 600 16px/1.35 var(--sans);
+  font: 500 14px/1.3 var(--sans);
 }
 
 .g-compose-card[data-frame="band"][data-tone="accent"] {
@@ -300,10 +300,11 @@
 .g-compose-card[data-frame="pill"] {
   width: auto;
   align-self: center;
-  border-radius: 16px;
-  padding: 12px 24px;
+  border-radius: 5px;
+  padding: 8px 16px;
   background: var(--card);
   border-color: var(--rule);
+  box-shadow: none;
 }
 
 .g-compose-card[data-frame="pill"][data-tone="accent"] {
@@ -317,10 +318,10 @@
 }
 
 .g-compose-card[data-frame="pill"][data-tone="muted"] {
-  background: color-mix(in srgb, var(--ink) 7%, var(--paper));
-  border-color: color-mix(in srgb, var(--ink) 14%, var(--paper));
+  background: color-mix(in srgb, var(--ink) 7%, var(--card));
+  border-color: color-mix(in srgb, var(--ink) 20%, var(--card));
   color: var(--ink);
-  box-shadow: 0 1px 2px color-mix(in srgb, var(--ink) 8%, transparent);
+  box-shadow: none;
 }
 
 .g-compose-card-line {
@@ -529,7 +530,7 @@
 .g-compose-step-title,
 .g-compose-note-k {
   color: var(--ink);
-  font: 600 16px/1.35 var(--sans);
+  font: 500 14px/1.3 var(--sans);
 }
 
 .g-compose-card-text,
@@ -638,12 +639,15 @@
   border-color: var(--ink);
 }
 
+/* `.markdown-body hr` is margin 54px 0 at specificity 0,1,1. These two selectors win. */
+.g-compose hr,
+.markdown-body .g-compose hr,
 .g-compose-divider {
   width: 100%;
   height: 0;
-  margin: 2px 0;
+  margin: 16px 0 10px;
   border: 0;
-  border-top: 1px solid var(--rule);
+  border-top: 1px solid color-mix(in srgb, var(--rule) 70%, var(--card));
 }
 
 .g-compose-h {
