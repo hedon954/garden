@@ -1,13 +1,13 @@
 ---
 title: Explanation gallery
 navTitle: Gallery
-description: Six garden compose diagrams for RBAC, SSO, an auth stack, API checks, an agent policy point, and OAuth PKCE.
+description: Seven garden compose diagrams for RBAC, SSO, an auth stack, API checks, an agent policy point, OAuth PKCE, and a two-row flow.
 section: components
 order: 36.5
 badge: compose
 ---
 
-These six diagrams are `garden compose`. Color comes only from the theme tokens. A narrow screen stacks each row into one column.
+These seven diagrams are `garden compose`. Color comes only from the theme tokens. A narrow screen stacks each row into one column.
 
 ## How the atoms fit together
 
@@ -303,4 +303,50 @@ tree:
   - type: text
     text: This sketch leaves out the browser redirect, callback binding, and token checks.
     tone: muted
+```
+
+## Two rows
+
+The top row is plain titles. The bottom row is pills. A `divider` sits between them.
+
+```garden compose
+intent: |
+  Two rows. The top three steps are plain titles, the bottom three are pills, and a footer says the second row is the decision loop.
+tree:
+  - row:
+      align: center
+      children:
+        - title:
+            text: Understand the need
+            align: center
+        - arrow: right
+        - title:
+            text: Design the approach
+            align: center
+        - arrow: right
+        - title:
+            text: Ship it
+            align: center
+  - divider:
+  - row:
+      align: center
+      children:
+        - card:
+            frame: pill
+            align: center
+            title: State a hypothesis
+        - arrow: right
+        - card:
+            frame: pill
+            align: center
+            title: Test it cheaply
+        - arrow: right
+        - card:
+            frame: pill
+            align: center
+            title: Iterate or drop it
+  - type: text
+    text: The second row is the decision loop product discovery actually emphasizes.
+    tone: muted
+    align: start
 ```

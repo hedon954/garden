@@ -150,10 +150,10 @@ test("the host renders each compose fence as static HTML", () => {
   assert.match(html[1], /name="gc2"/u);
 });
 
-test("the handbook gallery renders all six explanation diagrams", () => {
+test("the handbook gallery renders the explanation diagrams", () => {
   const markdown = fs.readFileSync(path.join(root, "docs/handbook/components/compose-gallery.md"), "utf8");
   const fences = scanFences(markdown).map((fence) => classifyFence(fence)).filter((item) => item.kind === "garden");
-  assert.equal(fences.length, 6);
+  assert.equal(fences.length, 7);
   assert.doesNotMatch(markdown, /ChatGPT/u);
   assert.doesNotMatch(fs.readFileSync(path.join(root, "docs/handbook/en/components/compose-gallery.md"), "utf8"), /ChatGPT/u);
   assert.deepEqual(checkGardenMarkdown(markdown), []);
@@ -175,6 +175,8 @@ test("the handbook gallery renders all six explanation diagrams", () => {
   assert.match(html, /M5 0\.7 5 6\.5/);
   assert.match(html, /--span:2/);
   assert.match(html, /① 点击登录 \/ 授权/);
+  assert.match(html, /第二行才是产品探索更强调的决策循环。/);
+  assert.match(html, /data-frame="pill"/);
   assert.match(html, /class="g-compose-fan"/);
   assert.match(html, /data-align="start"/);
   assert.doesNotMatch(html, /<script/u);

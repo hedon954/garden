@@ -1,13 +1,13 @@
 ---
 title: 说明图画廊
 navTitle: 说明图画廊
-description: 六张 garden compose 说明图：RBAC、SSO、认证分层、API 六维、Agent 策略点和 OAuth 授权码。
+description: 七张 garden compose 说明图：RBAC、SSO、认证分层、API 六维、Agent 策略点、OAuth 授权码，和两行流程。
 section: components
 order: 36.5
 badge: compose
 ---
 
-下面六张都是 `garden compose`。颜色只走主题变量。窄屏把图里的横排收成一列。
+下面七张都是 `garden compose`。颜色只走主题变量。窄屏把图里的横排收成一列。
 
 ## 零件怎么拼
 
@@ -303,4 +303,50 @@ tree:
   - type: text
     text: 简化示意：真实流程还包含浏览器跳转、回调绑定、授权码及令牌校验等细节。
     tone: muted
+```
+
+## 两行流程
+
+上面一行是无框标题，下面一行是胶囊。中间一条 `divider`。
+
+```garden compose
+intent: |
+  两行流程。上面三步是白话，下面三步是胶囊，脚注说明第二行才是决策循环。
+tree:
+  - row:
+      align: center
+      children:
+        - title:
+            text: 理解需求
+            align: center
+        - arrow: right
+        - title:
+            text: 设计方案
+            align: center
+        - arrow: right
+        - title:
+            text: 开发上线
+            align: center
+  - divider:
+  - row:
+      align: center
+      children:
+        - card:
+            frame: pill
+            align: center
+            title: 提出假设
+        - arrow: right
+        - card:
+            frame: pill
+            align: center
+            title: 低成本验证
+        - arrow: right
+        - card:
+            frame: pill
+            align: center
+            title: 迭代或放弃
+  - type: text
+    text: 第二行才是产品探索更强调的决策循环。
+    tone: muted
+    align: start
 ```
