@@ -349,7 +349,8 @@
   display: block;
   width: 100%;
   height: auto;
-  aspect-ratio: 600 / 56;
+  aspect-ratio: 600 / 72;
+  color: var(--flow);
 }
 
 .g-compose-join-label {

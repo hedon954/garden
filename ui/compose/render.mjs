@@ -139,8 +139,9 @@ function fanHtml(count) {
 }
 
 function joinHtml(text) {
-  // One polyline under the label. Arms start high and meet downward; the stem continues down.
-  return `<div class="g-compose-join"><div class="g-compose-join-label">${textHtml(text)}</div><svg class="g-compose-join-svg" viewBox="0 0 600 56" aria-hidden="true" focusable="false"><path d="M2 2 L300 36 L300 52 L300 36 L598 2" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/></svg></div>`;
+  // One path. The two arms meet in a single corner, then the same stroke returns to that
+  // vertex and runs up into the opening. The label stays above the svg.
+  return `<div class="g-compose-join"><div class="g-compose-join-label">${textHtml(text)}</div><svg class="g-compose-join-svg" viewBox="0 0 600 72" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false"><path d="M16 4 L300 64 L584 4 L300 64 L300 8" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/></svg></div>`;
 }
 
 function lanesHtml(node) {
