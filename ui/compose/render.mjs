@@ -1,5 +1,5 @@
 const ARROW = (dir) =>
-  `<svg class="g-compose-arrow" data-dir="${dir}" viewBox="0 0 12 16" width="12" height="16" aria-hidden="true" focusable="false"><path d="M6 1.2 6 13.2 M3.15 10.2 6 13.2 8.85 10.2" fill="none" stroke="currentColor" stroke-width="1.05" stroke-linecap="round" stroke-linejoin="round"></path></svg>`;
+  `<svg class="g-compose-arrow" data-dir="${dir}" viewBox="0 0 10 8" width="10" height="8" aria-hidden="true" focusable="false"><path d="M5 0.7 5 6.5 M2.6 4.1 5 6.5 7.4 4.1" fill="none" stroke="currentColor" stroke-width="1.05" stroke-linecap="round" stroke-linejoin="round"></path></svg>`;
 
 function esc(value) {
   return String(value ?? "")

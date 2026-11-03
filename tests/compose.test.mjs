@@ -171,8 +171,8 @@ test("the handbook gallery renders all six explanation diagrams", () => {
   assert.doesNotMatch(html, /preserveAspectRatio="none"/u);
   assert.match(html, /data-tone="tip"/);
   assert.match(html, /class="g-compose-join-label"/);
-  assert.match(html, /viewBox="0 0 12 16"/);
-  assert.match(html, /M6 1\.2 6 13\.2/);
+  assert.match(html, /viewBox="0 0 10 8"/);
+  assert.match(html, /M5 0\.7 5 6\.5/);
   assert.match(html, /--span:2/);
   assert.match(html, /① 点击登录 \/ 授权/);
   assert.match(html, /class="g-compose-fan"/);

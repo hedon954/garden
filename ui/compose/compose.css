@@ -177,7 +177,7 @@
   align-items: flex-start;
   gap: 4px;
   box-sizing: border-box;
-  padding: 8px 12px;
+  padding: 14px 16px;
   border: 1px solid var(--rule);
   border-radius: var(--r, 12px);
   background: var(--card);
@@ -264,14 +264,14 @@
 
 .g-compose-card[data-frame="band"] {
   width: 100%;
-  padding: 3px 16px 4px;
+  padding: 12px 18px;
   border: 0;
   background: var(--well);
   box-shadow: none;
 }
 
 .g-compose-row > .g-compose-stack {
-  padding-top: 3px;
+  padding-top: 12px;
 }
 
 .g-compose-row > .g-compose-stack > .g-compose-h {
@@ -297,7 +297,7 @@
   width: auto;
   align-self: center;
   border-radius: 16px;
-  padding: 10px 22px;
+  padding: 12px 24px;
   background: var(--card);
 }
 
@@ -341,7 +341,7 @@
   grid-template-columns: repeat(var(--n, 3), minmax(0, 1fr));
   gap: 8px;
   width: 100%;
-  margin-block: -2px;
+  margin-block: -3px;
 }
 
 .g-compose-fan .g-compose-arrow {
@@ -576,10 +576,15 @@
   display: block;
   flex: 0 0 auto;
   align-self: center;
-  width: 12px;
-  height: 16px;
+  width: 10px;
+  height: 8px;
   margin: 0 auto;
   color: var(--muted);
+}
+
+.g-compose-stack > .g-compose-arrow,
+.g-compose-body > .g-compose-arrow {
+  margin-block: -2px;
 }
 
 .g-compose-arrow[data-dir="right"] {
