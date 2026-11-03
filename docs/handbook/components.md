@@ -1,7 +1,7 @@
 ---
 title: 组件总览
 navTitle: 组件总览
-description: 12 个 garden 围栏，以及链接卡片、来源胶囊和本地图片的效果预览。
+description: garden 围栏的效果预览，以及链接卡片、来源胶囊和本地图片。figure 已由 compose 接替。
 section: components
 order: 30
 ---
@@ -74,40 +74,34 @@ data:
     y: 1340
 ```
 
-## [分区结构图 · figure](/garden/components/figure)
+## [说明图 · compose](/garden/components/compose)
 
-```garden figure
-svg: |
-  <svg viewBox="0 0 560 194" xmlns="http://www.w3.org/2000/svg" font-family="var(--sans)" style="max-width: 380px; margin-inline: auto">
-    <rect data-p="sync" x="2" y="4" width="180" height="186" rx="16" fill="var(--card)" stroke="var(--rule-strong)" stroke-width="2.5"/>
-    <text data-p="sync" x="92" y="42" text-anchor="middle" font-size="24" font-weight="600" fill="var(--ink)">1. garden</text>
-    <text data-p="sync" x="92" y="72" text-anchor="middle" font-size="24" font-weight="600" fill="var(--ink)">sync</text>
-    <text data-p="sync" x="92" y="108" text-anchor="middle" font-size="24" fill="var(--muted)">解析</text>
-    <text data-p="sync" x="92" y="137" text-anchor="middle" font-size="24" fill="var(--muted)">Markdown 与</text>
-    <text data-p="sync" x="92" y="166" text-anchor="middle" font-size="24" fill="var(--muted)">图片尺寸</text>
-    <path d="M183.5 97 H188.5" stroke="var(--muted)" stroke-width="2.5"/>
-    <rect data-p="build" x="190" y="4" width="180" height="186" rx="16" fill="var(--card)" stroke="var(--rule-strong)" stroke-width="2.5"/>
-    <text data-p="build" x="280" y="42" text-anchor="middle" font-size="24" font-weight="600" fill="var(--ink)">2. garden</text>
-    <text data-p="build" x="280" y="72" text-anchor="middle" font-size="24" font-weight="600" fill="var(--ink)">build</text>
-    <text data-p="build" x="280" y="108" text-anchor="middle" font-size="24" fill="var(--muted)">生成静态页面</text>
-    <text data-p="build" x="280" y="137" text-anchor="middle" font-size="24" fill="var(--muted)">与搜索索引</text>
-    <path d="M371.5 97 H376.5" stroke="var(--muted)" stroke-width="2.5"/>
-    <rect data-p="validate" x="378" y="4" width="180" height="186" rx="16" fill="var(--card)" stroke="var(--rule-strong)" stroke-width="2.5"/>
-    <text data-p="validate" x="468" y="42" text-anchor="middle" font-size="24" font-weight="600" fill="var(--ink)">3. pages:</text>
-    <text data-p="validate" x="468" y="72" text-anchor="middle" font-size="24" font-weight="600" fill="var(--ink)">validate</text>
-    <text data-p="validate" x="468" y="108" text-anchor="middle" font-size="24" fill="var(--muted)">检查导出目录</text>
-  </svg>
-parts:
+```garden compose
+title: 站点发布流水线
+caption: 点一步，看这一步做什么
+steps:
   - id: sync
-    label: 1. 同步内容
-    text: 扫描正文与附件，生成站点数据。
+    title: sync
+    badge: "1"
+    text: 同步内容与配置
   - id: build
-    label: 2. 构建页面
-    text: 预渲染所有页面路由，输出 RSS、sitemap 与搜索文件。
+    title: build
+    badge: "2"
+    text: 生成静态 HTML
   - id: validate
-    label: 3. 导出校验
-    text: 确认导出目录结构完整。
+    title: validate
+    badge: "3"
+    text: 检查后再上线
+notes:
+  - for: sync
+    text: 先对齐远程与本地材料。
+  - for: build
+    text: 构建期把 compose 画进页面。
+  - for: validate
+    text: 钩子拦住还没编译的想法。
 ```
+
+[figure](/garden/components/figure) 已废弃，旧围栏仍能渲染。
 
 ## [嵌入网页片段 · html](/garden/components/html)
 

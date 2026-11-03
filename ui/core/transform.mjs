@@ -3,6 +3,7 @@ import { parse as parseYaml } from "yaml";
 import { compileUiBlock, jsonFence, readPayload } from "./compile.mjs";
 import { findBlocks, scanFences } from "./fence.mjs";
 import { renderStatic } from "./static.mjs";
+import { composeText, isComposeInfo, parseCompose, renderCompose } from "../compose/index.mjs";
 import { fileFeedMarkdown, fileSearchText } from "../garden/file-block.mjs";
 
 /**
@@ -61,6 +62,11 @@ function widgetCaption(body) {
 }
 
 /** Props of a `garden file` fence (authored or built), or null for any other fence. */
+function readCompose(fence) {
+  if (fence.lang !== "garden" || !isComposeInfo(fence.info)) return null;
+  return parseCompose(fence.body);
+}
+
 function fileFenceProps(fence) {
   if (fence.lang !== "garden" || !/^file(?:\s|$)/iu.test(fence.info ?? "")) return null;
   try {
@@ -116,6 +122,8 @@ export function contentToSearchText(content) {
     if (fence.lang === "widget") return ` ${widgetCaption(fence.body).caption} `;
     const file = fileFenceProps(fence);
     if (file) return ` ${fileSearchText(file)} `;
+    const compose = readCompose(fence);
+    if (compose) return compose.ok ? ` ${composeText(compose.doc)} ` : " ";
     return undefined;
   });
 }
@@ -137,6 +145,8 @@ export function contentForFeed(content, { pageUrl = "", siteUrl = "" } = {}) {
     }
     const file = fileFenceProps(fence);
     if (file) return fileFeedMarkdown(file, { siteUrl });
+    const compose = readCompose(fence);
+    if (compose) return compose.ok ? renderCompose(compose.doc, { scope: `feed${fence.startLine}` }) : "";
     return undefined;
   });
 }
@@ -158,6 +168,8 @@ export function contentForDistribution(content, { pageUrl = "", siteUrl = "" } =
     }
     const file = fileFenceProps(fence);
     if (file) return fileFeedMarkdown(file, { siteUrl });
+    const compose = readCompose(fence);
+    if (compose?.ok) return composeText(compose.doc);
     return undefined;
   });
 }

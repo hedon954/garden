@@ -11,7 +11,7 @@ description: >-
 
 # Compile Garden interactive blocks
 
-The author writes a one-sentence idea in an unnamed `garden` fence. This skill turns it into `garden interactive` or another `garden` component. The interactive components and design rules are in the output of `npx garden ui prompt`. The purpose and examples of the 12 `garden` components are in `node_modules/hd-garden/templates/garden-blocks.md` (in the engine repo, `templates/garden-blocks.md`). Treat those two as the source of truth; never write components from memory.
+The author writes a one-sentence idea in an unnamed `garden` fence. This skill turns it into `garden interactive`, `garden compose`, or another `garden` component. If a `garden compose` fence is still prose, fill a YAML tree in that same fence and do not change the fence type. The interactive components and design rules are in the output of `npx garden ui prompt`. The purpose and examples of the `garden` components are in `node_modules/hd-garden/templates/garden-blocks.md` (in the engine repo, `templates/garden-blocks.md`). Treat those two as the source of truth; never write components from memory.
 
 When the author commits, the pre-commit hook runs the same `npx garden ui check`. The commands you use to find blocks, write them back and self-check are the same ones that stop the author's commit.
 
@@ -34,7 +34,7 @@ Run every command from the site root. If no post path was given, ask only for th
    npx garden ui scan content/posts/path.md
    ```
 
-   stdout is JSON. `lang` is `garden-idea` (an idea), `garden-interactive`, or the older `intent` / `ui`. Each block has `lang`, `id`, `status`, `startLine`, `hash` (hash of the whole fence, used as `--base` on write-back), `intentHash` (hash of the author's words), `intent` (the author's words), `caption`, `section` (the heading it sits under) and `diagnostics`. Do not find fences yourself with regular expressions.
+   stdout is JSON. `lang` is `garden-idea` (an idea), `garden-compose`, `garden-interactive`, or the older `intent` / `ui`. Each block has `lang`, `id`, `status`, `startLine`, `hash` (hash of the whole fence, used as `--base` on write-back), `intentHash` (hash of the author's words), `intent` (the author's words), `caption`, `section` (the heading it sits under) and `diagnostics`. Do not find fences yourself with regular expressions.
 
 2. Read the rules:
 
@@ -48,7 +48,8 @@ Run every command from the site root. If no post path was given, ask only for th
    - **Write it back as prose**: when a sentence, a table or a Mermaid diagram says it clearly.
    - **Write `garden interactive`**: when the reader needs to drag, click or step through it to understand.
    - **Write a `diff`**: when the idea follows a complete code block and is about "what changed since the last version". Write the diff the words describe as plain Markdown (just this one `diff` fence). Once written back it sits right after that code, and the page turns them into a "code / compare with previous" toggle. New lines in the diff must match the complete code above.
-   - **Write another `garden` component**: one or more resource cards (`card` / `cards`), a few metrics (`stat`), two approaches side by side or a good/bad comparison (`compare` / `verdict: good|bad`), a timeline (`timeline`), a static chart (`chart`), a labelled structure diagram (`figure`), a downloadable file (`file`), a relationship diagram of 3–6 elements (`relations`), a compact icon list or step list (`list`), or a choice card with two or three options (`choice`). Fields and validation rules are in `npx garden ui prompt` and `templates/garden-blocks.md`.
+   - **Write another `garden` component**: one or more resource cards (`card` / `cards`), a few metrics (`stat`), two approaches side by side or a good/bad comparison (`compare` / `verdict: good|bad`), a timeline (`timeline`), a static chart (`chart`), an explanation diagram (`compose`), a downloadable file (`file`), a relationship diagram of 3–6 elements (`relations`), a compact icon list or step list (`list`), or a choice card with two or three options (`choice`). `figure` is deprecated; do not write a new one. Fields and validation rules are in `npx garden ui prompt` and `templates/garden-blocks.md`.
+   - **Compile `garden compose`**: when `lang` is `garden-compose` and `status` is `uncompiled`, keep the fence header as `garden compose`. Put the scanned sentence into `intent` unchanged and write a YAML tree (`steps` + `notes`, or `tree`). Do not switch it to interactive, and do not write HTML, SVG, or scripts. The recipe is the explanation-diagram section of `npx garden ui prompt`.
    - **Write `garden html`**: canvas animation, audio, physics simulations and anything else the catalog cannot express. Write the HTML in the same-name directory following [garden-interactive-chart](../garden-interactive-chart/SKILL.md), and put the claim in `title`.
 
 4. When writing `garden interactive`:

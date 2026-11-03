@@ -1,6 +1,7 @@
 "use client";
 
 import { useUiLang } from "../UiLang";
+import { renderCompose } from "../../../ui/compose/render.mjs";
 import { readGardenPayload } from "../../lib/remark-garden.mjs";
 import {
   GardenCard,
@@ -39,6 +40,10 @@ export function GardenBlock({ dataPayload }: { dataPayload?: string }) {
       return <GardenChart props={props} />;
     case "figure":
       return <GardenFigure props={props}>{String(block.children ?? "")}</GardenFigure>;
+    case "compose":
+      if (block.error?.code === "compose-uncompiled") return <GardenIdea text={String(block.idea || block.children || "")} />;
+      if (block.error) return <GardenUnknown name="compose" />;
+      return <div className="g-compose-host" dangerouslySetInnerHTML={{ __html: renderCompose(props) }} />;
     case "html":
       return <GardenHtml props={props}>{String(block.children ?? "")}</GardenHtml>;
     case "interactive":

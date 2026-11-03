@@ -317,9 +317,15 @@ test("insert pickers paste a garden idea brief with a thumbnail, not a YAML exam
   const items = pickerItems();
   assert.deepEqual(items.map((item) => item.name), ["", ...GARDEN_NAMES]);
   for (const item of items) {
-    assert.match(item.body, /^```garden\n/u);
-    assert.doesNotMatch(item.body, /```garden [a-z]/u);
-    assert.doesNotMatch(item.body, /^[a-z]+:/mu);
+    if (item.name === "compose") {
+      assert.equal(item.label, "compose（想法）");
+      assert.match(item.body, /^```garden compose\n/u);
+      assert.doesNotMatch(item.body, /^[a-z]+:/mu);
+    } else {
+      assert.match(item.body, /^```garden\n/u);
+      assert.doesNotMatch(item.body, /```garden [a-z]/u);
+      assert.doesNotMatch(item.body, /^[a-z]+:/mu);
+    }
     assert.match(item.preview, /^data:image\/svg\+xml,/u);
     assert.match(decodeURIComponent(item.preview.slice("data:image/svg+xml,".length)), /<(?:rect|path|circle|text)\b/u);
     assert.match(suggestHtml(item), /<img\b[^>]*class="garden-suggest-thumb"/u);
@@ -339,7 +345,7 @@ test("insert pickers paste a garden idea brief with a thumbnail, not a YAML exam
 test("editor snippets, Typora templates and text replacements come from one catalog", () => {
   const snippets = vscodeSnippets();
   assert.equal(snippets["Garden 块"].prefix, "garden");
-  assert.match(snippets["Garden 块"].body[0], /card,stat,compare,timeline,chart,figure,html,interactive/);
+  assert.match(snippets["Garden 块"].body[0], /card,stat,compare,timeline,chart,compose,html,interactive/);
   assert.ok(snippets.gcard || snippets["Garden 资源卡 gcard"]);
   const markdown = gardenBlocksMarkdown();
   assert.match(markdown, /```garden card/);

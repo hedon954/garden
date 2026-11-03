@@ -166,7 +166,7 @@ items:
     caption: 宽表格在桌面端向两侧对称外扩上限
 ```
 
-组件页包括 12 个 `garden` 围栏，以及链接卡片、来源胶囊和本地图片。效果见左侧导航的 [组件总览](/garden/components)。
+组件页包括各个 `garden` 围栏，以及链接卡片、来源胶囊和本地图片。说明图是 [compose](/garden/components/compose)，`figure` 已废弃。效果见左侧导航的 [组件总览](/garden/components)。
 
 <h2 id="garden-admin-title">从初始化到日常写作</h2>
 

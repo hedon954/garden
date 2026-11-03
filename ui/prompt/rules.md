@@ -1,6 +1,6 @@
 # 把作者的想法编译成 Garden 块
 
-文章里只有一种写法：`garden` 围栏。名字只有 card、stat、compare、timeline、chart、figure、html、interactive、file、relations、list、choice。裸 `garden` 围栏是作者的想法，发布前编译掉。不要再写 `ui`、`widget`、`embed`、`intent` 或 `garden:名字`。
+文章里只有一种写法：`garden` 围栏。名字只有 card、stat、compare、timeline、chart、compose、html、interactive、file、relations、list、choice、figure。裸 `garden` 围栏是作者的想法，发布前编译掉。`garden compose` 在正文还是白话时也是未编译的想法，编译后围栏类型仍是 `garden compose`。不要再写 `ui`、`widget`、`embed`、`intent` 或 `garden:名字`。`figure` 已废弃，新的说明图写 `compose`。
 
 ## 只用作者的原文
 
@@ -14,7 +14,7 @@
 
 ## 静态 garden 组件字段与校验规则
 
-除 `interactive` 外，其余 11 个 `garden <name>` 组件都用 YAML 书写：
+除 `interactive` 外，其余 `garden <name>` 组件都用 YAML 书写：
 
 - `garden card`：
   - 单卡模式：支持 `title`、`url`、`meta`、`description`（或别名 `text`）、`points`（字符串数组或 `{ title, text? }[]`，别名 `items`）、`image`、`alt`、`source`、`site`、`takeaway`（`description`、`points`、`cards` 至少填一项）。
@@ -27,7 +27,8 @@
   - 正反对照模式：给条目加 `verdict: bad` 或 `verdict: good`，改为上下堆叠并显示红叉或绿勾，不受 60 字 `compare-long` 限制。
 - `garden timeline`：可选 `title`，必填 `items` 数组（至少 2 项，每项含可选 `date`、必填 `title`、可选 `text`、`source`）。
 - `garden chart`：可选 `type`（`"bar"`）、`title`、`unit`、`x`、`xLabel`、`yLabel`、`caption`，必填 `data`（`{ x, y, label? }[]`，至少 2 项）或 `series`（配 `x` 标签数组）。自带可展开数据表，同节不要重复手写相同数据的 Markdown 表。
-- `garden figure`：`svg`（内联 `<svg>`，在可切换元素上标 `data-p="<id>"`）、`image`（配可选 `alt`）或 `mermaid` 三选一，配 `parts`（`{ id, label, text }[]`，`label` 也支持写 `name`）与可选 `caption`。
+- `garden compose`：YAML 树。顶层可写 `title`、`caption`、`intent`，再加 `steps` + `notes`，或 `tree`（`children` 是 `tree` 的别名）。零件只有 stack、row、card、title、text、steps、compare、callout、divider、badge、kpi、arrow、notes。颜色只用 `tone: plain | accent | muted`（callout 用 `note | tip | warn`）。不要写 HTML、SVG、脚本、颜色值或宽度。`figure` 不要再写。
+- `garden figure`（已废弃，旧稿仍能渲染）：`svg`（内联 `<svg>`，在可切换元素上标 `data-p="<id>"`）、`image`（配可选 `alt`）或 `mermaid` 三选一，配 `parts`（`{ id, label, text }[]`，`label` 也支持写 `name`）与可选 `caption`。新的说明图写 `garden compose`。
 - `garden html`：`src`（同名子目录下的本地 `.html`）或 `code` 二选一，配 `title`、可选 `height`。
 - `garden file`：单文件填 `src`（可选 `title`、`note`），多文件填 `files` 数组（每项含 `src`、可选 `title`、`note`）。本地路径相对当前 Markdown 且不能越出 `content/`（否则报 `file-outside`），文件不存在报 `missing-asset`，单文件超过 `5 MB` 报 `file-large` 警告；不要手写 `resolved`（报 `garden-file`）。
 - `garden relations`：可选 `title`、`caption`，必填 `items`（3～6 项，每项含 `title`、`text`，节点无强调色选项），在 `items` 与 `links` 之间可选 `center: <序号|标题>`，可选 `links` 数组。

@@ -3,8 +3,9 @@
  * snippets, Typora templates and the component list.
  * Names describe what the reader sees. English only.
  */
+import { COMPOSE_EXAMPLE_BODY } from "../compose/examples.mjs";
 
-export const GARDEN_NAMES = ["card", "stat", "compare", "timeline", "chart", "figure", "html", "interactive", "file", "relations", "list", "choice"];
+export const GARDEN_NAMES = ["card", "stat", "compare", "timeline", "chart", "compose", "html", "interactive", "file", "relations", "list", "choice", "figure"];
 
 export const LEGACY_FENCES = {
   embed: { name: "card", suggestion: "`embed` 已改为 `garden card`" },
@@ -93,10 +94,19 @@ unit: ms
 \`\`\``,
     triggers: ["gchart"],
   },
+  compose: {
+    label: "说明图",
+    when: "几张卡片和箭头讲清一条流程，点一步看说明。",
+    whenNot: "要拖参数或放一张真图时，用 interactive 或图片。",
+    keys: ["title", "caption", "intent", "steps", "notes", "tree", "children"],
+    example: `\`\`\`garden compose\n${COMPOSE_EXAMPLE_BODY}\n\`\`\``,
+    triggers: ["gcompose"],
+  },
   figure: {
-    label: "结构图",
-    when: "一张结构图，读者点一个部分就看到对应的一句说明。",
-    whenNot: "作者已经用 mermaid 画了整张流程时，保留 mermaid，不要拆开重画。",
+    label: "结构图（废弃）",
+    deprecated: true,
+    when: "已废弃。新的说明图请写 compose。",
+    whenNot: "点选说明用 compose，不要再写新的 figure。",
     keys: ["image", "alt", "mermaid", "svg", "parts", "caption"],
     example: `\`\`\`garden figure
 image: ./figure.svg
@@ -111,7 +121,7 @@ parts:
   html: {
     label: "自定义 HTML",
     when: "目录里的组件画不出来的示意图或小工具，写在同名目录的 HTML 里。",
-    whenNot: "能用 card、chart、figure 或正文说清时，不要写 HTML。",
+    whenNot: "能用 card、chart、compose 或正文说清时，不要写 HTML。",
     keys: ["src", "code", "title", "height"],
     example: `\`\`\`garden html
 src: ./demo.html
@@ -323,6 +333,29 @@ series:
   - name: Latency
     data: [120, 85]
 unit: ms
+\`\`\``,
+  compose: `\`\`\`garden compose
+title: Site publish pipeline
+caption: Click a step to read what it does
+intent: |
+  Three cards and downward arrows for sync, build, then validate.
+steps:
+  - id: sync
+    title: sync
+    text: Sync content and config
+  - id: build
+    title: build
+    text: Emit static HTML
+  - id: validate
+    title: validate
+    text: Check before shipping
+notes:
+  - for: sync
+    text: Line up remote and local material
+  - for: build
+    text: The build renders compose into the page
+  - for: validate
+    text: The hook stops an uncompiled idea
 \`\`\``,
   figure: `\`\`\`garden figure
 image: ./figure.svg

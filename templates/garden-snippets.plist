@@ -85,16 +85,11 @@ unit: ms
   </dict>
   <dict>
     <key>phrase</key>
-    <string>```garden figure
-image: ./figure.svg
-parts:
-  - name: 全部
-    text: 整张图。
-  - name: 标记
-    text: 这一步只做标记。
+    <string>```garden compose
+用三张卡加向下箭头讲清 sync → build → validate；读者点每一步，下面展开对应说明。
 ```</string>
     <key>shortcut</key>
-    <string>;gfigure</string>
+    <string>;gcompose</string>
   </dict>
   <dict>
     <key>phrase</key>
@@ -186,6 +181,19 @@ none:
 ```</string>
     <key>shortcut</key>
     <string>;gchoice</string>
+  </dict>
+  <dict>
+    <key>phrase</key>
+    <string>```garden figure
+image: ./figure.svg
+parts:
+  - name: 全部
+    text: 整张图。
+  - name: 标记
+    text: 这一步只做标记。
+```</string>
+    <key>shortcut</key>
+    <string>;gfigure</string>
   </dict>
 </array>
 </plist>

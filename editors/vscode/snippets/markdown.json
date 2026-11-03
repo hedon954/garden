@@ -2,11 +2,11 @@
   "Garden 块": {
     "prefix": "garden",
     "body": [
-      "```garden ${1|idea,card,stat,compare,timeline,chart,figure,html,interactive,file,relations,list,choice|}",
+      "```garden ${1|idea,card,stat,compare,timeline,chart,compose,html,interactive,file,relations,list,choice,figure|}",
       "$0",
       "```"
     ],
-    "description": "选择 Garden 块：想法 / card / stat / compare / timeline / chart / figure / html / interactive / file / relations / list / choice"
+    "description": "选择 Garden 块：想法 / card / stat / compare / timeline / chart / compose / html / interactive / file / relations / list / choice / figure"
   },
   "Garden 想法 garden想法": {
     "prefix": "garden想法",
@@ -96,19 +96,14 @@
     ],
     "description": "一组已经算好的数字，读者不需要拧参数。 不该用：数字会随读者的选择变化时，写成想法，编译成 interactive。"
   },
-  "Garden 结构图 gfigure": {
-    "prefix": "gfigure",
+  "Garden 说明图 gcompose": {
+    "prefix": "gcompose",
     "body": [
-      "```garden figure",
-      "image: ./figure.svg",
-      "parts:",
-      "  - name: 全部",
-      "    text: 整张图。",
-      "  - name: 标记",
-      "    text: 这一步只做标记。",
+      "```garden compose",
+      "用三张卡加向下箭头讲清 sync → build → validate；读者点每一步，下面展开对应说明。",
       "```"
     ],
-    "description": "一张结构图，读者点一个部分就看到对应的一句说明。 不该用：作者已经用 mermaid 画了整张流程时，保留 mermaid，不要拆开重画。"
+    "description": "几张卡片和箭头讲清一条流程，点一步看说明。 不该用：要拖参数或放一张真图时，用 interactive 或图片。"
   },
   "Garden 自定义 HTML ghtml": {
     "prefix": "ghtml",
@@ -118,7 +113,7 @@
       "title: 示意图",
       "```"
     ],
-    "description": "目录里的组件画不出来的示意图或小工具，写在同名目录的 HTML 里。 不该用：能用 card、chart、figure 或正文说清时，不要写 HTML。"
+    "description": "目录里的组件画不出来的示意图或小工具，写在同名目录的 HTML 里。 不该用：能用 card、chart、compose 或正文说清时，不要写 HTML。"
   },
   "Garden 交互 ginteractive": {
     "prefix": "ginteractive",
@@ -206,6 +201,20 @@
       "```"
     ],
     "description": "给读者两三个具体选项让他选一个，每个选项有图标、一个醒目的数字和一句说明。 不该用：选项会改变后面的计算结果时，写成想法，编译成 interactive。"
+  },
+  "Garden 结构图（废弃） gfigure": {
+    "prefix": "gfigure",
+    "body": [
+      "```garden figure",
+      "image: ./figure.svg",
+      "parts:",
+      "  - name: 全部",
+      "    text: 整张图。",
+      "  - name: 标记",
+      "    text: 这一步只做标记。",
+      "```"
+    ],
+    "description": "已废弃。新的说明图请写 compose。 不该用：点选说明用 compose，不要再写新的 figure。"
   },
   "Garden 代码与对比": {
     "prefix": "gdiff",

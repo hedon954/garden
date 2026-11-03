@@ -1,7 +1,7 @@
 ---
 title: Component reference
 navTitle: Overview
-description: Every field, default, limit, and error code for the 12 garden fence components, one page each.
+description: Fields, defaults, limits, and error codes for the garden fences. figure is deprecated in favor of compose.
 section: reference
 order: 0
 ---
@@ -19,7 +19,8 @@ For every component: invalid YAML, or a top-level key the component does not sup
 | [`compare`](/garden/en/reference/compare) | Place two or three options side by side to contrast tradeoffs, or stack good and bad practices. |
 | [`timeline`](/garden/en/reference/timeline) | Order release milestones, incident steps, or build stages along a vertical sequence. |
 | [`chart`](/garden/en/reference/chart) | Render proportional horizontal bars with a built-in expandable data table underneath. |
-| [`figure`](/garden/en/reference/figure) | Pair an SVG diagram with step buttons that highlight each region and show its explanation. |
+| [`compose`](/garden/en/reference/compose) | Draw an explanation diagram of cards, arrows, and notes. Click a step to open its note. |
+| [`figure`](/garden/en/reference/figure) | Deprecated. Old annotated diagrams still render. New ones use compose. |
 | [`html`](/garden/en/reference/html) | Run a self-contained HTML, CSS, and JavaScript demo inside a sandboxed iframe. |
 | [`interactive`](/garden/en/reference/interactive) | Let readers drag sliders or switches to recalculate formulas and charts in real time. |
 | [`file`](/garden/en/reference/file) | Attach one or more files with automatic format and size badges, download links, and inline preview. |

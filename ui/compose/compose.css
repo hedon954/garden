@@ -1,0 +1,318 @@
+/* Compose diagrams. Color comes only from Garden theme tokens, so light and
+   dark follow `data-theme` without a second palette. */
+
+.g-compose {
+  position: relative;
+  box-sizing: border-box;
+  max-width: 100%;
+  min-width: 0;
+  margin: 1.25em 0;
+  padding: 18px 18px 16px;
+  border: 1px solid var(--rule);
+  border-radius: var(--r-lg, 24px);
+  background: var(--paper);
+  box-shadow: var(--card-shadow);
+  color: var(--text, var(--ink));
+  overflow-wrap: anywhere;
+}
+
+.g-compose-host {
+  display: contents;
+}
+
+.g-compose p,
+.markdown-body .g-compose p {
+  margin: 0;
+}
+
+.g-compose-head {
+  margin: 0 0 14px;
+}
+
+.g-compose-title,
+.g-compose-h {
+  color: var(--ink);
+  font: 600 18px/1.4 var(--sans);
+}
+
+.g-compose-caption {
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.g-compose-body,
+.g-compose-stack,
+.g-compose-row,
+.g-compose-steps,
+.g-compose-compare,
+.g-compose-card,
+.g-compose-step {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.g-compose-stack {
+  display: flex;
+  flex-direction: column;
+}
+
+.g-compose-stack[data-gap="0"] { gap: 0; }
+.g-compose-stack[data-gap="1"] { gap: 6px; }
+.g-compose-stack[data-gap="2"] { gap: 10px; }
+.g-compose-stack[data-gap="3"] { gap: 14px; }
+.g-compose-stack[data-gap="4"] { gap: 20px; }
+
+.g-compose-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: 12px;
+}
+
+.g-compose-row > .g-compose-card,
+.g-compose-row > .g-compose-disclosure {
+  flex: 1 1 11rem;
+  min-width: min(100%, 11rem);
+}
+
+.g-compose-compare {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 11rem), 1fr));
+  gap: 12px;
+  align-items: stretch;
+}
+
+.g-compose-steps {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 2px;
+}
+
+.g-compose-steps[data-dir="row"] {
+  flex-direction: row;
+  align-items: stretch;
+  gap: 8px;
+}
+
+.g-compose-steps[data-dir="row"] > .g-compose-step {
+  flex: 1 1 0;
+}
+
+.g-compose-card,
+.g-compose-step {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  box-sizing: border-box;
+  padding: 14px 16px;
+  border: 1px solid var(--rule);
+  border-radius: var(--r, 12px);
+  background: var(--card);
+  color: var(--ink);
+  font: inherit;
+  text-align: start;
+  text-decoration: none;
+  user-select: text;
+}
+
+.g-compose-disclosure {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.g-compose-disclosure > summary {
+  position: relative;
+  list-style: none;
+  cursor: pointer;
+  padding-right: 36px;
+}
+
+.g-compose-disclosure > summary::-webkit-details-marker {
+  display: none;
+}
+
+.g-compose-disclosure > summary::marker {
+  content: "";
+}
+
+.g-compose-disclosure > summary::after {
+  content: "";
+  position: absolute;
+  top: 18px;
+  right: 16px;
+  width: 8px;
+  height: 8px;
+  border-right: 1.5px solid var(--muted);
+  border-bottom: 1.5px solid var(--muted);
+  transform: translateY(-2px) rotate(45deg);
+}
+
+.g-compose-disclosure[open] > summary {
+  border-color: var(--ink);
+  background: var(--well);
+}
+
+.g-compose-disclosure[open] > summary::after {
+  transform: translateY(2px) rotate(225deg);
+}
+
+.g-compose-disclosure > .g-compose-note {
+  margin-top: 8px;
+}
+
+.g-compose-card[data-tone="accent"],
+.g-compose-step[data-tone="accent"] {
+  background: var(--well);
+  border-color: var(--rule-strong);
+}
+
+.g-compose-card[data-tone="muted"],
+.g-compose-step[data-tone="muted"] {
+  color: var(--muted);
+}
+
+.g-compose-card-title,
+.g-compose-step-title,
+.g-compose-note-k {
+  color: var(--ink);
+  font: 600 16px/1.4 var(--sans);
+}
+
+.g-compose-card-text,
+.g-compose-step-text,
+.g-compose-text,
+.g-compose-note-text {
+  color: var(--text, var(--ink));
+  font: 400 15px/1.6 var(--sans);
+}
+
+.g-compose-card[data-tone="muted"] .g-compose-card-text,
+.g-compose-step[data-tone="muted"] .g-compose-step-text {
+  color: var(--muted);
+}
+
+.g-compose-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--well);
+  color: var(--ink);
+  font: 600 12px/1.5 var(--sans);
+}
+
+.g-compose-badge[data-tone="muted"] {
+  color: var(--muted);
+}
+
+.g-compose-card[data-tone="accent"] .g-compose-badge,
+.g-compose-step[data-tone="accent"] .g-compose-badge {
+  background: var(--card);
+}
+
+.g-compose-kpi {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.g-compose-kpi-value {
+  color: var(--ink);
+  font: 700 28px/1.1 var(--sans);
+  font-variant-numeric: tabular-nums;
+}
+
+.g-compose-kpi-unit,
+.g-compose-kpi-label {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.g-compose-arrow {
+  display: block;
+  flex: 0 0 auto;
+  align-self: center;
+  width: 24px;
+  height: 32px;
+  margin: 2px 0;
+  color: var(--muted);
+}
+
+.g-compose-arrow[data-dir="right"] {
+  transform: rotate(-90deg);
+}
+
+.g-compose-note {
+  padding: 12px 14px;
+  border: 1px solid var(--rule);
+  border-radius: var(--r, 12px);
+  background: var(--well);
+}
+
+.g-compose-note + .g-compose-note {
+  margin-top: 8px;
+}
+
+.g-compose-note-k {
+  margin-bottom: 4px;
+}
+
+.g-compose-callout {
+  padding: 12px 14px;
+  border: 1px solid var(--rule);
+  border-radius: var(--r, 12px);
+  background: var(--well);
+  color: var(--text, var(--ink));
+}
+
+.g-compose-callout[data-tone="tip"] {
+  background: var(--card);
+  border-color: var(--rule-strong);
+}
+
+.g-compose-callout[data-tone="warn"] {
+  border-color: var(--ink);
+}
+
+.g-compose-divider {
+  width: 100%;
+  height: 0;
+  margin: 12px 0;
+  border: 0;
+  border-top: 1px solid var(--rule);
+}
+
+.g-compose-h {
+  margin-bottom: 2px;
+}
+
+@media (max-width: 800px) {
+  .g-compose {
+    padding: 14px 12px 12px;
+  }
+
+  .g-compose-row,
+  .g-compose-compare,
+  .g-compose-steps[data-dir="row"] {
+    flex-direction: column;
+    grid-template-columns: 1fr;
+  }
+
+  .g-compose-row > .g-compose-card,
+  .g-compose-row > .g-compose-disclosure,
+  .g-compose-steps[data-dir="row"] > .g-compose-step,
+  .g-compose-steps[data-dir="row"] > .g-compose-disclosure {
+    flex: none;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .g-compose-arrow[data-dir="right"] {
+    transform: none;
+  }
+}

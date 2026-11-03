@@ -22,6 +22,7 @@ export function siteCliLang(siteRoot) {
 const zh = {
   checkPass: (n) => `检查通过（${n} 个文件）\n`,
   ideaUncompiled: (file, line) => `${file}:${line}  -  garden-idea  还有没编译的想法\n`,
+  composeUncompiled: (file, line) => `${file}:${line}  -  compose-uncompiled  还有没编译的 compose 想法\n`,
   intentUncompiled: (file, line, id) => `${file}:${line}  ${id ?? "-"}  intent-uncompiled  还有没编译的 intent 块\n`,
   promptBanner: (sep) => `\n${sep} 发给 AI 的修复提示词 ${sep}\n`,
   promptWritten: (rel, copied) => `已写入 ${rel}${copied ? "，并已复制到剪贴板" : ""}。确实要先提交，可以用 git commit --no-verify。\n`,
@@ -34,6 +35,7 @@ const zh = {
   promptRuleOffline: "- 如果你不能访问这个仓库，就只回复每块修好后的完整围栏。",
   promptItem: (i, file, start, end, target) => `${i}. ${file}，第 ${start}–${end} 行，${target}`,
   promptGardenIdea: "   - garden-idea：这段想法还没编译，请按原话编译成 garden interactive 或其他 garden 组件（或判断后写回正文）。",
+  promptCompose: "   - compose-uncompiled：围栏类型保持 garden compose。把原话原样放进 intent，并在同一围栏里写 YAML 树。不要改成别的组件，也不要写 HTML 或脚本。",
   promptIntent: "   - intent-uncompiled：这段想法还没编译，请按原话编译成 ui 块（或判断后写回正文）。",
   promptDiag: (line, code, message) => `   - 第 ${line} 行 ${code}：${message}`,
   promptFence: "当前围栏：",
@@ -44,6 +46,7 @@ const zh = {
 const en = {
   checkPass: (n) => `Check passed (${n} ${n === 1 ? "file" : "files"})\n`,
   ideaUncompiled: (file, line) => `${file}:${line}  -  garden-idea  uncompiled idea remaining\n`,
+  composeUncompiled: (file, line) => `${file}:${line}  -  compose-uncompiled  uncompiled compose idea remaining\n`,
   intentUncompiled: (file, line, id) => `${file}:${line}  ${id ?? "-"}  intent-uncompiled  uncompiled intent block remaining\n`,
   promptBanner: (sep) => `\n${sep} Fix prompt for AI ${sep}\n`,
   promptWritten: (rel, copied) => `Wrote ${rel}${copied ? " and copied it to the clipboard" : ""}. To commit anyway, run git commit --no-verify.\n`,
@@ -56,6 +59,7 @@ const en = {
   promptRuleOffline: "- If you cannot access this repository, reply with only the finished fence for each block.",
   promptItem: (i, file, start, end, target) => `${i}. ${file}, lines ${start}–${end}, ${target}`,
   promptGardenIdea: "   - garden-idea: this idea is not compiled yet; compile it into garden interactive or another garden component (or put the sentence back into the prose).",
+  promptCompose: "   - compose-uncompiled: keep the fence type garden compose. Put the author's sentence in intent unchanged and fill a YAML tree in the same fence. Do not switch components, and do not write HTML or scripts.",
   promptIntent: "   - intent-uncompiled: this idea is not compiled yet; compile it into a ui block (or put the sentence back into the prose).",
   promptDiag: (line, code, message) => `   - line ${line} ${code}: ${message}`,
   promptFence: "Current fence:",

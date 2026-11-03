@@ -1,3 +1,4 @@
+import { COMPOSE_INTENT } from "../compose/examples.mjs";
 import { CATALOG, GARDEN_NAMES, IDEA } from "./catalog.mjs";
 
 function fenceLines(example) {
@@ -31,7 +32,7 @@ export function vscodeSnippets() {
     for (const trigger of spec.triggers) {
       snippets[`Garden ${spec.label} ${trigger}`] = {
         prefix: trigger,
-        body: fenceLines(spec.example),
+        body: name === "compose" ? fenceLines(guidanceFence(name)) : fenceLines(spec.example),
         description: `${spec.when} 不该用：${spec.whenNot}`,
       };
     }
@@ -76,7 +77,7 @@ export function textReplacementPlist() {
     ...IDEA.triggers.map((trigger) => ({ shortcut: `;${trigger}`, phrase: IDEA.example })),
     ...GARDEN_NAMES.flatMap((name) => CATALOG[name].triggers.map((trigger) => ({
       shortcut: `;${trigger}`,
-      phrase: CATALOG[name].example,
+      phrase: name === "compose" ? guidanceFence(name) : CATALOG[name].example,
     }))),
   ];
   const dicts = items.map((item) => `  <dict>
@@ -102,6 +103,7 @@ const GUIDANCE_FACTS = {
   compare: "两三件东西的名字，以及每件一句差别",
   timeline: "每条的日期、标题和一句说明",
   chart: "图表类型、横轴、几组已经算好的数字、单位",
+  compose: "想让读者看清的流程，以及每一步点开后要读到的说明",
   figure: "图放在哪里，读者点开每一部分时要看到的说明",
   html: "同名目录里的 HTML 文件，以及这张图要表达的意思",
   interactive: "读者能拧的参数，以及拧的时候想让他看出什么",
@@ -115,9 +117,10 @@ function ideaFence(text) {
   return `\`\`\`garden\n${text}\n\`\`\``;
 }
 
-/** The block an insert command pastes. Named components stay an uncompiled idea for the garden-ui skill. */
+/** The block an insert command pastes. Named components stay an uncompiled idea, except compose, which keeps its fence type. */
 export function guidanceFence(name) {
   if (!name) return IDEA.example;
+  if (name === "compose") return `\`\`\`garden compose\n${COMPOSE_INTENT}\n\`\`\``;
   const spec = CATALOG[name];
   return ideaFence(`做成${spec.label}。${spec.when}请写上${GUIDANCE_FACTS[name]}。`);
 }
@@ -134,6 +137,7 @@ const PREVIEWS = {
   compare: svgThumb(`<rect x="8" y="10" width="24" height="28" rx="3" fill="#fff" stroke="#d9d3c7"/><rect x="40" y="10" width="24" height="28" rx="3" fill="#fff" stroke="#c4552a"/><path d="M12 18h16M12 24h12M44 18h16M44 24h12" stroke="#2b2926" stroke-width="2" stroke-linecap="round"/>`),
   timeline: svgThumb(`<path d="M20 8v32" stroke="#d9d3c7" stroke-width="2"/><circle cx="20" cy="14" r="3" fill="#c4552a"/><circle cx="20" cy="24" r="3" fill="#2b2926"/><circle cx="20" cy="34" r="3" fill="#2b2926"/><path d="M30 14h24M30 24h18M30 34h20" stroke="#2b2926" stroke-width="2" stroke-linecap="round"/>`),
   chart: svgThumb(`<path d="M10 38h52" stroke="#d9d3c7" stroke-width="2"/><rect x="16" y="22" width="8" height="16" fill="#2b2926"/><rect x="32" y="12" width="8" height="26" fill="#c4552a"/><rect x="48" y="18" width="8" height="20" fill="#2b2926"/>`),
+  compose: svgThumb(`<rect x="16" y="6" width="40" height="10" rx="3" fill="#fff" stroke="#2b2926"/><path d="M36 16v5M32 18l4 4 4-4" fill="none" stroke="#c4552a" stroke-width="1.5" stroke-linecap="round"/><rect x="16" y="23" width="40" height="10" rx="3" fill="#fff" stroke="#2b2926"/><path d="M36 33v4" stroke="#c4552a" stroke-width="1.5"/>`),
   figure: svgThumb(`<rect x="10" y="10" width="52" height="28" rx="3" fill="#fff" stroke="#2b2926"/><circle cx="24" cy="24" r="4" fill="#c4552a"/><circle cx="48" cy="20" r="4" fill="#2b2926"/>`),
   html: svgThumb(`<path d="M18 16l-8 8 8 8M54 16l8 8-8 8" fill="none" stroke="#c4552a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M32 14l8 20" stroke="#2b2926" stroke-width="2" stroke-linecap="round"/>`),
   interactive: svgThumb(`<path d="M12 24h48" stroke="#d9d3c7" stroke-width="4" stroke-linecap="round"/><circle cx="40" cy="24" r="6" fill="#c4552a"/>`),
@@ -186,7 +190,7 @@ export function pickerItems() {
     { name: "", label: `想法 · ${IDEA.label}`, body: guidanceFence(""), preview: PREVIEWS.idea, when: IDEA.when, whenNot: IDEA.whenNot },
     ...GARDEN_NAMES.map((name) => ({
       name,
-      label: `${name} · ${CATALOG[name].label}`,
+      label: name === "compose" ? "compose（想法）" : `${name} · ${CATALOG[name].label}`,
       body: guidanceFence(name),
       preview: PREVIEWS[name],
       when: CATALOG[name].when,

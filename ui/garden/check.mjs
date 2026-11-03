@@ -90,6 +90,14 @@ export function checkGardenMarkdown(markdown, { draft = false, title = "", title
       push(fence.line, "garden-relations", block.error.message, "要素更多或有分支：```mermaid flowchart；一次走完的步骤：garden list。");
       return;
     }
+    if (block.error?.code === "compose-uncompiled") {
+      if (!draft) push(fence.line, "compose-uncompiled", block.error.message, "保持 `garden compose`，把原话写进 intent，并补上 YAML 树。");
+      return;
+    }
+    if (block.error?.code === "compose-invalid") {
+      push(fence.line, "compose-invalid", block.error.message, "用 steps、notes，或 tree 里的 stack、row、card、steps、compare、callout、badge、kpi、arrow、notes。");
+      return;
+    }
     if (block.name === "file") {
       if (block.props.resolved !== undefined) {
         push(fence.line, "garden-file", "resolved 由构建生成，不要手写。", "删掉 resolved，只写 src、title、note 或 files。");

@@ -1,4 +1,5 @@
 import { parse as parseYaml } from "yaml";
+import { parseCompose } from "../compose/parse.mjs";
 import { CATALOG, knownName, legacyOf } from "./catalog.mjs";
 import { relationIndex } from "./relations.mjs";
 
@@ -123,9 +124,25 @@ function relationsProblem(props) {
   return "";
 }
 
+function composeBlock(header, body) {
+  const result = parseCompose(body);
+  const block = {
+    name: "compose",
+    props: result.doc ?? {},
+    children: "",
+    id: header.id,
+    legacy: Boolean(header.legacy),
+    legacyLang: header.legacyLang,
+    idea: result.uncompiled ? String(body ?? "").trim() : result.doc?.intent ?? "",
+  };
+  if (!result.ok) return { ...block, error: result.error };
+  return block;
+}
+
 export function parseGardenBlock(info, body) {
   const header = parseGardenInfo(info);
   if (!header) return null;
+  if (header.name === "compose") return composeBlock(header, body);
   const { yamlText, children } = splitPropsAndChildren(body);
   if (!header.name) {
     const text = String(body ?? "").trim();

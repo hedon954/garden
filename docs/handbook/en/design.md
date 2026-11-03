@@ -33,39 +33,26 @@ The `ArticleTitle` component applies two rules to headings:
 
 When `npx garden sync` runs, the build script reads the pixel width and height of every local image (PNG, JPEG, WebP, GIF, and SVG) and writes them into the `imageSizes` map in `.garden/generated-content.ts`:
 
-```garden figure
-caption: Click the buttons above to inspect the three stages from build to browser render
-svg: |
-  <svg viewBox="0 0 560 195" xmlns="http://www.w3.org/2000/svg" font-family="var(--sans)" style="max-width: 380px; margin-inline: auto">
-    <rect data-p="sync" x="2" y="4" width="180" height="187" rx="16" fill="var(--card)" stroke="var(--rule-strong)" stroke-width="2.5"/>
-    <text data-p="sync" x="92" y="42" text-anchor="middle" font-size="24" font-weight="600" fill="var(--ink)">1. Build-time</text>
-    <text data-p="sync" x="92" y="72" text-anchor="middle" font-size="24" font-weight="600" fill="var(--ink)">Sizing</text>
-    <text data-p="sync" x="92" y="138" text-anchor="middle" font-size="24" fill="var(--muted)">Emit width /</text>
-    <text data-p="sync" x="92" y="167" text-anchor="middle" font-size="24" fill="var(--muted)">height &amp; --wl</text>
-    <path d="M183.5 97.5 H188.5" stroke="var(--muted)" stroke-width="2.5"/>
-    <rect data-p="measure" x="190" y="4" width="180" height="187" rx="16" fill="var(--card)" stroke="var(--rule-strong)" stroke-width="2.5"/>
-    <text data-p="measure" x="280" y="42" text-anchor="middle" font-size="24" font-weight="600" fill="var(--ink)">2. Client</text>
-    <text data-p="measure" x="280" y="72" text-anchor="middle" font-size="24" font-weight="600" fill="var(--ink)">Measurement</text>
-    <text data-p="measure" x="280" y="138" text-anchor="middle" font-size="24" fill="var(--muted)">Fit wide</text>
-    <text data-p="measure" x="280" y="167" text-anchor="middle" font-size="24" fill="var(--muted)">figures &amp; TOC</text>
-    <path d="M371.5 97.5 H376.5" stroke="var(--muted)" stroke-width="2.5"/>
-    <rect data-p="dark" x="378" y="4" width="180" height="187" rx="16" fill="var(--card)" stroke="var(--rule-strong)" stroke-width="2.5"/>
-    <text data-p="dark" x="468" y="42" text-anchor="middle" font-size="24" font-weight="600" fill="var(--ink)">3. Dark</text>
-    <text data-p="dark" x="468" y="72" text-anchor="middle" font-size="24" font-weight="600" fill="var(--ink)">Backing &amp;</text>
-    <text data-p="dark" x="468" y="102" text-anchor="middle" font-size="24" font-weight="600" fill="var(--ink)">Zoom</text>
-    <text data-p="dark" x="468" y="138" text-anchor="middle" font-size="24" fill="var(--muted)">Pad #faf9f5 ·</text>
-    <text data-p="dark" x="468" y="167" text-anchor="middle" font-size="24" fill="var(--muted)">Click to zoom</text>
-  </svg>
-parts:
+```garden compose
+title: From build to the browser
+caption: Click a step to read what that stage does
+steps:
   - id: sync
-    label: 1. Build-time Sizing
-    text: Server-rendered HTML already carries the image's `width`, `height`, `data-nw`, `data-bw`, and initial `--wl` / `--wr`, preventing layout shift before the image finishes downloading.
+    title: Read sizes at build time
+    text: Write width and height so text does not jump
   - id: measure
-    label: 2. Client Measurement
-    text: After load, `ArticleMeasure` recomputes the expansion margins for the current viewport width and checks on scroll whether a wide figure overlaps the floating table of contents.
+    title: Measure on the client
+    text: Fit wide figures and the table of contents
   - id: dark
-    label: 3. Dark Backing & Zoom
-    text: "Clicking any article figure opens it in a full-screen lightbox (press `Esc` or click the backdrop to close); dark mode sets `--image-backing: #faf9f5` behind figures."
+    title: Dark backing and zoom
+    text: A light pad behind dark lines, click to zoom
+notes:
+  - for: sync
+    text: The server HTML already carries width, height, and the wide-figure margins, so later text does not jump before the image loads.
+  - for: measure
+    text: After load, ArticleMeasure recomputes the margins for the current viewport and checks whether a wide figure covers the table of contents.
+  - for: dark
+    text: A click opens the lightbox on the same page. Dark mode puts a light paper color behind figures and does not invert them.
 ```
 
 ## 4. Dark-mode Image Backing and Warm Paper Tokens

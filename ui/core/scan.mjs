@@ -1,3 +1,4 @@
+import { parseCompose } from "../compose/parse.mjs";
 import { compiledOf, fenceHash, findBlocks, idOf, intentHash, intentOf, splitUiBody } from "./fence.mjs";
 import { checkUiBlock } from "./validate.mjs";
 import { readInteractiveFence } from "./garden-fence.mjs";
@@ -12,9 +13,28 @@ export function checkInteractiveFence(block, options = {}) {
   return { ...check, diagnostics: check.diagnostics.map((item) => ({ ...item, line: read.toFileLine(item.line) })) };
 }
 
+/** A `garden compose` fence whose body is still prose, or a YAML tree that fails the catalog. */
+export function checkComposeFence(block) {
+  const result = parseCompose(block.body);
+  if (result.uncompiled) return { ok: false, uncompiled: true, diagnostics: [], doc: null };
+  if (!result.ok) {
+    return {
+      ok: false,
+      uncompiled: false,
+      doc: null,
+      diagnostics: [{ code: result.error.code, line: block.startLine, message: result.error.message, severity: "error" }],
+    };
+  }
+  return { ok: true, uncompiled: false, diagnostics: [], doc: result.doc };
+}
+
 /** Status of one block: uncompiled / stale / error / ok. */
 export function blockStatus(block, check) {
   if (block.lang === "intent" || block.lang === "garden-idea") return "uncompiled";
+  if (block.lang === "garden-compose") {
+    if (check?.uncompiled) return "uncompiled";
+    return check && !check.ok ? "error" : "ok";
+  }
   if (block.lang === "garden-interactive") return check && !check.ok ? "error" : "ok";
   if (block.lang === "ui") {
     if (check && !check.ok) return "error";
@@ -47,10 +67,16 @@ export function scanMarkdown(markdown, options = {}) {
       ? checkUiBlock(block.body, { lineOffset: block.startLine, markdownPath, readData, skipData })
       : block.lang === "garden-interactive"
         ? checkInteractiveFence(block, { markdownPath, readData, skipData })
-        : null;
+        : block.lang === "garden-compose"
+          ? checkComposeFence(block)
+          : null;
     const header = block.lang === "ui"
       ? splitUiBody(block.body).header
-      : block.lang === "garden-interactive" ? readInteractiveFence(block).props : null;
+      : block.lang === "garden-interactive"
+        ? readInteractiveFence(block).props
+        : block.lang === "garden-compose"
+          ? check?.doc
+          : null;
     return {
       lang: block.lang,
       id: idOf(block),

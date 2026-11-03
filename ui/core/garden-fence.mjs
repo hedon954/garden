@@ -5,13 +5,16 @@ import { parse as parseYaml, stringify } from "yaml";
  * `intent` / `ui` ones:
  *   ```garden                      an idea, one sentence to compile before publishing
  *   ```garden interactive #id      a compiled interactive block
+ *   ```garden compose              an idea until the body is a YAML tree
  * Other `garden <name>` fences (card, stat, ...) are checked by `garden check`.
  */
 export function gardenKind(fence) {
   if (fence.lang !== "garden") return null;
   const [name = ""] = fence.info.split(/\s+/u);
   if (!name) return "idea";
-  if (name.toLowerCase() === "interactive") return "interactive";
+  const folded = name.toLowerCase();
+  if (folded === "interactive") return "interactive";
+  if (folded === "compose") return "compose";
   return null;
 }
 

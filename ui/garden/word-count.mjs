@@ -25,6 +25,8 @@
  *     (including `<script>` text) is counted.
  *   - `garden figure` emits tab labels, part explanations, the caption, and
  *     SVG `<text>`. Prop keys and part ids stay in attributes and are excluded.
+ *   - `garden compose` counts the title, caption, card text, and notes. The
+ *     author's `intent` and ids stay out.
  * - A heading written `## 1.2 Title` keeps the digits (they move into
  *   `.sec-no`). The dot is dropped. The space was never going to be counted.
  *
@@ -36,6 +38,7 @@
 import katex from "katex";
 import { Marked } from "marked";
 import { parse as parseYaml } from "yaml";
+import { composeText, parseCompose } from "../compose/index.mjs";
 import { fileSearchText } from "./file-block.mjs";
 
 const marked = new Marked({
@@ -160,6 +163,11 @@ function gardenHtml(info, body) {
   if (name === "file") {
     // Only what the card shows: titles and notes, not the previewed document.
     return `<p>${escapeHtml(fileSearchText(readYaml(yamlText) ?? {}))}</p>`;
+  }
+  if (name === "compose") {
+    const result = parseCompose(body);
+    if (!result.ok) return `<p>${escapeHtml(body)}</p>`;
+    return `<p>${escapeHtml(composeText(result.doc))}</p>`;
   }
   if (name === "figure") {
     const data = readYaml(yamlText);

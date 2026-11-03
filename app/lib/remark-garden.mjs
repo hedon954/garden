@@ -1,3 +1,4 @@
+import { renderCompose } from "../../ui/compose/render.mjs";
 import { diffToNewCode, protectMathIdentifiers } from "../../ui/garden/enhance.mjs";
 import { classifyFence } from "../../ui/garden/parse.mjs";
 
@@ -29,7 +30,11 @@ function fenceNodeToRecord(node) {
   return { lang: String(node.lang || "").toLowerCase(), meta: String(node.meta || ""), info: `${node.lang || ""} ${node.meta || ""}`.trim() };
 }
 
-function rewriteChildren(node) {
+function htmlElement(value) {
+  return { type: "html", value };
+}
+
+function rewriteChildren(node, nextScope) {
   if (!Array.isArray(node.children)) return;
   const next = [];
   for (let index = 0; index < node.children.length; index += 1) {
@@ -51,6 +56,10 @@ function rewriteChildren(node) {
         next.push(gardenElement({ legacy: true, from: kind.lang || record.lang, suggestion: kind.suggestion }));
         continue;
       }
+      if (kind.kind === "garden" && kind.block?.name === "compose" && !kind.block.error) {
+        next.push(htmlElement(renderCompose(kind.block.props, { scope: nextScope() })));
+        continue;
+      }
       if (kind.kind === "garden" && kind.block) {
         next.push(gardenElement(kind.block));
         continue;
@@ -61,20 +70,25 @@ function rewriteChildren(node) {
   node.children = next;
 }
 
-function walk(node) {
+function walk(node, nextScope) {
   if (!node || typeof node !== "object") return;
   if (node.type === "math" || node.type === "inlineMath") {
     node.value = protectMathIdentifiers(node.value);
   }
   if (Array.isArray(node.children)) {
-    for (const child of node.children) walk(child);
-    rewriteChildren(node);
+    for (const child of node.children) walk(child, nextScope);
+    rewriteChildren(node, nextScope);
   }
 }
 
 export function remarkGarden() {
+  let composeCount = 0;
+  const nextScope = () => {
+    composeCount += 1;
+    return `gc${composeCount}`;
+  };
   return (tree) => {
-    walk(tree);
+    walk(tree, nextScope);
   };
 }
 

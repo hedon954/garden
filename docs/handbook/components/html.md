@@ -34,7 +34,7 @@ code: |
 ```
 
 - **什么时候用**：内置组件画不出来的画布动画、物理模拟或独立小工具。
-- **什么时候不用**：只需要拖动滑杆算公式时用[可调公式与参数](/garden/components/interactive)；静态图表或结构图优先用对应组件。
+- **什么时候不用**：只需要拖动滑杆算公式时用[可调公式与参数](/garden/components/interactive)；说明图用 [compose](/garden/components/compose)。
 
 可以这样对 AI 说：
 

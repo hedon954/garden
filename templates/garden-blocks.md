@@ -87,26 +87,42 @@ series:
 unit: ms
 ```
 
-## figure · 结构图
+## compose · 说明图
 
-一张结构图，读者点一个部分就看到对应的一句说明。
+几张卡片和箭头讲清一条流程，点一步看说明。
 
-不该用：作者已经用 mermaid 画了整张流程时，保留 mermaid，不要拆开重画。
+不该用：要拖参数或放一张真图时，用 interactive 或图片。
 
-```garden figure
-image: ./figure.svg
-parts:
-  - name: 全部
-    text: 整张图。
-  - name: 标记
-    text: 这一步只做标记。
+```garden compose
+title: 站点发布流水线
+caption: 三步串起来，点哪步看哪步
+intent: |
+  用三张卡加向下箭头讲清 sync → build → validate；读者点每一步，下面展开对应说明。
+steps:
+  - id: sync
+    title: sync
+    text: 同步内容与配置
+  - id: build
+    title: build
+    text: 生成静态 HTML
+  - id: validate
+    title: validate
+    text: 检查后再上线
+notes:
+  - for: sync
+    text: 先对齐远程与本地材料
+  - for: build
+    text: 构建期把 compose 渲进正文
+  - for: validate
+    text: 钩子拦住未编译的想法块
+
 ```
 
 ## html · 自定义 HTML
 
 目录里的组件画不出来的示意图或小工具，写在同名目录的 HTML 里。
 
-不该用：能用 card、chart、figure 或正文说清时，不要写 HTML。
+不该用：能用 card、chart、compose 或正文说清时，不要写 HTML。
 
 ```garden html
 src: ./demo.html
@@ -203,4 +219,19 @@ items:
     label: 更看重价格
 none:
   label: 都不合适
+```
+
+## figure · 结构图（废弃）
+
+已废弃。新的说明图请写 compose。
+
+不该用：点选说明用 compose，不要再写新的 figure。
+
+```garden figure
+image: ./figure.svg
+parts:
+  - name: 全部
+    text: 整张图。
+  - name: 标记
+    text: 这一步只做标记。
 ```

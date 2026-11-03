@@ -1,7 +1,7 @@
 ---
 title: 组件参考
 navTitle: 总览
-description: 12 个 garden 围栏组件的全部字段、默认值、取值限制和报错代码，每个组件一页。
+description: garden 围栏组件的字段、默认值、取值限制和报错代码。figure 已由 compose 接替。
 section: reference
 order: 0
 ---
@@ -19,7 +19,8 @@ order: 0
 | [`compare`](/garden/reference/compare) | 把两三种方案左右并列，或把不好的做法与更好的做法上下对照。 |
 | [`timeline`](/garden/reference/timeline) | 按时间或阶段顺序排开版本演进、排查经过或关键节点。 |
 | [`chart`](/garden/reference/chart) | 把一组算好的数字画成比例条形图，下方自带可展开的数据表。 |
-| [`figure`](/garden/reference/figure) | 一张带切换按钮的结构图，点到哪个部分就高亮并显示对应说明。 |
+| [`compose`](/garden/reference/compose) | 用卡片、箭头和注释画一张说明图，点一步展开对应说明。 |
+| [`figure`](/garden/reference/figure) | 已废弃。旧的分区结构图仍能渲染，新的说明图写 compose。 |
 | [`html`](/garden/reference/html) | 在沙盒中运行一段独立的网页小工具、画布动画或演示。 |
 | [`interactive`](/garden/reference/interactive) | 让读者拖动滑杆或切换选项，实时看到公式和图表的计算结果。 |
 | [`file`](/garden/reference/file) | 给读者提供一份或一组可下载的文件，支持在当前页展开预览。 |

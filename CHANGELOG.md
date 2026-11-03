@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.11.0
+
+`garden compose` is an explanation diagram: a YAML tree of cards, arrows, badges, and notes, rendered to static HTML at build time. The fence starts as one sentence and stays `garden compose` after compile. Light and dark both use the existing theme tokens, and a narrow screen stacks the diagram into one column. Clicking a step shows its note without a runtime. `figure` is deprecated; handbook demos now use compose, and old `figure` fences still render. This release does not publish the package and does not bump garden-blog.
+
 ## 0.10.4
 
 Ship the VS Code / Cursor and Typora Intelligent UI plugins inside `hd-garden`. `garden init` and the first `garden sync` copy them into `.garden/editors/` and, on a TTY, ask before installing. `garden editors install` (`--vscode`, `--typora`, `--yes`) installs them later. In Typora, `/` offers `/garden`, then a thumbnail picker. Insert paths paste a plain `garden` brief for the `garden-ui` skill.

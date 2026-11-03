@@ -112,8 +112,8 @@ npx garden editors install --typora
 
 不借助 AI 手写组件时，可以直接使用包内自带的模板与代码片段：
 
-- `make new` 创建的草稿底部自带一段 `<!-- 组件速查 ... -->` 注释，包含想法块和 12 个组件的示例，写完可直接删掉。
-- `templates/garden-blocks.md` 汇总了想法块与 12 个组件的适用场景（`when` / `whenNot`）和可复制示例；macOS 与 Typora / Alfred 用户可导入 `templates/garden-snippets.plist`，输入 `;gidea`（或 `;garden想法`）、`;gcard`、`;gstat`、`;gcompare`、`;gtimeline`、`;gchart`、`;gfigure`、`;ghtml`、`;ginteractive`、`;gfile`、`;grel`、`;glist`、`;gchoice` 即可展开对应围栏。
+- `make new` 创建的草稿底部自带一段 `<!-- 组件速查 ... -->` 注释，包含想法块和各个组件的示例，写完可直接删掉。
+- `templates/garden-blocks.md` 汇总了想法块与各个组件的适用场景（`when` / `whenNot`）和可复制示例；macOS 与 Typora / Alfred 用户可导入 `templates/garden-snippets.plist`，输入 `;gidea`（或 `;garden想法`）、`;gcard`、`;gstat`、`;gcompare`、`;gtimeline`、`;gchart`、`;gcompose`、`;gfigure`、`;ghtml`、`;ginteractive`、`;gfile`、`;grel`、`;glist`、`;gchoice` 即可展开对应围栏。`;gcompose` 展开的是带一句白话的 `garden compose`。
 - 编辑器插件的用法见上一节。`npx garden ui catalog` 在本地生成 `.garden/ui-catalog.html` 离线组件画廊。
 
 ## 8. 可选的独立管理后台

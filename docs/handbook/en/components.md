@@ -1,7 +1,7 @@
 ---
 title: Components Overview
 navTitle: Overview
-description: Live previews of the 12 garden fences, plus link cards, source chips, and local images.
+description: Live previews of the garden fences, plus link cards, source chips, and local images. figure is deprecated in favor of compose.
 section: components
 order: 30
 ---
@@ -74,41 +74,34 @@ data:
     y: 1340
 ```
 
-## [Annotated Diagram · figure](/garden/en/components/figure)
+## [Explanation diagram · compose](/garden/en/components/compose)
 
-```garden figure
-svg: |
-  <svg viewBox="0 0 560 194" xmlns="http://www.w3.org/2000/svg" font-family="var(--sans)" style="max-width: 380px; margin-inline: auto">
-    <rect data-p="sync" x="2" y="4" width="180" height="186" rx="16" fill="var(--card)" stroke="var(--rule-strong)" stroke-width="2.5"/>
-    <text data-p="sync" x="92" y="42" text-anchor="middle" font-size="24" font-weight="600" fill="var(--ink)">1. garden</text>
-    <text data-p="sync" x="92" y="72" text-anchor="middle" font-size="24" font-weight="600" fill="var(--ink)">sync</text>
-    <text data-p="sync" x="92" y="108" text-anchor="middle" font-size="24" fill="var(--muted)">Parse</text>
-    <text data-p="sync" x="92" y="137" text-anchor="middle" font-size="24" fill="var(--muted)">Markdown &amp;</text>
-    <text data-p="sync" x="92" y="166" text-anchor="middle" font-size="24" fill="var(--muted)">image sizes</text>
-    <path d="M183.5 97 H188.5" stroke="var(--muted)" stroke-width="2.5"/>
-    <rect data-p="build" x="190" y="4" width="180" height="186" rx="16" fill="var(--card)" stroke="var(--rule-strong)" stroke-width="2.5"/>
-    <text data-p="build" x="280" y="42" text-anchor="middle" font-size="24" font-weight="600" fill="var(--ink)">2. garden</text>
-    <text data-p="build" x="280" y="72" text-anchor="middle" font-size="24" font-weight="600" fill="var(--ink)">build</text>
-    <text data-p="build" x="280" y="108" text-anchor="middle" font-size="24" fill="var(--muted)">Build static</text>
-    <text data-p="build" x="280" y="137" text-anchor="middle" font-size="24" fill="var(--muted)">pages &amp; index</text>
-    <path d="M371.5 97 H376.5" stroke="var(--muted)" stroke-width="2.5"/>
-    <rect data-p="validate" x="378" y="4" width="180" height="186" rx="16" fill="var(--card)" stroke="var(--rule-strong)" stroke-width="2.5"/>
-    <text data-p="validate" x="468" y="42" text-anchor="middle" font-size="24" font-weight="600" fill="var(--ink)">3. pages:</text>
-    <text data-p="validate" x="468" y="72" text-anchor="middle" font-size="24" font-weight="600" fill="var(--ink)">validate</text>
-    <text data-p="validate" x="468" y="108" text-anchor="middle" font-size="24" fill="var(--muted)">Check</text>
-    <text data-p="validate" x="468" y="137" text-anchor="middle" font-size="24" fill="var(--muted)">exported files</text>
-  </svg>
-parts:
+```garden compose
+title: Site publish pipeline
+caption: Click a step to read what it does
+steps:
   - id: sync
-    label: 1. Sync Content
-    text: Scans posts and sidecar assets to generate site data.
+    title: sync
+    badge: "1"
+    text: Sync content and config
   - id: build
-    label: 2. Build Pages
-    text: Prerenders all routes and outputs RSS, sitemap, and search indexes.
+    title: build
+    badge: "2"
+    text: Emit static HTML
   - id: validate
-    label: 3. Validate Export
-    text: Checks that the exported static directory is complete.
+    title: validate
+    badge: "3"
+    text: Check before shipping
+notes:
+  - for: sync
+    text: Line up remote and local material.
+  - for: build
+    text: The build renders compose into the page.
+  - for: validate
+    text: The hook stops an idea that is still prose.
 ```
+
+[figure](/garden/en/components/figure) is deprecated. Old fences still render.
 
 ## [Embedded Web Snippet · html](/garden/en/components/html)
 

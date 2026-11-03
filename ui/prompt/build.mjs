@@ -10,6 +10,7 @@ export const RECIPE_FILES = [
   "plan.md",
   "data-chart.md",
   "code-walkthrough.md",
+  "compose.md",
 ];
 
 /**
