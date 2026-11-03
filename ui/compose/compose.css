@@ -65,10 +65,10 @@
 }
 
 .g-compose-stack[data-gap="0"] { gap: 0; }
-.g-compose-stack[data-gap="1"] { gap: 6px; }
-.g-compose-stack[data-gap="2"] { gap: 10px; }
-.g-compose-stack[data-gap="3"] { gap: 14px; }
-.g-compose-stack[data-gap="4"] { gap: 20px; }
+.g-compose-stack[data-gap="1"] { gap: 4px; }
+.g-compose-stack[data-gap="2"] { gap: 6px; }
+.g-compose-stack[data-gap="3"] { gap: 8px; }
+.g-compose-stack[data-gap="4"] { gap: 12px; }
 
 .g-compose-row {
   display: flex;
@@ -168,9 +168,9 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 6px;
+  gap: 4px;
   box-sizing: border-box;
-  padding: 14px 16px;
+  padding: 8px 14px;
   border: 1px solid var(--rule);
   border-radius: var(--r, 12px);
   background: var(--card);
@@ -228,14 +228,14 @@
 
 .g-compose-card[data-tone="accent"],
 .g-compose-step[data-tone="accent"] {
-  background: color-mix(in srgb, var(--flow) 14%, var(--paper));
-  border-color: color-mix(in srgb, var(--flow) 34%, var(--paper));
+  background: color-mix(in srgb, var(--flow) 8%, var(--paper));
+  border-color: color-mix(in srgb, var(--flow) 22%, var(--paper));
 }
 
 .g-compose-card[data-tone="tip"],
 .g-compose-step[data-tone="tip"] {
-  background: color-mix(in srgb, var(--flow-back) 16%, var(--paper));
-  border-color: color-mix(in srgb, var(--flow-back) 36%, var(--paper));
+  background: color-mix(in srgb, var(--flow-back) 9%, var(--paper));
+  border-color: color-mix(in srgb, var(--flow-back) 24%, var(--paper));
 }
 
 .g-compose-card[data-tone="muted"],
@@ -257,17 +257,18 @@
 
 .g-compose-card[data-frame="band"] {
   width: 100%;
+  padding: 8px 16px;
   border: 0;
   background: var(--well);
   box-shadow: none;
 }
 
 .g-compose-card[data-frame="band"][data-tone="accent"] {
-  background: color-mix(in srgb, var(--flow) 14%, var(--paper));
+  background: color-mix(in srgb, var(--flow) 8%, var(--paper));
 }
 
 .g-compose-card[data-frame="band"][data-tone="tip"] {
-  background: color-mix(in srgb, var(--flow-back) 16%, var(--paper));
+  background: color-mix(in srgb, var(--flow-back) 9%, var(--paper));
 }
 
 .g-compose-card[data-frame="band"] > .g-compose-card-text,
@@ -285,13 +286,13 @@
 }
 
 .g-compose-card[data-frame="pill"][data-tone="accent"] {
-  background: color-mix(in srgb, var(--flow) 14%, var(--paper));
-  border-color: color-mix(in srgb, var(--flow) 34%, var(--paper));
+  background: color-mix(in srgb, var(--flow) 8%, var(--paper));
+  border-color: color-mix(in srgb, var(--flow) 22%, var(--paper));
 }
 
 .g-compose-card[data-frame="pill"][data-tone="tip"] {
-  background: color-mix(in srgb, var(--flow-back) 16%, var(--paper));
-  border-color: color-mix(in srgb, var(--flow-back) 36%, var(--paper));
+  background: color-mix(in srgb, var(--flow-back) 9%, var(--paper));
+  border-color: color-mix(in srgb, var(--flow-back) 24%, var(--paper));
 }
 
 .g-compose-card-line {
@@ -335,30 +336,29 @@
 .g-compose-fan[data-n="4"] { --n: 4; }
 
 .g-compose-join {
-  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   width: 100%;
   margin: 2px 0 0;
   color: var(--ink);
 }
 
 .g-compose-join-svg {
+  align-self: stretch;
   display: block;
   width: 100%;
   height: auto;
-  aspect-ratio: 600 / 96;
+  aspect-ratio: 600 / 56;
 }
 
 .g-compose-join-label {
-  position: absolute;
-  z-index: 1;
-  left: 50%;
-  top: 62%;
-  transform: translate(-50%, -100%);
+  display: block;
   width: max-content;
   max-width: 70%;
-  margin: 0;
-  padding: 0 8px 2px;
-  background: var(--paper);
+  margin: 0 0 4px;
+  padding: 0;
+  background: transparent;
   color: var(--ink);
   font: 700 16px/1.3 var(--sans);
   text-align: center;
@@ -670,14 +670,9 @@
   }
 
   .g-compose-join-label {
-    position: static;
-    top: auto;
-    left: auto;
-    transform: none;
     width: auto;
     max-width: none;
     margin: 0;
-    background: transparent;
   }
 
   .g-compose-lane-label {
