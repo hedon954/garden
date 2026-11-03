@@ -47,6 +47,6 @@ Three cards and downward arrows for sync, build, then validate. Clicking a step 
 
 Narrow screens stack the diagram into one column. Color comes from theme tokens, so light and dark both stay readable. With JavaScript off, the cards and notes are still in the page.
 
-Every field is in [Component reference · compose](/garden/en/reference/compose). Finished diagrams are in the [explanation gallery](/garden/en/components/compose-gallery).
+Every field is in [Component reference · compose](/garden/en/reference/compose). A minimal example is on [Compose example](/garden/en/components/compose-gallery).
 
 [figure](/garden/en/components/figure) is deprecated. Old `garden figure` fences still render. New diagrams should be compose.
