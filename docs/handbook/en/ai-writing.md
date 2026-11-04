@@ -21,7 +21,7 @@ Let the reader drag daily word count and writing days per week to see how many w
 ```
 ````
 
-Draft posts (`draft: true`) may keep uncompiled idea fences; in non-draft posts, both `npx garden ui check` and `npx garden check` report a `garden-idea` error. Depending on the content, the Agent compiles the idea into a built-in component (`garden interactive`, `card`, `stat`, `compare`, and others) or replaces it with plain prose when a paragraph is clearer.
+Draft posts (`draft: true`) may keep uncompiled idea fences; in non-draft posts, both `npx garden ui check` and `npx garden check` report a `garden-idea` error. Depending on the content, the Agent compiles the idea into a built-in component (`garden compose`, `card`, `stat`, `compare`, and others) or replaces it with plain prose when a paragraph is clearer.
 
 ## 2. Three Bundled Skills
 
@@ -106,8 +106,8 @@ A component then takes four steps:
 
 When writing components by hand without AI, you can use the templates and snippets shipped in the package:
 
-- Every draft created by `make new` includes an HTML comment at the bottom with copy-ready examples for idea fences and all 12 components; delete the comment whenever you are done.
-- `templates/garden-blocks.md` lists `when` / `whenNot` guidance and copyable templates for every block; macOS, Typora, and Alfred users can import `templates/garden-snippets.plist` to expand `;gidea`, `;gcard`, `;gstat`, `;gcompare`, `;gtimeline`, `;gchart`, `;gfigure`, `;ghtml`, `;ginteractive`, `;gfile`, `;grel`, `;glist`, and `;gchoice`.
+- Every draft created by `make new` includes an HTML comment at the bottom with copy-ready examples for idea fences and the built-in components; delete the comment whenever you are done.
+- `templates/garden-blocks.md` lists `when` / `whenNot` guidance and copyable templates for every block; macOS, Typora, and Alfred users can import `templates/garden-snippets.plist` to expand `;gidea`, `;gcard`, `;gstat`, `;gcompare`, `;gtimeline`, `;gchart`, `;gcompose`, `;ghtml`, `;ginteractive`, `;gfile`, `;grel`, `;glist`, and `;gchoice`. `;gcompose` expands to a `garden compose` fence with one sentence.
 - Editor plugin usage is in the previous section. `npx garden ui catalog` writes an offline component catalog at `.garden/ui-catalog.html`.
 
 ## 8. Optional Standalone Admin

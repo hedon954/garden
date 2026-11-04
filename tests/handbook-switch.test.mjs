@@ -4,7 +4,7 @@ import { handbookPageLang, handbookSwitchLabel, handbookSwitchTarget, handbookSw
 
 const pages = [
   ["/garden/", "zh"], ["/garden/reference/card/", "zh"], ["/garden-081/garden/", "zh"],
-  ["/garden/en/", "en"], ["/garden/en/reference/card/", "en"], ["/garden-081/garden/en/reference/figure/", "en"],
+  ["/garden/en/", "en"], ["/garden/en/reference/card/", "en"], ["/garden-081/garden/en/reference/compose/", "en"],
 ];
 
 test("Chinese handbook pages offer English and English pages offer Chinese, with or without a base path", () => {

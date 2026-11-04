@@ -1,6 +1,7 @@
 import { parse as parseYaml } from "yaml";
+import { parseCompose } from "../compose/parse.mjs";
 import { sha256Hex } from "./sha256.mjs";
-import { gardenKind, readInteractiveFence } from "./garden-fence.mjs";
+import { gardenInfoId, gardenKind, readInteractiveFence } from "./garden-fence.mjs";
 
 export const normalizeNewlines = (text) => text.replace(/\r\n?/gu, "\n");
 
@@ -151,6 +152,16 @@ export function compiledOf(headerText) {
 
 export function intentOf(fence) {
   if (fence.lang === "intent" || fence.lang === "garden-idea") return normalizeNewlines(fence.body);
+  if (fence.lang === "garden-compose") {
+    // Play (DIL or TEMP legacy PascalCase) carries intent in the YAML header above ---.
+    if (/\{@body\b|\{#(?:if|each)\b|<(?:slider|button|choice|stat|State|Let|Slider|If|Each)\b/u.test(fence.body ?? "")) {
+      const { props } = readInteractiveFence(fence);
+      return typeof props.intent === "string" ? props.intent : null;
+    }
+    const result = parseCompose(fence.body);
+    if (result.uncompiled) return normalizeNewlines(fence.body);
+    return result.doc?.intent ? result.doc.intent : null;
+  }
   if (fence.lang === "garden-interactive") {
     const { props } = readInteractiveFence(fence);
     return typeof props.intent === "string" ? props.intent : null;
@@ -173,6 +184,7 @@ export function intentOf(fence) {
 export function idOf(fence) {
   if (fence.lang === "intent") return fence.info.split(/\s+/u)[0] || null;
   if (fence.lang === "garden-interactive") return readInteractiveFence(fence).id;
+  if (fence.lang === "garden-compose") return gardenInfoId(fence.info);
   if (fence.lang === "ui") {
     const { header } = splitUiBody(fence.body);
     return typeof header?.id === "string" ? header.id : null;

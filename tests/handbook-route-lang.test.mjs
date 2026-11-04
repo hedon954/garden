@@ -6,7 +6,7 @@ import path from "node:path";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { ALLOWED_EN_HANDBOOK_CJK } from "../scripts/handbook-allowlist.mjs";
-import { findBuiltEnglishHtmlCjk, stripAllowedFigureAllKeywordInHtml } from "../scripts/handbook-facts.mjs";
+import { findBuiltEnglishHtmlCjk } from "../scripts/handbook-facts.mjs";
 import { inAppPath, isHandbookPath, pickNotFoundLang, stripConfiguredBasePath } from "../ui/garden/html-lang.mjs";
 import "./workerd-modules.mjs";
 
@@ -66,11 +66,11 @@ function allEnglishHandbookRoutes() {
   return routes;
 }
 
-function bodyChinese(page, route = "/garden/en") {
-  // Check visible text and attributes inside <main>, excluding the allowlisted 中 switcher,
-  // 丨 title-split explanation, and the narrow `"全部"` config value on /garden/en/components/figure.
-  const mainMatch = /<main\b[\s\S]*?<\/main>/u.exec(stripAllowedFigureAllKeywordInHtml(page, route));
-  const mainHtml = mainMatch ? mainMatch[0] : stripAllowedFigureAllKeywordInHtml(page, route);
+function bodyChinese(page) {
+  // Check visible text and attributes inside <main>, excluding the allowlisted 中 switcher
+  // and the 丨 title-split explanation.
+  const mainMatch = /<main\b[\s\S]*?<\/main>/u.exec(page);
+  const mainHtml = mainMatch ? mainMatch[0] : page;
   const attrs = [...mainHtml.matchAll(/\s(?:aria-label|title|placeholder|alt)="([^"]*)"/gu)]
     .map((m) => m[1])
     .filter((v) => HAN.test(v));

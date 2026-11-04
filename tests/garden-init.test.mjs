@@ -458,9 +458,6 @@ test("an en_US site from garden init --locale en builds a 100% English static si
         scrubbed = scrubbed
           .replace(/"children":"中"/gu, '"children":"ZH"')
           .replace(/[丨｜]/gu, "|");
-        if (route === "/garden/components/figure" || route === "/garden/en/components/figure") {
-          scrubbed = scrubbed.replace(/"全部"/gu, '"ALL"');
-        }
       }
       if (CJK_OR_FULLWIDTH_RE.test(scrubbed)) {
         const match = scrubbed.match(/.{0,30}[\u3000-\u303f\u3400-\u9fff\uf900-\ufaff\uff00-\uffef]+.{0,30}/u)?.[0];

@@ -168,7 +168,8 @@ function commandCheck() {
       for (const item of block.diagnostics.filter((entry) => entry.severity === "warning")) {
         warnings.push(`${target.file}:${item.line}  ${block.id ?? "-"}  ${item.code}  ${item.message}`);
       }
-      if ((block.lang === "intent" || block.lang === "garden-idea") && !draft) problems.push({ file: target.file, block, diagnostics: [] });
+      const uncompiledCompose = block.lang === "garden-compose" && block.status === "uncompiled";
+      if ((block.lang === "intent" || block.lang === "garden-idea" || uncompiledCompose) && !draft) problems.push({ file: target.file, block, diagnostics: [] });
       else if (errors.length) problems.push({ file: target.file, block, diagnostics: errors });
     }
   }
@@ -183,6 +184,9 @@ function commandCheck() {
     }
     if (problem.block.lang === "garden-idea") {
       process.stderr.write(t.ideaUncompiled(problem.file, problem.block.startLine));
+    }
+    if (problem.block.lang === "garden-compose" && problem.block.status === "uncompiled") {
+      process.stderr.write(t.composeUncompiled(problem.file, problem.block.startLine));
     }
     for (const item of problem.diagnostics) {
       process.stderr.write(`${problem.file}:${item.line}  ${problem.block.id ?? "-"}  ${item.code}  ${item.message}\n`);

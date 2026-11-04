@@ -68,7 +68,7 @@ Obsidian 插件这一轮不随包安装。
 ```
 ````
 
-让 Agent 按站点里的 `garden-ui` skill 处理这篇稿件：Agent 先用 `npx garden ui scan` 读取待编译块的哈希，再读 `npx garden ui prompt` 的组件规则，生成 `garden interactive`（或 `card`、`stat`、`compare`、`timeline`、`chart`、`figure`、`html`、`file`、`relations`、`list`、`choice` 等内置组件，或在完整代码下方生成 `diff`），最后用 `npx garden ui apply` 只替换该围栏。如果你在编译前直接 `git commit`，pre-commit 钩子会运行同一条 `npx --no-install garden ui check --staged --quiet` 拦下提交，并打印一段可直接粘贴给 AI 的修复提示词。
+让 Agent 按站点里的 `garden-ui` skill 处理这篇稿件：Agent 先用 `npx garden ui scan` 读取待编译块的哈希，再读 `npx garden ui prompt` 的组件规则，生成 `garden compose`（或 `card`、`stat`、`compare`、`timeline`、`chart`、`compose`、`html`、`file`、`relations`、`list`、`choice` 等内置组件，或在完整代码下方生成 `diff`），最后用 `npx garden ui apply` 只替换该围栏。如果你在编译前直接 `git commit`，pre-commit 钩子会运行同一条 `npx --no-install garden ui check --staged --quiet` 拦下提交，并打印一段可直接粘贴给 AI 的修复提示词。
 
 ## 4. 常用命令
 
@@ -98,7 +98,7 @@ npx garden editors install --yes               # 把 Intelligent UI 插件装进
 
 本地运行 `make dev` 后访问 `/garden`（英文版在 `/garden/en`），或直接阅读仓库内的文档：
 
-- **[Garden 使用说明（中文）](docs/handbook/index.md)** · **[Garden Handbook (English)](docs/handbook/en/index.md)**：快速开始、[用 AI 写作](docs/handbook/ai-writing.md)、[站点与专栏配置](docs/handbook/config.md)、[发布到 GitHub Pages](docs/handbook/deploy.md)、[写文章与随想](docs/handbook/writing.md)、[阅读排版](docs/handbook/design.md)、[组件](docs/handbook/components.md)（12 个 `garden` 围栏，以及链接卡片、来源胶囊和本地图片）与 [语法检查](docs/handbook/workflow.md)。
+- **[Garden 使用说明（中文）](docs/handbook/index.md)** · **[Garden Handbook (English)](docs/handbook/en/index.md)**：快速开始、[用 AI 写作](docs/handbook/ai-writing.md)、[站点与专栏配置](docs/handbook/config.md)、[发布到 GitHub Pages](docs/handbook/deploy.md)、[写文章与随想](docs/handbook/writing.md)、[阅读排版](docs/handbook/design.md)、[组件](docs/handbook/components.md)（`garden` 围栏，以及链接卡片、来源胶囊和本地图片；说明图是 compose）与 [语法检查](docs/handbook/workflow.md)。
 - **[从零开始](docs/quick-start.md)** 与 **[GitHub Pages 部署](docs/github-pages.md)**：单公开仓库或「私有源码仓库 + 公开页面仓库」的 Actions 配置与 Giscus 评论接入。
 - **[独立管理后台](docs/admin-service.md)**：可选的 `/admin` 服务（本地、Docker 或 Cloudflare Workers），支持网页发随想、阿里云 OSS 媒体直传与 `/admin/ui` 组件工作台。
 

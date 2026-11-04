@@ -2,8 +2,8 @@
 name: garden-ui
 description: >-
   Compiles the `garden` idea blocks in one Garden post into garden components
-  (garden interactive, or card / stat / compare / ... , or prose, or garden
-  html), fixes broken garden interactive blocks, and suggests where a post could
+  (garden compose, or card / stat / compare / ... , or prose, or garden
+  html), fixes broken garden compose blocks, and suggests where a post could
   use interaction. Older intent / ui blocks are handled the same way. Use when
   the user says 编译这篇 / 编译想法 / 重编译 <id> / 这篇哪里适合交互, or pastes a
   garden ui check fix prompt.
@@ -11,7 +11,7 @@ description: >-
 
 # 编译 Garden 交互块
 
-作者在稿里用不带名字的 `garden` 围栏写一句想法，这个 skill 把它变成 `garden interactive` 或别的 `garden` 组件。交互组件和设计规则在 `npx garden ui prompt` 的输出里，12 个 `garden` 组件的用途和示例在 `node_modules/hd-garden/templates/garden-blocks.md`（在引擎仓库里是 `templates/garden-blocks.md`），以这两份为准，不凭记忆写组件。
+作者在稿里用不带名字的 `garden` 围栏写一句想法，这个 skill 把它变成 `garden compose`、`garden compose` 或别的 `garden` 组件。`garden compose` 若还是白话，就在同一围栏里填 YAML 树，不要改围栏类型。交互组件和设计规则在 `npx garden ui prompt` 的输出里，各 `garden` 组件的用途和示例在 `node_modules/hd-garden/templates/garden-blocks.md`（在引擎仓库里是 `templates/garden-blocks.md`），以这两份为准，不凭记忆写组件。
 
 作者提交时，提交前钩子跑的是同一个 `npx garden ui check`。你用来找块、写回、自查的命令，和拦住作者提交的命令是同一套。
 
@@ -34,7 +34,7 @@ description: >-
    npx garden ui scan content/posts/路径.md
    ```
 
-   stdout 是 JSON。`lang` 是 `garden-idea`（想法）、`garden-interactive`，或旧写法的 `intent` / `ui`。每块有 `lang`、`id`、`status`、`startLine`、`hash`（整段围栏的哈希，写回时当 `--base`）、`intentHash`（原话的哈希）、`intent`（原话）、`caption`、`section`（所在小节标题）和 `diagnostics`。不要自己用正则找围栏。
+   stdout 是 JSON。`lang` 是 `garden-idea`（想法）、`garden-compose`、`garden-interactive`，或旧写法的 `intent` / `ui`。每块有 `lang`、`id`、`status`、`startLine`、`hash`（整段围栏的哈希，写回时当 `--base`）、`intentHash`（原话的哈希）、`intent`（原话）、`caption`、`section`（所在小节标题）和 `diagnostics`。不要自己用正则找围栏。
 
 2. 读规则：
 
@@ -46,13 +46,14 @@ description: >-
 
 3. 每块读原话和所在小节，三选一：
    - **写回正文**：一句话、一张表或一张 Mermaid 就能说清时。
-   - **写 `garden interactive`**：读者需要拖、点、翻才能看懂时。
+   - **写 `garden compose`**：读者需要拖、点、翻才能看懂时。
    - **写一段 `diff`**：想法紧跟在一段完整代码后面，说的是「和上一版比改了什么」时。按原话写出 diff，用一段普通 Markdown 写回（只有这一个 `diff` 围栏）。写回后它紧挨着那段代码，页面会合成「代码 / 对比上一版」切换；diff 里的新行要和上面的完整代码一致。
-   - **写别的 `garden` 组件**：一张或多张资源卡（`card` / `cards`）、几个指标（`stat`）、两种做法并排或好坏对照（`compare` / `verdict: good|bad`）、一条时间线（`timeline`）、一张静态图表（`chart`）、一张分区结构图（`figure`）、一份下载文件（`file`）、3～6 个要素的关系图（`relations`）、紧凑图标列表或分步列表（`list`）、两三个选项的选择卡（`choice`）。字段与校验约束见 `npx garden ui prompt` 与 `templates/garden-blocks.md`。
+   - **写别的 `garden` 组件**：一张或多张资源卡（`card` / `cards`）、几个指标（`stat`）、两种做法并排或好坏对照（`compare` / `verdict: good|bad`）、一条时间线（`timeline`）、一张静态图表（`chart`）、一张说明图（`compose`）、一份下载文件（`file`）、3～6 个要素的关系图（`relations`）、紧凑图标列表或分步列表（`list`）、两三个选项的选择卡（`choice`）。字段与校验约束见 `npx garden ui prompt` 与 `templates/garden-blocks.md`。
+   - **编译 `garden compose`**：`lang` 是 `garden-compose` 且 `status` 是 `uncompiled` 时，围栏头保持 `garden compose`。把扫描到的原话原样放进 `intent`，正文写成 YAML 树（`steps` + `notes`，或 `tree`）。不要改成 interactive，不要写 HTML、SVG 或脚本。配方在 `npx garden ui prompt` 的说明图一节。
    - **写 `garden html`**：目录表达不了的画布动画、音频、物理模拟等。按 [garden-interactive-chart](../garden-interactive-chart/SKILL.md) 在同名目录写 HTML，用 `title` 写下判断。
 
-4. 写 `garden interactive` 时：
-   - 格式：围栏头写 `garden interactive #<id>`；`---` 上面是 `caption`、`intent`、可选的 `expect`；`---` 下面是 `npx garden ui prompt` 里的组件树。
+4. 写 `garden compose` 时：
+   - 格式：围栏头写 `garden compose #<id>`；`---` 上面是 `caption`、`intent`、可选的 `expect`；`---` 下面是 `npx garden ui prompt` 里的组件树。
    - 原话原样放进 `intent`，一个字都不改。
    - `caption` 摘原话里的判断。原话没有判断句，就根据小节内容补一句，并在回复里说明。
    - 原话里有已知点（"batch 1 时是 512 MiB"），写进 `expect`。
@@ -63,7 +64,7 @@ description: >-
 
    ````bash
    npx garden ui apply content/posts/路径.md --id <id> --base <hash> <<'GARDEN_UI'
-   ```garden interactive #id
+   ```garden compose #id
    caption: ...
    intent: |
      ...
@@ -95,7 +96,7 @@ description: >-
 
    | id | 选择 | 配方 | 假设 | expect |
    | --- | --- | --- | --- | --- |
-   | kv-memory | garden interactive | 参数台 | 默认序列取 4K | batch 1 时 512 MiB |
+   | kv-memory | garden compose | 参数台 | 默认序列取 4K | batch 1 时 512 MiB |
 
    "假设"写原话没说、你替作者定下的东西（默认值、范围、补的 caption）。没有就写"无"。
 

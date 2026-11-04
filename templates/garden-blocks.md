@@ -28,7 +28,7 @@ description: vLLM 的分页 KV 管理。
 
 一个短指标：标签、数字、可选的一句说明和来源。
 
-不该用：数字需要读者自己代入参数时，写成想法，不要做静态指标。
+不该用：数字需要读者自己代入参数时，写成想法，编译成 compose。
 
 ```garden stat
 items:
@@ -75,7 +75,7 @@ items:
 
 一组已经算好的数字，读者不需要拧参数。
 
-不该用：数字会随读者的选择变化时，写成想法，编译成 interactive。
+不该用：数字会随读者的选择变化时，写成想法，编译成 compose（带 Slider）。
 
 ```garden chart
 type: bar
@@ -87,44 +87,47 @@ series:
 unit: ms
 ```
 
-## figure · 结构图
+## compose · 说明图与可调参数
 
-一张结构图，读者点一个部分就看到对应的一句说明。
+静态说明图（卡片、箭头、流程），或读者要拧滑杆/选项才能看懂的可调图。
 
-不该用：作者已经用 mermaid 画了整张流程时，保留 mermaid，不要拆开重画。
+不该用：放一张真图或自定义 HTML 时，用图片或 garden html。
 
-```garden figure
-image: ./figure.svg
-parts:
-  - name: 全部
-    text: 整张图。
-  - name: 标记
-    text: 这一步只做标记。
+```garden compose
+<intent>
+用三张卡加向下箭头讲清 sync → build → validate；读者点每一步，下面展开对应说明。
+</intent>
+<steps>
+  <step id="sync">
+    <badge>1</badge>
+    <title>sync</title>
+    <text>同步内容与配置</text>
+    <note>先对齐远程与本地材料</note>
+  </step>
+  <step id="build">
+    <badge>2</badge>
+    <title>build</title>
+    <text>生成静态 HTML</text>
+    <note>构建期把 compose 渲进正文</note>
+  </step>
+  <step id="validate">
+    <badge>3</badge>
+    <title>validate</title>
+    <text>检查后再上线</text>
+    <note>钩子拦住未编译的想法块</note>
+  </step>
+</steps>
 ```
 
 ## html · 自定义 HTML
 
 目录里的组件画不出来的示意图或小工具，写在同名目录的 HTML 里。
 
-不该用：能用 card、chart、figure 或正文说清时，不要写 HTML。
+不该用：能用 card、chart、compose 或正文说清时，不要写 HTML。
 
 ```garden html
 src: ./demo.html
 title: 示意图
-```
-
-## interactive · 交互
-
-读者需要拧参数或翻状态才能看懂，由想法编译而来。
-
-不该用：一次乘法、把散文切成步骤，都不要做成交互。
-
-```garden interactive #kv-memory
-caption: 显存与 batch、序列长度都成正比。
-intent: |
-  让读者拧 batch，看 KV 显存。
----
-<State batch={1} />
 ```
 
 ## file · 文件
@@ -188,7 +191,7 @@ items:
 
 给读者两三个具体选项让他选一个，每个选项有图标、一个醒目的数字和一句说明。
 
-不该用：选项会改变后面的计算结果时，写成想法，编译成 interactive。
+不该用：选项会改变后面的计算结果时，写成想法，编译成 compose。
 
 ```garden choice
 title: 你更倾向哪一种？

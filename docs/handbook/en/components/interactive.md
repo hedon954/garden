@@ -7,7 +7,10 @@ order: 38
 badge: interactive
 ---
 
-```garden interactive #reading-time
+> **Deprecated.** New posts should use [`compose`](/garden/en/components/compose) with ChatGPT-shaped DIL (`{@body}`, `{expr}`, `{#if}` / `{#each}`, lowercase tags). Old `garden interactive` fences still parse as compose play for compatibility and will be removed like `figure`.
+
+
+```garden compose #reading-time
 caption: "Example: estimate reading time from word count, reading speed, and image count. Numbers are illustrative only."
 ---
 <State words={6000} speed={400} images={8} />

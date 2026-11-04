@@ -3,15 +3,21 @@
  * snippets, Typora templates and the component list.
  * Names describe what the reader sees. English only.
  */
+import { COMPOSE_EXAMPLE_BODY } from "../compose/examples.mjs";
 
-export const GARDEN_NAMES = ["card", "stat", "compare", "timeline", "chart", "figure", "html", "interactive", "file", "relations", "list", "choice"];
+export const GARDEN_NAMES = ["card", "stat", "compare", "timeline", "chart", "compose", "html", "interactive", "file", "relations", "list", "choice"];
+
+/** Names offered to authors. Deprecated names still parse in old posts. */
+export function offeredGardenNames() {
+  return GARDEN_NAMES.filter((name) => !CATALOG[name]?.deprecated);
+}
 
 export const LEGACY_FENCES = {
   embed: { name: "card", suggestion: "`embed` 已改为 `garden card`" },
   widget: { name: "html", suggestion: "`widget` 已改为 `garden html`" },
   intent: { name: "", suggestion: "`intent` 已改为 `garden`（想法，发布前编译）" },
-  ui: { name: "interactive", suggestion: "`ui` 已改为 `garden interactive`" },
-  "ui-error": { name: "interactive", suggestion: "`ui` 已改为 `garden interactive`" },
+  ui: { name: "compose", suggestion: "`ui` 已改为 `garden compose`（可调参数写在 compose 里）" },
+  "ui-error": { name: "compose", suggestion: "`ui` 已改为 `garden compose`" },
 };
 
 export const CATALOG = {
@@ -31,7 +37,7 @@ description: vLLM 的分页 KV 管理。
   stat: {
     label: "指标",
     when: "一个短指标：标签、数字、可选的一句说明和来源。",
-    whenNot: "数字需要读者自己代入参数时，写成想法，不要做静态指标。",
+    whenNot: "数字需要读者自己代入参数时，写成想法，编译成 compose。",
     keys: ["items", "label", "value", "unit", "caption", "source", "text"],
     example: `\`\`\`garden stat
 items:
@@ -80,7 +86,7 @@ items:
   chart: {
     label: "图表",
     when: "一组已经算好的数字，读者不需要拧参数。",
-    whenNot: "数字会随读者的选择变化时，写成想法，编译成 interactive。",
+    whenNot: "数字会随读者的选择变化时，写成想法，编译成 compose（带 Slider）。",
     keys: ["type", "title", "x", "series", "data", "unit", "caption", "xLabel", "yLabel"],
     example: `\`\`\`garden chart
 type: bar
@@ -93,25 +99,18 @@ unit: ms
 \`\`\``,
     triggers: ["gchart"],
   },
-  figure: {
-    label: "结构图",
-    when: "一张结构图，读者点一个部分就看到对应的一句说明。",
-    whenNot: "作者已经用 mermaid 画了整张流程时，保留 mermaid，不要拆开重画。",
-    keys: ["image", "alt", "mermaid", "svg", "parts", "caption"],
-    example: `\`\`\`garden figure
-image: ./figure.svg
-parts:
-  - name: 全部
-    text: 整张图。
-  - name: 标记
-    text: 这一步只做标记。
-\`\`\``,
-    triggers: ["gfigure"],
+  compose: {
+    label: "说明图与可调参数",
+    when: "静态说明图（卡片、箭头、流程），或读者要拧滑杆/选项才能看懂的可调图。",
+    whenNot: "放一张真图或自定义 HTML 时，用图片或 garden html。",
+    keys: ["title", "caption", "intent", "expect", "id", "steps", "notes", "tree", "children"],
+    example: `\`\`\`garden compose\n${COMPOSE_EXAMPLE_BODY}\n\`\`\``,
+    triggers: ["gcompose"],
   },
   html: {
     label: "自定义 HTML",
     when: "目录里的组件画不出来的示意图或小工具，写在同名目录的 HTML 里。",
-    whenNot: "能用 card、chart、figure 或正文说清时，不要写 HTML。",
+    whenNot: "能用 card、chart、compose 或正文说清时，不要写 HTML。",
     keys: ["src", "code", "title", "height"],
     example: `\`\`\`garden html
 src: ./demo.html
@@ -120,16 +119,20 @@ title: 示意图
     triggers: ["ghtml"],
   },
   interactive: {
-    label: "交互",
-    when: "读者需要拧参数或翻状态才能看懂，由想法编译而来。",
-    whenNot: "一次乘法、把散文切成步骤，都不要做成交互。",
+    label: "交互（已并入 compose）",
+    deprecated: true,
+    when: "旧稿兼容。新文章请写 garden compose（{@body}/{expr}/{#if}/{#each}）。",
+    whenNot: "新文章不要再写 interactive。",
     keys: ["id", "caption", "intent", "expect"],
-    example: `\`\`\`garden interactive #kv-memory
+    example: `\`\`\`garden compose #kv-memory
 caption: 显存与 batch、序列长度都成正比。
 intent: |
   让读者拧 batch，看 KV 显存。
 ---
-<State batch={1} />
+{@body const [batch, setBatch] = DIL.useState(1)}
+{@body const mem = 2 * 32 * 8 * 128 * 4096 * batch * 2}
+<slider min={1} max={32} value={batch} onChange={setBatch} label="batch" />
+<stat label="KV 显存" value={mem} format="bytes" />
 \`\`\``,
     triggers: ["ginteractive"],
   },
@@ -199,7 +202,7 @@ items:
   choice: {
     label: "选择卡",
     when: "给读者两三个具体选项让他选一个，每个选项有图标、一个醒目的数字和一句说明。",
-    whenNot: "选项会改变后面的计算结果时，写成想法，编译成 interactive。",
+    whenNot: "选项会改变后面的计算结果时，写成想法，编译成 compose。",
     keys: ["title", "items", "none", "caption"],
     itemKeys: ["icon", "value", "text", "label", "reply"],
     example: `\`\`\`garden choice
@@ -324,24 +327,44 @@ series:
     data: [120, 85]
 unit: ms
 \`\`\``,
-  figure: `\`\`\`garden figure
-image: ./figure.svg
-parts:
-  - name: All
-    text: The full diagram.
-  - name: Mark
-    text: This step only marks reachable objects.
+  compose: `\`\`\`garden compose
+<intent>
+Three cards and downward arrows for sync, build, then validate.
+</intent>
+<steps>
+  <step id="sync">
+    <badge>1</badge>
+    <title>sync</title>
+    <text>Sync content and config</text>
+    <note>Line up remote and local material</note>
+  </step>
+  <step id="build">
+    <badge>2</badge>
+    <title>build</title>
+    <text>Emit static HTML</text>
+    <note>The build renders compose into the page</note>
+  </step>
+  <step id="validate">
+    <badge>3</badge>
+    <title>validate</title>
+    <text>Check before shipping</text>
+    <note>The hook stops an uncompiled idea</note>
+  </step>
+</steps>
 \`\`\``,
   html: `\`\`\`garden html
 src: ./demo.html
 title: Diagram
 \`\`\``,
-  interactive: `\`\`\`garden interactive #kv-memory
+  interactive: `\`\`\`garden compose #kv-memory
 caption: KV memory scales linearly with both batch size and sequence length.
 intent: |
   Let the reader adjust batch size and inspect KV memory.
 ---
-<State batch={1} />
+{@body const [batch, setBatch] = DIL.useState(1)}
+{@body const mem = 2 * 32 * 8 * 128 * 4096 * batch * 2}
+<slider min={1} max={32} value={batch} onChange={setBatch} label="batch" />
+<stat label="KV memory" value={mem} format="bytes" />
 \`\`\``,
   file: `\`\`\`garden file
 src: ./post-name/spec.zip

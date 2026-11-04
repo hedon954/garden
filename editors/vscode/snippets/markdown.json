@@ -2,11 +2,11 @@
   "Garden 块": {
     "prefix": "garden",
     "body": [
-      "```garden ${1|idea,card,stat,compare,timeline,chart,figure,html,interactive,file,relations,list,choice|}",
+      "```garden ${1|idea,card,stat,compare,timeline,chart,compose,html,file,relations,list,choice|}",
       "$0",
       "```"
     ],
-    "description": "选择 Garden 块：想法 / card / stat / compare / timeline / chart / figure / html / interactive / file / relations / list / choice"
+    "description": "选择 Garden 块：想法 / card / stat / compare / timeline / chart / compose / html / file / relations / list / choice"
   },
   "Garden 想法 garden想法": {
     "prefix": "garden想法",
@@ -48,7 +48,7 @@
       "    source: https://arxiv.org/abs/2309.06180",
       "```"
     ],
-    "description": "一个短指标：标签、数字、可选的一句说明和来源。 不该用：数字需要读者自己代入参数时，写成想法，不要做静态指标。"
+    "description": "一个短指标：标签、数字、可选的一句说明和来源。 不该用：数字需要读者自己代入参数时，写成想法，编译成 compose。"
   },
   "Garden 对比 gcompare": {
     "prefix": "gcompare",
@@ -94,21 +94,16 @@
       "unit: ms",
       "```"
     ],
-    "description": "一组已经算好的数字，读者不需要拧参数。 不该用：数字会随读者的选择变化时，写成想法，编译成 interactive。"
+    "description": "一组已经算好的数字，读者不需要拧参数。 不该用：数字会随读者的选择变化时，写成想法，编译成 compose（带 Slider）。"
   },
-  "Garden 结构图 gfigure": {
-    "prefix": "gfigure",
+  "Garden 说明图与可调参数 gcompose": {
+    "prefix": "gcompose",
     "body": [
-      "```garden figure",
-      "image: ./figure.svg",
-      "parts:",
-      "  - name: 全部",
-      "    text: 整张图。",
-      "  - name: 标记",
-      "    text: 这一步只做标记。",
+      "```garden compose",
+      "用三张卡加向下箭头讲清 sync → build → validate；读者点每一步，下面展开对应说明。",
       "```"
     ],
-    "description": "一张结构图，读者点一个部分就看到对应的一句说明。 不该用：作者已经用 mermaid 画了整张流程时，保留 mermaid，不要拆开重画。"
+    "description": "静态说明图（卡片、箭头、流程），或读者要拧滑杆/选项才能看懂的可调图。 不该用：放一张真图或自定义 HTML 时，用图片或 garden html。"
   },
   "Garden 自定义 HTML ghtml": {
     "prefix": "ghtml",
@@ -118,20 +113,7 @@
       "title: 示意图",
       "```"
     ],
-    "description": "目录里的组件画不出来的示意图或小工具，写在同名目录的 HTML 里。 不该用：能用 card、chart、figure 或正文说清时，不要写 HTML。"
-  },
-  "Garden 交互 ginteractive": {
-    "prefix": "ginteractive",
-    "body": [
-      "```garden interactive #kv-memory",
-      "caption: 显存与 batch、序列长度都成正比。",
-      "intent: |",
-      "  让读者拧 batch，看 KV 显存。",
-      "---",
-      "<State batch={1} />",
-      "```"
-    ],
-    "description": "读者需要拧参数或翻状态才能看懂，由想法编译而来。 不该用：一次乘法、把散文切成步骤，都不要做成交互。"
+    "description": "目录里的组件画不出来的示意图或小工具，写在同名目录的 HTML 里。 不该用：能用 card、chart、compose 或正文说清时，不要写 HTML。"
   },
   "Garden 文件 gfile": {
     "prefix": "gfile",
@@ -205,7 +187,7 @@
       "  label: 都不合适",
       "```"
     ],
-    "description": "给读者两三个具体选项让他选一个，每个选项有图标、一个醒目的数字和一句说明。 不该用：选项会改变后面的计算结果时，写成想法，编译成 interactive。"
+    "description": "给读者两三个具体选项让他选一个，每个选项有图标、一个醒目的数字和一句说明。 不该用：选项会改变后面的计算结果时，写成想法，编译成 compose。"
   },
   "Garden 代码与对比": {
     "prefix": "gdiff",

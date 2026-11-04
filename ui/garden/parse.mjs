@@ -1,4 +1,6 @@
 import { parse as parseYaml } from "yaml";
+import { parseCompose } from "../compose/parse.mjs";
+import { looksLikePlayCompose, parsePlayCompose } from "../compose/dil.mjs";
 import { CATALOG, knownName, legacyOf } from "./catalog.mjs";
 import { relationIndex } from "./relations.mjs";
 
@@ -123,9 +125,33 @@ function relationsProblem(props) {
   return "";
 }
 
+
+function composeBlock(header, body) {
+  if (looksLikePlayCompose(body)) return parsePlayCompose(header, body);
+  const result = parseCompose(body);
+  const block = {
+    name: "compose",
+    mode: "diagram",
+    props: result.doc ?? {},
+    children: "",
+    id: header.id,
+    legacy: Boolean(header.legacy),
+    legacyLang: header.legacyLang,
+    idea: result.uncompiled ? String(body ?? "").trim() : result.doc?.intent ?? "",
+  };
+  if (!result.ok) return { ...block, error: result.error };
+  return block;
+}
+
 export function parseGardenBlock(info, body) {
   const header = parseGardenInfo(info);
   if (!header) return null;
+  if (header.name === "compose") return composeBlock(header, body);
+  // TEMP: old `garden interactive` → compose play (legacy PascalCase or DIL). Remove like figure once samples are gone.
+  if (header.name === "interactive") {
+    const play = parsePlayCompose(header, body);
+    return { ...play, fromInteractive: true, name: "compose" };
+  }
   const { yamlText, children } = splitPropsAndChildren(body);
   if (!header.name) {
     const text = String(body ?? "").trim();

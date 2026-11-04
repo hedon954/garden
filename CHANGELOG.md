@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.11.0
+
+`garden compose` is an explanation diagram: a YAML tree of cards, arrows, badges, and notes, rendered to static HTML at build time. The fence starts as one sentence and stays `garden compose` after compile. Light and dark both use the existing theme tokens, and a narrow screen stacks the diagram into one column. Clicking a step shows its note without a runtime. Compose now compiles Markdown leaves and catalog tags into one static tree, the same split ChatGPT uses for DIL, without streaming or a script sandbox. The handbook still teaches the idea sentence, then shows the seven capability diagrams. The diagram frame uses the page paper color. The `garden figure` component is gone: fences, the renderer, the picker, and the handbook page. Publish as `hd-garden@0.11.0`. Independent sites bump `hd-garden` (for example garden-blog) after the npm tag lands.
+
 ## 0.10.4
 
 Ship the VS Code / Cursor and Typora Intelligent UI plugins inside `hd-garden`. `garden init` and the first `garden sync` copy them into `.garden/editors/` and, on a TTY, ask before installing. `garden editors install` (`--vscode`, `--typora`, `--yes`) installs them later. In Typora, `/` offers `/garden`, then a thumbnail picker. Insert paths paste a plain `garden` brief for the `garden-ui` skill.

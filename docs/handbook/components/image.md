@@ -9,7 +9,7 @@ order: 45
 图片单独成段时会包进图框，并在下方显示图注。
 
 - **什么时候用**：这张图属于文章，读者需要看到图下说明。
-- **什么时候不用**：只是装饰时，把 `alt` 写成以 `image`、`截图` 或 `img` 开头的占位词，这样不会出现图注。要按部分高亮说明时用[分区结构图](/garden/components/figure)；要提供下载时用[文件下载与预览](/garden/components/file)。
+- **什么时候不用**：只是装饰时，把 `alt` 写成以 `image`、`截图` 或 `img` 开头的占位词，这样不会出现图注。要按部分点开说明时用[说明图](/garden/components/compose)；要提供下载时用[文件下载与预览](/garden/components/file)。
 
 长文 `content/posts/my-post.md` 的配图放在同名目录 `content/posts/my-post/`。正文用 Markdown 图片语法引用，地址写成 `./my-post/diagram.svg`，方括号里的 `alt` 写成图注。
 

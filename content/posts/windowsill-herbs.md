@@ -82,28 +82,6 @@ caption: 第六周剪叶前，罗勒大约 22 厘米。
 
 ![朝北的窗台，从左到右是罗勒、薄荷和一只空盆。](./windowsill-herbs/sill.svg)
 
-```garden figure
-caption: 朝北的窗台，从左到右是罗勒、薄荷和一只空盆。
-parts:
-  - name: 全部
-    text: 三只盆并排，靠左的光照最好。
-  - name: 罗勒
-    text: 靠左，每天都够到上午的光。
-  - name: 薄荷
-    text: 中间，土干得慢一些。
-  - name: 空盆
-    text: 右边空着，留给秋天的香菜。
----
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 220">
-  <rect data-p="全部" x="20" y="16" width="600" height="150" rx="10" fill="#d5e3ea"/>
-  <rect data-p="罗勒" x="70" y="96" width="90" height="58" rx="8" fill="#c4a574"/>
-  <circle data-p="罗勒" cx="115" cy="78" r="30" fill="#3f7d4e"/>
-  <rect data-p="薄荷" x="270" y="104" width="90" height="50" rx="8" fill="#c4a574"/>
-  <circle data-p="薄荷" cx="315" cy="88" r="26" fill="#6aa87a"/>
-  <rect data-p="空盆" x="470" y="118" width="90" height="36" rx="8" fill="#e4d3b8"/>
-</svg>
-```
-
 ## 今天浇不浇
 
 土面还湿就先不动。干了再浇，浇到盆底出水，然后把托盘倒掉。
@@ -123,15 +101,16 @@ flowchart TD
 
 盆口越大，一次浇得越多。12 厘米的盆大约是 70 毫升。
 
-```garden interactive #pot-water
+```garden compose #pot-water
 caption: 盆口越大，一次浇得越多。12 厘米大约是 70 毫升。
 intent: |
   让读者拧盆口直径，看这一次该浇多少毫升。
 ---
-<State diameter={12} />
-<Slider bind="diameter" label="盆口直径" min={8} max={24} unit="cm" />
-<Let water={round(diameter * diameter * 0.35 + 20)} />
-<Stat label="这一次" value={water} unit="ml" />
+{@body const [diameter, setDiameter] = DIL.useState(12)}
+{@body const water = Math.round(diameter * diameter * 0.35 + 20)}
+
+<slider min={8} max={24} value={diameter} onChange={setDiameter} label="盆口直径" unit="cm" />
+<stat label="这一次" value={water} unit="ml" />
 ```
 
 ## 水怎么往下走

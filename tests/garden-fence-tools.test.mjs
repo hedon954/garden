@@ -167,7 +167,7 @@ test("the handbook's AI-writing example matches what the commands print", () => 
   for (const line of check.stderr.split("\n").slice(2, 9)) {
     if (line.trim()) assert.ok(overview.includes(line), `overview prompt line: ${line}`);
   }
-  const interactive = overview.match(/```garden interactive #writing-pace\n[\s\S]*?\n```/u)[0];
+  const interactive = overview.match(/```garden compose #writing-pace\n[\s\S]*?\n```/u)[0];
   fs.writeFileSync(path.join(dir, "new.md"), interactive);
   const apply = cli(dir, "apply", "content/posts/writing-pace.md", "--intent-hash", block.intentHash, "--file", path.join(dir, "new.md"));
   assert.ok(overview.includes(apply.stdout.trim()), apply.stdout);

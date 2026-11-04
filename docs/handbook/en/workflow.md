@@ -49,13 +49,15 @@ Three commands check your content at different scopes:
 | `diff-orphan` | Error | A `diff` code fence is not immediately preceded by a complete code block |
 | `legacy-fence` | Error | Uses a legacy fence name (such as `garden:stat`, `widget`, `embed`, or `html garden`); replace with `garden <name>` |
 | `garden-idea` | Error | A non-draft post still contains an uncompiled `garden` idea fence |
-| `garden-name` | Error | Unknown `garden` component name (must be `card`, `stat`, `compare`, `timeline`, `chart`, `figure`, `html`, `interactive`, `file`, `relations`, `list`, or `choice`) |
+| `compose-uncompiled` | Error | A non-draft `garden compose` fence is still prose, not markup |
+| `compose-invalid` | Error | A `garden compose` document is invalid: unknown tag, unclosed tag, or a YAML slot tree |
+| `garden-name` | Error | Unknown `garden` component name (`card`, `stat`, `compare`, `timeline`, `chart`, `compose`, `html`, `interactive`, `file`, `relations`, `list`, `choice`) |
 | `garden-yaml` | Error | Invalid YAML syntax, wrong top-level shape, or unsupported keys inside a `garden` fence |
 | `garden-relations` | Error | `garden relations` has fewer than 3 or more than 6 elements, or invalid `links` entries (use a `mermaid` flowchart for larger or branching diagrams, or `garden list` for one-pass steps) |
 | `garden-file` / `file-outside` | Error | `garden file` manually sets `resolved`, is missing a valid `src` / `files`, or points outside `content/` |
 | `file-large` | Warning | A local file referenced by `garden file` exceeds `5 MB` |
 | `compare-long` | Error | A single side-by-side cell in `garden compare` exceeds roughly 60 characters (does not apply when `verdict` is used) |
-| `interactive-trivial` / `steps-prose` | Error | `garden interactive` only computes a single multiplication, or `<Steps>` contains only prose without state changes |
+| `interactive-trivial` / `steps-prose` | Error | `garden compose` only computes a single multiplication, or `<Steps>` contains only prose without state changes |
 
 ## 3. Git Pre-commit Hook and Component Catalog
 
@@ -72,13 +74,13 @@ Three commands check your content at different scopes:
 
 Garden provides three ways to insert or generate components quickly:
 
-1. **Draft cheat sheet comment**: Running `make new SLUG=xxx TITLE="..."` appends an HTML comment to the bottom of the new `.md` file with examples for idea fences and all 12 components. HTML comments are hidden from the rendered page and can be deleted when finished.
+1. **Draft cheat sheet comment**: Running `make new SLUG=xxx TITLE="..."` appends an HTML comment to the bottom of the new `.md` file with examples for idea fences and the built-in components. HTML comments are hidden from the rendered page and can be deleted when finished.
 2. **Snippet template files**: The `templates/` directory inside `hd-garden` includes two template files:
-   - `templates/garden-blocks.md`: Copyable Markdown templates for idea fences and all 12 built-in components.
-   - `templates/garden-snippets.plist`: macOS text replacements (drag into **System Settings → Keyboard → Text Replacements**) with triggers `;gidea`, `;gcard`, `;gstat`, `;gcompare`, `;gtimeline`, `;gchart`, `;gfigure`, `;ghtml`, `;ginteractive`, `;gfile`, `;grel`, `;glist`, and `;gchoice`.
+   - `templates/garden-blocks.md`: Copyable Markdown templates for idea fences and the built-in components.
+   - `templates/garden-snippets.plist`: macOS text replacements (drag into **System Settings → Keyboard → Text Replacements**) with triggers `;gidea`, `;gcard`, `;gstat`, `;gcompare`, `;gtimeline`, `;gchart`, `;gcompose`, `;ghtml`, `;ginteractive`, `;gfile`, `;grel`, `;glist`, and `;gchoice`. `;gcompose` expands to a `garden compose` fence with one sentence. The others expand to their fences.
 3. **Install AI Agent skills (`npx garden skill`)**: Running `npx garden skill` in a site repository (also run automatically during `npx hd-garden init`) copies three skills into `.agents/skills/`:
    - `garden-ui`: Compiles natural-language `garden` idea fences into concrete component blocks.
-   - `garden-interactive-chart`: Authors `interactive`, `chart`, `figure`, and `html` components from article data.
+   - `garden-interactive-chart`: Authors `interactive`, `chart`, `compose`, and `html` components from article data.
    - `garden-post-review`: Reviews an entire post against layout and component rules.
 
 ## 5. VS Code, Cursor, and Typora Plugins

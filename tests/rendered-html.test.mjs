@@ -685,10 +685,12 @@ test("palette: warm paper, ink accent, no blue, readable chips in both themes", 
   assert.match(shell, /:root\{\s*--paper:#FAF9F5;/);
   assert.match(globals, /:root \{\s*--paper: #faf9f5;\s*--paper-deep: #f0eee6;/);
 
-  // no blue left in the site styles, except the NOTE callout, which follows the A2 demo
+  // no blue left in the site styles, except the NOTE callout and compose lane
+  // --flow/--flow-back, which reuse the same note/tip hues (not a second palette).
   const blues = /2c55b4|93b2f4|5e86e0|4c72c9|eaf0fc|eef3fc|44,\s*85,\s*180|44 85 180|147,\s*178,\s*244|147 178 244/i;
   const a2WithoutCallouts = a2.replace(/--al-note(-bg|-line)?: [^;]+;/g, "");
-  for (const [name, css] of Object.entries({ tokens, shell, globals, a2: a2WithoutCallouts, ui })) assert.doesNotMatch(css, blues, name);
+  const tokensWithoutFlow = tokens.replace(/--flow(-back)?: [^;]+;/g, "");
+  for (const [name, css] of Object.entries({ tokens: tokensWithoutFlow, shell, globals, a2: a2WithoutCallouts, ui })) assert.doesNotMatch(css, blues, name);
 
   // WCAG AA (4.5:1) for chip text, selected chips and muted text
   const lum = (hex) => {

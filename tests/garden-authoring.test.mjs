@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
-import { CATALOG, GARDEN_NAMES } from "../ui/garden/catalog.mjs";
+import { CATALOG, offeredGardenNames } from "../ui/garden/catalog.mjs";
 import { checkGardenMarkdown } from "../ui/garden/check.mjs";
 import { splitCompareLine } from "../ui/garden/compare-line.mjs";
 import { diffToNewCode, figureBreakout, figureImageWidth, imageDisplayWidth, protectMathIdentifiers, tableBreakout, tocShift } from "../ui/garden/enhance.mjs";
@@ -52,7 +52,7 @@ test("garden fences parse to one node and legacy fences stay errors", () => {
   assert.equal(block.props.value, 3.2);
   const legacy = checkGardenMarkdown(markdown);
   assert.equal(legacy.some((item) => item.code === "legacy-fence"), true);
-  assert.match(legacy.find((item) => item.code === "legacy-fence").suggestion, /garden interactive/);
+  assert.match(legacy.find((item) => item.code === "legacy-fence").suggestion, /garden compose/);
 });
 
 test("a one-line compare cell keeps its colon", () => {
@@ -315,11 +315,17 @@ test("typing / offers the garden command, and /garden is the component picker", 
 
 test("insert pickers paste a garden idea brief with a thumbnail, not a YAML example", () => {
   const items = pickerItems();
-  assert.deepEqual(items.map((item) => item.name), ["", ...GARDEN_NAMES]);
+  assert.deepEqual(items.map((item) => item.name), ["", ...offeredGardenNames()]);
   for (const item of items) {
-    assert.match(item.body, /^```garden\n/u);
-    assert.doesNotMatch(item.body, /```garden [a-z]/u);
-    assert.doesNotMatch(item.body, /^[a-z]+:/mu);
+    if (item.name === "compose") {
+      assert.equal(item.label, "compose（想法）");
+      assert.match(item.body, /^```garden compose\n/u);
+      assert.doesNotMatch(item.body, /^[a-z]+:/mu);
+    } else {
+      assert.match(item.body, /^```garden\n/u);
+      assert.doesNotMatch(item.body, /```garden [a-z]/u);
+      assert.doesNotMatch(item.body, /^[a-z]+:/mu);
+    }
     assert.match(item.preview, /^data:image\/svg\+xml,/u);
     assert.match(decodeURIComponent(item.preview.slice("data:image/svg+xml,".length)), /<(?:rect|path|circle|text)\b/u);
     assert.match(suggestHtml(item), /<img\b[^>]*class="garden-suggest-thumb"/u);
@@ -339,7 +345,8 @@ test("insert pickers paste a garden idea brief with a thumbnail, not a YAML exam
 test("editor snippets, Typora templates and text replacements come from one catalog", () => {
   const snippets = vscodeSnippets();
   assert.equal(snippets["Garden 块"].prefix, "garden");
-  assert.match(snippets["Garden 块"].body[0], /card,stat,compare,timeline,chart,figure,html,interactive/);
+  assert.match(snippets["Garden 块"].body[0], /card,stat,compare,timeline,chart,compose,html,file/);
+  assert.doesNotMatch(snippets["Garden 块"].body[0], /interactive/);
   assert.ok(snippets.gcard || snippets["Garden 资源卡 gcard"]);
   const markdown = gardenBlocksMarkdown();
   assert.match(markdown, /```garden card/);

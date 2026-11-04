@@ -73,8 +73,7 @@ body {
 .g-card,
 .g-timeline,
 .g-sandbox,
-.g-html,
-.g-figure {
+.g-html {
   box-shadow: none;
 }
 
@@ -287,6 +286,17 @@ body {
   grid-row: 1;
   min-width: 0;
   max-width: var(--col);
+}
+
+/* The compare post puts two wide diagrams side by side. */
+@media (min-width: 1260px) {
+  .post-reading-page:has(.g-compose-pair) .article-reading-layout {
+    grid-template-columns: 24px minmax(0, 1fr) var(--rail);
+  }
+
+  .post-reading-page:has(.g-compose-pair) .article-reading-column {
+    max-width: none;
+  }
 }
 
 .post-reading-page .article-reading-layout > .toc {
@@ -785,6 +795,17 @@ html[data-theme="dark"] .markdown-body > p > img:not([class]) {
   background: transparent;
 }
 
+.table-wrap td .markdown-image-trigger {
+  margin: 0;
+}
+
+.table-wrap td .markdown-image-trigger img {
+  width: 280px;
+  max-width: 100%;
+  height: auto;
+  border-radius: 6px;
+}
+
 @media (min-width: 900px) {
   .ux-wide {
     margin-left: calc(-1 * var(--wl, 0px)) !important;
@@ -885,8 +906,6 @@ html[data-theme="dark"] .markdown-body > p > img:not([class]) {
 .g-cmp,
 .g-timeline,
 .g-chart,
-.g-figure,
-.g-explore,
 .g-html,
 .g-idea,
 .g-legacy,
@@ -895,77 +914,9 @@ html[data-theme="dark"] .markdown-body > p > img:not([class]) {
   box-shadow: none;
 }
 
-.g-explore {
-  border: 1px solid var(--rule);
-  border-radius: var(--r);
-  padding: 12px 14px 14px;
-  background: transparent;
-  max-width: 100%;
-}
-
-.g-explore [role="tablist"] {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin: 0;
-  padding: 0;
-}
-
-.g-explore [role="tab"] {
-  font: 500 14px / 1 var(--sans);
-  padding: 9px 12px;
-  min-height: 44px;
-  border-radius: 999px;
-  border: 1px solid var(--rule);
-  background: transparent;
-  color: var(--soft);
-  cursor: pointer;
-}
-
-.g-explore [role="tab"][aria-selected="true"] {
-  border-color: var(--blue);
-  color: var(--blue);
-  background: var(--blue-tint);
-}
-
-.dx-wrap {
-  overflow: visible;
-  margin-top: 10px;
-  max-width: 100%;
-}
-
-.dx-wrap svg {
-  display: block;
-  width: 100%;
-  max-width: 100%;
-  height: auto;
-}
-
-.g-explore:not([data-sel="all"]) .dx-wrap [data-p]:not(.on),
-.g-explore:not([data-sel="all"]) .dx-wrap text:not(.on) {
-  opacity: 0.22;
-}
-
-.g-explore .on {
-  opacity: 1;
-}
-
-.dx-exp p {
-  margin: 10px 0 0;
-}
-
-.g-explore figcaption {
-  font-size: 13px;
-  color: var(--muted);
-  margin-top: 8px;
-  text-align: left;
-}
-
 .g-sandbox,
 .g-play,
-.g-html,
-.g-explore,
-.dx-wrap {
+.g-html {
   max-width: 100%;
 }
 
@@ -973,7 +924,6 @@ html[data-theme="dark"] .markdown-body > p > img:not([class]) {
 .g-stat,
 .g-cmp,
 .g-timeline,
-.g-figure,
 .g-html {
   border: 1px solid var(--rule);
   border-radius: var(--r);
@@ -982,8 +932,7 @@ html[data-theme="dark"] .markdown-body > p > img:not([class]) {
 
 .g-card,
 .g-cmp,
-.g-html,
-.g-figure {
+.g-html {
   padding: 14px 16px;
 }
 
@@ -1163,23 +1112,12 @@ html[data-theme="dark"] .markdown-body > p > img:not([class]) {
   min-width: 3px;
 }
 
-.g-figure svg,
 .g-mermaid svg,
 .dx-svg {
   display: block;
   width: 100%;
   max-width: 100%;
   height: auto;
-}
-
-.g-figure:not([data-sel="all"]) [data-p]:not(.on),
-.g-figure:not([data-sel="all"]) text:not(.on) {
-  opacity: 0.22;
-}
-
-.g-figure [data-p].on,
-.g-figure text.on {
-  opacity: 1;
 }
 
 .g-mermaid {
@@ -1399,17 +1337,8 @@ html[data-theme="dark"] .markdown-body > p > img:not([class]) {
   padding-right: 44px;
 }
 
-.ux-fs:not(.g-sandbox) > .ux-fsbar + .g-explore {
-  padding-right: 14px;
-}
-
 .ux-fs:not(.g-sandbox) > .ux-fsbar + .g-sandbox {
   padding-right: 0;
-}
-
-.ux-fs:not(.g-sandbox) > .ux-fsbar + .g-explore > [role="tablist"] {
-  padding-right: 44px;
-  box-sizing: border-box;
 }
 
 .ux-fs:fullscreen,
@@ -1791,13 +1720,6 @@ html[data-theme="dark"] .gf-scrim { background: rgb(0 0 0 / 45%); }
   align-items: start;
   justify-content: space-between;
   font-family: var(--sans);
-}
-
-.garden-doc-page .g-explore:not([data-sel="all"]) .dx-wrap [data-p]:not(.on),
-.garden-doc-page .g-explore:not([data-sel="all"]) .dx-wrap text:not(.on),
-.garden-doc-page .g-figure:not([data-sel="all"]) [data-p]:not(.on),
-.garden-doc-page .g-figure:not([data-sel="all"]) text:not(.on) {
-  opacity: 0.56;
 }
 
 .garden-doc-page > .toc {
@@ -2639,15 +2561,6 @@ html[data-theme="dark"] .ref-demo { --rd-s: #262624; --rd-p: #1f1e1d; --rd-i: #e
 @media (max-width: 1023px) {
   .ref-pane[data-p="c"] pre { padding-right: 56px; }
   .ref-demo-in .toc-mobile-trigger { opacity: 0; visibility: hidden; pointer-events: none; }
-}
-
-/* figure reference page: the drawing needs room, so the example stacks
-   (preview on top, full width; code below). Scoped to the reference demo;
-   figures in articles are untouched. */
-@media (min-width: 1024px) {
-  .ref-demo[data-name="figure"] { grid-template-columns: minmax(0, 1fr); background: var(--rd-p); }
-  .ref-demo[data-name="figure"] .ref-pane[data-p="v"] { grid-column: 1; grid-row: 1; }
-  .ref-demo[data-name="figure"] .ref-pane[data-p="c"] { grid-column: 1; grid-row: 2; background: var(--rd-s); border-top: 1px solid var(--rd-r); }
 }
 
 /* ===== v0.10.1 tip keep (after git checkout of a2.css from 9a80f7e5) ===== */

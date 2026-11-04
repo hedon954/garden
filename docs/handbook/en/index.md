@@ -45,7 +45,7 @@ $ npx garden ui scan content/posts/writing-pace.md
 }
 ```
 
-Next, the Agent reads the component catalog from `npx garden ui prompt`, writes a `garden interactive` block, and runs `npx garden ui apply` with `--intent-hash` to replace only that fence while leaving the rest of the file byte-for-byte untouched:
+Next, the Agent reads the component catalog from `npx garden ui prompt`, writes a `garden compose` block, and runs `npx garden ui apply` with `--intent-hash` to replace only that fence while leaving the rest of the file byte-for-byte untouched:
 
 ```console
 $ npx garden ui apply content/posts/writing-pace.md --intent-hash 8866427a --file new.md
@@ -70,7 +70,7 @@ Rules:
 - If you cannot access this repository, reply with only the finished fence for each block.
 
 1. content/posts/writing-pace.md, lines 9–11, intent-hash: 8866427a
-   - garden-idea: this idea is not compiled yet; compile it into garden interactive or another garden component (or put the sentence back into the prose).
+   - garden-idea: this idea is not compiled yet; compile it into garden compose or another garden component (or put the sentence back into the prose).
 
 Current fence:
 
@@ -85,9 +85,9 @@ The same prompt is saved to `.garden/ui-fix-prompt.md` and copied to the clipboa
 
 ### 4. The Rendered Result
 
-The `garden interactive` fence written back in step 2 renders directly on the article page as an interactive calculator:
+The `garden compose` fence written back in step 2 renders directly on the article page as an interactive calculator:
 
-```garden interactive #writing-pace
+```garden compose #writing-pace
 caption: Writing a few hundred extra words each day finishes sooner than adding another writing day per week.
 intent: |
   Let the reader drag daily word count and writing days per week to see how many weeks an 8,000-word article takes.
@@ -171,7 +171,7 @@ items:
     caption: Maximum width for wide multi-column tables expanding symmetrically on desktop
 ```
 
-The component pages cover the 12 `garden` fences, plus link cards, source chips, and local images. See [Components Overview](/garden/en/components) for the live examples.
+The component pages cover the `garden` fences, plus link cards, source chips, and local images. Explanation diagrams are [compose](/garden/en/components/compose). See [Components Overview](/garden/en/components) for the live examples.
 
 <h2 id="garden-admin-title">From Init to Daily Writing</h2>
 

@@ -34,7 +34,7 @@ code: |
 ```
 
 - **When to use**: Running custom DOM scripts, Canvas animations, physical simulations, or self-contained HTML widgets.
-- **When to skip**: You only need sliders wired to a formula (use [`interactive`](/garden/en/components/interactive)) or a diagram with clickable regions (use [`figure`](/garden/en/components/figure)).
+- **When to skip**: You only need sliders wired to a formula (use [`interactive`](/garden/en/components/interactive)) or a diagram of cards and notes (use [`compose`](/garden/en/components/compose)).
 
 You can tell the AI:
 

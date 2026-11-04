@@ -33,40 +33,31 @@ Garden 的文章页面围绕长文阅读体验做了几项自动化处理。这�
 
 在运行 `npx garden sync` 时，构建脚本会直接解析本地图片（PNG、JPEG、WebP、GIF、SVG）的像素宽高并写入 `.garden/generated-content.ts` 的 `imageSizes` 表：
 
-```garden figure
-caption: 点击上方按钮查看图片从构建到渲染的三个阶段
-svg: |
-  <svg viewBox="0 0 560 194" xmlns="http://www.w3.org/2000/svg" font-family="var(--sans)" style="max-width: 380px; margin-inline: auto">
-    <rect data-p="sync" x="2" y="4" width="180" height="186" rx="16" fill="var(--card)" stroke="var(--rule-strong)" stroke-width="2.5"/>
-    <text data-p="sync" x="92" y="42" text-anchor="middle" font-size="24" font-weight="600" fill="var(--ink)">1. 构建期</text>
-    <text data-p="sync" x="92" y="72" text-anchor="middle" font-size="24" font-weight="600" fill="var(--ink)">读取尺寸</text>
-    <text data-p="sync" x="92" y="108" text-anchor="middle" font-size="24" fill="var(--muted)">写入 width /</text>
-    <text data-p="sync" x="92" y="137" text-anchor="middle" font-size="24" fill="var(--muted)">height 与 --wl</text>
-    <path d="M183.5 97 H188.5" stroke="var(--muted)" stroke-width="2.5"/>
-    <rect data-p="measure" x="190" y="4" width="180" height="186" rx="16" fill="var(--card)" stroke="var(--rule-strong)" stroke-width="2.5"/>
-    <text data-p="measure" x="280" y="42" text-anchor="middle" font-size="24" font-weight="600" fill="var(--ink)">2. 客户端</text>
-    <text data-p="measure" x="280" y="72" text-anchor="middle" font-size="24" font-weight="600" fill="var(--ink)">测量拓宽</text>
-    <text data-p="measure" x="280" y="108" text-anchor="middle" font-size="24" fill="var(--muted)">按当前视口</text>
-    <text data-p="measure" x="280" y="137" text-anchor="middle" font-size="24" fill="var(--muted)">调整宽图</text>
-    <text data-p="measure" x="280" y="166" text-anchor="middle" font-size="24" fill="var(--muted)">与目录</text>
-    <path d="M371.5 97 H376.5" stroke="var(--muted)" stroke-width="2.5"/>
-    <rect data-p="dark" x="378" y="4" width="180" height="186" rx="16" fill="var(--card)" stroke="var(--rule-strong)" stroke-width="2.5"/>
-    <text data-p="dark" x="468" y="42" text-anchor="middle" font-size="24" font-weight="600" fill="var(--ink)">3. 深色衬底</text>
-    <text data-p="dark" x="468" y="72" text-anchor="middle" font-size="24" font-weight="600" fill="var(--ink)">与灯箱</text>
-    <text data-p="dark" x="468" y="108" text-anchor="middle" font-size="24" fill="var(--muted)">深色垫</text>
-    <text data-p="dark" x="468" y="137" text-anchor="middle" font-size="24" fill="var(--muted)">#faf9f5 ·</text>
-    <text data-p="dark" x="468" y="166" text-anchor="middle" font-size="24" fill="var(--muted)">点击放大</text>
-  </svg>
-parts:
-  - id: sync
-    label: 1. 构建期读取尺寸
-    text: 服务端生成的 HTML 已经带有图片的 `width`、`height`、`data-nw`、`data-bw` 以及宽图的初始 `--wl` / `--wr`，图片尚未下载完成时也不会把下方文字顶得跳动。
-  - id: measure
-    label: 2. 客户端测量拓宽
-    text: 浏览器加载后，`ArticleMeasure` 根据当前窗口的实际宽度重新计算拓宽边距，并在滚动时实时判断宽图是否与右侧目录重叠。
-  - id: dark
-    label: 3. 深色衬底与灯箱
-    text: "正文配图点击后可在当前页打开灯箱大图（按 `Esc` 或点击背景关闭）；深色模式下自动为配图设置 `--image-backing: #faf9f5` 背景。"
+```garden compose
+<intent>
+图片从构建到渲染分三步。点一步，看这一阶段做什么。
+</intent>
+# 图片从构建到渲染
+
+点一步，看这一阶段做什么
+
+<steps>
+  <step id="sync">
+    <title>构建期读取尺寸</title>
+    <text>写入宽高，避免文字跳动</text>
+    <note>服务端生成的 HTML 已经带有图片的 width、height 和宽图边距。图片还没下载完时，下方文字也不会被顶得跳动。</note>
+  </step>
+  <step id="measure">
+    <title>客户端测量拓宽</title>
+    <text>按当前视口调整宽图与目录</text>
+    <note>浏览器加载后，ArticleMeasure 按当前窗口宽度重算拓宽边距，并在滚动时判断宽图是否挡住右侧目录。</note>
+  </step>
+  <step id="dark">
+    <title>深色衬底与灯箱</title>
+    <text>浅色纸底垫住黑线，点击可以放大</text>
+    <note>正文配图可以在当前页打开灯箱。深色模式下配图使用浅色纸底，不反色。</note>
+  </step>
+</steps>
 ```
 
 ## 4. 深色模式配图衬底与暖纸墨色

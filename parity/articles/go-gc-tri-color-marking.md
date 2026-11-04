@@ -222,27 +222,6 @@ addEventListener('resize',size);
 
 ### 2.3 GC 四阶段循环
 
-```garden figure
-parts:
-  - id: all
-    label: 全部
-    text: GC 循环周期
-  - id: trig
-    label: GC Trigger
-    text: GC Trigger 堆阈值/定时/手动
-  - id: p1
-    label: 清扫终止
-    text: "STW: 准备根对象, 清理上一轮残余"
-  - id: p2
-    label: 并发标记
-    text: 所有对象标记完成 gcMarkDone
-  - id: p3
-    label: 标记终止
-    text: "STW: 保证全局标记完成, 必须全局一致"
-  - id: p4
-    label: 并发清扫
-    text: 清理结束 & 等待下一轮
----
 <svg viewBox="0 0 680 210" class="dx-svg g-flow" role="img" aria-label="GC 四阶段循环：GC Trigger → 清扫终止（STW）→ 并发标记 → 标记终止（STW）→ 并发清扫 → 等待下一轮">
 <defs><marker id="ahc" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L8 4L0 8z" class="fl-ah"/></marker></defs>
 <g class="fl-e"><line x1="92" y1="90" x2="114" y2="90" marker-end="url(#ahc)"/><line x1="232" y1="90" x2="254" y2="90" marker-end="url(#ahc)"/><line x1="372" y1="90" x2="394" y2="90" marker-end="url(#ahc)"/><line x1="512" y1="90" x2="534" y2="90" marker-end="url(#ahc)"/>
@@ -254,7 +233,7 @@ parts:
 <rect x="396" y="62" width="116" height="56" rx="8" class="fl-n gc-stw" data-p="p3 stw"/><text x="454" y="84" text-anchor="middle" class="dx-l">③ 标记终止</text><text x="454" y="104" text-anchor="middle" class="dx-cap">STW</text>
 <rect x="536" y="62" width="116" height="56" rx="8" class="fl-n fl-m" data-p="p4 conc"/><text x="594" y="84" text-anchor="middle" class="dx-l">④ 并发清扫</text><text x="594" y="104" text-anchor="middle" class="dx-cap">Concurrent</text>
 </svg>
-```
+
 
 ### 2.4 GC 触发机制
 
@@ -1193,21 +1172,6 @@ func greyobject(obj, base, off uintptr, span *mspan, gcw *gcWork, objIndex uintp
 
 整个 `gcDrain()` 的标记循环流程可以总结为如下图所示：
 
-```garden figure
-parts:
-  - id: all
-    label: 全部
-    text: "`gcDrain` 的核心逻辑是一个消费循环。"
-  - id: q
-    label: 灰色对象队列
-    text: 它从本地或全局的工作缓冲区（`gcWork`）中提取指针（灰色对象）
-  - id: scan
-    label: 扫描函数
-    text: "`markroot()`: 标记 GC 的根集（root set），这些是追踪的起点。"
-  - id: grey
-    label: greyobject
-    text: 识别其引用的子对象，并通过 greyobject 将子对象加入工作队列（即着色为灰色）。
----
 <svg viewBox="0 0 680 200" class="dx-svg g-flow" role="img" aria-label="gcDrain 标记循环：灰色对象队列 → gcDrain → markroot / scanobject / scanSpan → greyobject → 设置标记位（白→灰）→ 入队">
 <defs><marker id="ahd" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L8 4L0 8z" class="fl-ah"/></marker></defs>
 <g class="fl-e"><line x1="110" y1="100" x2="136" y2="100" marker-end="url(#ahd)"/><line x1="222" y1="92" x2="262" y2="44" marker-end="url(#ahd)"/><line x1="222" y1="100" x2="262" y2="100" marker-end="url(#ahd)"/><line x1="222" y1="108" x2="262" y2="156" marker-end="url(#ahd)"/>
@@ -1222,7 +1186,7 @@ parts:
 <rect x="412" y="78" width="100" height="44" rx="8" class="fl-n gc-stw" data-p="grey"/><text x="462" y="105" text-anchor="middle" class="dx-l">greyobject</text>
 <rect x="542" y="78" width="124" height="44" rx="8" class="fl-n" data-p="grey"/><text x="604" y="105" text-anchor="middle" class="dx-l">设置标记位</text>
 </svg>
-```
+
 
 ### 3.3 标记终止检测 gcMarkDone()
 
@@ -1689,27 +1653,6 @@ GC 结束时，通过 pacer 计算下次触发点：
 
 ### 3.6 STW 分析
 
-```garden figure
-parts:
-  - id: all
-    label: 全部
-    text: GC 循环周期
-  - id: trig
-    label: GC Trigger
-    text: GC Trigger 堆阈值/定时/手动
-  - id: p1
-    label: 清扫终止
-    text: "STW: 准备根对象, 清理上一轮残余"
-  - id: p2
-    label: 并发标记
-    text: 所有对象标记完成 gcMarkDone
-  - id: p3
-    label: 标记终止
-    text: "STW: 保证全局标记完成, 必须全局一致"
-  - id: p4
-    label: 并发清扫
-    text: 清理结束 & 等待下一轮
----
 <svg viewBox="0 0 680 210" class="dx-svg g-flow" role="img" aria-label="GC 四阶段循环：GC Trigger → 清扫终止（STW）→ 并发标记 → 标记终止（STW）→ 并发清扫 → 等待下一轮">
 <defs><marker id="ahc" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L8 4L0 8z" class="fl-ah"/></marker></defs>
 <g class="fl-e"><line x1="92" y1="90" x2="114" y2="90" marker-end="url(#ahc)"/><line x1="232" y1="90" x2="254" y2="90" marker-end="url(#ahc)"/><line x1="372" y1="90" x2="394" y2="90" marker-end="url(#ahc)"/><line x1="512" y1="90" x2="534" y2="90" marker-end="url(#ahc)"/>
@@ -1721,7 +1664,7 @@ parts:
 <rect x="396" y="62" width="116" height="56" rx="8" class="fl-n gc-stw" data-p="p3 stw"/><text x="454" y="84" text-anchor="middle" class="dx-l">③ 标记终止</text><text x="454" y="104" text-anchor="middle" class="dx-cap">STW</text>
 <rect x="536" y="62" width="116" height="56" rx="8" class="fl-n fl-m" data-p="p4 conc"/><text x="594" y="84" text-anchor="middle" class="dx-l">④ 并发清扫</text><text x="594" y="104" text-anchor="middle" class="dx-cap">Concurrent</text>
 </svg>
-```
+
 
 我们再来看一下这张图，分析一下为什么 ① ③ 阶段需要 STW，而 ② ④ 却不需要呢？
 

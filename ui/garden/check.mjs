@@ -5,6 +5,7 @@ import { splitTitle } from "./title.mjs";
 import { splitCompareLine } from "./compare-line.mjs";
 import { readFileProps } from "./file-block.mjs";
 import { checkInteractiveFence } from "../core/scan.mjs";
+import { compileUiBlock } from "../core/compile.mjs";
 
 const COMPARE_LIMIT = 60;
 
@@ -90,6 +91,14 @@ export function checkGardenMarkdown(markdown, { draft = false, title = "", title
       push(fence.line, "garden-relations", block.error.message, "要素更多或有分支：```mermaid flowchart；一次走完的步骤：garden list。");
       return;
     }
+    if (block.error?.code === "compose-uncompiled") {
+      if (!draft) push(fence.line, "compose-uncompiled", block.error.message, "保持 `garden compose`，把原话放进 intent，并写上 Markdown 和标签。");
+      return;
+    }
+    if (block.error?.code === "compose-invalid") {
+      push(fence.line, "compose-invalid", block.error.message, "叶子写 Markdown，结构写 box、row、stack、steps、arrow、join、lanes 这些标签。");
+      return;
+    }
     if (block.name === "file") {
       if (block.props.resolved !== undefined) {
         push(fence.line, "garden-file", "resolved 由构建生成，不要手写。", "删掉 resolved，只写 src、title、note 或 files。");
@@ -104,18 +113,25 @@ export function checkGardenMarkdown(markdown, { draft = false, title = "", title
     if (block.name === "compare" && compareTooLong(block.props)) {
       push(fence.line, "compare-long", "对比格超过约 60 字。", "这一格改回原文的列表或段落。");
     }
-    if (block.name === "interactive") {
+    if (block.name === "interactive" || (block.name === "compose" && block.mode === "play")) {
       const source = `${fence.body}\n${block.children}`;
       if (isTrivialInteractive(source)) {
         push(fence.line, "interactive-trivial", "只有一次乘法，却做成了交互。", "把这句算式留在正文里。");
       }
       if (isProseSteps(source)) {
-        push(fence.line, "steps-prose", "步骤只是散文。", "连续的段落不要拆成步骤；有状态变化时才用 interactive。");
+        push(fence.line, "steps-prose", "步骤只是散文。", "连续的段落不要拆成步骤；有状态变化时才用 compose。");
       }
-      // The component tree: the same check the page and `garden ui check` run.
-      const { diagnostics: uiDiagnostics = [] } = checkInteractiveFence({ lang: "garden", info: fence.meta ?? "", body: fence.body, startLine: fence.line }, { skipData: true });
-      for (const item of uiDiagnostics.filter((entry) => entry.severity === "error")) {
-        push(item.line, item.code, item.message, "运行 npx garden ui check 拿到修复提示词。");
+      // Prefer DIL-lowered uiSource; TEMP fall back to interactive fence check for PascalCase.
+      if (typeof block.uiSource === "string" && block.uiSource.trim()) {
+        const { check } = compileUiBlock(block.uiSource, { skipData: true });
+        for (const item of (check.diagnostics ?? []).filter((entry) => entry.severity === "error")) {
+          push(fence.line + (item.line ? item.line - 1 : 0), item.code, item.message, "按 ChatGPT DIL 写法检查 {@body} / 标签 / 表达式。");
+        }
+      } else {
+        const { diagnostics: uiDiagnostics = [] } = checkInteractiveFence({ lang: "garden", info: fence.meta ?? "", body: fence.body, startLine: fence.line }, { skipData: true });
+        for (const item of uiDiagnostics.filter((entry) => entry.severity === "error")) {
+          push(item.line, item.code, item.message, "运行 npx garden ui check 拿到修复提示词。");
+        }
       }
     }
   });

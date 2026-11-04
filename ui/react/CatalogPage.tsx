@@ -3,7 +3,7 @@
 import { marked } from "marked";
 import { useMemo, useState, useSyncExternalStore } from "react";
 import { COMPONENTS, GROUPS } from "../core/catalog.mjs";
-import { CATALOG, GARDEN_NAMES, IDEA } from "../garden/catalog.mjs";
+import { CATALOG, IDEA, offeredGardenNames } from "../garden/catalog.mjs";
 import { compileUiBlock } from "../core/compile.mjs";
 import { DEMOS, demoFence } from "../core/demos.mjs";
 import { scanFences } from "../core/fence.mjs";
@@ -155,7 +155,7 @@ export function CatalogPage({ recipes = [], onStart }: { recipes?: RecipeSource[
         <p>文章里只写 <code>garden</code> 围栏。下面是名字。再往下的清单是 interactive 的内部零件，不是文章里的名字。</p>
         <ul>
           <li><code>garden</code> · {IDEA.label}。{IDEA.when}</li>
-          {GARDEN_NAMES.map((name) => {
+          {offeredGardenNames().map((name) => {
             const spec = CATALOG[name as keyof typeof CATALOG];
             return <li key={name}><code>garden {name}</code> · {spec.label}。{spec.when}</li>;
           })}

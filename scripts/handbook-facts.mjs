@@ -1105,7 +1105,7 @@ function findDisallowedEnCjk(line, { allowTitleSplit = false } = {}) {
 
 /**
  * Extract local relative file paths included or embedded by an English handbook Markdown page
- * (Markdown images, HTML media tags, and `garden file` / `garden figure` / `garden html` fences).
+ * (Markdown images, HTML media tags, and `garden file` / `garden html` fences).
  */
 function extractIncludedHandbookFiles(markdown, mdFile, root = ROOT) {
   const handbookRoot = path.join(root, "docs/handbook");
@@ -1143,31 +1143,6 @@ function extractIncludedHandbookFiles(markdown, mdFile, root = ROOT) {
 }
 
 /**
- * Strip the narrow, line-specific `"全部"` config value exception when checking
- * `docs/handbook/en/components/figure.md` on the `parts[].id` field row.
- */
-function stripAllowedFigureAllKeywordInLine(relFile, line) {
-  const rule = ALLOWED_EN_HANDBOOK_CJK.figureAllKeyword;
-  if (relFile === rule.file && rule.linePattern.test(line)) {
-    return line.replaceAll(`\`${rule.literal}\``, "").replaceAll(rule.literal, "");
-  }
-  return line;
-}
-
-/**
- * Strip the narrow, row-specific `<code>"全部"</code>` config value exception when
- * checking built HTML for `/garden/en/components/figure` on the `parts[].id` table row.
- */
-export function stripAllowedFigureAllKeywordInHtml(html, pageLabel = "") {
-  const rule = ALLOWED_EN_HANDBOOK_CJK.figureAllKeyword;
-  if (!rule.routePattern.test(String(pageLabel))) return String(html);
-  return String(html).replace(/<tr\b[^>]*>[\s\S]*?<\/tr>/giu, (tr) => {
-    if (!/<code>parts\[\]\.id<\/code>/u.test(tr)) return tr;
-    return tr.replace(/<code>(?:"|&quot;)全部(?:"|&quot;)<\/code>/gu, '<code>"all"</code>');
-  });
-}
-
-/**
  * Every English handbook page under docs/handbook/en/ (including fenced code blocks and
  * any included/embedded files) must not contain CJK characters, except the explicit allowlist.
  * Note: This static check inspects Markdown source, embedded assets, and pre-rendered HTML files;
@@ -1185,8 +1160,7 @@ export function checkEnglishHandbookNoCjk(root = ROOT) {
     for (let i = 0; i < lines.length; i += 1) {
       const line = lines[i];
       const lineAllowSplit = allowTitleSplit && /(?:title|split|delimiter|heading|two-line|` \| `)/iu.test(line);
-      const scannedLine = stripAllowedFigureAllKeywordInLine(relFile, line);
-      const bad = findDisallowedEnCjk(scannedLine, { allowTitleSplit: lineAllowSplit });
+      const bad = findDisallowedEnCjk(line, { allowTitleSplit: lineAllowSplit });
       if (bad.length > 0) {
         const sample = [...new Set(bad)].slice(0, 8).join("");
         issues.push({
@@ -1231,20 +1205,16 @@ export function checkEnglishHandbookNoCjk(root = ROOT) {
  * Inspect a single built HTML document for an English handbook route (or the
  * English 404 output), covering <head> meta tags, <title>, visible text, and
  * user-facing attributes (`content`, `alt`, `title`, `aria-label`, `placeholder`).
- * Only the `中` language switcher, the `丨` / `｜` title-split delimiter explanation,
- * and the narrow `"全部"` config value on `/garden/en/components/figure` (`parts[].id` row)
+ * Only the `中` language switcher and the `丨` / `｜` title-split delimiter explanation
  * are permitted.
  * Note: This check inspects static HTML markup only and does not cover runtime rendering
  * or client-side hydration in a real browser.
  */
 export function findBuiltEnglishHtmlCjk(html, pageLabel = "/garden/en") {
   const issues = [];
-  const cleaned = stripAllowedFigureAllKeywordInHtml(
-    String(html)
-      .replace(/<script[\s\S]*?<\/script>/giu, "")
-      .replace(/<style[\s\S]*?<\/style>/giu, ""),
-    pageLabel,
-  );
+  const cleaned = String(html)
+    .replace(/<script[\s\S]*?<\/script>/giu, "")
+    .replace(/<style[\s\S]*?<\/style>/giu, "");
 
   const recordIfCjk = (value, context, allowTitleSplit = false) => {
     const text = String(value ?? "").trim();

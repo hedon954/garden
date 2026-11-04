@@ -236,27 +236,6 @@ title: 步骤
 
 把这段话画成一张可以点的图：
 
-```garden figure
-parts:
-  - id: all
-    label: 全部
-    text: Decode 第 1 步：用最新输入 `It` 的 Q，去查询历史上的 K、按权重混合 V……
-  - id: q
-    label: Q
-    text: Q 是当前 token 的「提问」……
-  - id: k
-    label: K
-    text: K 是各 token 的「索引标签」……
-  - id: v
-    label: V
-    text: V 是可被取用的「内容」……
-  - id: cache
-    label: KV Cache
-    text: 历史上的 K/V 会被以后每一步的新 Q 反复读到，所以要写入 KV Cache……
-  - id: out
-    label: 输出
-    text: 这个上下文向量再经输出投影、FFN 和后续层……
----
 <svg viewBox="0 0 580 270" class="dx-svg" role="img" aria-labelledby="dxT"><title id="dxT">一次 Decode 步里的注意力：当前 token It 的 Q 与所有 K 算相似度，按权重混合 V</title>
 <rect data-p="cache" class="dx-cache" x="12" y="38" width="460" height="82" rx="10"/><text x="20" y="134" class="dx-cap" data-p="cache">KV Cache（历史 token 的 K/V，复用）</text>
 <g><text x="58" y="30" class="dx-tok" text-anchor="middle">The</text><rect data-p="k" class="dx-k" x="20" y="44" width="76" height="30" rx="6"/><text x="58" y="64" text-anchor="middle" class="dx-l">K</text><rect data-p="v" class="dx-v" x="20" y="82" width="76" height="30" rx="6"/><text x="58" y="102" text-anchor="middle" class="dx-l">V</text></g><g><text x="150" y="30" class="dx-tok" text-anchor="middle">cat</text><rect data-p="k" class="dx-k" x="112" y="44" width="76" height="30" rx="6"/><text x="150" y="64" text-anchor="middle" class="dx-l">K</text><rect data-p="v" class="dx-v" x="112" y="82" width="76" height="30" rx="6"/><text x="150" y="102" text-anchor="middle" class="dx-l">V</text></g><g><text x="242" y="30" class="dx-tok" text-anchor="middle">is</text><rect data-p="k" class="dx-k" x="204" y="44" width="76" height="30" rx="6"/><text x="242" y="64" text-anchor="middle" class="dx-l">K</text><rect data-p="v" class="dx-v" x="204" y="82" width="76" height="30" rx="6"/><text x="242" y="102" text-anchor="middle" class="dx-l">V</text></g><g><text x="334" y="30" class="dx-tok" text-anchor="middle">very</text><rect data-p="k" class="dx-k" x="296" y="44" width="76" height="30" rx="6"/><text x="334" y="64" text-anchor="middle" class="dx-l">K</text><rect data-p="v" class="dx-v" x="296" y="82" width="76" height="30" rx="6"/><text x="334" y="102" text-anchor="middle" class="dx-l">V</text></g><g><text x="426" y="30" class="dx-tok" text-anchor="middle">cute</text><rect data-p="k" class="dx-k" x="388" y="44" width="76" height="30" rx="6"/><text x="426" y="64" text-anchor="middle" class="dx-l">K</text><rect data-p="v" class="dx-v" x="388" y="82" width="76" height="30" rx="6"/><text x="426" y="102" text-anchor="middle" class="dx-l">V</text></g><g><text x="518" y="30" class="dx-tok" text-anchor="middle">It</text><rect data-p="kn" class="dx-k dx-new" x="480" y="44" width="76" height="30" rx="6"/><text x="518" y="64" text-anchor="middle" class="dx-l">K</text><rect data-p="vn" class="dx-v dx-new" x="480" y="82" width="76" height="30" rx="6"/><text x="518" y="102" text-anchor="middle" class="dx-l">V</text></g>
@@ -264,7 +243,7 @@ parts:
 <rect data-p="q" class="dx-q" x="480" y="150" width="76" height="30" rx="6"/><text x="518" y="170" text-anchor="middle" class="dx-l">Q</text>
 <g data-p="out"><rect class="dx-o" x="150" y="214" width="230" height="34" rx="8"/><text x="265" y="236" text-anchor="middle" class="dx-l">上下文向量 → … → logits → seems</text></g>
 </svg>
-```
+
 
 更完整的过程可以参考下图：
 

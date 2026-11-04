@@ -47,4 +47,4 @@ https://spec.commonmark.org/
 
 随想 Front Matter 里的 `type: link` 用你写的 `title`、`description` 和 `image`，字段见[写文章与随想](/garden/writing)。
 
-这不是 `garden` 围栏，没有字段表。12 个围栏组件的字段见[组件参考](/garden/reference)。
+这不是 `garden` 围栏，没有字段表。围栏组件的字段见[组件参考](/garden/reference)。

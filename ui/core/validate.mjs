@@ -397,7 +397,11 @@ export function checkUiBlock(body, options = {}) {
     const expand = (children, lookup) => {
       const output = [];
       for (const child of children) {
-        if (child.t !== "el") continue;
+        // Markdown leaves inside If/Each must keep the branch/item lookup (ChatGPT DIL).
+        if (child.t !== "el") {
+          output.push({ node: child, lookup });
+          continue;
+        }
         if (child.n === "If") {
           if (evalProp(child, "test", lookup)) output.push(...expand(child.c, lookup));
         } else if (child.n === "Each") {
@@ -447,10 +451,8 @@ export function checkUiBlock(body, options = {}) {
       if (!spec) return;
 
       if (node.n === "If" || node.n === "Each") {
+        // expand() already walks Markdown leaves with the correct locals.
         for (const item of expand([node], lookup)) visit(item.node, item.lookup, parentContext);
-        node.c.forEach((child) => {
-          if (child.t !== "el") visit(child, lookup, parentContext);
-        });
         return;
       }
 
