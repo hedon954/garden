@@ -1,43 +1,48 @@
 tip: compose-dil-full-rewrite
 date: 2026-11-04 Asia/Shanghai
 branch: tip/compose-dil-full-rewrite
-commits: f506a44 (engine) + 8a6188c (un-draft tip posts)
-package version: 0.12.0-tip.dil (NOT npm published)
+HEAD: c31654d (engine f506a44 + un-draft 8a6188c + notes)
+package version: 0.12.0-tip.dil
+npm publish: NOT done
+Cloud Agent: NOT used
+merge to main: NOT done
 
 ## What landed
-- DIL diagram path: Markdown leaves + catalog tags + design tokens + named icons
-- New: ui/compose/icons.mjs (18 names), ui/compose/tokens.mjs
-- markup/render/css: padding/gap/radius/background/size/border/align/justify/wrap; caption; grid/grid-item; icon
-- Docs: docs/compose-{dil,catalog,tokens,icons,authoring}.md
-- Compare: 7 historical + date sliding-window + vertical push success/fail (primitives only)
-- Parity matrix: icon/grid/caption/box token rows marked 是
-- Claude paper via theme --paper/--ink (no hex in compose.css)
-- No Cloud Agent; no npm publish; not merged to main
+- DIL diagram path: Markdown leaves + catalog tags + design tokens + named icons → one-shot static HTML
+- New modules: ui/compose/icons.mjs (18 names), ui/compose/tokens.mjs
+- markup/render/css: padding/gap/radius/background/size/border/align/justify/wrap; caption; grid + grid-item; icon
+- Docs: docs/compose-{dil,catalog,tokens,icons,authoring}.md + handbook note
+- Compare: 6 GPT side-by-sides + two-row + date sliding-window + vertical push success/fail (primitives only)
+- Parity matrix: icon / grid / caption / box-token rows → 是
+- Claude paper via theme --paper / --ink (compose.css has no hex)
+- Sugar kept: arrow / fan / join / lanes / steps / pill / band / kpi / callout
 
-## Deploy
-project: hd-garden-pr92
-alias: https://tip-dil-full.hd-garden-pr92.pages.dev
+## Deploy (hd-garden-pr92)
+alias:  https://tip-dil-full.hd-garden-pr92.pages.dev
 direct: https://23e46999.hd-garden-pr92.pages.dev
 cache-bust: ?v=dil-full-20261104
 
 compare: https://tip-dil-full.hd-garden-pr92.pages.dev/blog/compose-compare/?v=dil-full-20261104
 parity:  https://tip-dil-full.hd-garden-pr92.pages.dev/blog/compose-parity/?v=dil-full-20261104
-handbook: https://tip-dil-full.hd-garden-pr92.pages.dev/garden/components/compose/?v=dil-full-20261104
+handbook compose: https://tip-dil-full.hd-garden-pr92.pages.dev/garden/components/compose/?v=dil-full-20261104
 
-## Fidelity notes (structure vs GPT; colors Claude)
-1. RBAC — columns + join: structure match; Role emphasis via band/accent
-2. SSO — pill → IdP band → fan → 3 systems: match
-3. Auth stack — 5 layers with accent/tip bands: match
-4. API six — 2x2 + 1x2 via grid tokens: match (tighter than old dual-row)
-5. Agent PEP — shield icon + 2x2 constraint grid: match; icon now first-class
+Live smoke 2026-11-04 ~15:16 CST: compare 200; icon data-name set check/check-circle/lock/lock-open/shield/x/x-circle present; date + push scenes present.
+
+## Fidelity (structure vs GPT; colors Claude)
+1. RBAC — 3-col + join: match
+2. SSO — pill → IdP → fan → 3 systems: match
+3. Auth stack — 5 layers accent/tip: match
+4. API six — grid 2×2 + 1×2: match
+5. Agent PEP — shield icon + constraint grid: match (icon first-class)
 6. OAuth PKCE — lanes: match
-7. Two-row flow — titles + divider + pills: match
-8. Date window (new) — row of tokenized boxes + check/lock icons
+7. Two-row — titles / divider / pills: match
+8. Date window (new) — tokenized boxes + icons
 9. Push flow (new) — stack + success/fail icons
 
-Still softer than GPT on: join stroke weight/label absolute position; lane shaft polish; exact ChatGPT gray→Claude surface mapping (intentional).
+Still softer than GPT (acceptable for tip): join stroke/label absolute geometry; lane shaft polish; GPT gray→Claude surface (intentional).
 
-## Confirm
-npm publish: NO
-Cloud Agent: NO
-merge main: NO
+## Local
+checkout: /workspace/garden-compose-local
+dist: /workspace/garden-compose-local/dist/client
+plan: /workspace/compose-dil-rewrite-plan.md
+lock: /workspace/compose-dil-rewrite-lock-20261104.md
