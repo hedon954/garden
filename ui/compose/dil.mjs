@@ -20,9 +20,9 @@ const DIL_BODY_RE = /\{@body\b/u;
 const DIL_IF_RE = /\{#if\b/u;
 const DIL_EACH_RE = /\{#each\b/u;
 
-/** Lowercase play tags that mark a compose body as DIL play (not a static diagram). */
+/** Lowercase play-only tags. Do NOT list diagram tags (stack/card/badge/…) — those would steal static compose fences. */
 const PLAY_TAG_RE =
-  /<\/?(?:slider|button|choice|segmented-control|toggle|stat|chart|pie|pie-chart|stack|columns|card|meter|badge|table|caption|cite|checklist|stepper)\b/iu;
+  /<\/?(?:slider|button|choice|segmented-control|toggle|stat|chart|pie|pie-chart|meter|checklist|stepper)\b/iu;
 
 const TAG_MAP = {
   slider: "Slider",
