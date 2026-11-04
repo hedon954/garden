@@ -9,11 +9,11 @@ badge: compose
 
 When a post needs a structure diagram, type `/garden` and pick `compose`. That inserts a `garden compose` fence. Write the structure in plain language inside the fence, then ask the AI to compile the post. Your sentence stays inside `<intent>`, and the AI fills in Markdown leaves and component tags to render a static diagram.
 
-## What to write
+## How to write
 
 Write the structure you want the reader to see. Do not describe the look.
 
-Four things are enough:
+Four things:
 
 - **How many parts**: three columns side by side, five layers top to bottom, or two rows.
 - **Short names**: the words shown on the diagram. Put the explanation on the line below, not inside the title.
@@ -22,16 +22,15 @@ Four things are enough:
 
 Do not write colors, rounded corners, grey pills, font weights, spacing, shadows, or full-width rules. Component defaults handle the look. Every tag is listed in [Component reference · compose](/garden/en/reference/compose).
 
-## Not enough vs enough
+## Best practices
 
-In each pair below, the first line is too vague or talks about styling. The fenced block is ready to copy.
+Two things usually go wrong in an intent fence: naming only a topic with no structure, or spending the sentence on colors, corner radii, and font weights. Below are five common structures showing what to avoid and how to write the fence instead.
 
 **Three columns joined in the middle**
 
-Not enough: "Draw a permissions diagram." — No columns and no names.
-Also not enough: "Three equal columns, light grey rounded box in the middle, lighter font weight." — All styling, no content.
+Writing only "Draw a permissions diagram" gives no columns or names; writing "Three equal columns, light grey rounded box in the middle, lighter font weight" only describes styling.
 
-Enough:
+Name the three columns, the items under each one, the middle link, and the focus:
 
 ````markdown
 ```garden compose
@@ -41,13 +40,9 @@ Role sits in the middle and connects users to permissions. Role is the focus.
 ```
 ````
 
-This names the three columns, the items under each one, the middle link, and the focus on `Role`.
+**Converge, then fan out**
 
-**One hub, then fan out**
-
-Not enough: "Draw SSO with nicer arrows and even spacing." — Only talks about styling.
-
-Enough:
+Instead of "Draw SSO with nicer arrows and even spacing," state what reaches the hub first and which systems it branches out to:
 
 ````markdown
 ```garden compose
@@ -57,13 +52,9 @@ All three systems trust that provider. The identity provider is the focus.
 ```
 ````
 
-This states what comes first, the one-to-three fan-out, and which box matters most.
+**Top-to-bottom layers**
 
-**Layers from top to bottom**
-
-Not enough: "Five full-width bands, color the second and fifth, thin arrows." — Describes boxes instead of layers.
-
-Enough:
+Instead of "Five full-width bands, color the second and fifth, thin arrows," list the five layer names, pick the two to highlight, and note whether every request walks them in order:
 
 ````markdown
 ```garden compose
@@ -74,13 +65,9 @@ Not every request walks all five in order.
 ```
 ````
 
-This names the five layers, picks the two to highlight, and notes that requests do not always run in order.
+**Multiple facets of one subject**
 
-**Several sides of one thing**
-
-Not enough: "Two rows of two cards, then two more, unbolded titles." — Only describes layout.
-
-Enough:
+Instead of "Two rows of two cards, then two more, unbolded titles," give the six short names, the one-line question under each, the two groups, and the non-sequential note:
 
 ````markdown
 ```garden compose
@@ -90,13 +77,9 @@ For business logic and storage, check Transport and Confidentiality. Not a stric
 ```
 ````
 
-This gives the six short names, the one-line question under each, the two groups, and the non-sequential note.
+**Two-row contrast flow**
 
-**Two rows in contrast**
-
-Not enough: "Borderless text on top, grey pills below, hug the content." — All visual instructions.
-
-Enough:
+Instead of "Borderless text on top, grey pills below, hug the content," state which row is background and which row carries the point:
 
 ````markdown
 ```garden compose
@@ -105,8 +88,6 @@ Bottom row is the discovery loop: Hypothesize -> Cheap test -> Iterate or drop.
 The top row is background; the bottom row is the point.
 ```
 ````
-
-This says which row is background and which row carries the point.
 
 ## Capability examples
 

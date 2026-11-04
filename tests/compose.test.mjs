@@ -151,7 +151,8 @@ test("the handbook compose page shows the capability diagrams", () => {
     assert.doesNotMatch(page, /ChatGPT|garden figure|已废弃|deprecated/u);
   }
   assert.match(markdown, /## 怎么写/);
-  assert.match(markdown, /## 不够 vs 够用/);
+  assert.match(markdown, /## 最佳实践/);
+  assert.doesNotMatch(markdown, /不够|够用/u);
   assert.match(markdown, /## 能力示例/);
   assert.match(markdown, /下面这些图只是示例/);
   assert.doesNotMatch(markdown, /^## (?:RBAC|SSO|OAuth)/mu);
@@ -159,8 +160,9 @@ test("the handbook compose page shows the capability diagrams", () => {
   assert.match(markdown, /角色连接用户和权限/);
   assert.match(markdown, /Policy Enforcement Point/);
   assert.match(markdown, /### 两行流程对比/);
-  assert.match(english, /## What to write/);
-  assert.match(english, /## Not enough vs enough/);
+  assert.match(english, /## How to write/);
+  assert.match(english, /## Best practices/);
+  assert.doesNotMatch(english, /not enough|Not enough|too thin/u);
   assert.match(english, /## Capability examples/);
   assert.match(english, /The diagrams below are only examples/);
   assert.doesNotMatch(english, /^## (?:RBAC|SSO|OAuth)/mu);
