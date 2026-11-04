@@ -11,7 +11,7 @@ badge: compose
 
 围栏写 ` ```garden compose `。作者原话放 `<intent>`（不绘制）。未知标签报 `compose-invalid`。
 
-当前 **68** 个标签（`CATALOG_TAGS`）。图标 **690** 个名字 —— 见 [图标目录](/garden/reference/compose-icons)。
+当前 **68** 个标签（见下方目录）。图标 **690** 个名字 —— 见 [图标目录](/garden/reference/compose-icons)。
 
 ## 共用 token
 

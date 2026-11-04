@@ -11,7 +11,7 @@ badge: compose
 
 Fence: ` ```garden compose `. Author intent stays in `<intent>` (not drawn). Unknown tags fail with `compose-invalid`.
 
-**68 tags** in `CATALOG_TAGS`. Icons: **690** names — see [compose icons](/garden/en/reference/compose-icons).
+**68 tags** in the catalog below. Icons: **690** names — see [compose icons](/garden/en/reference/compose-icons).
 
 ## Shared tokens
 

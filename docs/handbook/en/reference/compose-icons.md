@@ -11,7 +11,7 @@ badge: compose
 
 `<icon name="check-circle" size="sm"/>` — Lucide stroke, `viewBox="0 0 24 24"`, follows `currentColor` (ink). Default stroke ≈ 1.75.
 
-**690** names in `ICON_NAMES`. Unknown `name` → compile error. Use browser find (⌘/Ctrl+F) on a name, or jump by letter.
+**690** icon names. Unknown `name` → compile error. Use browser find (⌘/Ctrl+F) on a name, or jump by letter.
 
 <style>
 .gc-icon-az { display: flex; flex-wrap: wrap; gap: 0.35rem 0.75rem; margin: 0.75rem 0 1.25rem; font: 500 13px/1.4 var(--sans, system-ui, sans-serif); }

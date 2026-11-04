@@ -144,48 +144,39 @@ test("the host renders each compose fence as static HTML", () => {
   assert.match(html[1], /name="gc2"/u);
 });
 
-test("the handbook compose page shows the capability diagrams", () => {
+test("the handbook compose page stays short and points at reference catalogs", () => {
   const markdown = fs.readFileSync(path.join(root, "docs/handbook/components/compose.md"), "utf8");
   const english = fs.readFileSync(path.join(root, "docs/handbook/en/components/compose.md"), "utf8");
   for (const page of [markdown, english, fs.readFileSync(path.join(root, "docs/handbook/components.md"), "utf8"), fs.readFileSync(path.join(root, "docs/handbook/reference.md"), "utf8")]) {
     assert.doesNotMatch(page, /ChatGPT|garden figure|已废弃|deprecated/u);
   }
   assert.match(markdown, /## 怎么写/);
-  assert.match(markdown, /## 最佳实践/);
-  assert.doesNotMatch(markdown, /不够|够用/u);
-  assert.match(markdown, /## 能力示例/);
-  assert.match(markdown, /下面这些图只是示例/);
-  assert.doesNotMatch(markdown, /^## (?:RBAC|SSO|OAuth)/mu);
+  assert.match(markdown, /## 写法对照/);
+  assert.match(markdown, /## 一张示例/);
   assert.match(markdown, /不要写样式/);
   assert.match(markdown, /角色连接用户和权限/);
-  assert.match(markdown, /Policy Enforcement Point/);
-  assert.match(markdown, /### 两行流程对比/);
+  assert.match(markdown, /\/garden\/reference\/compose/);
+  assert.match(markdown, /\/garden\/reference\/compose-icons/);
+  assert.doesNotMatch(markdown, /^## (?:RBAC|SSO|OAuth|最佳实践|能力示例)/mu);
   assert.match(english, /## How to write/);
-  assert.match(english, /## Best practices/);
-  assert.doesNotMatch(english, /not enough|Not enough|too thin/u);
-  assert.match(english, /## Capability examples/);
-  assert.match(english, /The diagrams below are only examples/);
-  assert.doesNotMatch(english, /^## (?:RBAC|SSO|OAuth)/mu);
-  assert.match(english, /Do not describe the look/);
-  assert.match(english, /Role connects users and permissions/);
-  assert.match(english, /Policy Enforcement Point/);
-  assert.match(english, /### Two-row contrast flow/);
+  assert.match(english, /## Rewrite patterns/);
+  assert.match(english, /## One sample/);
+  assert.match(english, /\/garden\/en\/reference\/compose/);
+  assert.match(english, /\/garden\/en\/reference\/compose-icons/);
+  assert.doesNotMatch(english, /^## (?:RBAC|SSO|OAuth|Best practices|Capability examples)/mu);
   assert.equal(fs.existsSync(path.join(root, "docs/handbook/components/figure.md")), false);
   assert.equal(fs.existsSync(path.join(root, "docs/handbook/components/compose-gallery.md")), false);
+  assert.equal(fs.existsSync(path.join(root, "docs/handbook/reference/compose.md")), true);
+  assert.equal(fs.existsSync(path.join(root, "docs/handbook/reference/compose-icons.md")), true);
   const fences = scanFences(markdown).map((fence) => classifyFence(fence)).filter((item) => item.kind === "garden");
   const englishFences = scanFences(english).map((fence) => classifyFence(fence)).filter((item) => item.kind === "garden");
-  assert.equal(fences.length, 8);
-  assert.equal(englishFences.length, 8);
+  assert.equal(fences.length, 2);
+  assert.equal(englishFences.length, 2);
   assert.deepEqual(checkGardenMarkdown(markdown), []);
   assert.deepEqual(checkGardenMarkdown(english), []);
   const html = fences.map((item) => renderCompose(item.block.props, { scope: "ex" })).join("\n");
-  assert.match(html, /data-frame="pill"/);
   assert.match(html, /data-frame="band"/);
   assert.match(html, /g-compose-join/);
-  assert.match(html, /g-compose-lanes/);
-  assert.match(html, /g-compose-fan/);
-  assert.match(html, /g-compose-divider/);
-  assert.match(html, /data-tone="muted"/);
   assert.doesNotMatch(html, /<script/u);
 });
 

@@ -11,7 +11,7 @@ badge: compose
 
 `<icon name="check-circle" size="sm"/>` —— Lucide 描边，`viewBox="0 0 24 24"`，跟随 `currentColor`（墨色）。默认描边约 1.75。
 
-`ICON_NAMES` 共 **690** 个。未知 `name` → 编译失败。用浏览器查找（⌘/Ctrl+F）搜名字，或按字母跳转。
+图标名字共 **690** 个。未知 `name` → 编译失败。用浏览器查找（⌘/Ctrl+F）搜名字，或按字母跳转。
 
 <style>
 .gc-icon-az { display: flex; flex-wrap: wrap; gap: 0.35rem 0.75rem; margin: 0.75rem 0 1.25rem; font: 500 13px/1.4 var(--sans, system-ui, sans-serif); }
