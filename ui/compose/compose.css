@@ -49,7 +49,7 @@
 .g-compose-body {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
 }
 
 .g-compose-body,
@@ -71,14 +71,14 @@
 .g-compose-stack[data-gap="0"] { gap: 0; }
 .g-compose-stack[data-gap="1"] { gap: 4px; }
 .g-compose-stack[data-gap="2"] { gap: 6px; }
-.g-compose-stack[data-gap="3"] { gap: 4px; }
+.g-compose-stack[data-gap="3"] { gap: 8px; }
 .g-compose-stack[data-gap="4"] { gap: 12px; }
 
 .g-compose-row {
   display: flex;
   flex-wrap: wrap;
   align-items: stretch;
-  gap: 8px;
+  gap: 12px;
 }
 
 .g-compose-row > .g-compose-card,
@@ -180,7 +180,7 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 4px;
+  gap: 8px;
   box-sizing: border-box;
   padding: 14px 16px;
   border: 1px solid var(--rule);
@@ -394,7 +394,7 @@
 .g-compose-join {
   display: grid;
   width: 100%;
-  margin: -16px 0 0;
+  margin: 2px 0 8px;
   color: var(--ink);
 }
 
@@ -407,7 +407,7 @@
   display: block;
   width: 100%;
   height: auto;
-  aspect-ratio: 600 / 48;
+  aspect-ratio: 600 / 72;
   color: var(--flow);
 }
 
