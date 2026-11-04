@@ -748,28 +748,48 @@
 }
 .g-compose-card[data-bg="surface-accent"],
 .g-compose-grid-item[data-bg="surface-accent"] {
-  background: color-mix(in srgb, var(--flow) 8%, var(--paper));
+  background: color-mix(in srgb, var(--flow) 12%, var(--paper));
 }
 .g-compose-card[data-bg="surface-tip"],
 .g-compose-grid-item[data-bg="surface-tip"] {
-  background: color-mix(in srgb, var(--flow-back) 10%, var(--paper));
+  background: color-mix(in srgb, var(--flow-back) 14%, var(--paper));
 }
 .g-compose-card[data-bg="surface-muted"],
 .g-compose-grid-item[data-bg="surface-muted"] {
-  background: color-mix(in srgb, var(--ink) 6%, var(--paper));
+  background: color-mix(in srgb, var(--ink) 5%, var(--paper));
 }
 .g-compose-card[data-bg="transparent"],
 .g-compose-grid-item[data-bg="transparent"] {
   background: transparent;
 }
 
-.g-compose-card[data-size="sm"] { padding: 8px 10px; gap: 6px; }
+.g-compose-card[data-size="sm"] {
+  padding: 6px 8px;
+  gap: 3px;
+  min-width: 4.25rem;
+  border-radius: 10px;
+}
 .g-compose-card[data-size="lg"] { padding: 16px 20px; gap: 10px; }
 .g-compose-card[data-size="xl"] { padding: 20px 24px; gap: 12px; }
 
+/* Day-chip density: equal squat cells in a nowrap row */
+.g-compose-row[data-wrap="nowrap"] > .g-compose-card[data-size="sm"] {
+  flex: 1 1 0;
+  width: auto;
+  max-width: 5.5rem;
+  align-items: center;
+  text-align: center;
+}
+.g-compose-row[data-wrap="nowrap"] > .g-compose-card[data-size="sm"] > .g-compose-text,
+.g-compose-row[data-wrap="nowrap"] > .g-compose-card[data-size="sm"] > .g-compose-caption-inline,
+.g-compose-row[data-wrap="nowrap"] > .g-compose-card[data-size="sm"] > .g-compose-h {
+  text-align: center;
+  width: 100%;
+}
+
 .g-compose-h[data-size="sm"],
 .g-compose-text[data-size="sm"],
-.g-compose-caption-inline[data-size="sm"] { font-size: 12px; }
+.g-compose-caption-inline[data-size="sm"] { font-size: 11px; font-weight: 500; line-height: 1.25; }
 .g-compose-h[data-size="lg"] { font-size: 16px; }
 .g-compose-h[data-size="xl"] { font-size: 18px; }
 .g-compose-text[data-size="lg"],
@@ -777,7 +797,7 @@
 
 .g-compose-caption-inline {
   color: var(--muted);
-  font: 400 13px/1.45 var(--sans);
+  font: 400 12px/1.35 var(--sans);
   margin: 0;
 }
 
@@ -807,14 +827,19 @@
 .g-compose-icon {
   display: inline-block;
   flex: 0 0 auto;
-  width: 16px;
-  height: 16px;
+  width: 15px;
+  height: 15px;
   color: var(--ink);
   vertical-align: -2px;
 }
-.g-compose-icon[data-size="sm"] { width: 12px; height: 12px; }
-.g-compose-icon[data-size="lg"] { width: 20px; height: 20px; }
-.g-compose-icon[data-size="xl"] { width: 24px; height: 24px; }
+.g-compose-icon[data-size="sm"] { width: 13px; height: 13px; }
+.g-compose-icon[data-size="lg"] { width: 18px; height: 18px; }
+.g-compose-icon[data-size="xl"] { width: 22px; height: 22px; }
+.g-compose-card[data-size="sm"] > .g-compose-icon {
+  width: 14px;
+  height: 14px;
+  margin: 1px 0 0;
+}
 .g-compose-icon[data-inline="true"] {
   margin-right: 6px;
 }
@@ -875,6 +900,269 @@
 
 .g-compose-pair .g-compose {
   margin: 0;
+}
+
+
+
+/* —— Expanded catalog widgets (static snapshots) —— */
+
+.g-compose-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid color-mix(in srgb, var(--rule) 70%, var(--paper));
+  background: color-mix(in srgb, var(--flow) 12%, var(--paper));
+  color: var(--ink);
+  font: 500 13px/1.2 var(--sans);
+  white-space: nowrap;
+}
+.g-compose-button[data-tone="muted"] { background: color-mix(in srgb, var(--ink) 5%, var(--paper)); }
+.g-compose-button[data-tone="tip"] { background: color-mix(in srgb, var(--flow-back) 14%, var(--paper)); }
+.g-compose-button[data-size="sm"] { padding: 4px 8px; font-size: 12px; }
+.g-compose-button[data-size="lg"] { padding: 8px 16px; font-size: 14px; }
+
+.g-compose-slider,
+.g-compose-progress,
+.g-compose-meter {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+  min-width: 8rem;
+}
+.g-compose-widget-label {
+  color: var(--muted);
+  font: 400 12px/1.3 var(--sans);
+}
+.g-compose-widget-value {
+  color: var(--ink);
+  font: 500 12px/1.3 var(--sans);
+}
+.g-compose-slider-track,
+.g-compose-meter-track {
+  position: relative;
+  height: 6px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--ink) 8%, var(--paper));
+  overflow: visible;
+}
+.g-compose-slider-track > i,
+.g-compose-meter-track > i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: color-mix(in srgb, var(--flow) 55%, var(--ink));
+}
+.g-compose-slider-track > b {
+  position: absolute;
+  top: 50%;
+  width: 12px;
+  height: 12px;
+  margin: -6px 0 0 -6px;
+  border-radius: 50%;
+  background: var(--paper);
+  border: 2px solid color-mix(in srgb, var(--flow) 55%, var(--ink));
+  box-sizing: border-box;
+}
+
+.g-compose-checkbox,
+.g-compose-radio,
+.g-compose-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font: 400 13px/1.3 var(--sans);
+  color: var(--ink);
+}
+.g-compose-checkbox > i,
+.g-compose-radio > i {
+  width: 1.1em;
+  text-align: center;
+  color: var(--muted);
+}
+.g-compose-checkbox[data-checked="true"] > i,
+.g-compose-radio[data-checked="true"] > i { color: var(--ink); }
+.g-compose-toggle > i {
+  width: 28px;
+  height: 16px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--ink) 18%, var(--paper));
+  position: relative;
+  display: inline-block;
+}
+.g-compose-toggle > i::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--paper);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--ink) 20%, var(--paper));
+}
+.g-compose-toggle[data-checked="true"] > i {
+  background: color-mix(in srgb, var(--flow) 45%, var(--ink));
+}
+.g-compose-toggle[data-checked="true"] > i::after { left: 14px; }
+
+.g-compose-field-static {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+}
+.g-compose-input-face,
+.g-compose-select-face,
+.g-compose-textarea-face {
+  display: block;
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid color-mix(in srgb, var(--rule) 70%, var(--paper));
+  background: var(--paper);
+  color: var(--ink);
+  font: 400 13px/1.35 var(--sans);
+  min-height: 1.35em;
+}
+.g-compose-textarea-face { min-height: 3.2em; white-space: pre-wrap; }
+
+.g-compose-tabs { display: flex; flex-direction: column; gap: 8px; width: 100%; }
+.g-compose-tablist {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  border-bottom: 1px solid color-mix(in srgb, var(--rule) 70%, var(--paper));
+  padding-bottom: 4px;
+}
+.g-compose-tab-h {
+  padding: 4px 10px;
+  border-radius: 6px 6px 0 0;
+  color: var(--muted);
+  font: 500 13px/1.3 var(--sans);
+}
+.g-compose-tab-h[data-active="true"] {
+  color: var(--ink);
+  background: color-mix(in srgb, var(--ink) 5%, var(--paper));
+}
+.g-compose-tabpanel { min-width: 0; }
+
+.g-compose-list {
+  margin: 0;
+  padding-left: 1.2em;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font: 400 13px/1.45 var(--sans);
+}
+.g-compose-table {
+  width: 100%;
+  border-collapse: collapse;
+  font: 400 13px/1.4 var(--sans);
+}
+.g-compose-table th,
+.g-compose-table td {
+  border: 1px solid color-mix(in srgb, var(--rule) 70%, var(--paper));
+  padding: 6px 8px;
+  text-align: start;
+  vertical-align: top;
+}
+.g-compose-table th {
+  background: color-mix(in srgb, var(--ink) 4%, var(--paper));
+  font-weight: 600;
+}
+
+.g-compose-code {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--ink) 5%, var(--paper));
+  border: 1px solid color-mix(in srgb, var(--rule) 60%, var(--paper));
+  overflow: auto;
+  font: 400 12px/1.45 var(--mono, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace);
+}
+.g-compose-kbd {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 4px;
+  border: 1px solid color-mix(in srgb, var(--rule) 80%, var(--paper));
+  background: color-mix(in srgb, var(--ink) 4%, var(--paper));
+  font: 500 12px/1.3 var(--mono, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace);
+}
+.g-compose-link {
+  color: var(--ink);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.g-compose-label {
+  color: var(--muted);
+  font: 500 12px/1.3 var(--sans);
+  margin: 0;
+}
+.g-compose-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--flow) 14%, var(--paper));
+  color: var(--ink);
+  font: 600 11px/1 var(--sans);
+  text-transform: uppercase;
+}
+.g-compose-avatar[data-size="sm"] { width: 22px; height: 22px; font-size: 10px; }
+.g-compose-avatar[data-size="lg"] { width: 36px; height: 36px; font-size: 13px; }
+.g-compose-image {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+}
+.g-compose-spacer[data-gap="1"] { height: 4px; }
+.g-compose-spacer[data-gap="2"] { height: 8px; }
+.g-compose-spacer[data-gap="3"] { height: 12px; }
+.g-compose-spacer[data-gap="4"] { height: 16px; }
+.g-compose-empty {
+  padding: 16px;
+  text-align: center;
+  color: var(--muted);
+  font: 400 13px/1.4 var(--sans);
+  border: 1px dashed color-mix(in srgb, var(--rule) 70%, var(--paper));
+  border-radius: 8px;
+}
+.g-compose-group,
+.g-compose-field,
+.g-compose-header,
+.g-compose-footer,
+.g-compose-figure,
+.g-compose-prose {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gc-gap, 8px);
+  min-width: 0;
+  width: 100%;
+}
+.g-compose-option {
+  display: inline-flex;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--rule) 70%, var(--paper));
+  font: 400 12px/1.3 var(--sans);
+}
+.g-compose-option[data-selected="true"] {
+  background: color-mix(in srgb, var(--flow) 12%, var(--paper));
+  border-color: color-mix(in srgb, var(--flow) 35%, var(--rule));
+}
+
+/* Timeline chips: empty day = no fill, just date + dash */
+.g-compose-card[data-frame="text"][data-size="sm"] {
+  border-color: transparent;
+  background: transparent;
+  padding: 4px 6px;
+  min-width: 2.6rem;
 }
 
 @media (max-width: 800px) {

@@ -246,39 +246,95 @@ tags:
 <text tone="muted" align="start">第二行才是产品探索更强调的决策循环。</text>
 ```
 
-## 日期频控（滑动窗口）
+## 近四日推送频控
 
-用通用 `row` + `box` + `icon` 拼日期格：已通过、可推、锁定。没有专用日历组件。
+左边是 ChatGPT 原图，右边用通用 `row` + `box` + `icon` 拼（没有专用日历组件）。格子要矮、等宽、轻描边。
+
+![ChatGPT 原图](./compose-compare/freq-4day-gpt.png)
 
 ```garden compose
 <intent>
-横向一排日期格。11/01 已通过（绿勾），11/02 可推（开锁），11/03 与 11/04 锁定。格子要小、圆角、浅底。
+横向四个等宽矮格。11/01 已触达（浅绿+勾），11/02 可推（浅蓝+开锁），11/03 与 11/04 锁定（浅灰+锁）。图标不要太大，日期和状态标签居中。
 </intent>
 <stack align="center" gap={2}>
-  <title>近四日推送频控</title>
-  <caption>同一用户滑动窗口内最多一次成功触达</caption>
-  <row gap={2} justify="center" wrap="nowrap">
-    <box padding={2} gap={1} radius="md" background="surface-tip" border="subtle" align="center" size="sm">
-      <icon name="check-circle" size="lg"/>
-      <text size="sm">11/01</text>
-      <caption>已触达</caption>
+  <title align="center">近四日推送频控</title>
+  <caption align="center">同一用户滑动窗口内最多一次成功触达</caption>
+  <row gap={2} justify="center" align="stretch" wrap="nowrap">
+    <box padding={1} gap={1} radius="md" background="surface-tip" border="subtle" align="center" size="sm">
+      <icon name="check-circle" size="sm"/>
+      <text size="sm" align="center">11/01</text>
+      <caption size="sm" align="center">已触达</caption>
     </box>
-    <box padding={2} gap={1} radius="md" background="surface-accent" border="subtle" align="center" size="sm">
-      <icon name="lock-open" size="lg"/>
-      <text size="sm">11/02</text>
-      <caption>可推</caption>
+    <box padding={1} gap={1} radius="md" background="surface-accent" border="subtle" align="center" size="sm">
+      <icon name="lock-open" size="sm"/>
+      <text size="sm" align="center">11/02</text>
+      <caption size="sm" align="center">可推</caption>
     </box>
-    <box padding={2} gap={1} radius="md" background="surface-muted" border="subtle" align="center" size="sm">
-      <icon name="lock" size="lg"/>
-      <text size="sm">11/03</text>
-      <caption>锁定</caption>
+    <box padding={1} gap={1} radius="md" background="surface-muted" border="subtle" align="center" size="sm">
+      <icon name="lock" size="sm"/>
+      <text size="sm" align="center">11/03</text>
+      <caption size="sm" align="center">锁定</caption>
     </box>
-    <box padding={2} gap={1} radius="md" background="surface-muted" border="subtle" align="center" size="sm">
-      <icon name="lock" size="lg"/>
-      <text size="sm">11/04</text>
-      <caption>锁定</caption>
+    <box padding={1} gap={1} radius="md" background="surface-muted" border="subtle" align="center" size="sm">
+      <icon name="lock" size="sm"/>
+      <text size="sm" align="center">11/04</text>
+      <caption size="sm" align="center">锁定</caption>
     </box>
   </row>
+</stack>
+```
+
+## 最近 7 天 Push 频控示意
+
+滑动窗口：已发送用蓝底勾，空日只有短横，窗口外沿用绿底开锁。仍只用 `row` / `box` / `icon` / `text`。
+
+![ChatGPT 原图](./compose-compare/freq-7day-gpt.png)
+
+```garden compose
+<intent>
+横向八个日期。11/01、11/03 已发送（浅蓝底+勾）。11/02、11/04–11/07 空（无底+短横）。11/08 可再发（浅绿底+开锁）。底下左注已发送，右注可再发；再加一行星号说明。
+</intent>
+<stack align="center" gap={2}>
+  <title align="center">最近 7 天 Push 频控示意</title>
+  <row gap={1} justify="center" align="stretch" wrap="nowrap">
+    <box padding={1} gap={1} radius="md" background="surface-accent" border="subtle" align="center" size="sm">
+      <text size="sm" align="center">11/01</text>
+      <icon name="check-circle" size="sm"/>
+    </box>
+    <box frame="text" padding={1} gap={1} align="center" size="sm">
+      <text size="sm" align="center">11/02</text>
+      <icon name="minus" size="sm"/>
+    </box>
+    <box padding={1} gap={1} radius="md" background="surface-accent" border="subtle" align="center" size="sm">
+      <text size="sm" align="center">11/03</text>
+      <icon name="check-circle" size="sm"/>
+    </box>
+    <box frame="text" padding={1} gap={1} align="center" size="sm">
+      <text size="sm" align="center">11/04</text>
+      <icon name="minus" size="sm"/>
+    </box>
+    <box frame="text" padding={1} gap={1} align="center" size="sm">
+      <text size="sm" align="center">11/05</text>
+      <icon name="minus" size="sm"/>
+    </box>
+    <box frame="text" padding={1} gap={1} align="center" size="sm">
+      <text size="sm" align="center">11/06</text>
+      <icon name="minus" size="sm"/>
+    </box>
+    <box frame="text" padding={1} gap={1} align="center" size="sm">
+      <text size="sm" align="center">11/07</text>
+      <icon name="minus" size="sm"/>
+    </box>
+    <box padding={1} gap={1} radius="md" background="surface-tip" border="subtle" align="center" size="sm">
+      <text size="sm" align="center">11/08</text>
+      <icon name="lock-open" size="sm"/>
+    </box>
+  </row>
+  <row justify="between" wrap="wrap" gap={2}>
+    <caption size="sm">11/01、11/03 已发送</caption>
+    <caption size="sm">11/08 起可再次发送*</caption>
+  </row>
+  <caption size="sm" align="start">* 假设 11/01 的发送记录已超过完整的 7×24 小时。</caption>
 </stack>
 ```
 

@@ -191,12 +191,12 @@ test("the handbook compose page shows the capability diagrams", () => {
 
 test("the compare post keeps the acceptance diagrams beside the originals", () => {
   const markdown = fs.readFileSync(path.join(root, "content/posts/compose-compare.md"), "utf8");
-  assert.equal((markdown.match(/!\[[^\]]*\]\(\.\/compose-compare\/[^)]+\)/gu) || []).length, 6);
+  assert.equal((markdown.match(/!\[[^\]]*\]\(\.\/compose-compare\/[^)]+\)/gu) || []).length, 8);
   for (const name of ["rbac", "sso", "auth-stack", "api-six", "agent-pep", "oauth-pkce"]) {
     assert.equal(fs.existsSync(path.join(root, "content/posts/compose-compare", `${name}.png`)), true);
   }
   const fences = scanFences(markdown).map((fence) => classifyFence(fence)).filter((item) => item.kind === "garden");
-  assert.equal(fences.length, 9);
+  assert.equal(fences.length, 10);
   assert.deepEqual(checkGardenMarkdown(markdown), []);
   const html = fences.map((item) => renderCompose(item.block.props, { scope: "compare" })).join("\n");
   assert.match(html, /角色连接用户和权限/);
@@ -209,6 +209,8 @@ test("the compare post keeps the acceptance diagrams beside the originals", () =
   assert.match(html, /data-name="check-circle"/);
   assert.match(html, /data-name="lock"/);
   assert.match(html, /近四日推送频控/);
+  assert.match(html, /最近 7 天 Push 频控示意/);
+  assert.match(html, /data-name=\"minus\"/);
   assert.match(html, /策略过滤通过/);
   assert.match(html, /g-compose-grid/);
   assert.match(html, /g-compose-lanes/);

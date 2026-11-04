@@ -12,7 +12,7 @@ tags:
 
 - **第二列（ChatGPT 渲染效果）图片来源**：基于 [OpenUI 对 GPT-6 Intelligent UI 的抓包拆解](https://www.openui.com/blog/how-chatgpt-intelligent-ui-works) 与 [Disdjj/intelligent-ui-demo ANALYSIS.md](https://github.com/Disdjj/intelligent-ui-demo/blob/main/ANALYSIS.md)（协议版本 14）整理的静态 DIL 对照渲染，以及少量在 ChatGPT 图例中出现的连接结构。
 - **第四列（我们的效果图）图片来源**：在同一 tip 上由当前 `ui/compose/` 真实编译渲染后截图（Claude 博文纸色底面 `--paper` + 透明线框卡片）。
-- **统计总览**：共 **30** 行；**已实现 26 行**（含 icon、grid/grid-item、token 化表面，以及 play 模式下的 DIL `{@body}` / `{expr}` / `{#if}` / `{#each}`、slider、button·choice、pie/chart），**部分实现 0 行**，**未实现 4 行**（通用表单控件、内建 table 标签、宿主业务卡片、流式截断恢复）。
+- **统计总览**：共 **30** 行；**已实现 28 行**（diagram 目录约 68 标签 + 图标库 690；含 table/input/checkbox 等静态快照，以及 play 模式下的 DIL `{@body}` / `{expr}` / `{#if}` / `{#each}`、slider、button·choice、pie/chart），**部分实现 0 行**，**未实现 2 行**（宿主业务卡片、流式截断恢复）。
 - **运行时说明**：表末四行里，`{@body}` / `{expr}` / `{#if}/{#each}` 已在 `garden compose` **play** 路径用 ChatGPT 同款 DIL 作者面落地（白名单表达式求值，非 Worker `eval`）；`recoveryDiagnostics` 仍未实现。映射见仓库 [`docs/compose-dil.md`](https://github.com/hedon954/garden/blob/cursor/garden-compose-c115/docs/compose-dil.md)。下方「tip 实测」有可拧的 live 演示。
 
 ## 逐项验收总表
@@ -23,7 +23,7 @@ tags:
 | **`title`（标题叶子）**<br>块或卡片的主标题，在抓包统计中高频出现（`size="sm\|md\|lg"`）。 | ![DIL title 静态对照](./compose-parity/gpt-title.png) | **是**<br>Markdown `# / ## / ###` 标题或 `<title align="start\|center">`。 | ![Garden Compose title](./compose-parity/our-title.png) |
 | **`caption`（底部弱化说明）**<br>图底或卡片内的辅助小字说明。 | ![DIL caption 静态对照](./compose-parity/gpt-caption.png) | **是**<br>`<caption>` 或 `<text tone="muted">`；图底注脚与卡内辅助说明。 | ![Garden Compose muted text](./compose-parity/our-caption.png) |
 | **`badge`（徽章标签）**<br>圆角小标签，常用于标记状态、编号或上下文芯片。 | ![DIL badge 静态对照](./compose-parity/gpt-badge.png) | **是**<br>`<badge tone="accent\|tip\|muted\|plain">`，可独立并排或放进 `<box>` 头部。 | ![Garden Compose badge](./compose-parity/our-badge.png) |
-| **`icon`（矢量图标）**<br>抓包中出现 26 次的内建图标节点，常配合标题强调语义。 | ![DIL icon 静态对照](./compose-parity/gpt-icon.png) | **是**<br>`<icon name="check|check-circle|lock|shield|…" size="sm|md|lg|xl"/>`，具名 SVG；`mark="shield"` 仍可用。 | ![Garden Compose shield mark](./compose-parity/our-icon.png) |
+| **`icon`（矢量图标）**<br>抓包中出现 26 次的内建图标节点，常配合标题强调语义。 | ![DIL icon 静态对照](./compose-parity/gpt-icon.png) | **是**<br>`<icon name="…"/>`，具名 SVG **690** 个（Lucide）；`mark="shield"` 仍可用。 | ![Garden Compose shield mark](./compose-parity/our-icon.png) |
 | **`box`（线框容器） / `card`**<br>带边框、圆角与内边距的通用容器（抓包出现 54 次）。 | ![DIL box 静态对照](./compose-parity/gpt-box.png) | **是**<br>`<box padding gap radius background border size align>`；默认 Claude 纸面 + `--rule-strong` 边框。 | ![Garden Compose box](./compose-parity/our-box.png) |
 | **`box` 强调色带变体（`background="surface-secondary"`）**<br>无描边或弱描边的整行浅色底通栏，用来突出关键层。 | ![DIL tinted box 静态对照](./compose-parity/gpt-box-surface.png) | **是**<br>`background="surface-secondary|surface-accent|…"`，或 `<band tone="…">` / `<box frame="band">`。 | ![Garden Compose band](./compose-parity/our-box-surface.png) |
 | **`box` 胶囊变体（紧凑短词框）**<br>按文字宽度收缩的圆角胶囊，用于流程节点或角色头。 | ![DIL pill box 静态对照](./compose-parity/gpt-box-pill.png) | **是**<br>专用标签 `<pill tone="plain\|muted\|accent\|tip">`。 | ![Garden Compose pill](./compose-parity/our-box-pill.png) |
@@ -41,8 +41,8 @@ tags:
 | **并列对比组（Compare Items）**<br>两到四项放在同一排对照优劣或职责边界。 | ![DIL compare 静态对照](./compose-parity/gpt-compare.png) | **是**<br>`<compare>` + `<item tone="plain\|accent\|tip\|muted">`。 | ![Garden Compose compare](./compose-parity/our-compare.png) |
 | **`button` / ` segmented-control`（按钮与分段切换）**<br>触发状态切换或档位选择的内建控件。 | ![DIL controls 静态对照](./compose-parity/gpt-controls.png) | **是（play）**<br>`<button>` 与 `<choice>`（分段切换）走 ChatGPT 同款 DIL：`{@body const [x,setX]=DIL.useState(...)}` + `onClick` / `value`/`onChange`。见下方 tip 实测。 | 见下方 tip 实测 |
 | **`slider`（滑动条）**<br>抓包中用于调节连续数值（如预算、速率）并实时重算视图。 | ![DIL controls 静态对照](./compose-parity/gpt-controls.png) | **是（play）**<br>`<slider min max value onChange label unit />`，与 `{@body}` 派生值联动。见下方 tip 实测 / [窗台香草](/blog/windowsill-herbs/)。 | 见下方 tip 实测 |
-| **`input` / `select` / `checkbox` / `radio`（表单输入）**<br>文本输入、下拉选择、复选与单选控件。 | ![DIL controls 静态对照](./compose-parity/gpt-controls.png) | **否（未实现）**<br>在 `compose` 中未实现。 | — |
-| **`table`（结构化数据表）**<br>抓包 `model_dil_v2` 中出现 1 次的内建表格组件。 | ![DIL table 静态对照](./compose-parity/gpt-table.png) | **否（未实现）**<br>博文正文直接写 GFM Markdown 表格；`compose` 内部未设 `<table/>` 标签。 | — |
+| **`input` / `select` / `checkbox` / `radio`（表单输入）**<br>文本输入、下拉选择、复选与单选控件。 | ![DIL controls 静态对照](./compose-parity/gpt-controls.png) | **是（静态快照）**<br>`<input/>` `<select/>` `<textarea/>` `<checkbox/>` `<radio/>`；带 `{@body}` 时仍走 play。 | 见 diagram 快照 / tip 实测 |
+| **`table`（结构化数据表）**<br>抓包 `model_dil_v2` 中出现 1 次的内建表格组件。 | ![DIL table 静态对照](./compose-parity/gpt-table.png) | **是**<br>`<table>` + `<tr>` / `<th>` / `<td>`（可含 `thead`/`tbody`）。 | 见 diagram 快照 |
 | **`pie-chart` / 内建图表**<br>抓包中由编译器追加 `card` 外壳的饼图/图表节点。 | ![DIL chart 静态对照](./compose-parity/gpt-chart.png) | **是（play）**<br>`<pie title slices={[...]} />` / `<chart type="bar|line|area|pie" ... />`，切片可用 `{expr}`。独立大数据图仍可走 `garden chart`。见下方 tip 实测。 | 见下方 tip 实测 |
 | **宿主解析组件（30 eager + 283 lazy）**<br>如 `Cite`、`AsyncImage`、`ProductCard`、`FlightCard`、`Map` 等由服务端按 ID 注入数据的宿主卡片。 | ![DIL host widgets 静态对照](./compose-parity/gpt-host-widgets.png) | **否（未实现）**<br>当前 tip 优先对齐内建布局与连接目录；宿主业务卡片未实现。 | — |
 | **`{@body ...}`（响应式脚本块）**<br>在沙箱 Worker 中运行的状态声明与派生计算。 | ![基于 OpenUI / Disdjj 协议的静态演示](./compose-parity/gpt-runtime-body.png)<br><small>基于 OpenUI / Disdjj 协议的静态演示：左为初始状态 A（`$24/月`），右为切换档位与席位后重算出的状态 B（`$120` + 批量折扣徽章）。</small> | **是（play，受限子集）**<br>作者面与 ChatGPT 同款：`{@body const [n,setN]=DIL.useState(3)}`、`{@body const total = n * price}`。求值走白名单表达式解释器（非 Worker `eval`）。见下方 tip 实测。 | 见下方 tip 实测 |

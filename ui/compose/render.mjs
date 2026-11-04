@@ -74,7 +74,7 @@ function kpiHtml(kpi) {
   return `<span class="g-compose-kpi"><span class="g-compose-kpi-value">${textHtml(kpi.value)}</span>${unit}${label}</span>`;
 }
 
-const PHRASING = new Set(["badge", "kpi", "text", "title", "caption", "icon"]);
+const PHRASING = new Set(["badge", "kpi", "text", "title", "caption", "icon", "label", "kbd", "link", "button"]);
 
 function noteHtml(note) {
   const kicker = note.title ? `<p class="g-compose-note-k">${textHtml(note.title)}</p>` : "";
@@ -118,16 +118,35 @@ function attrIf(name, value, fallback) {
   return value && value !== fallback ? ` data-${name}="${esc(value)}"` : "";
 }
 
+function renderChildren(nodes, ctx) {
+  return (nodes ?? []).map((child) => renderNode(child, ctx)).join("");
+}
+
+function meterBar(node, kind) {
+  const max = node.max || 100;
+  const pct = Math.max(0, Math.min(100, Math.round((Number(node.value) / max) * 100)));
+  const label = node.label ? `<span class="g-compose-widget-label">${textHtml(node.label)}</span>` : "";
+  const value = `<span class="g-compose-widget-value">${textHtml(String(node.value))}${node.unit ? textHtml(node.unit) : ""}</span>`;
+  return `<div class="g-compose-${kind}">${label}<div class="g-compose-meter-track" role="img" aria-label="${esc(String(pct))}%"><i style="width:${pct}%"></i></div>${value}</div>`;
+}
+
 function renderNode(node, ctx) {
   switch (node.type) {
     case "stack":
-      return `<div class="g-compose-stack"${tokenData(node)}${tokenStyle(node)}>${node.children.map((child) => renderNode(child, ctx)).join("")}</div>`;
+    case "columns":
+    case "group":
+    case "field":
+    case "header":
+    case "footer":
+    case "figure":
+    case "prose":
+      return `<div class="g-compose-${node.type === "columns" ? "row" : node.type === "stack" ? "stack" : node.type}"${node.type === "columns" ? ` data-wrap="wrap"` : ""}${tokenData(node)}${tokenStyle(node)}>${renderChildren(node.children, ctx)}</div>`;
     case "row":
-      return `<div class="g-compose-row"${tokenData(node)}${tokenStyle(node)}>${node.children.map((child) => renderNode(child, ctx)).join("")}</div>`;
+      return `<div class="g-compose-row"${tokenData(node)}${tokenStyle(node)}>${renderChildren(node.children, ctx)}</div>`;
     case "grid":
-      return `<div class="g-compose-grid" data-cols="${node.cols || 2}"${tokenData(node)}${tokenStyle(node)}>${node.children.map((child) => renderNode(child, ctx)).join("")}</div>`;
+      return `<div class="g-compose-grid" data-cols="${node.cols || 2}"${tokenData(node)}${tokenStyle(node)}>${renderChildren(node.children, ctx)}</div>`;
     case "grid-item":
-      return `<div class="g-compose-grid-item" data-span="${node.span || 1}"${tokenData(node)}${tokenStyle(node)}>${node.children.map((child) => renderNode(child, ctx)).join("")}</div>`;
+      return `<div class="g-compose-grid-item" data-span="${node.span || 1}"${tokenData(node)}${tokenStyle(node)}>${renderChildren(node.children, ctx)}</div>`;
     case "card":
       return renderCard(node, ctx);
     case "title":
@@ -136,6 +155,12 @@ function renderNode(node, ctx) {
       return renderText(node, ctx, "g-compose-text");
     case "caption":
       return renderText({ ...node, tone: "muted" }, ctx, "g-compose-caption-inline");
+    case "label":
+      return renderText(node, ctx, "g-compose-label");
+    case "kbd":
+      return `<kbd class="g-compose-kbd">${textHtml(node.text)}</kbd>`;
+    case "link":
+      return `<a class="g-compose-link" href="${esc(node.href)}">${textHtml(node.text)}</a>`;
     case "steps":
       return renderSteps(node, ctx);
     case "compare":
@@ -146,10 +171,13 @@ function renderNode(node, ctx) {
       return `<aside class="g-compose-callout" data-tone="${esc(node.tone)}"><p>${textHtml(node.text)}</p></aside>`;
     case "divider":
       return `<hr class="g-compose-divider">`;
+    case "spacer":
+      return `<div class="g-compose-spacer" data-gap="${node.gap ?? 2}" aria-hidden="true"></div>`;
     case "badge":
       return badgeHtml(node);
     case "kpi":
-      return kpiHtml(node);
+    case "stat":
+      return kpiHtml({ value: node.value, unit: node.unit, label: node.label });
     case "icon":
       return iconSvg(node.name, { size: node.size || "md", inline: node.inline }) || "";
     case "arrow":
@@ -162,6 +190,78 @@ function renderNode(node, ctx) {
       return lanesHtml(node);
     case "notes":
       return "";
+    case "tabs": {
+      const heads = (node.children ?? []).map((tab, i) => `<span class="g-compose-tab-h"${tab.active || i === 0 ? ` data-active="true"` : ""}>${textHtml(tab.title || `Tab ${i + 1}`)}</span>`).join("");
+      const active = (node.children ?? []).find((tab) => tab.active) || (node.children ?? [])[0];
+      const body = active ? renderChildren(active.children, ctx) : "";
+      return `<div class="g-compose-tabs"><div class="g-compose-tablist">${heads}</div><div class="g-compose-tabpanel">${body}</div></div>`;
+    }
+    case "tab":
+      return renderChildren(node.children, ctx);
+    case "list": {
+      const tag = node.ordered ? "ol" : "ul";
+      const items = (node.children ?? []).map((child) => {
+        if (child.type === "list-item") return `<li>${renderChildren(child.children, ctx)}</li>`;
+        return `<li>${renderNode(child, ctx)}</li>`;
+      }).join("");
+      return `<${tag} class="g-compose-list">${items}</${tag}>`;
+    }
+    case "list-item":
+      return renderChildren(node.children, ctx);
+    case "table":
+      return `<table class="g-compose-table">${renderChildren(node.children, ctx)}</table>`;
+    case "thead":
+    case "tbody":
+      return `<${node.type}>${renderChildren(node.children, ctx)}</${node.type}>`;
+    case "tr":
+      return `<tr>${renderChildren(node.children, ctx)}</tr>`;
+    case "th":
+    case "td": {
+      const align = node.align ? ` data-align="${esc(node.align)}"` : "";
+      const inner = node.children?.length ? renderChildren(node.children, ctx) : textHtml(node.text);
+      return `<${node.type}${align}>${inner}</${node.type}>`;
+    }
+    case "code":
+      return `<pre class="g-compose-code"${node.language ? ` data-lang="${esc(node.language)}"` : ""}><code>${esc(node.text)}</code></pre>`;
+    case "image":
+      return `<img class="g-compose-image" data-size="${esc(node.size || "md")}" src="${esc(node.src)}" alt="${esc(node.alt || "")}" loading="lazy">`;
+    case "avatar":
+      return `<span class="g-compose-avatar" data-size="${esc(node.size || "md")}" aria-hidden="true">${textHtml((node.label || "?").slice(0, 2))}</span>`;
+    case "progress":
+      return meterBar(node, "progress");
+    case "meter":
+      return meterBar(node, "meter");
+    case "checkbox":
+    case "radio": {
+      const mark = node.checked ? (node.type === "radio" ? "●" : "✓") : (node.type === "radio" ? "○" : "□");
+      const label = node.label ? `<span>${textHtml(node.label)}</span>` : "";
+      return `<span class="g-compose-${node.type}"${node.checked ? ` data-checked="true"` : ""}${node.disabled ? ` data-disabled="true"` : ""}><i aria-hidden="true">${mark}</i>${label}</span>`;
+    }
+    case "toggle":
+      return `<span class="g-compose-toggle"${node.checked ? ` data-checked="true"` : ""}><i aria-hidden="true"></i>${node.label ? `<span>${textHtml(node.label)}</span>` : ""}</span>`;
+    case "input":
+    case "textarea":
+    case "select": {
+      const label = node.label ? `<span class="g-compose-widget-label">${textHtml(node.label)}</span>` : "";
+      const value = node.value || node.placeholder || "";
+      const kind = node.type === "textarea" ? "textarea" : node.type === "select" ? "select" : "input";
+      return `<label class="g-compose-field-static">${label}<span class="g-compose-${kind}-face">${textHtml(value || (kind === "select" ? "选择…" : ""))}</span></label>`;
+    }
+    case "button":
+      return `<span class="g-compose-button" data-tone="${esc(node.tone || "accent")}" data-size="${esc(node.size || "md")}">${textHtml(node.text)}</span>`;
+    case "slider": {
+      const min = node.min ?? 0;
+      const max = node.max ?? 100;
+      const value = node.value ?? min;
+      const pct = max === min ? 0 : Math.round(((value - min) / (max - min)) * 100);
+      const label = node.label ? `<span class="g-compose-widget-label">${textHtml(node.label)}</span>` : "";
+      const readout = `<span class="g-compose-widget-value">${textHtml(String(value))}${node.unit ? textHtml(` ${node.unit}`) : ""}</span>`;
+      return `<div class="g-compose-slider">${label}<div class="g-compose-slider-track" role="img" aria-label="${esc(String(value))}"><i style="width:${pct}%"></i><b style="left:${pct}%"></b></div>${readout}</div>`;
+    }
+    case "empty":
+      return `<div class="g-compose-empty">${textHtml(node.text)}</div>`;
+    case "option":
+      return `<span class="g-compose-option"${node.selected ? ` data-selected="true"` : ""}>${textHtml(node.text || node.value)}</span>`;
     default: {
       const unhandled = node.type;
       throw new Error(`compose render missing ${String(unhandled)}`);
