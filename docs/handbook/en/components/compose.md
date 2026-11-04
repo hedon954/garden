@@ -89,6 +89,12 @@ The top row is background; the bottom row is the point.
 ```
 ````
 
+
+
+## Icons and surfaces
+
+Use named `<icon name="check-circle"/>` marks for status. Small cells come from `padding`, `background`, and `radius` — not a one-off component. See `docs/compose-icons.md` and `docs/compose-tokens.md`.
+
 ## Capability examples
 
 **The diagrams below are only examples** showing the layout shapes `compose` can build. The sample topics (permissions, sign-in, APIs) are just filler text; replace them with your own subject when writing a post.

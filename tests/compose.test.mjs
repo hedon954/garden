@@ -196,7 +196,7 @@ test("the compare post keeps the acceptance diagrams beside the originals", () =
     assert.equal(fs.existsSync(path.join(root, "content/posts/compose-compare", `${name}.png`)), true);
   }
   const fences = scanFences(markdown).map((fence) => classifyFence(fence)).filter((item) => item.kind === "garden");
-  assert.equal(fences.length, 7);
+  assert.equal(fences.length, 9);
   assert.deepEqual(checkGardenMarkdown(markdown), []);
   const html = fences.map((item) => renderCompose(item.block.props, { scope: "compare" })).join("\n");
   assert.match(html, /角色连接用户和权限/);
@@ -204,6 +204,13 @@ test("the compare post keeps the acceptance diagrams beside the originals", () =
   assert.match(html, /授权决策系统/);
   assert.match(html, /业务操作与数据存储/);
   assert.match(html, /Policy Enforcement Point/);
+  assert.match(html, /g-compose-icon/);
+  assert.match(html, /data-name="shield"/);
+  assert.match(html, /data-name="check-circle"/);
+  assert.match(html, /data-name="lock"/);
+  assert.match(html, /近四日推送频控/);
+  assert.match(html, /策略过滤通过/);
+  assert.match(html, /g-compose-grid/);
   assert.match(html, /g-compose-lanes/);
   assert.match(html, /data-tone="forward"/);
   assert.match(html, /data-tone="back"/);

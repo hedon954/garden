@@ -13,6 +13,7 @@
   background: var(--paper);
   box-shadow: none;
   color: var(--ink);
+  overflow: hidden;
   overflow-wrap: break-word;
 }
 
@@ -70,16 +71,25 @@
 
 .g-compose-stack[data-gap="0"] { gap: 0; }
 .g-compose-stack[data-gap="1"] { gap: 4px; }
-.g-compose-stack[data-gap="2"] { gap: 6px; }
-.g-compose-stack[data-gap="3"] { gap: 8px; }
-.g-compose-stack[data-gap="4"] { gap: 12px; }
+.g-compose-stack[data-gap="2"] { gap: 8px; }
+.g-compose-stack[data-gap="3"] { gap: 12px; }
+.g-compose-stack[data-gap="4"] { gap: 16px; }
+.g-compose-stack[style*="--gc-gap"] { gap: var(--gc-gap); }
 
 .g-compose-row {
   display: flex;
   flex-wrap: wrap;
   align-items: stretch;
-  gap: 8px;
+  gap: var(--gc-gap, 8px);
 }
+.g-compose-row[data-wrap="nowrap"] { flex-wrap: nowrap; }
+.g-compose-row[data-justify="center"] { justify-content: center; }
+.g-compose-row[data-justify="end"] { justify-content: flex-end; }
+.g-compose-row[data-justify="between"] { justify-content: space-between; }
+.g-compose-row[data-justify="around"] { justify-content: space-around; }
+.g-compose-row[data-align="center"] { align-items: center; }
+.g-compose-row[data-align="end"] { align-items: flex-end; }
+.g-compose-row[data-align="stretch"] { align-items: stretch; }
 
 .g-compose-row > .g-compose-card,
 .g-compose-row > .g-compose-disclosure,
@@ -683,6 +693,157 @@
   margin-bottom: 2px;
 }
 
+
+/* —— Design tokens (Claude paper surfaces, 4px spacing) —— */
+
+.g-compose-card[style*="--gc-pad"],
+.g-compose-stack[style*="--gc-pad"],
+.g-compose-row[style*="--gc-pad"],
+.g-compose-grid[style*="--gc-pad"],
+.g-compose-grid-item[style*="--gc-pad"] {
+  padding: var(--gc-pad);
+}
+
+.g-compose-card[data-pad="0"],
+.g-compose-grid-item[data-pad="0"] { padding: 0; }
+.g-compose-card[data-pad="1"],
+.g-compose-grid-item[data-pad="1"] { padding: 4px; }
+.g-compose-card[data-pad="2"],
+.g-compose-grid-item[data-pad="2"] { padding: 8px; }
+.g-compose-card[data-pad="3"],
+.g-compose-grid-item[data-pad="3"] { padding: 12px; }
+.g-compose-card[data-pad="4"],
+.g-compose-grid-item[data-pad="4"] { padding: 16px; }
+
+.g-compose-card[data-radius="none"],
+.g-compose-grid-item[data-radius="none"] { border-radius: 0; }
+.g-compose-card[data-radius="sm"],
+.g-compose-grid-item[data-radius="sm"] { border-radius: 6px; }
+.g-compose-card[data-radius="md"],
+.g-compose-grid-item[data-radius="md"] { border-radius: 10px; }
+.g-compose-card[data-radius="lg"],
+.g-compose-grid-item[data-radius="lg"] { border-radius: 14px; }
+.g-compose-card[data-radius="xl"],
+.g-compose-grid-item[data-radius="xl"] { border-radius: 18px; }
+.g-compose-card[data-radius="full"],
+.g-compose-grid-item[data-radius="full"] { border-radius: 999px; }
+
+.g-compose-card[data-border="none"],
+.g-compose-card[data-border="false"] { border-color: transparent; border-width: 0; }
+.g-compose-card[data-border="subtle"] { border-color: color-mix(in srgb, var(--rule) 70%, var(--paper)); }
+.g-compose-card[data-border="strong"],
+.g-compose-card[data-border="true"] { border-color: var(--rule-strong); }
+
+.g-compose-card[data-bg="surface"],
+.g-compose-card[data-bg="paper"],
+.g-compose-grid-item[data-bg="surface"],
+.g-compose-grid-item[data-bg="paper"] {
+  background: var(--paper);
+}
+.g-compose-card[data-bg="surface-secondary"],
+.g-compose-card[data-bg="well"],
+.g-compose-grid-item[data-bg="surface-secondary"],
+.g-compose-grid-item[data-bg="well"] {
+  background: var(--well);
+}
+.g-compose-card[data-bg="surface-accent"],
+.g-compose-grid-item[data-bg="surface-accent"] {
+  background: color-mix(in srgb, var(--flow) 8%, var(--paper));
+}
+.g-compose-card[data-bg="surface-tip"],
+.g-compose-grid-item[data-bg="surface-tip"] {
+  background: color-mix(in srgb, var(--flow-back) 10%, var(--paper));
+}
+.g-compose-card[data-bg="surface-muted"],
+.g-compose-grid-item[data-bg="surface-muted"] {
+  background: color-mix(in srgb, var(--ink) 6%, var(--paper));
+}
+.g-compose-card[data-bg="transparent"],
+.g-compose-grid-item[data-bg="transparent"] {
+  background: transparent;
+}
+
+.g-compose-card[data-size="sm"] { padding: 8px 10px; gap: 6px; }
+.g-compose-card[data-size="lg"] { padding: 16px 20px; gap: 10px; }
+.g-compose-card[data-size="xl"] { padding: 20px 24px; gap: 12px; }
+
+.g-compose-h[data-size="sm"],
+.g-compose-text[data-size="sm"],
+.g-compose-caption-inline[data-size="sm"] { font-size: 12px; }
+.g-compose-h[data-size="lg"] { font-size: 16px; }
+.g-compose-h[data-size="xl"] { font-size: 18px; }
+.g-compose-text[data-size="lg"],
+.g-compose-caption-inline[data-size="lg"] { font-size: 16px; }
+
+.g-compose-caption-inline {
+  color: var(--muted);
+  font: 400 13px/1.45 var(--sans);
+  margin: 0;
+}
+
+.g-compose-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--gc-cols, 2), minmax(0, 1fr));
+  gap: var(--gc-gap, 12px);
+  width: 100%;
+}
+.g-compose-grid[data-cols="1"] { --gc-cols: 1; }
+.g-compose-grid[data-cols="2"] { --gc-cols: 2; }
+.g-compose-grid[data-cols="3"] { --gc-cols: 3; }
+.g-compose-grid[data-cols="4"] { --gc-cols: 4; }
+.g-compose-grid[data-cols="5"] { --gc-cols: 5; }
+.g-compose-grid[data-cols="6"] { --gc-cols: 6; }
+
+.g-compose-grid-item {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--gc-gap, 8px);
+}
+.g-compose-grid-item[data-span="2"] { grid-column: span 2; }
+.g-compose-grid-item[data-span="3"] { grid-column: span 3; }
+.g-compose-grid-item[data-span="4"] { grid-column: span 4; }
+
+.g-compose-icon {
+  display: inline-block;
+  flex: 0 0 auto;
+  width: 16px;
+  height: 16px;
+  color: var(--ink);
+  vertical-align: -2px;
+}
+.g-compose-icon[data-size="sm"] { width: 12px; height: 12px; }
+.g-compose-icon[data-size="lg"] { width: 20px; height: 20px; }
+.g-compose-icon[data-size="xl"] { width: 24px; height: 24px; }
+.g-compose-icon[data-inline="true"] {
+  margin-right: 6px;
+}
+
+.g-compose-card > .g-compose-icon,
+.g-compose-stack > .g-compose-icon {
+  align-self: center;
+}
+
+.g-compose-arrow[data-dir="left"] {
+  transform: rotate(90deg);
+}
+.g-compose-arrow[data-dir="up"] {
+  transform: rotate(180deg);
+}
+
+.g-compose-body,
+.g-compose-stack,
+.g-compose-row,
+.g-compose-steps,
+.g-compose-compare,
+.g-compose-card,
+.g-compose-step,
+.g-compose-grid,
+.g-compose-grid-item {
+  min-width: 0;
+  max-width: 100%;
+}
+
 .g-compose-pair {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
@@ -723,9 +884,16 @@
 
   .g-compose-row,
   .g-compose-compare,
-  .g-compose-steps[data-dir="row"] {
+  .g-compose-steps[data-dir="row"],
+  .g-compose-grid {
     flex-direction: column;
     grid-template-columns: 1fr;
+  }
+
+  .g-compose-grid-item[data-span="2"],
+  .g-compose-grid-item[data-span="3"],
+  .g-compose-grid-item[data-span="4"] {
+    grid-column: auto;
   }
 
   .g-compose-row > .g-compose-card,

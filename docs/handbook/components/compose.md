@@ -87,6 +87,12 @@ Role 在中间，把用户和权限接起来。Role 是重点。
 ```
 ````
 
+
+
+## 图标与表面
+
+状态符号用 `<icon name="check-circle"/>` 一类具名图标，不要塞 emoji。小格子、浅底、圆角用 `padding`、`background`、`radius` 组合，不要为单张图发明专用标签。完整词表见仓库 `docs/compose-icons.md` 与 `docs/compose-tokens.md`。
+
 ## 能力示例
 
 **下面这些图只是示例**，用来展示 `compose` 能拼出哪几类常见结构。图里的权限、登录、API 等词只是为了把格子填满，写文章时换成你自己的主题即可。

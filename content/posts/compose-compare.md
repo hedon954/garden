@@ -119,44 +119,42 @@ tags:
   <text tone="muted">例如：修改订单收货地址</text>
 </stack>
 <arrow dir="down"/>
-<row>
-  <box>
+<grid cols={2} gap={3}>
+  <box padding={3} gap={1} radius="lg" border="subtle">
     <title>认证</title>
     <text>你是谁？</text>
-    <text tone="muted">Authentication</text>
+    <caption>Authentication</caption>
   </box>
-  <box>
+  <box padding={3} gap={1} radius="lg" border="subtle">
     <title>凭证</title>
     <text>如何证明你的身份？</text>
-    <text tone="muted">Credential</text>
+    <caption>Credential</caption>
   </box>
-</row>
-<row>
-  <box>
+  <box padding={3} gap={1} radius="lg" border="subtle">
     <title>授权</title>
     <text>你有权修改这笔订单吗？</text>
-    <text tone="muted">Authorization</text>
+    <caption>Authorization</caption>
   </box>
-  <box>
+  <box padding={3} gap={1} radius="lg" border="subtle">
     <title>验证</title>
     <text>提交的数据是否合法？</text>
-    <text tone="muted">Verification</text>
+    <caption>Verification</caption>
   </box>
-</row>
+</grid>
 <arrow dir="down"/>
-<stack align="center">
+<stack align="center" gap={2}>
   <title>业务操作与数据存储</title>
+  <grid cols={2} gap={3}>
+    <box padding={3} gap={1} radius="lg" border="subtle">
+      <title>传输</title>
+      <text>网络中能否被窃听、篡改、冒充？</text>
+    </box>
+    <box padding={3} gap={1} radius="lg" border="subtle">
+      <title>保密</title>
+      <text>敏感数据泄露后能否被读取？</text>
+    </box>
+  </grid>
 </stack>
-<row>
-  <box>
-    <title>传输</title>
-    <text>网络中能否被窃听、篡改、冒充？</text>
-  </box>
-  <box>
-    <title>保密</title>
-    <text>敏感数据泄露后能否被读取？</text>
-  </box>
-</row>
 <text tone="muted">概念示意：六者并不是严格串行的执行阶段，传输保护贯穿网络通信，保密措施也可能覆盖客户端与服务端。</text>
 ```
 
@@ -182,17 +180,16 @@ tags:
     </row>
   </band>
   <arrow dir="down"/>
-  <box align="center" mark="shield">
+  <box align="center" padding={3} gap={2} radius="lg" background="surface-secondary" border="subtle">
+    <icon name="shield" size="lg"/>
     <title>Policy Enforcement Point</title>
-    <text tone="muted" align="center">独立于 LLM 的确定性执行控制</text>
-    <row align="center">
-      <text>权限与资源范围</text>
-      <text>操作参数校验</text>
-    </row>
-    <row align="center">
-      <text>任务意图约束</text>
-      <text>高风险操作审批</text>
-    </row>
+    <caption align="center">独立于 LLM 的确定性执行控制</caption>
+    <grid cols={2} gap={2}>
+      <text align="center">权限与资源范围</text>
+      <text align="center">操作参数校验</text>
+      <text align="center">任务意图约束</text>
+      <text align="center">高风险操作审批</text>
+    </grid>
   </box>
   <arrow dir="down"/>
   <title>Tool Executor</title>
@@ -247,4 +244,80 @@ tags:
   <pill tone="muted">迭代或放弃</pill>
 </row>
 <text tone="muted" align="start">第二行才是产品探索更强调的决策循环。</text>
+```
+
+## 日期频控（滑动窗口）
+
+用通用 `row` + `box` + `icon` 拼日期格：已通过、可推、锁定。没有专用日历组件。
+
+```garden compose
+<intent>
+横向一排日期格。11/01 已通过（绿勾），11/02 可推（开锁），11/03 与 11/04 锁定。格子要小、圆角、浅底。
+</intent>
+<stack align="center" gap={2}>
+  <title>近四日推送频控</title>
+  <caption>同一用户滑动窗口内最多一次成功触达</caption>
+  <row gap={2} justify="center" wrap="nowrap">
+    <box padding={2} gap={1} radius="md" background="surface-tip" border="subtle" align="center" size="sm">
+      <icon name="check-circle" size="lg"/>
+      <text size="sm">11/01</text>
+      <caption>已触达</caption>
+    </box>
+    <box padding={2} gap={1} radius="md" background="surface-accent" border="subtle" align="center" size="sm">
+      <icon name="lock-open" size="lg"/>
+      <text size="sm">11/02</text>
+      <caption>可推</caption>
+    </box>
+    <box padding={2} gap={1} radius="md" background="surface-muted" border="subtle" align="center" size="sm">
+      <icon name="lock" size="lg"/>
+      <text size="sm">11/03</text>
+      <caption>锁定</caption>
+    </box>
+    <box padding={2} gap={1} radius="md" background="surface-muted" border="subtle" align="center" size="sm">
+      <icon name="lock" size="lg"/>
+      <text size="sm">11/04</text>
+      <caption>锁定</caption>
+    </box>
+  </row>
+</stack>
+```
+
+## 推荐链路（成功 / 失败）
+
+竖向推荐推送：成功走绿底勾选，失败无底打叉。仍用 `stack` + `box` + `icon`。
+
+```garden compose
+<intent>
+从上到下：候选召回 → 策略过滤 → 触达。成功分支带勾并浅绿底；失败分支带叉、无强调底。
+</intent>
+<stack align="center" gap={2}>
+  <box padding={3} gap={1} radius="lg" border="subtle" align="center">
+    <title>候选召回</title>
+    <caption>Retrieve candidates</caption>
+  </box>
+  <arrow dir="down"/>
+  <box padding={3} gap={2} radius="lg" background="surface-tip" border="subtle" align="center">
+    <icon name="check-circle" size="lg"/>
+    <title>策略过滤通过</title>
+    <caption>频控 / 合规 / 配额均满足</caption>
+  </box>
+  <arrow dir="down"/>
+  <box padding={3} gap={2} radius="lg" background="surface-tip" border="subtle" align="center">
+    <icon name="check" size="lg"/>
+    <title>触达成功</title>
+    <caption>写入审计并进入冷却窗</caption>
+  </box>
+  <divider/>
+  <box padding={3} gap={2} radius="lg" border="subtle" align="center">
+    <icon name="x-circle" size="lg"/>
+    <title>策略过滤失败</title>
+    <caption>命中频控或高风险拦截</caption>
+  </box>
+  <arrow dir="down"/>
+  <box padding={3} gap={2} radius="lg" border="subtle" align="center">
+    <icon name="x" size="lg"/>
+    <title>跳过触达</title>
+    <caption>不发消息，仅记拒绝原因</caption>
+  </box>
+</stack>
 ```

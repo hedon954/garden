@@ -1,21 +1,57 @@
 /**
  * One-shot compile of a compose fence.
- * Leaves are Markdown. Composition is a catalog of tags.
+ * Leaves are Markdown. Composition is a catalog of tags + design tokens.
  * Unclosed tags fail. There is no stream repair and no script evaluation.
  */
 
-const LAYOUT = new Set(["box", "row", "stack", "grid", "pill", "band", "steps", "step", "lanes", "compare", "item", "callout"]);
-const TEXTISH = new Set(["title", "text", "badge", "note", "actor", "intent", "join"]);
-const VOID = new Set(["arrow", "fan", "divider", "kpi"]);
+import { hasIcon } from "./icons.mjs";
+import {
+  ALIGNS,
+  BACKGROUNDS,
+  BORDERS,
+  JUSTIFIES,
+  RADII,
+  SIZES,
+  SPACING,
+  TONES,
+  WRAPS,
+  enumOr,
+  spacingAttr,
+} from "./tokens.mjs";
+
+const LAYOUT = new Set([
+  "box",
+  "row",
+  "stack",
+  "grid",
+  "grid-item",
+  "pill",
+  "band",
+  "steps",
+  "step",
+  "lanes",
+  "compare",
+  "item",
+  "callout",
+]);
+const TEXTISH = new Set([
+  "title",
+  "text",
+  "caption",
+  "badge",
+  "note",
+  "actor",
+  "intent",
+  "join",
+]);
+const VOID = new Set(["arrow", "fan", "divider", "kpi", "icon"]);
 const KNOWN = new Set([...LAYOUT, ...TEXTISH, ...VOID, "message"]);
 
-const TONES = new Set(["plain", "accent", "tip", "muted"]);
 const LANE_TONES = new Set(["forward", "back"]);
 const CALLOUT_TONES = new Set(["note", "tip", "warn"]);
 const FRAMES = new Set(["card", "band", "text", "pill"]);
-const ALIGNS = new Set(["start", "center"]);
-const MAX_NODES = 80;
-const MAX_DEPTH = 8;
+const MAX_NODES = 120;
+const MAX_DEPTH = 10;
 
 class MarkupError extends Error {}
 
@@ -88,7 +124,7 @@ function markdownNodes(raw) {
   const flush = () => {
     const text = para.join("\n").trim();
     para = [];
-    if (text) nodes.push({ type: "text", text, align: "", tone: "plain" });
+    if (text) nodes.push({ type: "text", text, align: "", tone: "plain", size: "" });
   };
   for (const line of lines) {
     const trimmed = line.trim();
@@ -99,13 +135,13 @@ function markdownNodes(raw) {
     const heading = /^#{1,3}\s+(.+)$/u.exec(trimmed);
     if (heading) {
       flush();
-      nodes.push({ type: "title", text: heading[1].trim(), align: "", tone: "plain" });
+      nodes.push({ type: "title", text: heading[1].trim(), align: "", tone: "plain", size: "" });
       continue;
     }
     const item = /^[-*]\s+(.+)$/u.exec(trimmed);
     if (item) {
       flush();
-      nodes.push({ type: "text", text: item[1].trim(), align: "", tone: "plain" });
+      nodes.push({ type: "text", text: item[1].trim(), align: "", tone: "plain", size: "" });
       continue;
     }
     para.push(trimmed);
@@ -125,12 +161,44 @@ function enumAttr(attrs, name, allowed, fallback) {
   return String(value);
 }
 
+function spacingOf(attrs, name, fallback = null) {
+  const value = attrs[name];
+  if (value == null || value === true || value === "") return fallback;
+  const n = spacingAttr(value, null);
+  if (n == null) fail(`${name} 只能是 0 到 4。`);
+  return n;
+}
+
+function tokenBag(attrs, defaults = {}) {
+  const padding = spacingOf(attrs, "padding", defaults.padding ?? null);
+  const gap = spacingOf(attrs, "gap", defaults.gap ?? null);
+  const radius = enumAttr(attrs, "radius", RADII, defaults.radius ?? "");
+  const background = enumAttr(attrs, "background", BACKGROUNDS, defaults.background ?? "");
+  const size = enumAttr(attrs, "size", SIZES, defaults.size ?? "");
+  const align = enumAttr(attrs, "align", ALIGNS, defaults.align ?? "");
+  const justify = enumAttr(attrs, "justify", JUSTIFIES, defaults.justify ?? "");
+  let border = defaults.border ?? "";
+  if (attrs.border != null) {
+    if (attrs.border === true) border = "true";
+    else if (attrs.border === false) border = "none";
+    else border = enumAttr(attrs, "border", BORDERS, "true");
+  }
+  let wrap = defaults.wrap ?? "";
+  if (attrs.wrap != null) {
+    if (attrs.wrap === true) wrap = "wrap";
+    else if (attrs.wrap === false) wrap = "nowrap";
+    else wrap = enumAttr(attrs, "wrap", WRAPS, "wrap");
+  }
+  return { padding, gap, radius, background, size, align, justify, border, wrap };
+}
+
 function textNode(attrs, children) {
   return {
     type: "text",
     text: inlineText(children),
     align: enumAttr(attrs, "align", ALIGNS, ""),
     tone: enumAttr(attrs, "tone", TONES, "plain"),
+    size: enumAttr(attrs, "size", SIZES, ""),
   };
 }
 
@@ -140,6 +208,16 @@ function titleNode(attrs, children) {
     text: inlineText(children),
     align: enumAttr(attrs, "align", ALIGNS, ""),
     tone: "plain",
+    size: enumAttr(attrs, "size", SIZES, ""),
+  };
+}
+
+function captionNode(attrs, children) {
+  return {
+    type: "caption",
+    text: inlineText(children),
+    align: enumAttr(attrs, "align", ALIGNS, ""),
+    size: enumAttr(attrs, "size", SIZES, ""),
   };
 }
 
@@ -151,6 +229,8 @@ function finishBox(attrs, children, frame) {
     type: "stack",
     gap: 0,
     align: "",
+    justify: "",
+    wrap: "",
     children: [card, { type: "notes", items: [{ for: card.id, text: note.text, title: "" }] }],
   };
 }
@@ -158,20 +238,42 @@ function finishBox(attrs, children, frame) {
 function boxNode(attrs, children, frame) {
   const title = children.find((child) => child.type === "title");
   const badge = children.find((child) => child.type === "badge");
+  // Keep title/badge as face props for disclosure + legacy; also leave non-title children free.
   const rest = children.filter((child) => child !== title && child !== badge && child.type !== "note");
+  const tokens = tokenBag(attrs, { align: frame === "pill" ? "center" : "" });
   return {
     type: "card",
     id: typeof attrs.id === "string" ? attrs.id : "",
     frame,
     tone: enumAttr(attrs, "tone", TONES, "plain"),
-    align: enumAttr(attrs, "align", ALIGNS, ""),
     mark: attrs.mark === "shield" ? "shield" : "",
     title: title?.text || "",
     text: "",
     badge: badge ? { text: badge.text, tone: badge.tone || "accent" } : null,
     kpi: null,
     children: rest,
+    ...tokens,
   };
+}
+
+function layoutNode(name, attrs, children, defaults = {}) {
+  const tokens = tokenBag(attrs, defaults);
+  const node = {
+    type: name,
+    children,
+    ...tokens,
+  };
+  if (name === "grid") {
+    const cols = attrs.cols != null ? Number(attrs.cols) : attrs.columns != null ? Number(attrs.columns) : 2;
+    if (!Number.isInteger(cols) || cols < 1 || cols > 6) fail("grid 的 cols 只能是 1 到 6。");
+    node.cols = cols;
+  }
+  if (name === "grid-item") {
+    const span = attrs.span != null ? Number(attrs.span) : 1;
+    if (!Number.isInteger(span) || span < 1 || span > 6) fail("grid-item 的 span 只能是 1 到 6。");
+    node.span = span;
+  }
+  return node;
 }
 
 function elementNode(tag, children) {
@@ -184,8 +286,15 @@ function elementNode(tag, children) {
     case "note":
     case "actor":
       return { ...textNode(attrs, children), type: name === "text" ? "text" : name };
+    case "caption":
+      return captionNode(attrs, children);
     case "badge":
-      return { type: "badge", text: inlineText(children), tone: enumAttr(attrs, "tone", TONES, "accent") };
+      return {
+        type: "badge",
+        text: inlineText(children),
+        tone: enumAttr(attrs, "tone", TONES, "accent"),
+        size: enumAttr(attrs, "size", SIZES, ""),
+      };
     case "join":
       return { type: "join", text: inlineText(children) };
     case "message": {
@@ -203,18 +312,23 @@ function elementNode(tag, children) {
     case "box":
       return finishBox(attrs, children, enumAttr(attrs, "frame", FRAMES, "card"));
     case "pill":
-      return finishBox({ ...attrs, align: attrs.align || "center" }, children.some((child) => child.type === "title") ? children : children.map((child) => (child.type === "text" ? { ...child, type: "title" } : child)), "pill");
+      return finishBox(
+        { ...attrs, align: attrs.align || "center" },
+        children.some((child) => child.type === "title")
+          ? children
+          : children.map((child) => (child.type === "text" ? { ...child, type: "title" } : child)),
+        "pill",
+      );
     case "band":
       return finishBox(attrs, children, "band");
     case "stack":
+      return layoutNode("stack", attrs, children, { gap: 3 });
     case "row":
+      return layoutNode("row", attrs, children, { gap: 2, wrap: "wrap" });
     case "grid":
-      return {
-        type: name === "grid" ? "row" : name,
-        align: enumAttr(attrs, "align", ALIGNS, ""),
-        gap: 3,
-        children,
-      };
+      return layoutNode("grid", attrs, children, { gap: 3 });
+    case "grid-item":
+      return layoutNode("grid-item", attrs, children, {});
     case "lanes": {
       const actors = children.filter((child) => child.type === "actor").map((child) => child.text);
       const messages = children.filter((child) => child.type === "message");
@@ -270,14 +384,16 @@ function elementNode(tag, children) {
     default:
       fail(`不认识标签 ${name}。`);
   }
-  return { type: "text", text: "", align: "", tone: "plain" };
+  return { type: "text", text: "", align: "", tone: "plain", size: "" };
 }
 
 function voidNode(tag) {
   const { name, attrs } = tag;
   if (name === "arrow") {
     const direction = attrs.dir || attrs.direction || "down";
-    if (direction !== "down" && direction !== "right") fail("arrow 的 dir 只能是 down 或 right。");
+    if (direction !== "down" && direction !== "right" && direction !== "left" && direction !== "up") {
+      fail("arrow 的 dir 只能是 down、up、left 或 right。");
+    }
     return { type: "arrow", direction };
   }
   if (name === "fan") {
@@ -288,7 +404,23 @@ function voidNode(tag) {
   if (name === "divider") return { type: "divider" };
   if (name === "kpi") {
     if (attrs.value == null || attrs.value === true) fail("kpi 要写 value。");
-    return { type: "kpi", value: String(attrs.value), unit: attrs.unit ? String(attrs.unit) : "", label: attrs.label ? String(attrs.label) : "" };
+    return {
+      type: "kpi",
+      value: String(attrs.value),
+      unit: attrs.unit ? String(attrs.unit) : "",
+      label: attrs.label ? String(attrs.label) : "",
+    };
+  }
+  if (name === "icon") {
+    const iconName = attrs.name == null || attrs.name === true ? "" : String(attrs.name);
+    if (!iconName) fail("icon 要写 name。");
+    if (!hasIcon(iconName)) fail(`不认识图标 ${iconName}。`);
+    return {
+      type: "icon",
+      name: iconName,
+      size: enumAttr(attrs, "size", SIZES, "md"),
+      inline: attrs.inline === true || attrs.inline === "true",
+    };
   }
   fail(`${name} 不能自闭合。`);
   return { type: "divider" };
@@ -309,9 +441,9 @@ function parseRegion(src, from, stop, depth, state) {
       if (tag.name !== stop) fail(`多出来的 </${tag.name}>。`);
       return { nodes, index: tag.end };
     }
-    if (depth + 1 > MAX_DEPTH) fail("嵌套太深（最多 8 层）。");
+    if (depth + 1 > MAX_DEPTH) fail("嵌套太深（最多 10 层）。");
     state.nodes += 1;
-    if (state.nodes > MAX_NODES) fail("节点太多（最多 80 个）。");
+    if (state.nodes > MAX_NODES) fail("节点太多（最多 120 个）。");
     if (tag.self || VOID.has(tag.name)) {
       if (!tag.self && !VOID.has(tag.name)) fail(`${tag.name} 没有闭合。`);
       if (!VOID.has(tag.name)) fail(`${tag.name} 不能自闭合。`);
@@ -350,7 +482,7 @@ export function parseCompose(body) {
     const rest = intentMatch ? text.replace(intentMatch[0], "") : text;
     const { nodes } = parseRegion(rest, 0, "", 0, { nodes: 0 });
     if (!nodes.length) return uncompiled();
-    if (countNodes(nodes) > MAX_NODES) fail("节点太多（最多 80 个）。");
+    if (countNodes(nodes) > MAX_NODES) fail("节点太多（最多 120 个）。");
     return {
       ok: true,
       uncompiled: false,
@@ -362,3 +494,6 @@ export function parseCompose(body) {
     throw error;
   }
 }
+
+// Re-export for docs/tests that want the catalog list.
+export const CATALOG_TAGS = [...KNOWN].sort();

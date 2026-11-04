@@ -12,7 +12,7 @@ tags:
 
 - **第二列（ChatGPT 渲染效果）图片来源**：基于 [OpenUI 对 GPT-6 Intelligent UI 的抓包拆解](https://www.openui.com/blog/how-chatgpt-intelligent-ui-works) 与 [Disdjj/intelligent-ui-demo ANALYSIS.md](https://github.com/Disdjj/intelligent-ui-demo/blob/main/ANALYSIS.md)（协议版本 14）整理的静态 DIL 对照渲染，以及少量在 ChatGPT 图例中出现的连接结构。
 - **第四列（我们的效果图）图片来源**：在同一 tip 上由当前 `ui/compose/` 真实编译渲染后截图（Claude 博文纸色底面 `--paper` + 透明线框卡片）。
-- **统计总览**：共 **30** 行；**已实现 24 行**（含专用连接、结构原语，以及 play 模式下的 DIL `{@body}` / `{expr}` / `{#if}` / `{#each}`、slider、button·choice、pie/chart），**部分实现 2 行**，**未实现 4 行**（通用表单控件、内建 table 标签、宿主业务卡片、流式截断恢复）。
+- **统计总览**：共 **30** 行；**已实现 26 行**（含 icon、grid/grid-item、token 化表面，以及 play 模式下的 DIL `{@body}` / `{expr}` / `{#if}` / `{#each}`、slider、button·choice、pie/chart），**部分实现 0 行**，**未实现 4 行**（通用表单控件、内建 table 标签、宿主业务卡片、流式截断恢复）。
 - **运行时说明**：表末四行里，`{@body}` / `{expr}` / `{#if}/{#each}` 已在 `garden compose` **play** 路径用 ChatGPT 同款 DIL 作者面落地（白名单表达式求值，非 Worker `eval`）；`recoveryDiagnostics` 仍未实现。映射见仓库 [`docs/compose-dil.md`](https://github.com/hedon954/garden/blob/cursor/garden-compose-c115/docs/compose-dil.md)。下方「tip 实测」有可拧的 live 演示。
 
 ## 逐项验收总表
@@ -21,15 +21,15 @@ tags:
 | :--- | :--- | :--- | :--- |
 | **`text`（正文叶子）**<br>段落或列表项转成的文本节点，内含 `**bold**`、`*em*`、`` `code` `` 行内结构。 | ![DIL text 静态对照](./compose-parity/gpt-text.png) | **是**<br>Markdown 段落直接编译为 `text` 节点，或显式写 `<text tone="plain\|muted" align="start\|center">`。 | ![Garden Compose text](./compose-parity/our-text.png) |
 | **`title`（标题叶子）**<br>块或卡片的主标题，在抓包统计中高频出现（`size="sm\|md\|lg"`）。 | ![DIL title 静态对照](./compose-parity/gpt-title.png) | **是**<br>Markdown `# / ## / ###` 标题或 `<title align="start\|center">`。 | ![Garden Compose title](./compose-parity/our-title.png) |
-| **`caption`（底部弱化说明）**<br>图底或卡片内的辅助小字说明。 | ![DIL caption 静态对照](./compose-parity/gpt-caption.png) | **是**<br>用 `<text tone="muted">` 表达同级辅助说明与图底注脚。 | ![Garden Compose muted text](./compose-parity/our-caption.png) |
+| **`caption`（底部弱化说明）**<br>图底或卡片内的辅助小字说明。 | ![DIL caption 静态对照](./compose-parity/gpt-caption.png) | **是**<br>`<caption>` 或 `<text tone="muted">`；图底注脚与卡内辅助说明。 | ![Garden Compose muted text](./compose-parity/our-caption.png) |
 | **`badge`（徽章标签）**<br>圆角小标签，常用于标记状态、编号或上下文芯片。 | ![DIL badge 静态对照](./compose-parity/gpt-badge.png) | **是**<br>`<badge tone="accent\|tip\|muted\|plain">`，可独立并排或放进 `<box>` 头部。 | ![Garden Compose badge](./compose-parity/our-badge.png) |
-| **`icon`（矢量图标）**<br>抓包中出现 26 次的内建图标节点，常配合标题强调语义。 | ![DIL icon 静态对照](./compose-parity/gpt-icon.png) | **部分**<br>目前在 `<box mark="shield">` 内置盾牌校验图标；通用 `<icon name="...">` 词表未实现。 | ![Garden Compose shield mark](./compose-parity/our-icon.png) |
-| **`box`（线框容器） / `card`**<br>带边框、圆角与内边距的通用容器（抓包出现 54 次）。 | ![DIL box 静态对照](./compose-parity/gpt-box.png) | **是**<br>`<box>`（默认 `frame="card"`），在 Claude 纸面底上采用透明底与 `--rule-strong` 边框。 | ![Garden Compose box](./compose-parity/our-box.png) |
-| **`box` 强调色带变体（`background="surface-secondary"`）**<br>无描边或弱描边的整行浅色底通栏，用来突出关键层。 | ![DIL tinted box 静态对照](./compose-parity/gpt-box-surface.png) | **是**<br>`<band tone="accent\|tip\|muted">` 或 `<box frame="band">`。 | ![Garden Compose band](./compose-parity/our-box-surface.png) |
+| **`icon`（矢量图标）**<br>抓包中出现 26 次的内建图标节点，常配合标题强调语义。 | ![DIL icon 静态对照](./compose-parity/gpt-icon.png) | **是**<br>`<icon name="check|check-circle|lock|shield|…" size="sm|md|lg|xl"/>`，具名 SVG；`mark="shield"` 仍可用。 | ![Garden Compose shield mark](./compose-parity/our-icon.png) |
+| **`box`（线框容器） / `card`**<br>带边框、圆角与内边距的通用容器（抓包出现 54 次）。 | ![DIL box 静态对照](./compose-parity/gpt-box.png) | **是**<br>`<box padding gap radius background border size align>`；默认 Claude 纸面 + `--rule-strong` 边框。 | ![Garden Compose box](./compose-parity/our-box.png) |
+| **`box` 强调色带变体（`background="surface-secondary"`）**<br>无描边或弱描边的整行浅色底通栏，用来突出关键层。 | ![DIL tinted box 静态对照](./compose-parity/gpt-box-surface.png) | **是**<br>`background="surface-secondary|surface-accent|…"`，或 `<band tone="…">` / `<box frame="band">`。 | ![Garden Compose band](./compose-parity/our-box-surface.png) |
 | **`box` 胶囊变体（紧凑短词框）**<br>按文字宽度收缩的圆角胶囊，用于流程节点或角色头。 | ![DIL pill box 静态对照](./compose-parity/gpt-box-pill.png) | **是**<br>专用标签 `<pill tone="plain\|muted\|accent\|tip">`。 | ![Garden Compose pill](./compose-parity/our-box-pill.png) |
 | **`row`（横向并排）**<br>子项沿水平方向等宽或居中排列（抓包出现 35 次）。 | ![DIL row 静态对照](./compose-parity/gpt-row.png) | **是**<br>`<row align="start\|center">`，窄屏自动折成单列。 | ![Garden Compose row](./compose-parity/our-row.png) |
 | **`stack` / 纵向 `box`（垂直堆叠）**<br>子项自上而下按固定间距排列。 | ![DIL stack 静态对照](./compose-parity/gpt-stack.png) | **是**<br>`<stack align="start\|center">`。 | ![Garden Compose stack](./compose-parity/our-stack.png) |
-| **`grid` + `grid-item`（多列网格）**<br>按列数对齐的二维卡片网格（抓包中 `grid` 2 次、`grid-item` 12 次）。 | ![DIL grid 静态对照](./compose-parity/gpt-grid.png) | **部分**<br>`<grid>` 已支持并编译为同行等宽网格行；跨列 `span` 的独立 `<grid-item>` 属性未实现。 | ![Garden Compose grid](./compose-parity/our-grid.png) |
+| **`grid` + `grid-item`（多列网格）**<br>按列数对齐的二维卡片网格（抓包中 `grid` 2 次、`grid-item` 12 次）。 | ![DIL grid 静态对照](./compose-parity/gpt-grid.png) | **是**<br>`<grid cols={2|3|…}>` + `<grid-item span={n}>`，间距走 `gap` token。 | ![Garden Compose grid](./compose-parity/our-grid.png) |
 | **`divider`（水平分隔线）**<br>切分上下两个逻辑区域的细横线。 | ![DIL divider 静态对照](./compose-parity/gpt-divider.png) | **是**<br>自闭合标签 `<divider/>`。 | ![Garden Compose divider](./compose-parity/our-divider.png) |
 | **单向连接箭头（`↓` / `→`）**<br>ChatGPT 常靠 `box` + 字符或小图标拼出上下/左右流向。 | ![DIL arrow 静态对照](./compose-parity/gpt-arrow.png) | **是（专用标签）**<br>`<arrow dir="down\|right"/>`，内置统一尺寸 SVG 箭头，窄屏自动把右箭头转为向下。 | ![Garden Compose arrow](./compose-parity/our-arrow.png) |
 | **一分多扇出连接（Fan-out）**<br>从一层同时指向下方多列的并列箭头（见 SSO 图例）。 | ![DIL fan 静态对照](./compose-parity/gpt-fan.png) | **是（专用标签）**<br>`<fan n="2\|3\|4"/>`，与下方 `<row>` 的列数对齐。 | ![Garden Compose fan](./compose-parity/our-fan.png) |
