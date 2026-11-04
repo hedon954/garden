@@ -523,7 +523,12 @@ export function catalogSchema() {
 
 /** Markdown reference that `garden ui prompt` inserts between rules and recipes. */
 export function catalogReference() {
-  const lines = ["## 组件参考", ""];
+  const lines = [
+    "## interactive 组件参考（PascalCase，兼容）",
+    "",
+    "仅用于遗留 `garden interactive` 围栏。新的可调参数请写 `garden compose` play（见上方 compose 目录与 `{@body}`）。",
+    "",
+  ];
   for (const group of GROUPS) {
     lines.push(`### ${group}`, "");
     for (const [name, spec] of Object.entries(COMPONENTS)) {

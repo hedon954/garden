@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.12.1
+
+Author-facing surfaces catch up to the 0.12 compose DIL engine. `garden ui prompt` now injects a generated compose catalog (lowercase tags + tokens + icon count) beside the interactive PascalCase reference; rules and the compose recipe stop forbidding `{@body}` and document play on the same fence. `garden-ui` skills (ZH/EN), CLI fix-prompt locale, and `garden-blocks` no longer tell authors to fill YAML trees for compose. VS Code / Typora editor packages rebuild at `0.1.1` so shipped `editors/dist` matches. Publish as `hd-garden@0.12.1`.
+
 ## 0.12.0
 
 `garden compose` DIL rewrite: Markdown leaves plus lowercase catalog tags (`row` / `box` / `icon` / `text` / …), Claude paper tokens, and ~690 Lucide icons. Handbook usage stays short; reference pages list all tags in groups and icons as a searchable glyph grid. Compare scenes (including 近四日 / 最近 7 天 push frequency) stretch day chips across the full banner; phrasing leaves keep footnote markers like `* 假设…`. Publish as `hd-garden@0.12.0`. Independent sites bump `hd-garden` (for example garden-blog) after the npm tag lands.

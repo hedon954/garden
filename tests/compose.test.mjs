@@ -246,7 +246,32 @@ test("the ui prompt catalog includes compose and forbids arbitrary HTML", () => 
   const recipe = fs.readFileSync(path.join(root, "ui/prompt/recipes/compose.md"), "utf8");
   assert.match(rules, /garden compose/);
   assert.match(recipe, /不要写色值、HTML、SVG、脚本/);
-  for (const name of ["stack", "row", "card", "steps", "compare", "callout", "badge", "kpi", "arrow", "notes"]) {
+  assert.doesNotMatch(rules, /也不要写 \{@body\b/u);
+  assert.doesNotMatch(recipe, /也不要写 \{@body\b/u);
+  assert.doesNotMatch(rules + "\n" + recipe, /不要写 \{@body\b/u);
+  assert.match(rules, /\{@body\b/u);
+  assert.match(recipe, /\{@body\b/u);
+  for (const name of ["stack", "row", "card", "steps", "compare", "callout", "badge", "kpi", "arrow", "note", "icon"]) {
     assert.match(recipe, new RegExp(name));
   }
+});
+
+test("garden ui prompt includes generated compose DIL catalog", async () => {
+  const { buildPrompt, composeCatalogReference } = await import("../ui/prompt/build.mjs");
+  const catalog = composeCatalogReference();
+  assert.match(catalog, /compose 目录/);
+  assert.match(catalog, /小写标签/);
+  assert.match(catalog, /`icon`/);
+  assert.match(catalog, /\{@body\b/u);
+  assert.doesNotMatch(catalog, /不要写.*\{@body\}/u);
+  const prompt = buildPrompt({
+    rules: fs.readFileSync(path.join(root, "ui/prompt/rules.md"), "utf8"),
+    recipes: [fs.readFileSync(path.join(root, "ui/prompt/recipes/compose.md"), "utf8")],
+  });
+  assert.match(prompt, /compose 目录（小写标签 \+ token）/);
+  assert.match(prompt, /interactive 组件参考（PascalCase，兼容）/);
+  assert.match(prompt, /`icon`/);
+  assert.doesNotMatch(prompt, /也不要写 \{@body\b/u);
+  assert.doesNotMatch(prompt, /不要写 \{@body\b/u);
+  assert.match(prompt, /`padding` \/ `gap`/);
 });

@@ -12,7 +12,7 @@
 | `core/` | 解析、表达式、目录、校验、静态快照。不依赖 React |
 | `host.mjs` | 宿主契约和 `<Sandbox>` 的 iframe 协议 |
 | `react/` | `UiFigure` 和目录里的组件，样式在 `react/ui.css` |
-| `compose/` | `garden compose` 的 YAML 树、静态 HTML 和样式。不读文章，不引用宿主 |
+| `compose/` | `garden compose` 的 DIL（Markdown + 小写目录标签）、静态 HTML 和样式。不读文章，不引用宿主 |
 | `prompt/` | 写给模型的目录说明、配方和规则。宿主负责发送 |
 | `preview/` | 编辑器里的预览挂载 |
 | `evals/` | 评测样本，由宿主的工作台读取 |
