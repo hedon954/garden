@@ -1,7 +1,7 @@
 tip: compose-dil-full-rewrite (4-day stretch + 7-day breathing room)
 date: 2026-11-04 Asia/Shanghai ~18:40
 branch: tip/compose-dil-full-rewrite
-HEAD: 6e00ef1
+HEAD: 08b8759
 npm publish: NOT done
 Cloud Agent: NOT used
 merge to main: NOT done
