@@ -191,6 +191,9 @@
   text-align: start;
   text-decoration: none;
   user-select: text;
+  /* Keep fill + border continuous at the radius (no square child bleed at corners). */
+  overflow: hidden;
+  background-clip: padding-box;
 }
 
 .g-compose-disclosure {

@@ -53,12 +53,12 @@ tags:
 
 下面几块都是 `garden compose` 围栏、**同一套** `{@body}` / `{expr}` / `{#if}` / `{#each}` + 小写标签；不是旧的 PascalCase `garden interactive` 树。拧一下控件，数字应立刻变。
 
-### Slider + `{@body}` 派生
+### Slider + body 派生
 
 ```garden compose #parity-slider
 caption: 拧直径，看毫升。
 intent: |
-  验收 slider 与 {@body} 派生值。
+  验收滑杆与派生毫升数是否跟着变。
 ---
 {@body const [diameter, setDiameter] = DIL.useState(12)}
 {@body const water = Math.round(diameter * diameter * 0.35 + 20)}
@@ -72,7 +72,7 @@ intent: |
 ```garden compose #parity-choice
 caption: 选档位，拧席位，看月费；点一下回到 1 席。
 intent: |
-  验收 choice、button、slider 与条件分支。
+  验收分段选择、按钮、滑杆与条件分支；月费数字必须跟着变。
 ---
 {@body const [plan, setPlan] = DIL.useState("pro")}
 {@body const [seats, setSeats] = DIL.useState(3)}
@@ -82,11 +82,12 @@ intent: |
 <choice value={plan} onChange={setPlan} label="档位" options={[{value:"basic",label:"Basic"},{value:"pro",label:"Pro"}]} />
 <slider min={1} max={12} value={seats} onChange={setSeats} label="席位" />
 <button onClick={setSeats(1)}>席位清为 1</button>
+<stat label="月费" value={total} unit="USD" />
 
 {#if seats >= 5}
-批量折扣档：{seats} 席 · 月费 ${total}
+批量折扣档：{seats} 席
 {:else}
-标准档：{seats} 席 · 月费 ${total}
+标准档：{seats} 席
 {/if}
 ```
 
@@ -95,7 +96,7 @@ intent: |
 ```garden compose #parity-each
 caption: 遍历三行清单。
 intent: |
-  验收 each 局部变量进入正文插值。
+  验收 each：三行清单必须画出来，序号与名字跟着数组走。
 ---
 {@body const items = ["香草", "多肉", "番茄"]}
 {#each items as name, i}

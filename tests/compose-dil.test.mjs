@@ -53,3 +53,44 @@ test("lowers button onClick setName(expr)", () => {
   const { check } = compileUiBlock(block.uiSource);
   assert.equal(check.ok, true, JSON.stringify(check.diagnostics));
 });
+
+test("intent YAML may mention {@body} without breaking the tree", () => {
+  const body = `caption: pot
+intent: |
+  验收 slider 与 {@body} 派生值。
+---
+{@body const [diameter, setDiameter] = DIL.useState(12)}
+{@body const water = Math.round(diameter * diameter * 0.35 + 20)}
+<slider min={8} max={24} value={diameter} onChange={setDiameter} label="盆口直径" unit="cm" />
+<stat label="这一次" value={water} unit="ml" />
+`;
+  const block = parsePlayCompose({ id: "pot-water" }, body);
+  assert.equal(block.error, undefined, JSON.stringify(block.error));
+  assert.equal(block.dil, true);
+  assert.match(block.uiSource, /bind="diameter"/);
+  const { check } = compileUiBlock(block.uiSource);
+  assert.equal(check.ok, true, JSON.stringify(check.diagnostics));
+});
+
+test("if/each plain text lowers to a painted Caption leaf", () => {
+  const block = parsePlayCompose(
+    { id: "flow" },
+    `caption: x
+---
+{@body const items = ["香草", "多肉"]}
+{@body const seats = 8}
+{#each items as name, i}
+第 {i + 1} 项：{name}
+{/each}
+{#if seats >= 5}
+批量折扣档：{seats} 席
+{:else}
+标准档：{seats} 席
+{/if}
+`,
+  );
+  assert.match(block.uiSource, /<Each[\s\S]*<Caption>第 \{i \+ 1\} 项：\{name\}<\/Caption>/);
+  assert.match(block.uiSource, /<If test=\{seats >= 5\}>[\s\S]*<Caption>批量折扣档：\{seats\} 席<\/Caption>/);
+  const { check } = compileUiBlock(block.uiSource);
+  assert.equal(check.ok, true, JSON.stringify(check.diagnostics));
+});

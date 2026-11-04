@@ -87,7 +87,13 @@ function splitHeader(raw) {
   const sep = lines.findIndex((line, index) => index > 0 && /^---\s*$/u.test(line));
   if (sep < 0) return { yamlText: "", tree: lines.join("\n") };
   const head = lines.slice(0, sep).join("\n");
-  if (/<\/?[A-Za-z]/.test(head) || /\{@body\b/.test(head) || /\{#(?:if|each)\b/.test(head)) {
+  // Only treat head as "not YAML" when DIL/markup starts a line. Prose in intent
+  // may mention `{@body}` mid-sentence without being a real body statement.
+  if (
+    /(?:^|\n)\s*<\/?[A-Za-z]/m.test(head) ||
+    /(?:^|\n)\s*\{@body\b/m.test(head) ||
+    /(?:^|\n)\s*\{#(?:if|each)\b/m.test(head)
+  ) {
     return { yamlText: "", tree: lines.join("\n") };
   }
   return { yamlText: head, tree: lines.slice(sep + 1).join("\n") };
@@ -176,13 +182,29 @@ function parseBodies(source) {
   return { state, lets, errors, rest: cleaned };
 }
 
+/**
+ * Plain Markdown / text inside {#if}/{#each} must become a painted leaf.
+ * If the body already has a component tag, leave it alone; otherwise wrap in Caption
+ * (always visible in the play runtime) so derived copy cannot silently vanish.
+ */
+function wrapFlowBody(body) {
+  const text = String(body ?? "");
+  if (!text.trim()) return text;
+  if (/<[A-Za-z][\w-]*/u.test(text)) return text;
+  // Preserve leading/trailing newlines for readability in lowered source.
+  const lead = text.match(/^\s*/u)?.[0] ?? "";
+  const trail = text.match(/\s*$/u)?.[0] ?? "";
+  const inner = text.trim();
+  return `${lead}<Caption>${inner}</Caption>${trail}`;
+}
+
 function expandControl(source) {
   let text = source;
   text = text.replace(
     /\{#each\s+([^]+?)\s+as\s+([A-Za-z_]\w*)(?:\s*,\s*([A-Za-z_]\w*))?\s*\}([\s\S]*?)\{\/each\}/gu,
     (_, list, asName, indexName, body) => {
       const index = indexName ? ` index="${indexName}"` : "";
-      return `<Each of={${rewriteExpr(list)}} as="${asName}"${index}>${body}</Each>`;
+      return `<Each of={${rewriteExpr(list)}} as="${asName}"${index}>${wrapFlowBody(body)}</Each>`;
     },
   );
 
@@ -212,9 +234,9 @@ function expandControl(source) {
       for (const piece of conditions) {
         const body = inner.slice(piece.start, piece.end);
         if (piece.cond == null) {
-          parts.push(`<If test={!(${firstCond})}>${body}</If>`);
+          parts.push(`<If test={!(${firstCond})}>${wrapFlowBody(body)}</If>`);
         } else {
-          parts.push(`<If test={${piece.cond}}>${body}</If>`);
+          parts.push(`<If test={${piece.cond}}>${wrapFlowBody(body)}</If>`);
         }
       }
       return parts.join("\n");

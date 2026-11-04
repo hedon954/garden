@@ -80,7 +80,11 @@ export const asNumber = (value: unknown) => (typeof value === "number" && Number
 export function expandChildren(runtime: Runtime, children: UiNode[] | undefined, env: Env): Array<{ node: UiNode; env: Env }> {
   const output: Array<{ node: UiNode; env: Env }> = [];
   for (const child of children ?? []) {
-    if (child.t !== "el") continue;
+    // Markdown / paragraph leaves inside If/Each must paint (ChatGPT DIL).
+    if (child.t !== "el") {
+      output.push({ node: child, env });
+      continue;
+    }
     if (child.n === "If") {
       if (propValue(runtime, child, "test", env)) output.push(...expandChildren(runtime, child.c, env));
     } else if (child.n === "Each") {
