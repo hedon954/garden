@@ -7,99 +7,106 @@ order: 36
 badge: compose
 ---
 
-In the editor, type `/garden` and choose the compose item. That inserts a `garden compose` fence whose body is one sentence, not YAML. After compile, the fence type stays `garden compose`: that sentence is copied into `<intent>` unchanged, and the compile step writes Markdown leaves plus tags, not YAML slots.
+In the editor, type `/garden` and choose `compose`. That inserts a `garden compose` fence. Write a few plain sentences inside it, then ask the AI to compile the post.
 
-You only write what the reader should see. Do not write density, fill, corner radius, font weight, shadow, or whether a box should hug its text. Every field is in [Component reference · compose](/garden/en/reference/compose). A narrow screen stacks a row into one column.
+## What to write
 
-## How to write the sentence
+Write the structure you want the reader to see. Do not describe the look.
 
-### State the structure
+State four things and the compiler has enough:
 
-The sentence needs a claim about shape. Three lists joined in the middle. One place reached first, then a fan-out. Layers from top to bottom. Several facets of one request. A first row of sequence and a second row that is the point.
+- **How many parts**: three columns side by side, five layers top to bottom, or two rows.
+- **Short names**: the words that appear on the diagram, such as `User`, `Identity Provider`, or `Authorization`. Put the explanation on the line below, not inside the title.
+- **Who connects to whom**: what goes to what first, where one box fans out, or where two sides meet. If the parts are not in order, say "not a strict sequence."
+- **Which part is the point**: name it directly, such as "Role is the focus" or "the bottom row is the point."
 
-### Name the parts
+Do not write colors, rounded corners, grey pills, font weights, spacing, shadows, or full-width rules. Component defaults handle the look. Every tag is listed in [Component reference · compose](/garden/en/reference/compose).
 
-Boxes, lanes, and steps use the short nouns the reader will read on the diagram. `Administrator`, `identity provider`, and `authorization decision` can be titles. Put the explanation in the line under the name. Do not use a full sentence as the title.
+## Not enough vs enough
 
-### State the relationships
+In each pair below, the first line is too vague or talks about styling. The fenced block is ready to copy. The compiled diagrams follow below this section.
 
-Say order, grouping, who connects to whom, and whether lines fan out or meet. If it is not a single sequence, say that it is not a strict order. If the reader should open one step and read only that note, say which step and which sentence.
+**Three columns joined in the middle**
 
-### Mark what matters
-
-Say which part should be seen first, and which parts are only the path or the background. For example: "Role is the middle layer to see first." "The identity service and the authorization decision are the two layers to emphasize." "The second row is the decision loop." Do not name a color or a frame.
-
-### Do not describe the look
-
-Do not ask for flatter cards, grey pills, hugging the text, not stretching, a font weight, tighter density, a shadow, a radius, or a tinted band. Shared defaults and the compile step decide the look.
-
-## Enough structure, and not enough
-
-Each pair is the sentence you type into the fence. The compiled diagrams are below this section.
-
-### Three columns, joined in the middle
-
-Not enough: "Draw a permissions diagram." There are no columns, no names, and no connection.
-
-Also not enough: "Three equal columns, a light grey rounded card in the middle, do not stretch it, use a light font weight." That is a look, not a structure.
+Not enough: "Draw a permissions diagram." — No columns and no names.
+Also not enough: "Three equal columns, light grey rounded box in the middle, lighter font weight." — All styling, no content.
 
 Enough:
 
 ````markdown
 ```garden compose
-Three columns: User with Alice and Bob, Role with Administrator and Reviewer, Permission with orders:read and orders:approve. Role sits in the middle and connects users to permissions. Role is the layer to see first.
+Three columns: User has Alice and Bob; Role has Administrator and Reviewer;
+Permission has orders:read and orders:approve.
+Role sits in the middle and connects users to permissions. Role is the focus.
 ```
 ````
 
-### Reach one place, then fan out
+This names the three columns, the items under each one, the middle link, and the focus on `Role`.
 
-Not enough: "Draw SSO, with nicer arrows and even gaps."
+**One hub, then fan out**
+
+Not enough: "Draw SSO with nicer arrows and even spacing." — Only talks about styling.
 
 Enough:
 
 ````markdown
 ```garden compose
-The browser reaches the identity provider first. The identity provider then connects to HR, Finance, and Project at once. All three systems trust that same provider. The identity provider is the layer to see first.
+The browser reaches the identity provider first, then connects to
+HR, Finance, and Project at once.
+All three systems trust that provider. The identity provider is the focus.
 ```
 ````
 
-### Layers from top to bottom
+This states what comes first, the one-to-three fan-out, and which box matters most.
 
-Not enough: "Five full-width bands, tint the second and the fifth, draw thin arrows."
+**Layers from top to bottom**
+
+Not enough: "Five full-width bands, color the second and fifth, thin arrows." — Describes boxes instead of layers.
 
 Enough:
 
 ````markdown
 ```garden compose
-Five layers from top to bottom: browser, identity service, BFF, business service, authorization decision. The identity service and the authorization decision are the two layers to emphasize. The others are the path. Not every request walks the layers in this order.
+Five layers top to bottom: Browser, Identity Service, BFF,
+Business Service, Authorization Decision.
+Identity Service and Authorization Decision are the focus; the rest are the path.
+Not every request walks all five in order.
 ```
 ````
 
-### Several facets of one request
+This names the five layers, picks the two to highlight, and notes that requests do not always run in order.
 
-Not enough: "Two rows of two cards, then two more, and do not bold the titles."
+**Several sides of one request**
+
+Not enough: "Two rows of two cards, then two more, unbolded titles." — Only describes layout.
 
 Enough:
 
 ````markdown
 ```garden compose
-The user wants to change an order address. Split that into authentication, credential, authorization, and verification, one question each: who you are, how you prove it, whether you may, and whether the payload is valid. Then transport and confidentiality. These six are not a strict sequence.
+When a user sends a request, check four things first: Authentication (who you are),
+Credential (how you prove it), Authorization (whether you may), Validation (whether data is valid).
+For business logic and storage, check Transport and Confidentiality. Not a strict sequence.
 ```
 ````
 
-### A sequence on top, the point underneath
+This gives the six short names, the one-line question under each, the two groups, and the non-sequential note.
 
-Not enough: "Plain titles on top, grey pills underneath, hug the text, do not stretch the row."
+**Two rows in contrast**
+
+Not enough: "Borderless text on top, grey pills below, hug the content." — All visual instructions.
 
 Enough:
 
 ````markdown
 ```garden compose
-The top row is delivery order: Understand, Design, Ship. The bottom row is the decision loop to emphasize: Hypothesize, Cheap test, Iterate or stop. The top row is background. The bottom row is the point.
+Top row is standard delivery: Understand -> Design -> Ship.
+Bottom row is the discovery loop: Hypothesize -> Cheap test -> Iterate or drop.
+The top row is background; the bottom row is the point.
 ```
 ````
 
-The diagrams below are what this kind of sentence looks like after compile.
+This says which row is background and which row carries the point. The diagrams below are compiled from sentences like these.
 
 ## RBAC
 
