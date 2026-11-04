@@ -1,5 +1,5 @@
 ---
-draft: true
+draft: false
 title: 说明图对照
 description: 说明图并排点验。左边是原来的示意，右边是 garden compose。
 date: 2026-11-03
