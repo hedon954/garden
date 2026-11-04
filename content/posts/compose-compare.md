@@ -8,7 +8,7 @@ tags:
   - compose
 ---
 
-这些图只在这篇 tip 对照里点验。左边是原来的示意，右边是 `garden compose`。颜色走主题变量，浅色和深色都用同一张卡片。窄屏先上下叠，再把图里的横排收成一列。
+左边是原来的示意，右边是 `garden compose`。颜色走主题变量，浅色和深色都用同一张卡片。窄屏先上下叠，再把图里的横排收成一列。
 
 ## RBAC
 
@@ -119,44 +119,42 @@ tags:
   <text tone="muted">例如：修改订单收货地址</text>
 </stack>
 <arrow dir="down"/>
-<row>
-  <box>
+<grid cols={2} gap={3}>
+  <box padding={3} gap={1} radius="lg" border="subtle">
     <title>认证</title>
     <text>你是谁？</text>
-    <text tone="muted">Authentication</text>
+    <caption>Authentication</caption>
   </box>
-  <box>
+  <box padding={3} gap={1} radius="lg" border="subtle">
     <title>凭证</title>
     <text>如何证明你的身份？</text>
-    <text tone="muted">Credential</text>
+    <caption>Credential</caption>
   </box>
-</row>
-<row>
-  <box>
+  <box padding={3} gap={1} radius="lg" border="subtle">
     <title>授权</title>
     <text>你有权修改这笔订单吗？</text>
-    <text tone="muted">Authorization</text>
+    <caption>Authorization</caption>
   </box>
-  <box>
+  <box padding={3} gap={1} radius="lg" border="subtle">
     <title>验证</title>
     <text>提交的数据是否合法？</text>
-    <text tone="muted">Verification</text>
+    <caption>Verification</caption>
   </box>
-</row>
+</grid>
 <arrow dir="down"/>
-<stack align="center">
+<stack align="center" gap={2}>
   <title>业务操作与数据存储</title>
+  <grid cols={2} gap={3}>
+    <box padding={3} gap={1} radius="lg" border="subtle">
+      <title>传输</title>
+      <text>网络中能否被窃听、篡改、冒充？</text>
+    </box>
+    <box padding={3} gap={1} radius="lg" border="subtle">
+      <title>保密</title>
+      <text>敏感数据泄露后能否被读取？</text>
+    </box>
+  </grid>
 </stack>
-<row>
-  <box>
-    <title>传输</title>
-    <text>网络中能否被窃听、篡改、冒充？</text>
-  </box>
-  <box>
-    <title>保密</title>
-    <text>敏感数据泄露后能否被读取？</text>
-  </box>
-</row>
 <text tone="muted">概念示意：六者并不是严格串行的执行阶段，传输保护贯穿网络通信，保密措施也可能覆盖客户端与服务端。</text>
 ```
 
@@ -182,17 +180,16 @@ tags:
     </row>
   </band>
   <arrow dir="down"/>
-  <box align="center" mark="shield">
+  <box align="center" padding={3} gap={2} radius="lg" background="surface-secondary" border="subtle">
+    <icon name="shield" size="lg"/>
     <title>Policy Enforcement Point</title>
-    <text tone="muted" align="center">独立于 LLM 的确定性执行控制</text>
-    <row align="center">
-      <text>权限与资源范围</text>
-      <text>操作参数校验</text>
-    </row>
-    <row align="center">
-      <text>任务意图约束</text>
-      <text>高风险操作审批</text>
-    </row>
+    <caption align="center">独立于 LLM 的确定性执行控制</caption>
+    <grid cols={2} gap={2}>
+      <text align="center">权限与资源范围</text>
+      <text align="center">操作参数校验</text>
+      <text align="center">任务意图约束</text>
+      <text align="center">高风险操作审批</text>
+    </grid>
   </box>
   <arrow dir="down"/>
   <title>Tool Executor</title>
@@ -247,4 +244,136 @@ tags:
   <pill tone="muted">迭代或放弃</pill>
 </row>
 <text tone="muted" align="start">第二行才是产品探索更强调的决策循环。</text>
+```
+
+## 近四日推送频控
+
+左边是 ChatGPT 原图，右边用通用 `row` + `box` + `icon` 拼（没有专用日历组件）。格子要矮、等宽、轻描边。
+
+![ChatGPT 原图](./compose-compare/freq-4day-gpt.png)
+
+```garden compose
+<intent>
+横向四个等宽矮格，拉满卡片宽度、左右不留空。11/01 已触达（浅绿+勾），11/02 可推（浅蓝+开锁），11/03 与 11/04 锁定（浅灰+锁）。图标不要太大，日期和状态标签居中。
+</intent>
+<stack align="center" gap={2}>
+  <title align="center">近四日推送频控</title>
+  <caption align="center">同一用户滑动窗口内最多一次成功触达</caption>
+  <row gap={2} align="stretch" wrap="nowrap">
+    <box padding={1} gap={1} radius="md" background="surface-tip" border="subtle" align="center" size="sm">
+      <icon name="check-circle" size="sm"/>
+      <text size="sm" align="center">11/01</text>
+      <caption size="sm" align="center">已触达</caption>
+    </box>
+    <box padding={1} gap={1} radius="md" background="surface-accent" border="subtle" align="center" size="sm">
+      <icon name="lock-open" size="sm"/>
+      <text size="sm" align="center">11/02</text>
+      <caption size="sm" align="center">可推</caption>
+    </box>
+    <box padding={1} gap={1} radius="md" background="surface-muted" border="subtle" align="center" size="sm">
+      <icon name="lock" size="sm"/>
+      <text size="sm" align="center">11/03</text>
+      <caption size="sm" align="center">锁定</caption>
+    </box>
+    <box padding={1} gap={1} radius="md" background="surface-muted" border="subtle" align="center" size="sm">
+      <icon name="lock" size="sm"/>
+      <text size="sm" align="center">11/04</text>
+      <caption size="sm" align="center">锁定</caption>
+    </box>
+  </row>
+</stack>
+```
+
+## 最近 7 天 Push 频控示意
+
+滑动窗口：已发送用蓝底勾，空日只有短横，窗口外沿用绿底开锁。仍只用 `row` / `box` / `icon` / `text`。
+
+![ChatGPT 原图](./compose-compare/freq-7day-gpt.png)
+
+```garden compose
+<intent>
+场景栈要有行间隙（标题/日列/图例/脚注），gap≥3。横向八个等宽日格撑满横幅（含空日）。已发送浅蓝底+勾，空日无底+短横，窗口外沿浅绿底+开锁。标题 size=sm。图例左「已发送」、右绿色「可再次发送*」；脚注以 * 开头左对齐。
+</intent>
+<stack align="stretch" gap={3}>
+  <title size="sm" align="start">最近 7 天 Push 频控示意</title>
+  <row gap={2} align="stretch" wrap="nowrap">
+    <box padding={1} gap={1} radius="md" background="surface-accent" border="subtle" align="center" size="sm">
+      <text size="sm" align="center">11/01</text>
+      <icon name="check-circle" size="sm"/>
+    </box>
+    <box frame="text" padding={0} gap={1} align="center" size="sm">
+      <text size="sm" align="center">11/02</text>
+      <icon name="minus" size="sm"/>
+    </box>
+    <box padding={1} gap={1} radius="md" background="surface-accent" border="subtle" align="center" size="sm">
+      <text size="sm" align="center">11/03</text>
+      <icon name="check-circle" size="sm"/>
+    </box>
+    <box frame="text" padding={0} gap={1} align="center" size="sm">
+      <text size="sm" align="center">11/04</text>
+      <icon name="minus" size="sm"/>
+    </box>
+    <box frame="text" padding={0} gap={1} align="center" size="sm">
+      <text size="sm" align="center">11/05</text>
+      <icon name="minus" size="sm"/>
+    </box>
+    <box frame="text" padding={0} gap={1} align="center" size="sm">
+      <text size="sm" align="center">11/06</text>
+      <icon name="minus" size="sm"/>
+    </box>
+    <box frame="text" padding={0} gap={1} align="center" size="sm">
+      <text size="sm" align="center">11/07</text>
+      <icon name="minus" size="sm"/>
+    </box>
+    <box padding={1} gap={1} radius="md" background="surface-tip" border="subtle" align="center" size="sm">
+      <text size="sm" align="center">11/08</text>
+      <icon name="lock-open" size="sm"/>
+    </box>
+  </row>
+  <row justify="between" align="start" wrap="nowrap" gap={1}>
+    <caption size="sm" align="start">11/01、11/03 已发送</caption>
+    <text size="sm" tone="tip" align="end">11/08 起可再次发送*</text>
+  </row>
+  <caption size="sm" align="start">* 假设 11/01 的发送记录已超过完整的 7×24 小时。</caption>
+</stack>
+```
+
+## 推荐链路（成功 / 失败）
+
+竖向推荐推送：成功走绿底勾选，失败无底打叉。仍用 `stack` + `box` + `icon`。
+
+```garden compose
+<intent>
+从上到下：候选召回 → 策略过滤 → 触达。成功分支带勾并浅绿底；失败分支带叉、无强调底。
+</intent>
+<stack align="center" gap={2}>
+  <box padding={3} gap={1} radius="lg" border="subtle" align="center">
+    <title>候选召回</title>
+    <caption>Retrieve candidates</caption>
+  </box>
+  <arrow dir="down"/>
+  <box padding={3} gap={2} radius="lg" background="surface-tip" border="subtle" align="center">
+    <icon name="check-circle" size="lg"/>
+    <title>策略过滤通过</title>
+    <caption>频控 / 合规 / 配额均满足</caption>
+  </box>
+  <arrow dir="down"/>
+  <box padding={3} gap={2} radius="lg" background="surface-tip" border="subtle" align="center">
+    <icon name="check" size="lg"/>
+    <title>触达成功</title>
+    <caption>写入审计并进入冷却窗</caption>
+  </box>
+  <divider/>
+  <box padding={3} gap={2} radius="lg" border="subtle" align="center">
+    <icon name="x-circle" size="lg"/>
+    <title>策略过滤失败</title>
+    <caption>命中频控或高风险拦截</caption>
+  </box>
+  <arrow dir="down"/>
+  <box padding={3} gap={2} radius="lg" border="subtle" align="center">
+    <icon name="x" size="lg"/>
+    <title>跳过触达</title>
+    <caption>不发消息，仅记拒绝原因</caption>
+  </box>
+</stack>
 ```

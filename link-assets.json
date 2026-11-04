@@ -13,6 +13,9 @@
     "openlibrary.org": {
       "file": "/link-assets/fav/openlibrary.org-291d6aef76.png"
     },
+    "openui.com": {
+      "file": "/link-assets/fav/openui.com-78bc402d36.svg"
+    },
     "typora.io": {
       "file": "/link-assets/fav/typora.io-ac8bd1d6ec.png"
     },
@@ -25,7 +28,7 @@
       "title": "GitHub - remarkjs/remark-gfm: remark plugin to support GFM (autolink literals, footnotes, strikethrough, tables, tasklists)",
       "description": "remark plugin to support GFM (autolink literals, footnotes, strikethrough, tables, tasklists) - remarkjs/remark-gfm",
       "siteName": "GitHub",
-      "image": "/link-assets/og/6bffa3ac1b-a910af77e8.webp"
+      "image": "/link-assets/og/6bffa3ac1b-2cb595014b.webp"
     },
     "https://katex.org/docs/supported.html": {
       "title": "Supported Functions · KaTeX",

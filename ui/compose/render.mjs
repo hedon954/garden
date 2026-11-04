@@ -1,3 +1,6 @@
+import { iconSvg } from "./icons.mjs";
+import { SPACING_PX } from "./tokens.mjs";
+
 const ARROW = (dir) =>
   `<svg class="g-compose-arrow" data-dir="${dir}" viewBox="0 0 10 8" width="10" height="8" aria-hidden="true" focusable="false"><path d="M5 0.7 5 6.5 M2.6 4.1 5 6.5 7.4 4.1" fill="none" stroke="currentColor" stroke-width="1.05" stroke-linecap="round" stroke-linejoin="round"></path></svg>`;
 
@@ -58,10 +61,11 @@ function badgeHtml(badge) {
   if (!badge?.text) return "";
   const index = /^[①②③④⑤⑥⑦⑧⑨]$/u.test(badge.text);
   const cls = index ? "g-compose-index" : "g-compose-badge";
-  return `<span class="${cls}" data-tone="${esc(badge.tone || "accent")}">${textHtml(badge.text)}</span>`;
+  const size = badge.size ? ` data-size="${esc(badge.size)}"` : "";
+  return `<span class="${cls}" data-tone="${esc(badge.tone || "accent")}"${size}>${textHtml(badge.text)}</span>`;
 }
 
-const SHIELD = `<svg class="g-compose-mark" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false"><path d="M8 1.4l5.2 2.1v4.3c0 3.1-2.2 5.2-5.2 6.6-3-1.4-5.2-3.5-5.2-6.6V3.5L8 1.4z" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M5.4 8.1l1.7 1.7 3.5-3.6" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+const SHIELD = iconSvg("shield") || "";
 
 function kpiHtml(kpi) {
   if (!kpi?.value) return "";
@@ -70,7 +74,7 @@ function kpiHtml(kpi) {
   return `<span class="g-compose-kpi"><span class="g-compose-kpi-value">${textHtml(kpi.value)}</span>${unit}${label}</span>`;
 }
 
-const PHRASING = new Set(["badge", "kpi", "text", "title"]);
+const PHRASING = new Set(["badge", "kpi", "text", "title", "caption", "icon", "label", "kbd", "link", "button"]);
 
 function noteHtml(note) {
   const kicker = note.title ? `<p class="g-compose-note-k">${textHtml(note.title)}</p>` : "";
@@ -84,18 +88,79 @@ function disclosure(ctx, className, tone, face, notes, id) {
   return `<details class="g-compose-disclosure" name="${ctx.scope}" id="${ctx.scope}-${esc(id)}"${open}><summary class="${className}" data-tone="${esc(tone)}">${face}</summary>${body}</details>`;
 }
 
+function tokenStyle(node) {
+  const parts = [];
+  if (node.padding != null && SPACING_PX[node.padding] != null) {
+    parts.push(`--gc-pad:${SPACING_PX[node.padding]}px`);
+  }
+  if (node.gap != null && SPACING_PX[node.gap] != null) {
+    parts.push(`--gc-gap:${SPACING_PX[node.gap]}px`);
+  }
+  return parts.length ? ` style="${parts.join(";")}"` : "";
+}
+
+function tokenData(node, { skip = [] } = {}) {
+  const bits = [];
+  const skipSet = new Set(skip);
+  if (node.padding != null && !skipSet.has("padding")) bits.push(` data-pad="${node.padding}"`);
+  if (node.gap != null && !skipSet.has("gap")) bits.push(` data-gap="${node.gap}"`);
+  if (node.radius) bits.push(` data-radius="${esc(node.radius)}"`);
+  if (node.background) bits.push(` data-bg="${esc(node.background)}"`);
+  if (node.size) bits.push(` data-size="${esc(node.size)}"`);
+  if (node.align && node.align !== "start") bits.push(` data-align="${esc(node.align)}"`);
+  if (node.justify) bits.push(` data-justify="${esc(node.justify)}"`);
+  if (node.border) bits.push(` data-border="${esc(node.border)}"`);
+  if (node.wrap) bits.push(` data-wrap="${esc(node.wrap)}"`);
+  return bits.join("");
+}
+
+function attrIf(name, value, fallback) {
+  return value && value !== fallback ? ` data-${name}="${esc(value)}"` : "";
+}
+
+function renderChildren(nodes, ctx) {
+  return (nodes ?? []).map((child) => renderNode(child, ctx)).join("");
+}
+
+function meterBar(node, kind) {
+  const max = node.max || 100;
+  const pct = Math.max(0, Math.min(100, Math.round((Number(node.value) / max) * 100)));
+  const label = node.label ? `<span class="g-compose-widget-label">${textHtml(node.label)}</span>` : "";
+  const value = `<span class="g-compose-widget-value">${textHtml(String(node.value))}${node.unit ? textHtml(node.unit) : ""}</span>`;
+  return `<div class="g-compose-${kind}">${label}<div class="g-compose-meter-track" role="img" aria-label="${esc(String(pct))}%"><i style="width:${pct}%"></i></div>${value}</div>`;
+}
+
 function renderNode(node, ctx) {
   switch (node.type) {
     case "stack":
-      return `<div class="g-compose-stack" data-gap="${node.gap}"${attrIf("align", node.align, "start")}>${node.children.map((child) => renderNode(child, ctx)).join("")}</div>`;
+    case "columns":
+    case "group":
+    case "field":
+    case "header":
+    case "footer":
+    case "figure":
+    case "prose":
+      return `<div class="g-compose-${node.type === "columns" ? "row" : node.type === "stack" ? "stack" : node.type}"${node.type === "columns" ? ` data-wrap="wrap"` : ""}${tokenData(node)}${tokenStyle(node)}>${renderChildren(node.children, ctx)}</div>`;
     case "row":
-      return `<div class="g-compose-row"${attrIf("align", node.align, "start")}>${node.children.map((child) => renderNode(child, ctx)).join("")}</div>`;
+      return `<div class="g-compose-row"${tokenData(node)}${tokenStyle(node)}>${renderChildren(node.children, ctx)}</div>`;
+    case "grid":
+      return `<div class="g-compose-grid" data-cols="${node.cols || 2}"${tokenData(node)}${tokenStyle(node)}>${renderChildren(node.children, ctx)}</div>`;
+    case "grid-item":
+      return `<div class="g-compose-grid-item" data-span="${node.span || 1}"${tokenData(node)}${tokenStyle(node)}>${renderChildren(node.children, ctx)}</div>`;
     case "card":
       return renderCard(node, ctx);
     case "title":
       return renderText(node, ctx, "g-compose-h");
     case "text":
       return renderText(node, ctx, "g-compose-text");
+    case "caption":
+      return renderText({ ...node, tone: "muted" }, ctx, "g-compose-caption-inline");
+    case "label":
+      return renderText(node, ctx, "g-compose-label");
+    case "kbd":
+      return `<kbd class="g-compose-kbd">${textHtml(node.text)}</kbd>`;
+    case "link":
+      return `<a class="g-compose-link" href="${esc(node.href)}">${textHtml(node.text)}</a>`;
     case "steps":
       return renderSteps(node, ctx);
     case "compare":
@@ -106,12 +171,17 @@ function renderNode(node, ctx) {
       return `<aside class="g-compose-callout" data-tone="${esc(node.tone)}"><p>${textHtml(node.text)}</p></aside>`;
     case "divider":
       return `<hr class="g-compose-divider">`;
+    case "spacer":
+      return `<div class="g-compose-spacer" data-gap="${node.gap ?? 2}" aria-hidden="true"></div>`;
     case "badge":
       return badgeHtml(node);
     case "kpi":
-      return kpiHtml(node);
+    case "stat":
+      return kpiHtml({ value: node.value, unit: node.unit, label: node.label });
+    case "icon":
+      return iconSvg(node.name, { size: node.size || "md", inline: node.inline }) || "";
     case "arrow":
-      return ARROW(node.direction === "right" ? "right" : "down");
+      return ARROW(node.direction === "right" || node.direction === "left" || node.direction === "up" ? node.direction : "down");
     case "fan":
       return fanHtml(node.count);
     case "join":
@@ -120,6 +190,78 @@ function renderNode(node, ctx) {
       return lanesHtml(node);
     case "notes":
       return "";
+    case "tabs": {
+      const heads = (node.children ?? []).map((tab, i) => `<span class="g-compose-tab-h"${tab.active || i === 0 ? ` data-active="true"` : ""}>${textHtml(tab.title || `Tab ${i + 1}`)}</span>`).join("");
+      const active = (node.children ?? []).find((tab) => tab.active) || (node.children ?? [])[0];
+      const body = active ? renderChildren(active.children, ctx) : "";
+      return `<div class="g-compose-tabs"><div class="g-compose-tablist">${heads}</div><div class="g-compose-tabpanel">${body}</div></div>`;
+    }
+    case "tab":
+      return renderChildren(node.children, ctx);
+    case "list": {
+      const tag = node.ordered ? "ol" : "ul";
+      const items = (node.children ?? []).map((child) => {
+        if (child.type === "list-item") return `<li>${renderChildren(child.children, ctx)}</li>`;
+        return `<li>${renderNode(child, ctx)}</li>`;
+      }).join("");
+      return `<${tag} class="g-compose-list">${items}</${tag}>`;
+    }
+    case "list-item":
+      return renderChildren(node.children, ctx);
+    case "table":
+      return `<table class="g-compose-table">${renderChildren(node.children, ctx)}</table>`;
+    case "thead":
+    case "tbody":
+      return `<${node.type}>${renderChildren(node.children, ctx)}</${node.type}>`;
+    case "tr":
+      return `<tr>${renderChildren(node.children, ctx)}</tr>`;
+    case "th":
+    case "td": {
+      const align = node.align ? ` data-align="${esc(node.align)}"` : "";
+      const inner = node.children?.length ? renderChildren(node.children, ctx) : textHtml(node.text);
+      return `<${node.type}${align}>${inner}</${node.type}>`;
+    }
+    case "code":
+      return `<pre class="g-compose-code"${node.language ? ` data-lang="${esc(node.language)}"` : ""}><code>${esc(node.text)}</code></pre>`;
+    case "image":
+      return `<img class="g-compose-image" data-size="${esc(node.size || "md")}" src="${esc(node.src)}" alt="${esc(node.alt || "")}" loading="lazy">`;
+    case "avatar":
+      return `<span class="g-compose-avatar" data-size="${esc(node.size || "md")}" aria-hidden="true">${textHtml((node.label || "?").slice(0, 2))}</span>`;
+    case "progress":
+      return meterBar(node, "progress");
+    case "meter":
+      return meterBar(node, "meter");
+    case "checkbox":
+    case "radio": {
+      const mark = node.checked ? (node.type === "radio" ? "●" : "✓") : (node.type === "radio" ? "○" : "□");
+      const label = node.label ? `<span>${textHtml(node.label)}</span>` : "";
+      return `<span class="g-compose-${node.type}"${node.checked ? ` data-checked="true"` : ""}${node.disabled ? ` data-disabled="true"` : ""}><i aria-hidden="true">${mark}</i>${label}</span>`;
+    }
+    case "toggle":
+      return `<span class="g-compose-toggle"${node.checked ? ` data-checked="true"` : ""}><i aria-hidden="true"></i>${node.label ? `<span>${textHtml(node.label)}</span>` : ""}</span>`;
+    case "input":
+    case "textarea":
+    case "select": {
+      const label = node.label ? `<span class="g-compose-widget-label">${textHtml(node.label)}</span>` : "";
+      const value = node.value || node.placeholder || "";
+      const kind = node.type === "textarea" ? "textarea" : node.type === "select" ? "select" : "input";
+      return `<label class="g-compose-field-static">${label}<span class="g-compose-${kind}-face">${textHtml(value || (kind === "select" ? "选择…" : ""))}</span></label>`;
+    }
+    case "button":
+      return `<span class="g-compose-button" data-tone="${esc(node.tone || "accent")}" data-size="${esc(node.size || "md")}">${textHtml(node.text)}</span>`;
+    case "slider": {
+      const min = node.min ?? 0;
+      const max = node.max ?? 100;
+      const value = node.value ?? min;
+      const pct = max === min ? 0 : Math.round(((value - min) / (max - min)) * 100);
+      const label = node.label ? `<span class="g-compose-widget-label">${textHtml(node.label)}</span>` : "";
+      const readout = `<span class="g-compose-widget-value">${textHtml(String(value))}${node.unit ? textHtml(` ${node.unit}`) : ""}</span>`;
+      return `<div class="g-compose-slider">${label}<div class="g-compose-slider-track" role="img" aria-label="${esc(String(value))}"><i style="width:${pct}%"></i><b style="left:${pct}%"></b></div>${readout}</div>`;
+    }
+    case "empty":
+      return `<div class="g-compose-empty">${textHtml(node.text)}</div>`;
+    case "option":
+      return `<span class="g-compose-option"${node.selected ? ` data-selected="true"` : ""}>${textHtml(node.text || node.value)}</span>`;
     default: {
       const unhandled = node.type;
       throw new Error(`compose render missing ${String(unhandled)}`);
@@ -127,15 +269,12 @@ function renderNode(node, ctx) {
   }
 }
 
-function attrIf(name, value, fallback) {
-  return value && value !== fallback ? ` data-${name}="${esc(value)}"` : "";
-}
-
 function renderText(node, ctx, className) {
   const tag = ctx.phrasing ? "span" : "p";
-  const align = node.align === "center" || node.align === "start" ? ` data-align="${node.align}"` : "";
+  const align = node.align === "center" || node.align === "start" || node.align === "end" ? ` data-align="${node.align}"` : "";
   const tone = attrIf("tone", node.tone, "plain");
-  return `<${tag} class="${className}"${align}${tone}>${textHtml(node.text)}</${tag}>`;
+  const size = node.size ? ` data-size="${esc(node.size)}"` : "";
+  return `<${tag} class="${className}"${align}${tone}${size}>${textHtml(node.text)}</${tag}>`;
 }
 
 function fanHtml(count) {
@@ -143,8 +282,6 @@ function fanHtml(count) {
 }
 
 function joinHtml(text) {
-  // One path. Arms meet at the bottom vertex, then the same stroke runs up to a tip
-  // above the label. The label sits in the opening with its top on the arm line.
   return `<div class="g-compose-join"><svg class="g-compose-join-svg" viewBox="0 0 600 72" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false"><path d="M18 8 L300 66 L582 8 L300 66 L300 1" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/></svg><div class="g-compose-join-label">${textHtml(text)}</div></div>`;
 }
 
@@ -180,8 +317,8 @@ function faceOf(node, ctx, phrasing) {
 function cardAttrs(node) {
   const tone = node.tone || "plain";
   const frame = node.frame && node.frame !== "card" ? ` data-frame="${esc(node.frame)}"` : "";
-  const align = node.align === "center" ? ` data-align="center"` : "";
-  return ` data-tone="${esc(tone)}"${frame}${align}`;
+  const align = node.align === "center" || node.align === "end" ? ` data-align="${esc(node.align)}"` : "";
+  return ` data-tone="${esc(tone)}"${frame}${align}${tokenData(node, { skip: ["align"] })}${tokenStyle(node)}`;
 }
 
 function renderCard(node, ctx) {
@@ -235,6 +372,7 @@ export function composeText(doc) {
     if (item.kpi?.value) parts.push(item.kpi.value);
     if (item.kpi?.unit) parts.push(item.kpi.unit);
     if (item.kpi?.label) parts.push(item.kpi.label);
+    if (item.type === "icon" && item.name) parts.push(item.name);
   };
   walk(doc?.nodes, (node) => {
     pushItem(node);

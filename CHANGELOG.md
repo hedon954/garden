@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.12.0
+
+`garden compose` DIL rewrite: Markdown leaves plus lowercase catalog tags (`row` / `box` / `icon` / `text` / …), Claude paper tokens, and ~690 Lucide icons. Handbook usage stays short; reference pages list all tags in groups and icons as a searchable glyph grid. Compare scenes (including 近四日 / 最近 7 天 push frequency) stretch day chips across the full banner; phrasing leaves keep footnote markers like `* 假设…`. Publish as `hd-garden@0.12.0`. Independent sites bump `hd-garden` (for example garden-blog) after the npm tag lands.
+
 ## 0.11.0
 
 `garden compose` is an explanation diagram: a YAML tree of cards, arrows, badges, and notes, rendered to static HTML at build time. The fence starts as one sentence and stays `garden compose` after compile. Light and dark both use the existing theme tokens, and a narrow screen stacks the diagram into one column. Clicking a step shows its note without a runtime. Compose now compiles Markdown leaves and catalog tags into one static tree, the same split ChatGPT uses for DIL, without streaming or a script sandbox. The handbook still teaches the idea sentence, then shows the seven capability diagrams. The diagram frame uses the page paper color. The `garden figure` component is gone: fences, the renderer, the picker, and the handbook page. Publish as `hd-garden@0.11.0`. Independent sites bump `hd-garden` (for example garden-blog) after the npm tag lands.

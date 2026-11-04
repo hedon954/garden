@@ -1,99 +1,177 @@
 ---
 title: Component reference · compose
 navTitle: compose
-description: Draw an explanation diagram with Markdown leaves and catalog tags. The build compiles them into one tree of static HTML.
+description: Scannable catalog of every compose tag, shared tokens, and links to the icon grid.
 section: reference
 order: 6
 badge: compose
 ---
 
-[← Component reference](/garden/en/reference) · [Usage: compose](/garden/en/components/compose)
+[← Component reference](/garden/en/reference) · [Usage](/garden/en/components/compose) · [Icons](/garden/en/reference/compose-icons)
 
-## Example
+Fence: ` ```garden compose `. Author intent stays in `<intent>` (not drawn). Unknown tags fail with `compose-invalid`.
 
-The fence is ` ```garden compose `. Prose with no tags reports `compose-uncompiled`. A broken tag, or a YAML slot tree, reports `compose-invalid`.
+**68 tags** in the catalog below. Icons: **690** names — see [compose icons](/garden/en/reference/compose-icons).
 
-```garden compose
-<intent>
-Three cards and downward arrows for sync, build, then validate. Clicking a step opens its note.
-</intent>
-# Site publish pipeline
+## Shared tokens
 
-Click a step to read what it does
+Write once; most layout tags accept them. Colors come only from Garden theme variables (Claude paper).
 
-<steps>
-  <step id="sync">
-    <badge>1</badge>
-    <title>sync</title>
-    <text>Sync content and config</text>
-    <note>Line up remote and local material</note>
-  </step>
-  <step id="build">
-    <badge>2</badge>
-    <title>build</title>
-    <text>Emit static HTML</text>
-    <note>The build renders compose into the page</note>
-  </step>
-  <step id="validate">
-    <badge>3</badge>
-    <title>validate</title>
-    <text>Check before shipping</text>
-    <note>The hook stops an idea that is still prose</note>
-  </step>
-</steps>
-```
-
-A `#` heading and the paragraph under it are Markdown leaves. They join the same tree as `<steps>`.
-
-```garden compose
-<intent>
-Two cards joined by a rightward arrow. Each card has a badge, and one has a metric. Click a card to read its note.
-</intent>
-<row>
-  <box id="sync" tone="accent">
-    <badge>1</badge>
-    <title>sync</title>
-    <kpi value="12" unit="ms" label="sync"/>
-    <text>Sync content and config</text>
-    <note>Line up remote and local material</note>
-  </box>
-  <arrow dir="right"/>
-  <box id="build">
-    <title>build</title>
-    <text>Emit static HTML</text>
-    <note>The build renders compose into the page</note>
-  </box>
-</row>
-```
-
-## Tags
-
-The author's sentence goes in `<intent>` and is not drawn. Other leaves are Markdown. Structure is the tags below. Do not write `{@body}`, `{#if}`, expressions, scripts, color values, or widths.
-
-| Tag | Role |
+| Token | Values |
 | :--- | :--- |
-| `#` headings, paragraphs, `**emphasis**`, lists | Join the same tree as tags. A heading becomes a title, a paragraph becomes text |
-| `<box>` | A card. `frame` is `card`, `band`, `text`, or `pill`. `tone` is `plain`, `accent`, `tip`, or `muted` |
-| `<band>` / `<pill>` | Two frames of `box`. A sentence inside `<pill>` becomes its title |
-| `<row>` / `<stack>` / `<grid>` | A horizontal row, a vertical stack, or a row of equal cells |
-| `<title>` / `<text>` | A short name, and the line under it. `text` may set `tone="muted"`, `align="center"`, or `align="start"` |
-| `<badge>` | A badge. One circled digit is drawn as an index |
-| `<kpi value unit label/>` | One metric |
-| `<arrow dir="down"/>` | An arrow. `dir` may also be `right`. A narrow screen turns right arrows downward |
-| `<fan n="3"/>` | Several downward arrows. The next row needs the same number of cells |
-| `<join>` | A V that meets under a label |
-| `<lanes>` | Lanes. Inside: `<actor>` and `<message from="1" to="2" tone="forward">`. `tone` is `forward` or `back` |
-| `<divider/>` | A rule |
-| `<steps>` / `<step id>` / `<note>` | Click a step to read only that note |
-| `<compare>` / `<item>` | Two to four compared items |
-| `<callout tone="tip">` | One note. `tone` is `note`, `tip`, or `warn` |
+| `padding` / `gap` | `0`–`4` (4px × n) |
+| `background` | `surface` `surface-secondary` `surface-accent` `surface-tip` `surface-muted` `transparent` |
+| `radius` | `none` `sm` `md` `lg` `xl` `full` |
+| `border` | `subtle` `strong`/`true` `none`/`false` |
+| `size` | `sm` `md` `lg` `xl` |
+| `tone` | `plain` `accent` `tip` `muted` (and callout `note`/`warn`) |
+| `align` | `start` `center` `end` `stretch` |
+| `justify` (row) | `start` `center` `end` `between` `around` |
+| `wrap` (row) | `wrap` `nowrap` |
 
-`tone="accent"` and `tone="tip"` are the two emphases, the same pair as lane `forward` / `back`. `muted` is the quiet layer. It is a meaning, not a style instruction.
+## High-traffic attributes
 
-Nesting stops at 8 levels, and a diagram stops at 80 tags. An unclosed tag is an error. The compiler does not repair a half-written document.
+### `box` / `card`
+
+| Attr | Notes |
+| :--- | :--- |
+| `frame` | `card` (default) `band` `pill` `text` — or sugar tags `<band>` / `<pill>` |
+| `padding` `gap` `radius` `border` `background` `size` `align` `tone` `id` `mark` | shared tokens; `mark="shield"` draws a shield glyph |
+
+### `row` / `stack` / `grid`
+
+| Attr | Notes |
+| :--- | :--- |
+| `gap` `align` | shared |
+| `justify` `wrap` | `row` only |
+| `cols` | `grid` only, 1–6 |
+| `span` | `grid-item` only, 1–6 |
+
+### `text` / `title` / `caption`
+
+| Attr | Notes |
+| :--- | :--- |
+| `size` `align` | shared |
+| `tone` | `text`: `plain` `muted` `accent` `tip`. `caption` forces muted. |
+
+### `icon`
+
+| Attr | Notes |
+| :--- | :--- |
+| `name` | required; must be in the [icon catalog](/garden/en/reference/compose-icons) |
+| `size` | `sm` `md` `lg` `xl` |
+| `inline` | sit with surrounding text |
+
+## Tag catalog
+
+One mini sample per group, then a one-line table for every tag. No per-tag essays.
+
+### Layout
+
+```garden compose
+<row gap={2}><box padding={2} radius="md" border="subtle"><title size="sm">A</title></box><box padding={2} radius="md" background="surface-accent"><title size="sm">B</title></box></row>
+```
+
+| Tag | Purpose |
+| :--- | :--- |
+| `box` | Generic container; padding / gap / background / radius |
+| `card` | Alias of box as a card face |
+| `stack` | Vertical stack |
+| `row` | Horizontal row |
+| `columns` | Multi-column row (wrap by default) |
+| `grid` | Equal grid; cols 1–6 |
+| `grid-item` | Grid cell; span columns |
+| `group` | Semantic group |
+| `field` | Form-field group |
+| `header` | Header region |
+| `footer` | Footer region |
+| `figure` | Figure region |
+| `prose` | Prose region |
+| `divider` | Divider (self-closing) |
+| `separator` | Alias of divider |
+| `spacer` | Empty spacer |
+| `band` | Full-width band (box frame=band) |
+| `pill` | Pill (box frame=pill) |
+
+### Text
+
+```garden compose
+<stack gap={1}><title size="sm">Title</title><text size="sm">Body</text><caption size="sm">Caption</caption><badge>badge</badge></stack>
+```
+
+| Tag | Purpose |
+| :--- | :--- |
+| `title` | Short title |
+| `text` | Body text |
+| `caption` | Caption (muted by default) |
+| `label` | Control label |
+| `badge` | Pill badge |
+| `kpi` | Metric (self-closing) |
+| `stat` | Alias of kpi |
+| `icon` | Named stroke icon (self-closing) |
+| `callout` | Callout strip |
+| `kbd` | Keyboard keycap |
+| `link` | Inline link |
+| `intent` | Author intent (not drawn) |
+
+### Controls
+
+```garden compose
+<stack gap={2}><row gap={2}><avatar label="A" size="sm"/><badge>ok</badge><kbd>⌘K</kbd></row><list><list-item>One</list-item><list-item>Two</list-item></list><progress value={40} max={100} label="40%"/></stack>
+```
+
+| Tag | Purpose |
+| :--- | :--- |
+| `button` | Button snapshot |
+| `slider` | Slider snapshot / play |
+| `progress` | Progress bar |
+| `meter` | Meter bar |
+| `checkbox` | Checkbox snapshot |
+| `radio` | Radio snapshot |
+| `toggle` | Toggle snapshot |
+| `switch` | Alias of toggle |
+| `input` | Text input snapshot |
+| `textarea` | Textarea snapshot |
+| `select` | Select snapshot |
+| `tabs` | Tabs container |
+| `tab` | One tab |
+| `list` | List |
+| `list-item` | List item |
+| `table` | Table |
+| `thead` | Table head |
+| `tbody` | Table body |
+| `tr` | Table row |
+| `th` | Header cell |
+| `td` | Data cell |
+| `image` | Image |
+| `avatar` | Avatar placeholder |
+| `empty` | Empty state |
+| `option` | Segment option snapshot |
+
+### Connectors
+
+```garden compose
+<stack align="center" gap={1}><pill>Start</pill><arrow dir="down"/><band tone="accent" align="center"><title size="sm">Hub</title></band></stack>
+```
+
+| Tag | Purpose |
+| :--- | :--- |
+| `arrow` | Arrow |
+| `fan` | Downward fan arrows |
+| `join` | V-shaped join |
+| `lanes` | Swimlanes |
+| `actor` | Lane actor |
+| `message` | Lane message |
+| `steps` | Steps container |
+| `step` | One step |
+| `note` | Step note |
+| `compare` | Compare cards |
+| `item` | Compare item |
+| `code` | Code snapshot |
+| `pre` | Preformatted text |
 
 ## Limits
 
-- The open note sits under its step. One diagram shows one open note at a time. It still opens with JavaScript off.
-- A fence that is still one sentence reports `compose-uncompiled`. A draft may keep it. Publish only after compile.
-- Color comes from theme tokens. The outer frame uses the page paper color, not a second off-white card.
+- Nesting ~10 levels / ~220 nodes.
+- Uncompiled prose-only fences report `compose-uncompiled`.
+- Play path (`{@body}`, `{#if}`, …) is documented in the repo `docs/compose-dil.md`; static fences render default-state snapshots for control tags.

@@ -1,99 +1,177 @@
 ---
 title: 组件参考 · compose
 navTitle: compose
-description: 用 Markdown 和标签画一张说明图。构建期编成同一棵树，再变成静态 HTML。
+description: 全部 compose 标签一览、共用 token，以及图标目录入口。
 section: reference
 order: 6
 badge: compose
 ---
 
-[← 组件参考](/garden/reference) · [用法：说明图](/garden/components/compose)
+[← 组件参考](/garden/reference) · [用法](/garden/components/compose) · [图标目录](/garden/reference/compose-icons)
 
-## 示例
+围栏写 ` ```garden compose `。作者原话放 `<intent>`（不绘制）。未知标签报 `compose-invalid`。
 
-围栏写 ` ```garden compose `。正文还是一句白话时报 `compose-uncompiled`。标签不合法，或写成 YAML 槽，报 `compose-invalid`。
+当前 **68** 个标签（见下方目录）。图标 **690** 个名字 —— 见 [图标目录](/garden/reference/compose-icons)。
 
-```garden compose
-<intent>
-用三张卡加向下箭头讲清 sync → build → validate；读者点每一步，下面展开对应说明。
-</intent>
-# 站点发布流水线
+## 共用 token
 
-三步串起来，点哪步看哪步
+多数布局标签共用；颜色只走 Garden 主题变量（Claude 纸色）。
 
-<steps>
-  <step id="sync">
-    <badge>1</badge>
-    <title>sync</title>
-    <text>同步内容与配置</text>
-    <note>先对齐远程与本地材料</note>
-  </step>
-  <step id="build">
-    <badge>2</badge>
-    <title>build</title>
-    <text>生成静态 HTML</text>
-    <note>构建期把 compose 渲进正文</note>
-  </step>
-  <step id="validate">
-    <badge>3</badge>
-    <title>validate</title>
-    <text>检查后再上线</text>
-    <note>钩子拦住未编译的想法块</note>
-  </step>
-</steps>
-```
-
-`#` 标题和下面的段落是 Markdown 叶子，和 `<steps>` 编进同一棵树。
-
-```garden compose
-<intent>
-两张卡用向右箭头连起来，每张卡上有徽标和指标。点一张卡，看对应说明。
-</intent>
-<row>
-  <box id="sync" tone="accent">
-    <badge>1</badge>
-    <title>sync</title>
-    <kpi value="12" unit="ms" label="对齐"/>
-    <text>同步内容与配置</text>
-    <note>先对齐远程与本地材料</note>
-  </box>
-  <arrow dir="right"/>
-  <box id="build">
-    <title>build</title>
-    <text>生成静态 HTML</text>
-    <note>构建期把 compose 渲进正文</note>
-  </box>
-</row>
-```
-
-## 标签
-
-作者原话放在 `<intent>` 里，不画出来。其余叶子用 Markdown，结构用下面这些标签。不要写 `{@body}`、`{#if}`、表达式、脚本、色值或宽度。
-
-| 标签 | 作用 |
+| Token | 取值 |
 | :--- | :--- |
-| `#` 标题、段落、`**强调**`、列表 | 和标签进同一棵树。标题变成 title，段落变成 text |
-| `<box>` | 一张卡。`frame` 是 `card`、`band`、`text`、`pill`。`tone` 是 `plain`、`accent`、`tip`、`muted` |
-| `<band>` / `<pill>` | `box` 的两种框。`<pill>` 里的一句会当成标题 |
-| `<row>` / `<stack>` / `<grid>` | 横排、竖排、横排格子 |
-| `<title>` / `<text>` | 短名字，和名字下面的一句。`text` 可以写 `tone="muted"`、`align="center"` 或 `align="start"` |
-| `<badge>` | 徽标。一个圆圈数字会画成序号 |
-| `<kpi value unit label/>` | 一个指标 |
-| `<arrow dir="down"/>` | 箭头。`dir` 还有 `right`。窄屏上向右的箭头会改成向下 |
-| `<fan n="3"/>` | 并排的几根向下箭头。下一行格子数要相同 |
-| `<join>` | V 形连接，字写在缺口里 |
-| `<lanes>` | 泳道。里面是 `<actor>` 和 `<message from="1" to="2" tone="forward">`。`tone` 是 `forward` 或 `back` |
-| `<divider/>` | 分隔线 |
-| `<steps>` / `<step id>` / `<note>` | 点一步，只看这一步的说明 |
-| `<compare>` / `<item>` | 2 到 4 项对照 |
-| `<callout tone="tip">` | 一句提示。`tone` 是 `note`、`tip`、`warn` |
+| `padding` / `gap` | `0`–`4`（4px × n） |
+| `background` | `surface` `surface-secondary` `surface-accent` `surface-tip` `surface-muted` `transparent` |
+| `radius` | `none` `sm` `md` `lg` `xl` `full` |
+| `border` | `subtle` `strong`/`true` `none`/`false` |
+| `size` | `sm` `md` `lg` `xl` |
+| `tone` | `plain` `accent` `tip` `muted`（callout 另有 `note`/`warn`） |
+| `align` | `start` `center` `end` `stretch` |
+| `justify`（row） | `start` `center` `end` `between` `around` |
+| `wrap`（row） | `wrap` `nowrap` |
 
-`tone="accent"` 和 `tone="tip"` 是两种强调，和泳道的 `forward` / `back` 同一对颜色。`muted` 是中性的一层，不是一句样式要求。
+## 高频属性
 
-嵌套最多 8 层，整张图最多 80 个标签。没闭合的标签直接报错，不会在半截上补齐。
+### `box` / `card`
 
-## 限制与报错
+| 属性 | 说明 |
+| :--- | :--- |
+| `frame` | `card`（默认）`band` `pill` `text`；也可用糖标签 `<band>` / `<pill>` |
+| `padding` `gap` `radius` `border` `background` `size` `align` `tone` `id` `mark` | 共用 token；`mark="shield"` 画盾牌 |
 
-- 点开一步时，说明出现在这一步下面。同一张图里同时只展开一条。不打开 JavaScript 也能点开。
-- 正文还是一句想法时报 `compose-uncompiled`。草稿里可以留着，发布前必须编译。
-- 颜色只来自主题变量。外框用页面的纸色，不另铺一张发白的卡片。
+### `row` / `stack` / `grid`
+
+| 属性 | 说明 |
+| :--- | :--- |
+| `gap` `align` | 共用 |
+| `justify` `wrap` | 仅 `row` |
+| `cols` | 仅 `grid`，1–6 |
+| `span` | 仅 `grid-item`，1–6 |
+
+### `text` / `title` / `caption`
+
+| 属性 | 说明 |
+| :--- | :--- |
+| `size` `align` | 共用 |
+| `tone` | `text`：`plain` `muted` `accent` `tip`。`caption` 固定 muted。 |
+
+### `icon`
+
+| 属性 | 说明 |
+| :--- | :--- |
+| `name` | 必填；须在 [图标目录](/garden/reference/compose-icons) |
+| `size` | `sm` `md` `lg` `xl` |
+| `inline` | 与文字同行 |
+
+## 标签目录
+
+每组一个迷你样例，下面一张一句话表；不写长文。
+
+### 布局
+
+```garden compose
+<row gap={2}><box padding={2} radius="md" border="subtle"><title size="sm">甲</title></box><box padding={2} radius="md" background="surface-accent"><title size="sm">乙</title></box></row>
+```
+
+| 标签 | 用途 |
+| :--- | :--- |
+| `box` | 通用容器；可设 padding / gap / background / radius |
+| `card` | box 的卡面别名 |
+| `stack` | 竖排 |
+| `row` | 横排 |
+| `columns` | 多列横排（默认可换行） |
+| `grid` | 等分网格；cols 1–6 |
+| `grid-item` | 网格格；span 跨列 |
+| `group` | 语义分组容器 |
+| `field` | 表单项分组 |
+| `header` | 页眉区 |
+| `footer` | 页脚区 |
+| `figure` | 图示区 |
+| `prose` | 长文段落区 |
+| `divider` | 分隔线（自闭合） |
+| `separator` | divider 别名 |
+| `spacer` | 空白间距 |
+| `band` | 通栏强调条（box frame=band） |
+| `pill` | 胶囊（box frame=pill） |
+
+### 文字
+
+```garden compose
+<stack gap={1}><title size="sm">标题</title><text size="sm">正文</text><caption size="sm">说明</caption><badge>徽标</badge></stack>
+```
+
+| 标签 | 用途 |
+| :--- | :--- |
+| `title` | 短标题 |
+| `text` | 正文 |
+| `caption` | 次要说明（默认 muted） |
+| `label` | 控件标签 |
+| `badge` | 胶囊徽标 |
+| `kpi` | 指标数字（自闭合） |
+| `stat` | kpi 别名 |
+| `icon` | 具名描边图标（自闭合） |
+| `callout` | 提示条 |
+| `kbd` | 键盘键帽 |
+| `link` | 行内链接 |
+| `intent` | 作者原话（不绘制） |
+
+### 控件
+
+```garden compose
+<stack gap={2}><row gap={2}><avatar label="甲" size="sm"/><badge>好</badge><kbd>⌘K</kbd></row><list><list-item>一项</list-item><list-item>二项</list-item></list><progress value={40} max={100} label="40%"/></stack>
+```
+
+| 标签 | 用途 |
+| :--- | :--- |
+| `button` | 按钮快照 |
+| `slider` | 滑杆快照 / play 可调 |
+| `progress` | 进度条 |
+| `meter` | 计量条 |
+| `checkbox` | 复选框快照 |
+| `radio` | 单选快照 |
+| `toggle` | 开关快照 |
+| `switch` | toggle 别名 |
+| `input` | 单行输入快照 |
+| `textarea` | 多行输入快照 |
+| `select` | 下拉快照 |
+| `tabs` | 选项卡容器 |
+| `tab` | 单个选项卡 |
+| `list` | 列表 |
+| `list-item` | 列表项 |
+| `table` | 表格 |
+| `thead` | 表头 |
+| `tbody` | 表体 |
+| `tr` | 表行 |
+| `th` | 表头格 |
+| `td` | 表数据格 |
+| `image` | 图片 |
+| `avatar` | 头像占位 |
+| `empty` | 空状态 |
+| `option` | 分段选项快照 |
+
+### 连接糖
+
+```garden compose
+<stack align="center" gap={1}><pill>起点</pill><arrow dir="down"/><band tone="accent" align="center"><title size="sm">枢纽</title></band></stack>
+```
+
+| 标签 | 用途 |
+| :--- | :--- |
+| `arrow` | 箭头 |
+| `fan` | 向下分叉箭头 |
+| `join` | V 形汇合 |
+| `lanes` | 泳道图 |
+| `actor` | 泳道角色 |
+| `message` | 泳道消息 |
+| `steps` | 分步容器 |
+| `step` | 一步 |
+| `note` | 步骤展开说明 |
+| `compare` | 对照卡组 |
+| `item` | 对照项 |
+| `code` | 代码快照 |
+| `pre` | 预格式文本 |
+
+## 限制
+
+- 嵌套约 10 层 / 约 220 节点。
+- 只有白话、没有标签时报 `compose-uncompiled`。
+- Play（`{@body}`、`{#if}` …）见仓库 `docs/compose-dil.md`；静态围栏里的控件标签画成默认态快照。
