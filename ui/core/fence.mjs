@@ -153,6 +153,11 @@ export function compiledOf(headerText) {
 export function intentOf(fence) {
   if (fence.lang === "intent" || fence.lang === "garden-idea") return normalizeNewlines(fence.body);
   if (fence.lang === "garden-compose") {
+    // Play (DIL or TEMP legacy PascalCase) carries intent in the YAML header above ---.
+    if (/\{@body\b|\{#(?:if|each)\b|<(?:slider|button|choice|stat|State|Let|Slider|If|Each)\b/u.test(fence.body ?? "")) {
+      const { props } = readInteractiveFence(fence);
+      return typeof props.intent === "string" ? props.intent : null;
+    }
     const result = parseCompose(fence.body);
     if (result.uncompiled) return normalizeNewlines(fence.body);
     return result.doc?.intent ? result.doc.intent : null;

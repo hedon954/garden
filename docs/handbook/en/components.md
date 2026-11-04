@@ -127,7 +127,7 @@ code: |
 
 ## [Interactive Formula & Parameters · interactive](/garden/en/components/interactive)
 
-```garden interactive #overview-reading
+```garden compose #overview-reading
 caption: "Example: estimate reading time from word count and reading speed."
 ---
 <State words={6000} speed={400} />

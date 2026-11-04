@@ -40,11 +40,25 @@ export function GardenBlock({ dataPayload }: { dataPayload?: string }) {
     case "compose":
       if (block.error?.code === "compose-uncompiled") return <GardenIdea text={String(block.idea || block.children || "")} />;
       if (block.error) return <GardenUnknown name="compose" />;
+      if (block.mode === "play") {
+        // DIL play: prefer lowered uiSource from ui/compose/dil.mjs. children alone is TEMP legacy.
+        return (
+          <GardenInteractive
+            block={{
+              id: block.id,
+              props,
+              children: String(block.children ?? ""),
+              uiSource: typeof block.uiSource === "string" ? block.uiSource : undefined,
+            }}
+          />
+        );
+      }
       return <div className="g-compose-host" dangerouslySetInnerHTML={{ __html: renderCompose(props) }} />;
     case "html":
       return <GardenHtml props={props}>{String(block.children ?? "")}</GardenHtml>;
     case "interactive":
-      return <GardenInteractive block={{ id: block.id, props, children: block.children }} />;
+      // TEMP compat if a payload still names interactive; parse now rewrites to compose.
+      return <GardenInteractive block={{ id: block.id, props, children: String(block.children ?? "") }} />;
     case "file":
       // Post bodies render file cards on the server (MarkdownArticle); this path has no Markdown preview.
       return <GardenFile props={props} lang={lang} />;

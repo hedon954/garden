@@ -45,7 +45,7 @@ $ npx garden ui scan content/posts/writing-pace.md
 }
 ```
 
-接着 Agent 读取 `npx garden ui prompt` 里的组件目录，写出 `garden interactive`，再用 `npx garden ui apply` 按 `--intent-hash` 只替换这一块，围栏外的正文逐字节不变：
+接着 Agent 读取 `npx garden ui prompt` 里的组件目录，写出 `garden compose`，再用 `npx garden ui apply` 按 `--intent-hash` 只替换这一块，围栏外的正文逐字节不变：
 
 ```console
 $ npx garden ui apply content/posts/writing-pace.md --intent-hash cb3a3569 --file new.md
@@ -70,7 +70,7 @@ content/posts/writing-pace.md:9  -  garden-idea  还有没编译的想法
 - 如果你不能访问这个仓库，就只回复每块修好后的完整围栏。
 
 1. content/posts/writing-pace.md，第 9–11 行，intent-hash: cb3a3569
-   - garden-idea：这段想法还没编译，请按原话编译成 garden interactive 或其他 garden 组件（或判断后写回正文）。
+   - garden-idea：这段想法还没编译，请按原话编译成 garden compose 或其他 garden 组件（或判断后写回正文）。
 （后面附当前围栏原文）
 ────────────────────────────────────────────────────────────
 已写入 .garden/ui-fix-prompt.md。确实要先提交，可以用 git commit --no-verify。
@@ -80,9 +80,9 @@ content/posts/writing-pace.md:9  -  garden-idea  还有没编译的想法
 
 ### 4. 页面渲染结果
 
-第 2 步写回的 `garden interactive` 块在文章页面直接渲染为可拖动的交互控件：
+第 2 步写回的 `garden compose` 块在文章页面直接渲染为可拖动的交互控件：
 
-```garden interactive #writing-pace
+```garden compose #writing-pace
 caption: 每天多写几百字，比每周多写一天更快。
 intent: |
   让读者拖动每天写的字数和每周写几天，看写完一篇 8000 字的长文要几周。

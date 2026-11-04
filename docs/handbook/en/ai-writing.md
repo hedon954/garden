@@ -21,7 +21,7 @@ Let the reader drag daily word count and writing days per week to see how many w
 ```
 ````
 
-Draft posts (`draft: true`) may keep uncompiled idea fences; in non-draft posts, both `npx garden ui check` and `npx garden check` report a `garden-idea` error. Depending on the content, the Agent compiles the idea into a built-in component (`garden interactive`, `card`, `stat`, `compare`, and others) or replaces it with plain prose when a paragraph is clearer.
+Draft posts (`draft: true`) may keep uncompiled idea fences; in non-draft posts, both `npx garden ui check` and `npx garden check` report a `garden-idea` error. Depending on the content, the Agent compiles the idea into a built-in component (`garden compose`, `card`, `stat`, `compare`, and others) or replaces it with plain prose when a paragraph is clearer.
 
 ## 2. Three Bundled Skills
 

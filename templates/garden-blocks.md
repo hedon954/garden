@@ -130,13 +130,15 @@ src: ./demo.html
 title: 示意图
 ```
 
-## interactive · 交互
+## compose · 交互（原 interactive，已并入）
+
+新写法用 ChatGPT 同款 DIL：`{@body}` / `{expr}` / `{#if}` / `{#each}` + 小写标签。下面若仍见 PascalCase，仅作旧稿对照。
 
 读者需要拧参数或翻状态才能看懂，由想法编译而来。
 
 不该用：一次乘法、把散文切成步骤，都不要做成交互。
 
-```garden interactive #kv-memory
+```garden compose #kv-memory
 caption: 显存与 batch、序列长度都成正比。
 intent: |
   让读者拧 batch，看 KV 显存。

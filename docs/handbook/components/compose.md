@@ -328,3 +328,27 @@ Role 在中间，把用户和权限接起来。Role 是重点。
 </row>
 <text tone="muted">第二行才是产品探索更强调的决策循环。</text>
 ```
+
+## 可调参数（play · ChatGPT 同款 DIL）
+
+说明图不够、读者要拧参数时，仍写 `garden compose`，在围栏里用 ChatGPT Intelligent UI 同款写法：
+
+- `{@body const [n, setN] = DIL.useState(3)}` 声明状态
+- `{@body const total = n * 24}` 派生值
+- `{total}` / `value={n}` 插值
+- `{#if …}{:else}{/if}`、`{#each … as item, i}{/each}` 控制流
+- 小写控件：`<slider>`、`<choice>`、`<button>`、`<pie>` / `<chart>`、`<stat>`
+
+旧的 `garden interactive` 与 PascalCase `<State>` / `<Slider>` 仅作兼容，新文章不要再写。完整映射见仓库 `docs/compose-dil.md`。
+
+```garden compose #compose-play-demo
+caption: 拧一下席位，看月费。
+intent: |
+  让读者调席位，看月费怎么变。
+---
+{@body const [seats, setSeats] = DIL.useState(3)}
+{@body const total = seats * 24}
+<slider min={1} max={12} value={seats} onChange={setSeats} label="席位" />
+<stat label="月费" value={total} unit="USD" />
+```
+

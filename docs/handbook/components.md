@@ -127,7 +127,7 @@ code: |
 
 ## [可调公式与参数 · interactive](/garden/components/interactive)
 
-```garden interactive #overview-reading
+```garden compose #overview-reading
 caption: 示例：按字数和阅读速度估算阅读时间。
 ---
 <State words={6000} speed={400} />

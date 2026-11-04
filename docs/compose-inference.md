@@ -44,15 +44,16 @@ ChatGPT's full path is:
 
 Streaming is why the compiler cuts incomplete tags, auto-closes open elements, and keeps `recoveryDiagnostics`. The ANALYSIS capture counted 338 recovery patches against 134 full code replacements. That repair exists so a half-written program can still run.
 
-## What Garden drops
+## What Garden drops (and what play now keeps)
 
-Garden posts are one-shot static HTML. These ChatGPT pieces are out:
+Garden posts are one-shot HTML (no stream). These ChatGPT pieces stay out:
 
 - Stream cuts, auto-close, and `recoveryDiagnostics`. An unclosed tag is an error.
-- `{@body}` JavaScript, `{expr}` interpolation, `{#if}` / `{#each}`, and event handlers.
-- The Worker sandbox, render-op protocol, and view-state round trip.
-- Server-resolved widgets (`AsyncImage`, `Cite`, `Entity`) and `AppBlock` HTML apps.
+- The Worker sandbox, render-op protocol, and view-state round trip. Play uses the whitelist expression interpreter instead of `eval` in a Worker.
+- Server-resolved host widgets (`AsyncImage`, `Cite`, `Entity`) and `AppBlock` HTML apps (still out of tip scope).
 - A constants table. Nothing is streaming, so text stays in the node.
+
+Play mode on `garden compose` **keeps the ChatGPT DIL author surface**: `{@body}`, `{expr}`, `{#if}` / `{#each}`, and lowercase controls (`slider`, `button`, `choice`, `chart` / `pie`). See [compose-dil.md](./compose-dil.md) for the locked mapping. `{@body}` is a restricted subset (`DIL.useState` and `const name = expr`), not arbitrary JavaScript.
 
 ## What stays the same in principle
 

@@ -21,7 +21,7 @@ order: 2
 ```
 ````
 
-草稿（`draft: true`）里可以保留未编译的想法；非草稿文章里还有未编译的想法时，`npx garden ui check` 和 `npx garden check` 都会报 `garden-idea` 错误。Agent 会根据内容把想法编译成 `garden interactive`、`card`、`stat`、`compare` 等内置组件，或者在一段话就能说清时直接写回普通段落。
+草稿（`draft: true`）里可以保留未编译的想法；非草稿文章里还有未编译的想法时，`npx garden ui check` 和 `npx garden check` 都会报 `garden-idea` 错误。Agent 会根据内容把想法编译成 `garden compose`、`card`、`stat`、`compare` 等内置组件，或者在一段话就能说清时直接写回普通段落。
 
 ## 2. 随包安装的三个 skill
 

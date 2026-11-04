@@ -57,7 +57,7 @@ order: 40
 | `garden-file` / `file-outside` | 错误 | `garden file` 手写了 `resolved`、缺少有效的 `src` / `files`，或本地路径越出了 `content/` 目录 |
 | `file-large` | 警告 | `garden file` 引用的单个本地文件体积超过 `5 MB` |
 | `compare-long` | 错误 | `garden compare` 并排模式下单个对比格的正文超过约 60 字（带 `verdict` 的上下对照不受此限） |
-| `interactive-trivial` / `steps-prose` | 错误 | `garden interactive` 只有一次简单乘法，或步骤只是散文而没有状态变化 |
+| `interactive-trivial` / `steps-prose` | 错误 | `garden compose` 只有一次简单乘法，或步骤只是散文而没有状态变化 |
 
 ## 3. Git 提交前钩子与组件画廊
 

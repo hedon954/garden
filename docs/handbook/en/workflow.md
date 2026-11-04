@@ -57,7 +57,7 @@ Three commands check your content at different scopes:
 | `garden-file` / `file-outside` | Error | `garden file` manually sets `resolved`, is missing a valid `src` / `files`, or points outside `content/` |
 | `file-large` | Warning | A local file referenced by `garden file` exceeds `5 MB` |
 | `compare-long` | Error | A single side-by-side cell in `garden compare` exceeds roughly 60 characters (does not apply when `verdict` is used) |
-| `interactive-trivial` / `steps-prose` | Error | `garden interactive` only computes a single multiplication, or `<Steps>` contains only prose without state changes |
+| `interactive-trivial` / `steps-prose` | Error | `garden compose` only computes a single multiplication, or `<Steps>` contains only prose without state changes |
 
 ## 3. Git Pre-commit Hook and Component Catalog
 

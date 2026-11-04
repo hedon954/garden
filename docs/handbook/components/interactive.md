@@ -7,7 +7,10 @@ order: 38
 badge: interactive
 ---
 
-```garden interactive #reading-time
+> **已废弃。** 新文章请写 [`compose`](/garden/components/compose)，用 ChatGPT 同款 DIL（`{@body}` / `{expr}` / `{#if}` / `{#each}` 与小写标签）。旧的 `garden interactive` 围栏仍会当作 compose play 解析以兼容，之后会像 `figure` 一样删掉。
+
+
+```garden compose #reading-time
 caption: 示例：按字数、阅读速度和配图数估算一篇文章的阅读时间。数字只用来演示组件，不是统计结果。
 ---
 <State words={6000} speed={400} images={8} />

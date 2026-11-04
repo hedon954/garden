@@ -439,11 +439,13 @@ export function GardenHtml({ props, children }: { props: Record<string, unknown>
   return <FullscreenFrame label={title}><StaticGardenHtml code={code} /></FullscreenFrame>;
 }
 
-export function GardenInteractive({ block }: { block: { id?: string | null; props: Record<string, unknown>; children?: string } }) {
+export function GardenInteractive({ block }: { block: { id?: string | null; props: Record<string, unknown>; children?: string; uiSource?: string } }) {
   const t = useUi();
   const lang = useUiLang();
-  // Same source `garden ui check` validates (ui/core/garden-fence.mjs).
-  const { source, header } = interactiveUiSource({ id: block.id ?? null, props: block.props, children: block.children ?? "" });
+  // Prefer DIL-lowered uiSource from compose/dil.mjs; else build from PascalCase children (TEMP legacy).
+  const built = interactiveUiSource({ id: block.id ?? null, props: block.props, children: block.children ?? "" });
+  const source = typeof block.uiSource === "string" && block.uiSource.trim() ? block.uiSource : built.source;
+  const header = built.header;
   const { payload, check } = compileUiBlock(source);
   if (!payload) {
     return (

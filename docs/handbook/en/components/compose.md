@@ -326,3 +326,27 @@ The top row is delivery order: Understand, Design, Ship. The bottom row is the d
 </row>
 <text tone="muted">The second row is the decision loop that product discovery emphasizes.</text>
 ```
+
+## Play mode (ChatGPT-shaped DIL)
+
+When a static diagram is not enough and readers need to tweak parameters, keep the `garden compose` fence and write ChatGPT Intelligent UI–shaped DIL:
+
+- `{@body const [n, setN] = DIL.useState(3)}` for state
+- `{@body const total = n * 24}` for derived values
+- `{total}` / `value={n}` interpolation
+- `{#if …}{:else}{/if}` and `{#each … as item, i}{/each}`
+- Lowercase controls: `<slider>`, `<choice>`, `<button>`, `<pie>` / `<chart>`, `<stat>`
+
+Legacy `garden interactive` and PascalCase `<State>` / `<Slider>` remain as compatibility only. See `docs/compose-dil.md` for the mapping.
+
+```garden compose #compose-play-demo
+caption: Drag seats to see the monthly bill.
+intent: |
+  Let the reader change seat count and watch the total.
+---
+{@body const [seats, setSeats] = DIL.useState(3)}
+{@body const total = seats * 24}
+<slider min={1} max={12} value={seats} onChange={setSeats} label="Seats" />
+<stat label="Monthly" value={total} unit="USD" />
+```
+

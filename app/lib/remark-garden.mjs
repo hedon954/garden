@@ -76,7 +76,7 @@ function rewriteChildren(node, nextScope) {
     if (pair && following?.type === "code") {
       const record = fenceNodeToRecord(following);
       const kind = classifyFence({ ...record, body: following.value, line: 1, endLine: 1 });
-      if (kind.kind === "garden" && kind.block?.name === "compose" && !kind.block.error) {
+      if (kind.kind === "garden" && kind.block?.name === "compose" && !kind.block.error && kind.block.mode !== "play") {
         next.push(composePair(pair.image, pair.alt, renderCompose(kind.block.props, { scope: nextScope() })));
         index += 1;
         continue;
@@ -98,7 +98,7 @@ function rewriteChildren(node, nextScope) {
         next.push(gardenElement({ legacy: true, from: kind.lang || record.lang, suggestion: kind.suggestion }));
         continue;
       }
-      if (kind.kind === "garden" && kind.block?.name === "compose" && !kind.block.error) {
+      if (kind.kind === "garden" && kind.block?.name === "compose" && !kind.block.error && kind.block.mode !== "play") {
         next.push(htmlElement(renderCompose(kind.block.props, { scope: nextScope() })));
         continue;
       }

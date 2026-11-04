@@ -68,7 +68,7 @@ Obsidian 插件这一轮不随包安装。
 ```
 ````
 
-让 Agent 按站点里的 `garden-ui` skill 处理这篇稿件：Agent 先用 `npx garden ui scan` 读取待编译块的哈希，再读 `npx garden ui prompt` 的组件规则，生成 `garden interactive`（或 `card`、`stat`、`compare`、`timeline`、`chart`、`compose`、`html`、`file`、`relations`、`list`、`choice` 等内置组件，或在完整代码下方生成 `diff`），最后用 `npx garden ui apply` 只替换该围栏。如果你在编译前直接 `git commit`，pre-commit 钩子会运行同一条 `npx --no-install garden ui check --staged --quiet` 拦下提交，并打印一段可直接粘贴给 AI 的修复提示词。
+让 Agent 按站点里的 `garden-ui` skill 处理这篇稿件：Agent 先用 `npx garden ui scan` 读取待编译块的哈希，再读 `npx garden ui prompt` 的组件规则，生成 `garden compose`（或 `card`、`stat`、`compare`、`timeline`、`chart`、`compose`、`html`、`file`、`relations`、`list`、`choice` 等内置组件，或在完整代码下方生成 `diff`），最后用 `npx garden ui apply` 只替换该围栏。如果你在编译前直接 `git commit`，pre-commit 钩子会运行同一条 `npx --no-install garden ui check --staged --quiet` 拦下提交，并打印一段可直接粘贴给 AI 的修复提示词。
 
 ## 4. 常用命令
 

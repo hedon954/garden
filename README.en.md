@@ -66,7 +66,7 @@ Where you want a component or interactive calculation, write an unnamed `garden`
 ```
 ````
 
-Ask your Agent to compile the post using the bundled `garden-ui` skill: it runs `npx garden ui scan` to locate uncompiled or broken blocks, reads the component catalog from `npx garden ui prompt`, generates a `garden interactive` block (or `card`, `stat`, `compare`, `timeline`, `chart`, `figure`, `html`, `file`, `relations`, `list`, `choice`, or a `diff` block right below a code snippet), and writes only that fence back via `npx garden ui apply`. If you run `git commit` before compiling, the pre-commit hook runs `npx --no-install garden ui check --staged --quiet`, stops the commit, and prints a ready-to-paste fix prompt for your AI.
+Ask your Agent to compile the post using the bundled `garden-ui` skill: it runs `npx garden ui scan` to locate uncompiled or broken blocks, reads the component catalog from `npx garden ui prompt`, generates a `garden compose` block (or `card`, `stat`, `compare`, `timeline`, `chart`, `figure`, `html`, `file`, `relations`, `list`, `choice`, or a `diff` block right below a code snippet), and writes only that fence back via `npx garden ui apply`. If you run `git commit` before compiling, the pre-commit hook runs `npx --no-install garden ui check --staged --quiet`, stops the commit, and prints a ready-to-paste fix prompt for your AI.
 
 ## 4. Common commands
 

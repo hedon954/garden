@@ -101,15 +101,16 @@ flowchart TD
 
 盆口越大，一次浇得越多。12 厘米的盆大约是 70 毫升。
 
-```garden interactive #pot-water
+```garden compose #pot-water
 caption: 盆口越大，一次浇得越多。12 厘米大约是 70 毫升。
 intent: |
   让读者拧盆口直径，看这一次该浇多少毫升。
 ---
-<State diameter={12} />
-<Slider bind="diameter" label="盆口直径" min={8} max={24} unit="cm" />
-<Let water={round(diameter * diameter * 0.35 + 20)} />
-<Stat label="这一次" value={water} unit="ml" />
+{@body const [diameter, setDiameter] = DIL.useState(12)}
+{@body const water = Math.round(diameter * diameter * 0.35 + 20)}
+
+<slider min={8} max={24} value={diameter} onChange={setDiameter} label="盆口直径" unit="cm" />
+<stat label="这一次" value={water} unit="ml" />
 ```
 
 ## 水怎么往下走
