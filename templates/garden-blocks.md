@@ -94,28 +94,29 @@ unit: ms
 不该用：要拖参数或放一张真图时，用 interactive 或图片。
 
 ```garden compose
-title: 站点发布流水线
-caption: 三步串起来，点哪步看哪步
-intent: |
-  用三张卡加向下箭头讲清 sync → build → validate；读者点每一步，下面展开对应说明。
-steps:
-  - id: sync
-    title: sync
-    text: 同步内容与配置
-  - id: build
-    title: build
-    text: 生成静态 HTML
-  - id: validate
-    title: validate
-    text: 检查后再上线
-notes:
-  - for: sync
-    text: 先对齐远程与本地材料
-  - for: build
-    text: 构建期把 compose 渲进正文
-  - for: validate
-    text: 钩子拦住未编译的想法块
-
+<intent>
+用三张卡加向下箭头讲清 sync → build → validate；读者点每一步，下面展开对应说明。
+</intent>
+<steps>
+  <step id="sync">
+    <badge>1</badge>
+    <title>sync</title>
+    <text>同步内容与配置</text>
+    <note>先对齐远程与本地材料</note>
+  </step>
+  <step id="build">
+    <badge>2</badge>
+    <title>build</title>
+    <text>生成静态 HTML</text>
+    <note>构建期把 compose 渲进正文</note>
+  </step>
+  <step id="validate">
+    <badge>3</badge>
+    <title>validate</title>
+    <text>检查后再上线</text>
+    <note>钩子拦住未编译的想法块</note>
+  </step>
+</steps>
 ```
 
 ## html · 自定义 HTML

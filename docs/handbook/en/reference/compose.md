@@ -1,7 +1,7 @@
 ---
 title: Component reference · compose
 navTitle: compose
-description: A YAML tree rendered at build time into a static explanation diagram.
+description: Draw an explanation diagram with Markdown leaves and catalog tags. The build compiles them into one tree of static HTML.
 section: reference
 order: 6
 badge: compose
@@ -11,111 +11,89 @@ badge: compose
 
 ## Example
 
-```garden compose
-title: Site publish pipeline
-caption: Click a step to read what it does
-intent: |
-  Three cards and downward arrows for sync, build, then validate. Clicking a step opens its note.
-steps:
-  - id: sync
-    title: sync
-    text: Sync content and config
-  - id: build
-    title: build
-    text: Emit static HTML
-  - id: validate
-    title: validate
-    text: Check before shipping
-notes:
-  - for: sync
-    text: Line up remote and local material
-  - for: build
-    text: The build renders compose into the page
-  - for: validate
-    text: The hook stops an uncompiled idea
-```
-
-For a row with a badge, a metric, and an arrow, put the nodes under `tree`. A narrow screen still uses one column.
+The fence is ` ```garden compose `. Prose with no tags reports `compose-uncompiled`. A broken tag, or a YAML slot tree, reports `compose-invalid`.
 
 ```garden compose
-title: Sync, then build
-caption: Click a card to read its note
-intent: |
-  Two cards joined by a rightward arrow, each with a badge or a short line.
-tree:
-  - row:
-      - card:
-          id: sync
-          tone: accent
-          title: sync
-          badge: "1"
-          kpi:
-            value: 12
-            unit: ms
-            label: align
-          text: Sync content and config
-      - arrow: right
-      - card:
-          id: build
-          title: build
-          text: Emit static HTML
-  - notes:
-      - for: sync
-        text: Line up remote and local material
-      - for: build
-        text: The build renders compose into the page
+<intent>
+Three cards and downward arrows for sync, build, then validate. Clicking a step opens its note.
+</intent>
+# Site publish pipeline
+
+Click a step to read what it does
+
+<steps>
+  <step id="sync">
+    <badge>1</badge>
+    <title>sync</title>
+    <text>Sync content and config</text>
+    <note>Line up remote and local material</note>
+  </step>
+  <step id="build">
+    <badge>2</badge>
+    <title>build</title>
+    <text>Emit static HTML</text>
+    <note>The build renders compose into the page</note>
+  </step>
+  <step id="validate">
+    <badge>3</badge>
+    <title>validate</title>
+    <text>Check before shipping</text>
+    <note>The hook stops an idea that is still prose</note>
+  </step>
+</steps>
 ```
 
-## Fields
+A `#` heading and the paragraph under it are Markdown leaves. They join the same tree as `<steps>`.
 
-Fence header: ` ```garden compose `. A body that is still prose reports `compose-uncompiled`. A YAML tree that breaks the catalog reports `compose-invalid`.
+```garden compose
+<intent>
+Two cards joined by a rightward arrow. Each card has a badge, and one has a metric. Click a card to read its note.
+</intent>
+<row>
+  <box id="sync" tone="accent">
+    <badge>1</badge>
+    <title>sync</title>
+    <kpi value="12" unit="ms" label="sync"/>
+    <text>Sync content and config</text>
+    <note>Line up remote and local material</note>
+  </box>
+  <arrow dir="right"/>
+  <box id="build">
+    <title>build</title>
+    <text>Emit static HTML</text>
+    <note>The build renders compose into the page</note>
+  </box>
+</row>
+```
 
-| Field | Required | Default | Allowed values and limits | Description |
-| :--- | :--- | :--- | :--- | :--- |
-| `title` | Optional | none | string | Title inside the frame. It does not enter the table of contents |
-| `caption` | Optional | none | string | One line under the title |
-| `intent` | Optional | none | string | The author's sentence. It is not drawn |
-| `steps` | One of `steps` or `tree` | none | 1 to 8 items | Step cards, stacked or in a row |
-| `notes` | With `steps` | none | 1 to 8 items | `for` names an `id` |
-| `tree` | One of `tree` or `steps` | none | node list | Nested tree. `children` is an alias |
-| `steps[].id` | Required when notes point at it | none | starts with a letter | Target for a note |
-| `steps[].title` | Required | none | string | Card title |
-| `steps[].text` | Optional | none | string | One line on the card |
-| `steps[].badge` | Optional | none | string or `{ text, tone }` | Badge |
-| `steps[].kpi` | Optional | none | `{ value, label?, unit? }` | One metric |
-| `steps[].tone` | Optional | `plain` | `plain`, `accent`, `tip`, `muted` | Card fill. `accent` and `tip` are the two emphasis fills |
-| `notes[].for` | Required | none | an existing `id` | Which card opens this note |
-| `notes[].text` | Required | none | string | The note itself |
+## Tags
 
-Nodes allowed under `tree`: `stack`, `row`, `card`, `title`, `text`, `steps`, `compare`, `callout`, `divider`, `badge`, `kpi`, `arrow`, `fan`, `join`, `lanes`, `notes`.
+The author's sentence goes in `<intent>` and is not drawn. Other leaves are Markdown. Structure is the tags below. Do not write `{@body}`, `{#if}`, expressions, scripts, color values, or widths.
 
-Assemble a diagram from these atoms. Do not add a style that only one picture uses.
+| Tag | Role |
+| :--- | :--- |
+| `#` headings, paragraphs, `**emphasis**`, lists | Join the same tree as tags. A heading becomes a title, a paragraph becomes text |
+| `<box>` | A card. `frame` is `card`, `band`, `text`, or `pill`. `tone` is `plain`, `accent`, `tip`, or `muted` |
+| `<band>` / `<pill>` | Two frames of `box`. A sentence inside `<pill>` becomes its title |
+| `<row>` / `<stack>` / `<grid>` | A horizontal row, a vertical stack, or a row of equal cells |
+| `<title>` / `<text>` | A short name, and the line under it. `text` may set `tone="muted"`, `align="center"`, or `align="start"` |
+| `<badge>` | A badge. One circled digit is drawn as an index |
+| `<kpi value unit label/>` | One metric |
+| `<arrow dir="down"/>` | An arrow. `dir` may also be `right`. A narrow screen turns right arrows downward |
+| `<fan n="3"/>` | Several downward arrows. The next row needs the same number of cells |
+| `<join>` | A V that meets under a label |
+| `<lanes>` | Lanes. Inside: `<actor>` and `<message from="1" to="2" tone="forward">`. `tone` is `forward` or `back` |
+| `<divider/>` | A rule |
+| `<steps>` / `<step id>` / `<note>` | Click a step to read only that note |
+| `<compare>` / `<item>` | Two to four compared items |
+| `<callout tone="tip">` | One note. `tone` is `note`, `tip`, or `warn` |
 
-| What you are drawing | Write |
-| --- | --- |
-| Soft full-width band | `card` + `frame: band`. `tone: accent` and `tone: tip` are the two emphasis fills, the same pair as lane `forward` and `back` |
-| Small capsule | `card` + `frame: pill`. `plain` is a white hairline capsule, `tone: muted` is the soft neutral fill, `tone: accent` is the emphasis fill |
-| Plain title block | `card` + `frame: text` |
-| Bordered card | `card` |
-| Circled index | `badge: "①"` |
-| Shield | `mark: shield` |
-| Downward arrow | `arrow: down` |
-| A row of downward arrows | `fan: 3`, then a `row` with the same number of cells |
-| V connector with the label in the notch | `join: one sentence`. The arms and the short stem are one polyline, opening upward |
-| Swimlane | `lanes`. Header capsules shrink to their text. The label sits above the shaft. `tone: forward` and `back` use two emphasis colors |
-| Footer | `text` + `tone: muted` |
-| Two-by-two | two `row` nodes, two cells each |
+`tone="accent"` and `tone="tip"` are the two emphases, the same pair as lane `forward` / `back`. `muted` is the quiet layer. It is a meaning, not a style instruction.
 
-The line under a title on `frame: band` or `frame: text` is the gray subtitle. Inside a centered `stack`, a left footer uses `align: start`.
+Nesting stops at 8 levels, and a diagram stops at 80 tags. An unclosed tag is an error. The compiler does not repair a half-written document.
 
-- `arrow` direction is `down` or `right`. On a narrow screen a rightward arrow points down.
-- `callout` tone is `note`, `tip`, or `warn`.
-- `compare` takes 2 to 4 items, each with `title` and optional `text`.
-- Do not write HTML, scripts, color values, or widths. Color comes from theme tokens.
-- Nesting stops at 8 levels, and one diagram holds at most 80 nodes. A clickable card cannot contain another clickable card.
+## Limits
 
-## Limits and errors
-
-- Opening a step shows its note directly underneath. Only one note in a diagram is open at a time. It works with JavaScript disabled.
-- A body that is not a YAML tree (still one sentence) reports `compose-uncompiled`. Drafts may keep it. Publishing requires a tree.
-- A bad shape, an unknown node, a `for` that matches nothing, or a repeated `id` reports `compose-invalid`.
+- The open note sits under its step. One diagram shows one open note at a time. It still opens with JavaScript off.
+- A fence that is still one sentence reports `compose-uncompiled`. A draft may keep it. Publish only after compile.
+- Color comes from theme tokens. The outer frame uses the page paper color, not a second off-white card.

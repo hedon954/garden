@@ -324,27 +324,29 @@ series:
 unit: ms
 \`\`\``,
   compose: `\`\`\`garden compose
-title: Site publish pipeline
-caption: Click a step to read what it does
-intent: |
-  Three cards and downward arrows for sync, build, then validate.
-steps:
-  - id: sync
-    title: sync
-    text: Sync content and config
-  - id: build
-    title: build
-    text: Emit static HTML
-  - id: validate
-    title: validate
-    text: Check before shipping
-notes:
-  - for: sync
-    text: Line up remote and local material
-  - for: build
-    text: The build renders compose into the page
-  - for: validate
-    text: The hook stops an uncompiled idea
+<intent>
+Three cards and downward arrows for sync, build, then validate.
+</intent>
+<steps>
+  <step id="sync">
+    <badge>1</badge>
+    <title>sync</title>
+    <text>Sync content and config</text>
+    <note>Line up remote and local material</note>
+  </step>
+  <step id="build">
+    <badge>2</badge>
+    <title>build</title>
+    <text>Emit static HTML</text>
+    <note>The build renders compose into the page</note>
+  </step>
+  <step id="validate">
+    <badge>3</badge>
+    <title>validate</title>
+    <text>Check before shipping</text>
+    <note>The hook stops an uncompiled idea</note>
+  </step>
+</steps>
 \`\`\``,
   html: `\`\`\`garden html
 src: ./demo.html

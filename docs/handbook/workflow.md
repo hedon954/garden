@@ -49,8 +49,8 @@ order: 40
 | `diff-orphan` | 错误 | `diff` 代码块前面没有紧挨着的完整代码块 |
 | `legacy-fence` | 错误 | 使用了旧版围栏名（如 `garden:stat`、`widget`、`embed`、`html garden`），需改为 `garden <name>` |
 | `garden-idea` | 错误 | 非草稿文章里还有未编译的空白 `garden` 想法块 |
-| `compose-uncompiled` | 错误 | 非草稿里的 `garden compose` 还是白话，没有编译成 YAML 树 |
-| `compose-invalid` | 错误 | `garden compose` 的 YAML 树不合法：未知零件、对不上的 `for`，或重复的 `id` |
+| `compose-uncompiled` | 错误 | 非草稿里的 `garden compose` 还是白话，没有编译成标记 |
+| `compose-invalid` | 错误 | `garden compose` 的标记不合法：未知标签、没闭合，或写成了 YAML 槽 |
 | `garden-name` | 错误 | 未知的 `garden` 组件名（支持 `card`、`stat`、`compare`、`timeline`、`chart`、`compose`、`html`、`interactive`、`file`、`relations`、`list`、`choice`） |
 | `garden-yaml` | 错误 | `garden` 围栏内 YAML 语法错误、顶层不是键值/列表，或包含该组件不支持的键名 |
 | `garden-relations` | 错误 | `garden relations` 的要素数量不在 3～6 个之间，或 `links` 配置不合法（要素更多或有分支改用 `mermaid` 流程图，只走一遍的步骤用 `garden list`） |

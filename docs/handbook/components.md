@@ -77,44 +77,24 @@ data:
 ## [说明图 · compose](/garden/components/compose)
 
 ```garden compose
-intent: |
-  两行流程。上面三步是白话，下面三步是胶囊。
-tree:
-  - row:
-      align: center
-      children:
-        - title:
-            text: 理解需求
-            align: center
-        - arrow: right
-        - title:
-            text: 设计方案
-            align: center
-        - arrow: right
-        - title:
-            text: 开发上线
-            align: center
-  - divider:
-  - row:
-      align: center
-      children:
-        - card:
-            frame: pill
-            tone: muted
-            align: center
-            title: 提出假设
-        - arrow: right
-        - card:
-            frame: pill
-            tone: muted
-            align: center
-            title: 低成本验证
-        - arrow: right
-        - card:
-            frame: pill
-            tone: muted
-            align: center
-            title: 迭代或放弃
+<intent>
+上面一行是交付顺序：理解需求、设计方案、开发上线。下面一行才是要强调的决策循环：提出假设、低成本验证、迭代或放弃。上面是背景，下面是重点。
+</intent>
+<row align="center">
+  <title align="center">理解需求</title>
+  <arrow dir="right"/>
+  <title align="center">设计方案</title>
+  <arrow dir="right"/>
+  <title align="center">开发上线</title>
+</row>
+<divider/>
+<row align="center">
+  <pill tone="muted">提出假设</pill>
+  <arrow dir="right"/>
+  <pill tone="muted">低成本验证</pill>
+  <arrow dir="right"/>
+  <pill tone="muted">迭代或放弃</pill>
+</row>
 ```
 
 ## [嵌入网页片段 · html](/garden/components/html)

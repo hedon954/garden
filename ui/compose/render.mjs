@@ -10,7 +10,11 @@ function esc(value) {
 }
 
 function textHtml(value) {
-  return esc(value).replaceAll("\n", "<br>");
+  return esc(value)
+    .replaceAll("\n", "<br>")
+    .replace(/`([^`]+)`/gu, "<code>$1</code>")
+    .replace(/\*\*([^*]+)\*\*/gu, "<strong>$1</strong>")
+    .replace(/(^|[^*])\*([^*\n]+)\*(?!\*)/gu, "$1<em>$2</em>");
 }
 
 export function composeScope(doc) {

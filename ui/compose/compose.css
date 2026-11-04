@@ -8,11 +8,11 @@
   min-width: 0;
   margin: 1.25em 0;
   padding: 18px 18px 14px;
-  border: 1px solid color-mix(in srgb, var(--rule-strong) 72%, var(--card));
+  border: 1px solid color-mix(in srgb, var(--rule-strong) 72%, var(--paper));
   border-radius: 8px;
-  background: color-mix(in srgb, var(--ink) 2%, var(--card));
+  background: var(--paper);
   box-shadow: none;
-  color: var(--text, var(--ink));
+  color: var(--ink);
   overflow-wrap: break-word;
 }
 
@@ -394,7 +394,7 @@
 .g-compose-join {
   display: grid;
   width: 100%;
-  margin: 0;
+  margin: -16px 0 0;
   color: var(--ink);
 }
 
@@ -407,7 +407,7 @@
   display: block;
   width: 100%;
   height: auto;
-  aspect-ratio: 600 / 72;
+  aspect-ratio: 600 / 48;
   color: var(--flow);
 }
 

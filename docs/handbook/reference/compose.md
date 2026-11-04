@@ -1,7 +1,7 @@
 ---
 title: 组件参考 · compose
 navTitle: compose
-description: 用 YAML 树画一张说明图。卡片、箭头和注释在构建期变成静态 HTML。
+description: 用 Markdown 和标签画一张说明图。构建期编成同一棵树，再变成静态 HTML。
 section: reference
 order: 6
 badge: compose
@@ -11,111 +11,89 @@ badge: compose
 
 ## 示例
 
-```garden compose
-title: 站点发布流水线
-caption: 三步串起来，点哪步看哪步
-intent: |
-  用三张卡加向下箭头讲清 sync → build → validate；读者点每一步，下面展开对应说明。
-steps:
-  - id: sync
-    title: sync
-    text: 同步内容与配置
-  - id: build
-    title: build
-    text: 生成静态 HTML
-  - id: validate
-    title: validate
-    text: 检查后再上线
-notes:
-  - for: sync
-    text: 先对齐远程与本地材料
-  - for: build
-    text: 构建期把 compose 渲进正文
-  - for: validate
-    text: 钩子拦住未编译的想法块
-```
-
-要并排、加徽标和指标时，把节点写进 `tree`。窄屏仍是一列。
+围栏写 ` ```garden compose `。正文还是一句白话时报 `compose-uncompiled`。标签不合法，或写成 YAML 槽，报 `compose-invalid`。
 
 ```garden compose
-title: 同步然后构建
-caption: 点一张卡，看对应说明
-intent: |
-  两张卡用向右箭头连起来，每张卡上有徽标和指标。
-tree:
-  - row:
-      - card:
-          id: sync
-          tone: accent
-          title: sync
-          badge: "1"
-          kpi:
-            value: 12
-            unit: ms
-            label: 对齐
-          text: 同步内容与配置
-      - arrow: right
-      - card:
-          id: build
-          title: build
-          text: 生成静态 HTML
-  - notes:
-      - for: sync
-        text: 先对齐远程与本地材料
-      - for: build
-        text: 构建期把 compose 渲进正文
+<intent>
+用三张卡加向下箭头讲清 sync → build → validate；读者点每一步，下面展开对应说明。
+</intent>
+# 站点发布流水线
+
+三步串起来，点哪步看哪步
+
+<steps>
+  <step id="sync">
+    <badge>1</badge>
+    <title>sync</title>
+    <text>同步内容与配置</text>
+    <note>先对齐远程与本地材料</note>
+  </step>
+  <step id="build">
+    <badge>2</badge>
+    <title>build</title>
+    <text>生成静态 HTML</text>
+    <note>构建期把 compose 渲进正文</note>
+  </step>
+  <step id="validate">
+    <badge>3</badge>
+    <title>validate</title>
+    <text>检查后再上线</text>
+    <note>钩子拦住未编译的想法块</note>
+  </step>
+</steps>
 ```
 
-## 字段
+`#` 标题和下面的段落是 Markdown 叶子，和 `<steps>` 编进同一棵树。
 
-围栏写 ` ```garden compose `。正文还是白话时报 `compose-uncompiled`。YAML 树不合法时报 `compose-invalid`。
+```garden compose
+<intent>
+两张卡用向右箭头连起来，每张卡上有徽标和指标。点一张卡，看对应说明。
+</intent>
+<row>
+  <box id="sync" tone="accent">
+    <badge>1</badge>
+    <title>sync</title>
+    <kpi value="12" unit="ms" label="对齐"/>
+    <text>同步内容与配置</text>
+    <note>先对齐远程与本地材料</note>
+  </box>
+  <arrow dir="right"/>
+  <box id="build">
+    <title>build</title>
+    <text>生成静态 HTML</text>
+    <note>构建期把 compose 渲进正文</note>
+  </box>
+</row>
+```
 
-| 字段 | 是否必填 | 默认值 | 取值与限制 | 说明 |
-| :--- | :--- | :--- | :--- | :--- |
-| `title` | 可选 | 无 | 字符串 | 图内标题，不进入目录 |
-| `caption` | 可选 | 无 | 字符串 | 标题下的一句说明 |
-| `intent` | 可选 | 无 | 字符串 | 作者原话，不画出来 |
-| `steps` | 与 `tree` 二选一 | 无 | 1–8 项 | 纵向或横向的步骤卡 |
-| `notes` | 跟 `steps` 一起写 | 无 | 1–8 项 | `for` 指向某个 `id` |
-| `tree` | 与 `steps` 二选一 | 无 | 零件列表 | 嵌套树。`children` 是别名 |
-| `steps[].id` | 有注释时必填 | 无 | 字母开头 | 给注释点选用 |
-| `steps[].title` | 必填 | 无 | 字符串 | 卡片标题 |
-| `steps[].text` | 可选 | 无 | 字符串 | 卡片里的一句说明 |
-| `steps[].badge` | 可选 | 无 | 字符串或 `{ text, tone }` | 徽标 |
-| `steps[].kpi` | 可选 | 无 | `{ value, label?, unit? }` | 一个指标 |
-| `steps[].tone` | 可选 | `plain` | `plain`、`accent`、`tip`、`muted` | 卡片底色。`accent` 和 `tip` 是两种强调色 |
-| `notes[].for` | 必填 | 无 | 已有的 `id` | 点哪张卡展开这条 |
-| `notes[].text` | 必填 | 无 | 字符串 | 展开后的说明 |
+## 标签
 
-`tree` 里的零件只有这些：`stack`、`row`、`card`、`title`、`text`、`steps`、`compare`、`callout`、`divider`、`badge`、`kpi`、`arrow`、`fan`、`join`、`lanes`、`notes`。
+作者原话放在 `<intent>` 里，不画出来。其余叶子用 Markdown，结构用下面这些标签。不要写 `{@body}`、`{#if}`、表达式、脚本、色值或宽度。
 
-拼法跟说明图的骨架一致，不按某一张图单独改样式。
+| 标签 | 作用 |
+| :--- | :--- |
+| `#` 标题、段落、`**强调**`、列表 | 和标签进同一棵树。标题变成 title，段落变成 text |
+| `<box>` | 一张卡。`frame` 是 `card`、`band`、`text`、`pill`。`tone` 是 `plain`、`accent`、`tip`、`muted` |
+| `<band>` / `<pill>` | `box` 的两种框。`<pill>` 里的一句会当成标题 |
+| `<row>` / `<stack>` / `<grid>` | 横排、竖排、横排格子 |
+| `<title>` / `<text>` | 短名字，和名字下面的一句。`text` 可以写 `tone="muted"`、`align="center"` 或 `align="start"` |
+| `<badge>` | 徽标。一个圆圈数字会画成序号 |
+| `<kpi value unit label/>` | 一个指标 |
+| `<arrow dir="down"/>` | 箭头。`dir` 还有 `right`。窄屏上向右的箭头会改成向下 |
+| `<fan n="3"/>` | 并排的几根向下箭头。下一行格子数要相同 |
+| `<join>` | V 形连接，字写在缺口里 |
+| `<lanes>` | 泳道。里面是 `<actor>` 和 `<message from="1" to="2" tone="forward">`。`tone` 是 `forward` 或 `back` |
+| `<divider/>` | 分隔线 |
+| `<steps>` / `<step id>` / `<note>` | 点一步，只看这一步的说明 |
+| `<compare>` / `<item>` | 2 到 4 项对照 |
+| `<callout tone="tip">` | 一句提示。`tone` 是 `note`、`tip`、`warn` |
 
-| 要画的东西 | 写法 |
-| --- | --- |
-| 浅底通栏 | `card` + `frame: band`。`tone: accent` 和 `tone: tip` 是两种强调底，和泳道的 `forward` / `back` 同一对颜色 |
-| 小胶囊 | `card` + `frame: pill`。`plain` 是白底细边，`tone: muted` 是浅中性底，`tone: accent` 是强调浅底 |
-| 无框标题 | `card` + `frame: text` |
-| 带边框的卡 | `card` |
-| 圆圈序号 | `badge: "①"` |
-| 盾牌 | `mark: shield` |
-| 向下的箭头 | `arrow: down` |
-| 并排的几根向下箭头 | `fan: 3`，下一行 `row` 的格数相同 |
-| V 形连接，字写在缺口里 | `join: 一句说明`。两臂和短竖线是一条折线，开口朝上 |
-| 泳道 | `lanes`。表头胶囊按内容收缩。说明在箭头上方。`tone: forward` 和 `back` 用两种强调色 |
-| 脚注 | `text` + `tone: muted` |
-| 两列两行 | 两个 `row`，每个两格 |
+`tone="accent"` 和 `tone="tip"` 是两种强调，和泳道的 `forward` / `back` 同一对颜色。`muted` 是中性的一层，不是一句样式要求。
 
-`frame: band` 和 `frame: text` 标题下的那一句是灰色说明。居中 `stack` 里的脚注要靠左，写 `align: start`。
-
-- `arrow` 的方向是 `down` 或 `right`。窄屏上向右的箭头会改成向下。
-- `callout` 的 `tone` 是 `note`、`tip`、`warn`。
-- `compare` 写 2–4 项，每项有 `title` 和可选的 `text`。
-- 不要写 HTML、脚本、色值或宽度。颜色只来自主题变量。
-- 嵌套最多 8 层，整张图最多 80 个零件。被点选的卡片不要再套一张被点选的卡片。
+嵌套最多 8 层，整张图最多 80 个标签。没闭合的标签直接报错，不会在半截上补齐。
 
 ## 限制与报错
 
 - 点开一步时，说明出现在这一步下面。同一张图里同时只展开一条。不打开 JavaScript 也能点开。
-- 正文不是 YAML 树（还是一句想法）时报 `compose-uncompiled`。草稿里可以留着，发布前必须编译。
-- 树的形状、未知零件、对不上的 `for` 或重复的 `id` 报 `compose-invalid`。
+- 正文还是一句想法时报 `compose-uncompiled`。草稿里可以留着，发布前必须编译。
+- 颜色只来自主题变量。外框用页面的纸色，不另铺一张发白的卡片。

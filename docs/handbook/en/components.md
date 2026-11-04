@@ -77,44 +77,24 @@ data:
 ## [Explanation diagram · compose](/garden/en/components/compose)
 
 ```garden compose
-intent: |
-  Two rows. Plain titles first, then muted pills.
-tree:
-  - row:
-      align: center
-      children:
-        - title:
-            text: Understand
-            align: center
-        - arrow: right
-        - title:
-            text: Design
-            align: center
-        - arrow: right
-        - title:
-            text: Ship
-            align: center
-  - divider:
-  - row:
-      align: center
-      children:
-        - card:
-            frame: pill
-            tone: muted
-            align: center
-            title: Hypothesize
-        - arrow: right
-        - card:
-            frame: pill
-            tone: muted
-            align: center
-            title: Cheap test
-        - arrow: right
-        - card:
-            frame: pill
-            tone: muted
-            align: center
-            title: Iterate or stop
+<intent>
+The top row is delivery order: Understand, Design, Ship. The bottom row is the decision loop to emphasize: Hypothesize, Cheap test, Iterate or stop. The top row is background. The bottom row is the point.
+</intent>
+<row align="center">
+  <title align="center">Understand</title>
+  <arrow dir="right"/>
+  <title align="center">Design</title>
+  <arrow dir="right"/>
+  <title align="center">Ship</title>
+</row>
+<divider/>
+<row align="center">
+  <pill tone="muted">Hypothesize</pill>
+  <arrow dir="right"/>
+  <pill tone="muted">Cheap test</pill>
+  <arrow dir="right"/>
+  <pill tone="muted">Iterate or stop</pill>
+</row>
 ```
 
 ## [Embedded Web Snippet · html](/garden/en/components/html)

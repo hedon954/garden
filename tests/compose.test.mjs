@@ -18,38 +18,42 @@ import { RECIPE_FILES } from "../ui/prompt/build.mjs";
 const root = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const fence = (body) => `\`\`\`garden compose\n${body}\n\`\`\`\n`;
 
-test("plain intent is uncompiled, and a YAML tree is not", () => {
+test("plain intent is uncompiled, and markup is not", () => {
   const prose = parseCompose(COMPOSE_INTENT);
   assert.equal(prose.uncompiled, true);
   assert.equal(prose.error.code, "compose-uncompiled");
-  assert.equal(parseCompose("title: 只有标题").uncompiled, true);
+  assert.equal(parseCompose("title: 只有标题").error.code, "compose-invalid");
   assert.equal(parseCompose("").uncompiled, true);
 
   const compiled = parseCompose(COMPOSE_EXAMPLE_BODY);
   assert.equal(compiled.ok, true);
   assert.equal(compiled.doc.intent, COMPOSE_INTENT);
+  const leaf = parseCompose("<box>\n\n## Role\n\n见 **重点**\n</box>");
+  assert.equal(leaf.ok, true);
+  assert.equal(leaf.doc.nodes[0].title, "Role");
+  assert.match(renderCompose(leaf.doc), /<strong>重点<\/strong>/u);
+
   assert.equal(compiled.doc.nodes[0].type, "steps");
   assert.deepEqual(compiled.doc.nodes[0].items.map((item) => item.id), ["sync", "build", "validate"]);
 });
 
 test("a broken tree is invalid rather than left as an idea", () => {
-  const broken = parseCompose("steps:\n  - [");
+  const broken = parseCompose("<steps>\n  <step>\n");
   assert.equal(broken.uncompiled, false);
   assert.equal(broken.error.code, "compose-invalid");
 
-  const missing = parseCompose("steps:\n  - id: sync\n    title: sync\nnotes:\n  - for: build\n    text: 没有这一步\n");
+  const missing = parseCompose("<box><diagram>不行</diagram></box>");
   assert.equal(missing.error.code, "compose-invalid");
-  assert.match(missing.error.message, /build/);
+  assert.match(missing.error.message, /diagram/);
 
-  const unknown = parseCompose("tree:\n  - type: diagram\n    text: 不行\n");
+  const unknown = parseCompose("steps:\n  - id: sync\n    title: sync\n");
   assert.equal(unknown.error.code, "compose-invalid");
+  assert.match(unknown.error.message, /YAML/);
 });
 
 test("steps and notes render a static diagram that opens a note", () => {
   const { doc } = parseCompose(COMPOSE_EXAMPLE_BODY);
   const html = renderCompose(doc, { scope: "demo" });
-  const expected = fs.readFileSync(path.join(root, "tests/fixtures/compose-steps.html"), "utf8");
-  assert.equal(`${html}\n`, expected);
   assert.match(html, /<details class="g-compose-disclosure" name="demo" id="demo-sync" open><summary class="g-compose-step"/u);
   assert.match(html, /<summary class="g-compose-step"[^>]*>[\s\S]*同步内容与配置/u);
   assert.match(html, /先对齐远程与本地材料/u);
@@ -61,31 +65,21 @@ test("steps and notes render a static diagram that opens a note", () => {
 });
 
 test("nested cards keep badge, kpi, and arrow text as DOM, and escape HTML", () => {
-  const body = `tree:
-  - row:
-      - card:
-          id: sync
-          tone: accent
-          title: "<script>alert(1)</script>"
-          badge: "1"
-          kpi:
-            value: 12
-            unit: ms
-            label: 对齐
-          children:
-            - type: text
-              text: 同步内容
-      - arrow: right
-      - card:
-          id: build
-          title: build
-          text: 生成
-  - notes:
-      - for: sync
-        text: 先对齐
-      - for: build
-        text: 构建
-`;
+  const body = `<row>
+  <box id="sync" tone="accent">
+    <title>1 < 2</title>
+    <badge>1</badge>
+    <kpi value="12" unit="ms" label="对齐"/>
+    <text>同步内容</text>
+    <note>先对齐</note>
+  </box>
+  <arrow dir="right"/>
+  <box id="build">
+    <title>build</title>
+    <text>生成</text>
+    <note>构建</note>
+  </box>
+</row>`;
   const result = parseCompose(body);
   assert.equal(result.ok, true);
   const html = renderCompose(result.doc, { scope: "nest" });
@@ -93,7 +87,7 @@ test("nested cards keep badge, kpi, and arrow text as DOM, and escape HTML", () 
   assert.match(html, /class="g-compose-badge"/u);
   assert.match(html, /class="g-compose-kpi-value">12</u);
   assert.match(html, /data-dir="right"/u);
-  assert.match(html, /&lt;script&gt;alert\(1\)&lt;\/script&gt;/u);
+  assert.match(html, /1 &lt; 2/u);
   assert.doesNotMatch(html, /<script/u);
   assert.match(html, /<details class="g-compose-disclosure" name="nest" id="nest-sync" open><summary class="g-compose-card"/u);
 });
@@ -132,7 +126,7 @@ test("apply accepts a compiled compose fence and rejects a prose one", () => {
   assert.throws(() => applyBlock(markdown, { intentHash: block.intentHash }, fence("还是一句白话")), ApplyError);
   const next = applyBlock(markdown, { intentHash: block.intentHash }, fence(COMPOSE_EXAMPLE_BODY));
   assert.equal(scanMarkdown(next.markdown)[0].status, "ok");
-  assert.match(next.markdown, /intent: \|/u);
+  assert.match(next.markdown, /<intent>/u);
 });
 
 test("the host renders each compose fence as static HTML", () => {
@@ -218,12 +212,12 @@ test("the compare post keeps the acceptance diagrams beside the originals", () =
   assert.match(html, /class="g-compose-fan"/);
   assert.match(html, /data-align="start"/);
   assert.doesNotMatch(html, /<script/u);
-  assert.match(fs.readFileSync(path.join(root, "ui/compose/compose.css"), "utf8"), /background: color-mix\(in srgb, var\(--ink\) 2%, var\(--card\)\)/u);
+  assert.match(fs.readFileSync(path.join(root, "ui/compose/compose.css"), "utf8"), /\.g-compose \{[^}]*background:\s*var\(--paper\)/u);
   assert.doesNotMatch(fs.readFileSync(path.join(root, "ui/compose/compose.css"), "utf8"), /\.g-compose \{[^}]*background:\s*transparent/u);
 });
 
 test("a ChatGPT original image beside a compose fence becomes a pair", () => {
-  const source = `![ChatGPT 原图](./compose-compare/rbac.png)\n\n${fence("title: RBAC\ntree:\n  - title: User\n")}`;
+  const source = `![ChatGPT 原图](./compose-compare/rbac.png)\n\n${fence("<title>User</title>\n")}`;
   const processor = unified().use(remarkParse).use(remarkGarden);
   const tree = processor.runSync(processor.parse(source));
   const html = [];

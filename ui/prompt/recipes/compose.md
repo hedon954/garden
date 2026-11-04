@@ -1,55 +1,40 @@
 # 配方：说明图（garden compose）
 
-**读者卡在哪：** 一条流程被拍成一张图。读者想点某一步，只看这一步的说明。
+**读者卡在哪：** 一条结构被画成一张图。读者要看见谁和谁有关、哪一块是重点。
 
-**什么时候用：** 两三步到八步，每步一张卡片，步骤之间用箭头，点一步展开对应注释。也可以并排几张卡片，窄屏会收成一列。
+**什么时候用：** 几列名单、从一个点散开、从上到下的几层、一次事情的几面、或上面一行顺序、下面一行才是重点。
 
 **什么时候不用：** 读者要拖参数（`garden interactive`）、要一张真图或 Mermaid、或正文列表已经说清。
 
-**围栏：** 类型始终是 `garden compose`。作者原话放进 `intent`，一个字不改。不要改成别的组件。
+**围栏：** 类型始终是 `garden compose`。作者原话放进 `<intent>`，一个字不改。不要改成别的组件。正文还是一句白话时，不要发明 YAML 槽。
 
-**零件（只能这些）：** `stack`、`row`、`card`、`title`、`text`、`steps`、`compare`、`callout`、`divider`、`badge`、`kpi`、`arrow`、`fan`、`join`、`lanes`、`notes`。
+**模型写的是标记，不是槽：** 叶子是 Markdown（`#` 标题、段落、`**强调**`、列表）。结构是标签。Markdown 和标签编进同一棵树。
 
-- `stack` / `row` / `card` / `text` 可以写 `align: center`。居中的 `stack` 里，脚注要靠左就给那句 `text` 写 `align: start`。
-- `card.frame` 是 `card`（默认边框）、`band`（通栏浅底，用来强调中间一层）、`text`（无框）或 `pill`（小胶囊）。`pill` 的 `plain` 是白底细边，`tone: muted` 是浅中性底。`band` 和 `text` 标题下的一句是灰色说明。
-- `fan: 3` 是并排向下的箭头，下一行 `row` 的格数要相同。`join: 一句说明` 是 V 形连接，字写在缺口里。`lanes` 是泳道：`actors` 加 `messages`（`from` / `to` 从 1 起，`tone: forward | back`）。
-- 两列两行写成两个 `row`，每个两格。不要为某一张图单独改样式。
-- 窄屏会收成一列。不要写色值、HTML、SVG、脚本、class 或宽度。
+**目录里的标签：** `box`、`row`、`stack`、`grid`、`title`、`text`、`badge`、`pill`、`band`、`arrow`、`fan`、`join`、`lanes`、`divider`、`steps`、`step`、`note`、`compare`、`callout`、`kpi`。
 
-- 说明图优先写顶层 `steps` + `notes`。`notes[].for` 对上 `steps[].id`。
-- 要嵌套时写 `tree:`。每一项一个零件：`card:`、`stack:`、`row:`、`arrow: down|right`、`notes:`。
-- `tone` 只有 `plain`、`accent`、`tip`、`muted`。`accent` 和 `tip` 是两种强调底，和泳道 `forward` / `back` 同一对颜色。`callout` 的 tone 是 `note`、`tip`、`warn`。
-- 颜色只通过 tone。不要写色值、HTML、SVG、脚本、class 或宽度。
-- 徽章和指标可以写在卡片字段 `badge` / `kpi` 上，也可以作为子零件嵌进 `card.children`。
-- 手机上会强制成一列。不要自己排死列宽。
-- 正文是可选的 DOM 文字，阅读页不调用模型。
+- `<box frame="band" tone="accent">` 是要先看见的一层。`frame` 还有 `card`、`text`、`pill`。`tone` 只有 `plain`、`accent`、`tip`、`muted`。
+- `<arrow dir="down"/>` 或 `dir="right"`。`<fan n="3"/>` 下面的 `<row>` 要有同样格数。`<join>一句说明</join>` 是收到一处。
+- `<lanes>` 里写 `<actor>` 和 `<message from="1" to="2" tone="forward">`。`tone` 是 `forward` 或 `back`。
+- `<steps>` 里每步一个 `<step id="sync">`，要点开的说明写 `<note>`（这些 note 收成 notes）。
+- `<compare>` 里 2 到 4 个 `<item>`。`<callout tone="tip">` 的 tone 是 `note`、`tip`、`warn`。
+- 不要写色值、HTML、SVG、脚本，也不要写 `{@body}`、`{#if}` 或 `{表达式}`。颜色走主题变量。窄屏会收成一列。
 
 **骨架：**
 
 ````md
 ```garden compose
-title: 站点发布流水线
-caption: 三步串起来，点哪步看哪步
-intent: |
-  （作者原话，一字不改）
-steps:
-  - id: sync
-    title: sync
-    text: 同步内容与配置
-  - id: build
-    title: build
-    text: 生成静态 HTML
-  - id: validate
-    title: validate
-    text: 检查后再上线
-notes:
-  - for: sync
-    text: 先对齐远程与本地材料
-  - for: build
-    text: 构建期把 compose 渲进正文
-  - for: validate
-    text: 钩子拦住未编译的想法块
+<intent>
+用三张卡加向下箭头讲清 sync → build → validate；读者点每一步，下面展开对应说明。
+</intent>
+<steps>
+  <step id="sync">
+    <badge>1</badge>
+    <title>sync</title>
+    <text>同步内容与配置</text>
+    <note>先对齐远程与本地材料</note>
+  </step>
+</steps>
 ```
 ````
 
-嵌套时换成 `tree:`，例如 `row` 里放 `card`、`arrow: right`、再一张 `card`，下面接 `notes:`。`id` 用字母开头。
+并排时用 `<row>` 包 `<box>`、`<arrow dir="right"/>`、再一个 `<box>`。`id` 用字母开头。

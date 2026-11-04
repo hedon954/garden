@@ -91,11 +91,11 @@ export function checkGardenMarkdown(markdown, { draft = false, title = "", title
       return;
     }
     if (block.error?.code === "compose-uncompiled") {
-      if (!draft) push(fence.line, "compose-uncompiled", block.error.message, "保持 `garden compose`，把原话写进 intent，并补上 YAML 树。");
+      if (!draft) push(fence.line, "compose-uncompiled", block.error.message, "保持 `garden compose`，把原话放进 intent，并写上 Markdown 和标签。");
       return;
     }
     if (block.error?.code === "compose-invalid") {
-      push(fence.line, "compose-invalid", block.error.message, "用 steps、notes，或 tree 里的 stack、row、card、steps、compare、callout、badge、kpi、arrow、notes。");
+      push(fence.line, "compose-invalid", block.error.message, "叶子写 Markdown，结构写 box、row、stack、steps、arrow、join、lanes 这些标签。");
       return;
     }
     if (block.name === "file") {
