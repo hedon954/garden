@@ -1,20 +1,23 @@
-tip: compose-dil-full-rewrite (7-day root: stack gap + sparse between)
-date: 2026-11-04 Asia/Shanghai ~19:00
+tip: compose-dil-full-rewrite (7-day banner stretch + footnote * + right tip)
+date: 2026-11-04 Asia/Shanghai ~19:15
 branch: tip/compose-dil-full-rewrite
-HEAD: d2d928b
+HEAD: (pending)
 npm publish: NOT done
 Cloud Agent: NOT used
 merge to main: NOT done
 
-## Root cause (hedon: 还是拥挤 / 行间隙小了)
-1. Vertical: 7-day `<stack gap={1}>` → CSS 4px; title/row/footnotes glued. Fix: gap={3} (12px).
-2. Horizontal: prior remove of max-width left flex:1 on ALL nowrap sm cards → empty frame=text days equal-stretch. Fix: justify=between → content-sized; equal flex:1 only when NOT between/around (近四日 still edge-to-edge).
-3. Secondary: chip date↔icon gap 0→1; frame=text min-width 0.
+## Hedon correction (t305u)
+1. Day rows (4 AND 7): equal flex stretch full banner — NOT content-sized empty days.
+2. 「11/08 起可再次发送」 on the RIGHT (legend justify=between).
+3. Footnote starts with visible `*`.
 
-## Gap rung note
-gap 0/1 = intra-chip; ≥2/3 = section stacks (tokens.mjs + docs/compose-tokens.md).
+## Fixes
+- Parser: phrasing leaves (caption/text/title/…) use phrasingNodes — keep lone `* ` footnote markers; stack-level markdown lists still strip.
+- CSS: nowrap sm cards always flex:1 1 0 (incl. frame=text). Reverted between→flex:none / frame=text flex:none.
+- CSS: justify=between rows → caption-inline + text flex:0 0 auto so tip pins right; data-align=end text-align.
+- DIL: 7-day day row drop justify=between; keep stack gap={3}; legend between + tip tone; footnote `* 假设…`.
 
-## Deploy (hd-garden-pr92) — STATIC_EXPORT=1
-alias:  https://tip-dil-full.hd-garden-pr92.pages.dev
-cache-bust: ?v=7day-root-20261104
-compare:  https://tip-dil-full.hd-garden-pr92.pages.dev/blog/compose-compare/?v=7day-root-20261104
+## Deploy
+alias: https://tip-dil-full.hd-garden-pr92.pages.dev
+cache-bust: ?v=7day-banner-20261104
+compare: https://tip-dil-full.hd-garden-pr92.pages.dev/blog/compose-compare/?v=7day-banner-20261104

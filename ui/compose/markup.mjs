@@ -196,6 +196,19 @@ function markdownNodes(raw) {
   return nodes;
 }
 
+/** Phrasing leaves: keep footnote markers like "* 假设 …"; no list/heading strip. */
+const PHRASING_TAGS = new Set(["caption", "text", "title", "label", "kbd", "code", "join", "callout"]);
+
+function phrasingNodes(raw) {
+  const text = String(raw ?? "").replace(/^\n+|\n+$/u, "").trim();
+  if (!text) return [];
+  return [{ type: "text", text, align: "", tone: "plain", size: "" }];
+}
+
+function regionTextNodes(raw, stop) {
+  return PHRASING_TAGS.has(stop) ? phrasingNodes(raw) : markdownNodes(raw);
+}
+
 function inlineText(nodes) {
   return nodes.map((node) => node.text || "").filter(Boolean).join("\n").trim();
 }
@@ -647,11 +660,11 @@ function parseRegion(src, from, stop, depth, state) {
   while (i < src.length) {
     const tag = findTag(src, i);
     if (!tag) {
-      nodes.push(...markdownNodes(src.slice(i)));
+      nodes.push(...regionTextNodes(src.slice(i), stop));
       i = src.length;
       break;
     }
-    if (tag.index > i) nodes.push(...markdownNodes(src.slice(i, tag.index)));
+    if (tag.index > i) nodes.push(...regionTextNodes(src.slice(i, tag.index), stop));
     if (tag.closing) {
       if (tag.name !== stop) fail(`多出来的 </${tag.name}>。`);
       return { nodes, index: tag.end };

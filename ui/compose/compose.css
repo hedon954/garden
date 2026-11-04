@@ -100,6 +100,17 @@
   min-width: 0;
 }
 
+/* Legend / between rows: content-sized leaves so space-between pins tip to the right edge */
+.g-compose-row[data-justify="between"] > .g-compose-text,
+.g-compose-row[data-justify="between"] > .g-compose-caption-inline,
+.g-compose-row[data-justify="between"] > .g-compose-h,
+.g-compose-row[data-justify="around"] > .g-compose-text,
+.g-compose-row[data-justify="around"] > .g-compose-caption-inline,
+.g-compose-row[data-justify="around"] > .g-compose-h {
+  flex: 0 0 auto;
+  min-width: 0;
+}
+
 .g-compose-row > .g-compose-badge {
   flex: 0 0 auto;
 }
@@ -130,8 +141,14 @@
 }
 
 .g-compose-h[data-align="center"],
-.g-compose-text[data-align="center"] {
+.g-compose-text[data-align="center"],
+.g-compose-caption-inline[data-align="center"] {
   text-align: center;
+}
+.g-compose-h[data-align="end"],
+.g-compose-text[data-align="end"],
+.g-compose-caption-inline[data-align="end"] {
+  text-align: end;
 }
 
 .g-compose-stack[data-align="center"] > .g-compose-h[data-align="start"],
@@ -770,37 +787,24 @@
   border-radius: 8px;
 }
 .g-compose-card[data-size="sm"][data-frame="text"] {
+  /* still flex:1 with siblings; lighter pad so empty days don't look like pills */
   min-width: 0;
-  padding: 2px 4px;
+  padding: 4px 2px;
 }
 .g-compose-card[data-size="lg"] { padding: 16px 20px; gap: 10px; }
 .g-compose-card[data-size="xl"] { padding: 20px 24px; gap: 12px; }
 
 /*
- * Day-chip rows — two layouts, composed via justify (no SlidingWindow):
- * - Equal stretch (近四日): nowrap sm cards WITHOUT justify=between/around → flex:1, edge-to-edge.
- * - Sparse timeline (最近7天): justify=between → content-sized chips; air sits between markers.
- * Empty frame=text days never force equal columns.
+ * Day-chip rows (4-day AND 7-day): every sm cell equal-stretches edge-to-edge,
+ * including empty frame=text days. Full banner width is the lock — do not
+ * content-size empty days. Legend rows use justify=between separately.
  */
-.g-compose-row[data-wrap="nowrap"]:not([data-justify="between"]):not([data-justify="around"]) > .g-compose-card[data-size="sm"] {
+.g-compose-row[data-wrap="nowrap"] > .g-compose-card[data-size="sm"] {
   flex: 1 1 0;
   width: auto;
   min-width: 0;
   align-items: center;
   text-align: center;
-}
-.g-compose-row[data-wrap="nowrap"][data-justify="between"] > .g-compose-card[data-size="sm"],
-.g-compose-row[data-wrap="nowrap"][data-justify="around"] > .g-compose-card[data-size="sm"] {
-  flex: 0 0 auto;
-  width: auto;
-  min-width: 0;
-  align-items: center;
-  text-align: center;
-}
-.g-compose-row[data-wrap="nowrap"] > .g-compose-card[data-size="sm"][data-frame="text"] {
-  flex: 0 0 auto;
-  min-width: 0;
-  width: auto;
 }
 .g-compose-row[data-wrap="nowrap"] > .g-compose-card[data-size="sm"] > .g-compose-text,
 .g-compose-row[data-wrap="nowrap"] > .g-compose-card[data-size="sm"] > .g-compose-caption-inline,
@@ -1222,19 +1226,17 @@
     -webkit-overflow-scrolling: touch;
     gap: 4px;
   }
-  .g-compose-row[data-wrap="nowrap"]:not([data-justify="between"]):not([data-justify="around"]) > .g-compose-card,
-  .g-compose-row[data-wrap="nowrap"]:not([data-justify="between"]):not([data-justify="around"]) > .g-compose-card[data-size="sm"] {
+  .g-compose-row[data-wrap="nowrap"] > .g-compose-card,
+  .g-compose-row[data-wrap="nowrap"] > .g-compose-card[data-size="sm"] {
     flex: 1 1 0;
     width: auto;
     min-width: 2.2rem;
   }
-  .g-compose-row[data-wrap="nowrap"][data-justify="between"] > .g-compose-card,
-  .g-compose-row[data-wrap="nowrap"][data-justify="between"] > .g-compose-card[data-size="sm"],
-  .g-compose-row[data-wrap="nowrap"][data-justify="around"] > .g-compose-card,
-  .g-compose-row[data-wrap="nowrap"][data-justify="around"] > .g-compose-card[data-size="sm"],
-  .g-compose-row[data-wrap="nowrap"] > .g-compose-card[data-frame="text"] {
+  .g-compose-row[data-wrap="nowrap"][data-justify="between"] > .g-compose-text,
+  .g-compose-row[data-wrap="nowrap"][data-justify="between"] > .g-compose-caption-inline,
+  .g-compose-row[data-wrap="nowrap"][data-justify="around"] > .g-compose-text,
+  .g-compose-row[data-wrap="nowrap"][data-justify="around"] > .g-compose-caption-inline {
     flex: 0 0 auto;
-    width: auto;
     min-width: 0;
   }
 

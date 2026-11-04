@@ -292,11 +292,11 @@ tags:
 
 ```garden compose
 <intent>
-场景栈要有行间隙（标题/日列/脚注），勿用 gap=1。横向八个日期：空日按内容宽、justify=between 留空气；已发送浅蓝底+勾，空日无底+短横，窗口外沿浅绿底+开锁。标题 size=sm。底下左注已发送，右注绿色可再发；再一行左对齐星号说明。
+场景栈要有行间隙（标题/日列/图例/脚注），gap≥3。横向八个等宽日格撑满横幅（含空日）。已发送浅蓝底+勾，空日无底+短横，窗口外沿浅绿底+开锁。标题 size=sm。图例左「已发送」、右绿色「可再次发送*」；脚注以 * 开头左对齐。
 </intent>
 <stack align="stretch" gap={3}>
   <title size="sm" align="start">最近 7 天 Push 频控示意</title>
-  <row gap={2} justify="between" align="center" wrap="nowrap">
+  <row gap={2} align="stretch" wrap="nowrap">
     <box padding={1} gap={1} radius="md" background="surface-accent" border="subtle" align="center" size="sm">
       <text size="sm" align="center">11/01</text>
       <icon name="check-circle" size="sm"/>
