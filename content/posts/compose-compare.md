@@ -254,12 +254,12 @@ tags:
 
 ```garden compose
 <intent>
-横向四个等宽矮格。11/01 已触达（浅绿+勾），11/02 可推（浅蓝+开锁），11/03 与 11/04 锁定（浅灰+锁）。图标不要太大，日期和状态标签居中。
+横向四个等宽矮格，拉满卡片宽度、左右不留空。11/01 已触达（浅绿+勾），11/02 可推（浅蓝+开锁），11/03 与 11/04 锁定（浅灰+锁）。图标不要太大，日期和状态标签居中。
 </intent>
 <stack align="center" gap={2}>
   <title align="center">近四日推送频控</title>
   <caption align="center">同一用户滑动窗口内最多一次成功触达</caption>
-  <row gap={1} justify="center" align="stretch" wrap="nowrap">
+  <row gap={2} align="stretch" wrap="nowrap">
     <box padding={1} gap={1} radius="md" background="surface-tip" border="subtle" align="center" size="sm">
       <icon name="check-circle" size="sm"/>
       <text size="sm" align="center">11/01</text>
@@ -292,11 +292,11 @@ tags:
 
 ```garden compose
 <intent>
-横向八个日期。11/01、11/03 已发送（浅蓝底+勾）。11/02、11/04–11/07 空（无底+短横）。11/08 可再发（浅绿底+开锁）。标题要小、半粗。底下左注已发送，右注绿色可再发；再一行左对齐星号说明。
+横向八个日期，列间距要有呼吸感、别挤。11/01、11/03 已发送（浅蓝底+勾）。11/02、11/04–11/07 空（无底+短横）。11/08 可再发（浅绿底+开锁）。标题要小、半粗。底下左注已发送，右注绿色可再发；再一行左对齐星号说明。
 </intent>
 <stack align="stretch" gap={1}>
   <title size="sm" align="start">最近 7 天 Push 频控示意</title>
-  <row gap={1} justify="between" align="stretch" wrap="nowrap">
+  <row gap={3} justify="between" align="stretch" wrap="nowrap">
     <box padding={1} gap={0} radius="md" background="surface-accent" border="subtle" align="center" size="sm">
       <text size="sm" align="center">11/01</text>
       <icon name="check-circle" size="sm"/>

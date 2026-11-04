@@ -1,33 +1,18 @@
-tip: compose-dil-full-rewrite (handbook catalog + 7-day parity)
-date: 2026-11-04 Asia/Shanghai ~18:30
+tip: compose-dil-full-rewrite (4-day stretch + 7-day breathing room)
+date: 2026-11-04 Asia/Shanghai ~18:40
 branch: tip/compose-dil-full-rewrite
-HEAD: ee47df9
+HEAD: (pending commit)
 npm publish: NOT done
 Cloud Agent: NOT used
 merge to main: NOT done
 
-## Counts
-- Compose tags listed in handbook: 68 (CATALOG_TAGS)
-- Named icons listed in handbook: 690 (ICON_NAMES / Lucide)
-- Generator: scripts/gen-compose-handbook.mjs
-
-## Handbook (clarity × brevity)
-- Usage pages shortened; link to catalogs (no full dumps)
-- reference/compose: shared tokens once + high-traffic attrs (box/row/text/icon) + group tables (one-liner + one mini sample per group)
-- reference/compose-icons: A–Z jump + glyph grid (icon + monospace name), no per-icon essays
-- Wired in reference.md overview + COMPONENT_BADGE
-
-## 7-day / 4-day parity
-- Title size=sm (12.5px / 600), tighter stack gap
-- Denser sm chips (pad/gap/max-width), empty-day frame=text tighter
-- Footnote: left caption + right text tone=tip (green); disclaimer start-aligned
-- nowrap rows stay horizontal on narrow screens (scroll)
+## Spacing fix (hedon annotate)
+- 近四日: drop row justify=center; gap 1→2; remove CSS max-width:3.4rem on nowrap sm chips so flex:1 fills card (左右不留空)
+- 最近7天: row gap 1→3 (12px); same max-width lift so eight columns spread with breathing room (别挤)
+- Kept: title size=sm, left caption + right tip tone, star footnote start-aligned, nowrap horizontal
 
 ## Deploy (hd-garden-pr92) — STATIC_EXPORT=1
 alias:  https://tip-dil-full.hd-garden-pr92.pages.dev
-cache-bust: ?v=handbook-catalog-20261104
+cache-bust: ?v=spacing-20261104
 
-usage:    https://tip-dil-full.hd-garden-pr92.pages.dev/garden/components/compose/?v=handbook-catalog-20261104
-tags ref: https://tip-dil-full.hd-garden-pr92.pages.dev/garden/reference/compose/?v=handbook-catalog-20261104
-icons:    https://tip-dil-full.hd-garden-pr92.pages.dev/garden/reference/compose-icons/?v=handbook-catalog-20261104
-compare:  https://tip-dil-full.hd-garden-pr92.pages.dev/blog/compose-compare/?v=handbook-catalog-20261104
+compare:  https://tip-dil-full.hd-garden-pr92.pages.dev/blog/compose-compare/?v=spacing-20261104

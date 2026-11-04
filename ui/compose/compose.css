@@ -772,11 +772,11 @@
 .g-compose-card[data-size="lg"] { padding: 16px 20px; gap: 10px; }
 .g-compose-card[data-size="xl"] { padding: 20px 24px; gap: 12px; }
 
-/* Day-chip density: equal squat cells in a nowrap row */
+/* Day-chip row: equal squat cells stretch across the row (no side gutters) */
 .g-compose-row[data-wrap="nowrap"] > .g-compose-card[data-size="sm"] {
   flex: 1 1 0;
   width: auto;
-  max-width: 3.4rem;
+  min-width: 0;
   align-items: center;
   text-align: center;
 }
@@ -1205,7 +1205,6 @@
     flex: 1 1 0;
     width: auto;
     min-width: 2.2rem;
-    max-width: 3.4rem;
   }
 
   .g-compose-grid-item[data-span="2"],
