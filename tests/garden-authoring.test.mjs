@@ -52,7 +52,7 @@ test("garden fences parse to one node and legacy fences stay errors", () => {
   assert.equal(block.props.value, 3.2);
   const legacy = checkGardenMarkdown(markdown);
   assert.equal(legacy.some((item) => item.code === "legacy-fence"), true);
-  assert.match(legacy.find((item) => item.code === "legacy-fence").suggestion, /garden interactive/);
+  assert.match(legacy.find((item) => item.code === "legacy-fence").suggestion, /garden compose/);
 });
 
 test("a one-line compare cell keeps its colon", () => {
@@ -345,7 +345,8 @@ test("insert pickers paste a garden idea brief with a thumbnail, not a YAML exam
 test("editor snippets, Typora templates and text replacements come from one catalog", () => {
   const snippets = vscodeSnippets();
   assert.equal(snippets["Garden 块"].prefix, "garden");
-  assert.match(snippets["Garden 块"].body[0], /card,stat,compare,timeline,chart,compose,html,interactive/);
+  assert.match(snippets["Garden 块"].body[0], /card,stat,compare,timeline,chart,compose,html,file/);
+  assert.doesNotMatch(snippets["Garden 块"].body[0], /interactive/);
   assert.ok(snippets.gcard || snippets["Garden 资源卡 gcard"]);
   const markdown = gardenBlocksMarkdown();
   assert.match(markdown, /```garden card/);

@@ -174,8 +174,8 @@ test("the handbook compose page shows the capability diagrams", () => {
   assert.equal(fs.existsSync(path.join(root, "docs/handbook/components/compose-gallery.md")), false);
   const fences = scanFences(markdown).map((fence) => classifyFence(fence)).filter((item) => item.kind === "garden");
   const englishFences = scanFences(english).map((fence) => classifyFence(fence)).filter((item) => item.kind === "garden");
-  assert.equal(fences.length, 7);
-  assert.equal(englishFences.length, 7);
+  assert.equal(fences.length, 8);
+  assert.equal(englishFences.length, 8);
   assert.deepEqual(checkGardenMarkdown(markdown), []);
   assert.deepEqual(checkGardenMarkdown(english), []);
   const html = fences.map((item) => renderCompose(item.block.props, { scope: "ex" })).join("\n");

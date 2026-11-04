@@ -1,4 +1,5 @@
 ---
+draft: true
 title: Compose 与 ChatGPT Intelligent UI 能力验收表
 description: 逐项对齐 ChatGPT Intelligent UI（DIL）内建组件、连接方式与运行时能力，持续跟踪 Garden Compose 的实现进度。
 date: 2026-11-04

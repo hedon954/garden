@@ -28,7 +28,7 @@ description: vLLM 的分页 KV 管理。
 
 一个短指标：标签、数字、可选的一句说明和来源。
 
-不该用：数字需要读者自己代入参数时，写成想法，不要做静态指标。
+不该用：数字需要读者自己代入参数时，写成想法，编译成 compose。
 
 ```garden stat
 items:
@@ -75,7 +75,7 @@ items:
 
 一组已经算好的数字，读者不需要拧参数。
 
-不该用：数字会随读者的选择变化时，写成想法，编译成 interactive。
+不该用：数字会随读者的选择变化时，写成想法，编译成 compose（带 Slider）。
 
 ```garden chart
 type: bar
@@ -87,11 +87,11 @@ series:
 unit: ms
 ```
 
-## compose · 说明图
+## compose · 说明图与可调参数
 
-几张卡片和箭头讲清一条流程，点一步看说明。
+静态说明图（卡片、箭头、流程），或读者要拧滑杆/选项才能看懂的可调图。
 
-不该用：要拖参数或放一张真图时，用 interactive 或图片。
+不该用：放一张真图或自定义 HTML 时，用图片或 garden html。
 
 ```garden compose
 <intent>
@@ -128,22 +128,6 @@ unit: ms
 ```garden html
 src: ./demo.html
 title: 示意图
-```
-
-## compose · 交互（原 interactive，已并入）
-
-新写法用 ChatGPT 同款 DIL：`{@body}` / `{expr}` / `{#if}` / `{#each}` + 小写标签。下面若仍见 PascalCase，仅作旧稿对照。
-
-读者需要拧参数或翻状态才能看懂，由想法编译而来。
-
-不该用：一次乘法、把散文切成步骤，都不要做成交互。
-
-```garden compose #kv-memory
-caption: 显存与 batch、序列长度都成正比。
-intent: |
-  让读者拧 batch，看 KV 显存。
----
-<State batch={1} />
 ```
 
 ## file · 文件
@@ -207,7 +191,7 @@ items:
 
 给读者两三个具体选项让他选一个，每个选项有图标、一个醒目的数字和一句说明。
 
-不该用：选项会改变后面的计算结果时，写成想法，编译成 interactive。
+不该用：选项会改变后面的计算结果时，写成想法，编译成 compose。
 
 ```garden choice
 title: 你更倾向哪一种？

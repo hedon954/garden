@@ -329,9 +329,9 @@ Role 在中间，把用户和权限接起来。Role 是重点。
 <text tone="muted">第二行才是产品探索更强调的决策循环。</text>
 ```
 
-## 可调参数（play · ChatGPT 同款 DIL）
+## 可调参数（play）
 
-说明图不够、读者要拧参数时，仍写 `garden compose`，在围栏里用 ChatGPT Intelligent UI 同款写法：
+静态说明图还差一步、读者要拧参数时，仍写 `garden compose`，在围栏里用同一套 DIL 写法：
 
 - `{@body const [n, setN] = DIL.useState(3)}` 声明状态
 - `{@body const total = n * 24}` 派生值

@@ -327,9 +327,9 @@ The top row is delivery order: Understand, Design, Ship. The bottom row is the d
 <text tone="muted">The second row is the decision loop that product discovery emphasizes.</text>
 ```
 
-## Play mode (ChatGPT-shaped DIL)
+## Play mode
 
-When a static diagram is not enough and readers need to tweak parameters, keep the `garden compose` fence and write ChatGPT Intelligent UI–shaped DIL:
+When a static diagram still needs reader-tunable parameters, keep the `garden compose` fence and write the same DIL shape:
 
 - `{@body const [n, setN] = DIL.useState(3)}` for state
 - `{@body const total = n * 24}` for derived values

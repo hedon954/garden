@@ -121,7 +121,7 @@ title: 示意图
   interactive: {
     label: "交互（已并入 compose）",
     deprecated: true,
-    when: "旧稿兼容。新文章请写 garden compose，用 ChatGPT 同款 DIL：{@body} / {expr} / {#if} / {#each} 与小写标签。",
+    when: "旧稿兼容。新文章请写 garden compose（{@body}/{expr}/{#if}/{#each}）。",
     whenNot: "新文章不要再写 interactive。",
     keys: ["id", "caption", "intent", "expect"],
     example: `\`\`\`garden compose #kv-memory
