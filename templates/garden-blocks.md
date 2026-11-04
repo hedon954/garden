@@ -89,7 +89,7 @@ unit: ms
 
 ## compose · 说明图与可调参数
 
-静态说明图（卡片、箭头、流程），或读者要拧滑杆/选项才能看懂的可调图。
+静态说明图或可调 play；写 DIL（Markdown+标签），不是 YAML。
 
 不该用：放一张真图或自定义 HTML 时，用图片或 garden html。
 

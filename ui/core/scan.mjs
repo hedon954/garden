@@ -13,7 +13,7 @@ export function checkInteractiveFence(block, options = {}) {
   return { ...check, diagnostics: check.diagnostics.map((item) => ({ ...item, line: read.toFileLine(item.line) })) };
 }
 
-/** A `garden compose` fence whose body is still prose, or a YAML tree that fails the catalog. */
+/** A `garden compose` fence whose body is still prose, or a DIL tree that fails the catalog. */
 export function checkComposeFence(block) {
   const result = parseCompose(block.body);
   if (result.uncompiled) return { ok: false, uncompiled: true, diagnostics: [], doc: null };

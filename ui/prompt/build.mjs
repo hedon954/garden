@@ -1,4 +1,5 @@
 import { catalogReference } from "../core/catalog.mjs";
+import { composeCatalogReference } from "../compose/prompt-catalog.mjs";
 
 export const RECIPE_FILES = [
   "param-bench.md",
@@ -13,13 +14,21 @@ export const RECIPE_FILES = [
   "compose.md",
 ];
 
+export { composeCatalogReference };
+
 /**
- * `garden ui prompt`: rules + component reference generated from the catalog
- * + recipes. The admin workbench appends `studio` for its output contract.
+ * `garden ui prompt`: rules + compose DIL catalog + interactive PascalCase
+ * reference + recipes. The admin workbench appends `studio` for its output contract.
  * @param {{ rules: string, recipes: string[], studio?: string | null }} parts
  */
 export function buildPrompt({ rules, recipes, studio = null }) {
-  const parts = [rules.trim(), catalogReference().trim(), "## 配方", ...recipes.map((recipe) => recipe.trim())];
+  const parts = [
+    rules.trim(),
+    composeCatalogReference().trim(),
+    catalogReference().trim(),
+    "## 配方",
+    ...recipes.map((recipe) => recipe.trim()),
+  ];
   if (studio) parts.push(studio.trim());
   return `${parts.join("\n\n---\n\n")}\n`;
 }

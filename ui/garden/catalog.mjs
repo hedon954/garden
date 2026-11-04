@@ -101,9 +101,9 @@ unit: ms
   },
   compose: {
     label: "说明图与可调参数",
-    when: "静态说明图（卡片、箭头、流程），或读者要拧滑杆/选项才能看懂的可调图。",
+    when: "静态说明图或可调 play；写 DIL（Markdown+标签），不是 YAML。",
     whenNot: "放一张真图或自定义 HTML 时，用图片或 garden html。",
-    keys: ["title", "caption", "intent", "expect", "id", "steps", "notes", "tree", "children"],
+    keys: ["caption", "intent", "expect", "id"],
     example: `\`\`\`garden compose\n${COMPOSE_EXAMPLE_BODY}\n\`\`\``,
     triggers: ["gcompose"],
   },

@@ -2,16 +2,20 @@
 name: garden-ui
 description: >-
   Compiles the `garden` idea blocks in one Garden post into garden components
-  (garden compose, or card / stat / compare / ... , or prose, or garden
+  (garden compose DIL, or card / stat / compare / ... , or prose, or garden
   html), fixes broken garden compose blocks, and suggests where a post could
-  use interaction. Older intent / ui blocks are handled the same way. Use when
-  the user says 编译这篇 / 编译想法 / 重编译 <id> / 这篇哪里适合交互, or pastes a
-  garden ui check fix prompt.
+  use interaction. Older intent / ui / interactive blocks are handled the same
+  way. Use when the user says 编译这篇 / 编译想法 / 重编译 <id> / 这篇哪里适合交互,
+  or pastes a garden ui check fix prompt.
 ---
 
 # 编译 Garden 交互块
 
-作者在稿里用不带名字的 `garden` 围栏写一句想法，这个 skill 把它变成 `garden compose`、`garden compose` 或别的 `garden` 组件。`garden compose` 若还是白话，就在同一围栏里填 YAML 树，不要改围栏类型。交互组件和设计规则在 `npx garden ui prompt` 的输出里，各 `garden` 组件的用途和示例在 `node_modules/hd-garden/templates/garden-blocks.md`（在引擎仓库里是 `templates/garden-blocks.md`），以这两份为准，不凭记忆写组件。
+作者在稿里用不带名字的 `garden` 围栏写一句想法，这个 skill 把它变成 `garden compose`、别的 `garden` 组件，或写回正文。
+
+**`garden compose` 写的是 DIL，不是 YAML：** 叶子是 Markdown，结构是 compose 目录里的**小写标签** + 设计 token。作者原话放进 `<intent>`（或块头 `intent:`）。围栏类型始终是 `garden compose`——静态说明图与可调 play 都是它。不要发明 YAML 槽，不要用 interactive 的 PascalCase 当作者输入。
+
+交互组件、compose 目录和设计规则在 `npx garden ui prompt` 的输出里；各 `garden` 组件的用途和示例在 `node_modules/hd-garden/templates/garden-blocks.md`（在引擎仓库里是 `templates/garden-blocks.md`）。以这两份为准，不凭记忆写组件。改完引擎后若本 skill 或 prompt 过期，先 `npx garden ui prompt` 再写。
 
 作者提交时，提交前钩子跑的是同一个 `npx garden ui check`。你用来找块、写回、自查的命令，和拦住作者提交的命令是同一套。
 
@@ -42,22 +46,23 @@ description: >-
    npx garden ui prompt
    ```
 
-   里面是组件目录、配方和设计规则。按配方的骨架写，不发明目录里没有的组件或属性。
+   里面是 compose 目录（小写标签 + token）、interactive PascalCase 参考（兼容）、配方和设计规则。按配方的骨架写，不发明目录里没有的组件或属性。
 
 3. 每块读原话和所在小节，三选一：
    - **写回正文**：一句话、一张表或一张 Mermaid 就能说清时。
-   - **写 `garden compose`**：读者需要拖、点、翻才能看懂时。
+   - **写 `garden compose`（说明图）**：读者需要看见结构、关系、重点时。Markdown 叶子 + 小写目录标签；不要 YAML。
+   - **写 `garden compose`（play）**：读者需要拖、点、翻才能看懂时。仍用 `garden compose`；可用 `{@body}`、`{expr}`、`{#if}`/`{#each}` 与小写控件（`slider`/`choice`/`button`/`stat`…）。遗留 `garden interactive` + PascalCase 仅作兼容。
    - **写一段 `diff`**：想法紧跟在一段完整代码后面，说的是「和上一版比改了什么」时。按原话写出 diff，用一段普通 Markdown 写回（只有这一个 `diff` 围栏）。写回后它紧挨着那段代码，页面会合成「代码 / 对比上一版」切换；diff 里的新行要和上面的完整代码一致。
-   - **写别的 `garden` 组件**：一张或多张资源卡（`card` / `cards`）、几个指标（`stat`）、两种做法并排或好坏对照（`compare` / `verdict: good|bad`）、一条时间线（`timeline`）、一张静态图表（`chart`）、一张说明图（`compose`）、一份下载文件（`file`）、3～6 个要素的关系图（`relations`）、紧凑图标列表或分步列表（`list`）、两三个选项的选择卡（`choice`）。字段与校验约束见 `npx garden ui prompt` 与 `templates/garden-blocks.md`。
-   - **编译 `garden compose`**：`lang` 是 `garden-compose` 且 `status` 是 `uncompiled` 时，围栏头保持 `garden compose`。把扫描到的原话原样放进 `intent`，正文写成 YAML 树（`steps` + `notes`，或 `tree`）。不要改成 interactive，不要写 HTML、SVG 或脚本。配方在 `npx garden ui prompt` 的说明图一节。
+   - **写别的 `garden` 组件**：一张或多张资源卡（`card` / `cards`）、几个指标（`stat`）、两种做法并排或好坏对照（`compare` / `verdict: good|bad`）、一条时间线（`timeline`）、一张静态图表（`chart`）、一份下载文件（`file`）、3～6 个要素的关系图（`relations`）、紧凑图标列表或分步列表（`list`）、两三个选项的选择卡（`choice`）。字段与校验约束见 `npx garden ui prompt` 与 `templates/garden-blocks.md`。
+   - **编译已有 `garden compose`**：`lang` 是 `garden-compose` 且 `status` 是 `uncompiled` 时，围栏头保持 `garden compose`。把扫描到的原话原样放进 `<intent>`（或块头 `intent:`），正文写成 DIL（Markdown + 小写标签；play 时加 `{@body}` 等）。不要改成 interactive，不要写任意 HTML、SVG 或脚本。配方在 `npx garden ui prompt` 的说明图一节。
    - **写 `garden html`**：目录表达不了的画布动画、音频、物理模拟等。按 [garden-interactive-chart](../garden-interactive-chart/SKILL.md) 在同名目录写 HTML，用 `title` 写下判断。
 
 4. 写 `garden compose` 时：
-   - 格式：围栏头写 `garden compose #<id>`；`---` 上面是 `caption`、`intent`、可选的 `expect`；`---` 下面是 `npx garden ui prompt` 里的组件树。
-   - 原话原样放进 `intent`，一个字都不改。
-   - `caption` 摘原话里的判断。原话没有判断句，就根据小节内容补一句，并在回复里说明。
-   - 原话里有已知点（"batch 1 时是 512 MiB"），写进 `expect`。
-   - 数据写在块里。原话提到同名目录里已有的数据文件时，才用 `Data` 引用。
+   - 格式：围栏头写 `garden compose`（可选 `#<id>`）；作者原话进 `<intent>…</intent>` 或块头 `intent:`；静态说明图直接写 Markdown + 标签树；play 可在 `---` 块头写 `caption` / `intent`，正文用 `{@body}` 与小写控件。
+   - 原话原样放进 intent，一个字都不改。
+   - 芯片内部 `gap={0}`/`gap={1}`；章节堆叠 `gap={2}`/`gap={3}`；日横幅等宽；phrasing 叶子保留前导 `*`。
+   - play 时：`caption` 摘原话里的判断；原话有已知点可写 `expect`（若引擎/校验支持）。
+   - 不要写色值、宽度、任意 HTML/SVG/脚本；图标用 `<icon name="…"/>`（名字须在目录里）。
    - 块太大就拆成两块，各自就近放在要讲的段落旁边，不挪到别的文件。
 
 5. 每块用 `apply` 写回，新内容从标准输入给：
@@ -65,17 +70,16 @@ description: >-
    ````bash
    npx garden ui apply content/posts/路径.md --id <id> --base <hash> <<'GARDEN_UI'
    ```garden compose #id
-   caption: ...
-   intent: |
-     ...
-   ---
+   <intent>
    ...
+   </intent>
+   <row gap={2}>...</row>
    ```
    GARDEN_UI
    ````
 
    - 想法块没有 id，用 `--intent-hash <intentHash>` 定位；原话重复时改用 `--at <startLine>`。
-   - 新内容可以是一个 `garden` 组件围栏（interactive、card、stat……），或一段普通 Markdown（写回正文时）。旧稿里的 `ui` 块也可以按原格式写回。
+   - 新内容可以是一个 `garden` 组件围栏（compose、interactive、card、stat……），或一段普通 Markdown（写回正文时）。旧稿里的 `ui` 块也可以按原格式写回。
    - 新内容里不能再有没编译的想法。
    - 成功时 stdout 是 `{"ok":true,...}`。失败时 stderr 是 JSON，按 `code` 处理：
      - `apply-invalid`：新内容没通过校验，按 `diagnostics` 改了再写。
@@ -96,7 +100,7 @@ description: >-
 
    | id | 选择 | 配方 | 假设 | expect |
    | --- | --- | --- | --- | --- |
-   | kv-memory | garden compose | 参数台 | 默认序列取 4K | batch 1 时 512 MiB |
+   | kv-memory | garden compose play | 参数台 | 默认序列取 4K | batch 1 时 512 MiB |
 
    "假设"写原话没说、你替作者定下的东西（默认值、范围、补的 caption）。没有就写"无"。
 
@@ -106,14 +110,16 @@ description: >-
 - 编造原话里没有的数字。需要数字但原话没给时，用原话里的公式算，或者问作者。
 - 使用远程地址（图片、脚本、数据）。
 - 改动目标块之外的正文。
+- 把 compose 写成 YAML 槽，或禁止作者/模型使用合法的 `{@body}` / `{expr}` / `{#if}` / `{#each}`（play 需要时）。
 
 ## 建议模式：这篇哪里适合交互
 
 只读，不改稿。先运行 `npx garden ui prompt` 读设计规则，再通读全文，挑出纯文字或贴图说不清的段落：
 
-- 公式或数字随参数变化（参数台、换算器）
+- 公式或数字随参数变化（compose play / 参数台）
 - 多步过程（步进器、流程）
 - 两种做法的差别（对比）
 - 一组格子、字节或内存布局（格子图）
+- 结构关系说明图（compose 静态 DIL）
 
 每处给出：所在小节、为什么文字不够、一段可以直接粘贴到该段落后面的 `garden` 想法块草稿。草稿只写读者要做什么、看到什么，以及原文里已有的数字，不写组件名。最多 5 处；没有合适的就说没有。

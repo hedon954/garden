@@ -5,7 +5,7 @@ import { parse as parseYaml, stringify } from "yaml";
  * `intent` / `ui` ones:
  *   ```garden                      an idea, one sentence to compile before publishing
  *   ```garden interactive #id      a compiled interactive block
- *   ```garden compose              an idea until the body is a YAML tree
+ *   ```garden compose              an idea until the body is DIL (Markdown + catalog tags)
  * Other `garden <name>` fences (card, stat, ...) are checked by `garden check`.
  */
 export function gardenKind(fence) {

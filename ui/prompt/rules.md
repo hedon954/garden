@@ -27,7 +27,7 @@
   - 正反对照模式：给条目加 `verdict: bad` 或 `verdict: good`，改为上下堆叠并显示红叉或绿勾，不受 60 字 `compare-long` 限制。
 - `garden timeline`：可选 `title`，必填 `items` 数组（至少 2 项，每项含可选 `date`、必填 `title`、可选 `text`、`source`）。
 - `garden chart`：可选 `type`（`"bar"`）、`title`、`unit`、`x`、`xLabel`、`yLabel`、`caption`，必填 `data`（`{ x, y, label? }[]`，至少 2 项）或 `series`（配 `x` 标签数组）。自带可展开数据表，同节不要重复手写相同数据的 Markdown 表。
-- `garden compose`：不是 YAML 槽。叶子是 Markdown（标题、段落、`**强调**`、列表），结构是目录里的标签（`box`、`row`、`stack`、`grid`、`title`、`text`、`badge`、`arrow`、`fan`、`join`、`lanes`、`divider`、`steps`、`pill`、`band`）。作者原话放进 `<intent>`，不画出来。`tone` 只有 `plain`、`accent`、`tip`、`muted`。不要写脚本、色值、宽度，也不要写 `{@body}` 或表达式。
+- `garden compose`：不是 YAML 槽。叶子是 Markdown（标题、段落、`**强调**`、列表），结构是 **compose 目录**里的小写标签（完整列表见下方「compose 目录」：约 68 个标签 + Lucide 图标名 + token）。作者原话放进 `<intent>`，不画出来。芯片内部用 `gap={0}`/`gap={1}`，章节堆叠用 `gap={2}`/`gap={3}`；日横幅等宽用 `flex:1`；tip 钉右边用 `justify="between"`；phrasing 叶子保留前导 `*`。不要写脚本、色值、任意 HTML/SVG 或宽度。**静态 diagram** 只写 Markdown+标签；**play（可调参数）** 仍用同一围栏，可用 `{@body}`、`{expr}`、`{#if}`/`{#each}` 与小写控件（`slider`/`choice`/`button`/`stat`…）。不要用 interactive 的 PascalCase 当作者输入。
 - `garden html`：`src`（同名子目录下的本地 `.html`）或 `code` 二选一，配 `title`、可选 `height`。
 - `garden file`：单文件填 `src`（可选 `title`、`note`），多文件填 `files` 数组（每项含 `src`、可选 `title`、`note`）。本地路径相对当前 Markdown 且不能越出 `content/`（否则报 `file-outside`），文件不存在报 `missing-asset`，单文件超过 `5 MB` 报 `file-large` 警告；不要手写 `resolved`（报 `garden-file`）。
 - `garden relations`：可选 `title`、`caption`，必填 `items`（3～6 项，每项含 `title`、`text`，节点无强调色选项），在 `items` 与 `links` 之间可选 `center: <序号|标题>`，可选 `links` 数组。
@@ -39,7 +39,7 @@
   - 可用 `icon` 名（23 个）：`search`、`eye`、`heart`、`chat`、`shield`、`wallet`、`bell`、`check`、`x`、`star`、`flag`、`clock`、`idea`、`book`、`link`、`user`、`chart`、`gear`、`file`、`pin`、`flask`、`target`、`question`。
 - `garden choice`：可选 `title`、`caption`，必填 `items` 数组（2～3 项，每项含 `icon`、`value`、`text`、`label`、`reply`），可选 `none: { label, reply }`（在卡片下方渲染为单行兜底文字按钮）。整组支持键盘方向键切换，窄屏下卡片单列纵向堆叠。
 
-interactive 的正文仍用下面的组件和属性。那是 interactive 的内部零件，不是文章里的名字。
+遗留 `garden interactive` 的正文仍用下面的 PascalCase 组件和属性（见「interactive 组件参考」）。新的可调参数优先写 `garden compose` play（`{@body}` + 小写控件）。PascalCase 不是 compose 作者输入。
 
 # 把作者的意图写成 Garden 的 interactive 块
 
