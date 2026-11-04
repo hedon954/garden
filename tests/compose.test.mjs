@@ -156,9 +156,15 @@ test("the handbook compose page shows the capability diagrams", () => {
   for (const page of [markdown, english, fs.readFileSync(path.join(root, "docs/handbook/components.md"), "utf8"), fs.readFileSync(path.join(root, "docs/handbook/reference.md"), "utf8")]) {
     assert.doesNotMatch(page, /ChatGPT|garden figure|已废弃|deprecated/u);
   }
+  assert.match(markdown, /## 怎么写这句想法/);
+  assert.match(markdown, /## 够用的句子和不够的/);
+  assert.match(markdown, /不要写样子/);
   assert.match(markdown, /角色连接用户和权限/);
   assert.match(markdown, /Policy Enforcement Point/);
   assert.match(markdown, /## 两行流程/);
+  assert.match(english, /## How to write the sentence/);
+  assert.match(english, /## Enough structure, and not enough/);
+  assert.match(english, /Do not describe the look/);
   assert.match(english, /Role connects users and permissions/);
   assert.match(english, /Policy Enforcement Point/);
   assert.match(english, /## Two-row flow/);

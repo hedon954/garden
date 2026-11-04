@@ -1,17 +1,105 @@
 ---
 title: Explanation diagram (compose)
 navTitle: compose
-description: Explain a diagram with cards, arrows, lanes, and notes.
+description: Write the structure the reader should see, then look at the compiled diagrams.
 section: components
 order: 36
 badge: compose
 ---
 
-In the editor, type `/garden` and choose the compose item. That inserts a `garden compose` fence whose body is one sentence, not a YAML stub. After compile, the fence type stays `garden compose`: the sentence moves into `intent` and the body becomes a YAML tree.
+In the editor, type `/garden` and choose the compose item. That inserts a `garden compose` fence whose body is one sentence, not YAML. After compile, the fence type stays `garden compose`: that sentence is copied into `intent` unchanged, and the YAML tree is written by the compile step.
 
-Open a note with `steps` and `notes`. Every field is in [Component reference · compose](/garden/en/reference/compose). A narrow screen stacks a row into one column. Color comes from theme tokens, so light and dark both stay readable.
+You only write what the reader should see. Do not write density, fill, corner radius, font weight, shadow, or whether a box should hug its text. Every field is in [Component reference · compose](/garden/en/reference/compose). A narrow screen stacks a row into one column.
 
-Each diagram below is built from those parts.
+## How to write the sentence
+
+### State the structure
+
+The sentence needs a claim about shape. Three lists joined in the middle. One place reached first, then a fan-out. Layers from top to bottom. Several facets of one request. A first row of sequence and a second row that is the point.
+
+### Name the parts
+
+Boxes, lanes, and steps use the short nouns the reader will read on the diagram. `Administrator`, `identity provider`, and `authorization decision` can be titles. Put the explanation in the line under the name. Do not use a full sentence as the title.
+
+### State the relationships
+
+Say order, grouping, who connects to whom, and whether lines fan out or meet. If it is not a single sequence, say that it is not a strict order. If the reader should open one step and read only that note, say which step and which sentence.
+
+### Mark what matters
+
+Say which part should be seen first, and which parts are only the path or the background. For example: "Role is the middle layer to see first." "The identity service and the authorization decision are the two layers to emphasize." "The second row is the decision loop." Do not name a color or a frame.
+
+### Do not describe the look
+
+Do not ask for flatter cards, grey pills, hugging the text, not stretching, a font weight, tighter density, a shadow, a radius, or a tinted band. Shared defaults and the compile step decide the look.
+
+## Enough structure, and not enough
+
+Each pair is the sentence you type into the fence. The compiled diagrams are below this section.
+
+### Three columns, joined in the middle
+
+Not enough: "Draw a permissions diagram." There are no columns, no names, and no connection.
+
+Also not enough: "Three equal columns, a light grey rounded card in the middle, do not stretch it, use a light font weight." That is a look, not a structure.
+
+Enough:
+
+````markdown
+```garden compose
+Three columns: User with Alice and Bob, Role with Administrator and Reviewer, Permission with orders:read and orders:approve. Role sits in the middle and connects users to permissions. Role is the layer to see first.
+```
+````
+
+### Reach one place, then fan out
+
+Not enough: "Draw SSO, with nicer arrows and even gaps."
+
+Enough:
+
+````markdown
+```garden compose
+The browser reaches the identity provider first. The identity provider then connects to HR, Finance, and Project at once. All three systems trust that same provider. The identity provider is the layer to see first.
+```
+````
+
+### Layers from top to bottom
+
+Not enough: "Five full-width bands, tint the second and the fifth, draw thin arrows."
+
+Enough:
+
+````markdown
+```garden compose
+Five layers from top to bottom: browser, identity service, BFF, business service, authorization decision. The identity service and the authorization decision are the two layers to emphasize. The others are the path. Not every request walks the layers in this order.
+```
+````
+
+### Several facets of one request
+
+Not enough: "Two rows of two cards, then two more, and do not bold the titles."
+
+Enough:
+
+````markdown
+```garden compose
+The user wants to change an order address. Split that into authentication, credential, authorization, and verification, one question each: who you are, how you prove it, whether you may, and whether the payload is valid. Then transport and confidentiality. These six are not a strict sequence.
+```
+````
+
+### A sequence on top, the point underneath
+
+Not enough: "Plain titles on top, grey pills underneath, hug the text, do not stretch the row."
+
+Enough:
+
+````markdown
+```garden compose
+The top row is delivery order: Understand, Design, Ship. The bottom row is the decision loop to emphasize: Hypothesize, Cheap test, Iterate or stop. The top row is background. The bottom row is the point.
+```
+````
+
+The diagrams below are what this kind of sentence looks like after compile.
 
 ## RBAC
 
