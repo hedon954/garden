@@ -183,9 +183,9 @@
   gap: 8px;
   box-sizing: border-box;
   padding: 14px 16px;
-  border: 1px solid var(--rule);
+  border: 1px solid var(--rule-strong);
   border-radius: var(--r, 12px);
-  background: var(--card);
+  background: transparent;
   color: var(--ink);
   font: inherit;
   text-align: start;
@@ -196,9 +196,9 @@
 .g-compose-disclosure {
   min-width: 0;
   max-width: 100%;
-  border: 1px solid color-mix(in srgb, var(--rule-strong) 72%, var(--card));
+  border: 1px solid color-mix(in srgb, var(--rule-strong) 72%, var(--paper));
   border-radius: 8px;
-  background: var(--card);
+  background: transparent;
 }
 
 .g-compose-disclosure > summary {
@@ -242,7 +242,7 @@
 
 .g-compose-disclosure[open] > summary {
   border: 0;
-  border-bottom: 1px solid color-mix(in srgb, var(--rule) 70%, var(--card));
+  border-bottom: 1px solid color-mix(in srgb, var(--rule) 70%, var(--paper));
   background: transparent;
 }
 
@@ -272,8 +272,8 @@
 
 .g-compose-card[data-tone="muted"],
 .g-compose-step[data-tone="muted"] {
-  background: color-mix(in srgb, var(--ink) 6%, var(--card));
-  border-color: color-mix(in srgb, var(--ink) 16%, var(--card));
+  background: color-mix(in srgb, var(--ink) 6%, var(--paper));
+  border-color: color-mix(in srgb, var(--ink) 16%, var(--paper));
   color: var(--ink);
 }
 
@@ -328,8 +328,8 @@
   align-self: center;
   border-radius: 5px;
   padding: 8px 16px;
-  background: var(--card);
-  border-color: var(--rule);
+  background: transparent;
+  border-color: var(--rule-strong);
   box-shadow: none;
 }
 
@@ -447,9 +447,9 @@
   max-width: 100%;
   margin: 0 0 8px;
   padding: 5px 16px;
-  border: 1px solid var(--rule);
+  border: 1px solid var(--rule-strong);
   border-radius: 12px;
-  background: var(--card);
+  background: transparent;
   color: var(--ink);
   font: 600 14px/1.3 var(--sans);
   text-align: center;
@@ -591,8 +591,8 @@
 .g-compose-card[data-tone="tip"] .g-compose-badge,
 .g-compose-step[data-tone="tip"] .g-compose-badge,
 .g-compose-card[data-frame="band"] .g-compose-badge {
-  background: var(--card);
-  border: 1px solid var(--rule);
+  background: var(--paper);
+  border: 1px solid var(--rule-strong);
 }
 
 .g-compose-kpi {
@@ -657,7 +657,7 @@
 }
 
 .g-compose-callout[data-tone="tip"] {
-  background: var(--card);
+  background: transparent;
   border-color: var(--rule-strong);
 }
 
@@ -673,7 +673,7 @@
   height: 0;
   margin: 16px 0 10px;
   border: 0;
-  border-top: 1px solid color-mix(in srgb, var(--rule) 70%, var(--card));
+  border-top: 1px solid color-mix(in srgb, var(--rule) 70%, var(--paper));
 }
 
 .g-compose-h {

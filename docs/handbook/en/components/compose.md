@@ -1,30 +1,30 @@
 ---
 title: Explanation diagram (compose)
 navTitle: compose
-description: Write the structure the reader should see, then look at the compiled diagrams.
+description: Write a few plain sentences in a post and let the AI assemble a static diagram.
 section: components
 order: 36
 badge: compose
 ---
 
-In the editor, type `/garden` and choose `compose`. That inserts a `garden compose` fence. Write a few plain sentences inside it, then ask the AI to compile the post.
+When a post needs a structure diagram, type `/garden` and pick `compose`. That inserts a `garden compose` fence. Write the structure in plain language inside the fence, then ask the AI to compile the post. Your sentence stays inside `<intent>`, and the AI fills in Markdown leaves and component tags to render a static diagram.
 
 ## What to write
 
 Write the structure you want the reader to see. Do not describe the look.
 
-State four things and the compiler has enough:
+Four things are enough:
 
 - **How many parts**: three columns side by side, five layers top to bottom, or two rows.
-- **Short names**: the words that appear on the diagram, such as `User`, `Identity Provider`, or `Authorization`. Put the explanation on the line below, not inside the title.
-- **Who connects to whom**: what goes to what first, where one box fans out, or where two sides meet. If the parts are not in order, say "not a strict sequence."
-- **Which part is the point**: name it directly, such as "Role is the focus" or "the bottom row is the point."
+- **Short names**: the words shown on the diagram. Put the explanation on the line below, not inside the title.
+- **Who connects to whom**: what goes to what first, where one box fans out, or where sides meet. If there is no order, say "not a strict sequence."
+- **Which part is the point**: name it directly, such as "the middle column is the focus" or "the bottom row is the point."
 
 Do not write colors, rounded corners, grey pills, font weights, spacing, shadows, or full-width rules. Component defaults handle the look. Every tag is listed in [Component reference · compose](/garden/en/reference/compose).
 
 ## Not enough vs enough
 
-In each pair below, the first line is too vague or talks about styling. The fenced block is ready to copy. The compiled diagrams follow below this section.
+In each pair below, the first line is too vague or talks about styling. The fenced block is ready to copy.
 
 **Three columns joined in the middle**
 
@@ -76,7 +76,7 @@ Not every request walks all five in order.
 
 This names the five layers, picks the two to highlight, and notes that requests do not always run in order.
 
-**Several sides of one request**
+**Several sides of one thing**
 
 Not enough: "Two rows of two cards, then two more, unbolded titles." — Only describes layout.
 
@@ -106,9 +106,15 @@ The top row is background; the bottom row is the point.
 ```
 ````
 
-This says which row is background and which row carries the point. The diagrams below are compiled from sentences like these.
+This says which row is background and which row carries the point.
 
-## RBAC
+## Capability examples
+
+**The diagrams below are only examples** showing the layout shapes `compose` can build. The sample topics (permissions, sign-in, APIs) are just filler text; replace them with your own subject when writing a post.
+
+### Three columns joined in the middle
+
+Two outer lists linked through a middle column, pulled together at the bottom with `<join>`.
 
 ```garden compose
 <intent>
@@ -135,7 +141,9 @@ Three columns: User with Alice and Bob, Role with Administrator and Reviewer, Pe
 <text tone="muted" align="center">Concept: User ↔ Role ↔ Permission</text>
 ```
 
-## SSO
+### Converge, then fan out
+
+Flow into one highlighted band first, then branch to several targets at once with `<fan>`.
 
 ```garden compose
 <intent>
@@ -158,7 +166,9 @@ The browser reaches the identity provider first. The identity provider then conn
 </stack>
 ```
 
-## Authentication layers
+### Top-to-bottom layers
+
+Vertical steps where the key layers use `<band>` and the pass-through hops stay plain text.
 
 ```garden compose
 <intent>
@@ -198,7 +208,9 @@ Five layers from top to bottom: browser, identity service, BFF, business service
 </stack>
 ```
 
-## Six sides of an API
+### Multiple facets of one subject
+
+Non-sequential aspects grouped into rows of `<box>` cards.
 
 ```garden compose
 <intent>
@@ -246,7 +258,9 @@ The user wants to change an order address. Split that into authentication, crede
 <text tone="muted">Not a strict sequence. Transport covers the whole connection, and confidentiality can sit on both client and server.</text>
 ```
 
-## Agent, policy point, and tools
+### Container with nested checks
+
+A larger `<band>` or `<box>` holding a row of badges or a two-column checklist inside it.
 
 ```garden compose
 <intent>
@@ -284,7 +298,9 @@ User intent goes through the agent, then a policy enforcement point, then the to
 </stack>
 ```
 
-## OAuth authorization code + PKCE
+### Multi-actor sequence
+
+Several actors passing messages back and forth across `<lanes>`.
 
 ```garden compose
 <intent>
@@ -304,9 +320,9 @@ Three lanes (user, client, authorization server) and six steps for the authoriza
 <text tone="muted">A sketch. The real flow also binds the browser redirect, the callback, and checks on the code and token.</text>
 ```
 
-## Two-row flow
+### Two-row contrast flow
 
-The top row is plain titles. The bottom row is pills. A divider sits between them.
+Plain titles on top as background, a `<divider/>` in between, and muted pills on the bottom row for the loop that matters.
 
 ```garden compose
 <intent>
@@ -327,5 +343,5 @@ The top row is delivery order: Understand, Design, Ship. The bottom row is the d
   <arrow dir="right"/>
   <pill tone="muted">Iterate or stop</pill>
 </row>
-<text tone="muted" align="start">The second row is the decision loop.</text>
+<text tone="muted">The second row is the decision loop that product discovery emphasizes.</text>
 ```

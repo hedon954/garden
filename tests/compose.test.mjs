@@ -152,16 +152,22 @@ test("the handbook compose page shows the capability diagrams", () => {
   }
   assert.match(markdown, /## 怎么写/);
   assert.match(markdown, /## 不够 vs 够用/);
-  assert.match(markdown, /不要写样子/);
+  assert.match(markdown, /## 能力示例/);
+  assert.match(markdown, /下面这些图只是示例/);
+  assert.doesNotMatch(markdown, /^## (?:RBAC|SSO|OAuth)/mu);
+  assert.match(markdown, /不要写样式/);
   assert.match(markdown, /角色连接用户和权限/);
   assert.match(markdown, /Policy Enforcement Point/);
-  assert.match(markdown, /## 两行流程/);
+  assert.match(markdown, /### 两行流程对比/);
   assert.match(english, /## What to write/);
   assert.match(english, /## Not enough vs enough/);
+  assert.match(english, /## Capability examples/);
+  assert.match(english, /The diagrams below are only examples/);
+  assert.doesNotMatch(english, /^## (?:RBAC|SSO|OAuth)/mu);
   assert.match(english, /Do not describe the look/);
   assert.match(english, /Role connects users and permissions/);
   assert.match(english, /Policy Enforcement Point/);
-  assert.match(english, /## Two-row flow/);
+  assert.match(english, /### Two-row contrast flow/);
   assert.equal(fs.existsSync(path.join(root, "docs/handbook/components/figure.md")), false);
   assert.equal(fs.existsSync(path.join(root, "docs/handbook/components/compose-gallery.md")), false);
   const fences = scanFences(markdown).map((fence) => classifyFence(fence)).filter((item) => item.kind === "garden");
