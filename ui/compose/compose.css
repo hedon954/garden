@@ -78,7 +78,7 @@
   display: flex;
   flex-wrap: wrap;
   align-items: stretch;
-  gap: 12px;
+  gap: 8px;
 }
 
 .g-compose-row > .g-compose-card,
