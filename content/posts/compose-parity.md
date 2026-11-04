@@ -12,6 +12,7 @@ tags:
 - **第二列（ChatGPT 渲染效果）图片来源**：基于 [OpenUI 对 GPT-6 Intelligent UI 的抓包拆解](https://www.openui.com/blog/how-chatgpt-intelligent-ui-works) 与 [Disdjj/intelligent-ui-demo ANALYSIS.md](https://github.com/Disdjj/intelligent-ui-demo/blob/main/ANALYSIS.md)（协议版本 14）整理的静态 DIL 对照渲染，以及少量在 ChatGPT 图例中出现的连接结构。
 - **第四列（我们的效果图）图片来源**：在同一 tip 上由当前 `ui/compose/` 真实编译渲染后截图（Claude 博文纸色底面 `--paper` + 透明线框卡片）。
 - **统计总览**：共 **30** 行；**已实现 18 行**（含专用连接与结构原语），**部分实现 3 行**，**未实现 9 行**（交互控件、内建表格/饼图、宿主卡片、动态脚本与流式修复）。
+- **最后四行说明**：表末四行（`{@body}`、`{expr}`、`{#if}/{#each}`、`recoveryDiagnostics`）是 ChatGPT 对话运行时的动态特性（状态求值、模板分支、流式截断恢复），第二列用前后双帧静态演示展示它们在界面上的真实渲染变化；Garden 博客 `compose` 目前保持构建期一次性静态渲染（one-shot），暂未引入 Worker 脚本与流式运行时。
 
 ## 逐项验收总表
 
@@ -43,7 +44,7 @@ tags:
 | **`table`（结构化数据表）**<br>抓包 `model_dil_v2` 中出现 1 次的内建表格组件。 | ![DIL table 静态对照](./compose-parity/gpt-table.png) | **否（未实现）**<br>博文正文直接写 GFM Markdown 表格；`compose` 内部未设 `<table/>` 标签。 | — |
 | **`pie-chart` / 内建图表**<br>抓包中由编译器追加 `card` 外壳的饼图/图表节点。 | ![DIL chart 静态对照](./compose-parity/gpt-chart.png) | **否（未实现）**<br>`compose` 内部未实现图表标签（独立图表走 `garden chart`）。 | — |
 | **宿主解析组件（30 eager + 283 lazy）**<br>如 `Cite`、`AsyncImage`、`ProductCard`、`FlightCard`、`Map` 等由服务端按 ID 注入数据的宿主卡片。 | ![DIL host widgets 静态对照](./compose-parity/gpt-host-widgets.png) | **否（未实现）**<br>当前 tip 优先对齐内建布局与连接目录；宿主业务卡片未实现。 | — |
-| **`{@body ...}`（响应式脚本块）**<br>在沙箱 Worker 中运行的状态声明与派生计算。 | ![DIL runtime script 静态对照](./compose-parity/gpt-runtime-script.png) | **否（未实现）**<br>博客为构建期一次性静态渲染（one-shot），未引入 Worker 脚本求值。 | — |
-| **`{expr}`（属性与文本插值）**<br>把脚本变量绑定到组件属性或文本节点。 | ![DIL runtime script 静态对照](./compose-parity/gpt-runtime-script.png) | **部分**<br>仅支持 `<fan n={3}/>` 这类整数字面量写法；动态表达式求值未实现。 | — |
-| **`{#if}` / `{:else}` / `{#each}`（条件与循环控制流）**<br>根据运行时状态增删或遍历节点树。 | ![DIL runtime script 静态对照](./compose-parity/gpt-runtime-script.png) | **否（未实现）**<br>`compose` 围栏直接写出展开后的完整节点树，未实现模板控制流。 | — |
-| **流式编译修复（`recoveryDiagnostics`）**<br>流式输出时截断半截标签、自动闭合未完节点（抓包中 338 次恢复补丁）。 | ![DIL stream recovery 静态对照](./compose-parity/gpt-runtime-stream.png) | **否（未实现）**<br>`ui/compose/markup.mjs` 在完整围栏上一次性解析；未闭合标签直接报错。 | — |
+| **`{@body ...}`（响应式脚本块）**<br>在沙箱 Worker 中运行的状态声明与派生计算。 | ![基于 OpenUI / Disdjj 协议的静态演示](./compose-parity/gpt-runtime-body.png)<br><small>基于 OpenUI / Disdjj 协议的静态演示：左为初始状态 A（`$24/月`），右为切换档位与席位后重算出的状态 B（`$120` + 批量折扣徽章）。</small> | **否（未实现）**<br>博客为构建期一次性静态渲染（one-shot），未引入 Worker 脚本求值。 | — |
+| **`{expr}`（属性与文本插值）**<br>把脚本变量绑定到组件属性或文本节点。 | ![基于 OpenUI / Disdjj 协议的静态演示](./compose-parity/gpt-runtime-expr.png)<br><small>基于 OpenUI / Disdjj 协议的静态演示：左为 `usage=42` 时的正常蓝色进度条，右为 `usage=92` 时触发告警表达式变红。</small> | **部分**<br>仅支持 `<fan n={3}/>` 这类整数字面量写法；动态表达式求值未实现。 | — |
+| **`{#if}` / `{:else}` / `{#each}`（条件与循环控制流）**<br>根据运行时状态增删或遍历节点树。 | ![基于 OpenUI / Disdjj 协议的静态演示](./compose-parity/gpt-runtime-control.png)<br><small>基于 OpenUI / Disdjj 协议的静态演示：左为数组为空时命中 `{:else}` 渲染空状态卡，右为有 3 条数据时 `{#each}` 展开成 3 行列表。</small> | **否（未实现）**<br>`compose` 围栏直接写出展开后的完整节点树，未实现模板控制流。 | — |
+| **流式编译修复（`recoveryDiagnostics`）**<br>流式输出时截断半截标签、自动闭合未完节点（抓包中 338 次恢复补丁）。 | ![基于 OpenUI / Disdjj 协议的静态演示](./compose-parity/gpt-runtime-stream.png)<br><small>基于 OpenUI / Disdjj 协议的静态演示：左为流式半截标签（直接解析会白屏），右为编译器裁掉残缺属性并自动闭合后先画出已完卡片。</small> | **否（未实现）**<br>`ui/compose/markup.mjs` 在完整围栏上一次性解析；未闭合标签直接报错。 | — |
