@@ -1,6 +1,7 @@
 tip: compose-dil-full-rewrite (handbook catalog + 7-day parity)
 date: 2026-11-04 Asia/Shanghai ~18:30
 branch: tip/compose-dil-full-rewrite
+HEAD: ee47df9
 npm publish: NOT done
 Cloud Agent: NOT used
 merge to main: NOT done
