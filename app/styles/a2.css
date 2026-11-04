@@ -795,6 +795,17 @@ html[data-theme="dark"] .markdown-body > p > img:not([class]) {
   background: transparent;
 }
 
+.table-wrap td .markdown-image-trigger {
+  margin: 0;
+}
+
+.table-wrap td .markdown-image-trigger img {
+  width: 280px;
+  max-width: 100%;
+  height: auto;
+  border-radius: 6px;
+}
+
 @media (min-width: 900px) {
   .ux-wide {
     margin-left: calc(-1 * var(--wl, 0px)) !important;
