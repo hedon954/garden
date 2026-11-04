@@ -20,6 +20,7 @@ For every component: invalid YAML, or a top-level key the component does not sup
 | [`timeline`](/garden/en/reference/timeline) | Order release milestones, incident steps, or build stages along a vertical sequence. |
 | [`chart`](/garden/en/reference/chart) | Render proportional horizontal bars with a built-in expandable data table underneath. |
 | [`compose`](/garden/en/reference/compose) | Draw an explanation diagram of cards, arrows, and notes. Click a step to open its note. |
+| [`compose icons`](/garden/en/reference/compose-icons) | Every named stroke icon: glyph + name, A–Z. |
 | [`html`](/garden/en/reference/html) | Run a self-contained HTML, CSS, and JavaScript demo inside a sandboxed iframe. |
 | [`interactive`](/garden/en/reference/interactive) | Let readers drag sliders or switches to recalculate formulas and charts in real time. |
 | [`file`](/garden/en/reference/file) | Attach one or more files with automatic format and size badges, download links, and inline preview. |

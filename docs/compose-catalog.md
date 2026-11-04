@@ -1,5 +1,8 @@
 # Compose 组件目录
 
+用户手册标签目录：[`/garden/reference/compose`](/garden/reference/compose)。本页是仓库侧摘要。
+
+
 属性里的 token 见 [compose-tokens](./compose-tokens.md)。图标名见 [compose-icons](./compose-icons.md)。
 
 当前 **diagram 静态目录 68** 个小写标签（`CATALOG_TAGS`）。另有 play 路径把 `slider` / `button` / `choice` 等降到 `ui/core` 交互件（见 [compose-dil](./compose-dil.md)）；静态围栏里同名标签会画成可见默认态快照。

@@ -1,5 +1,8 @@
 # Compose 图标目录
 
+用户手册可扫目录（字形 + 名字）：[`/garden/reference/compose-icons`](/garden/reference/compose-icons)。下面是仓库侧说明；完整列表以 `ICON_NAMES` / 手册页为准。
+
+
 一等标签：`<icon name="check-circle" size="sm"/>`（自闭合）。
 
 描边 SVG（Lucide，ISC），`viewBox="0 0 24 24"`，跟随 `currentColor`（即 ink）。默认描边约 1.75。

@@ -1,42 +1,32 @@
-tip: compose-dil-full-rewrite (expand pass)
-date: 2026-11-04 Asia/Shanghai ~17:55
+tip: compose-dil-full-rewrite (handbook catalog + 7-day parity)
+date: 2026-11-04 Asia/Shanghai ~18:30
 branch: tip/compose-dil-full-rewrite
-HEAD: 8e7267f
-package version: 0.12.0-tip.dil
 npm publish: NOT done
 Cloud Agent: NOT used
 merge to main: NOT done
 
 ## Counts
-- Compose diagram native tags (CATALOG_TAGS): 68
-- Named icons (ICON_COUNT, Lucide ISC + aliases): 690
-- ChatGPT research target: ~70 natives / ~834 sprite symbols
-- Still missing vs ChatGPT: host eager/lazy product cards (~30+283), stream recoveryDiagnostics, Worker sandbox runtime, full 834 sprite parity (we ship 690 Lucide-compatible)
+- Compose tags listed in handbook: 68 (CATALOG_TAGS)
+- Named icons listed in handbook: 690 (ICON_NAMES / Lucide)
+- Generator: scripts/gen-compose-handbook.mjs
 
-## What landed this expand
-- Track A: expanded lowercase catalog to 68 (card/columns/tabs/table/list/input/checkbox/toggle/slider/button/progress/meter/avatar/image/spacer/code/…) with static default-state snapshots; play path unchanged for {@body}
-- Track B: replaced thin icons.mjs (18) with generated Lucide set (690) viewBox 24 stroke ~1.75; aliases (check-circle, layers-3, home, alert, …)
-- Track C: denser size=sm day chips; redraw 近四日; add 最近7天 timeline (minus empty days); GPT PNGs left
-- Docs: compose-catalog.md / compose-icons.md / parity stats
+## Handbook (clarity × brevity)
+- Usage pages shortened; link to catalogs (no full dumps)
+- reference/compose: shared tokens once + high-traffic attrs (box/row/text/icon) + group tables (one-liner + one mini sample per group)
+- reference/compose-icons: A–Z jump + glyph grid (icon + monospace name), no per-icon essays
+- Wired in reference.md overview + COMPONENT_BADGE
+
+## 7-day / 4-day parity
+- Title size=sm (12.5px / 600), tighter stack gap
+- Denser sm chips (pad/gap/max-width), empty-day frame=text tighter
+- Footnote: left caption + right text tone=tip (green); disclaimer start-aligned
+- nowrap rows stay horizontal on narrow screens (scroll)
 
 ## Deploy (hd-garden-pr92) — STATIC_EXPORT=1
 alias:  https://tip-dil-full.hd-garden-pr92.pages.dev
-direct: https://96e19b7f.hd-garden-pr92.pages.dev
-cache-bust: ?v=dil-expand-20261104
+cache-bust: ?v=handbook-catalog-20261104
 
-compare: https://tip-dil-full.hd-garden-pr92.pages.dev/blog/compose-compare/?v=dil-expand-20261104
-parity:  https://tip-dil-full.hd-garden-pr92.pages.dev/blog/compose-parity/?v=dil-expand-20261104
-handbook compose: https://tip-dil-full.hd-garden-pr92.pages.dev/garden/components/compose/?v=dil-expand-20261104
-
-Live smoke 2026-11-04 ~17:55 CST: compare/parity/handbook 200; icons check-circle/lock/lock-open/minus/shield present; freq-4day + freq-7day GPT assets present.
-
-## Fidelity notes
-1–7 historical compares: still render (RBAC/SSO/auth/API/agent/OAuth/two-row)
-8. 近四日: squat equal sm chips, smaller icons — closer to GPT panel; Claude paper tints (not GPT gray/blue exact)
-9. 最近7天: 8-day row with blue checks / dash empties / green lock-open + footnotes — structure aligned; color Claude
-Remaining soft: absolute GPT chip blue/green hex not copied (Claude intentional); join/lane polish; icon sprite still 690≠834; no host widgets / stream repair
-
-## Local
-checkout: /workspace/garden-compose-local
-build: STATIC_EXPORT=1 npm run build
-lock: /workspace/compose-dil-rewrite-lock-20261104.md
+usage:    https://tip-dil-full.hd-garden-pr92.pages.dev/garden/components/compose/?v=handbook-catalog-20261104
+tags ref: https://tip-dil-full.hd-garden-pr92.pages.dev/garden/reference/compose/?v=handbook-catalog-20261104
+icons:    https://tip-dil-full.hd-garden-pr92.pages.dev/garden/reference/compose-icons/?v=handbook-catalog-20261104
+compare:  https://tip-dil-full.hd-garden-pr92.pages.dev/blog/compose-compare/?v=handbook-catalog-20261104

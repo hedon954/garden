@@ -19,7 +19,8 @@ order: 0
 | [`compare`](/garden/reference/compare) | 把两三种方案左右并列，或把不好的做法与更好的做法上下对照。 |
 | [`timeline`](/garden/reference/timeline) | 按时间或阶段顺序排开版本演进、排查经过或关键节点。 |
 | [`chart`](/garden/reference/chart) | 把一组算好的数字画成比例条形图，下方自带可展开的数据表。 |
-| [`compose`](/garden/reference/compose) | 用卡片、箭头和注释画一张说明图，点一步展开对应说明。 |
+| [`compose`](/garden/reference/compose) | 用卡片、箭头和注释画一张说明图；标签全表与共用 token。 |
+| [`compose 图标`](/garden/reference/compose-icons) | 全部具名描边图标：字形 + 名字，按 A–Z 可扫。 |
 | [`html`](/garden/reference/html) | 在沙盒中运行一段独立的网页小工具、画布动画或演示。 |
 | [`interactive`](/garden/reference/interactive) | 让读者拖动滑杆或切换选项，实时看到公式和图表的计算结果。 |
 | [`file`](/garden/reference/file) | 给读者提供一份或一组可下载的文件，支持在当前页展开预览。 |
