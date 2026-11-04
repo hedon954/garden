@@ -27,6 +27,13 @@
 
 写法：`padding={3}` 或 `gap="2"`。
 
+用途约定（治根，别把场景栈压成 4px）：
+
+- `gap={0}` / `{1}`：芯片内部（日期↔图标、紧凑 pad）
+- `gap≥{2}` / `{3}`：场景级 `stack`（标题 → 日列 → 脚注）要有呼吸感；`gap={1}` 只有 4px，会把整块挤扁
+
+稀疏时间线（空日 `frame="text"`）用 `row justify="between"`：芯片按内容宽，空气落在列间。等宽状态格（如近四日）不要加 `justify="between"`，让 `sm` 卡 `flex:1` 拉满。
+
 ## 表面 `background`
 
 | Token | 映射 |

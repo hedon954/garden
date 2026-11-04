@@ -4,7 +4,11 @@
  */
 
 export const SPACING = new Set(["0", "1", "2", "3", "4"]);
-/** 4px × n — ChatGPT-aligned scale. */
+/**
+ * 4px × n — ChatGPT-aligned scale.
+ * Use 0/1 for intra-chip (date↔icon, tight pad). Use ≥2/3 for section stacks
+ * (title → row → footnotes); gap=1 (4px) crushes scene vertical rhythm.
+ */
 export const SPACING_PX = { 0: 0, 1: 4, 2: 8, 3: 12, 4: 16 };
 
 export const RADII = new Set(["none", "sm", "md", "lg", "xl", "full"]);

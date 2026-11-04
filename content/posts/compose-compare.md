@@ -292,40 +292,40 @@ tags:
 
 ```garden compose
 <intent>
-横向八个日期，列间距要有呼吸感、别挤。11/01、11/03 已发送（浅蓝底+勾）。11/02、11/04–11/07 空（无底+短横）。11/08 可再发（浅绿底+开锁）。标题要小、半粗。底下左注已发送，右注绿色可再发；再一行左对齐星号说明。
+场景栈要有行间隙（标题/日列/脚注），勿用 gap=1。横向八个日期：空日按内容宽、justify=between 留空气；已发送浅蓝底+勾，空日无底+短横，窗口外沿浅绿底+开锁。标题 size=sm。底下左注已发送，右注绿色可再发；再一行左对齐星号说明。
 </intent>
-<stack align="stretch" gap={1}>
+<stack align="stretch" gap={3}>
   <title size="sm" align="start">最近 7 天 Push 频控示意</title>
-  <row gap={3} justify="between" align="stretch" wrap="nowrap">
-    <box padding={1} gap={0} radius="md" background="surface-accent" border="subtle" align="center" size="sm">
+  <row gap={2} justify="between" align="center" wrap="nowrap">
+    <box padding={1} gap={1} radius="md" background="surface-accent" border="subtle" align="center" size="sm">
       <text size="sm" align="center">11/01</text>
       <icon name="check-circle" size="sm"/>
     </box>
-    <box frame="text" padding={0} gap={0} align="center" size="sm">
+    <box frame="text" padding={0} gap={1} align="center" size="sm">
       <text size="sm" align="center">11/02</text>
       <icon name="minus" size="sm"/>
     </box>
-    <box padding={1} gap={0} radius="md" background="surface-accent" border="subtle" align="center" size="sm">
+    <box padding={1} gap={1} radius="md" background="surface-accent" border="subtle" align="center" size="sm">
       <text size="sm" align="center">11/03</text>
       <icon name="check-circle" size="sm"/>
     </box>
-    <box frame="text" padding={0} gap={0} align="center" size="sm">
+    <box frame="text" padding={0} gap={1} align="center" size="sm">
       <text size="sm" align="center">11/04</text>
       <icon name="minus" size="sm"/>
     </box>
-    <box frame="text" padding={0} gap={0} align="center" size="sm">
+    <box frame="text" padding={0} gap={1} align="center" size="sm">
       <text size="sm" align="center">11/05</text>
       <icon name="minus" size="sm"/>
     </box>
-    <box frame="text" padding={0} gap={0} align="center" size="sm">
+    <box frame="text" padding={0} gap={1} align="center" size="sm">
       <text size="sm" align="center">11/06</text>
       <icon name="minus" size="sm"/>
     </box>
-    <box frame="text" padding={0} gap={0} align="center" size="sm">
+    <box frame="text" padding={0} gap={1} align="center" size="sm">
       <text size="sm" align="center">11/07</text>
       <icon name="minus" size="sm"/>
     </box>
-    <box padding={1} gap={0} radius="md" background="surface-tip" border="subtle" align="center" size="sm">
+    <box padding={1} gap={1} radius="md" background="surface-tip" border="subtle" align="center" size="sm">
       <text size="sm" align="center">11/08</text>
       <icon name="lock-open" size="sm"/>
     </box>

@@ -1,18 +1,20 @@
-tip: compose-dil-full-rewrite (4-day stretch + 7-day breathing room)
-date: 2026-11-04 Asia/Shanghai ~18:40
+tip: compose-dil-full-rewrite (7-day root: stack gap + sparse between)
+date: 2026-11-04 Asia/Shanghai ~19:00
 branch: tip/compose-dil-full-rewrite
-HEAD: 08b8759
+HEAD: (pending)
 npm publish: NOT done
 Cloud Agent: NOT used
 merge to main: NOT done
 
-## Spacing fix (hedon annotate)
-- 近四日: drop row justify=center; gap 1→2; remove CSS max-width:3.4rem on nowrap sm chips so flex:1 fills card (左右不留空)
-- 最近7天: row gap 1→3 (12px); same max-width lift so eight columns spread with breathing room (别挤)
-- Kept: title size=sm, left caption + right tip tone, star footnote start-aligned, nowrap horizontal
+## Root cause (hedon: 还是拥挤 / 行间隙小了)
+1. Vertical: 7-day `<stack gap={1}>` → CSS 4px; title/row/footnotes glued. Fix: gap={3} (12px).
+2. Horizontal: prior remove of max-width left flex:1 on ALL nowrap sm cards → empty frame=text days equal-stretch. Fix: justify=between → content-sized; equal flex:1 only when NOT between/around (近四日 still edge-to-edge).
+3. Secondary: chip date↔icon gap 0→1; frame=text min-width 0.
+
+## Gap rung note
+gap 0/1 = intra-chip; ≥2/3 = section stacks (tokens.mjs + docs/compose-tokens.md).
 
 ## Deploy (hd-garden-pr92) — STATIC_EXPORT=1
 alias:  https://tip-dil-full.hd-garden-pr92.pages.dev
-cache-bust: ?v=spacing-20261104
-
-compare:  https://tip-dil-full.hd-garden-pr92.pages.dev/blog/compose-compare/?v=spacing-20261104
+cache-bust: ?v=7day-root-20261104
+compare:  https://tip-dil-full.hd-garden-pr92.pages.dev/blog/compose-compare/?v=7day-root-20261104
