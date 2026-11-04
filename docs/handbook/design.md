@@ -34,25 +34,30 @@ Garden 的文章页面围绕长文阅读体验做了几项自动化处理。这�
 在运行 `npx garden sync` 时，构建脚本会直接解析本地图片（PNG、JPEG、WebP、GIF、SVG）的像素宽高并写入 `.garden/generated-content.ts` 的 `imageSizes` 表：
 
 ```garden compose
-title: 图片从构建到渲染
-caption: 点一步，看这一阶段做什么
-steps:
-  - id: sync
-    title: 构建期读取尺寸
-    text: 写入宽高，避免文字跳动
-  - id: measure
-    title: 客户端测量拓宽
-    text: 按当前视口调整宽图与目录
-  - id: dark
-    title: 深色衬底与灯箱
-    text: 浅色纸底垫住黑线，点击可以放大
-notes:
-  - for: sync
-    text: 服务端生成的 HTML 已经带有图片的 width、height 和宽图边距。图片还没下载完时，下方文字也不会被顶得跳动。
-  - for: measure
-    text: 浏览器加载后，ArticleMeasure 按当前窗口宽度重算拓宽边距，并在滚动时判断宽图是否挡住右侧目录。
-  - for: dark
-    text: 正文配图可以在当前页打开灯箱。深色模式下配图使用浅色纸底，不反色。
+<intent>
+图片从构建到渲染分三步。点一步，看这一阶段做什么。
+</intent>
+# 图片从构建到渲染
+
+点一步，看这一阶段做什么
+
+<steps>
+  <step id="sync">
+    <title>构建期读取尺寸</title>
+    <text>写入宽高，避免文字跳动</text>
+    <note>服务端生成的 HTML 已经带有图片的 width、height 和宽图边距。图片还没下载完时，下方文字也不会被顶得跳动。</note>
+  </step>
+  <step id="measure">
+    <title>客户端测量拓宽</title>
+    <text>按当前视口调整宽图与目录</text>
+    <note>浏览器加载后，ArticleMeasure 按当前窗口宽度重算拓宽边距，并在滚动时判断宽图是否挡住右侧目录。</note>
+  </step>
+  <step id="dark">
+    <title>深色衬底与灯箱</title>
+    <text>浅色纸底垫住黑线，点击可以放大</text>
+    <note>正文配图可以在当前页打开灯箱。深色模式下配图使用浅色纸底，不反色。</note>
+  </step>
+</steps>
 ```
 
 ## 4. 深色模式配图衬底与暖纸墨色

@@ -34,25 +34,30 @@ The `ArticleTitle` component applies two rules to headings:
 When `npx garden sync` runs, the build script reads the pixel width and height of every local image (PNG, JPEG, WebP, GIF, and SVG) and writes them into the `imageSizes` map in `.garden/generated-content.ts`:
 
 ```garden compose
-title: From build to the browser
-caption: Click a step to read what that stage does
-steps:
-  - id: sync
-    title: Read sizes at build time
-    text: Write width and height so text does not jump
-  - id: measure
-    title: Measure on the client
-    text: Fit wide figures and the table of contents
-  - id: dark
-    title: Dark backing and zoom
-    text: A light pad behind dark lines, click to zoom
-notes:
-  - for: sync
-    text: The server HTML already carries width, height, and the wide-figure margins, so later text does not jump before the image loads.
-  - for: measure
-    text: After load, ArticleMeasure recomputes the margins for the current viewport and checks whether a wide figure covers the table of contents.
-  - for: dark
-    text: A click opens the lightbox on the same page. Dark mode puts a light paper color behind figures and does not invert them.
+<intent>
+Image layout has three stages from the build to the browser. Click a step to read what that stage does.
+</intent>
+# From build to the browser
+
+Click a step to read what that stage does
+
+<steps>
+  <step id="sync">
+    <title>Read sizes at build time</title>
+    <text>Write width and height so text does not jump</text>
+    <note>The server HTML already carries width, height, and the wide-figure margins, so later text does not jump before the image loads.</note>
+  </step>
+  <step id="measure">
+    <title>Measure on the client</title>
+    <text>Fit wide figures and the table of contents</text>
+    <note>After load, ArticleMeasure recomputes the margins for the current viewport and checks whether a wide figure covers the table of contents.</note>
+  </step>
+  <step id="dark">
+    <title>Dark backing and zoom</title>
+    <text>A light pad behind dark lines, click to zoom</text>
+    <note>A click opens the lightbox on the same page. Dark mode puts a light paper color behind figures and does not invert them.</note>
+  </step>
+</steps>
 ```
 
 ## 4. Dark-mode Image Backing and Warm Paper Tokens
