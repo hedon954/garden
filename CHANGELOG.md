@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.13.0
+
+### Added
+
+- Chart foundation for play/DIL: `palette` (`series`|`categorical`), `yStep`, `overflow` (`expand`|`clip`), `legend` (`auto`|`show`|`hide`), `legendPosition` (`top`|`bottom`).
+- Series colors bind Claude `--gui-info` / `--gui-cat-*` (not paper `--blue`).
+- Block header `frame: none` for frameless chart hosts; stack `justify="between"` for title/badge rows.
+- Official compose handbook examples (ZH/EN): static active-hours eight bars + interactive fusion weights (default 45%).
+- Prompt/catalog props document `palette`, `yStep`, `overflow`, `legend`, `legendPosition`.
+
+### Fixed
+
+- Chart bars no longer paint near-black from Claude paper `--blue`.
+- Axis ticks honor explicit `yStep`; domain expansion vs clip via `overflow`.
+- Single-series legend authorable with `legend="show"`.
+
 ## 0.12.1
 
 Author-facing surfaces catch up to the 0.12 compose DIL engine. `garden ui prompt` now injects a generated compose catalog (lowercase tags + tokens + icon count) beside the interactive PascalCase reference; rules and the compose recipe stop forbidding `{@body}` and document play on the same fence. `garden-ui` skills (ZH/EN), CLI fix-prompt locale, and `garden-blocks` no longer tell authors to fill YAML trees for compose. VS Code / Typora editor packages rebuild at `0.1.1` so shipped `editors/dist` matches. Publish as `hd-garden@0.12.1`.

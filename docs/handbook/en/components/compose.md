@@ -121,3 +121,71 @@ intent: |
 <slider min={1} max={12} value={seats} onChange={setSeats} label="Seats" />
 <stat label="Monthly" value={total} unit="USD" />
 ```
+
+Play charts: `palette` (`series`|`categorical`), `yStep`, `overflow` (`expand`|`clip`); block header may set `frame: none`. Title/badge rows use `<stack direction="row" justify="between">`. Legend: `legend` (`auto`|`show`|`hide`), `legendPosition` (`top`|`bottom`).
+
+## Chart examples (play)
+
+Two official compose chart samples: eight static series bars with `yStep`, and a five-category weighted fusion chart (`palette="categorical"` + bottom legend). Illustrative data.
+
+### Static: active hours
+
+```garden compose #compose-chart-active-hours
+caption: "Illustrative: normalized activity over 30 days. Peak at 20:00."
+frame: none
+intent: |
+  Static distribution: series blue bars, explicit 8% ticks, stack header.
+---
+{@body const rows = [
+  { h: "08:00", p: 0.05 },
+  { h: "10:00", p: 0.07 },
+  { h: "12:00", p: 0.15 },
+  { h: "14:00", p: 0.06 },
+  { h: "16:00", p: 0.09 },
+  { h: "18:00", p: 0.14 },
+  { h: "20:00", p: 0.28 },
+  { h: "22:00", p: 0.16 }
+]}
+
+<stack direction="row" justify="between" align="center" gap={2}>
+  <stack gap={1}>
+    <caption>User activity by hour (sample)</caption>
+    <caption>Normalized activity over the last 30 days (illustrative)</caption>
+  </stack>
+  <badge tone="new">Peak 20:00</badge>
+</stack>
+
+<chart data={rows} x={h} yLabel="Activity" yFormat="percent" yMin={0} yMax={0.32} yStep={0.08} overflow="expand" height={280}>
+  <bar y={p} label="Activity" tone="accent" />
+</chart>
+```
+
+### Interactive: personal vs global fusion weight
+
+Default weight **45%**. Twist the slider or jump 0 / 45 / 100 — five categorical bars and “best time” update together.
+
+```garden compose #compose-chart-fusion-weights
+caption: Twist personal weight; fused bars recompute. Illustrative priors.
+frame: none
+intent: |
+  Fusion slider: categorical bars, bottom one-entry legend, overflow expand.
+---
+{@body const [w, setW] = DIL.useState(45)}
+{@body const a = w / 100}
+{@body const p08 = a * 0.05 + (1 - a) * 0.12}
+{@body const p12 = a * 0.12 + (1 - a) * 0.22}
+{@body const p18 = a * 0.20 + (1 - a) * 0.26}
+{@body const p20 = a * 0.45 + (1 - a) * 0.28}
+{@body const p22 = a * 0.18 + (1 - a) * 0.12}
+{@body const rows = [{ h: "08:00", p: p08 }, { h: "12:00", p: p12 }, { h: "18:00", p: p18 }, { h: "20:00", p: p20 }, { h: "22:00", p: p22 }]}
+{@body const peak = max(p08, p12, p18, p20, p22)}
+{@body const best = p20 == peak ? "20:00" : (p18 == peak ? "18:00" : (p12 == peak ? "12:00" : (p22 == peak ? "22:00" : "08:00")))}
+
+<choice value={w} onChange={setW} label="Weight presets" options={[{value:0,label:"0%"},{value:45,label:"45%"},{value:100,label:"100%"}]} />
+<slider min={0} max={100} value={w} onChange={setW} label="Personal activity weight" unit="%" />
+<chart legend="show" legendPosition="bottom" data={rows} x={h} palette="categorical" yLabel="Fused activity" yFormat="percent" yMin={0} yMax={0.4} overflow="expand" height={280}>
+  <bar y={p} label="Fused activity" tone="accent" />
+</chart>
+<stat label="Predicted best time" value={best} />
+```
+

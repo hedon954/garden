@@ -56,7 +56,7 @@
   --gui-cat-5: #3a6ea5;
   --gui-cat-6: #6f8f3f;
   --gui-cat-7: #a67c52;
-  --gui-chart-grid: color-mix(in srgb, var(--gui-border, #e6e3dc) 70%, transparent);
+  --gui-chart-grid: #e6e3dc99;
   --gui-info: #4f7fb8;
   --gui-info-text: #2f5f94;
   --gui-info-soft: #4f7fb81a;
@@ -127,7 +127,7 @@
   --gui-cat-5: #6b9ad4;
   --gui-cat-6: #a3c46b;
   --gui-cat-7: #c4a078;
-  --gui-chart-grid: color-mix(in srgb, var(--gui-border) 55%, transparent);
+  --gui-chart-grid: #5a585299;
   --gui-info: #7ba3d4;
   --gui-info-text: #a8c4e8;
   --gui-info-soft: #7ba3d426;

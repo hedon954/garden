@@ -170,6 +170,11 @@ badge: compose
 | `code` | 代码快照 |
 | `pre` | 预格式文本 |
 
+
+## 图表示例
+
+玩法级图表示例（静态八柱、融合权重滑杆）见 [说明图 · compose](/garden/components/compose#compose-chart-active-hours)。
+
 ## 限制
 
 - 嵌套约 10 层 / 约 220 节点。

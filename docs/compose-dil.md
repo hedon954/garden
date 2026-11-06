@@ -54,3 +54,11 @@ garden compose fence
 - 块头 `frame: none`：去掉 `.garden-ui` 外框描边（滑杆对照 GPT 时可选用）；默认 `card`。
 - 标题左 / 徽章右：通用 `<stack direction="row" justify="between" align="center">`，不是图表专用头。
 - `legend="auto|show|hide"`：auto 仅多系列显示；show 强制（可单系列一条）；hide 关闭。`legendPosition="top|bottom"`（默认 top）。
+
+## 图表示例（handbook）
+
+完整可运行样板见 handbook：
+
+- `docs/handbook/components/compose.md` → 「图表示例（play）」：`#compose-chart-active-hours`、`#compose-chart-fusion-weights`
+- EN：`docs/handbook/en/components/compose.md` → “Chart examples (play)”
+
