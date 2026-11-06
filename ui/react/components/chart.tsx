@@ -3,6 +3,7 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { TONES } from "../../core/catalog.mjs";
 import { formatValue } from "../../core/format.mjs";
+import { formatTicks, niceTicks, stepTicks } from "../../core/chart-ticks.mjs";
 import { isPowerOfTwo, lookupFrom, sampleDomain } from "../../core/state.mjs";
 import { asNumber, asString, evalExpr, expandChildren, propValue, registerComponents, rowValue, useRuntime } from "../runtime";
 import type { Env, Lookup, UiNode } from "../types";
@@ -13,46 +14,6 @@ const DEFAULT_TONES = ["accent", "muted", "new", "same"];
 const MARGIN = { top: 14, right: 16, bottom: 30, left: 60 };
 
 type Scale = { map: (value: number) => number; ticks: number[] };
-
-function niceTicks(min: number, max: number, count = 5) {
-  if (!Number.isFinite(min) || !Number.isFinite(max)) return [];
-  if (min === max) {
-    min -= 1;
-    max += 1;
-  }
-  const rough = (max - min) / count;
-  const magnitude = 10 ** Math.floor(Math.log10(rough));
-  const ratio = rough / magnitude;
-  const step = (ratio >= 7.5 ? 10 : ratio >= 3.5 ? 5 : ratio >= 1.5 ? 2 : 1) * magnitude;
-  const ticks: number[] = [];
-  for (let value = Math.ceil(min / step) * step; value <= max + step * 1e-9; value += step) {
-    ticks.push(Math.abs(value) < step * 1e-9 ? 0 : Number(value.toPrecision(12)));
-  }
-  return ticks;
-}
-
-/** Ticks that read well in the axis format: nice numbers inside the chosen binary unit for bytes. */
-function formatTicks(min: number, max: number, count: number, format?: string) {
-  if (format !== "bytes" || max <= 0) return niceTicks(min, max, count);
-  let unit = 1;
-  while (max / unit >= 1024 && unit < 1024 ** 5) unit *= 1024;
-  return niceTicks(min / unit, max / unit, count).map((tick) => tick * unit);
-}
-
-/** Author-specified linear step: min, min+step, … up to max (inclusive within epsilon). */
-function stepTicks(min: number, max: number, step: number) {
-  if (!(step > 0) || !Number.isFinite(min) || !Number.isFinite(max) || max < min) return [];
-  const ticks: number[] = [];
-  const n = Math.floor((max - min) / step + 1e-9);
-  for (let i = 0; i <= n; i += 1) {
-    const value = min + i * step;
-    ticks.push(Math.abs(value) < step * 1e-9 ? 0 : Number(value.toPrecision(12)));
-  }
-  if (ticks.length === 0 || ticks[ticks.length - 1] < max - step * 1e-6) {
-    ticks.push(Number(max.toPrecision(12)));
-  }
-  return ticks;
-}
 
 function logTicks(min: number, max: number) {
   const tens: number[] = [];

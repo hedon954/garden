@@ -4,6 +4,7 @@ import path from "node:path";
 import test from "node:test";
 import { compileUiBlock } from "../ui/core/compile.mjs";
 import { dilToUiSource, parsePlayCompose } from "../ui/compose/dil.mjs";
+import { ensureDomainEndpointTicks, niceTicks, stepTicks } from "../ui/core/chart-ticks.mjs";
 
 const css = fs.readFileSync(path.join(import.meta.dirname, "../ui/react/ui.css"), "utf8");
 
@@ -146,4 +147,22 @@ test("legend auto hides single series; show forces one-entry legend at bottom", 
   assert.equal(c2.ok, true, JSON.stringify(c2.diagnostics));
   assert.match(shown.uiSource, /legend="show"/);
   assert.match(shown.uiSource, /legendPosition="bottom"/);
+});
+
+
+test("niceTicks includes expanded domain max (0.45) when nice step would stop at 0.4", () => {
+  const ticks = niceTicks(0, 0.45, 4);
+  assert.equal(ticks[0], 0);
+  assert.ok(Math.abs(ticks[ticks.length - 1] - 0.45) < 1e-9, JSON.stringify(ticks));
+  assert.ok(ticks.includes(0.4) || ticks.some((t) => Math.abs(t - 0.4) < 1e-9), JSON.stringify(ticks));
+});
+
+test("stepTicks appends domain max when it falls between steps", () => {
+  const ticks = stepTicks(0, 0.45, 0.1);
+  assert.deepEqual(ticks.slice(0, 5), [0, 0.1, 0.2, 0.3, 0.4]);
+  assert.ok(Math.abs(ticks[ticks.length - 1] - 0.45) < 1e-9, JSON.stringify(ticks));
+});
+
+test("ensureDomainEndpointTicks is idempotent on already-closed ranges", () => {
+  assert.deepEqual(ensureDomainEndpointTicks([0, 0.08, 0.16, 0.24, 0.32], 0, 0.32), [0, 0.08, 0.16, 0.24, 0.32]);
 });
