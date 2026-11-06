@@ -20,7 +20,8 @@ test("slider, chart, steps, grid, code and diagram keep the measured sizes", () 
   assert.match(css, /input\[type="range"\] \{\s*display: block;\s*width: 100%;\s*height: 38px;/u);
   assert.match(css, /\.garden-ui-steps \.garden-ui-progress \{ height: 3px;/u);
   assert.match(css, /\.garden-ui-chart-axis \{ stroke: var\(--gui-border\);/u);
-  assert.match(css, /--gui-chart: var\(--well\);/u);
+  assert.match(css, /--gui-chart: transparent;/u);
+  assert.match(css, /--gui-chart-meta:/u);
   assert.match(css, /--gui-series-accent: var\(--gui-info\);/u);
   assert.match(css, /--gui-cat-0: #4f7fb8;/u);
   assert.match(css, /\.garden-ui\[data-frame="none"\]/u);
