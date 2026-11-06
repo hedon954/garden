@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.13.1
+
+### Fixed
+
+- Handbook reference sidebar: pages that share a `COMPONENT_BADGE` (compose + compose-icons) keep the code pill and append the `navTitle` remainder after a separator (` 图标` / ` icons`), so ZH/EN no longer show two identical `compose` entries.
+- Sidebar labels prefer authored `navTitle` (ZH and EN).
+- Official chart-example links on the compose reference pages use `#ui-compose-chart-active-hours` (play root DOM id prefix `ui-`), matching `ui/react/index.tsx`.
+
 ## 0.13.0
 
 ### Added
