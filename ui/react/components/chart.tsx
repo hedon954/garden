@@ -301,16 +301,28 @@ function Chart({ node, env }: { node: UiNode; env: Env }) {
   const markerX = model.marker !== null ? x.map(model.marker) : null;
   const markerIndex = model.marker !== null ? model.xs.reduce((best, xValue, index) => (Math.abs(xValue - (model.marker as number)) < Math.abs(model.xs[best] - (model.marker as number)) ? index : best), 0) : null;
   const tooltipIndex = hover;
+  const legendMode = (() => {
+    const raw = asString(value("legend"), "auto");
+    return raw === "show" || raw === "hide" ? raw : "auto";
+  })();
+  const legendPosition = asString(value("legendPosition"), "top") === "bottom" ? "bottom" : "top";
+  const showLegend = legendMode === "show" || (legendMode === "auto" && model.series.length > 1);
+  // Series-tone swatch (chart palette). Categorical bars stay multi-color; a forced
+  // single-series legend still uses the series tone (GPT fusion: one accent/blue dot).
+  const legendNode = showLegend ? (
+    <ul className="garden-ui-legend" data-position={legendPosition}>
+      {model.series.map((series, index) => (
+        <li key={index}>
+          <span className={`garden-ui-swatch garden-ui-series-${series.tone}`} />
+          {series.label}
+        </li>
+      ))}
+    </ul>
+  ) : null;
 
   return (
-    <div className="garden-ui-chart">
-      {model.series.length > 1 ? (
-        <ul className="garden-ui-legend">
-          {model.series.map((series, index) => (
-            <li key={index}><span className={`garden-ui-swatch garden-ui-series-${series.tone}`} />{series.label}</li>
-          ))}
-        </ul>
-      ) : null}
+    <div className="garden-ui-chart" data-legend={legendMode} data-legend-position={legendPosition}>
+      {legendPosition === "top" ? legendNode : null}
       <div
         ref={wrapRef}
         className="garden-ui-chart-canvas"
@@ -436,6 +448,7 @@ function Chart({ node, env }: { node: UiNode; env: Env }) {
           </div>
         ) : null}
       </div>
+      {legendPosition === "bottom" ? legendNode : null}
       {/* Tables ignore width: 1px, so the hiding box is a wrapper. */}
       <div className="garden-ui-sr-only">
       <table id={`${baseId}-table`}>

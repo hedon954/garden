@@ -53,3 +53,4 @@ garden compose fence
 - `yStep`：显式纵轴步长（如 `0.08` → 0/8%/16%/…）。`overflow="expand"`（默认）在数据超出 `yMin`/`yMax` 时扩大域；`clip` 保持域并在图内钳制绘制（不静默穿出 SVG）。
 - 块头 `frame: none`：去掉 `.garden-ui` 外框描边（滑杆对照 GPT 时可选用）；默认 `card`。
 - 标题左 / 徽章右：通用 `<stack direction="row" justify="between" align="center">`，不是图表专用头。
+- `legend="auto|show|hide"`：auto 仅多系列显示；show 强制（可单系列一条）；hide 关闭。`legendPosition="top|bottom"`（默认 top）。

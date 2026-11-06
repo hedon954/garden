@@ -118,3 +118,32 @@ test("best-time switching fixture: peak moves when weights change", () => {
   assert.ok(0.4 > 0.1);
   assert.ok(0.5 > 0.1);
 });
+
+test("legend auto hides single series; show forces one-entry legend at bottom", () => {
+  const hidden = parsePlayCompose(
+    { id: "leg-auto" },
+    `caption: a
+---
+{@body const rows=[{h:"20:00",p:0.28}]}
+<chart data={rows} x={h} legend="auto">
+  <bar y={p} label="融合后活跃概率" />
+</chart>`,
+  );
+  const { check: c1 } = compileUiBlock(hidden.uiSource);
+  assert.equal(c1.ok, true, JSON.stringify(c1.diagnostics));
+  assert.match(hidden.uiSource, /legend="auto"/);
+
+  const shown = parsePlayCompose(
+    { id: "leg-show" },
+    `caption: s
+---
+{@body const rows=[{h:"20:00",p:0.28}]}
+<chart data={rows} x={h} palette="categorical" legend="show" legendPosition="bottom">
+  <bar y={p} label="融合后活跃概率" tone="accent" />
+</chart>`,
+  );
+  const { check: c2 } = compileUiBlock(shown.uiSource);
+  assert.equal(c2.ok, true, JSON.stringify(c2.diagnostics));
+  assert.match(shown.uiSource, /legend="show"/);
+  assert.match(shown.uiSource, /legendPosition="bottom"/);
+});

@@ -862,6 +862,8 @@
 .garden-ui-chart-grid { stroke: var(--gui-border); stroke-width: 1; stroke-dasharray: 2 4; }
 .garden-ui-chart-axis { stroke: var(--gui-border); stroke-width: 1; }
 .garden-ui-chart .garden-ui-legend { justify-content: center; }
+.garden-ui-chart .garden-ui-legend[data-position="bottom"] { margin-top: 4px; }
+.garden-ui-chart[data-legend-position="bottom"] { /* canvas then legend */ }
 .garden-ui-chart-tick,
 .garden-ui-chart-label { fill: var(--gui-subtle); font-family: var(--gui-font); font-size: 12px; }
 .garden-ui-chart-value { fill: var(--gui-text); font-family: var(--gui-font); font-size: 12px; font-weight: 600; }
