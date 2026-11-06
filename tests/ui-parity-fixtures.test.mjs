@@ -22,7 +22,7 @@ test("slider, chart, steps, grid, code and diagram keep the measured sizes", () 
   assert.match(css, /\.garden-ui-chart-axis \{ stroke: var\(--gui-border\);/u);
   assert.match(css, /--gui-chart: var\(--well\);/u);
   assert.match(css, /--gui-series-accent: var\(--gui-info\);/u);
-  assert.match(css, /--gui-cat-0: #539af8;/u);
+  assert.match(css, /--gui-cat-0: #4f7fb8;/u);
   assert.match(css, /\.garden-ui\[data-frame="none"\]/u);
   assert.match(css, /\.garden-ui-cell \{\s*min-width: 40px;\s*height: 36px;/u);
   assert.match(css, /\.garden-ui-code \{[^}]*border-radius: 12px;[^}]*font-size: 13px;\s*line-height: 1\.6;/u);
