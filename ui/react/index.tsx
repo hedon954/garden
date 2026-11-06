@@ -16,8 +16,9 @@ export type { UiHost } from "./runtime";
 export type { Diagnostic, UiNode, UiPayload } from "./types";
 
 export function UiFigure({ payload, host }: { payload: UiPayload; host?: UiHost }) {
+  const frame = payload.frame === "none" ? "none" : "card";
   return (
-    <figure className="garden-ui" lang="en-US" id={`ui-${payload.id}`}>
+    <figure className="garden-ui" data-frame={frame} lang="en-US" id={`ui-${payload.id}`}>
       <UiRuntime payload={payload} host={host} />
       <figcaption>{payload.caption}</figcaption>
     </figure>

@@ -39,11 +39,20 @@
   --gui-shadow: none;
   --gui-code-bg: var(--well, #f0eee6);
   --gui-accent: var(--blue, #30302e);
+  /* Chart series palette is independent of Claude paper --blue (near-black). */
   --gui-series-plain: var(--ink, #1b1a18);
-  --gui-series-accent: var(--blue);
-  --gui-series-new: #00a240;
-  --gui-series-waste: #e02e2a;
-  --gui-series-same: #924ff7;
+  --gui-series-accent: var(--gui-info);
+  --gui-series-new: var(--gui-success, #6bc67f);
+  --gui-series-waste: var(--gui-danger, #e02e2a);
+  --gui-series-same: var(--gui-discovery, #924ff7);
+  --gui-cat-0: #539af8;
+  --gui-cat-1: #924ff7;
+  --gui-cat-2: #e67e22;
+  --gui-cat-3: #00a240;
+  --gui-cat-4: #e02e2a;
+  --gui-cat-5: #0169cc;
+  --gui-cat-6: #6bc67f;
+  --gui-cat-7: #ba2623;
   --gui-info: #539af8;
   --gui-info-text: #0169cc;
   --gui-info-soft: #0285ff1a;
@@ -101,7 +110,7 @@
   --gui-code-bg: var(--well);
   --gui-accent: var(--blue);
   --gui-series-plain: var(--ink);
-  --gui-series-accent: var(--blue);
+  --gui-series-accent: var(--gui-info);
   --gui-series-new: #04b84c;
   --gui-series-waste: #fa423e;
   --gui-info: #0285ff;
@@ -130,6 +139,14 @@
   line-height: 26px;
   letter-spacing: normal;
   -webkit-font-smoothing: antialiased;
+}
+
+/* Optional host chrome: frame none drops the outer card outline. */
+.garden-ui[data-frame="none"] {
+  margin: 12px 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
 }
 
 .garden-ui-body {
@@ -214,6 +231,15 @@
 /* layout */
 .garden-ui-stack { display: flex; flex-direction: column; }
 .garden-ui-stack[data-direction="row"] { flex-direction: row; flex-wrap: wrap; align-items: center; }
+.garden-ui-stack[data-justify="start"] { justify-content: flex-start; }
+.garden-ui-stack[data-justify="center"] { justify-content: center; }
+.garden-ui-stack[data-justify="end"] { justify-content: flex-end; }
+.garden-ui-stack[data-justify="between"] { justify-content: space-between; }
+.garden-ui-stack[data-align="start"] { align-items: flex-start; }
+.garden-ui-stack[data-align="center"] { align-items: center; }
+.garden-ui-stack[data-align="end"] { align-items: flex-end; }
+.garden-ui-stack[data-align="stretch"] { align-items: stretch; }
+.garden-ui-stack[data-direction="row"][data-justify="between"] { flex-wrap: nowrap; width: 100%; }
 
 .garden-ui-columns {
   display: grid;
@@ -824,6 +850,14 @@
 .garden-ui-series-same { --gui-series: var(--gui-series-same); }
 .garden-ui-series-muted,
 .garden-ui-series-cached { --gui-series: var(--gui-subtle); }
+.garden-ui-cat-0 { --gui-series: var(--gui-cat-0); }
+.garden-ui-cat-1 { --gui-series: var(--gui-cat-1); }
+.garden-ui-cat-2 { --gui-series: var(--gui-cat-2); }
+.garden-ui-cat-3 { --gui-series: var(--gui-cat-3); }
+.garden-ui-cat-4 { --gui-series: var(--gui-cat-4); }
+.garden-ui-cat-5 { --gui-series: var(--gui-cat-5); }
+.garden-ui-cat-6 { --gui-series: var(--gui-cat-6); }
+.garden-ui-cat-7 { --gui-series: var(--gui-cat-7); }
 
 .garden-ui-chart-grid { stroke: var(--gui-border); stroke-width: 1; stroke-dasharray: 2 4; }
 .garden-ui-chart-axis { stroke: var(--gui-border); stroke-width: 1; }

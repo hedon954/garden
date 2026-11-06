@@ -39,6 +39,21 @@ function formatTicks(min: number, max: number, count: number, format?: string) {
   return niceTicks(min / unit, max / unit, count).map((tick) => tick * unit);
 }
 
+/** Author-specified linear step: min, min+step, … up to max (inclusive within epsilon). */
+function stepTicks(min: number, max: number, step: number) {
+  if (!(step > 0) || !Number.isFinite(min) || !Number.isFinite(max) || max < min) return [];
+  const ticks: number[] = [];
+  const n = Math.floor((max - min) / step + 1e-9);
+  for (let i = 0; i <= n; i += 1) {
+    const value = min + i * step;
+    ticks.push(Math.abs(value) < step * 1e-9 ? 0 : Number(value.toPrecision(12)));
+  }
+  if (ticks.length === 0 || ticks[ticks.length - 1] < max - step * 1e-6) {
+    ticks.push(Number(max.toPrecision(12)));
+  }
+  return ticks;
+}
+
 function logTicks(min: number, max: number) {
   const tens: number[] = [];
   for (let exponent = Math.ceil(Math.log10(min)); 10 ** exponent <= max * (1 + 1e-9); exponent += 1) tens.push(10 ** exponent);
@@ -84,7 +99,7 @@ type Model = {
   categorical: boolean;
   xs: number[];
   categories: string[];
-  series: Array<{ kind: string; label: string; tone: string; format?: string; ys: number[] }>;
+  series: Array<{ kind: string; label: string; tone: string; format?: string; ys: number[]; tones: Array<string | null> }>;
   marker: number | null;
   xScaleKind: "linear" | "log";
   xFormat?: string;
@@ -152,6 +167,11 @@ function Chart({ node, env }: { node: UiNode; env: Env }) {
             const y = rowValue(runtime, item.node.p?.y, list[rowIndex], item.env);
             return typeof y === "number" ? y : Number.NaN;
           }),
+          tones: order.map((rowIndex) => {
+            if (!item.node.p?.tone) return null;
+            const tone = rowValue(runtime, item.node.p?.tone, list[rowIndex], item.env);
+            return typeof tone === "string" && (TONES as string[]).includes(tone) ? tone : null;
+          }),
         })),
         marker: null,
         xScaleKind: "linear",
@@ -187,6 +207,7 @@ function Chart({ node, env }: { node: UiNode; env: Env }) {
           const result = y?.k === "expr" ? evalExpr(y.e, lookupFrom(...item.env.locals, scope) as Lookup) : y?.v;
           return typeof result === "number" ? result : Number.NaN;
         }),
+        tones: xs.map(() => null),
       })),
       marker: asNumber(runtime.state[sweep]) ?? null,
       xScaleKind: scale,
@@ -201,12 +222,37 @@ function Chart({ node, env }: { node: UiNode; env: Env }) {
   const finite = model.series.flatMap((series) => series.ys.filter((y) => Number.isFinite(y)));
   const yScaleKind = value("yScale") === "log" ? "log" : "linear";
   const hasFill = model.series.some((series) => series.kind === "Bar" || series.kind === "Area");
-  let yMin = asNumber(value("yMin")) ?? (yScaleKind === "log" ? Math.min(...finite.filter((y) => y > 0)) : Math.min(hasFill ? 0 : Infinity, ...finite, 0));
-  const yMax = asNumber(value("yMax")) ?? Math.max(...finite, yMin + 1);
+  const dataMin = finite.length
+    ? (yScaleKind === "log" ? Math.min(...finite.filter((y) => y > 0)) : Math.min(...finite))
+    : 0;
+  const dataMax = finite.length ? Math.max(...finite) : 1;
+  const explicitMin = asNumber(value("yMin"));
+  const explicitMax = asNumber(value("yMax"));
+  const overflow = asString(value("overflow"), "expand") === "clip" ? "clip" : "expand";
+  let yMin = explicitMin ?? (yScaleKind === "log" ? dataMin : Math.min(hasFill ? 0 : Infinity, dataMin, 0));
+  let yMax = explicitMax ?? Math.max(dataMax, yMin + 1);
   if (!Number.isFinite(yMin)) yMin = 0;
+  if (!Number.isFinite(yMax) || yMax <= yMin) yMax = yMin + 1;
+  // expand: grow explicit domain to fit data (no silent SVG overflow). clip: keep domain.
+  if (overflow === "expand") {
+    if (Number.isFinite(dataMin) && dataMin < yMin) yMin = dataMin;
+    if (Number.isFinite(dataMax) && dataMax > yMax) yMax = dataMax;
+  }
   const y = makeScale(yMin, yMax, MARGIN.top + innerHeight, MARGIN.top, yScaleKind);
+  const plotTop = MARGIN.top;
+  const plotBottom = MARGIN.top + innerHeight;
+  const clampY = (px: number) => Math.min(plotBottom, Math.max(plotTop, px));
   const yFormatForTicks = (value("yFormat") as string | undefined) ?? model.series[0]?.format;
-  const yTicks = yScaleKind === "linear" ? formatTicks(yMin, yMax, 4, yFormatForTicks) : y.ticks;
+  const yStep = asNumber(value("yStep"));
+  const yTicks = yScaleKind === "linear"
+    ? (yStep !== undefined && yStep > 0 ? stepTicks(yMin, yMax, yStep) : formatTicks(yMin, yMax, 4, yFormatForTicks))
+    : y.ticks;
+  const palette = asString(value("palette"), "series") === "categorical" ? "categorical" : "series";
+  const colorClass = (seriesTone: string, index: number, rowTone: string | null | undefined) => {
+    if (rowTone) return `garden-ui-series-${rowTone}`;
+    if (palette === "categorical") return `garden-ui-cat-${index % 8}`;
+    return `garden-ui-series-${seriesTone}`;
+  };
 
   const categoryCount = model.categories.length || 1;
   const band = innerWidth / categoryCount;
@@ -341,9 +387,15 @@ function Chart({ node, env }: { node: UiNode; env: Env }) {
                 if (!Number.isFinite(value)) return null;
                 const center = x.map(model.xs[index]);
                 const left = center - ((barWidth + 2) * barSeries.length) / 2 + barIndex * (barWidth + 2);
-                const top = y.map(Math.max(value, yMin));
-                const base = y.map(yScaleKind === "log" ? yMin : Math.max(yMin, 0));
-                return <rect key={`${seriesIndex}-${index}`} className={`garden-ui-chart-bar garden-ui-series-${series.tone}`} x={left} y={Math.min(top, base)} width={barWidth} height={Math.abs(base - top)} rx={Math.min(4, barWidth / 4)} />;
+                const drawnValue = overflow === "clip" ? Math.min(Math.max(value, yMin), yMax) : value;
+                let top = y.map(Math.max(drawnValue, yMin));
+                let base = y.map(yScaleKind === "log" ? yMin : Math.max(yMin, 0));
+                if (overflow === "clip") {
+                  top = clampY(top);
+                  base = clampY(base);
+                }
+                const cls = colorClass(series.tone, index, series.tones[index]);
+                return <rect key={`${seriesIndex}-${index}`} className={`garden-ui-chart-bar ${cls}`} x={left} y={Math.min(top, base)} width={barWidth} height={Math.abs(base - top)} rx={Math.min(4, barWidth / 4)} />;
               });
             }
             return series.ys.map((value, index) =>

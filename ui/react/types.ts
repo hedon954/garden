@@ -18,6 +18,8 @@ export type UiPayload = {
   v: 1;
   id: string;
   caption: string;
+  /** Host chrome: card (default outline) or none (frameless). */
+  frame?: "card" | "none";
   root: UiNode;
   data: Record<string, unknown>;
 };

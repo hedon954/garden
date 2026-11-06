@@ -132,3 +132,5 @@ intent: |
 <slider min={1} max={12} value={seats} onChange={setSeats} label="席位" />
 <stat label="月费" value={total} unit="USD" />
 ```
+
+Play 图表：`palette`（series|categorical）、`yStep`、`overflow`（expand|clip）；块头可选 `frame: none`。布局头栏用 `<stack direction="row" justify="between">`。
