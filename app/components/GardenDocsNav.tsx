@@ -8,10 +8,11 @@ import {
   groupHandbookDocs,
   HANDBOOK_SECTIONS,
   HANDBOOK_UI,
-  NAV_SHORT_TITLE,
   REFERENCE_SECTION,
+  handbookNavLabel,
   isReferencePath,
   handbookPath,
+  referenceBadgeSuffix,
   sectionTitle,
   type GardenDocNavItem,
   type HandbookLang,
@@ -103,7 +104,7 @@ export function GardenDocsNav({
         <div className="gdoc-mobile-crumb" aria-hidden="true">
           <span>{sectionTitle(currentSection, lang) ?? t.name}</span>
           <CaretRight size={12} />
-          <strong>{currentDoc ? (lang === "en" ? currentDoc.navTitle ?? currentDoc.title : NAV_SHORT_TITLE[currentDoc.path] ?? currentDoc.title) : t.overviewHint}</strong>
+          <strong>{currentDoc ? handbookNavLabel(currentDoc, lang) : t.overviewHint}</strong>
         </div>
       </div>
 
@@ -161,7 +162,10 @@ export function GardenDocsNav({
                 {group.items.map((item) => {
                   const active = item.path === currentPath;
                   const badge = COMPONENT_BADGE[item.path];
-                  const label = lang === "en" ? item.navTitle ?? item.title : NAV_SHORT_TITLE[item.path] ?? item.title;
+                  const label = handbookNavLabel(item, lang);
+                  const referenceSuffix = group.id === REFERENCE_SECTION && badge
+                    ? referenceBadgeSuffix(badge, label)
+                    : null;
                   return (
                     <li key={item.path} className={active ? "is-active" : undefined}>
                       <Link
@@ -172,7 +176,11 @@ export function GardenDocsNav({
                         {badge ? (
                           <>
                             <code className="gdoc-comp-pill">{badge}</code>
-                            {group.id === REFERENCE_SECTION ? null : <span className="gdoc-comp-label">{label}</span>}
+                            {group.id === REFERENCE_SECTION ? (
+                              referenceSuffix ? <span className="gdoc-comp-label">{referenceSuffix}</span> : null
+                            ) : (
+                              <span className="gdoc-comp-label">{label}</span>
+                            )}
                           </>
                         ) : (
                           <span>{label}</span>

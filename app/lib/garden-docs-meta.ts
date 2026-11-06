@@ -133,6 +133,31 @@ export const NAV_SHORT_TITLE: Record<string, string> = {
   reference: "总览",
 };
 
+
+/**
+ * Reference sidebar shows COMPONENT_BADGE inside <code>. When two pages share a
+ * badge (compose + compose-icons), keep the code pill and append the remainder
+ * of navTitle / short label after a separator (space / · / dash).
+ * Returns the suffix including its leading separator, or null.
+ */
+export function referenceBadgeSuffix(badge: string, label: string): string | null {
+  if (!badge || !label || label === badge) return null;
+  if (!label.startsWith(badge)) return null;
+  const rest = label.slice(badge.length);
+  if (!rest || !/^[\s·\-—]/.test(rest)) return null;
+  return rest;
+}
+
+/** Sidebar text label: prefer authored navTitle; ZH may fall back to NAV_SHORT_TITLE. */
+export function handbookNavLabel(item: GardenDocNavItem, lang: HandbookLang): string {
+  if (item.navTitle) return item.navTitle;
+  if (lang !== "en") {
+    const short = NAV_SHORT_TITLE[item.path];
+    if (short) return short;
+  }
+  return item.title;
+}
+
 export function groupHandbookDocs<T extends GardenDocNavItem>(docs: T[]) {
   const bySection = new Map<string, T[]>();
   for (const section of HANDBOOK_SECTIONS) {

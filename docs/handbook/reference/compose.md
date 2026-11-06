@@ -173,7 +173,7 @@ badge: compose
 
 ## 图表示例
 
-玩法级图表示例（静态八柱、融合权重滑杆）见 [说明图 · compose](/garden/components/compose#compose-chart-active-hours)。
+玩法级图表示例（静态八柱、融合权重滑杆）见 [说明图 · compose](/garden/components/compose#ui-compose-chart-active-hours)。
 
 ## 限制
 

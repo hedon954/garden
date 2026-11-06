@@ -59,6 +59,6 @@ garden compose fence
 
 完整可运行样板见 handbook：
 
-- `docs/handbook/components/compose.md` → 「图表示例（play）」：`#compose-chart-active-hours`、`#compose-chart-fusion-weights`
+- `docs/handbook/components/compose.md` → 「图表示例（play）」：围栏 id 是 `compose-chart-active-hours` / `compose-chart-fusion-weights`；跳转锚点要用 `#ui-compose-chart-active-hours`（play 根节点 id 前缀 `ui-`）
 - EN：`docs/handbook/en/components/compose.md` → “Chart examples (play)”
 

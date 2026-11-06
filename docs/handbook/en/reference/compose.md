@@ -173,7 +173,7 @@ One mini sample per group, then a one-line table for every tag. No per-tag essay
 
 ## Chart examples
 
-Play-level chart samples (static eight bars, fusion weight slider) live on [Diagrams · compose](/garden/en/components/compose#compose-chart-active-hours).
+Play-level chart samples (static eight bars, fusion weight slider) live on [Diagrams · compose](/garden/en/components/compose#ui-compose-chart-active-hours).
 
 ## Limits
 
