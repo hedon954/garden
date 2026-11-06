@@ -3,7 +3,8 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { TONES } from "../../core/catalog.mjs";
 import { formatValue } from "../../core/format.mjs";
-import { formatTicks, niceTicks, stepTicks } from "../../core/chart-ticks.mjs";
+import { formatTicks, fitTicksPreserveEnds, niceTicks, stepTicks } from "../../core/chart-ticks.mjs";
+import { barColorClass } from "../../core/chart-color.mjs";
 import { isPowerOfTwo, lookupFrom, sampleDomain } from "../../core/state.mjs";
 import { asNumber, asString, evalExpr, expandChildren, propValue, registerComponents, rowValue, useRuntime } from "../runtime";
 import type { Env, Lookup, UiNode } from "../types";
@@ -31,19 +32,22 @@ type Anchor = "start" | "middle" | "end";
 
 const labelWidth = (text: string) => [...text].reduce((sum, char) => sum + ((char.codePointAt(0) ?? 0) > 0x2e80 ? 2 : 1), 0) * TICK_CHAR_WIDTH;
 
-/** Every k-th tick, for the smallest k whose labels no longer overlap at this width. */
+/** Every k-th tick, for the smallest k whose labels no longer overlap — endpoints always kept. */
 function fitTicks(ticks: number[], position: (tick: number) => number, label: (tick: number) => string, anchor: (x: number) => Anchor) {
+  if (ticks.length <= 2) return ticks;
   const extent = (tick: number) => {
     const x = position(tick);
     const width = labelWidth(label(tick));
     const side = anchor(x);
     return side === "start" ? [x, x + width] : side === "end" ? [x - width, x] : [x - width / 2, x + width / 2];
   };
+  const fits = (kept: number[]) => kept.every((tick, index) => index === 0 || extent(kept[index - 1])[1] + TICK_GAP <= extent(tick)[0]);
   for (let stride = 1; stride < ticks.length; stride += 1) {
-    const kept = ticks.filter((_, index) => index % stride === 0);
-    if (kept.every((tick, index) => index === 0 || extent(kept[index - 1])[1] + TICK_GAP <= extent(tick)[0])) return kept;
+    const mid = ticks.filter((_, index) => index > 0 && index < ticks.length - 1 && index % stride === 0);
+    const kept = [ticks[0], ...mid, ticks[ticks.length - 1]].filter((tick, index, all) => index === 0 || tick !== all[index - 1]);
+    if (fits(kept)) return kept;
   }
-  return ticks.slice(0, 1);
+  return [ticks[0], ticks[ticks.length - 1]];
 }
 
 function makeScale(min: number, max: number, from: number, to: number, kind: "linear" | "log"): Scale {
@@ -205,15 +209,14 @@ function Chart({ node, env }: { node: UiNode; env: Env }) {
   const clampY = (px: number) => Math.min(plotBottom, Math.max(plotTop, px));
   const yFormatForTicks = (value("yFormat") as string | undefined) ?? model.series[0]?.format;
   const yStep = asNumber(value("yStep"));
-  const yTicks = yScaleKind === "linear"
+  const yTicksRaw = yScaleKind === "linear"
     ? (yStep !== undefined && yStep > 0 ? stepTicks(yMin, yMax, yStep) : formatTicks(yMin, yMax, 4, yFormatForTicks))
     : y.ticks;
+  // Vertical thinning on short canvases; always keep domain ends (e.g. expanded 45%).
+  const yTicks = fitTicksPreserveEnds(yTicksRaw, (tick) => y.map(tick), 14);
   const palette = asString(value("palette"), "series") === "categorical" ? "categorical" : "series";
-  const colorClass = (seriesTone: string, index: number, rowTone: string | null | undefined) => {
-    if (rowTone) return `garden-ui-series-${rowTone}`;
-    if (palette === "categorical") return `garden-ui-cat-${index % 8}`;
-    return `garden-ui-series-${seriesTone}`;
-  };
+  const colorClass = (seriesTone: string, index: number, rowTone: string | null | undefined) =>
+    barColorClass(palette, seriesTone, index, rowTone);
 
   const categoryCount = model.categories.length || 1;
   const band = innerWidth / categoryCount;

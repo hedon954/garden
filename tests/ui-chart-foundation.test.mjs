@@ -4,7 +4,8 @@ import path from "node:path";
 import test from "node:test";
 import { compileUiBlock } from "../ui/core/compile.mjs";
 import { dilToUiSource, parsePlayCompose } from "../ui/compose/dil.mjs";
-import { ensureDomainEndpointTicks, niceTicks, stepTicks } from "../ui/core/chart-ticks.mjs";
+import { ensureDomainEndpointTicks, fitTicksPreserveEnds, niceTicks, stepTicks } from "../ui/core/chart-ticks.mjs";
+import { barColorClass } from "../ui/core/chart-color.mjs";
 
 const css = fs.readFileSync(path.join(import.meta.dirname, "../ui/react/ui.css"), "utf8");
 
@@ -165,4 +166,41 @@ test("stepTicks appends domain max when it falls between steps", () => {
 
 test("ensureDomainEndpointTicks is idempotent on already-closed ranges", () => {
   assert.deepEqual(ensureDomainEndpointTicks([0, 0.08, 0.16, 0.24, 0.32], 0, 0.32), [0, 0.08, 0.16, 0.24, 0.32]);
+});
+
+
+test("categorical palette is not flattened by series tone=accent (legend+categorical)", () => {
+  // Regression vs tip 08512249: tone on <bar> is for legend/series mode; categorical bars stay cat-N.
+  assert.equal(barColorClass("categorical", "accent", 0, "accent"), "garden-ui-cat-0");
+  assert.equal(barColorClass("categorical", "accent", 3, "accent"), "garden-ui-cat-3");
+  assert.equal(barColorClass("categorical", "accent", 4, null), "garden-ui-cat-4");
+  assert.equal(barColorClass("series", "accent", 0, "accent"), "garden-ui-series-accent");
+  assert.equal(barColorClass("series", "muted", 0, null), "garden-ui-series-muted");
+
+  const block = parsePlayCompose(
+    { id: "leg-cat" },
+    `caption: fusion legend + categorical
+---
+{@body const rows=[{h:"08:00",p:0.05},{h:"12:00",p:0.12},{h:"18:00",p:0.20},{h:"20:00",p:0.45},{h:"22:00",p:0.18}]}
+<chart data={rows} x={h} palette="categorical" legend="show" legendPosition="bottom" yFormat="percent" yMin={0} yMax={0.4} overflow="expand">
+  <bar y={p} label="融合后活跃概率" tone="accent" />
+</chart>`,
+  );
+  const { check } = compileUiBlock(block.uiSource);
+  assert.equal(check.ok, true, JSON.stringify(check.diagnostics));
+  assert.match(block.uiSource, /palette="categorical"/);
+  assert.match(block.uiSource, /legend="show"/);
+  assert.match(block.uiSource, /legendPosition="bottom"/);
+  assert.match(block.uiSource, /tone="accent"/);
+});
+
+test("fitTicksPreserveEnds keeps expanded max when a nearby nice step would collide", () => {
+  // Domain 0..0.45 with nice steps; short axis makes 40% and 45% collide — keep 45%.
+  const ticks = [0, 0.1, 0.2, 0.3, 0.4, 0.45];
+  const yMap = (v) => 200 - (v / 0.45) * 160; // ~17.8px between 0.4 and 0.45
+  const kept = fitTicksPreserveEnds(ticks, yMap, 20);
+  assert.equal(kept[0], 0);
+  assert.ok(Math.abs(kept[kept.length - 1] - 0.45) < 1e-9, JSON.stringify(kept));
+  // 0.4 may be dropped when too close to the endpoint
+  assert.ok(!kept.includes(0.4) || kept.length === ticks.length, JSON.stringify(kept));
 });

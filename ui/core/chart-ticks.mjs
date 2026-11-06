@@ -51,3 +51,33 @@ export function ensureDomainEndpointTicks(ticks, min, max) {
   if (!near(out[out.length - 1], max)) out.push(Number(max.toPrecision(12)));
   return out.filter((t, i) => i === 0 || !near(t, out[i - 1]));
 }
+
+
+/**
+ * Thin ticks when labels would collide, always keeping domain endpoints.
+ * `position(tick)` returns the axis coordinate (px); `minGap` is minimum spacing.
+ * Used for both x (horizontal) and y (vertical) so an expanded max (e.g. 45%)
+ * is not dropped when a nearby nice step (40%) would win a stride filter.
+ */
+export function fitTicksPreserveEnds(ticks, position, minGap) {
+  if (!Array.isArray(ticks) || ticks.length <= 2) return Array.isArray(ticks) ? [...ticks] : [];
+  const first = ticks[0];
+  const last = ticks[ticks.length - 1];
+  const spaced = (kept) => {
+    for (let i = 1; i < kept.length; i += 1) {
+      if (Math.abs(position(kept[i]) - position(kept[i - 1])) < minGap) return false;
+    }
+    return true;
+  };
+  for (let stride = 1; stride < ticks.length; stride += 1) {
+    const mid = [];
+    for (let i = 1; i < ticks.length - 1; i += 1) {
+      if (i % stride === 0) mid.push(ticks[i]);
+    }
+    const kept = [first, ...mid, last];
+    // de-dupe if an end coincided with a stride hit
+    const uniq = kept.filter((t, i) => i === 0 || t !== kept[i - 1]);
+    if (spaced(uniq)) return uniq;
+  }
+  return [first, last];
+}
