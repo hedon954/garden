@@ -73,3 +73,7 @@ intent: |
 <stat label="月费" value={total} unit="USD" />
 ```
 ````
+
+Play 图表：`palette`（series|categorical）、`yStep`、`overflow`（expand|clip）；块头可选 `frame: none`。布局头栏用 `<stack direction="row" justify="between">`。
+
+图例：`legend`（auto|show|hide）、`legendPosition`（top|bottom）。

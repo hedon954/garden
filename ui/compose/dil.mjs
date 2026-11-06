@@ -349,6 +349,7 @@ function buildUiSource(headerProps, children, legacyPlay, dil) {
     caption: headerProps.caption ?? "",
     intent: headerProps.intent ?? "",
     ...(headerProps.expect ? { expect: headerProps.expect } : {}),
+    ...(headerProps.frame ? { frame: headerProps.frame } : {}),
   };
   const yaml = stringify(header);
   return {
@@ -406,7 +407,7 @@ export function parsePlayCompose(header, body) {
     }
   }
   if (header.id && props.id == null) props.id = header.id;
-  const allowed = new Set(["id", "caption", "intent", "expect"]);
+  const allowed = new Set(["id", "caption", "intent", "expect", "frame"]);
   const unknown = Object.keys(props).filter((key) => !allowed.has(key));
   if (!error && unknown.length) {
     error = {

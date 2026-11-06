@@ -1,8 +1,8 @@
 {
   "name": "hd-garden",
-  "version": "0.12.1",
+  "version": "0.13.0",
   "private": false,
-  "description": "用 Markdown 写作、用 GitHub Pages 发布的个人博客引擎。",
+  "description": "\u7528 Markdown \u5199\u4f5c\u3001\u7528 GitHub Pages \u53d1\u5e03\u7684\u4e2a\u4eba\u535a\u5ba2\u5f15\u64ce\u3002",
   "license": "MIT",
   "homepage": "https://github.com/hedon954/garden",
   "bugs": {

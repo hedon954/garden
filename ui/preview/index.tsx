@@ -125,7 +125,7 @@ function Preview({ source, options }: { source: string; options: PreviewOptions 
     <div className="garden-ui-preview" data-theme={theme}>
       {stale ? <p className="garden-ui-preview-note">原话改过了，还没重编译。</p> : null}
       {options.mode === "static" ? (
-        <figure className="garden-ui" lang="en-US">
+        <figure className="garden-ui" data-frame={(typed as {frame?: string}).frame === "none" ? "none" : "card"} lang="en-US">
           <div className="garden-ui-body garden-ui-static" dangerouslySetInnerHTML={{ __html: renderStatic(typed, "html") }} />
           <figcaption>{typed.caption}</figcaption>
         </figure>

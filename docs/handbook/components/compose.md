@@ -132,3 +132,73 @@ intent: |
 <slider min={1} max={12} value={seats} onChange={setSeats} label="席位" />
 <stat label="月费" value={total} unit="USD" />
 ```
+
+Play 图表：`palette`（series|categorical）、`yStep`、`overflow`（expand|clip）；块头可选 `frame: none`。布局头栏用 `<stack direction="row" justify="between">`。
+
+图例：`legend`（auto|show|hide）、`legendPosition`（top|bottom）。
+
+## 图表示例（play）
+
+下面两例是官方 compose 图表样板：静态八柱（系列蓝 + `yStep`）与可调权重五类柱（`palette="categorical"` + 底图例）。示意数据。
+
+### 静态：活跃时段分布
+
+```garden compose #compose-chart-active-hours
+caption: 示意：最近 30 天活跃记录归一化后的分布。峰在 20:00。
+frame: none
+intent: |
+  静态分布：系列蓝柱、显式 8% 刻度、stack 头栏左标题右徽章。
+---
+{@body const rows = [
+  { h: "08:00", p: 0.05 },
+  { h: "10:00", p: 0.07 },
+  { h: "12:00", p: 0.15 },
+  { h: "14:00", p: 0.06 },
+  { h: "16:00", p: 0.09 },
+  { h: "18:00", p: 0.14 },
+  { h: "20:00", p: 0.28 },
+  { h: "22:00", p: 0.16 }
+]}
+
+<stack direction="row" justify="between" align="center" gap={2}>
+  <stack gap={1}>
+    <caption>用户活跃时间分布（示例）</caption>
+    <caption>假设用户最近 30 天的活跃记录经过归一化后的分布</caption>
+  </stack>
+  <badge tone="new">推荐 20:00</badge>
+</stack>
+
+<chart data={rows} x={h} yLabel="活跃概率" yFormat="percent" yMin={0} yMax={0.32} yStep={0.08} overflow="expand" height={280}>
+  <bar y={p} label="活跃概率" tone="accent" />
+</chart>
+```
+
+### 交互：个人与整体融合权重
+
+默认权重 **45%**。拧滑杆或快切 0 / 45 / 100，五根分类色柱与「预测最佳时间」跟着变。
+
+```garden compose #compose-chart-fusion-weights
+caption: 交互示例：拧个人权重，融合柱按公式重算。示意数据。
+frame: none
+intent: |
+  融合滑杆：categorical 逐柱色、legend 底栏单系列、overflow expand。
+---
+{@body const [w, setW] = DIL.useState(45)}
+{@body const a = w / 100}
+{@body const p08 = a * 0.05 + (1 - a) * 0.12}
+{@body const p12 = a * 0.12 + (1 - a) * 0.22}
+{@body const p18 = a * 0.20 + (1 - a) * 0.26}
+{@body const p20 = a * 0.45 + (1 - a) * 0.28}
+{@body const p22 = a * 0.18 + (1 - a) * 0.12}
+{@body const rows = [{ h: "08:00", p: p08 }, { h: "12:00", p: p12 }, { h: "18:00", p: p18 }, { h: "20:00", p: p20 }, { h: "22:00", p: p22 }]}
+{@body const peak = max(p08, p12, p18, p20, p22)}
+{@body const best = p20 == peak ? "20:00" : (p18 == peak ? "18:00" : (p12 == peak ? "12:00" : (p22 == peak ? "22:00" : "08:00")))}
+
+<choice value={w} onChange={setW} label="权重快切" options={[{value:0,label:"0%"},{value:45,label:"45%"},{value:100,label:"100%"}]} />
+<slider min={0} max={100} value={w} onChange={setW} label="个人活跃数据权重" unit="%" />
+<chart legend="show" legendPosition="bottom" data={rows} x={h} palette="categorical" yLabel="融合后活跃概率" yFormat="percent" yMin={0} yMax={0.4} overflow="expand" height={280}>
+  <bar y={p} label="融合后活跃概率" tone="accent" />
+</chart>
+<stat label="预测最佳时间" value={best} />
+```
+

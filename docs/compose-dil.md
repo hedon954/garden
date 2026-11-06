@@ -45,3 +45,20 @@ garden compose fence
 
 - 同：Markdown + 目录标签同树、token 化间距/表面、一等 icon、自由嵌套。
 - 不同：颜色走 Claude 纸色 token；一拍静态渲染；无 Worker/流式/AppBlock。
+
+## Chart 域 / 色板 / 外壳（play）
+
+- **系列色**走 `--gui-series-*`，绑定 `--gui-info` 等图表色，**不**再用 Claude 纸面 `--blue`（近黑）。
+- `palette="series"`（默认）：按系列 `tone` 上色。`palette="categorical"`：按类别序号用 `--gui-cat-0…7`。
+- `yStep`：显式纵轴步长（如 `0.08` → 0/8%/16%/…）。`overflow="expand"`（默认）在数据超出 `yMin`/`yMax` 时扩大域；`clip` 保持域并在图内钳制绘制（不静默穿出 SVG）。
+- 块头 `frame: none`：去掉 `.garden-ui` 外框描边（滑杆对照 GPT 时可选用）；默认 `card`。
+- 标题左 / 徽章右：通用 `<stack direction="row" justify="between" align="center">`，不是图表专用头。
+- `legend="auto|show|hide"`：auto 仅多系列显示；show 强制（可单系列一条）；hide 关闭。`legendPosition="top|bottom"`（默认 top）。
+
+## 图表示例（handbook）
+
+完整可运行样板见 handbook：
+
+- `docs/handbook/components/compose.md` → 「图表示例（play）」：`#compose-chart-active-hours`、`#compose-chart-fusion-weights`
+- EN：`docs/handbook/en/components/compose.md` → “Chart examples (play)”
+

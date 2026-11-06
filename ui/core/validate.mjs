@@ -16,7 +16,7 @@ import {
   runExpect,
 } from "./state.mjs";
 
-const HEADER_KEYS = new Set(["id", "caption", "intent", "compiled", "expect"]);
+const HEADER_KEYS = new Set(["id", "caption", "intent", "compiled", "expect", "frame"]);
 const MAX_ELEMENTS = 200;
 const CONSTANT_NAMES = new Set(["PI", "E", "undefined", "NaN", "Infinity"]);
 const INLINE_TYPES = new Set(["text", "x", "strong", "em", "code", "br", "link"]);
@@ -130,6 +130,9 @@ export function checkUiBlock(body, options = {}) {
   }
   if (typeof header.caption !== "string" || !header.caption.trim()) {
     add("ui-caption", headerLine(headerText, "caption", lineOffset), "caption 必填，写一句判断");
+  }
+  if (header.frame !== undefined && header.frame !== "card" && header.frame !== "none") {
+    add("ui-header", headerLine(headerText, "frame", lineOffset), "frame 只能是 card 或 none");
   }
   if (header.intent !== undefined && typeof header.intent !== "string") {
     add("ui-header", headerLine(headerText, "intent", lineOffset), "intent 必须是文字");
@@ -277,6 +280,9 @@ export function checkUiBlock(body, options = {}) {
         const hasData = Boolean(node.p.data);
         if (hasSweep === hasData) add("ui-prop", bodyLine(node.l), "<Chart> 的 sweep 和 data 必须写且只能写一个");
         if (hasData && !node.p.x) add("ui-prop", bodyLine(node.l), "<Chart> 数据模式需要 x");
+        if (node.p.yStep?.k === "lit" && !(typeof node.p.yStep.v === "number" && node.p.yStep.v > 0)) {
+          add("ui-prop", bodyLine(node.l), "<Chart> 的 yStep 必须大于 0");
+        }
         if (hasSweep && node.p.sweep.k === "lit") {
           const sweep = node.p.sweep.v;
           if (!stateTypes.has(sweep)) add("ui-bind", bodyLine(node.l), `<Chart> 的 sweep ${sweep} 没有在 State 里声明`);

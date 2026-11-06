@@ -170,11 +170,28 @@ test("the handbook compose page stays short and points at reference catalogs", (
   assert.equal(fs.existsSync(path.join(root, "docs/handbook/reference/compose-icons.md")), true);
   const fences = scanFences(markdown).map((fence) => classifyFence(fence)).filter((item) => item.kind === "garden");
   const englishFences = scanFences(english).map((fence) => classifyFence(fence)).filter((item) => item.kind === "garden");
-  assert.equal(fences.length, 2);
-  assert.equal(englishFences.length, 2);
+  assert.equal(fences.length, 4);
+  assert.equal(englishFences.length, 4);
+  assert.deepEqual(
+    fences.map((item) => item.block.mode),
+    ["diagram", "play", "play", "play"],
+  );
+  assert.deepEqual(
+    fences.filter((item) => item.block.mode === "play").map((item) => item.block.id),
+    ["compose-play-demo", "compose-chart-active-hours", "compose-chart-fusion-weights"],
+  );
+  assert.deepEqual(
+    englishFences.filter((item) => item.block.mode === "play").map((item) => item.block.id),
+    ["compose-play-demo", "compose-chart-active-hours", "compose-chart-fusion-weights"],
+  );
+  assert.match(markdown, /## 图表示例（play）/);
+  assert.match(english, /## Chart examples \(play\)/);
   assert.deepEqual(checkGardenMarkdown(markdown), []);
   assert.deepEqual(checkGardenMarkdown(english), []);
-  const html = fences.map((item) => renderCompose(item.block.props, { scope: "ex" })).join("\n");
+  const html = fences
+    .filter((item) => item.block.mode === "diagram")
+    .map((item) => renderCompose(item.block.props, { scope: "ex" }))
+    .join("\n");
   assert.match(html, /data-frame="band"/);
   assert.match(html, /g-compose-join/);
   assert.doesNotMatch(html, /<script/u);

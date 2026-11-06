@@ -37,6 +37,7 @@ export function compileUiBlock(body, options = {}) {
       v: PAYLOAD_VERSION,
       id: check.header.id,
       caption: check.header.caption.trim(),
+      frame: check.header.frame === "none" ? "none" : "card",
       root: stripTree(check.root, resolveImage),
       data: check.dataValues ?? {},
     },

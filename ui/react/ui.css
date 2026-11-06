@@ -7,7 +7,8 @@
 .garden-catalog,
 .garden-ui-preview {
   --gui-bg: transparent;
-  --gui-chart: var(--well);
+  --gui-chart: transparent;
+  --gui-chart-meta: var(--muted, #6e6b64);
   --gui-track: var(--rule, #e6e3dc);
   --gui-thumb: var(--paper, #faf9f5);
   --gui-slider-track: var(--rule, #e6e3dc);
@@ -39,14 +40,26 @@
   --gui-shadow: none;
   --gui-code-bg: var(--well, #f0eee6);
   --gui-accent: var(--blue, #30302e);
+  /* Chart series palette is independent of Claude paper --blue (near-black).
+   * Categorical hues: mid-chroma, warm+blue family for paper #faf9f5 (Datawrapper /
+   * ColorBrewer qualitative guidance) — not neon primaries that clash with beige wells. */
   --gui-series-plain: var(--ink, #1b1a18);
-  --gui-series-accent: var(--blue);
-  --gui-series-new: #00a240;
-  --gui-series-waste: #e02e2a;
-  --gui-series-same: #924ff7;
-  --gui-info: #539af8;
-  --gui-info-text: #0169cc;
-  --gui-info-soft: #0285ff1a;
+  --gui-series-accent: var(--gui-info);
+  --gui-series-new: var(--gui-success, #5a9e6f);
+  --gui-series-waste: var(--gui-danger, #c05757);
+  --gui-series-same: var(--gui-discovery, #8e6b9e);
+  --gui-cat-0: #4f7fb8;
+  --gui-cat-1: #c47a3a;
+  --gui-cat-2: #3e8f7a;
+  --gui-cat-3: #8e6b9e;
+  --gui-cat-4: #b85c6e;
+  --gui-cat-5: #3a6ea5;
+  --gui-cat-6: #6f8f3f;
+  --gui-cat-7: #a67c52;
+  --gui-chart-grid: #e6e3dc99;
+  --gui-info: #4f7fb8;
+  --gui-info-text: #2f5f94;
+  --gui-info-soft: #4f7fb81a;
   --gui-success: #6bc67f;
   --gui-success-text: #008635;
   --gui-success-soft: #04b84c1f;
@@ -68,7 +81,8 @@
 .garden-catalog[data-theme="dark"],
 .garden-ui-preview[data-theme="dark"] {
   --gui-bg: transparent;
-  --gui-chart: var(--well);
+  --gui-chart: transparent;
+  --gui-chart-meta: var(--soft, #bdb9b0);
   --gui-text: var(--ink);
   --gui-muted: var(--muted);
   --gui-subtle: var(--grey);
@@ -101,21 +115,31 @@
   --gui-code-bg: var(--well);
   --gui-accent: var(--blue);
   --gui-series-plain: var(--ink);
-  --gui-series-accent: var(--blue);
-  --gui-series-new: #04b84c;
-  --gui-series-waste: #fa423e;
-  --gui-info: #0285ff;
-  --gui-info-text: #66b5ff;
-  --gui-info-soft: #0285ff26;
-  --gui-success: #04b84c;
-  --gui-success-text: #40c977;
-  --gui-success-soft: #04b84c26;
-  --gui-danger: #fa423e;
-  --gui-danger-text: #fa423e;
-  --gui-danger-soft: #fa423e29;
-  --gui-discovery: #924ff7;
-  --gui-discovery-text: #be95fa;
-  --gui-discovery-soft: #924ff726;
+  --gui-series-accent: var(--gui-info);
+  --gui-series-new: #5cb88a;
+  --gui-series-waste: #d47a7a;
+  --gui-series-same: #b08ec4;
+  --gui-cat-0: #7ba3d4;
+  --gui-cat-1: #d49a5c;
+  --gui-cat-2: #5cb8a0;
+  --gui-cat-3: #b08ec4;
+  --gui-cat-4: #d48a9a;
+  --gui-cat-5: #6b9ad4;
+  --gui-cat-6: #a3c46b;
+  --gui-cat-7: #c4a078;
+  --gui-chart-grid: #5a585299;
+  --gui-info: #7ba3d4;
+  --gui-info-text: #a8c4e8;
+  --gui-info-soft: #7ba3d426;
+  --gui-success: #5cb88a;
+  --gui-success-text: #8fd4ad;
+  --gui-success-soft: #5cb88a26;
+  --gui-danger: #d47a7a;
+  --gui-danger-text: #e8a8a8;
+  --gui-danger-soft: #d47a7a29;
+  --gui-discovery: #b08ec4;
+  --gui-discovery-text: #d4b8e0;
+  --gui-discovery-soft: #b08ec426;
 }
 
 /* frame: each block is one outlined widget, with the same curved corner as a ChatGPT card */
@@ -130,6 +154,14 @@
   line-height: 26px;
   letter-spacing: normal;
   -webkit-font-smoothing: antialiased;
+}
+
+/* Optional host chrome: frame none drops the outer card outline. */
+.garden-ui[data-frame="none"] {
+  margin: 12px 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
 }
 
 .garden-ui-body {
@@ -151,7 +183,7 @@
 
 .garden-ui > figcaption {
   padding: 4px 16px 12px;
-  color: var(--gui-muted);
+  color: var(--gui-chart-meta, var(--gui-muted));
   font-size: 14px;
   line-height: 20px;
   text-align: start;
@@ -214,6 +246,15 @@
 /* layout */
 .garden-ui-stack { display: flex; flex-direction: column; }
 .garden-ui-stack[data-direction="row"] { flex-direction: row; flex-wrap: wrap; align-items: center; }
+.garden-ui-stack[data-justify="start"] { justify-content: flex-start; }
+.garden-ui-stack[data-justify="center"] { justify-content: center; }
+.garden-ui-stack[data-justify="end"] { justify-content: flex-end; }
+.garden-ui-stack[data-justify="between"] { justify-content: space-between; }
+.garden-ui-stack[data-align="start"] { align-items: flex-start; }
+.garden-ui-stack[data-align="center"] { align-items: center; }
+.garden-ui-stack[data-align="end"] { align-items: flex-end; }
+.garden-ui-stack[data-align="stretch"] { align-items: stretch; }
+.garden-ui-stack[data-direction="row"][data-justify="between"] { flex-wrap: nowrap; width: 100%; }
 
 .garden-ui-columns {
   display: grid;
@@ -810,8 +851,8 @@
 
 .garden-ui-chart-canvas {
   position: relative;
-  padding: 8px 4px 0;
-  border-radius: 12px;
+  padding: 4px 0 0;
+  border-radius: 0;
   outline: none;
   background: var(--gui-chart);
 }
@@ -824,12 +865,22 @@
 .garden-ui-series-same { --gui-series: var(--gui-series-same); }
 .garden-ui-series-muted,
 .garden-ui-series-cached { --gui-series: var(--gui-subtle); }
+.garden-ui-cat-0 { --gui-series: var(--gui-cat-0); }
+.garden-ui-cat-1 { --gui-series: var(--gui-cat-1); }
+.garden-ui-cat-2 { --gui-series: var(--gui-cat-2); }
+.garden-ui-cat-3 { --gui-series: var(--gui-cat-3); }
+.garden-ui-cat-4 { --gui-series: var(--gui-cat-4); }
+.garden-ui-cat-5 { --gui-series: var(--gui-cat-5); }
+.garden-ui-cat-6 { --gui-series: var(--gui-cat-6); }
+.garden-ui-cat-7 { --gui-series: var(--gui-cat-7); }
 
-.garden-ui-chart-grid { stroke: var(--gui-border); stroke-width: 1; stroke-dasharray: 2 4; }
+.garden-ui-chart-grid { stroke: var(--gui-chart-grid, var(--gui-border)); stroke-width: 1; stroke-dasharray: 2 4; }
 .garden-ui-chart-axis { stroke: var(--gui-border); stroke-width: 1; }
-.garden-ui-chart .garden-ui-legend { justify-content: center; }
+.garden-ui-chart .garden-ui-legend { justify-content: center; color: var(--gui-chart-meta, var(--gui-muted)); }
+.garden-ui-chart .garden-ui-legend[data-position="bottom"] { margin-top: 4px; }
+.garden-ui-chart[data-legend-position="bottom"] { /* canvas then legend */ }
 .garden-ui-chart-tick,
-.garden-ui-chart-label { fill: var(--gui-subtle); font-family: var(--gui-font); font-size: 12px; }
+.garden-ui-chart-label { fill: var(--gui-chart-meta, var(--gui-muted)); font-family: var(--gui-font); font-size: 12px; }
 .garden-ui-chart-value { fill: var(--gui-text); font-family: var(--gui-font); font-size: 12px; font-weight: 600; }
 .garden-ui-chart-line { fill: none; stroke: var(--gui-series); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 .garden-ui-chart-area { fill: var(--gui-series); fill-opacity: 0.1; stroke: none; }

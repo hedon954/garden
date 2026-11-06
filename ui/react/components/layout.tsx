@@ -26,8 +26,16 @@ export function useReducedMotion() {
 function Stack({ node, env }: { node: UiNode; env: Env }) {
   const runtime = useRuntime();
   const direction = asString(propValue(runtime, node, "direction", env), "col") === "row" ? "row" : "col";
+  const justify = asString(propValue(runtime, node, "justify", env), "");
+  const align = asString(propValue(runtime, node, "align", env), "");
   return (
-    <div className="garden-ui-stack" data-direction={direction} style={{ gap: gapOf(propValue(runtime, node, "gap", env)) }}>
+    <div
+      className="garden-ui-stack"
+      data-direction={direction}
+      data-justify={justify || undefined}
+      data-align={align || undefined}
+      style={{ gap: gapOf(propValue(runtime, node, "gap", env)) }}
+    >
       <RenderNodes nodes={node.c} env={env} />
     </div>
   );

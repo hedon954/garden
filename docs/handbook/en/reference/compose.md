@@ -170,6 +170,11 @@ One mini sample per group, then a one-line table for every tag. No per-tag essay
 | `code` | Code snapshot |
 | `pre` | Preformatted text |
 
+
+## Chart examples
+
+Play-level chart samples (static eight bars, fusion weight slider) live on [Diagrams · compose](/garden/en/components/compose#compose-chart-active-hours).
+
 ## Limits
 
 - Nesting ~10 levels / ~220 nodes.
