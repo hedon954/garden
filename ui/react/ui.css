@@ -7,7 +7,8 @@
 .garden-catalog,
 .garden-ui-preview {
   --gui-bg: transparent;
-  --gui-chart: var(--well);
+  --gui-chart: transparent;
+  --gui-chart-meta: var(--muted, #6e6b64);
   --gui-track: var(--rule, #e6e3dc);
   --gui-thumb: var(--paper, #faf9f5);
   --gui-slider-track: var(--rule, #e6e3dc);
@@ -80,7 +81,8 @@
 .garden-catalog[data-theme="dark"],
 .garden-ui-preview[data-theme="dark"] {
   --gui-bg: transparent;
-  --gui-chart: var(--well);
+  --gui-chart: transparent;
+  --gui-chart-meta: var(--soft, #bdb9b0);
   --gui-text: var(--ink);
   --gui-muted: var(--muted);
   --gui-subtle: var(--grey);
@@ -181,7 +183,7 @@
 
 .garden-ui > figcaption {
   padding: 4px 16px 12px;
-  color: var(--gui-muted);
+  color: var(--gui-chart-meta, var(--gui-muted));
   font-size: 14px;
   line-height: 20px;
   text-align: start;
@@ -849,8 +851,8 @@
 
 .garden-ui-chart-canvas {
   position: relative;
-  padding: 8px 4px 0;
-  border-radius: 12px;
+  padding: 4px 0 0;
+  border-radius: 0;
   outline: none;
   background: var(--gui-chart);
 }
@@ -874,11 +876,11 @@
 
 .garden-ui-chart-grid { stroke: var(--gui-chart-grid, var(--gui-border)); stroke-width: 1; stroke-dasharray: 2 4; }
 .garden-ui-chart-axis { stroke: var(--gui-border); stroke-width: 1; }
-.garden-ui-chart .garden-ui-legend { justify-content: center; }
+.garden-ui-chart .garden-ui-legend { justify-content: center; color: var(--gui-chart-meta, var(--gui-muted)); }
 .garden-ui-chart .garden-ui-legend[data-position="bottom"] { margin-top: 4px; }
 .garden-ui-chart[data-legend-position="bottom"] { /* canvas then legend */ }
 .garden-ui-chart-tick,
-.garden-ui-chart-label { fill: var(--gui-subtle); font-family: var(--gui-font); font-size: 12px; }
+.garden-ui-chart-label { fill: var(--gui-chart-meta, var(--gui-muted)); font-family: var(--gui-font); font-size: 12px; }
 .garden-ui-chart-value { fill: var(--gui-text); font-family: var(--gui-font); font-size: 12px; font-weight: 600; }
 .garden-ui-chart-line { fill: none; stroke: var(--gui-series); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 .garden-ui-chart-area { fill: var(--gui-series); fill-opacity: 0.1; stroke: none; }

@@ -217,3 +217,12 @@ test("chart categorical tokens harmonize with paper (not neon primaries)", () =>
   assert.doesNotMatch(css, /--gui-cat-0:\s*#539af8/u);
   assert.doesNotMatch(css, /--gui-cat-1:\s*#924ff7/u);
 });
+
+
+test("chart canvas integrates with paper; meta ink beats subtle-on-well", () => {
+  assert.match(css, /--gui-chart:\s*transparent/u);
+  assert.match(css, /--gui-chart-meta:\s*var\(--muted/u);
+  assert.match(css, /\[data-theme="dark"\][\s\S]*--gui-chart-meta:\s*var\(--soft/u);
+  assert.match(css, /\.garden-ui-chart-tick[\s\S]*fill:\s*var\(--gui-chart-meta/u);
+  assert.doesNotMatch(css, /--gui-chart:\s*var\(--well\)/u);
+});
