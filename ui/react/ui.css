@@ -39,23 +39,26 @@
   --gui-shadow: none;
   --gui-code-bg: var(--well, #f0eee6);
   --gui-accent: var(--blue, #30302e);
-  /* Chart series palette is independent of Claude paper --blue (near-black). */
+  /* Chart series palette is independent of Claude paper --blue (near-black).
+   * Categorical hues: mid-chroma, warm+blue family for paper #faf9f5 (Datawrapper /
+   * ColorBrewer qualitative guidance) — not neon primaries that clash with beige wells. */
   --gui-series-plain: var(--ink, #1b1a18);
   --gui-series-accent: var(--gui-info);
-  --gui-series-new: var(--gui-success, #6bc67f);
-  --gui-series-waste: var(--gui-danger, #e02e2a);
-  --gui-series-same: var(--gui-discovery, #924ff7);
-  --gui-cat-0: #539af8;
-  --gui-cat-1: #924ff7;
-  --gui-cat-2: #e67e22;
-  --gui-cat-3: #00a240;
-  --gui-cat-4: #e02e2a;
-  --gui-cat-5: #0169cc;
-  --gui-cat-6: #6bc67f;
-  --gui-cat-7: #ba2623;
-  --gui-info: #539af8;
-  --gui-info-text: #0169cc;
-  --gui-info-soft: #0285ff1a;
+  --gui-series-new: var(--gui-success, #5a9e6f);
+  --gui-series-waste: var(--gui-danger, #c05757);
+  --gui-series-same: var(--gui-discovery, #8e6b9e);
+  --gui-cat-0: #4f7fb8;
+  --gui-cat-1: #c47a3a;
+  --gui-cat-2: #3e8f7a;
+  --gui-cat-3: #8e6b9e;
+  --gui-cat-4: #b85c6e;
+  --gui-cat-5: #3a6ea5;
+  --gui-cat-6: #6f8f3f;
+  --gui-cat-7: #a67c52;
+  --gui-chart-grid: color-mix(in srgb, var(--gui-border, #e6e3dc) 70%, transparent);
+  --gui-info: #4f7fb8;
+  --gui-info-text: #2f5f94;
+  --gui-info-soft: #4f7fb81a;
   --gui-success: #6bc67f;
   --gui-success-text: #008635;
   --gui-success-soft: #04b84c1f;
@@ -111,20 +114,30 @@
   --gui-accent: var(--blue);
   --gui-series-plain: var(--ink);
   --gui-series-accent: var(--gui-info);
-  --gui-series-new: #04b84c;
-  --gui-series-waste: #fa423e;
-  --gui-info: #0285ff;
-  --gui-info-text: #66b5ff;
-  --gui-info-soft: #0285ff26;
-  --gui-success: #04b84c;
-  --gui-success-text: #40c977;
-  --gui-success-soft: #04b84c26;
-  --gui-danger: #fa423e;
-  --gui-danger-text: #fa423e;
-  --gui-danger-soft: #fa423e29;
-  --gui-discovery: #924ff7;
-  --gui-discovery-text: #be95fa;
-  --gui-discovery-soft: #924ff726;
+  --gui-series-new: #5cb88a;
+  --gui-series-waste: #d47a7a;
+  --gui-series-same: #b08ec4;
+  --gui-cat-0: #7ba3d4;
+  --gui-cat-1: #d49a5c;
+  --gui-cat-2: #5cb8a0;
+  --gui-cat-3: #b08ec4;
+  --gui-cat-4: #d48a9a;
+  --gui-cat-5: #6b9ad4;
+  --gui-cat-6: #a3c46b;
+  --gui-cat-7: #c4a078;
+  --gui-chart-grid: color-mix(in srgb, var(--gui-border) 55%, transparent);
+  --gui-info: #7ba3d4;
+  --gui-info-text: #a8c4e8;
+  --gui-info-soft: #7ba3d426;
+  --gui-success: #5cb88a;
+  --gui-success-text: #8fd4ad;
+  --gui-success-soft: #5cb88a26;
+  --gui-danger: #d47a7a;
+  --gui-danger-text: #e8a8a8;
+  --gui-danger-soft: #d47a7a29;
+  --gui-discovery: #b08ec4;
+  --gui-discovery-text: #d4b8e0;
+  --gui-discovery-soft: #b08ec426;
 }
 
 /* frame: each block is one outlined widget, with the same curved corner as a ChatGPT card */
@@ -859,7 +872,7 @@
 .garden-ui-cat-6 { --gui-series: var(--gui-cat-6); }
 .garden-ui-cat-7 { --gui-series: var(--gui-cat-7); }
 
-.garden-ui-chart-grid { stroke: var(--gui-border); stroke-width: 1; stroke-dasharray: 2 4; }
+.garden-ui-chart-grid { stroke: var(--gui-chart-grid, var(--gui-border)); stroke-width: 1; stroke-dasharray: 2 4; }
 .garden-ui-chart-axis { stroke: var(--gui-border); stroke-width: 1; }
 .garden-ui-chart .garden-ui-legend { justify-content: center; }
 .garden-ui-chart .garden-ui-legend[data-position="bottom"] { margin-top: 4px; }

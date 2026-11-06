@@ -12,7 +12,7 @@ const css = fs.readFileSync(path.join(import.meta.dirname, "../ui/react/ui.css")
 test("chart series palette does not use Claude paper --blue", () => {
   assert.match(css, /--gui-series-accent:\s*var\(--gui-info\)/u);
   assert.doesNotMatch(css, /--gui-series-accent:\s*var\(--blue\)/u);
-  assert.match(css, /--gui-cat-0:\s*#539af8/u);
+  assert.match(css, /--gui-cat-0:\s*#4f7fb8/u);
   assert.match(css, /\.garden-ui-cat-3\s*\{\s*--gui-series:\s*var\(--gui-cat-3\)/u);
 });
 
@@ -203,4 +203,17 @@ test("fitTicksPreserveEnds keeps expanded max when a nearby nice step would coll
   assert.ok(Math.abs(kept[kept.length - 1] - 0.45) < 1e-9, JSON.stringify(kept));
   // 0.4 may be dropped when too close to the endpoint
   assert.ok(!kept.includes(0.4) || kept.length === ticks.length, JSON.stringify(kept));
+});
+
+
+test("chart categorical tokens harmonize with paper (not neon primaries)", () => {
+  assert.match(css, /--gui-cat-0:\s*#4f7fb8/u);
+  assert.match(css, /--gui-cat-1:\s*#c47a3a/u);
+  assert.match(css, /--gui-cat-2:\s*#3e8f7a/u);
+  assert.match(css, /--gui-chart-grid:/u);
+  // dark theme defines its own cat ramp (was missing → neon leaked on dark)
+  assert.match(css, /\[data-theme="dark"\][\s\S]*--gui-cat-0:\s*#7ba3d4/u);
+  // refuse the old high-chroma clash set
+  assert.doesNotMatch(css, /--gui-cat-0:\s*#539af8/u);
+  assert.doesNotMatch(css, /--gui-cat-1:\s*#924ff7/u);
 });
