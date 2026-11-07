@@ -2,7 +2,7 @@
   "name": "hd-garden",
   "version": "0.13.3",
   "private": false,
-  "description": "\u7528 Markdown \u5199\u4f5c\u3001\u7528 GitHub Pages \u53d1\u5e03\u7684\u4e2a\u4eba\u535a\u5ba2\u5f15\u64ce\u3002",
+  "description": "用 Markdown 写作、用 GitHub Pages 发布的个人博客引擎。",
   "license": "MIT",
   "homepage": "https://github.com/hedon954/garden",
   "bugs": {
@@ -97,6 +97,7 @@
     "micromark-extension-mdx-expression": "^3.0.1",
     "micromark-extension-mdx-jsx": "^3.0.2",
     "next": "16.3.0",
+    "postcss": "^8.5.23",
     "react": "19.3.1",
     "react-dom": "19.3.1",
     "react-markdown": "^10.1.0",
