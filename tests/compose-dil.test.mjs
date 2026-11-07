@@ -1,12 +1,11 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { dilToUiSource, looksLikeDilPlay, looksLikeLegacyPlay, parsePlayCompose } from "../ui/compose/dil.mjs";
+import { dilToUiSource, looksLikeDilPlay, parsePlayCompose } from "../ui/compose/dil.mjs";
 import { compileUiBlock } from "../ui/core/compile.mjs";
 
-test("detects DIL vs legacy PascalCase", () => {
+test("detects DIL without stealing static scenes", () => {
   assert.equal(looksLikeDilPlay("{@body const [n, setN] = DIL.useState(1)}\n<slider value={n} onChange={setN} />"), true);
-  assert.equal(looksLikeLegacyPlay("<State n={1} />\n<Slider bind=\"n\" />"), true);
-  assert.equal(looksLikeDilPlay("<State n={1} />"), false);
+  assert.equal(looksLikeDilPlay("<box><text>Static</text></box>"), false);
 });
 
 test("lowers slider + body + expr", () => {

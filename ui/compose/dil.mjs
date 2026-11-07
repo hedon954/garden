@@ -6,18 +6,12 @@
  * (Slider, Chart, …) and the whitelist expression interpreter stay in place.
  * PascalCase is an internal compile target, not the author language.
  *
- * TEMP: looksLikeLegacyPlay / passthrough still accept old State/Slider trees
- * until every sample is migrated; delete that path once none remain.
  */
 
 import { parse as parseYaml, stringify } from "yaml";
 import { CATALOG_TAGS } from "./markup.mjs";
 import { COMPONENTS } from "../core/catalog.mjs";
 import { mapNativeScenes } from "./scenes.mjs";
-
-/** PascalCase interactive tags — author language we are retiring. */
-const LEGACY_TAG_RE =
-  /<(State|Let|Data|If|Each|Slider|Choice|Toggle|Button|Stepper|Checklist|Stat|Chart|Bar|Line|Area|Pie|Heatmap|Grid|Code|Math|Image|Video|Audio|Tabs|Tab|Steps|Step|Stack|Columns|Card|Reset)\b/u;
 
 const DIL_BODY_RE = /\{@body\b/u;
 const DIL_IF_RE = /\{#if\b/u;
@@ -70,17 +64,13 @@ const MATH_FNS = [
   "pow", "exp", "log", "log2", "log10", "sin", "cos", "tan", "atan2",
 ];
 
-export function looksLikeLegacyPlay(body) {
-  return LEGACY_TAG_RE.test(mapNativeScenes(String(body ?? "").replace(/<(markdown|html)>[\s\S]*?<\/\1>/giu, ""), () => ""));
-}
-
 export function looksLikeDilPlay(body) {
   const text = mapNativeScenes(String(body ?? "").replace(/<(markdown|html)>[\s\S]*?<\/\1>/giu, ""), () => "");
   return DIL_BODY_RE.test(text) || DIL_IF_RE.test(text) || DIL_EACH_RE.test(text) || CORE_PLAY_TAG_RE.test(text) || PLAY_TAG_RE.test(text);
 }
 
 export function looksLikePlayCompose(body) {
-  return looksLikeDilPlay(body) || looksLikeLegacyPlay(body);
+  return looksLikeDilPlay(body);
 }
 
 function rewriteMath(expr) {
@@ -356,7 +346,7 @@ function emitDecls(state, lets) {
   return lines.join("\n");
 }
 
-function buildUiSource(headerProps, children, legacyPlay, dil) {
+function buildUiSource(headerProps, children) {
   const header = {
     id: headerProps.id || "compose-play",
     caption: headerProps.caption ?? "",
@@ -369,8 +359,7 @@ function buildUiSource(headerProps, children, legacyPlay, dil) {
     ok: true,
     error: null,
     source: `---\n${yaml}---\n${children}`,
-    legacyPlay,
-    dil,
+    dil: true,
   };
 }
 
@@ -391,20 +380,13 @@ export function dilToUiSource({ id, props = {}, body = "" }) {
   });
   const { state, lets, errors, rest } = parseBodies(masked);
   if (errors.length) {
-    return { ok: false, error: errors[0], source: null, legacyPlay: false, dil: true };
+    return { ok: false, error: errors[0], source: null, dil: true };
   }
   const children = [emitDecls(state, lets), rewriteTags(expandControl(rest))]
     .filter((part) => String(part).trim())
     .join("\n\n");
   const restored = islands.reduce((value, island) => value.replace(island.token, `<${island.component} source={${JSON.stringify(island.source)}} />`), children);
-  return buildUiSource(headerProps, restored, false, true);
-}
-
-/** TEMP: old PascalCase body → ui source unchanged. */
-export function legacyPlayToUiSource({ id, props = {}, body = "" }) {
-  const { tree } = splitHeader(String(body ?? ""));
-  const headerProps = { ...props, id: id || props.id || "compose-play" };
-  return buildUiSource(headerProps, tree, true, false);
+  return buildUiSource(headerProps, restored);
 }
 
 /**
@@ -412,8 +394,6 @@ export function legacyPlayToUiSource({ id, props = {}, body = "" }) {
  */
 export function parsePlayCompose(header, body) {
   const raw = String(body ?? "");
-  const dil = looksLikeDilPlay(raw);
-  const legacy = looksLikeLegacyPlay(raw) && !dil;
   const { yamlText, tree } = splitHeader(raw);
 
   let props = {};
@@ -443,9 +423,7 @@ export function parsePlayCompose(header, body) {
     };
   }
 
-  const lowered = legacy
-    ? legacyPlayToUiSource({ id: header.id ?? props.id, props, body: tree })
-    : dilToUiSource({ id: header.id ?? props.id, props, body: tree });
+  const lowered = dilToUiSource({ id: header.id ?? props.id, props, body: tree });
 
   if (!lowered.ok && !error) {
     error = { code: "compose-dil", message: lowered.error || "DIL 解析失败" };
@@ -455,13 +433,10 @@ export function parsePlayCompose(header, body) {
     name: "compose",
     mode: "play",
     dil: Boolean(lowered.dil),
-    legacyPlay: Boolean(lowered.legacyPlay),
     props,
     children: tree,
     uiSource: lowered.source,
     id: header.id ?? props.id ?? null,
-    legacy: Boolean(header.legacy),
-    legacyLang: header.legacyLang,
     idea: typeof props.intent === "string" ? props.intent : "",
   };
   if (error) return { ...block, error };
