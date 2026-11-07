@@ -1,5 +1,7 @@
 "use client";
 
+import {renderComposePreview} from "./garden/ComposePreview";
+
 import Link from "next/link";
 import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { buildFixPrompt } from "../../ui/core/fix-prompt.mjs";
@@ -10,6 +12,7 @@ export function AdminCatalog({ recipes }: { recipes: RecipeSource[] }) {
   return (
     <section className="admin-panel ui-admin-catalog">
       <CatalogPage
+        renderBlock={renderComposePreview}
         recipes={recipes}
         onStart={(fence) => {
           window.localStorage.setItem(STUDIO_START_KEY, fence);

@@ -1,12 +1,11 @@
 "use client";
 
 import { marked } from "marked";
-import { useMemo, useState, useSyncExternalStore } from "react";
+import { useMemo, useState, useSyncExternalStore, type ReactNode } from "react";
 import { COMPONENTS, GROUPS } from "../core/catalog.mjs";
 import { CATALOG, offeredGardenNames } from "../garden/catalog.mjs";
 import { previewCompose } from "../compose/preview.mjs";
 import { AUTHOR_PLAY_TAGS } from "../compose/dil.mjs";
-import { GardenBlock } from "../../app/components/garden/GardenBlock";
 import { DEMOS, demoFence } from "../core/demos.mjs";
 import { scanFences } from "../core/fence.mjs";
 import { parseRecipe, type RecipeSource } from "./recipes";
@@ -103,7 +102,7 @@ function replaceCatalogHash(name: string) {
 }
 
 /** Category rail on the left, a grid of name + preview cards on the right. */
-export function CatalogPage({ recipes = [], onStart }: { recipes?: RecipeSource[]; onStart?: (fence: string) => void }) {
+export function CatalogPage({ recipes = [], onStart, renderBlock }: { recipes?: RecipeSource[]; onStart?: (fence: string) => void; renderBlock?: (block: unknown) => ReactNode }) {
   const parsedRecipes = useMemo(() => recipes.map(parseRecipe).filter((recipe) => recipe.fence), [recipes]);
   const [query, setQuery] = useState("");
   const hash = useSyncExternalStore(subscribeCatalogHash, () => window.location.hash, () => "");
@@ -179,7 +178,7 @@ export function CatalogPage({ recipes = [], onStart }: { recipes?: RecipeSource[
                   {card.title}
                 </button>
                 <div className="garden-catalog-well">
-                  {preview?.block ? <GardenBlock dataPayload={encodeURIComponent(JSON.stringify(preview.block))} /> : <p className="garden-catalog-empty">{preview?.diagnostics.map((item: {message: string}) => item.message).join("；") || "没有预览"}</p>}
+                  {preview?.block ? renderBlock ? renderBlock(preview.block) : <div dangerouslySetInnerHTML={{__html:preview.html}} /> : <p className="garden-catalog-empty">{preview?.diagnostics.map((item: {message: string}) => item.message).join("；") || "没有预览"}</p>}
                 </div>
                 {open ? (
                   <div className="garden-catalog-more">

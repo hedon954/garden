@@ -10,7 +10,7 @@ fs.rmSync(out, { recursive: true, force: true });
 fs.mkdirSync(out, { recursive: true });
 
 const shared = {
-  entryPoints: [path.join(root, "ui", "preview", "index.tsx")],
+  entryPoints: [path.join(root, "editors", "shared", "preview.tsx")],
   bundle: true,
   minify: true,
   jsx: "automatic",

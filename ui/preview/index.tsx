@@ -1,11 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { createRoot } from "react-dom/client";
 import { CATALOG_VERSION } from "../core/catalog.mjs";
 import { compileUiBlock } from "../core/compile.mjs";
 import { scanFences } from "../core/fence.mjs";
 import {parseGardenBlock} from "../garden/parse.mjs";
-import {GardenBlock} from "../../app/components/garden/GardenBlock";
-import {UiLangProvider} from "../../app/components/UiLang";
+import {renderCompose} from "../compose/render.mjs";
 import { renderStatic } from "../core/static.mjs";
 import { collectDataSources } from "../core/transform.mjs";
 
@@ -15,6 +14,8 @@ import { RuntimeLangProvider, IntentCard, UiErrorCard, type Diagnostic } from ".
 export type PreviewOptions = {
   theme?: "light" | "dark";
   lang?: "zh" | "en";
+  /** Native host supplied by the site/editor integration, never imported by UI. */
+  renderBlock?: (block: unknown, lang?: "zh" | "en") => ReactNode;
   mode?: "interactive" | "static";
   onCopyPrompt?:()=>void;
   /** Reads a path relative to the Markdown file, for Data files. */
@@ -87,7 +88,7 @@ function Preview({ source, options }: { source: string; options: PreviewOptions 
     if(options.mode==="static")return <div className="garden-ui-preview" data-theme={theme}><div className="markdown-body prose" dangerouslySetInnerHTML={{__html:renderStatic(payload,"html")}}/></div>;
     ready={...ready,payload};
   }
-  return <div className="garden-ui-preview" data-theme={theme}><UiLangProvider lang={options.lang}><div className="markdown-body prose"><GardenBlock dataPayload={encodeURIComponent(JSON.stringify(ready))}/></div></UiLangProvider></div>;
+  return <div className="garden-ui-preview" data-theme={theme}><div className="markdown-body prose">{options.renderBlock ? options.renderBlock(ready, options.lang) : <div dangerouslySetInnerHTML={{__html:ready.payload?renderStatic(ready.payload,"html"):renderCompose(block.props)}}/>}</div></div>;
 
 }
 
@@ -113,9 +114,9 @@ export function render(element: HTMLElement, source: string, options: PreviewOpt
   };
 }
 
-export function renderCatalog(element: HTMLElement, options: { recipes?: RecipeSource[]; theme?: "light" | "dark"; onStart?: (fence: string) => void } = {}) {
+export function renderCatalog(element: HTMLElement, options: { recipes?: RecipeSource[]; theme?: "light" | "dark"; onStart?: (fence: string) => void; renderBlock?: PreviewOptions["renderBlock"] } = {}) {
   if (options.theme) element.setAttribute("data-theme", options.theme);
-  const root = mount(element, (target) => target.render(<CatalogPage recipes={options.recipes ?? []} onStart={options.onStart} />));
+  const root = mount(element, (target) => target.render(<CatalogPage recipes={options.recipes ?? []} onStart={options.onStart} renderBlock={options.renderBlock} />));
   return { destroy: () => root.unmount() };
 }
 
