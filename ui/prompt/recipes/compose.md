@@ -25,7 +25,7 @@
 - `<lanes>` 里写 `<actor>` 和 `<message from="1" to="2" tone="forward">`
 - `<steps>` 里每步一个 `<step id="sync">`，要点开的说明写 `<note>`
 - `<compare>` 里 2 到 4 个 `<item>`。`<callout tone="tip">` 的 tone 是 `note`、`tip`、`warn`
-- 不要写 HTML、SVG、脚本或宽度。默认沿用主题；受支持标签可用 color / backgroundColor 指定颜色字面量（含 transparent），禁止任意 style/CSS 声明。窄屏会收成一列
+- 普通行内 Markdown 与安全 `<u>` 可用于文字叶子。块级 Markdown/HTML 写在 `<markdown>…</markdown>` / `<html>…</html>` 内容岛，可嵌入布局并与 Play 控件共存；允许本地排版的白名单 inline CSS，不执行脚本、事件、iframe 或资源 CSS 函数。未知/不安全内容明确报错，不是任意 HTML 执行环境。Compose 标签的自定义颜色仍使用 color / backgroundColor（含 transparent）。默认继承文章字体与字号；确需强调时使用受支持 size，不缩字塞图。
 
 **骨架（静态）：**
 

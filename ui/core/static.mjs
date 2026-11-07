@@ -1,3 +1,4 @@
+import { articleContentText, articleUrl, renderArticleContent } from "../garden/article-content.mjs";
 import { TONE_LABELS } from "./catalog.mjs";
 import { createBudget, evaluate } from "./expr.mjs";
 import { formatValue } from "./format.mjs";
@@ -80,6 +81,8 @@ export function toDoc(payload) {
         }
         return [text(formatValue(result))];
       }
+      case "rich":
+        return [{ k: "rich", source: node.v ?? "" }];
       case "strong":
         return [{ k: "b", c: inlines(node.c, ctx) }];
       case "em":
@@ -92,6 +95,8 @@ export function toDoc(payload) {
         return [{ k: "a", href: node.u, c: inlines(node.c, ctx) }];
       case "p":
         return inlines(node.c, ctx);
+      case "rich-block":
+        return [{ k: "content", source: node.v ?? "" }];
       case "el":
         if (node.n === "Badge") return [text(`［${plainInline(inlines(node.c, ctx))}］`)];
         if (node.n === "Cite") return [text(value(node, "label", ctx) ?? "")];
@@ -146,6 +151,8 @@ export function toDoc(payload) {
       case "text":
       case "x":
         return [{ k: "p", inl: inlines([node], ctx) }];
+      case "rich-block":
+        return [{ k: "content", source: node.v ?? "" }];
       case "el":
         return element(node, ctx);
       default:
@@ -356,6 +363,8 @@ export function toDoc(payload) {
             : []),
         ];
       }
+      case "Content":
+        return [{ k: "content", source: String(v("source") ?? "") }];
       case "Code": {
         const highlight = v("highlight");
         return [
@@ -381,6 +390,7 @@ export function toDoc(payload) {
 export function plainInline(inline) {
   return inline.map((item) => {
     if (item.k === "t") return item.v;
+    if (item.k === "rich") return articleContentText(item.source);
     if (item.k === "code") return item.v;
     if (item.k === "br") return " ";
     if (item.c) return plainInline(item.c);
@@ -391,11 +401,13 @@ export function plainInline(inline) {
 const escapeHtml = (value) =>
   String(value).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;");
 
-const safeHref = (href) => (/^(?:https:\/\/|\.{0,2}\/|#)/u.test(href) ? href : "#");
+const safeHref = (href) => { try { return articleUrl(href); } catch { return "#"; } };
 
 function inlineHtml(inline) {
   return inline.map((item) => {
     switch (item.k) {
+      case "rich":
+        return renderArticleContent(item.source, { inline: true });
       case "t":
         return escapeHtml(item.v);
       case "b":
@@ -417,6 +429,8 @@ function inlineHtml(inline) {
 export function docToHtml(doc) {
   return doc.map((block) => {
     switch (block.k) {
+      case "content":
+        return renderArticleContent(block.source);
       case "p":
         return `<p>${inlineHtml(block.inl)}</p>`;
       case "list": {
@@ -446,6 +460,8 @@ const escapeMarkdown = (value) => String(value).replace(/([\\`*_[\]<>|])/gu, "\\
 function inlineMarkdown(inline) {
   return inline.map((item) => {
     switch (item.k) {
+      case "rich":
+        return item.source;
       case "t":
         return escapeMarkdown(item.v);
       case "b":
@@ -467,6 +483,8 @@ function inlineMarkdown(inline) {
 export function docToMarkdown(doc, indent = "") {
   return doc.map((block) => {
     switch (block.k) {
+      case "content":
+        return `${indent}${block.source}`;
       case "p":
         return `${indent}${inlineMarkdown(block.inl)}`;
       case "list":
@@ -500,6 +518,8 @@ export function docToMarkdown(doc, indent = "") {
 export function docToText(doc) {
   return doc.map((block) => {
     switch (block.k) {
+      case "content":
+        return articleContentText(block.source);
       case "p":
         return plainInline(block.inl);
       case "list":

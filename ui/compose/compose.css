@@ -1343,3 +1343,11 @@
   padding: 0;
   box-shadow: none;
 }
+
+/* Article content islands keep real block structure within the surrounding layout. */
+.g-compose-content { min-width: 0; max-width: 100%; font: inherit; overflow-wrap: break-word; }
+.g-compose .g-compose-content p { margin: 0 0 1em; font: inherit; }
+.g-compose-content > :first-child { margin-top: 0; }
+.g-compose-content > :last-child { margin-bottom: 0; }
+.g-compose-content pre, .g-compose-content table { max-width: 100%; overflow-x: auto; }
+.g-compose-content img { max-width: 100%; height: auto; }

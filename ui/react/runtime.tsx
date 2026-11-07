@@ -1,4 +1,5 @@
 "use client";
+import { articleUrl, renderArticleContent } from "../garden/article-content.mjs";
 import { isColor, colorStyles } from "../core/color.mjs";
 
 import { createContext, createElement, Fragment, useCallback, useContext, useMemo, useState, type ReactNode } from "react";
@@ -121,12 +122,16 @@ function Interpolation({ node, env }: { node: UiNode; env: Env }) {
 const hasInterpolation = (nodes: UiNode[] | undefined): boolean =>
   (nodes ?? []).some((node) => node.t === "x" || hasInterpolation(node.c));
 
-const safeHref = (href: string) => (/^(?:https:\/\/|\.{0,2}\/|#)/u.test(href) || /^[\w\u3400-\u9fff./-]+$/u.test(href) ? href : "#");
+const safeHref = (href: string) => { try { return articleUrl(href); } catch { return "#"; } };
 
 export function RenderNode({ node, env }: { node: UiNode; env: Env }): ReactNode {
   const runtime = useRuntime();
   const tx = useRuntimeText();
   switch (node.t) {
+    case "rich":
+      return <span className="g-compose-inline" dangerouslySetInnerHTML={{ __html: renderArticleContent(node.v ?? "", { inline: true }) }} />;
+    case "rich-block":
+      return <div className="g-compose-content" dangerouslySetInnerHTML={{ __html: renderArticleContent(node.v ?? "") }} />;
     case "text":
       return node.v ?? "";
     case "x":
@@ -179,6 +184,7 @@ export function RenderNode({ node, env }: { node: UiNode; env: Env }): ReactNode
           </>
         );
       }
+      if (node.n === "Content" && node.p?.source?.k === "lit") return <div className="g-compose-content" dangerouslySetInnerHTML={{ __html: renderArticleContent(String(node.p.source.v ?? "")) }} />;
       const component = node.n ? registry.get(node.n) : undefined;
       if (!component) return <span className="garden-ui-unknown">{tx.unknownComponent(String(node.n))}</span>;
       // Registry entries are module-level functions, so their identity is stable across renders.

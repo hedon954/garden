@@ -1,3 +1,4 @@
+import { renderArticleContent } from "../garden/article-content.mjs";
 import { isColor } from "./color.mjs";
 import { COMPONENTS, COMPONENT_NAMES, TONES } from "./catalog.mjs";
 import { sandboxLimit, sandboxRemote } from "../host.mjs";
@@ -20,7 +21,7 @@ import {
 const HEADER_KEYS = new Set(["id", "caption", "intent", "compiled", "expect", "frame"]);
 const MAX_ELEMENTS = 200;
 const CONSTANT_NAMES = new Set(["PI", "E", "undefined", "NaN", "Infinity"]);
-const INLINE_TYPES = new Set(["text", "x", "strong", "em", "code", "br", "link"]);
+const INLINE_TYPES = new Set(["text", "x", "strong", "em", "code", "br", "link", "rich"]);
 const DECL_COMPONENTS = new Set(["State", "Let", "Data"]);
 
 function editDistance(left, right) {
@@ -209,6 +210,10 @@ export function checkUiBlock(body, options = {}) {
 
   // Static pass: catalog, props, children, bindings, names.
   const staticVisit = (node, parent, locals, chartDataMode) => {
+    if (node.t === "rich" || node.t === "rich-block") {
+      try { renderArticleContent(node.v ?? "", { inline: node.t === "rich" }); }
+      catch (error) { add("compose-content", bodyLine(node.l), error.message); }
+    }
     if (node.t === "x") {
       checkExpression(node.e, node.l, locals, false);
       return;
@@ -222,6 +227,10 @@ export function checkUiBlock(body, options = {}) {
       const suggestion = suggestComponent(node.n);
       add("ui-component", bodyLine(node.l), `组件 <${node.n}> 不在目录里${suggestion ? `，是不是 <${suggestion}>？` : ""}`);
       return;
+    }
+    if (node.n === "Content" && node.p.source?.k === "lit") {
+      try { renderArticleContent(String(node.p.source.v)); }
+      catch (error) { add("compose-content", bodyLine(node.l), error.message); }
     }
     const parentSpec = COMPONENTS[parent] ?? { children: "content" };
     if (spec.parents && !spec.parents.includes(parent)) {

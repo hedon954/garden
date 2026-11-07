@@ -89,3 +89,9 @@ export function renderArticleContent(source, { inline = false } = {}) {
   if (children.every(node => node.type === 'element' && ['u','span','b','i','strong','em','del','s','code','kbd','mark','sub','sup','small','abbr','cite','q','a','br'].includes(node.tagName) || node.type === 'text')) return output(tree);
   fail('此处需要行内内容；列表、表格、标题和代码块请放入 <markdown> 或 <html> 内容岛。');
 }
+
+export function articleContentText(source) {
+  const tree = html.runSync(html.parse(String(source ?? '')));
+  const text = node => node.type === 'text' ? node.value : (node.children ?? []).map(text).join(node.type === 'element' && ['p','li','tr','div','h1','h2','h3','h4','h5','h6'].includes(node.tagName) ? ' ' : '');
+  return text(tree).replace(/\s+/gu, ' ').trim();
+}

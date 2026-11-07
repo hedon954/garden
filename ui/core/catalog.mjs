@@ -31,6 +31,13 @@ const SERIES_PROPS = {
  * - string[]: only these components
  */
 export const COMPONENTS = {
+  Content: {
+    group: "媒体与代码", phase: 1,
+    summary: "共享文章 Markdown 与安全 HTML 内容岛；作者使用 <markdown> 或 <html>",
+    props: { source: { type: "string", literal: true, required: true, desc: "静态文章内容，不执行脚本或状态插值" } },
+    children: "none",
+    example: '<Content source={"**加粗** <u>下划线</u>"} />',
+  },
   State: {
     group: "状态与逻辑",
     phase: 1,

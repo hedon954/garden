@@ -58,11 +58,11 @@ const MATH_FNS = [
 ];
 
 export function looksLikeLegacyPlay(body) {
-  return LEGACY_TAG_RE.test(String(body ?? ""));
+  return LEGACY_TAG_RE.test(String(body ?? "").replace(/<(markdown|html)>[\s\S]*?<\/\1>/giu, ""));
 }
 
 export function looksLikeDilPlay(body) {
-  const text = String(body ?? "");
+  const text = String(body ?? "").replace(/<(markdown|html)>[\s\S]*?<\/\1>/giu, "");
   return DIL_BODY_RE.test(text) || DIL_IF_RE.test(text) || DIL_EACH_RE.test(text) || PLAY_TAG_RE.test(text);
 }
 
@@ -365,14 +365,21 @@ function buildUiSource(headerProps, children, legacyPlay, dil) {
 export function dilToUiSource({ id, props = {}, body = "" }) {
   const { tree } = splitHeader(String(body ?? ""));
   const headerProps = { ...props, id: id || props.id || "compose-play" };
-  const { state, lets, errors, rest } = parseBodies(tree);
+  const islands = [];
+  const masked = tree.replace(/<(markdown|html)>([\s\S]*?)<\/\1>/giu, (_whole, _tag, source) => {
+    const token = `GARDENCONTENTISLAND${islands.length}END`;
+    islands.push({ token, source });
+    return token;
+  });
+  const { state, lets, errors, rest } = parseBodies(masked);
   if (errors.length) {
     return { ok: false, error: errors[0], source: null, legacyPlay: false, dil: true };
   }
   const children = [emitDecls(state, lets), rewriteTags(expandControl(rest))]
     .filter((part) => String(part).trim())
     .join("\n\n");
-  return buildUiSource(headerProps, children, false, true);
+  const restored = islands.reduce((value, island) => value.replace(island.token, `<Content source={${JSON.stringify(island.source)}} />`), children);
+  return buildUiSource(headerProps, restored, false, true);
 }
 
 /** TEMP: old PascalCase body → ui source unchanged. */

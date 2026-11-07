@@ -24,7 +24,7 @@ const GROUPS = [
       "box", "card", "row", "stack", "columns", "grid", "grid-item", "pill", "band",
       "steps", "step", "lanes", "compare", "item", "callout", "tabs", "tab",
       "list", "list-item", "table", "tr", "th", "td", "thead", "tbody",
-      "group", "field", "header", "footer", "figure", "code", "pre",
+      "group", "field", "header", "footer", "figure", "code", "pre", "markdown", "html",
     ],
   },
   {
@@ -77,7 +77,7 @@ export function composeCatalogReference() {
     "- color / backgroundColor：布局与文字基础标签可写命名色、transparent、hex（含 alpha）、rgb/rgba/hsl/hsla 字面量。文字继承，背景不继承；不写则保留主题。Play 支持 stack/columns/card/caption/badge/stat/table；chart palette API 不变。禁止 style、url()、var() 或 CSS 声明。",
     "",
     '- 静态场景外框默认保留；需要无框时使用唯一最外层 `<figure frame="none">…</figure>`（显式默认 `frame="card"`）。只移除场景边框、圆角、背景与内边距，不影响内部卡片。',
-    "- 叶子是 Markdown（标题、段落、`**强调**`、列表）；结构是目录标签。不要写 YAML 槽、HTML、SVG、脚本或宽度；自定义颜色只写 color / backgroundColor。",
+    "- 行内内容支持文章 Markdown（强调、代码、链接、删除线）及安全 HTML（如 `<u>`）。完整段落、标题、列表、表格、代码和 HTML 块放在 `<markdown>…</markdown>` 或 `<html>…</html>` 中；两者可嵌入布局，采用共享文章语法。HTML/CSS 受明确白名单校验，不执行脚本、事件、iframe、外部样式或脚本 URL。内容岛为静态内容，状态插值放相邻 Compose 控件/文字。",
     "- 芯片内部间距用 `gap={0}` / `gap={1}`；章节堆叠用 `gap={2}` / `gap={3}` 及以上。",
     "- 日横幅等宽：`row` 里每个 day 芯片 `flex:1`（`nowrap` + `size=\"sm\"`），不要用 between 把空日挤成内容宽。",
     "- tip 钉在右边：`justify=\"between\"`，tip/`caption` 侧 `flex:0`。",

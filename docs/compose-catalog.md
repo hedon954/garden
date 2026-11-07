@@ -76,3 +76,13 @@
 ## Scene frame
 
 Static Compose keeps its default outer frame. To opt out, wrap the whole scene in a single outer `<figure frame="none">…</figure>`. `frame="card"` explicitly retains the default. This removes only scene border, radius, background and padding, not inner card frames or normal figure margins. Nested or sibling scene-frame declarations and unsupported frame values fail compilation. This is distinct from `box frame="text"` and Play block headers.
+
+## Shared Markdown and HTML content
+
+Inside a Compose scene, `<markdown>…</markdown>` and `<html>…</html>` are static content islands, nestable in the existing layout containers. Both use the article's shared GFM/CJK/line-break syntax, including paragraphs, headings, lists, tables, task lists, code fences and inline formatting. The tags identify content, not a second fence language. Text/title/caption leaves accept inline Markdown, links, deletion and safe formatting such as `<u>`; use a content island for block structures.
+
+HTML is allowlisted article content, not arbitrary HTML execution: links, images, paragraphs, headings, lists, tables, details/summary and inline formatting are supported. Inline CSS supports local layout, spacing, size, typography, colors and borders; unsupported properties/functions fail with `compose-content`. Scripts, event handlers, iframe/style/custom elements, CSS resource functions and script/data URLs are rejected. Use the existing explicit sandbox capability for executable widgets; it has not yet been unified into a Compose node.
+
+In Play, content islands compile to the same shared renderer and coexist with stateful controls. Ordinary inline underline and GFM deletion also work. HTML attributes/content and whole content islands are static: expressions are not executed inside them; place live interpolation beside the island. Existing legacy fences remain compatible and are not automatically migrated.
+
+Body text and readable lists inherit the actual surrounding article family/size. Explicit text/title `size="sm"`, `lg`, `xl` scale to .875em, 1.125em, 1.25em; semantic captions, controls and numeric displays retain their distinct scale. These are relative roles, not a universal article pixel size.

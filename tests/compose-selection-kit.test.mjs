@@ -3,7 +3,6 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import {createRequire} from 'node:module';
 import {spawnSync} from 'node:child_process';
 import {build} from 'esbuild';
 import {managedSkillBundle} from '../scripts/managed-skills.mjs';
@@ -52,9 +51,9 @@ test('every new reference example parses, renders and passes the authoritative c
   fs.mkdirSync(path.join(root,'node_modules/.bin'),{recursive:true});
   fs.symlinkSync(path.join(engineRoot,'bin/garden.mjs'),path.join(root,'node_modules/.bin/garden'));
   fs.writeFileSync(path.join(root,'package.json'),'{"private":true}');
-  const file=path.join(renderRoot,'render.cjs');
-  await build({stdin:{contents:'import "./ui/react/components/layout";import "./ui/react/components/inputs";import "./ui/react/components/display";import {UiRuntime} from "./ui/react/runtime";import {createElement} from "react";import {renderToStaticMarkup} from "react-dom/server";export const render=payload=>renderToStaticMarkup(createElement(UiRuntime,{payload}));',resolveDir:engineRoot,loader:'tsx'},bundle:true,packages:'external',platform:'node',format:'cjs',jsx:'automatic',outfile:file,logLevel:'silent'});
-  const renderPlay=createRequire(import.meta.url)(file).render;
+  const file=path.join(renderRoot,'render.mjs');
+  await build({stdin:{contents:'import "./ui/react/components/layout";import "./ui/react/components/inputs";import "./ui/react/components/display";import {UiRuntime} from "./ui/react/runtime";import {createElement} from "react";import {renderToStaticMarkup} from "react-dom/server";export const render=payload=>renderToStaticMarkup(createElement(UiRuntime,{payload}));',resolveDir:engineRoot,loader:'tsx'},bundle:true,packages:'external',platform:'node',format:'esm',jsx:'automatic',outfile:file,logLevel:'silent'});
+  const renderPlay=(await import(file)).render;
   let staticCount=0,playCount=0;
   for(const name of refs){
    const fences=[...read(name).matchAll(/^```garden compose[^\n]*\n([\s\S]*?)^```/gm)];

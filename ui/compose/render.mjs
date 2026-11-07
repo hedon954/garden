@@ -1,3 +1,4 @@
+import { articleContentText, renderArticleContent } from "../garden/article-content.mjs";
 import { isColor } from "../core/color.mjs";
 import { iconSvg } from "./icons.mjs";
 import { SPACING_PX } from "./tokens.mjs";
@@ -14,11 +15,7 @@ function esc(value) {
 }
 
 function textHtml(value) {
-  return esc(value)
-    .replaceAll("\n", "<br>")
-    .replace(/`([^`]+)`/gu, "<code>$1</code>")
-    .replace(/\*\*([^*]+)\*\*/gu, "<strong>$1</strong>")
-    .replace(/(^|[^*])\*([^*\n]+)\*(?!\*)/gu, "$1<em>$2</em>");
+  return renderArticleContent(String(value ?? ""), { inline: true });
 }
 
 export function composeScope(doc) {
@@ -149,6 +146,8 @@ function paintHtml(html, node = {}) {
 
 function renderNodeContent(node, ctx) {
   switch (node.type) {
+    case "content":
+      return `<div class="g-compose-content">${renderArticleContent(node.source)}</div>`;
     case "stack":
     case "columns":
     case "group":
@@ -389,6 +388,7 @@ export function composeText(doc) {
     if (item.kpi?.value) parts.push(item.kpi.value);
     if (item.kpi?.unit) parts.push(item.kpi.unit);
     if (item.kpi?.label) parts.push(item.kpi.label);
+    if (item.type === "content") parts.push(articleContentText(item.source));
     if (item.type === "icon" && item.name) parts.push(item.name);
   };
   walk(doc?.nodes, (node) => {

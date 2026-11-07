@@ -2,7 +2,6 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
-import {createRequire} from 'node:module';
 import {build} from 'esbuild';
 import {isColor} from '../ui/core/color.mjs';
 import {parseCompose} from '../ui/compose/parse.mjs';
@@ -37,9 +36,9 @@ test('play SSR uses same colors on real generic Card/Columns renderer, no chart 
  const root=path.resolve(new URL('..',import.meta.url).pathname);
  const dir=fs.mkdtempSync(path.join(root,'node_modules','.color-render-'));
  try {
-  const file=path.join(dir,'render.cjs');
-  await build({stdin:{contents:'import "./ui/react/components/layout";import {UiRuntime} from "./ui/react/runtime";import {createElement} from "react";import {renderToStaticMarkup} from "react-dom/server";export const render=payload=>renderToStaticMarkup(createElement(UiRuntime,{payload}));',resolveDir:root,loader:'tsx'},bundle:true,packages:'external',platform:'node',format:'cjs',jsx:'automatic',outfile:file,logLevel:'silent'});
-  const html=createRequire(import.meta.url)(file).render(c.payload);
+  const file=path.join(dir,'render.mjs');
+  await build({stdin:{contents:'import "./ui/react/components/layout";import {UiRuntime} from "./ui/react/runtime";import {createElement} from "react";import {renderToStaticMarkup} from "react-dom/server";export const render=payload=>renderToStaticMarkup(createElement(UiRuntime,{payload}));',resolveDir:root,loader:'tsx'},bundle:true,packages:'external',platform:'node',format:'esm',jsx:'automatic',outfile:file,logLevel:'silent'});
+  const html=(await import(file)).render(c.payload);
   assert.match(html,/class="garden-ui-columns"/);assert.match(html,/class="garden-ui-card/);
   assert.match(html,/--compose-color:#302820/);assert.match(html,/background-color:transparent/);assert.match(html,/--compose-background:#b97b3b12/);assert.match(html,/--compose-color:red/);
  }finally{fs.rmSync(dir,{recursive:true,force:true})}

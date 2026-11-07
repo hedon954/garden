@@ -1,3 +1,4 @@
+import { ArticleContentError, renderArticleContent } from "../garden/article-content.mjs";
 import { isColor } from "../core/color.mjs";
 /**
  * One-shot compile of a compose fence.
@@ -53,6 +54,8 @@ const LAYOUT = new Set([
   "figure",
   "code",
   "pre",
+  "markdown",
+  "html",
 ]);
 const TEXTISH = new Set([
   "title",
@@ -341,6 +344,9 @@ function elementNode(tag, children) {
   const { name, attrs } = tag;
   if (VOID.has(name)) fail(`${name} 要写成自闭合标签。`);
   switch (name) {
+    case "markdown":
+    case "html":
+      return { type: "content", source: inlineText(children) };
     case "title":
       return titleNode(attrs, children);
     case "text":
@@ -695,6 +701,17 @@ function parseRegion(src, from, stop, depth, state) {
       i = tag.end;
       continue;
     }
+    if (["text", "title", "caption", "label", "callout", "markdown", "html"].includes(tag.name)) {
+      const closing = new RegExp(`</${tag.name}\\s*>`, "giu");
+      closing.lastIndex = tag.end;
+      const match = closing.exec(src);
+      if (!match) fail(`缺少 </${tag.name}>。`);
+      const source = src.slice(tag.end, match.index).trim();
+      renderArticleContent(source, { inline: !["markdown", "html"].includes(tag.name) });
+      nodes.push(withColors(elementNode(tag, [{ type: "text", text: source }]), tag));
+      i = closing.lastIndex;
+      continue;
+    }
     const inner = parseRegion(src, tag.end, tag.name, depth + 1, state);
     nodes.push(withColors(elementNode(tag, inner.nodes), tag));
     i = inner.index;
@@ -736,6 +753,7 @@ export function parseCompose(body) {
       error: null,
     };
   } catch (error) {
+    if (error instanceof ArticleContentError) return { ok: false, uncompiled: false, doc: null, error: { code: error.code, message: error.message } };
     if (error instanceof MarkupError) return invalid(error.message);
     throw error;
   }

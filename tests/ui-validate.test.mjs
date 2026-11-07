@@ -66,9 +66,11 @@ test("child placement rules: Step only in Steps, Row only in Table / Grid", () =
   assert.deepEqual(errorCodes('<Grid cols={["a"]}>\n  <Each of={[1, 2]} as="i">\n    <Row cells={[i]} />\n  </Each>\n</Grid>'), []);
 });
 
-test("Markdown restrictions: no headings or raw HTML", () => {
-  assert.deepEqual(errorCodes("## 标题"), ["ui-markdown"]);
-  assert.ok(errorCodes("<div>x</div>").includes("ui-component"));
+test("article Markdown and safe HTML are accepted, executable HTML is not", () => {
+  assert.deepEqual(errorCodes("## 标题"), []);
+  assert.deepEqual(errorCodes("<div><u>text</u></div>"), []);
+  assert.ok(errorCodes('<div onclick="alert(1)">x</div>').includes("compose-content"));
+  assert.ok(errorCodes('<script>alert(1)</script>').includes("ui-component"));
 });
 
 test("Let cycles are reported", () => {

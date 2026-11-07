@@ -1,3 +1,4 @@
+import { ARTICLE_TAGS, articleParseExtensions, articleUrl, renderArticleContent } from "../garden/article-content.mjs";
 import * as acorn from "acorn";
 import { fromMarkdown } from "mdast-util-from-markdown";
 import { mdxExpressionFromMarkdown } from "mdast-util-mdx-expression";
@@ -9,12 +10,13 @@ import { pruneExpr } from "./expr.mjs";
 
 const parseOptions = {
   extensions: [
+    ...articleParseExtensions().extensions,
     mdxJsx({ acorn, addResult: true }),
     mdxExpression({ acorn, addResult: true }),
     // Same as MDX: indentation inside elements must not become code blocks.
     { disable: { null: ["autolink", "codeIndented", "htmlFlow", "htmlText"] } },
   ],
-  mdastExtensions: [mdxJsxFromMarkdown(), mdxExpressionFromMarkdown()],
+  mdastExtensions: [...articleParseExtensions().mdastExtensions, mdxJsxFromMarkdown(), mdxExpressionFromMarkdown()],
 };
 
 const lineOf = (node) => node?.position?.start?.line ?? 1;
@@ -29,7 +31,7 @@ function errorLine(error) {
 }
 
 const isBlockElement = (node) =>
-  node.t === "el" && !(COMPONENTS[node.n]?.inline);
+  node.t === "rich-block" || node.t === "el" && !(COMPONENTS[node.n]?.inline);
 
 function expressionFrom(estree) {
   const statement = estree?.body?.[0];
@@ -81,6 +83,12 @@ export function parseUiBody(text) {
     return props;
   };
 
+  const rich = (node, block = false) => {
+    const source = text.slice(node.position.start.offset, node.position.end.offset);
+    try { renderArticleContent(source, { inline: !block }); }
+    catch (error) { report("compose-content", lineOf(node), error.message); }
+    return { t: block ? "rich-block" : "rich", v: source, l: lineOf(node) };
+  };
   const convertInline = (node) => {
     switch (node.type) {
       case "text":
@@ -94,6 +102,8 @@ export function parseUiBody(text) {
         }
         return [{ t: "x", e: expression, s: node.value, l: lineOf(node) }];
       }
+      case "delete":
+        return [rich(node)];
       case "strong":
         return [{ t: "strong", c: node.children.flatMap(convertInline) }];
       case "emphasis":
@@ -104,8 +114,9 @@ export function parseUiBody(text) {
         return [{ t: "br" }];
       case "link": {
         const url = String(node.url ?? "");
-        if (!/^(?:https:\/\/|\.{0,2}\/|#)/u.test(url) && !/^[\w\u3400-\u9fff./-]+$/u.test(url)) {
-          report("ui-markdown", lineOf(node), "链接只能是相对路径或 https 地址");
+        try { articleUrl(url); }
+        catch (error) {
+          report("ui-markdown", lineOf(node), error.message);
           return node.children.flatMap(convertInline);
         }
         return [{ t: "link", u: url, c: node.children.flatMap(convertInline) }];
@@ -179,11 +190,9 @@ export function parseUiBody(text) {
       case "thematicBreak":
         return [{ t: "hr" }];
       case "heading":
-        report("ui-markdown", lineOf(node), "块里不能写标题，它会打乱文章目录");
-        return [];
       case "code":
-        report("ui-markdown", lineOf(node), "块里不能写代码围栏，代码用 <Code>");
-        return [];
+      case "table":
+        return [rich(node, true)];
       case "html":
         report("ui-markdown", lineOf(node), "块里不能写 HTML");
         return [];
@@ -198,6 +207,11 @@ export function parseUiBody(text) {
 
   function convertElement(node) {
     const name = node.name ?? "";
+    if (ARTICLE_TAGS.has(name) && !COMPONENTS[name]) {
+      const hasDynamic = value => value.type?.includes("Expression") || value.attributes?.some(attribute => attribute.value?.type === "mdxJsxAttributeValueExpression") || value.children?.some(hasDynamic);
+      if (hasDynamic(node)) report("compose-content", lineOf(node), "HTML 内容必须静态；将状态插值放在相邻 Compose 内容中，不要在 HTML 标签内写表达式。");
+      return rich(node, !["u", "span", "b", "i", "strong", "em", "del", "s", "code", "kbd", "mark", "sub", "sup", "small", "a", "br"].includes(name));
+    }
     if (!name) report("ui-syntax", lineOf(node), "块里不能写空标签 <>");
     let children;
     if (node.type === "mdxJsxTextElement") {

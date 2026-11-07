@@ -87,7 +87,7 @@ test("nested cards keep badge, kpi, and arrow text as DOM, and escape HTML", () 
   assert.match(html, /class="g-compose-badge"/u);
   assert.match(html, /class="g-compose-kpi-value">12</u);
   assert.match(html, /data-dir="right"/u);
-  assert.match(html, /1 &lt; 2/u);
+  assert.match(html, /1 (?:&lt;|&#x3C;) 2/u);
   assert.doesNotMatch(html, /<script/u);
   assert.match(html, /<details class="g-compose-disclosure" name="nest" id="nest-sync" open><summary class="g-compose-card"/u);
 });
@@ -257,12 +257,13 @@ test("a ChatGPT original image beside a compose fence becomes a pair", () => {
   assert.equal(html.filter((item) => item === "pair").length, 1);
 });
 
-test("the ui prompt catalog includes compose and forbids arbitrary HTML", () => {
+test("the ui prompt catalog distinguishes safe content islands from executable HTML", () => {
   assert.ok(RECIPE_FILES.includes("compose.md"));
   const rules = fs.readFileSync(path.join(root, "ui/prompt/rules.md"), "utf8");
   const recipe = fs.readFileSync(path.join(root, "ui/prompt/recipes/compose.md"), "utf8");
   assert.match(rules, /garden compose/);
-  assert.match(recipe, /不要写 HTML、SVG、脚本/);
+  assert.match(recipe, /<markdown>/);
+  assert.match(recipe, /不执行脚本、事件、iframe/);
   assert.match(recipe, /color \/ backgroundColor/);
   assert.doesNotMatch(recipe, /不要写色值/);
   assert.doesNotMatch(rules, /也不要写 \{@body\b/u);
