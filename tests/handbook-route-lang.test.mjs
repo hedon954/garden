@@ -140,6 +140,7 @@ test("static export keeps a single root 404.html and no index.txt RSC payload co
 function findChromeBinary() {
   const candidates = [
     process.env.CHROME_BIN,
+    "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
     "/usr/local/bin/google-chrome",
     "/usr/bin/google-chrome",
     "/usr/bin/google-chrome-stable",

@@ -114,8 +114,8 @@ test("garden init with --locale en / en_US writes English site.config.yaml, Make
 });
 
 function findChromeBinary() {
-  for (const candidate of ["/usr/local/bin/google-chrome", "/opt/google/chrome/chrome", "/usr/bin/google-chrome", "/usr/bin/chromium", "/usr/bin/chromium-browser"]) {
-    if (existsSync(candidate)) return candidate;
+  for (const candidate of [process.env.CHROME_BIN, "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome", "/usr/local/bin/google-chrome", "/opt/google/chrome/chrome", "/usr/bin/google-chrome", "/usr/bin/chromium", "/usr/bin/chromium-browser"]) {
+    if (candidate && existsSync(candidate)) return candidate;
   }
   return null;
 }
@@ -154,7 +154,7 @@ function serveStaticDir(rootDir) {
     } else if (!existsSync(candidate) && existsSync(path.join(candidate, "index.html"))) {
       candidate = path.join(candidate, "index.html");
     }
-    if (existsSync(candidate)) {
+    if (candidate && existsSync(candidate)) {
       const ext = path.extname(candidate).toLowerCase();
       res.writeHead(200, { "content-type": mimeTypes[ext] ?? "application/octet-stream" });
       res.end(readFileSync(candidate));
