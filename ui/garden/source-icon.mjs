@@ -1,3 +1,8 @@
+import {scanFences} from "./parse.mjs";
+import {parseCompose} from "../compose/index.mjs";
+import {looksLikePlayCompose} from "../compose/dil.mjs";
+import {mapNativeScenes} from "../compose/scenes.mjs";
+
 /**
  * One icon per site, wherever the site appears (inline link, {source} chip,
  * card sources): the favicon fetched at build time, else the first letter of
@@ -39,16 +44,19 @@ export function sourceIcon(url, favicons, explicit) {
   return src ? { src } : { letter: sourceLetter(host) };
 }
 
-/** URLs named as card sources inside ```garden card fences, so their favicons get fetched too. */
+/** Resource and citation URLs in actual Compose trees, including native Play scenes. */
 export function gardenSourceUrls(markdown) {
   const urls = [];
-  const fence = /^```garden\s+card\b[^\n]*\n([\s\S]*?)^```/gmu;
-  for (const [, body] of String(markdown ?? "").matchAll(fence)) {
-    for (const line of body.split("\n")) {
-      // `url: …`, `source: …`, or a bare `- …` entry of a source list.
-      const m = line.match(/^\s*(?:-\s*)?(?:(?:url|source)\s*:\s*)?["']?(https?:\/\/[^\s"']+)/u);
-      if (m) urls.push(m[1]);
-    }
+  const walk = (value,key="") => {
+    if(Array.isArray(value))value.forEach(item=>walk(item,key));
+    else if(value&&typeof value==="object")Object.entries(value).forEach(([k,v])=>walk(v,k));
+    else if((key==="url"||key==="source")&&typeof value==="string"&&/^https?:\/\//u.test(value))urls.push(value);
+  };
+  const visit = nodes => nodes?.forEach(node=>{if(node.type==="feature")walk(node.props);else visit(node.children);});
+  for(const fence of scanFences(markdown)) {
+    if(!/^garden compose(?:\s|$)/u.test(fence.info))continue;
+    if(looksLikePlayCompose(fence.body))mapNativeScenes(fence.body.replace(/<(markdown|html)>[\s\S]*?<\/\1>/giu,""),source=>{const parsed=parseCompose(source);if(parsed.ok)visit(parsed.doc.nodes);return source;});
+    else {const parsed=parseCompose(fence.body);if(parsed.ok)visit(parsed.doc.nodes);}
   }
-  return urls;
+  return [...new Set(urls)];
 }

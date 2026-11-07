@@ -32,17 +32,19 @@ test("only a source tag with +N truncates its host", async () => {
   assert.doesNotMatch(css, /^\.markdown-body a\.ext\.g-src > span \{ max-width/mu);
 });
 
-test("showcase relations cross the middle; Gutenberg cites itself first", async () => {
-  const { readFileSync } = await import("node:fs");
-  for (const file of ["interface-patterns.md", "interface-patterns-en.md"]) {
-    const md = readFileSync(new URL(`../content/posts/${file}`, import.meta.url), "utf8");
-    assert.match(md, /  - from: 3\n    to: 1\n    style: dashed\n/u);
-    assert.match(md, /  - from: 2\n    to: 4\n    style: dashed\n/u);
-    assert.match(md, /source:\n      - https:\/\/www\.gutenberg\.org\/\n      - https:\/\/en\.wikipedia\.org\/wiki\/Project_Gutenberg/u);
-  }
+test("showcase relations and ordered source metadata survive the Compose migration",async()=>{
+ const {readFileSync}=await import("node:fs");const {scanFences}=await import("../ui/garden/parse.mjs");const {parseCompose}=await import("../ui/compose/index.mjs");
+ for(const file of ["interface-patterns.md","interface-patterns-en.md"]){
+  const md=readFileSync(new URL(`../content/posts/${file}`,import.meta.url),"utf8");
+  const docs=scanFences(md).filter(f=>f.info==="garden compose").map(f=>parseCompose(f.body).doc);
+  const nodes=[];const walk=items=>items?.forEach(n=>{nodes.push(n);walk(n.children)});docs.forEach(d=>walk(d?.nodes));
+  const graph=nodes.find(n=>n.type==="feature"&&n.name==="relations");assert.ok(graph.props.links.some(e=>e.from===3&&e.to===1&&e.style==="dashed"));assert.ok(graph.props.links.some(e=>e.from===2&&e.to===4&&e.style==="dashed"));
+  const resources=nodes.find(n=>n.type==="feature"&&n.props.cards);assert.deepEqual(resources.props.cards[1].source.map(s=>s.url),["https://www.gutenberg.org/","https://en.wikipedia.org/wiki/Project_Gutenberg"]);
+ }
 });
 
-test("card source URLs are collected for favicon fetching", () => {
-  const md = "```garden card\ncards:\n  - url: https://a.org/x\n    source:\n      - https://en.wikipedia.org/wiki/A\n      - https://b.org/\n```\n\n```garden stat\nsource: https://no.org/\n```";
-  assert.deepEqual(gardenSourceUrls(md), ["https://a.org/x", "https://en.wikipedia.org/wiki/A", "https://b.org/"]);
+test("resource and citation URLs are collected from static and Play scenes",()=>{
+ const scene='<resources><resource href="https://a.org/x"><reference href="https://en.wikipedia.org/wiki/A"/><reference href="https://b.org/"/></resource></resources>';
+ const staticSource="```garden compose\n"+scene+"\n```";assert.deepEqual(gardenSourceUrls(staticSource),["https://a.org/x","https://en.wikipedia.org/wiki/A","https://b.org/"]);
+ const play="```garden compose\ncaption: Probe\n---\n"+scene+'\n<slider label="n" bind="n" min={1} max={2}/>\n```';assert.deepEqual(gardenSourceUrls(play),gardenSourceUrls(staticSource));
 });
