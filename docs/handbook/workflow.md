@@ -49,7 +49,7 @@ order: 40
 | `diff-orphan` | 错误 | `diff` 代码块前面没有紧挨着的完整代码块 |
 | `compose-uncompiled` | 错误 | 非草稿里的 `garden compose` 还是白话，没有编译成标记 |
 | `compose-invalid` | 错误 | `garden compose` 的标记不合法：未知标签、没闭合，或写成了 YAML 槽 |
-| `garden-name` | Error / 错误 | Author component fences must use `garden compose`. |
+| `garden-name` | 错误 | 作者组件围栏统一使用 `garden compose`。 |
 | `compose-file` / `file-outside` | 错误 | Compose `file` 手写了 `resolved`、缺少有效的 `src` / `files`，或本地路径越出了 `content/` 目录 |
 | `file-large` | 警告 | Compose `file` 引用的单个本地文件体积超过 `5 MB` |
 | `interactive-trivial` / `steps-prose` | 错误 | `garden compose` 只有一次简单乘法，或步骤只是散文而没有状态变化 |

@@ -49,7 +49,7 @@ Three commands check your content at different scopes:
 | `diff-orphan` | Error | A `diff` code fence is not immediately preceded by a complete code block |
 | `compose-uncompiled` | Error | A non-draft `garden compose` fence is still prose, not markup |
 | `compose-invalid` | Error | A `garden compose` document is invalid: unknown tag, unclosed tag, or a YAML slot tree |
-| `garden-name` | Error / 错误 | Author component fences must use `garden compose`. |
+| `garden-name` | Error | Author component fences must use `garden compose`. |
 | `compose-file` / `file-outside` | Error | Compose `file` manually sets `resolved`, is missing a valid `src` / `files`, or points outside `content/` |
 | `file-large` | Warning | A local file referenced by Compose `file` exceeds `5 MB` |
 | `interactive-trivial` / `steps-prose` | Error | `garden compose` only computes a single multiplication, or `<Steps>` contains only prose without state changes |
