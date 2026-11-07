@@ -54,3 +54,11 @@ test("commands are discoverable without extra shortcuts or replacing native Mark
   assert.doesNotMatch(source, /registerFoldingRangeProvider/u);
   assert.match(source, /title: "收起 Garden 块"/u);
 });
+
+
+test("Markdown defaults expose native gutter controls without mutating user settings", () => {
+  const manifest = JSON.parse(readFileSync(new URL("../editors/vscode/package.json", import.meta.url)));
+  assert.deepEqual(manifest.contributes.configurationDefaults, {
+    "[markdown]": { "editor.folding": true, "editor.foldingStrategy": "auto", "editor.showFoldingControls": "always" },
+  });
+});

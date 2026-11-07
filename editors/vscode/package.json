@@ -168,6 +168,13 @@
           "description": "打开稿件时使用 Markdown 原生折叠收起旧版 ui 整块，只露出围栏首行。"
         }
       }
+    },
+    "configurationDefaults": {
+      "[markdown]": {
+        "editor.folding": true,
+        "editor.foldingStrategy": "auto",
+        "editor.showFoldingControls": "always"
+      }
     }
   },
   "scripts": {
