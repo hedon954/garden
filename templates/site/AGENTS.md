@@ -18,6 +18,8 @@
 
 ## 从任务进入技能
 
+- 作者只需给原文和一句效果需求（如“使用 garden compose 呈现横向等宽卡片”）；
+  AI 应自行进入 Compose 技能、按需查布局要点并实现和校验，不要求作者写技术步骤。
 - 写说明图、并排卡片、可调参数、Compose 编译或修复：先读取
   `.agents/skills/garden-compose/SKILL.md`，按需读取它的 `references/`。
   使用它的 `scripts/` 或权威 CLI 定位、验证和单块写回，不重复实现解析器。

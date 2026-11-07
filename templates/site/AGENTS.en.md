@@ -20,6 +20,9 @@ project skills before editing. This guide is a map, not a duplicated catalog.
 
 ## Choose the project skill
 
+- Original prose plus an effect request (for example, “use garden compose for
+  horizontal equal-width cards”) is enough: load the Compose skill automatically,
+  consult relevant layout guidance and implement/check without asking for technical steps.
 - For diagrams, side-by-side cards, adjustable parameters and Compose repair,
   read `.agents/skills/garden-compose/SKILL.md`; load its references on demand.
   Use its scripts or the authoritative CLI to locate, validate and replace one
