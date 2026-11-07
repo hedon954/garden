@@ -2,6 +2,7 @@
 import { randomBytes } from "node:crypto";
 import { spawnSync } from "node:child_process";
 import { startDev } from "../scripts/dev-server.mjs";
+import { installManagedSkills } from "../scripts/managed-skills.mjs";
 import fs from "node:fs";
 import path from "node:path";
 import { createRequire } from "node:module";
@@ -472,34 +473,10 @@ async function editorsCommand(argv) {
   if (status) process.exit(status);
 }
 
-function packagedSkills() {
-  const root = path.join(gardenPackageRoot, ".agents", "skills");
-  if (!fs.existsSync(root)) return [];
-  return fs.readdirSync(root, { withFileTypes: true })
-    .filter((entry) => entry.isDirectory() && fs.existsSync(path.join(root, entry.name, "SKILL.md")))
-    .map((entry) => entry.name);
-}
-
-function installSkill(destinationRoot = siteRoot, { onlyMissing = false, lang = siteCliLang(destinationRoot) } = {}) {
-  const names = packagedSkills();
-  if (!names.length) fail("Garden 包里没有 skill。");
-  const installed = [];
-  for (const name of names) {
-    const to = path.join(destinationRoot, ".agents", "skills", name);
-    if (onlyMissing && fs.existsSync(path.join(to, "SKILL.md"))) continue;
-    fs.cpSync(path.join(gardenPackageRoot, ".agents", "skills", name), to, { recursive: true });
-    // English sites get the English skill text; files without a translation keep the packaged copy.
-    const english = path.join(gardenPackageRoot, "templates", "skills-en", name);
-    if (lang === "en" && fs.existsSync(english)) fs.cpSync(english, to, { recursive: true, force: true });
-    installed.push(name);
-  }
-  if (installed.length) {
-    process.stdout.write(
-      lang === "en"
-        ? `Installed skills: ${installed.join(", ")}\n`
-        : `已安装 skill：${installed.join("、")}\n`,
-    );
-  }
+function installSkill(destinationRoot = siteRoot, { lang = siteCliLang(destinationRoot) } = {}) {
+  // Managed kits update recursively even on automatic sync; local edits are backed up.
+  const installed = installManagedSkills({ engineRoot: gardenPackageRoot, siteRoot: destinationRoot, lang });
+  process.stdout.write(lang === "en" ? `Installed skills: ${installed.join(", ")}\n` : `已安装 skill：${installed.join("、")}\n`);
 }
 
 function help() {
