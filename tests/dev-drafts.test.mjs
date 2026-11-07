@@ -29,9 +29,11 @@ test("garden dev defaults to drafts before initial sync and server spawn, preser
 test("dev default is process-local and sync precedes Vinext with inherited env", () => {
   assert.equal((cli.match(/process\.env\.CONTENT_INCLUDE_DRAFTS \?\?= "1"/gu) ?? []).length, 1);
   const runner = cli.slice(cli.indexOf("async function runVinext("), cli.indexOf("async function runVinext(") + 650);
-  assert.ok(runner.indexOf("await sync()") < runner.indexOf("spawnSync("));
+  assert.ok(runner.indexOf("sync({ refreshLinks: true })") < runner.indexOf("spawnSync("));
   assert.match(runner, /env: siteEnv\(\)/u);
   const watcher = fs.readFileSync(new URL("../vite.config.ts", import.meta.url), "utf8");
   assert.match(watcher, /env: \{ \.\.\.process\.env, GARDEN_SITE: siteRoot/u);
-  assert.match(watcher, /sync\("preview"\)/u);
+  assert.match(watcher, /sync\("preview", \{ refreshLinks: true \}\)/u);
+  assert.match(watcher, /"scripts", "link-assets\.mjs"/u);
+  assert.match(watcher, /\}, 800\);/u);
 });

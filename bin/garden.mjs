@@ -283,11 +283,16 @@ async function prepare() {
   await ensureSiteKit();
 }
 
-async function sync() {
+async function sync({ refreshLinks = false } = {}) {
   if (!fs.existsSync(path.join(siteRoot, "site.config.yaml"))) {
     fail(`当前目录不是 Garden 站点（缺少 site.config.yaml）：${siteRoot}`);
   }
   await prepare();
+  // Same path as `garden links` / formal build: collect Markdown URLs (incl. drafts),
+  // refresh link-assets.json + public assets, then regenerate. Failures keep usable cache.
+  if (refreshLinks && process.env.GARDEN_OFFLINE !== "1") {
+    runNode("scripts/link-assets.mjs");
+  }
   runNode("scripts/build-content.mjs");
 }
 
@@ -320,7 +325,7 @@ function ensureDevGitHubLogin() {
 async function runVinext(vinextArgs, { copyDist = false } = {}) {
   const cwd = vinextRoot();
   if (vinextArgs[0] === "dev") {
-    const { finished } = await startDev({ cwd, executable: resolveVinext(), args: vinextArgs.slice(1), env: siteEnv(), prepare: sync });
+    const { finished } = await startDev({ cwd, executable: resolveVinext(), args: vinextArgs.slice(1), env: siteEnv(), prepare: () => sync({ refreshLinks: true }) });
     const result = await finished;
     if (result.status !== 0) process.exit(result.status || 1);
     return;
@@ -504,7 +509,7 @@ function help() {
   garden sync             只从 Markdown 生成索引
   garden new              创建文章草稿
   garden embed            拉取外链摘要
-  garden links            重新拉取外链图标（build 时会自动做）
+  garden links            重新拉取外链图标与卡片元数据（dev / build 时也会自动做）
   garden images           读取新的远程图片尺寸，写入 image-sizes.json（build 时会自动做）
   garden files            读取 garden file 里远程文件的大小，写入 file-sizes.json（build 时会自动做）
   garden init [目录]      创建只含稿和配置的新站点

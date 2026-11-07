@@ -257,6 +257,13 @@ test("external links show the local favicon before the text", () => {
   assert.match(css, /\.markdown-body a\.ext \{\s*overflow-wrap: break-word;/u);
   const bin = fs.readFileSync(new URL("../bin/garden.mjs", import.meta.url), "utf8");
   assert.match(bin, /case "build":\s*\/\/[^\n]*\n\s*if \(process\.env\.GARDEN_OFFLINE !== "1"\) runNode\("scripts\/link-assets\.mjs"\);/u);
+  assert.match(bin, /async function sync\(\{ refreshLinks = false \} = \{\}\)/u);
+  assert.match(bin, /if \(refreshLinks && process\.env\.GARDEN_OFFLINE !== "1"\) \{\s*runNode\("scripts\/link-assets\.mjs"\);/u);
+  assert.match(bin, /prepare: \(\) => sync\(\{ refreshLinks: true \}\)/u);
+  const vite = fs.readFileSync(new URL("../vite.config.ts", import.meta.url), "utf8");
+  assert.match(vite, /sync\("preview", \{ refreshLinks: true \}\)/u);
+  assert.match(vite, /"scripts", "link-assets\.mjs"/u);
+  assert.match(vite, /\}, 800\);/u);
 });
 
 test("a multi-size .ico is cut down to the image closest to 32px", async () => {

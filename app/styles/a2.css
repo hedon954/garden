@@ -367,6 +367,18 @@ html[data-theme="dark"] .column-reading-page .e-content {
   margin-top: 28px;
 }
 
+/* H4 sits below H3: same sans family, smaller size, still bold. */
+.markdown-body h4 {
+  font: 600 var(--fs-body) / 1.55 var(--sans);
+  color: var(--ink);
+  letter-spacing: 0;
+  margin: 28px 0 10px;
+}
+
+.markdown-body h3 + h4 {
+  margin-top: 18px;
+}
+
 .sec-no {
   color: var(--blue);
   font-variant-numeric: tabular-nums;
