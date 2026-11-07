@@ -2,7 +2,6 @@
 
 import ReactMarkdown from "react-markdown";
 import rehypeRaw from "rehype-raw";
-import { ComposeContentProvider } from "./AuthorRich";
 import { useUiLang } from "../UiLang";
 import { parseCompose } from "../../../ui/compose/index.mjs";
 import { renderCompose } from "../../../ui/compose/render.mjs";
@@ -11,10 +10,8 @@ import {
   GardenCard,
   GardenChart,
   GardenCompare,
-  GardenHtml,
   GardenIdea,
   GardenInteractive,
-  GardenLegacy,
   GardenStat,
   GardenTimeline,
   GardenUnknown,
@@ -30,14 +27,9 @@ export function GardenBlock({ dataPayload }: { dataPayload?: string }) {
   const lang = useUiLang();
   const block = readGardenPayload(dataPayload);
   if (!block) return null;
-  if (block.legacy && block.suggestion) return <GardenLegacy suggestion={String(block.suggestion)} />;
   if (!block.name) return <GardenIdea text={String(block.idea || block.children || "")} />;
   if (block.error) return <GardenUnknown name={String(block.name)} />;
   const props = (block.props ?? {}) as Record<string, unknown>;
-  if (block.composeFeature) {
-    const legacyPayload = encodeURIComponent(JSON.stringify({ ...block, composeFeature: false }));
-    return <ComposeContentProvider><GardenBlock dataPayload={legacyPayload}/></ComposeContentProvider>;
-  }
   switch (block.name) {
     case "card":
       return <GardenCard props={props} />;
@@ -67,11 +59,6 @@ export function GardenBlock({ dataPayload }: { dataPayload?: string }) {
         );
       }
       return <div className="g-compose-host"><ReactMarkdown rehypePlugins={[rehypeRaw]} components={composeComponents}>{renderCompose(props)}</ReactMarkdown></div>;
-    case "html":
-      return <GardenHtml props={props}>{String(block.children ?? "")}</GardenHtml>;
-    case "interactive":
-      // TEMP compat if a payload still names interactive; parse now rewrites to compose.
-      return <GardenInteractive block={{ id: block.id, props, children: String(block.children ?? "") }} />;
     case "file":
       // Post bodies render file cards on the server (MarkdownArticle); this path has no Markdown preview.
       return <GardenFile props={props} lang={lang} />;

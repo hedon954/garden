@@ -3,7 +3,7 @@
 import { marked } from "marked";
 import { useMemo, useState, useSyncExternalStore } from "react";
 import { COMPONENTS, GROUPS } from "../core/catalog.mjs";
-import { CATALOG, IDEA, offeredGardenNames } from "../garden/catalog.mjs";
+import { CATALOG, offeredGardenNames } from "../garden/catalog.mjs";
 import { compileUiBlock } from "../core/compile.mjs";
 import { DEMOS, demoFence } from "../core/demos.mjs";
 import { scanFences } from "../core/fence.mjs";
@@ -152,9 +152,8 @@ export function CatalogPage({ recipes = [], onStart }: { recipes?: RecipeSource[
     <div className="garden-catalog">
       <section className="garden-author-catalog">
         <h2>写作块</h2>
-        <p>文章里只写 <code>garden</code> 围栏。下面是名字。再往下的清单是 interactive 的内部零件，不是文章里的名字。</p>
+        <p>文章组件只使用 <code>garden compose</code>。在同一个入口内组合正文、图形、资源和交互；下方是渲染器内部组件契约。</p>
         <ul>
-          <li><code>garden</code> · {IDEA.label}。{IDEA.when}</li>
           {offeredGardenNames().map((name) => {
             const spec = CATALOG[name as keyof typeof CATALOG];
             return <li key={name}><code>garden {name}</code> · {spec.label}。{spec.when}</li>;

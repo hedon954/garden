@@ -94,10 +94,6 @@ function rewriteChildren(node, nextScope) {
     if (child?.type === "code") {
       const record = fenceNodeToRecord(child);
       const kind = classifyFence({ ...record, body: child.value, line: 1, endLine: 1 });
-      if (kind.kind === "legacy") {
-        next.push(gardenElement({ legacy: true, from: kind.lang || record.lang, suggestion: kind.suggestion }));
-        continue;
-      }
       if (kind.kind === "garden" && kind.block?.name === "compose" && !kind.block.error && kind.block.mode !== "play") {
         next.push(htmlElement(renderCompose(kind.block.props, { scope: nextScope() })));
         continue;

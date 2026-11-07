@@ -1,72 +1,18 @@
 "use client";
 import { hasIcon, iconSvg } from "../../../ui/compose/icons.mjs";
-import { useComposeContent, AuthorRich as Rich } from "./AuthorRich";
+import { AuthorRich as Rich } from "./AuthorRich";
 
-import { createContext, useContext, useEffect, useId, useRef, useState, type ComponentType, type CSSProperties, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useId, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { sourceIcon } from "../../../ui/garden/source-icon.mjs";
 import { circled, labelFits, legendLine, placeMarks, relationKeyAction, RELATION_COMPACT_WIDTH, RELATION_LABEL_FONT_MIN, relationEdges, relationHeights, relationIndex, relationLayout, relationLines, type RelationEdge as Edge } from "../../../ui/garden/relations.mjs";
-import {
-  Bell,
-  BookOpen,
-  ChartBar,
-  ChatCircle,
-  CheckCircle,
-  Clock,
-  Eye,
-  FileText,
-  Flag,
-  Flask,
-  Gear,
-  Heart,
-  Lightbulb,
-  LinkSimple,
-  MagnifyingGlass,
-  MapPin,
-  Question,
-  ShieldCheck,
-  Star,
-  Target,
-  User,
-  Wallet,
-  XCircle,
-  type IconProps,
-} from "@phosphor-icons/react/ssr";
+import {CheckCircle, XCircle} from "@phosphor-icons/react/ssr";
 import { useUi, useUiLang } from "../UiLang";
 
 
 
-/** Line icons an author can name in `icon:`. Unknown names draw nothing. */
-export const GARDEN_ICONS: Record<string, ComponentType<IconProps>> = {
-  search: MagnifyingGlass,
-  eye: Eye,
-  heart: Heart,
-  chat: ChatCircle,
-  shield: ShieldCheck,
-  wallet: Wallet,
-  bell: Bell,
-  check: CheckCircle,
-  x: XCircle,
-  star: Star,
-  flag: Flag,
-  clock: Clock,
-  idea: Lightbulb,
-  book: BookOpen,
-  link: LinkSimple,
-  user: User,
-  chart: ChartBar,
-  gear: Gear,
-  file: FileText,
-  pin: MapPin,
-  flask: Flask,
-  target: Target,
-  question: Question,
-};
-
-export function GardenIcon({ name, size = 18 }: { name: unknown; size?: number }) {
-  const compose = useComposeContent();
-  if (compose && hasIcon(String(name))) return <span aria-hidden="true" dangerouslySetInnerHTML={{__html:iconSvg(String(name)).replace('class="g-compose-icon"', `class="g-compose-icon" style="width:${size}px;height:${size}px"`)}}/>;
-  const Icon = typeof name === "string" ? GARDEN_ICONS[name.trim().toLowerCase()] : undefined;
-  return Icon ? <Icon className="g-ic" size={size} weight="regular" aria-hidden="true" /> : null;
+export function GardenIcon({name,size=18}:{name:unknown;size?:number}) {
+  if(!hasIcon(String(name)))return null;
+  return <span aria-hidden="true" dangerouslySetInnerHTML={{__html:iconSvg(String(name)).replace('class="g-compose-icon"',`class="g-compose-icon" style="width:${size}px;height:${size}px"`)}}/>;
 }
 
 const textsOf = (value: unknown) => (value == null ? [] : Array.isArray(value) ? value.map(String) : [String(value)]);

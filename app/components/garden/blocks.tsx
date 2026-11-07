@@ -1,14 +1,12 @@
 "use client";
 import { AuthorRich as Rich } from "./AuthorRich";
 
-import { useEffect, useRef, type ReactNode } from "react";
+import { type ReactNode } from "react";
 import { useUi, useUiLang } from "../UiLang";
-import { langOf, ui } from "../../lib/i18n";
-import { interactiveUiSource } from "../../../ui/core/garden-fence.mjs";
 import { compileUiBlock } from "../../../ui/core/compile.mjs";
 import { splitCompareLine } from "../../../ui/garden/compare-line.mjs";
 import { RuntimeLangProvider, UiErrorCard, UiFigure, type Diagnostic, type UiPayload } from "../../../ui/react";
-import { FullscreenFrame, SandboxFrame } from "./chrome";
+import { FullscreenFrame } from "./chrome";
 import { SourceMark, VerdictIcon } from "./patterns";
 
 const BASE_PATH = (process.env.NEXT_PUBLIC_BASE_PATH ?? "").replace(/\/+$/u, "");
@@ -258,188 +256,11 @@ export function GardenChart({ props }: { props: Record<string, unknown> }) {
   );
 }
 
-function htmlHasScript(source: string) {
-  return /<script\b(?![^>]*\btype\s*=\s*["']application\/json["'])/iu.test(source);
-}
-
-function isLightWidget(source: string) {
-  return /data-g="(?:quiz|calc|tabs|stepper|kvplay)"|class="[^"]*\b(?:g-steps|g-faq|g-quiz|g-tabs|g-play|g-calc)\b/iu.test(source);
-}
-
-function bindGardenWidgets(root: HTMLElement) {
-  const attr = root.closest("[lang]")?.getAttribute("lang");
-  const t = ui(attr ? langOf(attr) : undefined);
-  root.querySelectorAll<HTMLElement>("[data-g=tabs]").forEach((widget) => {
-    const list = widget.querySelector<HTMLElement>(":scope > [role=tablist]");
-    const tabs = [...(list?.querySelectorAll<HTMLElement>(":scope > [role=tab]") ?? [])];
-    const select = (index: number, focus = false) => {
-      tabs.forEach((tab, tabIndex) => {
-        const on = index === tabIndex;
-        tab.setAttribute("aria-selected", String(on));
-        tab.tabIndex = on ? 0 : -1;
-        const panel = document.getElementById(tab.getAttribute("aria-controls") || "");
-        if (panel) panel.hidden = !on;
-      });
-      if (focus) tabs[index]?.focus();
-    };
-    tabs.forEach((tab, index) => {
-      tab.addEventListener("click", () => select(index));
-      tab.addEventListener("keydown", (event) => {
-        const count = tabs.length;
-        const next = event.key === "ArrowRight" ? (index + 1) % count
-          : event.key === "ArrowLeft" ? (index - 1 + count) % count
-            : event.key === "Home" ? 0
-              : event.key === "End" ? count - 1 : -1;
-        if (next < 0) return;
-        event.preventDefault();
-        select(next, true);
-      });
-    });
-  });
-
-  root.querySelectorAll<HTMLFormElement>("[data-g=quiz]").forEach((form) => {
-    const out = form.querySelector<HTMLElement>(".g-quiz-out");
-    const explain = form.querySelector<HTMLElement>(".g-quiz-ex");
-    form.addEventListener("submit", (event) => {
-      event.preventDefault();
-      if (!out) return;
-      const chosen = form.querySelector<HTMLInputElement>("input:checked");
-      if (!chosen) {
-        out.className = "g-quiz-out";
-        out.textContent = t.pickAnswer;
-        return;
-      }
-      const correct = chosen.value === form.dataset.answer;
-      out.className = `g-quiz-out ${correct ? "ok" : "no"}`;
-      out.textContent = correct ? t.correct : t.wrong;
-      if (explain) explain.hidden = !correct;
-    });
-  });
-
-  root.querySelectorAll<HTMLElement>("[data-g=stepper]").forEach((stepper) => {
-    const panels = [...stepper.querySelectorAll<HTMLElement>("[data-step]")];
-    const dots = [...stepper.querySelectorAll<HTMLElement>(".g-stepper-dots i")];
-    const count = stepper.querySelector(".g-stepper-n");
-    const title = stepper.querySelector(".g-stepper-t");
-    const prev = stepper.querySelector<HTMLButtonElement>("[data-prev]");
-    const next = stepper.querySelector<HTMLButtonElement>("[data-next]");
-    let index = 0;
-    const show = () => {
-      panels.forEach((panel, panelIndex) => { panel.hidden = panelIndex !== index; });
-      if (count) count.textContent = `${index + 1} / ${panels.length}`;
-      if (title) title.textContent = panels[index]?.dataset.title || "";
-      dots.forEach((dot, dotIndex) => dot.classList.toggle("on", dotIndex <= index));
-      if (prev) prev.disabled = index === 0;
-      if (next) next.disabled = index === panels.length - 1;
-    };
-    prev?.addEventListener("click", () => { if (index > 0) { index -= 1; show(); } });
-    next?.addEventListener("click", () => { if (index < panels.length - 1) { index += 1; show(); } });
-    show();
-  });
-
-  root.querySelectorAll<HTMLElement>("[data-g=calc]").forEach((calc) => {
-    const raw = calc.querySelector("script[type='application/json'], script[type=\"application/json\"]")?.textContent;
-    if (!raw) return;
-    const spec = JSON.parse(raw) as {
-      formula: string;
-      vars: Record<string, { fixed?: number; values?: number[]; label?: string }>;
-      format?: string;
-      unit?: string;
-      show?: string;
-    };
-    const names = Object.keys(spec.vars);
-    const fn = new Function(...names, `return (${spec.formula})`) as (...args: number[]) => number;
-    const read = (key: string) => {
-      const variable = spec.vars[key];
-      if (variable?.fixed !== undefined) return Number(variable.fixed);
-      const field = calc.querySelector<HTMLInputElement | HTMLSelectElement>(`[data-k="${key}"]:checked`)
-        ?? calc.querySelector<HTMLInputElement | HTMLSelectElement>(`[data-k="${key}"]`);
-      if (!field) return 0;
-      if (variable?.values && field instanceof HTMLInputElement && field.type === "range") {
-        const value = variable.values[Number(field.value)] ?? variable.values[0];
-        const output = field.parentElement?.querySelector("output");
-        if (output) output.textContent = String(value);
-        field.setAttribute("aria-valuetext", String(value));
-        return Number(value);
-      }
-      const value = Number(field.value);
-      const output = field.parentElement?.querySelector("output");
-      if (output && field instanceof HTMLInputElement && field.type === "range") output.textContent = field.value;
-      return value;
-    };
-    const run = () => {
-      const values = Object.fromEntries(names.map((key) => [key, read(key)]));
-      const result = fn(...names.map((key) => values[key]));
-      const out = calc.querySelector("[data-out]");
-      if (out) {
-        out.textContent = spec.format === "GB"
-          ? `${(result / 2 ** 30).toFixed(2)} GB`
-          : `${Math.round(result * 1e4) / 1e4}${spec.unit ? ` ${spec.unit}` : ""}`;
-      }
-      const equation = calc.querySelector("[data-calc]");
-      if (equation && spec.show) {
-        const shown = spec.show.replace(/\{(\w+)\}/g, (_, key: string) => String(values[key]));
-        equation.textContent = `${shown} = ${spec.format === "GB" ? `${Math.round(result).toLocaleString("en-US")} ${t.bytes}` : String(Math.round(result * 1e4) / 1e4)}`;
-      }
-    };
-    calc.addEventListener("input", run);
-    calc.addEventListener("change", run);
-    run();
-  });
-}
-
-function StaticGardenHtml({ code }: { code: string }) {
-  const ref = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    const host = ref.current;
-    if (!host) return;
-    const root = host.shadowRoot ?? host.attachShadow({ mode: "open" });
-    root.innerHTML = code;
-  }, [code]);
-  return (
-    <div
-      className="g-html"
-      ref={ref}
-      suppressHydrationWarning
-      dangerouslySetInnerHTML={{ __html: `<template shadowrootmode="open">${code}</template>` }}
-    />
-  );
-}
-
-function LightGardenHtml({ code }: { code: string }) {
-  const ref = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    const host = ref.current;
-    if (host) bindGardenWidgets(host);
-  }, [code]);
-  return <div className="g-widget" ref={ref} dangerouslySetInnerHTML={{ __html: code }} />;
-}
-
-export function GardenHtml({ props, children }: { props: Record<string, unknown>; children?: string }) {
-  const code = typeof props.code === "string" ? props.code : children || "";
-  const t = useUi();
-  const title = String(props.title ?? "HTML");
-  if (!code && typeof props.src === "string") {
-    return <p className="g-embed-note">{t.htmlAt(String(props.src))}</p>;
-  }
-  if (htmlHasScript(code)) {
-    return <SandboxFrame html={code} title={title} />;
-  }
-  if (isLightWidget(code)) {
-    const view = <LightGardenHtml code={code} />;
-    return /class="[^"]*\bg-play\b|data-g="calc"/iu.test(code) ? <FullscreenFrame label={title}>{view}</FullscreenFrame> : view;
-  }
-  return <FullscreenFrame label={title}><StaticGardenHtml code={code} /></FullscreenFrame>;
-}
-
 export function GardenInteractive({ block, renderScene }: { renderScene?: (source: string) => React.ReactNode; block: { id?: string | null; props: Record<string, unknown>; children?: string; uiSource?: string } }) {
   const t = useUi();
   const lang = useUiLang();
-  // Prefer DIL-lowered uiSource from compose/dil.mjs; else build from PascalCase children (TEMP legacy).
-  const built = interactiveUiSource({ id: block.id ?? null, props: block.props, children: block.children ?? "" });
-  const source = typeof block.uiSource === "string" && block.uiSource.trim() ? block.uiSource : built.source;
-  const header = built.header;
-  const { payload, check } = compileUiBlock(source);
+  const { payload, check } = compileUiBlock(block.uiSource ?? "");
+  const header = check.header ?? {id:block.id,caption:block.props.caption};
   if (!payload) {
     return (
       <RuntimeLangProvider lang={lang}>
@@ -472,9 +293,7 @@ export function GardenIdea({ text }: { text: string }) {
   );
 }
 
-export function GardenLegacy({ suggestion }: { suggestion: string }) {
-  return <p className="g-embed-note">{suggestion}</p>;
-}
+
 
 export function GardenUnknown({ name }: { name: string }) {
   const t = useUi();

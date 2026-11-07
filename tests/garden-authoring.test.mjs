@@ -43,16 +43,11 @@ test("title width counts CJK as 1 and capitals as 0.68", () => {
   assert.equal(scale, Number(widest.toFixed(2)));
 });
 
-test("garden fences parse to one node and legacy fences stay errors", () => {
-  const markdown = "```garden stat\nlabel: 显存\nvalue: 3.2\n```\n\n```ui\n```\n";
-  const fences = scanFences(markdown);
-  assert.equal(fences.length, 2);
-  const block = parseGardenBlock(fences[0].info, fences[0].body);
-  assert.equal(block.name, "stat");
-  assert.equal(block.props.value, 3.2);
-  const legacy = checkGardenMarkdown(markdown);
-  assert.equal(legacy.some((item) => item.code === "legacy-fence"), true);
-  assert.match(legacy.find((item) => item.code === "legacy-fence").suggestion, /garden compose/);
+test("Compose is the only parsed author entry", () => {
+ const block=parseGardenBlock("garden compose",'<metric label="Memory" value="3.2"/>');
+ assert.equal(block.name,"compose");assert.equal(block.props.nodes[0].props.value,"3.2");
+ assert.equal(parseGardenBlock("garden unknown","data").error.code,"garden-name");
+ assert.deepEqual(offeredGardenNames(),["compose"]);
 });
 
 test("a one-line compare cell keeps its colon", () => {
@@ -108,45 +103,13 @@ test("a one-line compare cell keeps its colon", () => {
   }
   // Brackets that are not a link do not hide a colon.
   assert.equal(splitCompareLine("[注]：说明").title, "[注]");
-  // Length checks count only the text after the colon.
-  const long = ["```garden compare", "items:", `  - "标题：${"字".repeat(61)}"`, "```"].join("\n");
-  assert.ok(checkGardenMarkdown(long).some((item) => item.code === "compare-long"));
-  const short = ["```garden compare", "items:", `  - "${"题".repeat(20)}：${"字".repeat(50)}"`, "```"].join("\n");
-  assert.ok(!checkGardenMarkdown(short).some((item) => item.code === "compare-long"));
+
 });
 
-test("check reports long compare cells, trivial interactive, orphan diffs and bad names", () => {
-  const markdown = [
-    "```garden compare",
-    "items:",
-    "  - title: 甲",
-    `    text: ${"字".repeat(61)}`,
-    "```",
-    "",
-    "```diff",
-    "-old",
-    "+new",
-    "```",
-    "",
-    "```garden car",
-    "```",
-    "",
-    "```garden interactive",
-    "---",
-    "id: mul",
-    "caption: 一次乘法",
-    "---",
-    "<Let mem={a * b} />",
-    "```",
-  ].join("\n");
-  const codes = checkGardenMarkdown(markdown).map((item) => item.code);
-  assert.ok(codes.includes("compare-long"));
-  assert.ok(codes.includes("diff-orphan"));
-  assert.ok(codes.includes("garden-name"));
-  assert.ok(codes.includes("interactive-trivial"));
-  const named = checkGardenMarkdown(markdown).find((item) => item.code === "garden-name");
-  assert.equal(named.severity, "error");
-  assert.match(named.suggestion, /card/);
+test("checker reports malformed scenes, orphan diffs and unknown author entries",()=>{
+ const markdown=['```garden compose','<row><icon name="does-not-exist"/></row>','```','','```diff','-old','+new','```','','```garden unknown','text','```'].join("\n");
+ const codes=checkGardenMarkdown(markdown).map(item=>item.code);
+ assert.ok(codes.includes("compose-invalid"));assert.ok(codes.includes("diff-orphan"));assert.ok(codes.includes("garden-name"));
 });
 
 test("multi-letter math identifiers stay whole and real subscripts stay", () => {
@@ -289,13 +252,6 @@ test("tocShift stays put without overlap, slides past the widest overlap, and hi
   assert.deepEqual(tocShift({ tocLeft: 100, tocWidth: 100, viewport: 1000, overlapRights: [20] }), { shift: 0, hide: false });
 });
 
-test("every component's when and whenNot fit in one compare cell (60 characters)", () => {
-  for (const [name, spec] of Object.entries(CATALOG)) {
-    assert.ok([...spec.when].length <= 60, `${name}.when is ${[...spec.when].length} characters`);
-    assert.ok([...spec.whenNot].length <= 60, `${name}.whenNot is ${[...spec.whenNot].length} characters`);
-  }
-});
-
 test("typing / offers the garden command, and /garden is the component picker", () => {
   assert.equal(slashQuery("/").phase, "command");
   assert.equal(slashQuery("/").replaceLength, 1);
@@ -313,55 +269,16 @@ test("typing / offers the garden command, and /garden is the component picker", 
   assert.equal(slashQuery("").phase, "none");
 });
 
-test("insert pickers paste a garden idea brief with a thumbnail, not a YAML example", () => {
-  const items = pickerItems();
-  assert.deepEqual(items.map((item) => item.name), ["", ...offeredGardenNames()]);
-  for (const item of items) {
-    if (item.name === "compose") {
-      assert.equal(item.label, "compose（想法）");
-      assert.match(item.body, /^```garden compose\n/u);
-      assert.doesNotMatch(item.body, /^[a-z]+:/mu);
-    } else {
-      assert.match(item.body, /^```garden\n/u);
-      assert.doesNotMatch(item.body, /```garden [a-z]/u);
-      assert.doesNotMatch(item.body, /^[a-z]+:/mu);
-    }
-    assert.match(item.preview, /^data:image\/svg\+xml,/u);
-    assert.match(decodeURIComponent(item.preview.slice("data:image/svg+xml,".length)), /<(?:rect|path|circle|text)\b/u);
-    assert.match(suggestHtml(item), /<img\b[^>]*class="garden-suggest-thumb"/u);
-  }
-  const card = items.find((item) => item.name === "card");
-  assert.equal(
-    card.body,
-    guidanceFence("card"),
-  );
-  assert.match(card.body, /做成资源卡。/u);
-  assert.match(card.label, /资源卡/u);
-  assert.doesNotMatch(card.body, /url:/u);
-  const idea = items.find((item) => item.name === "");
-  assert.match(idea.body, /让读者……；想让读者看出……/u);
+test("editor insertion chooses content inside one Compose entry",()=>{
+ const items=pickerItems();assert.equal(items.length,1);assert.equal(items[0].name,"compose");
+ assert.match(items[0].body,/^```garden compose\n/);assert.match(suggestHtml(items[0]),/garden-suggest-thumb/);
+ assert.match(guidanceFence(),/^```garden compose\n/);assert.throws(()=>guidanceFence("unknown"),/garden compose/);
 });
 
-test("editor snippets, Typora templates and text replacements come from one catalog", () => {
-  const snippets = vscodeSnippets();
-  assert.equal(snippets["Garden 块"].prefix, "garden");
-  assert.match(snippets["Garden 块"].body[0], /card,stat,compare,timeline,chart,compose,html,file/);
-  assert.doesNotMatch(snippets["Garden 块"].body[0], /interactive/);
-  assert.ok(snippets.gcard || snippets["Garden 资源卡 gcard"]);
-  const markdown = gardenBlocksMarkdown();
-  assert.match(markdown, /```garden card/);
-  assert.match(markdown, /```garden timeline/);
-  const plist = textReplacementPlist();
-  assert.match(plist, /<key>shortcut<\/key>\s*<string>;gcard<\/string>/);
-  const onDisk = readFileSync(new URL("../editors/vscode/snippets/markdown.json", import.meta.url), "utf8");
-  assert.equal(JSON.parse(onDisk)["Garden 块"].prefix, snippets["Garden 块"].prefix);
-  const template = readFileSync(new URL("../templates/garden-blocks.md", import.meta.url), "utf8");
-  assert.equal(template, markdown);
-  const composeSkill = readFileSync(new URL("../.agents/skills/garden-compose/SKILL.md", import.meta.url), "utf8");
-  assert.match(composeSkill, /garden compose/);
-  assert.match(composeSkill, /scripts\/check\.mjs/);
-  const shipped = ["../.agents/skills/garden-post-review/SKILL.md", "../.agents/skills/garden-compose/SKILL.md", "../templates/garden-blocks.md"]
-    .map((file) => readFileSync(new URL(file, import.meta.url), "utf8"))
-    .join("\n");
-  assert.doesNotMatch(shipped, /```(?:widget|embed|intent)\b/);
+test("editor snippets, templates and replacements share the one Compose catalog",()=>{
+ const snippets=vscodeSnippets();assert.ok(Object.values(snippets).some(s=>s.body[0]==="```garden compose"));
+ assert.equal(gardenBlocksMarkdown(),readFileSync(new URL("../templates/garden-blocks.md",import.meta.url),"utf8"));
+ assert.equal(textReplacementPlist(),readFileSync(new URL("../templates/garden-snippets.plist",import.meta.url),"utf8"));
+ const shipped=JSON.parse(readFileSync(new URL("../editors/vscode/snippets/markdown.json",import.meta.url),"utf8"));assert.deepEqual(shipped,snippets);
+ assert.deepEqual(Object.keys(CATALOG),["compose"]);
 });
