@@ -1647,7 +1647,7 @@ html[data-theme="dark"] .g-quiz-out.no { color: #f29aab; }
   .g-range { grid-template-columns: 84px minmax(0, 1fr) 54px; gap: 8px; }
 }
 
-/* ---- garden file: a download card, a group of rows, a preview drawer ---- */
+/* ---- Compose files: a download card, a group of rows, a preview drawer ---- */
 .gf { margin: 24px 0; border: 1px solid var(--rule); border-radius: 12px; background: transparent; font-family: var(--sans); }
 .gf-title { padding: 14px 16px 0; font-size: 14px; font-weight: 600; line-height: 1.4; color: var(--muted); }
 .gf-row { display: flex; align-items: center; gap: 14px; padding: 14px 16px; }

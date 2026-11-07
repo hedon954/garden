@@ -1,4 +1,4 @@
-// Server component: the card for `garden file`. Only the 预览 control is a client island.
+// Server component: the card for Compose file. Only the 预览 control is a client island.
 import { siteLang, ui, type UiLang } from "../../lib/i18n";
 import { blockFiles, fileMeta } from "../../../ui/garden/file-block.mjs";
 import { ActionGlyph, FileGlyph, safeFileHref } from "./file-icons";

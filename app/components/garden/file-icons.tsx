@@ -1,6 +1,6 @@
 export { safeFileHref } from "../../../ui/garden/file-block.mjs";
 
-// Icons for `garden file`. No hooks: used by the server card and the client drawer alike.
+// Icons for Compose file. No hooks: used by the server card and the client drawer alike.
 const PAGE = "M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z";
 const FOLD = "M14 3v5h5";
 const MARKS: Record<string, string> = {

@@ -336,7 +336,7 @@ function Studio({ configured, modelName, remaining: initialRemaining, recipes }:
               这一篇
               <select value="" onChange={(event) => void openBlock(pickedFile, Number(event.target.value))}>
                 <option value="">选一块</option>
-                {pickedBlocks.filter((block) => block.lang !== "widget").map((block) => (
+                {pickedBlocks.map((block) => (
                   <option key={block.startLine} value={block.startLine}>
                     {`${"Compose"} · ${block.id ?? `第 ${block.startLine} 行`} · ${block.status}`}
                   </option>

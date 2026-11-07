@@ -1,7 +1,6 @@
 import matter from "gray-matter";
 import Link from "next/link";
-import { parse as parseYaml, stringify as stringifyYaml } from "yaml";
-import { scanFences } from "../../../../ui/core/fence.mjs";
+import { parse as parseYaml } from "yaml";
 import { collectDataSources, transformUiContent } from "../../../../ui/core/transform.mjs";
 import { AdminUiShell, isStaticExport, requireAdminPage, StaticAdminNotice } from "../../../components/AdminUiShell";
 import { MarkdownArticle } from "../../../components/MarkdownArticle";
@@ -25,21 +24,10 @@ const isRelative = (value: string) => !/^(?:[a-z][a-z0-9+.-]*:|\/|#)/iu.test(val
 /** Same-name-directory files go through the authenticated, sandboxed proxy. */
 function proxyAssets(content: string, post: string) {
   const proxy = (relative: string) => `/api/admin/preview/asset?post=${encodeURIComponent(post)}&path=${encodeURIComponent(relative)}`;
-  let output = replaceInlineLinks(content, (link) =>
+  return replaceInlineLinks(content, (link) =>
     link.image && isRelative(link.url) ? formatInlineLink(link, proxy(link.url)) : undefined,
   );
-  for (const fence of [...scanFences(output)].reverse()) {
-    if (fence.lang !== "widget") continue;
-    try {
-      const data = parseYaml(fence.body) as Record<string, unknown> | null;
-      if (!data || typeof data.src !== "string" || !isRelative(data.src)) continue;
-      const next = `${fence.marker}widget\n${stringifyYaml({ ...data, src: proxy(data.src) }).trimEnd()}\n${fence.marker}`;
-      output = `${output.slice(0, fence.start)}${next}${output.slice(fence.end)}`;
-    } catch {
-      continue;
-    }
-  }
-  return output;
+
 }
 
 export default async function DraftPreviewPage({ params }: { params: Promise<{ path: string[] }> }) {

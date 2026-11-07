@@ -69,7 +69,7 @@ export function AdminBlocks({ siteUrl }: { siteUrl: string }) {
   }, []);
 
   const visible = (block: Block) =>
-    block.lang !== "widget" && (filter === "all" || (filter === "todo" ? block.status !== "ok" : block.status === filter));
+    (filter === "all" || (filter === "todo" ? block.status !== "ok" : block.status === filter));
 
   const copyPrompt = async (file: FileBlocks, block: Block) => {
     const prompt = buildFixPrompt([{ file: file.path, block, diagnostics: block.diagnostics.filter((item) => item.severity === "error") }]);
@@ -78,7 +78,7 @@ export function AdminBlocks({ siteUrl }: { siteUrl: string }) {
   };
 
   const counts = { uncompiled: 0, stale: 0, error: 0, ok: 0 };
-  for (const file of files ?? []) for (const block of file.blocks) if (block.lang !== "widget") counts[block.status] += 1;
+  for (const file of files ?? []) for (const block of file.blocks) counts[block.status] += 1;
 
   return (
     <section className="admin-panel ui-admin-blocks">

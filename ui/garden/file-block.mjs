@@ -1,5 +1,5 @@
 /**
- * `garden file`: downloadable files in a post.
+ * Compose file: downloadable files in a post.
  *
  * Authors write a short YAML fence:
  *

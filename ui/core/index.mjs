@@ -1,5 +1,5 @@
 export { applyBlock, ApplyError, classifyReplacement } from "./apply.mjs";
-export { CATALOG_VERSION, catalogReference, catalogSchema, COMPONENTS, COMPONENT_NAMES, GROUPS, TONES, TONE_LABELS } from "./catalog.mjs";
+export { CATALOG_VERSION, catalogSchema, COMPONENTS, COMPONENT_NAMES, GROUPS, TONES, TONE_LABELS } from "./catalog.mjs";
 export { compileUiBlock, PAYLOAD_VERSION, readPayload } from "./compile.mjs";
 export { analyzeExpr, createBudget, evaluate, ExprError, FUNCTION_NAMES } from "./expr.mjs";
 export {

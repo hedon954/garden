@@ -574,35 +574,3 @@ export function catalogSchema() {
   };
 }
 
-/** Markdown reference that `garden ui prompt` inserts between rules and recipes. */
-export function catalogReference() {
-  const lines = [
-    "## interactive 组件参考（PascalCase，兼容）",
-    "",
-    "仅用于遗留 `garden interactive` 围栏。新的可调参数请写 `garden compose` play（见上方 compose 目录与 `{@body}`）。",
-    "",
-  ];
-  for (const group of GROUPS) {
-    lines.push(`### ${group}`, "");
-    for (const [name, spec] of Object.entries(COMPONENTS)) {
-      if (spec.group !== group) continue;
-      const parents = spec.parents ? `（只能放在 ${spec.parents.join(" / ")} 里）` : "";
-      lines.push(`#### ${name}${parents}`, "", spec.summary + (spec.phase > 1 ? `。阶段 ${spec.phase} 起可用` : ""), "");
-      if (spec.kind === "state") lines.push("- 任意名字={字面量}：状态名和默认值（数字、字符串或布尔）");
-      if (spec.kind === "let") lines.push("- 任意名字={表达式}：派生值");
-      for (const [prop, propSpec] of Object.entries(spec.props)) {
-        const flags = [propSpec.required ? "必填" : null, propSpec.literal ? "字面量" : null]
-          .filter(Boolean)
-          .join("，");
-        const values = propSpec.values ? `：${propSpec.values.join(" / ")}` : "";
-        const fallback = propSpec.default !== undefined ? `，默认 ${JSON.stringify(propSpec.default)}` : "";
-        lines.push(`- \`${prop}\`${flags ? `（${flags}）` : ""}${values}：${propSpec.desc ?? ""}${fallback}`);
-      }
-      const children = Array.isArray(spec.children)
-        ? `子元素：只能是 ${spec.children.join(" / ")}`
-        : { none: "没有子元素", content: "子元素：正文和组件", text: "子元素：一段文字", transparent: "子元素：按所在位置的规则" }[spec.children];
-      lines.push(`- ${children}`, "", "```text", spec.example, "```", "");
-    }
-  }
-  return lines.join("\n");
-}

@@ -32,14 +32,13 @@ cover: writing/first-post.jpg
 
 ## 一个小标题
 
-可以继续插入图片、代码、公式、Mermaid 图表，或用 \`garden\` 围栏写组件：
+可以继续插入图片、代码、公式、Mermaid 图表，或用 \`garden compose\` 围栏写组件：
 
-\`\`\`garden list
-items:
-  - icon: idea
-    text: 记下为什么重新开始写
-  - icon: book
-    text: 先把旧笔记整理成目录
+\`\`\`garden compose
+<icon-list>
+  <entry icon="idea"><text>记下为什么重新开始写</text></entry>
+  <entry icon="book"><text>先把旧笔记整理成目录</text></entry>
+</icon-list>
 \`\`\``;
 
 const thoughtSource = `---

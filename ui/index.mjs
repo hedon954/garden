@@ -19,7 +19,6 @@ export {
   blockStatus,
   bytes,
   CATALOG_VERSION,
-  catalogReference,
   catalogSchema,
   classifyReplacement,
   collectDataSources,

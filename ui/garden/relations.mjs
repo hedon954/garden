@@ -1,5 +1,5 @@
 /**
- * garden relations: 3 to 6 key elements on a circle and the directed links between them.
+ * Compose relations: 3 to 6 key elements on a circle and the directed links between them.
  * Shared by the parser (validation), the renderer and the tests.
  */
 

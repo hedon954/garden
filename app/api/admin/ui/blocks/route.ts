@@ -9,7 +9,7 @@ export async function GET() {
     const counts = { uncompiled: 0, stale: 0, error: 0, ok: 0 };
     for (const file of files) {
       for (const block of file.blocks) {
-        if (block.lang !== "widget") counts[block.status as keyof typeof counts] += 1;
+        counts[block.status as keyof typeof counts] += 1;
       }
     }
     return Response.json({ files, counts });
