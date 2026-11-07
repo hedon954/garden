@@ -269,8 +269,8 @@ test("checkEnglishHandbookNoCjk fails on CJK in English handbook prose, fenced c
         "",
         "![Layout](../assets/diagram.svg)",
         "",
-        "```garden file",
-        "src: ./components/file/note.md",
+        "```garden compose",
+        '<file src="./components/file/note.md"/>',
         "```",
       ].join("\n"),
     );

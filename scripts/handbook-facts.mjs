@@ -572,7 +572,7 @@ function checkCommandString(cmdText, file, lineNumber, facts, issues) {
       const sub = gardenArgs[0];
       if (!sub) continue;
       // In inline prose, component names / `garden <name>` etc. (without `npx`)
-      // can be a Markdown fence header reference (` ```garden stat `) when `sub` is a known component name
+      // can be a Markdown fence header reference (` ```garden compose `) when `sub` is a known component name
       // or a `<name>` placeholder and there are no extra args or only `#id`.
       if (
         head === "garden" &&
