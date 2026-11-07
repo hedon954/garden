@@ -1,17 +1,19 @@
 ---
-title: 说明图（compose）
-navTitle: 说明图
-description: 在文章里写几句白话，让 AI 拼出静态说明图。
+title: 内容、布局与交互（compose）
+navTitle: Compose
+description: 在同一个作者入口组合文章内容、布局、资源与交互。
 section: components
 order: 36
 badge: compose
 ---
 
-写文章想画一张结构图时，输入 `/garden` 选「compose（想法）」。文章里会插入一个 `garden compose` 围栏。你在里面用白话写清结构，再对 AI 说「编译这篇」，AI 就会把这句话留在 `<intent>` 里，并用 Markdown 叶子和组件标签拼出静态说明图。
+`garden compose` 是唯一的 Garden 作者入口。在围栏内组合 Markdown、安全 HTML 内容岛、布局、资源、文件、关系图、选择卡与 Play 交互。具体能力、内容边界和默认样式见[组件参考](/garden/reference/compose)，完整可用属性以 `npx garden ui schema` 为准。
+
+需要 AI 生成结构图时，输入 `/garden` 选「compose（想法）」。文章里会插入一个 `garden compose` 围栏。你在里面用白话写清结构，再对 AI 说「编译这篇」，AI 就会把这句话留在 `<intent>` 里，并用 Markdown 叶子和组件标签拼出静态说明图。
 
 ## 怎么写
 
-围栏里只写你想让读者看见的结构，不要写样式。
+先说明读者应当看见的关系和层级，再选择布局与必要样式。也可以直接写组件；不要把通用 HTML/CSS 当成所有组件的属性契约。
 
 把四件事写清楚：
 

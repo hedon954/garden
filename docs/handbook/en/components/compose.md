@@ -1,17 +1,19 @@
 ---
-title: Diagrams (compose)
-navTitle: Diagrams
-description: Write a short plain-language structure; AI compiles it into a static diagram.
+title: Content, layout, and interactions (compose)
+navTitle: Compose
+description: Combine article content, layout, resources, and interactions through one author entry.
 section: components
 order: 36
 badge: compose
 ---
 
-To draw a structure diagram in a post, type `/garden` and pick **compose (idea)**. That inserts a `garden compose` fence. Write the structure in plain language, then ask the AI to compile the post. It keeps your words in `<intent>` and builds the diagram from Markdown leaves plus catalog tags.
+`garden compose` is the single Garden author entry. Inside it, combine Markdown, safe HTML content islands, layout, resources, files, relations, selectable cards, and Play interactions. See the [component reference](/garden/en/reference/compose) for capabilities, content boundaries, and contextual defaults; `npx garden ui schema` is authoritative for supported fields.
+
+To ask AI for a structure diagram, type `/garden` and pick **compose (idea)**. That inserts a `garden compose` fence. Write the structure in plain language, then ask the AI to compile the post. It keeps your words in `<intent>` and builds the diagram from Markdown leaves plus catalog tags.
 
 ## How to write
 
-Describe the structure readers should see. Do not prescribe styles.
+Describe the relationships and hierarchy readers should see before choosing layout and necessary styles. You can also write components directly; do not assume every component accepts arbitrary HTML/CSS properties.
 
 Cover four things:
 
