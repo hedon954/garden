@@ -10,8 +10,8 @@ const kit=path.join(engineRoot,'.agents/skills/garden-compose');
 function run(script,args,cwd){return spawnSync(process.execPath,[path.join(kit,'scripts',script+'.mjs'),...args],{cwd,env:{...process.env,GARDEN_SITE:cwd,GARDEN_UI_NO_COPY:'1'},encoding:'utf8'});}
 test('English entry point overlays shared kit recursively without writing any skills',()=>{
  const en=managedSkillBundle({engineRoot,name:'garden-compose',lang:'en'}),zh=managedSkillBundle({engineRoot,name:'garden-compose'});
- assert.match(en['SKILL.md'].toString(),/Create, compile, repair/);
- for(const name of ['scripts/check.mjs','scripts/apply.mjs','references/static-play.md','references/colors.md','references/examples.md','references/layout-recipes.md'])assert.deepEqual(en[name],zh[name]);
+ assert.match(en['SKILL.md'].toString(),/Select, compose and validate/);
+ for(const name of ['scripts/check.mjs','scripts/apply.mjs','references/static-play.md','references/colors.md','references/examples.md','references/layout-recipes.md','references/visual-selection.md','references/composition-patterns.md'])assert.deepEqual(en[name],zh[name]);
 });
 test('shipped examples and wrappers pass authoritative CLI checks in an isolated site',()=>{
  const root=fs.mkdtempSync(path.join(os.tmpdir(),'compose-kit-'));
