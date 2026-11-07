@@ -786,7 +786,7 @@ const gardenIndexDocEn = enHandbookDocs.find((doc) => doc.path === "index") ?? n
 const gardenDocsEn = enHandbookDocs.filter((doc) => doc.path !== "index");
 
 // Intrinsic image sizes for width/height on <img>: local files are read now,
-// remote ones come from image-sizes.json (written by scripts/image-sizes.mjs).
+// remote ones come from .garden/image-sizes.json (written by scripts/image-sizes.mjs).
 function localImageFile(src) {
   const clean = src.split(/[?#]/u, 1)[0];
   const copied = assetFiles.get(clean)?.destination;

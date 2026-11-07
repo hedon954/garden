@@ -5,7 +5,7 @@
  * - for links written as `[text](url){card}`, the page's title, description,
  *   site name, author, date and a local copy of its og:image.
  *
- * Results are cached in `link-assets.json` (commit it). Every build refetches;
+ * Results are cached in `.garden/link-assets.json` (ignored build cache). Every build refetches;
  * when a fetch fails the cached copy stays, and when there is none the link
  * simply shows no icon. Network trouble never fails the build.
  */
@@ -13,6 +13,7 @@ import { execFileSync } from "node:child_process";
 import { lookup } from "node:dns/promises";
 import crypto from "node:crypto";
 import fs from "node:fs";
+import { readGeneratedCache, writeGeneratedCache } from "./generated-cache.mjs";
 import { isIP } from "node:net";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
@@ -23,7 +24,7 @@ import { markdownLinks } from "../ui/garden/markdown-links.mjs";
 import { gardenSourceUrls } from "../ui/garden/source-icon.mjs";
 import { configuredSiteAddress, sameSiteMatcher } from "../ui/garden/same-site.mjs";
 
-export const CACHE_FILE = "link-assets.json";
+export const CACHE_FILE = path.join(".garden", "link-assets.json");
 export const ASSET_DIR = path.join("public", "link-assets");
 export const ASSET_URL = "/link-assets";
 
@@ -40,7 +41,8 @@ export function emptyCache() {
 }
 
 export function readLinkCache(siteRoot) {
-  const cache = readJson(path.join(siteRoot, CACHE_FILE), emptyCache());
+  const data = readGeneratedCache(siteRoot, "link-assets.json", emptyCache());
+  const cache = data && typeof data === "object" ? data : emptyCache();
   return { ...emptyCache(), ...cache, favicons: { ...(cache.favicons ?? {}) }, cards: { ...(cache.cards ?? {}) } };
 }
 
@@ -218,7 +220,7 @@ export async function refreshLinkAssets({
 
   next.favicons = Object.fromEntries(Object.entries(next.favicons).sort(([a], [b]) => a.localeCompare(b)));
   try {
-    fs.writeFileSync(path.join(siteRoot, CACHE_FILE), `${JSON.stringify(next, null, 2)}\n`);
+    writeGeneratedCache(siteRoot, "link-assets.json", next);
     if (!files) pruneAssets(siteRoot, next);
   } catch (error) {
     log(`链接资源：写缓存失败（${error.message}）`);

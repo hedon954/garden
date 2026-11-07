@@ -488,7 +488,7 @@ function help() {
   garden new              创建文章草稿
   garden embed            拉取外链摘要
   garden links            重新拉取外链图标与卡片元数据（dev / build 时也会自动做）
-  garden images           读取新的远程图片尺寸，写入 image-sizes.json（build 时会自动做）
+  garden images           读取新的远程图片尺寸，写入 .garden/image-sizes.json（build 时会自动做）
   garden files            读取 garden file 里远程文件的大小，写入 file-sizes.json（build 时会自动做）
   garden init [目录]      创建只含稿和配置的新站点
   garden check <文章.md>  检查一篇博文的硬性结构

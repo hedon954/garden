@@ -68,3 +68,8 @@ next-env.d.ts
 /public/link-allowlist.json
 /public/search-index.json
 /public/search-full.*.json
+
+# Regenerable build metadata/assets; legacy root names remain ignored during migration.
+/image-sizes.json
+/link-assets.json
+/public/link-assets/

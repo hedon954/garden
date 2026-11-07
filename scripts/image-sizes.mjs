@@ -5,11 +5,12 @@
  *
  * - Local images are read at build time with image-size (see build-content).
  * - Remote images are probed here: only the first bytes are downloaded, never
- *   the whole file. Results go into `image-sizes.json` (commit it), so later
+ *   the whole file. Results go into `.garden/image-sizes.json` (ignored build cache), so later
  *   builds do not fetch them again. A failed probe is logged and retried next
  *   time; the image simply renders without a size. The build never fails.
  */
 import fs from "node:fs";
+import { readGeneratedCache, writeGeneratedCache } from "./generated-cache.mjs";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 import matter from "gray-matter";
@@ -18,7 +19,7 @@ import { isPublicUrl } from "./link-meta-core.mjs";
 import { assertPublicDns, pool } from "./link-assets.mjs";
 import { mapOutsideCode } from "../ui/garden/markdown-links.mjs";
 
-export const CACHE_FILE = "image-sizes.json";
+export const CACHE_FILE = path.join(".garden", "image-sizes.json");
 const HEAD_BYTES = [64 * 1024, 512 * 1024];
 const TIMEOUT_MS = 8000;
 
@@ -78,12 +79,8 @@ export function sizeFromBytes(bytes) {
 }
 
 export function readImageCache(siteRoot) {
-  try {
-    const data = JSON.parse(fs.readFileSync(path.join(siteRoot, CACHE_FILE), "utf8"));
-    return { images: data?.images && typeof data.images === "object" ? data.images : {} };
-  } catch {
-    return { images: {} };
-  }
+  const data = readGeneratedCache(siteRoot, "image-sizes.json", {});
+  return { images: data?.images && typeof data.images === "object" ? data.images : {} };
 }
 
 /** Read at most `limit` bytes of the response body, then stop the download. */
@@ -190,10 +187,7 @@ export async function refreshImageSizes({ siteRoot, fetch: fetcher, checkHost, l
     }
   });
   const sorted = Object.fromEntries(Object.keys(images).sort().map((url) => [url, images[url]]));
-  const next = `${JSON.stringify({ version: 1, images: sorted }, null, 2)}\n`;
-  const file = path.join(siteRoot, CACHE_FILE);
-  const previous = fs.existsSync(file) ? fs.readFileSync(file, "utf8") : "";
-  if (next !== previous && (urls.length || previous)) fs.writeFileSync(file, next);
+  if (urls.length || fs.existsSync(path.join(siteRoot, CACHE_FILE))) writeGeneratedCache(siteRoot, "image-sizes.json", { version: 1, images: sorted });
   log(`图片尺寸：${urls.length} 张远程图片，新读取 ${missing.length - failed} 张，失败 ${failed} 张。`);
   return { images: sorted, probed: missing.length - failed, failed };
 }
