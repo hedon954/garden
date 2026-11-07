@@ -256,11 +256,11 @@ export function GardenChart({ props }: { props: Record<string, unknown> }) {
   );
 }
 
-export function GardenInteractive({ block, renderScene }: { renderScene?: (source: string) => React.ReactNode; block: { id?: string | null; props: Record<string, unknown>; children?: string; uiSource?: string } }) {
+export function GardenInteractive({ block, renderScene }: { renderScene?: (source: string) => React.ReactNode; block: { id?: string | null; props: Record<string, unknown>; children?: string; uiSource?: string; payload?: UiPayload | null } }) {
   const t = useUi();
   const lang = useUiLang();
-  const { payload, check } = compileUiBlock(block.uiSource ?? "");
-  const header = check.header ?? {id:block.id,caption:block.props.caption};
+  const { payload, check } = block.payload ? {payload:block.payload,check:{header:{id:block.payload.id,caption:block.payload.caption},diagnostics:[]}} : compileUiBlock(block.uiSource ?? "");
+  const header = {id:payload?.id??block.id,caption:payload?.caption??block.props.caption};
   if (!payload) {
     return (
       <RuntimeLangProvider lang={lang}>

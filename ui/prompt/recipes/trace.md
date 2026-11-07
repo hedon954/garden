@@ -11,31 +11,33 @@
 **骨架（阶段 6 之前）：** `Steps bind="step"` + 一张 `Table`，列出每个参与方此刻的状态，这一步变了的标成 `new`。阶段 6 起改用 `Diagram`，用 `highlight` 标出当前节点。
 
 ````md
-```ui
----
+```garden compose
 id: tcp-handshake
 caption: 三次握手里，客户端先进入 ESTABLISHED，服务端要等最后一个 ACK。
 intent: |
   一步步走 TCP 三次握手，每步列出客户端和服务端的状态，标出这一步变了的那一方。
 ---
-<State step={0} />
-<Let clientStates={["CLOSED", "SYN-SENT", "ESTABLISHED", "ESTABLISHED"]}
-     serverStates={["LISTEN", "SYN-RCVD", "SYN-RCVD", "ESTABLISHED"]}
-     prev={max(step - 1, 0)} />
+{@body const [step, setStep] = DIL.useState(0)}
+{@body const clientStates = ["CLOSED", "SYN-SENT", "ESTABLISHED", "ESTABLISHED"]}
+{@body const serverStates = ["LISTEN", "SYN-RCVD", "SYN-RCVD", "ESTABLISHED"]}
+{@body const prev = max(step - 1, 0)}
 
-<Steps bind="step">
-  <Step title="开始">服务端在 LISTEN 等连接。</Step>
-  <Step title="SYN">客户端发 SYN；服务端收到后回 SYN+ACK，进入 SYN-RCVD。</Step>
-  <Step title="SYN+ACK">客户端收到 SYN+ACK，回 ACK，自己先进入 ESTABLISHED。</Step>
-  <Step title="ACK">服务端收到 ACK，也进入 ESTABLISHED。</Step>
-</Steps>
 
-<Table columns={["一方", "状态"]}>
-  <Row cells={["客户端", clientStates[step]]}
+
+<steps bind="step">
+  <step title="开始">服务端在 LISTEN 等连接。</step>
+  <step title="SYN">客户端发 SYN；服务端收到后回 SYN+ACK，进入 SYN-RCVD。</step>
+  <step title="SYN+ACK">客户端收到 SYN+ACK，回 ACK，自己先进入 ESTABLISHED。</step>
+  <step title="ACK">服务端收到 ACK，也进入 ESTABLISHED。</step>
+</steps>
+
+<table columns={["一方", "状态"]}>
+  <row cells={["客户端", clientStates[step]]}
        tones={step > 0 && clientStates[step] != clientStates[prev] ? "new" : "plain"} />
-  <Row cells={["服务端", serverStates[step]]}
+  <row cells={["服务端", serverStates[step]]}
        tones={step > 0 && serverStates[step] != serverStates[prev] ? "new" : "plain"} />
-</Table>
+</table>
+
 ```
 ````
 

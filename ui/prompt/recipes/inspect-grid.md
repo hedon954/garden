@@ -11,23 +11,24 @@
 **骨架：** `Grid` + 每行一个 `Row`；用 `tones` 标出特别的格子，用 `notes` 写每格的话，用 `legend` 解释颜色。需要切换场景时，加一个 `Choice` 或 `Toggle`。
 
 ````md
-```ui
----
+```garden compose
 id: ecb-vs-cbc
 caption: ECB 下相同的明文块得到相同的密文块；CBC 把上一块的密文混进来，重复就消失了。
 intent: |
   明文四块 A B A A，让读者在 ECB 和 CBC 之间切换，看密文里重复的块。
 ---
-<State mode="ecb" />
+{@body const [mode, setMode] = DIL.useState("ecb")}
 
-<Choice bind="mode" label="模式" options={[{ value: "ecb", label: "ECB" }, { value: "cbc", label: "CBC" }]} />
 
-<Grid cols={["块1", "块2", "块3", "块4"]} legend={{ same: "密文与别的块相同" }}>
-  <Row label="明文" cells={["A", "B", "A", "A"]} />
-  <Row label="密文" cells={mode == "ecb" ? ["X", "Y", "X", "X"] : ["P", "Q", "R", "S"]}
+<choice bind="mode" label="模式" options={[{ value: "ecb", label: "ECB" }, { value: "cbc", label: "CBC" }]} />
+
+<grid cols={["块1", "块2", "块3", "块4"]} legend={{ same: "密文与别的块相同" }}>
+  <row label="明文" cells={["A", "B", "A", "A"]} />
+  <row label="密文" cells={mode == "ecb" ? ["X", "Y", "X", "X"] : ["P", "Q", "R", "S"]}
        tones={mode == "ecb" ? ["same", "plain", "same", "same"] : "plain"}
        notes={mode == "ecb" ? ["和块3、块4相同", "", "和块1相同", "和块1相同"] : ["", "", "", ""]} />
-</Grid>
+</grid>
+
 ```
 ````
 

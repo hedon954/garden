@@ -1,8 +1,9 @@
 "use client";
 
-import ReactMarkdown from "react-markdown";
+import ReactMarkdown, {type Components} from "react-markdown";
 import rehypeRaw from "rehype-raw";
 import { useUiLang } from "../UiLang";
+import { readPayload } from "../../../ui/core/compile.mjs";
 import { parseCompose } from "../../../ui/compose/index.mjs";
 import { renderCompose } from "../../../ui/compose/render.mjs";
 import { readGardenPayload } from "../../lib/remark-garden.mjs";
@@ -52,6 +53,7 @@ export function GardenBlock({ dataPayload }: { dataPayload?: string }) {
             block={{
               id: block.id,
               props,
+              payload: block.payload ? readPayload(JSON.stringify(block.payload)) : null,
               children: String(block.children ?? ""),
               uiSource: typeof block.uiSource === "string" ? block.uiSource : undefined,
             }}

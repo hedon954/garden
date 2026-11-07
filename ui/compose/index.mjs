@@ -6,3 +6,5 @@ export { ICON_NAMES, hasIcon, iconSvg } from "./icons.mjs";
 export function isComposeInfo(info) {
   return /^compose(?:\s|$)/iu.test(String(info ?? "").trim());
 }
+
+export {composeSchema} from "./contracts.mjs";

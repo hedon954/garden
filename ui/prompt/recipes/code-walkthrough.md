@@ -13,26 +13,31 @@
 阶段 6 之前：
 
 ````md
-```ui
----
+```garden compose
 id: binary-search-vars
 caption: 每比较一次，搜索区间就缩小一半；8 个元素最多比较 4 次。
 intent: |
   在 [1 3 5 7 9 11 13 15] 里找 9，一步步列出 lo、hi、mid 和比较结果。
 ---
-<State step={0} />
-<Let los={[0, 4, 4]} his={[7, 7, 4]} mids={[3, 5, 4]} prev={max(step - 1, 0)} />
+{@body const [step, setStep] = DIL.useState(0)}
+{@body const los = [0, 4, 4]}
+{@body const his = [7, 7, 4]}
+{@body const mids = [3, 5, 4]}
+{@body const prev = max(step - 1, 0)}
 
-<Steps bind="step">
-  <Step title="第 1 次">mid = 3，a[3] = 7 小于 9，目标在右半边。</Step>
-  <Step title="第 2 次">lo 移到 4；mid = 5，a[5] = 11 大于 9，目标在左半边。</Step>
-  <Step title="第 3 次">hi 移到 4；mid = 4，a[4] = 9，找到。</Step>
-</Steps>
 
-<Table columns={["lo", "hi", "mid"]}>
-  <Row cells={[los[step], his[step], mids[step]]}
+
+<steps bind="step">
+  <step title="第 1 次">mid = 3，a[3] = 7 小于 9，目标在右半边。</step>
+  <step title="第 2 次">lo 移到 4；mid = 5，a[5] = 11 大于 9，目标在左半边。</step>
+  <step title="第 3 次">hi 移到 4；mid = 4，a[4] = 9，找到。</step>
+</steps>
+
+<table columns={["lo", "hi", "mid"]}>
+  <row cells={[los[step], his[step], mids[step]]}
        tones={step == 0 ? "plain" : [los[step] != los[prev] ? "new" : "plain", his[step] != his[prev] ? "new" : "plain", "new"]} />
-</Table>
+</table>
+
 ```
 ````
 

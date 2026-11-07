@@ -21,9 +21,7 @@ export function siteCliLang(siteRoot) {
 
 const zh = {
   checkPass: (n) => `检查通过（${n} 个文件）\n`,
-  ideaUncompiled: (file, line) => `${file}:${line}  -  garden-idea  还有没编译的想法\n`,
   composeUncompiled: (file, line) => `${file}:${line}  -  compose-uncompiled  还有没编译的 compose 想法\n`,
-  intentUncompiled: (file, line, id) => `${file}:${line}  ${id ?? "-"}  intent-uncompiled  还有没编译的 intent 块\n`,
   promptWritten: (rel, copied) => `已写入 ${rel}${copied ? "，并已复制到剪贴板" : ""}。\n`,
   reminder: (line) => `提醒  ${line}\n`,
   promptIntro: "请处理下面 Garden 博文里列出的块：没编译的想法要编译，有错误的交互块要修好。",
@@ -33,20 +31,16 @@ const zh = {
   promptRuleCheck: "- 不改作者原话的意思。改完运行 npx garden ui check <稿件>，直到通过。",
   promptRuleOffline: "- 如果你不能访问这个仓库，就只回复每块修好后的完整围栏。",
   promptItem: (i, file, start, end, target) => `${i}. ${file}，第 ${start}–${end} 行，${target}`,
-  promptGardenIdea: "   - garden-idea：这段想法还没编译，请按原话编译成 garden compose（DIL：Markdown+小写标签；可调参数用 play/{@body}）或其他 garden 组件（或判断后写回正文）。遗留 interactive 仅作兼容。",
-  promptCompose: "   - compose-uncompiled：围栏类型保持 garden compose。把原话原样放进 <intent>，正文写成 DIL（Markdown + 小写目录标签；play 可用 {@body}/{expr}/{#if}/{#each}）。不要写成 YAML 槽，不要改成别的组件，也不要写任意 HTML 或脚本。",
-  promptIntent: "   - intent-uncompiled：这段想法还没编译，请按原话编译成 ui 块（或判断后写回正文）。",
+  promptCompose: "   - compose-uncompiled：围栏类型保持 garden compose。把原话原样放进 <intent>，正文写成 DIL（Markdown + 小写目录标签；play 可用 {@body}/{expr}/{#if}/{#each}）。用内容岛组合 Markdown 与受校验的安全 HTML；执行代码只用隔离 sandbox。",
   promptDiag: (line, code, message) => `   - 第 ${line} 行 ${code}：${message}`,
   promptFence: "当前围栏：",
   promptTruncated: (max) => `（只附了前 ${max} 块的原文，其余按上面的位置去稿件里找。）`,
-  promptStandalone: "以下是 Garden ui 块的完整写作规则、组件参考和配方：",
+  promptStandalone: "以下是 Garden Compose的完整写作规则、组件参考和配方：",
 };
 
 const en = {
   checkPass: (n) => `Check passed (${n} ${n === 1 ? "file" : "files"})\n`,
-  ideaUncompiled: (file, line) => `${file}:${line}  -  garden-idea  uncompiled idea remaining\n`,
   composeUncompiled: (file, line) => `${file}:${line}  -  compose-uncompiled  uncompiled compose idea remaining\n`,
-  intentUncompiled: (file, line, id) => `${file}:${line}  ${id ?? "-"}  intent-uncompiled  uncompiled intent block remaining\n`,
   promptWritten: (rel, copied) => `Wrote ${rel}${copied ? " and copied it to the clipboard" : ""}.\n`,
   reminder: (line) => `note  ${line}\n`,
   promptIntro: "Handle the Garden post blocks listed below: compile uncompiled ideas, and fix interactive blocks that have errors.",
@@ -56,9 +50,7 @@ const en = {
   promptRuleCheck: "- Keep the author's meaning. When done, run npx garden ui check <post> until it passes.",
   promptRuleOffline: "- If you cannot access this repository, reply with only the finished fence for each block.",
   promptItem: (i, file, start, end, target) => `${i}. ${file}, lines ${start}–${end}, ${target}`,
-  promptGardenIdea: "   - garden-idea: this idea is not compiled yet; compile it into garden compose (DIL: Markdown + lowercase tags; tunable play with {@body}) or another garden component (or put the sentence back into the prose). Legacy interactive is compat only.",
   promptCompose: "   - compose-uncompiled: keep the fence type garden compose. Put the author's sentence in <intent> unchanged and write DIL (Markdown + lowercase catalog tags; play may use {@body}/{expr}/{#if}/{#each}). Do not write YAML slots, switch components, or write arbitrary HTML or scripts.",
-  promptIntent: "   - intent-uncompiled: this idea is not compiled yet; compile it into a ui block (or put the sentence back into the prose).",
   promptDiag: (line, code, message) => `   - line ${line} ${code}: ${message}`,
   promptFence: "Current fence:",
   promptTruncated: (max) => `(Only the first ${max} fences are attached; open the post for the rest.)`,

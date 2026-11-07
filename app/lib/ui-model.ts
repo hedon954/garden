@@ -9,8 +9,8 @@ import converter from "../../ui/prompt/recipes/converter.md?raw";
 import plan from "../../ui/prompt/recipes/plan.md?raw";
 import dataChart from "../../ui/prompt/recipes/data-chart.md?raw";
 import codeWalkthrough from "../../ui/prompt/recipes/code-walkthrough.md?raw";
-import { findBlocks, intentHash, setCompiled, splitUiBody } from "../../ui/core/fence.mjs";
-import { checkUiBlock } from "../../ui/core/validate.mjs";
+import { findBlocks } from "../../ui/core/fence.mjs";
+import { checkComposeFence } from "../../ui/core/scan.mjs";
 import { buildPrompt, RECIPE_FILES } from "../../ui/prompt/build.mjs";
 
 const recipeText: Record<string, string> = {
@@ -91,7 +91,7 @@ async function complete(messages: Message[]) {
 }
 
 function extract(content: string) {
-  const fence = findBlocks(content).find((block) => block.lang === "ui" && block.closed);
+  const fence = findBlocks(content).find((block) => block.lang === "garden-compose" && block.closed);
   const before = fence ? content.slice(0, fence.start) : content;
   const note = /^提醒[:：]\s*(.+)$/mu.exec(before)?.[1]?.trim() ?? null;
   return { fence, note };
@@ -122,14 +122,13 @@ export async function draftUiBlock(input: { mode: "create" | "revise"; instructi
     const { fence, note } = extract(reply.content);
     if (!fence) {
       if (round === 2) break;
-      messages.push({ role: "assistant", content: reply.content }, { role: "user", content: "回复里没有 ui 围栏。请只回复一个完整的 ui 围栏。" });
+      messages.push({ role: "assistant", content: reply.content }, { role: "user", content: "回复里没有 garden compose 围栏。请只回复一个完整的 garden compose 围栏。" });
       continue;
     }
     // lineOffset 1: in the workbench editor the fence starts on line 1.
-    const check = checkUiBlock(fence.body, { lineOffset: 1, skipData: true });
+    const check = checkComposeFence(fence, {skipData:true});
     const errors = (check.diagnostics as DraftDiagnostic[]).filter((item) => item.severity === "error");
-    const { header } = splitUiBody(fence.body);
-    const stamped = typeof header?.intent === "string" ? setCompiled(fence.raw, intentHash(header.intent)) : fence.raw;
+    const stamped = fence.raw;
     if (!errors.length || round === 2) {
       return { fence: stamped, note, diagnostics: check.diagnostics as DraftDiagnostic[], rounds: round, usage };
     }
@@ -137,9 +136,9 @@ export async function draftUiBlock(input: { mode: "create" | "revise"; instructi
       { role: "assistant", content: reply.content },
       {
         role: "user",
-        content: `程序校验发现这些问题：\n${errors.map((item) => `- 第 ${item.line} 行 ${item.code}：${item.message}`).join("\n")}\n请修正后重新给出完整的 ui 围栏，格式不变。`,
+        content: `程序校验发现这些问题：\n${errors.map((item) => `- 第 ${item.line} 行 ${item.code}：${item.message}`).join("\n")}\n请修正后重新给出完整的 garden compose 围栏，格式不变。`,
       },
     );
   }
-  return { fence: null, note: null, diagnostics: [], rounds: 2, usage, error: "模型没有给出 ui 围栏", raw: lastContent };
+  return { fence: null, note: null, diagnostics: [], rounds: 2, usage, error: "模型没有给出 garden compose 围栏", raw: lastContent };
 }

@@ -11,29 +11,31 @@
 **骨架：** `State step={0}`，`Steps bind="step"` 里每步一句话；旁边放一个随 `step` 变化的 `Grid` 或 `Table`，把这一步变了的地方标成 `new`。
 
 ````md
-```ui
----
+```garden compose
 id: prefill-decode
 caption: Prefill 一次写满 3 行 K/V；之后每步只新算 1 行，其余读缓存。
 intent: |
   让读者一步步看 KV cache 怎么增长：prompt 3 个 token，再 decode 两步。
   每步标出哪一行是新算的，哪些是读缓存。
 ---
-<State step={0} />
-<Let rows={step + 3} />
+{@body const [step, setStep] = DIL.useState(0)}
+{@body const rows = step + 3}
 
-<Steps bind="step">
-  <Step title="Prefill">一次算完 3 个 prompt token 的 K/V，全部写进缓存。</Step>
-  <Step title="Decode 1">新 token 只算自己的 K/V，追加第 4 行；前 3 行直接读缓存。</Step>
-  <Step title="Decode 2">再追加一行。缓存里已有 {rows} 行，本步新算 1 行。</Step>
-</Steps>
 
-<Grid cols={["K", "V"]} legend={{ new: "本步新算", cached: "读缓存" }}>
-  <Each of={range(0, rows)} as="i">
-    <Row label={"t" + (i + 1)} cells={["k" + (i + 1), "v" + (i + 1)]}
+
+<steps bind="step">
+  <step title="Prefill">一次算完 3 个 prompt token 的 K/V，全部写进缓存。</step>
+  <step title="Decode 1">新 token 只算自己的 K/V，追加第 4 行；前 3 行直接读缓存。</step>
+  <step title="Decode 2">再追加一行。缓存里已有 {rows} 行，本步新算 1 行。</step>
+</steps>
+
+<grid cols={["K", "V"]} legend={{ new: "本步新算", cached: "读缓存" }}>
+  {#each range(0, rows) as i}
+    <row label={"t" + (i + 1)} cells={["k" + (i + 1), "v" + (i + 1)]}
          tones={step == 0 || i == rows - 1 ? "new" : "cached"} />
-  </Each>
-</Grid>
+  {/each}
+</grid>
+
 ```
 ````
 

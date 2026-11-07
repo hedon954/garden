@@ -11,26 +11,30 @@
 **骨架：** `Columns` 里放两个 `Card`，两边读同一个状态；共同的输入（`Slider`、`Toggle`）放在上面。想强调胜出的一方时，给它 `tone="accent"`。
 
 ````md
-```ui
----
+```garden compose
 id: mutex-vs-rwlock
 caption: 读者越多，Mutex 越慢；RwLock 让读者并行，总耗时不变。
 intent: |
   对比 Mutex 和 RwLock：读者数量 1 到 8 可调，一个写者，每次读写 10 ms，看总耗时。
 expect:
-  - given: { readers: 3 }
+  - given:
+      readers: 3
     mutexMs: 40
     rwMs: 20
 ---
-<State readers={3} />
-<Let mutexMs={(readers + 1) * 10} rwMs={20} />
+{@body const [readers, setReaders] = DIL.useState(3)}
+{@body const mutexMs = (readers + 1) * 10}
+{@body const rwMs = 20}
 
-<Slider bind="readers" label="同时到达的读者" min={1} max={8} unit="个" />
 
-<Columns>
-  <Card title="Mutex">读者和写者一个接一个，共 **{mutexMs} ms**。</Card>
-  <Card title="RwLock" tone="accent">{readers} 个读者一起读，写者再独占，共 **{rwMs} ms**。</Card>
-</Columns>
+
+<slider bind="readers" label="同时到达的读者" min={1} max={8} unit="个" />
+
+<columns>
+  <card title="Mutex">读者和写者一个接一个，共 **{mutexMs} ms**。</card>
+  <card title="RwLock" tone="accent">{readers} 个读者一起读，写者再独占，共 **{rwMs} ms**。</card>
+</columns>
+
 ```
 ````
 

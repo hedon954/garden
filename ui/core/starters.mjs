@@ -1,5 +1,5 @@
 /**
- * Spoken starters for "insert an intent block". Editors show `label`, insert
+ * Spoken starters for "insert a Compose brief". Editors show `label`, insert
  * `text`; component names never appear, authors only describe what readers do.
  */
 export const STARTERS = [
@@ -13,6 +13,6 @@ export const STARTERS = [
 ];
 
 /** The fence an editor inserts; `text` may be empty for a blank block. */
-export function intentFence(text = "") {
-  return `\`\`\`intent\n${text}\n\`\`\`\n`;
+export function composeFence(text = "") {
+  return `\`\`\`garden compose\n${text}\n\`\`\`\n`;
 }

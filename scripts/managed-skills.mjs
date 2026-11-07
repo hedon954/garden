@@ -47,13 +47,7 @@ export function installManagedSkills({ engineRoot, siteRoot, lang = 'zh', log = 
   const backupRoot=path.join(siteRoot,'.garden/skill-backups',stamp);
   const backup=(relative,bytes)=>{const file=path.join(backupRoot,relative);fs.mkdirSync(path.dirname(file),{recursive:true});fs.writeFileSync(file,bytes);};
   const targetRoot=path.join(siteRoot,'.agents/skills');
-  for(const name of [...names,'garden-ui','garden-interactive-chart'])inventory(path.join(targetRoot,name));
-  // Retired skills are backed up in full, including locally authored extra files.
-  for(const name of ['garden-ui','garden-interactive-chart']) {
-    const dir=path.join(targetRoot,name);
-    for(const [relative,bytes] of Object.entries(inventory(dir)))backup(path.join(name,relative),bytes);
-    if(fs.existsSync(dir))fs.rmSync(dir,{recursive:true});
-  }
+  for(const name of names)inventory(path.join(targetRoot,name));
   const next={};
   for(const name of names)next[name]=syncManagedTree({destination:path.join(targetRoot,name),files:bundles[name],previous:state[name]??{},backup:(relative,bytes)=>backup(path.join(name,relative),bytes)});
   fs.mkdirSync(path.dirname(statePath),{recursive:true});const tmp=statePath+'.tmp';fs.writeFileSync(tmp,JSON.stringify(next,null,2)+'\n');fs.renameSync(tmp,statePath);

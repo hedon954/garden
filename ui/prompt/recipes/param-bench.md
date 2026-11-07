@@ -11,8 +11,7 @@
 **骨架：** `State` 放输入，`Let` 写公式，`Slider` 绑输入，一句带插值的话说出当前结果，需要看趋势时加 `Chart sweep`。
 
 ````md
-```ui
----
+```garden compose
 id: kv-memory
 caption: 显存与 batch、序列长度都成正比；batch 8、序列 32K 就要 32 GiB。
 intent: |
@@ -21,22 +20,28 @@ intent: |
   显存 = 2 × 32 层 × 8 个 KV 头 × 128 维 × 序列长度 × batch × 2 字节。
   batch 1、序列 4096 时是 512 MiB。
 expect:
-  - given: { batch: 1, seq: 4096 }
+  - given:
+      batch: 1
+      seq: 4096
     mem: 536870912
 ---
-<State batch={1} seq={4096} />
-<Let mem={2 * 32 * 8 * 128 * seq * batch * 2} />
+{@body const [batch, setBatch] = DIL.useState(1)}
+{@body const [seq, setSeq] = DIL.useState(4096)}
+{@body const mem = 2 * 32 * 8 * 128 * seq * batch * 2}
 
-<Columns>
-  <Slider bind="batch" label="batch" min={1} max={32} />
-  <Slider bind="seq" label="序列长度" min={1024} max={32768} scale="log" format="thousands" />
-</Columns>
+
+
+<columns>
+  <slider bind="batch" label="batch" min={1} max={32} />
+  <slider bind="seq" label="序列长度" min={1024} max={32768} scale="log" format="thousands" />
+</columns>
 
 batch 为 {batch}、序列 {thousands(seq)} 时，KV cache 要 **{bytes(mem)}**。
 
-<Chart sweep="seq" yLabel="KV 显存">
-  <Line y={mem} label="KV 显存" format="bytes" />
-</Chart>
+<chart sweep="seq" yLabel="KV 显存">
+  <line y={mem} label="KV 显存" format="bytes" />
+</chart>
+
 ```
 ````
 

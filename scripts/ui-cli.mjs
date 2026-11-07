@@ -4,7 +4,7 @@ import path from "node:path";
 import matter from "gray-matter";
 import { parse as parseYaml } from "yaml";
 import { applyBlock, ApplyError } from "../ui/core/apply.mjs";
-import { catalogSchema } from "../ui/core/catalog.mjs";
+import {composeSchema} from "../ui/compose/contracts.mjs";
 import { buildFixPrompt } from "../ui/core/fix-prompt.mjs";
 import { cliText, siteCliLang } from "../ui/core/cli-locale.mjs";
 import { scanMarkdown } from "../ui/core/scan.mjs";
@@ -157,7 +157,7 @@ function commandCheck() {
         warnings.push(`${target.file}:${item.line}  ${block.id ?? "-"}  ${item.code}  ${item.message}`);
       }
       const uncompiledCompose = block.lang === "garden-compose" && block.status === "uncompiled";
-      if ((block.lang === "intent" || block.lang === "garden-idea" || uncompiledCompose)) problems.push({ file: target.file, block, diagnostics: [] });
+      if (uncompiledCompose) problems.push({ file: target.file, block, diagnostics: [] });
       else if (errors.length) problems.push({ file: target.file, block, diagnostics: errors });
     }
   }
@@ -167,12 +167,6 @@ function commandCheck() {
     return;
   }
   for (const problem of problems) {
-    if (problem.block.lang === "intent") {
-      process.stderr.write(t.intentUncompiled(problem.file, problem.block.startLine, problem.block.id));
-    }
-    if (problem.block.lang === "garden-idea") {
-      process.stderr.write(t.ideaUncompiled(problem.file, problem.block.startLine));
-    }
     if (problem.block.lang === "garden-compose" && problem.block.status === "uncompiled") {
       process.stderr.write(t.composeUncompiled(problem.file, problem.block.startLine));
     }
@@ -291,7 +285,7 @@ switch (command) {
     process.stdout.write(promptText({ studio: flag("studio") }));
     break;
   case "schema":
-    process.stdout.write(`${JSON.stringify(catalogSchema(), null, 2)}\n`);
+    process.stdout.write(`${JSON.stringify(composeSchema(), null, 2)}\n`);
     break;
   case "catalog":
     commandCatalog();
@@ -302,7 +296,7 @@ switch (command) {
   garden ui scan <稿件.md>                 列出块、状态、行号和哈希（JSON）
   garden ui check <稿件.md>... | --staged | --all [--out 文件] [--standalone]
     默认只输出诊断和技能调用指令；--out 显式导出，--standalone 仅为导出附加完整参考
-                                           检查 garden 想法和 garden interactive（以及旧的 ui / intent 块），失败时给出修复提示词
+                                           检查 garden compose 原话、静态场景和参数交互，失败时给出修复提示词
   garden ui apply <稿件.md> --id <id> [--base <哈希>] [--file 新内容.md]
                                            只替换一块，围栏外逐字节不变
   garden ui prompt [--studio]              打印写作规则、组件参考和配方

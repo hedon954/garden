@@ -11,33 +11,36 @@
 **骨架：** 一个 `Slider` 或 `Choice` 作为输入；把每一项的单位用量写进 `Let` 数组；`Table` 里用 `Each` 逐项生成行。
 
 ````md
-```ui
----
+```garden compose
 id: roast-shopping
 caption: 用料按人数线性换算；带骨羊腿每人 0.4 kg。
 intent: |
   按人数（2 到 12 人，默认 6 人）算周日烤羊腿要买多少：
   带骨羊腿每人 0.4 kg，土豆每人 250 g，胡萝卜每人 1.5 根，甜点苹果每人半个。
 expect:
-  - given: { guests: 6 }
+  - given:
+      guests: 6
     lamb: 2.4
 ---
-<State guests={6} />
-<Let lamb={0.4 * guests}
-     items={[
+{@body const [guests, setGuests] = DIL.useState(6)}
+{@body const lamb = 0.4 * guests}
+{@body const items = [
        { name: "土豆", per: 250, unit: "g" },
        { name: "胡萝卜", per: 1.5, unit: "根" },
        { name: "苹果（甜点）", per: 0.5, unit: "个" },
-     ]} />
+     ]}
 
-<Slider bind="guests" label="人数" min={2} max={12} unit="人" />
 
-<Table columns={[{ label: "食材" }, { label: "数量", align: "right" }]}>
-  <Row cells={["带骨羊腿", fixed(lamb, 1) + " kg"]} tones="accent" />
-  <Each of={items} as="it">
-    <Row cells={[it.name, ceil(it.per * guests) + " " + it.unit]} />
-  </Each>
-</Table>
+
+<slider bind="guests" label="人数" min={2} max={12} unit="人" />
+
+<table columns={[{ label: "食材" }, { label: "数量", align: "right" }]}>
+  <row cells={["带骨羊腿", fixed(lamb, 1) + " kg"]} tones="accent" />
+  {#each items as it}
+    <row cells={[it.name, ceil(it.per * guests) + " " + it.unit]} />
+  {/each}
+</table>
+
 ```
 ````
 

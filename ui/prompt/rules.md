@@ -1,148 +1,41 @@
-# 把作者的想法编译成 Garden 块
+# 在一个 Compose 场景内组合文章内容
 
-文章里只有一种写法：`garden` 围栏。名字只有 card、stat、compare、timeline、chart、compose、html、interactive、file、relations、list、choice。裸 `garden` 围栏是作者的想法，发布前编译掉。`garden compose` 在正文还是白话时也是未编译的想法，编译后围栏类型仍是 `garden compose`。不要再写 `ui`、`widget`、`embed`、`intent` 或 `garden:名字`。
+作者只使用 `garden compose`。作者可以只写原话；AI 在场景内部选择内容与布局，不让作者选择不同围栏。发布前必须把原话编译为可解析的场景。
 
-## 只用作者的原文
+## 执行顺序
 
-- 只用作者已经写过的句子。不改措辞，不补例子，不编数字。
-- 不写测验，不写「作用」「适用」「特点」「说明」「要点」「互动版」「示例图」「点击」「点按」这类填充标签或过程旁白。
-- 并排格子只放大约 60 字以内的短句。格子里放不下的，留在正文。
-- 不要把连续段落拆成步骤。读者没有状态可以改时，不要做 interactive。
-- 计算器只给复杂公式。一次乘法留在正文里。
-- 保留作者自己的 mermaid。全局概览图保持一整张，不要拆开。
-- 正文已经读得清楚时，不要再套一个组件。
+1. 识别原文中的并列、先后、包含、共享起点与交互关系，不先收集零散图标、标题和线条。
+2. 把关系写成层级：同一条目的标题和全部段落属于同一个文本容器；图标属于固定左列；分隔线在相邻行之间，不放进文字列。
+3. 选择布局与比例，先保证换行和窄屏可读，再做间距、颜色和强调。不删事实、不补数字、不把正文缩小来挤进框。
+4. 用真实 CLI 检查、真实文章主题渲染，再检查几何与交互。解析通过不等于视觉正确；手写场景通过不证明 AI 能稳定生成。
 
-## 静态 garden 组件字段与校验规则
+## 内容和样式
 
-除 `interactive` 和 `compose` 外，其余 `garden <name>` 组件都用 YAML 书写：
+- 普通文章段落、标准列表和图片足够时不必额外包场景。保留作者的文字、链接、资源和 Mermaid。
+- `<markdown>…</markdown>` 与 `<html>…</html>` 是静态文章内容岛：支持 Markdown 块、强调、代码、链接、删除线和安全 HTML（如 `<u>`、details、表格）。它们不执行状态插值。
+- HTML 使用实际允许的标签/属性和局部 CSS；脚本、事件、脚本 URL 和不支持的样式会报错。不要把内容岛当成任意浏览器应用。
+- 需要执行 JavaScript 的独立画布用 `<sandbox html={"…"} css={"…"} js={"…"}/>`，脚本在隔离 iframe 中运行，不能加载远程资源，不与正文共享 DOM。
+- 默认正文的字体与字号继承实际文章配置；不是固定像素值。`text/title` 的 `size="sm|lg|xl"` 是有意的相对强调，不用于缩字塞框。图表标签、指标值、标题、说明和控件各有语义层级。
+- 默认保留场景外框；静态场景的唯一最外层可写 `<figure frame="none">…</figure>`，Play 块头可写 `frame: none`。不影响内部明确的卡片。
 
-- `garden card`：
-  - 单卡模式：支持 `title`、`url`、`meta`、`description`（或别名 `text`）、`points`（字符串数组或 `{ title, text? }[]`，别名 `items`）、`image`、`alt`、`source`、`site`、`takeaway`（`description`、`points`、`cards` 至少填一项）。
-  - 多卡模式（`cards:` 数组）：每项支持 `url`、`title`、`description`（或 `text`）、`image`、`alt`、`meta`、`source`、`takeaway`（如 `"**可借鉴：** ……"`）。
-  - `source` 支持单个链接、`{ url, site?, icon? }` 或链接数组；单个来源显示去掉 `www.` 的域名，多个来源自动折叠为第一个域名加 `+N`（如 `gutenberg.org +1`）。构建期下载到的 Favicon 优先于手写的 `icon`；都没有时取可注册域名主体的首字母大写（如 `en.wikipedia.org` -> `W`，`bbc.co.uk` -> `B`）。
-  - 正文行内链接末尾紧跟 `{source}`（如 `[wikipedia.org](https://en.wikipedia.org/wiki/Book_discussion_club){source}`）渲染为不带 `↗` 的行内来源胶囊。
-- `garden stat`：`items` 数组（建议 2～4 项，单项也可直接把字段写在顶层），每项必填 `label` 与 `value`，可选 `unit`、`caption`、`text`、`source`。
-- `garden compare`：`items` 数组（至少 2 项），每项含 `title`、`text`（也可写一行 `"标题：说明"` 字符串）。
-  - 并排模式：每格文字不超过约 60 字，超出报 `compare-long` 错误；额外键值渲染为底部属性标签。
-  - 正反对照模式：给条目加 `verdict: bad` 或 `verdict: good`，改为上下堆叠并显示红叉或绿勾，不受 60 字 `compare-long` 限制。
-- `garden timeline`：可选 `title`，必填 `items` 数组（至少 2 项，每项含可选 `date`、必填 `title`、可选 `text`、`source`）。
-- `garden chart`：可选 `type`（`"bar"`）、`title`、`unit`、`x`、`xLabel`、`yLabel`、`caption`，必填 `data`（`{ x, y, label? }[]`，至少 2 项）或 `series`（配 `x` 标签数组）。自带可展开数据表，同节不要重复手写相同数据的 Markdown 表。
-- `garden compose`：不是 YAML 槽。叶子是 Markdown（标题、段落、`**强调**`、列表），结构是 **compose 目录**里的小写标签（完整列表见下方「compose 目录」：约 68 个标签 + Lucide 图标名 + token）。作者原话放进 `<intent>`，不画出来。芯片内部用 `gap={0}`/`gap={1}`，章节堆叠用 `gap={2}`/`gap={3}`；日横幅等宽用 `flex:1`；tip 钉右边用 `justify="between"`；phrasing 叶子保留前导 `*`。不要写脚本、任意 HTML/SVG 或宽度；自定义文字/背景色只用受支持标签的 `color` / `backgroundColor` 字面量（含 transparent），不写 style、url()、var() 或 CSS 声明。**静态 diagram** 只写 Markdown+标签；**play（可调参数）** 仍用同一围栏，可用 `{@body}`、`{expr}`、`{#if}`/`{#each}` 与小写控件（`slider`/`choice`/`button`/`stat`…）。不要用 interactive 的 PascalCase 当作者输入。
-- `garden html`：`src`（同名子目录下的本地 `.html`）或 `code` 二选一，配 `title`、可选 `height`。
-- `garden file`：单文件填 `src`（可选 `title`、`note`），多文件填 `files` 数组（每项含 `src`、可选 `title`、`note`）。本地路径相对当前 Markdown 且不能越出 `content/`（否则报 `file-outside`），文件不存在报 `missing-asset`，单文件超过 `5 MB` 报 `file-large` 警告；不要手写 `resolved`（报 `garden-file`）。
-- `garden relations`：可选 `title`、`caption`，必填 `items`（3～6 项，每项含 `title`、`text`，节点无强调色选项），在 `items` 与 `links` 之间可选 `center: <序号|标题>`，可选 `links` 数组。
-  - `center`：把指定要素（1..N 序号或节点 `title`）放在正中，其余要素从正上方起顺时针均布在外圈；不做自动识别，写了不存在的 `center` 会使构建与检查失败（报 `garden-relations`）。
-  - `links` 每项必填 `from`、`to`（1..N 序号或节点 `title`，不能相同），可选 `style: solid | dashed`、`direction: one | both`、`label`。
-  - 首尾相接的循环把每一步写成一条 `link`（`1->2`、`2->3`、`3->4`、`4->1`）。任何宽度都画同一张关系图；`label` 写短一些，放不下时会变成圆圈序号并在图下列出。
-  - 要素不在 3～6 个之间、`center` 找不到对应要素或 `links` 不合法时报 `garden-relations` 错误（要素更多或有分支改用 ```mermaid 流程图，只走一遍的步骤用 `garden list`）。
-- `garden list`：可选 `title`、`caption`，必填 `items` 数组（每项含 `icon`、可选 `title`、`text` 字符串或字符串数组）。全不带 `title` 时为紧凑图标列表；任一项带 `title` 时为带分隔线的步骤列表。
-  - 可用 `icon` 名（23 个）：`search`、`eye`、`heart`、`chat`、`shield`、`wallet`、`bell`、`check`、`x`、`star`、`flag`、`clock`、`idea`、`book`、`link`、`user`、`chart`、`gear`、`file`、`pin`、`flask`、`target`、`question`。
-- `garden choice`：可选 `title`、`caption`，必填 `items` 数组（2～3 项，每项含 `icon`、`value`、`text`、`label`、`reply`），可选 `none: { label, reply }`（在卡片下方渲染为单行兜底文字按钮）。整组支持键盘方向键切换，窄屏下卡片单列纵向堆叠。
+## 原生语义组件
 
-遗留 `garden interactive` 的正文仍用下面的 PascalCase 组件和属性（见「interactive 组件参考」）。新的可调参数优先写 `garden compose` play（`{@body}` + 小写控件）。PascalCase 不是 compose 作者输入。
+在同一 Compose 内用 resource/resources、metric、timeline/event、relations/entity/edge、choices/choice-option、icon-list/entry、file/files、plot/datum、compare/item 表达对应内容。来源用 `reference href` 子项；文件保留真实构建解析与预览，禁止手写内部 resolved。目录由代码生成，未列出的属性不能猜。
 
-# 把作者的意图写成 Garden 的 interactive 块
+## 参数与状态
 
-你在帮一位技术博客作者，把他用自然语言写下的"这里想让读者动手看看"，写成 Garden 站点能直接绘制的 `ui` 块。读者在网页上拖滑杆、翻步骤、点格子，全部在本地计算，不会再调用模型。
-
-你只能使用下面"组件参考"里列出的组件和属性，用"配方"里的组合方式。目录里没有的东西，不要发明。
-
-## 一、ui 块长什么样
-
-一个 `ui` 围栏分两部分：开头 `---` 之间是块头（YAML），下面是正文。
+可调场景用块头 `caption`、`intent`、可选 `id/expect/frame`，然后 `---`，下面写 DIL：
 
 ````md
-```ui
+```garden compose
+caption: 参数变化会更新正文计算结果。
+intent: 保留作者的原话。
 ---
-id: kv-memory
-caption: 显存与 batch、序列长度都成正比；batch 8、序列 32K 就要 32 GiB。
-intent: |
-  （作者原话，一字不改）
-expect:
-  - given: { batch: 1, seq: 4096 }
-    mem: 536870912
----
-<State batch={1} seq={4096} />
-<Let mem={2 * 32 * 8 * 128 * seq * batch * 2} />
-
-<Slider bind="batch" label="batch" min={1} max={32} />
-<Slider bind="seq" label="序列长度" min={1024} max={32768} scale="log" format="thousands" />
-
-batch 为 {batch}、序列 {thousands(seq)} 时，KV cache 要 **{bytes(mem)}**。
-
-<Chart sweep="seq">
-  <Line y={mem} label="KV 显存" format="bytes" />
-</Chart>
+{@body const [n, setN] = DIL.useState(2)}
+{@body const doubled = n * 2}
+<slider label="数量" min={1} max={8} value={n} onChange={setN}/>
+结果：{doubled}
 ```
 ````
 
-### 块头
-
-- `id`：必填。小写字母、数字、连字符，篇内唯一。作者给了就用作者的。
-- `caption`：必填。一句判断，告诉没法交互的读者结论是什么。不能写"见下图""拖动滑杆试试"。
-- `intent`：作者原话，原样抄进来，不改一个字。
-- `expect`：作者原话里出现具体数值时必写，见第五节。
-- 不要写 `compiled`，它由工具生成。
-
-### 正文
-
-- 组件标签用大写开头，属性用名字传：字符串用双引号，数字、布尔、表达式用 `{}`。
-- 正文里可以写普通 Markdown 段落、加粗、列表；用 `{表达式}` 把会变的数字插进句子。字面的 `{` 写成 `\{`。
-- 不能写：标题、HTML 标签、图片语法、代码围栏、脚注、`import` / `export`。
-- 目录表达不了的画布（可转的示意、逐步出现的图钉、一段自包含动画）用 `<Sandbox>`。`html` / `css` / `js` 必须是字面量，不能加载远程脚本、图片或样式。脚本里可以用 `GardenUI.openUrl`（只打开 `https`）、`GardenUI.copy`，以及 `GardenUI.issuePrompt`。`issuePrompt` 只有宿主实现了继续对话时才可用；博客阅读页没有这个能力。
-
-## 二、状态和表达式
-
-- `<State 名字={默认值} />` 声明会变的量，值只能是数字、字符串或布尔字面量。
-- `<Let 名字={表达式} />` 声明由别的量算出来的值，数组和对象也用 `Let` 写。
-- 输入控件用 `bind="名字"` 绑定状态，名字必须先在 `State` 里声明，类型要一致。
-- `Steps` / `Tabs` 的 `bind` 绑定的是从 0 开始的序号。
-- 表达式是 JavaScript 表达式的子集：字面量、数组、对象、`+ - * / % **`、比较、`&& || ?? !`、三元、`a.b`、`a[i]`。
-- 只能调用这些函数：`abs min max floor ceil round trunc sqrt cbrt pow exp log log2 log10 sin cos tan atan2 clamp`、`range len sum avg col includes join`、`fixed percent bytes si thousands`、`float32 bits32 bits64`。常量只有 `PI`、`E`。
-- 不能写：赋值、函数、箭头函数、`new`、`this`、正则、`Math.xxx`、`.map()` 之类的方法调用。要循环就用 `<Each>`。
-- 数字是 JavaScript 双精度。要好读就用格式函数或组件的 `format`：`fixed:2`、`percent`、`bytes`、`si`、`thousands`。
-
-## 三、先判断要不要上交互
-
-先读作者原话和它所在的那一节，再决定：
-
-1. **写回正文**：一句话、一张静态表格或一张 Mermaid 就能说清，读者动手也不会多懂一点。
-2. **写 `ui`**：读者卡在下面某一种情况，动手能看懂：过程被拍成了一张图；参数是作者算好的死数字；二维结构被压成了表格；两种东西只能上下翻着对比；"如果……会怎样"没法试。
-3. **写 `widget`**：确实需要画布动画、音频、物理模拟这类目录里没有的能力。
-
-## 四、设计规则
-
-1. 默认状态就要能看出结论。不碰任何控件的读者，以及 RSS 里的静态版，也得读到重点。
-2. 每个控件都要改变看得见的东西。控件超过 3 个时，先考虑拆成两块。
-3. 不要重复周围散文已经讲过的内容，只放散文做不到的部分。
-4. 数字只来自作者原话或由原话里的公式算出。原话没给的数字，不要编；提到已有数据文件时用 `Data` 引用。
-5. 多列用 `Columns`，不写任何固定宽度；360px 宽的手机上也要能读。
-6. 一块里 `accent` / `waste` 色合起来最多用在两个焦点上。
-7. 块里不写标题，不写"如图所示"。
-8. 标签和说明用作者的语言，简短，不用感叹号，不写口号。
-
-## 五、写 expect
-
-作者原话里只要出现"某个输入下，结果是多少"，就写成断言：
-
-```yaml
-expect:
-  - given: { batch: 1, seq: 4096 }
-    mem: 536870912
-```
-
-- `given` 覆盖状态；其余键是状态名或 `Let` 名，值是期望结果。
-- 原话给的是近似值（"约 27.9 万"）时，写成 `{ value: 279000, tol: 0.01 }`，`tol` 是相对误差。
-- 断言不过时，先检查公式是否抄错，不要改断言去迁就公式。
-
-## 六、常见错误
-
-- 用了目录里没有的组件或属性，比如 `<Slidr>`、`<Text>`、`style="position:fixed"`；`color` / `backgroundColor` 仅在明确支持的组件上合法。
-- `bind` 的名字没在 `State` 里声明，或者类型不对（`Toggle` 绑了数字）。
-- `Step` 没放在 `Steps` 里，`Row` 没放在 `Table` / `Grid` 里。
-- 对数滑杆的 `min` 写成 0。
-- `Choice` 的默认值不在 `options` 里。
-- 用 `Math.pow`、`arr.map`、箭头函数。
-- 在正文里写 `##` 标题或 HTML。
-- `caption` 写成"拖动看看"，而不是一句结论。
-- 自己编原话里没有的数据。
+条件和重复使用 `{#if …}…{/if}`、`{#each rows as row, index}…{/each}`。静态语义子树可与控件并列，其自身状态不应因外层参数变化而被重置。不要把连续的正文硬拆成步骤或添加没有阅读价值的交互。

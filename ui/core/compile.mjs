@@ -18,7 +18,7 @@ function stripTree(node, resolveImage) {
 }
 
 /**
- * Checks a `ui` fence body and, when it passes, returns the JSON payload the
+ * Checks lowered internal component source and, when it passes, returns the JSON payload the
  * reading page renders. `resolveAsset(sidecarPath, written)` maps Image paths
  * to public URLs.
  */
@@ -46,13 +46,6 @@ export function compileUiBlock(body, options = {}) {
 }
 
 /** Serializes JSON into a fence whose marker is longer than any backtick run inside. */
-export function jsonFence(lang, value) {
-  const json = JSON.stringify(value);
-  const longest = Math.max(0, ...[...json.matchAll(/`+/gu)].map((match) => match[0].length));
-  const marker = "`".repeat(Math.max(3, longest + 1));
-  return `${marker}${lang}\n${json}\n${marker}`;
-}
-
 export function readPayload(source) {
   try {
     const value = JSON.parse(String(source).trim());

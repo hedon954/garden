@@ -13,27 +13,28 @@
 下面的数字只是示例；真实的块里，每个数字都必须来自原话或数据文件。
 
 ````md
-```ui
----
+```garden compose
 id: redis-io-threads
 caption: I/O 线程从 1 加到 4，QPS 涨了两倍多；再加到 8，只多了一成多。
 intent: |
   把 Redis I/O 线程数的压测结果画成柱状图，再列一张表：
   1 线程 98000，2 线程 181000，4 线程 312000，8 线程 356000。
 ---
-<Let bench={[
+{@body const bench = [
   { threads: 1, qps: 98000 },
   { threads: 2, qps: 181000 },
   { threads: 4, qps: 312000 },
   { threads: 8, qps: 356000 },
-]} />
+]}
 
-<Chart data={bench} x={threads} xLabel="I/O 线程" yLabel="QPS" yFormat="si">
-  <Bar y={qps} label="QPS" />
-</Chart>
 
-<Table data={bench} rowTone={threads == 4 ? "accent" : null}
+<chart data={bench} x={threads} xLabel="I/O 线程" yLabel="QPS" yFormat="si">
+  <bar y={qps} label="QPS" />
+</chart>
+
+<table data={bench} rowTone={threads == 4 ? "accent" : null}
        columns={[{ label: "I/O 线程", key: "threads" }, { label: "QPS", key: "qps", format: "thousands" }]} />
+
 ```
 ````
 

@@ -4,7 +4,7 @@ import { isColor } from "./color.mjs";
 import { COMPONENTS, COMPONENT_NAMES, TONES } from "./catalog.mjs";
 import { sandboxLimit, sandboxRemote } from "../host.mjs";
 import { analyzeExpr, createBudget, evaluate, ExprError } from "./expr.mjs";
-import { compiledOf, ID_PATTERN, intentHash, resolveSidecarPath, splitUiBody } from "./fence.mjs";
+import { ID_PATTERN, resolveSidecarPath, splitUiBody } from "./fence.mjs";
 import { isValidFormat } from "./format.mjs";
 import { parseUiBody } from "./parse.mjs";
 import {
@@ -141,12 +141,6 @@ export function checkUiBlock(body, options = {}) {
   }
   if (header.intent !== undefined && typeof header.intent !== "string") {
     add("ui-header", headerLine(headerText, "intent", lineOffset), "intent 必须是文字");
-  }
-  const compiled = compiledOf(headerText);
-  if (compiled !== undefined && !/^[0-9a-f]{8}$/u.test(compiled)) {
-    add("ui-header", headerLine(headerText, "compiled", lineOffset), "compiled 是工具写入的 8 位哈希，不要手改");
-  } else if (typeof header.intent === "string" && compiled !== undefined && compiled !== intentHash(header.intent)) {
-    add("ui-stale", headerLine(headerText, "compiled", lineOffset), "原话改过了，还没重编译", "warning");
   }
   if (header.expect !== undefined && !Array.isArray(header.expect)) {
     add("ui-header", headerLine(headerText, "expect", lineOffset), "expect 必须是数组");

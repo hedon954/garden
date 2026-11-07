@@ -4,11 +4,15 @@ import { defaultKeymap, history, historyKeymap } from "@codemirror/commands";
 import { RangeSetBuilder, StateEffect, StateField } from "@codemirror/state";
 import { Decoration, EditorView, keymap, lineNumbers, type DecorationSet } from "@codemirror/view";
 import { useEffect, useEffectEvent, useMemo, useRef, useState, useSyncExternalStore } from "react";
+import { parseGardenBlock } from "../../ui/garden/parse.mjs";
+import { GardenBlock } from "./garden/GardenBlock";
+import { parsePlayCompose, looksLikePlayCompose } from "../../ui/compose/dil.mjs";
+import { gardenInfoId } from "../../ui/core/garden-fence.mjs";
 import { compileUiBlock } from "../../ui/core/compile.mjs";
-import { fenceHash, findBlocks, idOf, intentHash, normalizeNewlines, scanFences, setCompiled, splitUiBody } from "../../ui/core/fence.mjs";
+import { fenceHash, findBlocks, idOf, intentHash, intentOf, normalizeNewlines } from "../../ui/core/fence.mjs";
 import { renderStatic } from "../../ui/core/static.mjs";
 import { collectDataSources } from "../../ui/core/transform.mjs";
-import { UiFigure, type Diagnostic, type UiPayload } from "../../ui/react";
+import { type Diagnostic, type UiPayload } from "../../ui/react";
 import { parseRecipe, type RecipeSource } from "../../ui/react/recipes";
 
 import { STUDIO_START_KEY, STUDIO_STORAGE_KEY as STORAGE_KEY } from "./ui-studio-keys";
@@ -48,13 +52,7 @@ function useDebounced<T>(value: T, delay: number) {
   return debounced;
 }
 
-function stamp(text: string) {
-  const fence = scanFences(text).find((item) => item.lang === "ui");
-  if (!fence) return text;
-  const { header } = splitUiBody(fence.body);
-  if (typeof header?.intent !== "string") return text;
-  return `${text.slice(0, fence.start)}${setCompiled(fence.raw, intentHash(header.intent))}${text.slice(fence.end)}`;
-}
+function stamp(text: string) { return text; }
 
 function loadSaved() {
   try {
@@ -133,27 +131,34 @@ function Studio({ configured, modelName, remaining: initialRemaining, recipes }:
 
   const debouncedText = useDebounced(text, 150);
   const compiled = useMemo(() => {
-    const fence = scanFences(debouncedText).find((item) => item.lang === "ui");
+    const fence = findBlocks(debouncedText).find((item) => item.lang === "garden-compose");
     if (!fence) {
       return {
         payload: null as UiPayload | null,
+        scene: null as string | null,
         diagnostics: debouncedText.trim()
-          ? [{ code: "ui-header", line: 1, message: "结构栏里要有一个 ```ui 围栏", severity: "error" } as Diagnostic]
+          ? [{ code: "ui-header", line: 1, message: "结构栏里要有一个 garden compose 围栏", severity: "error" } as Diagnostic]
           : [],
       };
     }
-    const result = compileUiBlock(fence.body, {
+    const block=parseGardenBlock(`garden ${fence.info}`,fence.body);
+    const error=block&&"error" in block?block.error:null;
+    if(!block||error)return {payload:null,scene:null,diagnostics:[{code:error?.code??"compose-invalid",line:fence.startLine,message:error?.message??"无效的 Compose",severity:"error"} as Diagnostic]};
+    if(!("mode" in block)||block.mode!=="play")return {payload:null,scene:encodeURIComponent(JSON.stringify(block)),diagnostics:[] as Diagnostic[]};
+    const parsed=parsePlayCompose({id:gardenInfoId(fence.info)},fence.body);
+    const result = compileUiBlock(parsed.uiSource, {
       lineOffset: fence.startLine,
       markdownPath: origin?.post ?? null,
       readData: (src: string) => dataFiles[src],
       skipData: !origin,
     });
-    return { payload: result.payload as UiPayload | null, diagnostics: result.check.diagnostics as Diagnostic[] };
+    return { payload: result.payload as UiPayload | null, scene:result.payload?encodeURIComponent(JSON.stringify({...block,payload:result.payload})):null, diagnostics: result.check.diagnostics as Diagnostic[] };
   }, [debouncedText, origin, dataFiles]);
 
-  const [lastGood, setLastGood] = useState<{ text: string; payload: UiPayload } | null>(null);
-  if (compiled.payload && lastGood?.text !== debouncedText) setLastGood({ text: debouncedText, payload: compiled.payload });
-  const shown = compiled.payload ?? lastGood?.payload ?? null;
+  const [lastGood,setLastGood]=useState<{text:string;payload:UiPayload|null;scene:string}|null>(null);
+  if(compiled.scene&&lastGood?.text!==debouncedText)setLastGood({text:debouncedText,payload:compiled.payload,scene:compiled.scene});
+  const shown=compiled.payload??lastGood?.payload??null;
+  const shownScene=compiled.scene??lastGood?.scene??null;
 
   useEffect(() => {
     viewRef.current?.dispatch({ effects: setErrorLines.of(compiled.diagnostics.filter((item) => item.severity === "error").map((item) => item.line)) });
@@ -226,17 +231,9 @@ function Studio({ configured, modelName, remaining: initialRemaining, recipes }:
     }
     const id = idOf(block);
     const base = fenceHash(block.raw);
-    if (block.lang === "intent") {
-      const intent = normalizeNewlines(block.body);
-      setOrigin({ post, target: id ? { id } : { intentHash: intentHash(intent) }, base });
-      setInstruction(intent);
-      replaceText("");
-      setMessage({ tone: "info", text: "已载入这段想法。按「生成」把它编译成 ui 块。" });
-    } else {
-      setOrigin({ post, target: id ? { id } : { intentHash: intentHash(splitUiBody(block.body).header?.intent ?? "") }, base });
-      replaceText(block.raw);
-      setMessage({ tone: "info", text: `已从 ${post} 打开 ${id ?? "这一块"}。改完用「复制写回命令」带回本地。` });
-    }
+    setOrigin({post,target:id?{id}:{intentHash:intentHash(intentOf(block)??"")},base});
+    replaceText(block.raw);
+    setMessage({tone:"info",text:`已从 ${post} 打开 ${id??"这一块"}。改完用「复制写回命令」带回本地。`});
     const sources = collectDataSources(block.raw);
     const loaded: Record<string, string> = {};
     for (const src of sources) {
@@ -341,7 +338,7 @@ function Studio({ configured, modelName, remaining: initialRemaining, recipes }:
                 <option value="">选一块</option>
                 {pickedBlocks.filter((block) => block.lang !== "widget").map((block) => (
                   <option key={block.startLine} value={block.startLine}>
-                    {`${block.lang === "intent" ? "想法" : "ui"} · ${block.id ?? `第 ${block.startLine} 行`} · ${block.status}`}
+                    {`${"Compose"} · ${block.id ?? `第 ${block.startLine} 行`} · ${block.status}`}
                   </option>
                 ))}
               </select>
@@ -387,9 +384,9 @@ function Studio({ configured, modelName, remaining: initialRemaining, recipes }:
         </div>
 
         <div className="ui-studio-preview" data-theme={theme} data-width={width} hidden={stage !== "preview"}>
-          {shown ? (
-            view === "interactive" ? (
-              <UiFigure payload={shown} />
+          {shownScene ? (
+            view === "interactive" || !shown ? (
+              <GardenBlock dataPayload={shownScene} />
             ) : (
               <figure className="garden-ui" lang="en-US">
                 <div className="garden-ui-body garden-ui-static" dangerouslySetInnerHTML={{ __html: renderStatic(shown, "html") }} />

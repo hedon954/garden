@@ -111,7 +111,7 @@ export function AdminBlocks({ siteUrl }: { siteUrl: string }) {
               <tbody>
                 {blocks.map((block) => (
                   <tr key={block.startLine}>
-                    <td>{block.lang === "intent" ? "想法" : "ui"} · {block.id ?? `第 ${block.startLine} 行`}</td>
+                    <td>{"Compose"} · {block.id ?? `第 ${block.startLine} 行`}</td>
                     <td><span className={`ui-admin-status ui-admin-status-${block.status}`}>{STATUS_LABELS[block.status]}</span></td>
                     <td>{block.caption ?? block.intent?.split("\n")[0] ?? ""}{block.diagnostics.length ? `（${block.diagnostics.length} 条诊断）` : ""}</td>
                     <td className="ui-admin-actions">

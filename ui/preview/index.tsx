@@ -188,4 +188,4 @@ export function renderCatalog(element: HTMLElement, options: { recipes?: RecipeS
 }
 
 export const catalogVersion = CATALOG_VERSION;
-export { intentFence, STARTERS as starters } from "../core/starters.mjs";
+export { composeFence, STARTERS as starters } from "../core/starters.mjs";

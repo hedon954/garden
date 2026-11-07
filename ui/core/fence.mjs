@@ -1,7 +1,8 @@
 import { parse as parseYaml } from "yaml";
 import { parseCompose } from "../compose/parse.mjs";
+import { looksLikePlayCompose, parsePlayCompose } from "../compose/dil.mjs";
 import { sha256Hex } from "./sha256.mjs";
-import { gardenInfoId, gardenKind, readInteractiveFence } from "./garden-fence.mjs";
+import { gardenInfoId, gardenKind } from "./garden-fence.mjs";
 
 export const normalizeNewlines = (text) => text.replace(/\r\n?/gu, "\n");
 
@@ -83,24 +84,13 @@ export function scanFences(markdown) {
   return fences;
 }
 
-export const BLOCK_LANGS = new Set(["ui", "intent", "widget"]);
-
-/**
- * Blocks the authoring tools act on. `garden` ideas and `garden interactive`
- * fences come back with lang `garden-idea` / `garden-interactive`; the older
- * `ui`, `intent` and `widget` fences keep their own lang.
- * @param {string} markdown @returns {Fence[]}
- */
+/** The authoring tools discover only Compose fences. */
 export function findBlocks(markdown) {
-  return scanFences(markdown).flatMap((fence) => {
-    if (BLOCK_LANGS.has(fence.lang)) return [fence];
-    const kind = gardenKind(fence);
-    return kind ? [{ ...fence, lang: `garden-${kind}` }] : [];
-  });
+  return scanFences(markdown).flatMap(fence=>gardenKind(fence)==="compose"?[{...fence,lang:"garden-compose"}]:[]);
 }
 
 /**
- * Splits a `ui` fence body into the YAML block header and the body. Returns
+ * Splits internal compiler source into the YAML block header and the body. Returns
  * `bodyLineOffset`, the number of lines before the body inside the fence.
  */
 export function splitUiBody(body) {
@@ -131,65 +121,19 @@ export function splitUiBody(body) {
   return { error: null, header, headerText, bodyText: lines.slice(closing + 1).join("\n"), bodyLineOffset: closing + 1 };
 }
 
-/** Writes `compiled:` by editing only that header line, keeping the author's formatting. */
-export function setCompiled(fenceRaw, hash) {
-  const lines = normalizeNewlines(fenceRaw).split("\n");
-  const headerStart = lines.findIndex((line, index) => index > 0 && line.trim() === "---");
-  if (headerStart !== 1) return fenceRaw;
-  const headerEnd = lines.findIndex((line, index) => index > headerStart && line.trim() === "---");
-  if (headerEnd < 0) return fenceRaw;
-  const existing = lines.findIndex((line, index) => index > headerStart && index < headerEnd && /^compiled\s*:/u.test(line));
-  if (existing >= 0) lines[existing] = `compiled: ${hash}`;
-  else lines.splice(headerEnd, 0, `compiled: ${hash}`);
-  return lines.join("\n");
-}
-
-/** Read from the raw header text: YAML would coerce hashes like 12e45678 into numbers. */
-export function compiledOf(headerText) {
-  const match = /^compiled\s*:\s*["']?([^"'\s]*)["']?\s*$/mu.exec(headerText ?? "");
-  return match ? match[1] : undefined;
-}
-
 export function intentOf(fence) {
-  if (fence.lang === "intent" || fence.lang === "garden-idea") return normalizeNewlines(fence.body);
-  if (fence.lang === "garden-compose") {
-    // Play (DIL or TEMP legacy PascalCase) carries intent in the YAML header above ---.
-    if (/\{@body\b|\{#(?:if|each)\b|<(?:slider|button|choice|stat|State|Let|Slider|If|Each)\b/u.test(fence.body ?? "")) {
-      const { props } = readInteractiveFence(fence);
-      return typeof props.intent === "string" ? props.intent : null;
-    }
-    const result = parseCompose(fence.body);
-    if (result.uncompiled) return normalizeNewlines(fence.body);
-    return result.doc?.intent ? result.doc.intent : null;
+  if(fence.lang!=="garden-compose")return null;
+  if(looksLikePlayCompose(fence.body)) {
+    const block=parsePlayCompose({id:gardenInfoId(fence.info)},fence.body);
+    return typeof block.props?.intent==="string"?block.props.intent:null;
   }
-  if (fence.lang === "garden-interactive") {
-    const { props } = readInteractiveFence(fence);
-    return typeof props.intent === "string" ? props.intent : null;
-  }
-  if (fence.lang === "ui") {
-    const { header } = splitUiBody(fence.body);
-    return typeof header?.intent === "string" ? header.intent : null;
-  }
-  if (fence.lang === "widget") {
-    try {
-      const data = parseYaml(fence.body);
-      return typeof data?.intent === "string" ? data.intent : null;
-    } catch {
-      return null;
-    }
-  }
-  return null;
+  const parsed=parseCompose(fence.body);
+  return parsed.uncompiled?normalizeNewlines(fence.body):parsed.doc?.intent||null;
 }
-
 export function idOf(fence) {
-  if (fence.lang === "intent") return fence.info.split(/\s+/u)[0] || null;
-  if (fence.lang === "garden-interactive") return readInteractiveFence(fence).id;
-  if (fence.lang === "garden-compose") return gardenInfoId(fence.info);
-  if (fence.lang === "ui") {
-    const { header } = splitUiBody(fence.body);
-    return typeof header?.id === "string" ? header.id : null;
-  }
-  return null;
+  if(fence.lang!=="garden-compose")return null;
+  const explicit=gardenInfoId(fence.info);
+  return explicit??(looksLikePlayCompose(fence.body)?parsePlayCompose({},fence.body).id:null);
 }
 
 export const ID_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/u;

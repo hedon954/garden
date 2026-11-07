@@ -5,7 +5,7 @@ import { readFileProps } from '../garden/file-block.mjs';
 import { relationIndex } from '../garden/relations.mjs';
 export const FEATURE_TAGS = new Set(['resources','resource','metric','timeline','relations','choices','files','file','plot','icon-list']);
 export const FEATURE_PARTS = new Set(['reference','point','event','entity','edge','choice-option','entry','datum']);
-const fields = {
+export const FEATURE_FIELDS = {
  resources:[],reference:['href','label'],
  resource:['href','title','description','image','alt','meta','source','takeaway'],
  metric:['label','value','unit','caption','source','text'],
@@ -22,7 +22,7 @@ export function featurePart(name,attrs,children=[]) {
  return {type:'feature-part',tag:name,attrs,children};
 }
 export function compileFeature(name,attrs,children,fail) {
- const allowed=fields[name]??[];
+ const allowed=FEATURE_FIELDS[name]??[];
  for(const key of Object.keys(attrs))if(!allowed.includes(key))fail(`<${name}> 不支持属性 ${key}；可用：${allowed.join(', ')}。`);
  for(const key of ['href','image','source','src'])if(attrs[key])articleUrl(attrs[key],key==='image');
  for(const key of ['title','description','caption','text','meta','takeaway','label','reply'])if(attrs[key])renderArticleContent(attrs[key],{inline:true});

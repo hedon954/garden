@@ -1,80 +1,37 @@
-import { stripCardMarkers } from "../garden/markdown-links.mjs";
-import { parse as parseYaml } from "yaml";
-import { compileUiBlock, jsonFence, readPayload } from "./compile.mjs";
-import { findBlocks, scanFences } from "./fence.mjs";
-import { renderStatic } from "./static.mjs";
-import { composeText, isComposeInfo, parseCompose, renderCompose } from "../compose/index.mjs";
-import { fileFeedMarkdown, fileSearchText } from "../garden/file-block.mjs";
+import {stripCardMarkers} from "../garden/markdown-links.mjs";
+import {parseUiBody} from "./parse.mjs";
+import {compileUiBlock,readPayload} from "./compile.mjs";
+import {findBlocks,scanFences} from "./fence.mjs";
+import {gardenInfoId} from "./garden-fence.mjs";
+import {renderStatic} from "./static.mjs";
+import {composeText,parseCompose,renderCompose} from "../compose/index.mjs";
+import {looksLikePlayCompose,parsePlayCompose} from "../compose/dil.mjs";
+import {fileFeedMarkdown} from "../garden/file-block.mjs";
+import {renderArticleContent} from "../garden/article-content.mjs";
 
-/**
- * Turns authored `ui` / `intent` fences into what the site renders.
- * - publish: errors are returned so the build can fail; intent is an error.
- * - preview: broken blocks become `ui-error` cards; intent stays as a card.
- */
-export function transformUiContent(markdown, options = {}) {
-  const { mode = "publish", markdownPath = null, readData = null, resolveAsset = null, lineOffset = 0 } = options;
-  const errors = [];
-  let output = markdown;
-  const blocks = findBlocks(markdown).filter((block) => block.lang === "ui" || block.lang === "intent");
-  for (const block of [...blocks].reverse()) {
-    let replacement = null;
-    if (block.lang === "intent") {
-      if (mode === "publish") {
-        errors.push({ code: "intent-uncompiled", line: block.startLine + lineOffset, message: "还有没编译的 intent 块", severity: "error" });
-      }
+/** Build-only serialization, consumed by the existing article component host. */
+const element = block => `<garden-block data-payload="${encodeURIComponent(JSON.stringify(block))}"></garden-block>`;
+function compiledCompose(fence,options={}) {
+  const block=parsePlayCompose({id:gardenInfoId(fence.info)},fence.body);
+  if(block.error)return {payload:null,check:{header:block.props,diagnostics:[{...block.error,line:fence.startLine??1,severity:"error"}]}};
+  return compileUiBlock(block.uiSource,options);
+}
+export function transformUiContent(markdown,options={}) {
+  const {mode="publish",lineOffset=0,...compileOptions}=options;
+  const errors=[];let content=markdown;
+  for(const fence of [...findBlocks(markdown)].reverse()) {
+    if(!looksLikePlayCompose(fence.body)) {
+      const parsed=parseCompose(fence.body);
+      if(!parsed.ok&&mode==="publish")errors.push({code:parsed.error?.code??"compose-uncompiled",line:fence.startLine+lineOffset,message:parsed.error?.message??"Compose 原话尚未编译",severity:"error"});
       continue;
     }
-    const { payload, check } = compileUiBlock(block.body, {
-      lineOffset: block.startLine + lineOffset,
-      markdownPath,
-      readData,
-      resolveAsset,
-    });
-    if (payload) {
-      replacement = jsonFence("ui", payload);
-    } else {
-      const blocking = check.diagnostics.filter((item) => item.severity === "error");
-      if (mode === "publish") {
-        errors.push(...blocking);
-        continue;
-      }
-      replacement = jsonFence("ui-error", {
-        id: check.header?.id ?? null,
-        caption: typeof check.header?.caption === "string" ? check.header.caption : "",
-        diagnostics: blocking,
-      });
-    }
-    output = `${output.slice(0, block.start)}${replacement}${output.slice(block.end)}`;
+    const {payload,check}=compiledCompose(fence,compileOptions);
+    const diagnostics=check.diagnostics.filter(d=>d.severity==="error").map(d=>({...d,line:fence.startLine+lineOffset}));
+    if(!payload&&mode==="publish"){errors.push(...diagnostics);continue;}
+    const block=payload?{name:"compose",mode:"play",props:{caption:payload.caption},payload}:{name:"compose",error:{code:"compose-invalid",message:diagnostics.map(d=>d.message).join("；")},props:{}};
+    content=content.slice(0,fence.start)+element(block)+content.slice(fence.end);
   }
-  return { content: output, errors: errors.sort((a, b) => a.line - b.line) };
-}
-
-function widgetCaption(body) {
-  try {
-    const data = parseYaml(body);
-    return {
-      caption: typeof data?.caption === "string" ? data.caption.trim() : "",
-      src: typeof data?.src === "string" ? data.src.trim() : "",
-    };
-  } catch {
-    return { caption: "", src: "" };
-  }
-}
-
-/** Props of a `garden file` fence (authored or built), or null for any other fence. */
-function readCompose(fence) {
-  if (fence.lang !== "garden" || !isComposeInfo(fence.info)) return null;
-  return parseCompose(fence.body);
-}
-
-function fileFenceProps(fence) {
-  if (fence.lang !== "garden" || !/^file(?:\s|$)/iu.test(fence.info ?? "")) return null;
-  try {
-    const data = parseYaml(fence.body);
-    return data && typeof data === "object" && !Array.isArray(data) ? data : {};
-  } catch {
-    return {};
-  }
+  return {content,errors:errors.sort((a,b)=>a.line-b.line)};
 }
 
 function replaceFences(content, replacer) {
@@ -87,8 +44,6 @@ function replaceFences(content, replacer) {
   return output;
 }
 
-const absolute = (src, siteUrl) => (src && siteUrl && src.startsWith("/") ? `${siteUrl.replace(/\/+$/u, "")}${src}` : src);
-
 const escapeHtml = (value) =>
   String(value).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;");
 
@@ -99,87 +54,46 @@ function excalidrawVisibleText(svg) {
   return parts.join(" ");
 }
 
-/** Readable text for search and word count: captions and snapshot text, never intent. */
+function readCompose(fence) {
+  if(fence.lang!=="garden"||!/^compose(?:\s|$)/iu.test(fence.info))return null;
+  if(looksLikePlayCompose(fence.body)){const result=compiledCompose(fence,{skipData:true});return {play:true,...result};}
+  return parseCompose(fence.body);
+}
+function replaceElements(content,visit) {
+  return String(content).replace(/<garden-block data-payload="([^"]+)">([\s\S]*?)<\/garden-block>/gu,(raw,encoded,fallback)=>{
+    try {const block=JSON.parse(decodeURIComponent(encoded));return visit(block,fallback)??raw;}catch{return raw;}
+  });
+}
+function readableHtml(html,{siteUrl=""}={}) {
+  return replaceElements(html,(block,fallback)=>{
+    if(block.composeFeature&&block.name==="file")return renderArticleContent(fileFeedMarkdown(block.props,{siteUrl}));
+    if(block.composeFeature)return fallback;
+    return undefined;
+  });
+}
 export function contentToSearchText(content) {
-  const withoutDiagramMarkup = String(content ?? "").replace(/<svg\b[^>]*class="[^"]*\bexcalidraw\b[^"]*"[\s\S]*?<\/svg>/giu, (svg) => ` ${excalidrawVisibleText(svg)} `);
-  return replaceFences(stripCardMarkers(withoutDiagramMarkup), (fence) => {
-    if (fence.lang === "ui") {
-      const payload = readPayload(fence.body);
-      if (!payload) return " ";
-      return ` ${payload.caption} ${renderStatic(payload, "text")} `;
-    }
-    if (fence.lang === "ui-error") {
-      const payload = (() => {
-        try {
-          return JSON.parse(fence.body);
-        } catch {
-          return null;
-        }
-      })();
-      return ` ${payload?.caption ?? ""} `;
-    }
-    if (fence.lang === "intent") return " ";
-    if (fence.lang === "widget") return ` ${widgetCaption(fence.body).caption} `;
-    const file = fileFenceProps(fence);
-    if (file) return ` ${fileSearchText(file)} `;
-    const compose = readCompose(fence);
-    if (compose) return compose.ok ? ` ${composeText(compose.doc)} ` : " ";
-    return undefined;
-  });
+  const source=replaceElements(content,block=>{const p=block.payload?readPayload(JSON.stringify(block.payload)):null;return p?` ${p.caption} ${renderStatic(p,"text")} `:undefined;});
+  const withoutDiagramMarkup=String(source).replace(/<svg\b[^>]*class="[^"]*\bexcalidraw\b[^"]*"[\s\S]*?<\/svg>/giu,svg=>` ${excalidrawVisibleText(svg)} `);
+  return replaceFences(stripCardMarkers(withoutDiagramMarkup),fence=>{const c=readCompose(fence);return c?c.play?(c.payload?` ${c.payload.caption} ${renderStatic(c.payload,"text")} `:" "):c.ok?` ${composeText(c.doc)} `:" ":undefined;});
 }
-
-/** Markdown for RSS: snapshots become an HTML block, widgets become caption + link. */
-export function contentForFeed(content, { pageUrl = "", siteUrl = "" } = {}) {
-  return replaceFences(stripCardMarkers(content), (fence) => {
-    if (fence.lang === "ui") {
-      const payload = readPayload(fence.body);
-      if (!payload) return "";
-      const link = pageUrl ? ` · <a href="${escapeHtml(`${pageUrl}#ui-${payload.id}`)}">在网页中交互</a>` : "";
-      return `<figure>${renderStatic(payload, "html")}<figcaption>${escapeHtml(payload.caption)}${link}</figcaption></figure>`;
-    }
-    if (fence.lang === "ui-error" || fence.lang === "intent") return "";
-    if (fence.lang === "widget") {
-      const { caption, src } = widgetCaption(fence.body);
-      const href = absolute(src, siteUrl);
-      return `${caption}${href ? `（[打开图表](${href})）` : ""}`;
-    }
-    const file = fileFenceProps(fence);
-    if (file) return fileFeedMarkdown(file, { siteUrl });
-    const compose = readCompose(fence);
-    if (compose) return compose.ok ? renderCompose(compose.doc, { scope: `feed${fence.startLine}` }) : "";
-    return undefined;
-  });
+export function contentForFeed(content,{pageUrl="",siteUrl=""}={}) {
+  const snapshot=p=>`<figure>${readableHtml(renderStatic(p,"html"),{siteUrl})}<figcaption>${escapeHtml(p.caption)}${pageUrl?` · <a href="${escapeHtml(pageUrl+"#ui-"+p.id)}">在网页中交互</a>`:""}</figcaption></figure>`;
+  const source=replaceElements(content,(block,fallback)=>{const p=block.payload?readPayload(JSON.stringify(block.payload)):null;return p?snapshot(p):block.composeFeature?readableHtml(element(block).replace("</garden-block>",fallback+"</garden-block>"),{siteUrl}):undefined;});
+  return replaceFences(stripCardMarkers(source),fence=>{const c=readCompose(fence);return c?c.play?(c.payload?snapshot(c.payload):""):c.ok?readableHtml(renderCompose(c.doc,{scope:`feed${fence.startLine}`}),{siteUrl}):"":undefined;});
 }
-
-/** Markdown for CSDN / 知乎 / 掘金: snapshot Markdown plus a link back to the block. */
-export function contentForDistribution(content, { pageUrl = "", siteUrl = "" } = {}) {
-  return replaceFences(stripCardMarkers(content), (fence) => {
-    if (fence.lang === "ui") {
-      const payload = readPayload(fence.body);
-      if (!payload) return "";
-      const link = pageUrl ? `\n\n[在原文中交互](${pageUrl}#ui-${payload.id})` : "";
-      return `${renderStatic(payload, "markdown")}\n\n*${payload.caption}*${link}`;
-    }
-    if (fence.lang === "ui-error" || fence.lang === "intent") return "";
-    if (fence.lang === "widget") {
-      const { caption, src } = widgetCaption(fence.body);
-      const href = absolute(src, siteUrl);
-      return `${caption}${href ? `（[打开图表](${href})）` : ""}`;
-    }
-    const file = fileFenceProps(fence);
-    if (file) return fileFeedMarkdown(file, { siteUrl });
-    const compose = readCompose(fence);
-    if (compose?.ok) return composeText(compose.doc);
-    return undefined;
-  });
+export function contentForDistribution(content,{pageUrl="",siteUrl=""}={}) {
+  const snapshot=p=>`${renderStatic(p,"markdown")}\n\n*${p.caption}*${pageUrl?`\n\n[在原文中交互](${pageUrl}#ui-${p.id})`:""}`;
+  const source=replaceElements(content,block=>{const p=block.payload?readPayload(JSON.stringify(block.payload)):null;return p?snapshot(p):block.composeFeature&&block.name==="file"?fileFeedMarkdown(block.props,{siteUrl}):undefined;});
+  return replaceFences(stripCardMarkers(source),fence=>{const c=readCompose(fence);return c?c.play?(c.payload?snapshot(c.payload):""):c.ok?composeText(c.doc):"":undefined;});
 }
-
-/** `Data` sources referenced by `ui` fences, so callers can prefetch them. */
 export function collectDataSources(markdown) {
-  const sources = new Set();
-  for (const block of findBlocks(markdown)) {
-    if (block.lang !== "ui") continue;
-    for (const match of block.body.matchAll(/<Data\b[^>]*\bsrc\s*=\s*"([^"]+)"/gu)) sources.add(match[1]);
+  const sources=new Set();
+  for(const block of findBlocks(markdown)) {
+    if(!looksLikePlayCompose(block.body))continue;
+    const parsed=parsePlayCompose({id:gardenInfoId(block.info)},block.body);
+    const tree=parseUiBody(parsed.uiSource??"").root;
+    const walk=nodes=>nodes?.forEach(node=>{if(node.t==="el"&&node.n==="Data"&&node.p?.src?.k==="lit"&&typeof node.p.src.v==="string")sources.add(node.p.src.v);walk(node.c);});
+    walk(tree?.c);
   }
   return [...sources];
 }

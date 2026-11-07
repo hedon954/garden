@@ -46,7 +46,6 @@ const TAG_MAP = {
   bar: "Bar",
   slice: "Slice",
   divider: "Divider",
-  reset: "Reset",
   sandbox: "Sandbox",
 };
 
@@ -59,6 +58,7 @@ for (const name of Object.keys(COMPONENTS)) {
 }
 
 const PLAY_TAG_RE = new RegExp(`</?(?:${Object.keys(TAG_MAP).filter(tag=>!CATALOG_TAGS.includes(tag)).join("|")})\\b`, "iu");
+export const AUTHOR_PLAY_TAGS = Object.freeze({...TAG_MAP});
 const MATH_FNS = [
   "abs", "min", "max", "floor", "ceil", "round", "trunc", "sqrt", "cbrt",
   "pow", "exp", "log", "log2", "log10", "sin", "cos", "tan", "atan2",

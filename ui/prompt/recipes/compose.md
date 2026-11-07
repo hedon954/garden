@@ -4,7 +4,7 @@
 
 **什么时候用：** 几列名单、从一个点散开、从上到下的几层、一次事情的几面、上面一行顺序下面一行才是重点；或默认状态就要能看出结论、拖一下才多懂一点。
 
-**什么时候不用：** 正文列表 / Mermaid / `garden list` / `garden relations` 已经说清；一次乘法留在正文；需要画布动画时用遗留 `garden interactive` + `<Sandbox>`（或 `garden html`）。
+**什么时候不用：** 普通正文列表或 Mermaid 已经说清；一次乘法留在正文。图标长文用 Compose 的 icon-list/entry 或 row + 共享右侧 stack；关系图用 relations；画布动画用同一 Compose 中的 sandbox。
 
 **围栏：** 类型始终是 `garden compose`。作者原话放进 `<intent>`，一个字不改。不要改成别的组件。正文还是一句白话时，不要发明 YAML 槽。
 
@@ -57,7 +57,7 @@
 - `{#if …}{:else}{/if}`、`{#each … as item, i}{/each}` 控制流
 - 小写控件：`<slider>`、`<choice>`、`<button>`、`<stat>`、`<pie>` / `<chart>`…
 
-旧的 `garden interactive` 与 PascalCase 仅作兼容；不要把 PascalCase 当成 compose 作者输入。
+作者输入只用目录中的小写标签。HTML/Markdown 内容用 markdown/html 岛；可执行动画用 sandbox。
 
 **骨架（play）：**
 
