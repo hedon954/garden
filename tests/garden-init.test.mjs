@@ -172,7 +172,7 @@ function serveStaticDir(rootDir) {
   });
 }
 
-async function verifyPagesInRealBrowser(chromeBin, baseUrl, routes) {
+async function verifyPagesInRealBrowser(chromeBin, baseUrl, routes, { width, probe } = {}) {
   const debugPort = await getFreePort();
   const userDataDir = mkdtempSync(path.join(tmpdir(), "garden-chrome-"));
   const proc = spawn(
@@ -235,6 +235,7 @@ async function verifyPagesInRealBrowser(chromeBin, baseUrl, routes) {
     try {
       await send("Page.enable");
       await send("Runtime.enable");
+      if (width) await send("Emulation.setDeviceMetricsOverride", { width, height: 1000, deviceScaleFactor: 1, mobile: false });
 
       const results = {};
       for (const route of routes) {
@@ -264,6 +265,11 @@ async function verifyPagesInRealBrowser(chromeBin, baseUrl, routes) {
           returnByValue: true,
         });
         results[route] = JSON.parse(evalRes.result.value);
+        if (probe) {
+          const checked = await send("Runtime.evaluate", { expression: probe, awaitPromise: true, returnByValue: true });
+          assert.ok(!checked.exceptionDetails, JSON.stringify(checked.exceptionDetails));
+          results[route].probe = checked.result.value;
+        }
       }
       await send("Browser.close").catch(() => {});
       ws.close();
@@ -551,7 +557,7 @@ test("an en_US site from garden init --locale en builds a 100% English static si
 
 // Installs the packed engine into a fresh site and builds it. Slow and needs the
 // npm registry, so it runs only when GARDEN_INIT_BUILD=1 (CI sets it).
-test("a site from garden init installs the packed engine and builds", { skip: process.env.GARDEN_INIT_BUILD !== "1", timeout: 15 * 60_000 }, (t) => {
+test("a site from garden init installs the packed engine and builds", { skip: process.env.GARDEN_INIT_BUILD !== "1", timeout: 15 * 60_000 }, async (t) => {
   const { parent, site } = initSite();
   t.after(() => rmSync(parent, { recursive: true, force: true }));
   const packed = execFileSync("npm", ["pack", "--silent", "--pack-destination", parent], { cwd: root, encoding: "utf8" }).trim().split("\n").at(-1);
@@ -573,8 +579,50 @@ test("a site from garden init installs the packed engine and builds", { skip: pr
     GISCUS_DISABLED: "1",
   };
   execFileSync("npx", ["--no-install", "garden", "new"], { cwd: site, stdio: "inherit", env: { ...env, GARDEN_NEW_TITLE: "你好，世界", GARDEN_NEW_SLUG: "hello" } });
+  const probePost = [
+    "---", "title: Packaged Compose test", "date: 2026-11-08",
+    "description: Explicit integration test content.", "---", "",
+    "Test article body.", "", "```garden compose #packaged-probe",
+    "caption: Packaged Compose test content", "---",
+    "{@body const [n, setN] = DIL.useState(1)}",
+    '<markdown>**Bold** and <u>underline</u></markdown>',
+    '<button onClick={setN(n+1)}>Increment</button>', 'Counter: {n}',
+    '<icon-list><entry icon="book-open" title="Test entry"><text>Test body paragraph.</text></entry></icon-list>',
+    '<choices><choice-option label="A" reply="Selected A"/></choices>', "```", "",
+  ].join("\n");
+  writeFileSync(path.join(site, "content/posts/compose-probe.md"), probePost);
   execFileSync("npx", ["--no-install", "garden", "build"], { cwd: site, stdio: "inherit", env });
   execFileSync("npx", ["--no-install", "garden", "pages:validate"], { cwd: site, stdio: "inherit", env });
   assert.ok(existsSync(path.join(site, "dist/client/index.html")));
   assert.ok(readdirSync(path.join(site, "content/posts")).includes("hello.md"));
+  const client = path.join(site, "dist/client");
+  for (const file of listFiles(client).filter(file => file.endsWith(".js"))) {
+    assert.doesNotMatch(readFileSync(path.join(client, file), "utf8"), /postcss\/lib\/postcss|from\s*["']node:(?:fs|path)["']/u, file);
+  }
+  const chrome = findChromeBinary();
+  assert.ok(chrome, "A real browser is required for packaged consumer verification");
+  const { server, port } = await serveStaticDir(client);
+  t.after(() => server.close());
+  const probe = `(async () => {
+    await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+    [...document.querySelectorAll('button')].find(b => b.textContent === 'Increment')?.click();
+    document.querySelector('.g-choice-opt')?.click();
+    for (let i = 0; i < 50; i++) {
+      if (document.body.innerText.includes('Counter: 2') && document.querySelector('.g-choice-reply')) break;
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
+    return {
+      counter: document.body.innerText.includes('Counter: 2'),
+      reply: document.querySelector('.g-choice-reply')?.textContent,
+      underline: document.querySelector('u')?.textContent,
+      entry: document.querySelector('.g-list-x')?.textContent,
+      overflow: document.documentElement.scrollWidth > innerWidth,
+    };
+  })()`;
+  for (const width of [1200, 500]) {
+    const result = await verifyPagesInRealBrowser(chrome, `http://127.0.0.1:${port}`, ["/blog/compose-probe/"], { width, probe });
+    assert.deepEqual(result["/blog/compose-probe/"].probe, {
+      counter: true, reply: "Selected A", underline: "underline", entry: "Test body paragraph.", overflow: false,
+    }, String(width));
+  }
 });
