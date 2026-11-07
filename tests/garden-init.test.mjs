@@ -54,6 +54,10 @@ test("garden init writes a site whose package.json parses and pins the current e
     );
   }
   const makefile = readFileSync(path.join(site, "Makefile"), "utf8");
+  assert.equal(pkg.scripts.dev, "garden dev");
+  assert.match(makefile, /dev: prepare\n\tnpx garden dev/u);
+  assert.doesNotMatch(makefile, /CONTENT_INCLUDE_DRAFTS/u);
+  assert.match(readFileSync(path.join(site, "README.md"), "utf8"), /CONTENT_INCLUDE_DRAFTS=0 make dev/u);
   for (const target of ["new", "dev", "update"]) assert.match(makefile, new RegExp(`^${target}:`, "m"));
   for (const excluded of ["site.config.en.yaml", "Makefile.en", "README.en.md", ".github/workflows/pages.yml"]) {
     assert.ok(!existsSync(path.join(site, excluded)), `zh init should not write ${excluded}`);
