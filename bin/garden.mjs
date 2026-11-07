@@ -2,6 +2,7 @@
 import { randomBytes } from "node:crypto";
 import { spawnSync } from "node:child_process";
 import { startDev } from "../scripts/dev-server.mjs";
+import { installSiteGuide } from "../scripts/site-guide.mjs";
 import { installManagedSkills } from "../scripts/managed-skills.mjs";
 import fs from "node:fs";
 import path from "node:path";
@@ -203,6 +204,7 @@ async function ensureSiteKit(destinationRoot = siteRoot) {
   const lang = siteCliLang(destinationRoot);
   if (!samePath(destinationRoot, gardenPackageRoot)) {
     const added = [];
+    if (installSiteGuide({ engineRoot: gardenPackageRoot, siteRoot: destinationRoot, lang })) added.push("AGENTS.md");
     if (
       copyIfMissing(
         path.join(gardenPackageRoot, "templates", "site", lang === "en" ? "Makefile.en" : "Makefile"),
@@ -348,7 +350,7 @@ const EN_TEMPLATE_VARIANTS = new Set(["site.config.en.yaml", "Makefile.en", "REA
 function copyTemplate(from, to) {
   fs.mkdirSync(to, { recursive: true });
   for (const entry of fs.readdirSync(from, { withFileTypes: true })) {
-    if (entry.name === ".git" || EN_TEMPLATE_VARIANTS.has(entry.name)) continue;
+    if (entry.name === ".git" || entry.name === "AGENTS.md" || entry.name === "AGENTS.en.md" || EN_TEMPLATE_VARIANTS.has(entry.name)) continue;
     const source = path.join(from, entry.name);
     const destination = path.join(to, entry.name);
     if (entry.isDirectory()) copyTemplate(source, destination);
@@ -421,6 +423,7 @@ async function initSite() {
       fs.copyFileSync(enWorkflow, workflowDest);
     }
   }
+  installSiteGuide({ engineRoot: gardenPackageRoot, siteRoot: destination, lang });
   writeEngineDependency(destination);
   process.stdout.write(lang === "en" ? `Created site: ${destination}\n` : `已创建站点：${destination}\n`);
   installSkill(destination, { lang });
@@ -496,6 +499,7 @@ function help() {
   garden ui <子命令>      Intelligent UI：scan、check、apply、prompt、schema、catalog
   garden hooks            安装提交前检查（检查暂存稿件里的 ui 块）
   garden editors install  安装 Intelligent UI 插件到 VS Code / Cursor 与 Typora（--vscode、--typora、--yes）
+  garden agents           仅在缺失时安装站点 AGENTS.md，保留已有指南
   garden skill            把引擎自带的 skill 装进当前站点
   garden pages:validate   检查 dist/client
   garden pages:prepare    写入公开产物仓库
@@ -578,6 +582,14 @@ async function main() {
     case "init":
       await initSite();
       break;
+    case "agents": {
+      if (samePath(siteRoot, gardenPackageRoot)) fail("This command is for a Garden site, not the engine repository.");
+      if (!fs.existsSync(path.join(siteRoot, "site.config.yaml"))) fail("Not a Garden site: missing site.config.yaml");
+      const lang = siteCliLang(siteRoot);
+      const created = installSiteGuide({ engineRoot: gardenPackageRoot, siteRoot, lang });
+      process.stdout.write(lang === "en" ? (created ? "Created AGENTS.md\n" : "Kept existing AGENTS.md\n") : (created ? "已创建 AGENTS.md\n" : "保留已有 AGENTS.md\n"));
+      break;
+    }
     case "skill":
     case "skills":
       installSkill();
