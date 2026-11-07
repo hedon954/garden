@@ -389,6 +389,10 @@ html[data-theme="dark"] .column-reading-page .e-content {
   margin: 0 0 22px;
 }
 
+.markdown-body > :is(ul, ol) + p {
+  margin-top: 22px;
+}
+
 .markdown-body strong {
   font-weight: 600;
   color: var(--ink);
