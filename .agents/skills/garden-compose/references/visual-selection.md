@@ -7,6 +7,8 @@ Identify the reader question first: “which things?”, “what happens next?�
 
 先确定读者问题，再抽取真实关系。普通清单已足够、只有一句结论、缺少关系/数值、图只会重复文字时保留 Markdown；建议请求只给形式与理由。没有顺序就不画流程，没有因果就不画因果箭头，没有数据就不造图表。不能确定的关系不强行补齐。
 
+The forms below are examples accumulated from practice, not an exhaustive taxonomy or a whitelist. If no row matches, use the primitive inventory, operations and discovery protocol in composition-patterns.md to build a faithful new arrangement. Absence from this map is not evidence of an engine limitation. / 下表是持续积累的典型经验，不穷举表示方式；没有匹配项时查基础组件和组合操作，构造并验证新组合，不能据此判定不支持。
+
 ## Capability map · 典型形式与边界
 
 | Content cue / 读者问题 | Components and arrangement / 组合 | Cautions / 边界 |
