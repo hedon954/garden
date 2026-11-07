@@ -13,6 +13,8 @@ test('draft and published files obey identical compile and syntax rules', () => 
    ['generic','```garden\n两张卡片并排\n```',1],
    ['intent','```intent\n---\nid: idea\n---\n两张卡片并排\n```',1],
    ['invalid','```garden compose\n<card><text>bad</card>\n```',1],
+   ['play','```garden compose\ncaption: 调整席位\nintent: 调整席位并查看总计\n---\n{@body const [n, setN] = DIL.useState(3)}\n<slider min={1} max={12} value={n} onChange={setN} label="席位" />\n<stat label="总计" value={n} />\n```',0],
+   ['invalid-play','```garden compose\ncaption: 查看总计\nintent: 查看派生值\n---\n{@body const total = absent * 24}\n<stat label="总计" value={total} />\n```',1],
    ['compiled','```garden compose\n<card><title>A</title><text>正文</text></card>\n```',0],
   ]) {
    fs.writeFileSync(path.join(root,'post.md'),`---\ndraft: ${draft}\n---\n${body}\n`);

@@ -2,7 +2,7 @@ import { parse as parseYaml } from "yaml";
 import { fenceHash, findBlocks, idOf, intentHash, intentOf, normalizeNewlines, scanFences, setCompiled, splitUiBody } from "./fence.mjs";
 import { checkUiBlock } from "./validate.mjs";
 import { gardenKind } from "./garden-fence.mjs";
-import { checkInteractiveFence } from "./scan.mjs";
+import { checkComposeFence, checkInteractiveFence } from "./scan.mjs";
 import { parseGardenBlock } from "../garden/parse.mjs";
 
 export class ApplyError extends Error {
@@ -65,6 +65,9 @@ export function applyBlock(markdown, target, replacementText, options = {}) {
     if (gardenKind(fence) === "interactive") {
       const check = checkInteractiveFence({ ...fence, startLine: block.startLine }, { markdownPath, readData });
       if (!check.ok) throw new ApplyError("apply-invalid", "新的 garden interactive 没有通过检查", check.diagnostics.filter((item) => item.severity === "error"));
+    } else if (gardenKind(fence) === "compose") {
+      const check = checkComposeFence({ ...fence, startLine: block.startLine }, { markdownPath, readData });
+      if (!check.ok) throw new ApplyError("apply-invalid", "新的 garden compose 没有通过检查", check.diagnostics.filter(item => item.severity === "error"));
     } else {
       const parsed = parseGardenBlock(`garden ${fence.info}`.trim(), fence.body);
       if (!parsed || parsed.error) {
