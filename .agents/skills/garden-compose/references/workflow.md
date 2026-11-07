@@ -5,13 +5,12 @@
 ```sh
 node .agents/skills/garden-compose/scripts/scan.mjs content/posts/post.md
 node .agents/skills/garden-compose/scripts/check.mjs content/posts/post.md
-# 失败时，把 .garden/ui-fix-prompt.md 全文给 AI；不会自动调用 AI。
-node .agents/skills/garden-compose/scripts/prompt.mjs > /tmp/garden-authoring-prompt.md
+# 失败时按文件/行号/错误码调用 garden-compose skill；默认不写文件、不调用AI。
 ```
 
 check 退出 1 表示存在错误或未编译意图；draft:true、未来发布日期与正常发布文章没有豁免。合法但未排版的 DIL 可以通过：工具不是 formatter。Warning 不等于 error；不要为了让输出干净删掉意图或事实。`--all` 只遍历 content 下 .md；`--staged` 读 git 索引中的 content 稿件，不是工作区。
 
-check exit 1 means errors/uncompiled intent, including in drafts. A pass is not a visual guarantee. The prompt includes the original fence, file/line context and rules; read diagnostics before generating a replacement. The prompt file is overwritten by the next failing check, so retain it if needed. Clipboard copying is disabled by the wrapper.
+check exit 1 means errors/uncompiled intent, including in drafts. A pass is not a visual guarantee. Default output contains diagnostics and a short project-skill instruction, not article bodies or catalogs. Scan the target to read source and hash. No prompt file is created/modified and no clipboard access occurs. An optional explicit export is `npx --no-install garden ui check content/posts/post.md --out .garden/export.md --standalone`; --standalone alone does not export.
 
 AI 保存一个完整候选围栏到临时文件后，用扫描结果写回（下面 TARGET_LINE 与 HASH 是需替换的占位符，不是固定值）:
 
