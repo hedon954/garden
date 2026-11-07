@@ -1,3 +1,4 @@
+import { parseGardenBlock } from "../ui/garden/parse.mjs";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
@@ -161,12 +162,12 @@ test("handbook-facts matches site.config.yaml keys by their full dotted path", (
   assert.deepEqual(issuesFor(["```yaml", "brand:", "  logo: brand/logo.svg", "author:", "  name: A", "```"]), []);
 });
 
-/** Every ```garden interactive block in a Markdown text, including samples nested in ````markdown fences. */
-function interactiveBlocks(markdown) {
+/** Every ```garden compose block in a Markdown text, including samples nested in ````markdown fences. */
+function composeBlocks(markdown) {
   const lines = markdown.split(/\r?\n/u);
   const blocks = [];
   for (let i = 0; i < lines.length; i += 1) {
-    const open = /^(\s*)(`{3,})garden interactive(?:\s+#([\w-]+))?\s*$/u.exec(lines[i]);
+    const open = /^(\s*)(`{3,})garden compose(?:\s+#([\w-]+))?\s*$/u.exec(lines[i]);
     if (!open) continue;
     const end = lines.findIndex((line, j) => j > i && line.trim() === open[2]);
     blocks.push({ line: i + 1, id: open[3] ?? "handbook-sample", body: lines.slice(i + 1, end).join("\n") });
@@ -176,31 +177,35 @@ function interactiveBlocks(markdown) {
 }
 
 function uiErrors(block) {
-  return checkUiBlock(`---\nid: ${block.id}\n${block.body}`, { skipData: true }).diagnostics.filter((d) => d.severity === "error");
+  const parsed = parseGardenBlock(`garden compose #${block.id}`, block.body);
+  if (parsed.error) return [parsed.error];
+  return parsed.mode === "play" ? checkUiBlock(parsed.uiSource, { skipData: true }).diagnostics.filter(d => d.severity === "error") : [];
 }
 
-test("every garden interactive example in the handbook passes the ui validator", () => {
+test("every garden compose example in the handbook passes the ui validator", () => {
   const files = fs.readdirSync(path.join(root, "docs/handbook"), { recursive: true }).filter((f) => String(f).endsWith(".md"));
   let count = 0;
   for (const rel of files) {
     const markdown = fs.readFileSync(path.join(root, "docs/handbook", String(rel)), "utf8");
-    for (const block of interactiveBlocks(markdown)) {
+    for (const block of composeBlocks(markdown)) {
+      const parsed = parseGardenBlock(`garden compose #${block.id}`, block.body);
+      if (parsed.error?.code === "compose-uncompiled") continue; // The tutorial also demonstrates author requests.
       count += 1;
       const errors = uiErrors(block);
       assert.deepEqual(errors, [], `docs/handbook/${rel}:${block.line}\n${errors.map((e) => `${e.code} ${e.message}`).join("\n")}`);
     }
   }
-  assert.ok(count >= 2, `expected the interactive page to show at least two examples, found ${count}`);
+  assert.ok(count >= 2, `expected the Compose handbook to show at least two examples, found ${count}`);
 });
 
 test("the ui validator rejects tags and props that are not in the catalog", () => {
-  const [block] = interactiveBlocks([
-    "```garden interactive",
+  const [block] = composeBlocks([
+    "```garden compose",
     "caption: 示例",
     "---",
-    "<State n={2} />",
-    "<Controls><Slider label=\"n\" state=\"n\" min={1} max={9} /></Controls>",
-    "<Result label=\"结果\" value=\"{n}\" />",
+    "{@body const [n, setN] = DIL.useState(2)}",
+    "<controls><slider label=\"n\" state=\"n\" min={1} max={9} /></controls>",
+    "<result label=\"结果\" value=\"{n}\" />",
     "```",
   ].join("\n"));
   const codes = uiErrors(block).map((e) => e.code);

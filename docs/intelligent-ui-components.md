@@ -1,8 +1,6 @@
 # Intelligent UI 组件规格
 
-这是 [Intelligent UI 写作层](./intelligent-ui.md) 第 7 节组件目录的完整规格：每个组件的属性、子元素、外观、交互和静态快照。`ui/core/catalog.mjs` 按本文实现；两者不一致时，先改本文，再改代码。组件清单、`garden ui prompt` 里的组件说明和校验器都从 `catalog.mjs` 生成。
-
----
+This file describes internal interactive rendering components, not a public author language. Authors use only `garden compose`; consult [the Compose reference](handbook/reference/compose.md) and the generated `garden ui schema` for current author-facing tags, defaults and child contracts. PascalCase nodes below are compiler targets used by the validator and shared renderer.
 
 ## 1. 通用约定
 

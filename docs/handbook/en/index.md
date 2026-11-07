@@ -18,7 +18,7 @@ Drop an unnamed `garden` fence where the interactive block should go and state w
 ````markdown
 ## Writing Pace
 
-```garden
+```garden compose
 Let the reader drag daily word count and writing days per week to see how many weeks an 8,000-word article takes.
 ```
 ````
@@ -34,7 +34,7 @@ $ npx garden ui scan content/posts/writing-pace.md
   "draft": false,
   "blocks": [
     {
-      "lang": "garden-idea",
+      "lang": "garden-compose",
       "status": "uncompiled",
       "startLine": 9,
       "intentHash": "8866427a",
@@ -58,7 +58,7 @@ On the first `garden sync` or `garden dev` run, Garden writes `exec npx --no-ins
 
 ```console
 $ git commit -m "Writing pace"
-content/posts/writing-pace.md:9  -  garden-idea  uncompiled idea remaining
+content/posts/writing-pace.md:9  -  compose-uncompiled  uncompiled compose idea remaining
 Use garden-compose skill (.agents/skills/garden-compose/SKILL.md), fix the failing blocks, then recheck.
 ```
 
@@ -69,18 +69,25 @@ The terminal shows diagnostics and a short instruction to load the project `gard
 The `garden compose` fence written back in step 2 renders directly on the article page as an interactive calculator:
 
 ```garden compose #writing-pace
-caption: Writing a few hundred extra words each day finishes sooner than adding another writing day per week.
-intent: |
-  Let the reader drag daily word count and writing days per week to see how many weeks an 8,000-word article takes.
+caption: Writing a few hundred extra words each day finishes sooner than adding
+  another writing day per week.
+intent: >
+  Let the reader drag daily word count and writing days per week to see how many
+  weeks an 8,000-word article takes.
 ---
-<State daily={500} days={3} />
-<Let weekly={daily * days} />
-<Let weeks={ceil(8000 / weekly)} />
+{@body const [daily, setDaily] = DIL.useState(500)}
+{@body const [days, setDays] = DIL.useState(3)}
+{@body const weekly = daily * days}
+{@body const weeks = ceil(8000 / weekly)}
 
-<Slider bind="daily" label="Words per day" min={200} max={2000} step={100} unit="words" />
-<Slider bind="days" label="Days per week" min={1} max={7} step={1} unit="days" />
 
-<Stat label="Weeks to finish 8,000 words" value={weeks} unit="weeks" hint="Rounded up to full weeks" />
+
+
+<slider bind="daily" label="Words per day" min={200} max={2000} step={100} unit="words" />
+<slider bind="days" label="Days per week" min={1} max={7} step={1} unit="days" />
+
+<stat label="Weeks to finish 8,000 words" value={weeks} unit="weeks" hint="Rounded up to full weeks" />
+
 ```
 
 > [!IMPORTANT] Humans and Agents Share the Same Tools
@@ -134,7 +141,7 @@ pages:
 
 ## Structured Components in Markdown
 
-Use ```` ```garden <name> ```` fences to insert metrics, side-by-side comparisons, timelines, or charts. Here is a `garden stat` block:
+Use `garden compose` to combine metrics, comparisons, timelines, or plots. Here is a metric scene:
 
 ```garden compose
 <stack><metric label="Reading Column" value="740" unit="px" caption="Default width for paragraphs, code blocks, and lists"></metric><metric label="Wide Figure Zone" value="1040" unit="px" caption="Screenshots display at half their pixel width and expand up to this limit above ~2000px"></metric><metric label="Wide Table Zone" value="1340" unit="px" caption="Maximum width for wide multi-column tables expanding symmetrically on desktop"></metric></stack>

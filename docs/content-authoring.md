@@ -176,9 +176,10 @@ content/posts/windowsill-herbs/layers.html
 ```
 
 ````md
-```garden html
-src: ./windowsill-herbs/layers.html
+```garden compose
+<html>src: ./windowsill-herbs/layers.html
 title: 水从土面渗到排水孔，大约要一分钟。
+</html>
 ```
 ````
 
@@ -190,7 +191,7 @@ title: 水从土面渗到排水孔，大约要一分钟。
 
 ### 提供文件下载
 
-想让读者下载一份文件（规格包、PDF、示例代码），用 `garden file` 围栏。文件放在这篇稿的同名目录里，`src` 相对这篇 Markdown 写：
+想让读者下载一份文件（规格包、PDF、示例代码），在 `garden compose` 里用 `<file>` 或 `<files>`。文件放在这篇稿的同名目录里，`src` 相对这篇 Markdown 写：
 
 ```text
 content/posts/go/go-lock.md
@@ -203,24 +204,16 @@ content/posts/go/go-lock/demo.zip
 一个文件：
 
 ````md
-```garden file
-src: ./go-lock/demo.zip
-title: 示例代码
-note: 三个可以直接运行的加锁例子
+```garden compose
+<file src="./go-lock/demo.zip" title="示例代码" note="三个可以直接运行的加锁例子"/>
 ```
 ````
 
 一组文件：
 
 ````md
-```garden file
-title: 参考资料
-files:
-  - src: ./go-lock/mutex-notes.pdf
-    note: 互斥锁的状态机，一页纸
-  - src: ./go-lock/readme.md
-  - src: https://oss.example.com/go-lock/trace.zip
-    title: 完整 trace
+```garden compose
+<files title="参考资料"><file src="./go-lock/mutex-notes.pdf" note="互斥锁的状态机，一页纸"/><file src="./go-lock/readme.md"/><file src="https://oss.example.com/go-lock/trace.zip" title="完整 trace"/></files>
 ```
 ````
 

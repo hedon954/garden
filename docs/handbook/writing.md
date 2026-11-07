@@ -62,7 +62,7 @@ func openStore(path string) (*Store, error) {
 }
 ```
 
-```garden
+```garden compose
 和上一版比：打开存储时的模式从 ModeJournal 改成了 ModeWAL。
 ```
 ````

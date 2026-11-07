@@ -13,15 +13,15 @@ order: 2
 
 ## 1. 写一句想法
 
-在想放组件的位置写一个不带名字的 `garden` 围栏，只写想让读者做什么、看到什么，不用写组件名：
+在想放组件的位置写一个 `garden compose` 围栏，只写想让读者做什么、看到什么，不用写组件名：
 
 ````markdown
-```garden
+```garden compose
 让读者拖动每天写的字数和每周写几天，看写完一篇 8000 字的长文要几周。
 ```
 ````
 
-草稿（`draft: true`）里可以保留未编译的想法；非草稿文章里还有未编译的想法时，`npx garden ui check` 和 `npx garden check` 都会报 `garden-idea` 错误。Agent 会根据内容把想法编译成 `garden compose`、`card`、`stat`、`compare` 等内置组件，或者在一段话就能说清时直接写回普通段落。
+未编译的想法使用同一个 `garden compose` 入口。`npx garden ui check` 和 `npx garden check` 对草稿与已发布稿件都检查并报告 `compose-uncompiled`。Agent 在 Compose 内组合正文、资源、图形和交互；如果一段普通文字更清楚，也可以直接写回段落。
 
 ## 2. 随包安装的两个 skill
 
@@ -29,7 +29,7 @@ order: 2
 
 | Skill 名称 | 触发话术示例 | 执行操作 |
 | :--- | :--- | :--- |
-| `garden-compose` | 「编译这篇：content/posts/writing-pace.md」「重编译 writing-pace」或直接粘贴修复提示词 | 扫描 `uncompiled`、`stale`、`error` 状态的块，按规则生成组件并用 `npx garden ui apply` 写回；说「这篇哪里适合交互」则进入只读建议模式，最多挑出 5 处可直接粘贴的想法草稿 |
+| `garden-compose` | 「编译这篇：content/posts/writing-pace.md」「重编译 writing-pace」或直接粘贴修复提示词 | 扫描 `uncompiled`、`error` 状态的块，按规则生成组件并用 `npx garden ui apply` 写回；说「这篇哪里适合交互」则进入只读建议模式，最多挑出 5 处可直接粘贴的想法草稿 |
 | `garden-post-review` | 「审稿：content/posts/writing-pace.md」 | 先修 `npx garden check` 报出的结构错误，再按图表规范修交互块，最后通读全文只给修改建议而不改稿 |
 
 ## 3. `garden ui` 子命令与整篇检查
@@ -51,7 +51,7 @@ order: 2
 首次运行 `npx garden sync` 或 `npx garden dev` 时，Garden 会在 `.git/hooks/pre-commit` 写入 `exec npx --no-install garden ui check --staged --quiet`（若已有其他钩子则不覆盖，只提示需添加的命令）。`--staged` 直接通过 `git show :<路径>` 读取暂存区内容，失败时输出文件行号、诊断码和调用项目技能的短指令：
 
 ```console
-content/posts/writing-pace.md:9  -  garden-idea  还有没编译的想法
+content/posts/writing-pace.md:9  -  compose-uncompiled  还有没编译的 compose 想法
 
 请调用 garden-compose skill（.agents/skills/garden-compose/SKILL.md），修复以上错误块后重新校验。
 ```
@@ -72,7 +72,7 @@ pages:
     title: "用 Markdown 写丨推送之后网站自己更新"
 ```
 
-```garden
+```garden compose
 和上一版比：标题原来用句号和换行分两行，现在改成用「丨」分行。
 ```
 ````
@@ -95,7 +95,7 @@ npx garden editors install --typora
 1. **插入想法。** 在要放组件的位置运行「插入 Garden 块」（VS Code / Cursor 的快捷键是 macOS `Cmd+Alt+I`，Windows / Linux `Ctrl+Alt+I`）。Typora 里输入 `/` 后选 `/garden`，下一层列表每一项有一张小预览图；命令的快捷键在 Windows / Linux 是 `Ctrl+Alt+I`，macOS 需要在「设置 → 快捷键」里自己录。插入的是给 `garden-compose` skill 编译的想法围栏，例如选「资源卡」得到：
 
    ````markdown
-   ```garden
+   ```garden compose
    做成资源卡。一篇论文、一个仓库或一本书，读者需要标题、链接和一句说明。请写上链接、标题、一句说明。
    ```
    ````
@@ -110,7 +110,7 @@ npx garden editors install --typora
 不借助 AI 手写组件时，可以直接使用包内自带的模板与代码片段：
 
 - `make new` 创建的草稿底部自带一段 `<!-- 组件速查 ... -->` 注释，包含想法块和各个组件的示例，写完可直接删掉。
-- `templates/garden-blocks.md` 汇总了想法块与各个组件的适用场景（`when` / `whenNot`）和可复制示例；macOS 与 Typora / Alfred 用户可导入 `templates/garden-snippets.plist`，输入 `;gidea`（或 `;garden想法`）、`;gcard`、`;gstat`、`;gcompare`、`;gtimeline`、`;gchart`、`;gcompose`、`;ghtml`、`;ginteractive`、`;gfile`、`;grel`、`;glist`、`;gchoice` 即可展开对应围栏。`;gcompose` 展开的是带一句白话的 `garden compose`。
+- `templates/garden-blocks.md` 提供统一 Compose 入口的示例；macOS 与 Typora / Alfred 用户可导入 `templates/garden-snippets.plist`，输入 `;gcompose` 展开带一句白话的 Compose 围栏。
 - 编辑器插件的用法见上一节。`npx garden ui catalog` 在本地生成 `.garden/ui-catalog.html` 离线组件画廊。
 
 ## 8. 可选的独立管理后台

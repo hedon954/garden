@@ -62,7 +62,7 @@ func openStore(path string) (*Store, error) {
 }
 ```
 
-```garden
+```garden compose
 Compared with the previous version: open the store with ModeWAL instead of ModeJournal.
 ```
 ````

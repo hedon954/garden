@@ -13,15 +13,15 @@ You do not need to memorize component tags to add charts, metrics, or interactiv
 
 ## 1. Write a One-sentence Idea
 
-Place an unnamed `garden` fence where the component belongs and state what the reader should do and see, without naming a component:
+Place a `garden compose` fence where the component belongs and state what the reader should do and see, without naming a component:
 
 ````markdown
-```garden
+```garden compose
 Let the reader drag daily word count and writing days per week to see how many weeks an 8,000-word article takes.
 ```
 ````
 
-Draft posts (`draft: true`) may keep uncompiled idea fences; in non-draft posts, both `npx garden ui check` and `npx garden check` report a `garden-idea` error. Depending on the content, the Agent compiles the idea into a built-in component (`garden compose`, `card`, `stat`, `compare`, and others) or replaces it with plain prose when a paragraph is clearer.
+Uncompiled requests use the same `garden compose` entry. Both `npx garden ui check` and `npx garden check` report `compose-uncompiled`, including in drafts. The Agent composes prose, resources, graphics and interactions inside Compose, or replaces the request with plain prose when that is clearer.
 
 ## 2. Two Bundled Skills
 
@@ -29,7 +29,7 @@ Two skills live in `.agents/skills/` at the root of the site repository. `npx hd
 
 | Skill Name | Example Trigger Prompt | What It Does |
 | :--- | :--- | :--- |
-| `garden-compose` | "Compile this post: content/posts/writing-pace.md", "Recompile writing-pace", or pasting a fix prompt | Scans `uncompiled`, `stale`, and `error` blocks, generates components, and writes them back via `npx garden ui apply`; asking where interactive blocks fit runs read-only suggestion mode and returns up to 5 ready-to-paste idea fences |
+| `garden-compose` | "Compile this post: content/posts/writing-pace.md", "Recompile writing-pace", or pasting a fix prompt | Scans `uncompiled` and `error` blocks, generates components, and writes them back via `npx garden ui apply`; asking where interactive blocks fit runs read-only suggestion mode and returns up to 5 ready-to-paste idea fences |
 | `garden-post-review` | "Review post: content/posts/writing-pace.md" | Fixes structural errors reported by `npx garden check`, repairs interactive blocks against the chart rules, and reads the full post to offer editorial suggestions without rewriting prose |
 
 ## 3. `garden ui` Subcommands and Post Checks
@@ -51,7 +51,7 @@ Authors and Agents run the same `garden ui` subcommands; when an idea fence has 
 On the first `npx garden sync` or `npx garden dev` run, Garden writes `exec npx --no-install garden ui check --staged --quiet` to `.git/hooks/pre-commit` (if a custom hook already exists, it leaves the file untouched and prints the line to add). `--staged` reads staged content directly via `git show :<path>` and, on failure, prints line numbers, diagnostic codes, and a short instruction to load the project skill:
 
 ```console
-content/posts/writing-pace.md:9  -  garden-idea  uncompiled idea remaining
+content/posts/writing-pace.md:9  -  compose-uncompiled  uncompiled compose idea remaining
 
 Use garden-compose skill (.agents/skills/garden-compose/SKILL.md), fix the failing blocks, then recheck.
 ```
@@ -72,7 +72,7 @@ pages:
     title: "Write in Markdown | Push to Update the Site"
 ```
 
-```garden
+```garden compose
 Compared with the previous version: split the title into two lines with " | " instead of a period and newline.
 ```
 ````
@@ -104,7 +104,7 @@ A component then takes four steps:
 When writing components by hand without AI, you can use the templates and snippets shipped in the package:
 
 - Every draft created by `make new` includes an HTML comment at the bottom with copy-ready examples for idea fences and the built-in components; delete the comment whenever you are done.
-- `templates/garden-blocks.md` lists `when` / `whenNot` guidance and copyable templates for every block; macOS, Typora, and Alfred users can import `templates/garden-snippets.plist` to expand `;gidea`, `;gcard`, `;gstat`, `;gcompare`, `;gtimeline`, `;gchart`, `;gcompose`, `;ghtml`, `;ginteractive`, `;gfile`, `;grel`, `;glist`, and `;gchoice`. `;gcompose` expands to a `garden compose` fence with one sentence.
+- `templates/garden-blocks.md` supplies examples for the single Compose entry. macOS, Typora and Alfred users can import `templates/garden-snippets.plist` and expand `;gcompose` to a Compose fence containing one author sentence.
 - Editor plugin usage is in the previous section. `npx garden ui catalog` writes an offline component catalog at `.garden/ui-catalog.html`.
 
 ## 8. Optional Standalone Admin

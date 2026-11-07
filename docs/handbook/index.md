@@ -13,12 +13,12 @@ Garden 是一个 Claude 风格的博客框架，文章用 Markdown 写，组件�
 
 ### 1. 作者写一句想法
 
-在想放交互的地方写一个不带名字的 `garden` 围栏，里面写清想让读者做什么、看到什么：
+在需要组件的地方写一个 `garden compose` 围栏，里面写清想让读者做什么、看到什么：
 
 ````markdown
 ## 写作节奏
 
-```garden
+```garden compose
 让读者拖动每天写的字数和每周写几天，看写完一篇 8000 字的长文要几周。
 ```
 ````
@@ -34,7 +34,7 @@ $ npx garden ui scan content/posts/writing-pace.md
   "draft": false,
   "blocks": [
     {
-      "lang": "garden-idea",
+      "lang": "garden-compose",
       "status": "uncompiled",
       "startLine": 9,
       "intentHash": "cb3a3569",
@@ -58,7 +58,7 @@ $ npx garden ui apply content/posts/writing-pace.md --intent-hash cb3a3569 --fil
 
 ```console
 $ git commit -m "写作节奏"
-content/posts/writing-pace.md:9  -  garden-idea  还有没编译的想法
+content/posts/writing-pace.md:9  -  compose-uncompiled  还有没编译的 compose 想法
 请调用 garden-compose skill（.agents/skills/garden-compose/SKILL.md），修复以上错误块后重新校验。
 ```
 
@@ -73,14 +73,19 @@ caption: 每天多写几百字，比每周多写一天更快。
 intent: |
   让读者拖动每天写的字数和每周写几天，看写完一篇 8000 字的长文要几周。
 ---
-<State daily={500} days={3} />
-<Let weekly={daily * days} />
-<Let weeks={ceil(8000 / weekly)} />
+{@body const [daily, setDaily] = DIL.useState(500)}
+{@body const [days, setDays] = DIL.useState(3)}
+{@body const weekly = daily * days}
+{@body const weeks = ceil(8000 / weekly)}
 
-<Slider bind="daily" label="每天写" min={200} max={2000} step={100} unit="字" />
-<Slider bind="days" label="每周写" min={1} max={7} step={1} unit="天" />
 
-<Stat label="写完 8000 字需要" value={weeks} unit="周" hint="不足一周按一周算" />
+
+
+<slider bind="daily" label="每天写" min={200} max={2000} step={100} unit="字" />
+<slider bind="days" label="每周写" min={1} max={7} step={1} unit="天" />
+
+<stat label="写完 8000 字需要" value={weeks} unit="周" hint="不足一周按一周算" />
+
 ```
 
 > [!IMPORTANT] 人和 Agent 用同一套工具
@@ -134,7 +139,7 @@ pages:
 
 ## 在文章里嵌入结构化组件
 
-需要数字、对比、时间线或图表时，用 ```` ```garden <name> ```` 围栏插入内置组件。下面是一组 `garden stat`：
+需要数字、对比、时间线或图表时，在 `garden compose` 内组合对应组件。下面是一组数值：
 
 ```garden compose
 <stack><metric label="正文阅读列" value="740" unit="px" caption="段落、代码块与列表的默认列宽"></metric><metric label="宽幅配图区" value="1040" unit="px" caption="截图按像素宽度的一半显示，像素宽度约 2000px 以上时展开到这个宽度"></metric><metric label="多列宽表区" value="1340" unit="px" caption="宽表格在桌面端向两侧对称外扩上限"></metric></stack>

@@ -117,19 +117,20 @@ content/posts/<slug>/diagram.html
 ```
 
 ````md
-```widget
-src: ./<slug>/diagram.html
+```garden compose #decode-demo
 caption: Naive decode recomputes every past token at every step.
+---
+<sandbox title="Decode illustration" html={"<p>Recompute every past token at each step.</p>"} />
 ```
 ````
 
-The fence only names the file and states the conclusion. The HTML is self-contained and runs in a sandboxed iframe. A missing file or caption fails the build; a broken chart still shows the caption, never a blank hole.
+Compose uses an isolated sandbox for self-contained executable illustrations. Put the actual HTML, CSS and JavaScript in its supported fields; a sidecar path is not an executable author entry. The caption states the conclusion. Check the compiled scene and its real iframe behavior before publishing.
 
 | Widget | Support path | Why not MDX first |
 | --- | --- | --- |
-| Autoplay waste animation | Sidecar HTML following the stepper primitive. Honor `prefers-reduced-motion` (jump to summary). | Needs timers and SVG cells; the complexity does not belong in Markdown. |
-| Prefill/decode stepper | Same sidecar convention, manual Prev/Next. | Prev/Next + step state. |
-| Memory chart | Sidecar HTML with a bound range input, log axis, and tooltip. | Hover + slider. A static Mermaid/SVG is a fallback, not a replacement. |
+| Autoplay waste animation | Compose sandbox HTML. Honor `prefers-reduced-motion` (jump to summary). | Needs timers and SVG cells; the complexity does not belong in Markdown. |
+| Prefill/decode stepper | Compose sandbox, manual Prev/Next. | Prev/Next + step state. |
+| Memory chart | Compose sandbox with a bound range input, log axis, and tooltip. | Hover + slider. A static Mermaid/SVG is a fallback, not a replacement. |
 
 **Do not** start with full MDX. It breaks Typora, splits the content compiler (`build-content.mjs` + `extractHeadings` + search), and invites arbitrary JSX in a Git-backed corpus.
 
