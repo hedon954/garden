@@ -1,15 +1,18 @@
 ---
 name: garden-compose
-description: Create, compile, repair and validate Garden Compose from original prose plus a visual-effect request; trigger automatically for horizontal equal-width cards, side-by-side cards, diagrams or interactive DIL with intent-based layout selection; also handle check diagnostics.
+description: Select, compose and validate suitable Garden Compose visuals from source content; use for visualization suggestions, choosing a diagram when no form is specified, implementing requested effects, and compiling or repairing static diagrams and interactive DIL.
 ---
 # Garden Compose
 
 Project-local only. Change only authorized posts/blocks; never publish or silently rewrite unrelated content.
 
-## Parse input and select a layout
-1. Separate source content, requested visual effect and authorized edit location. The effect request is not display copy. Accept paragraphs or list items directly.
-2. Map each source item to a content unit: use existing bold labels as titles and the remaining text as body content. Preserve wording, facts and order; do not invent summaries or conclusions.
-3. Match the effect to a layout reference. For horizontal equal-width cards, read `references/layout-recipes.md`, set the column count from the source items and create one card per item. For other effects, load the relevant reference on demand. Consult the catalog only for uncertain components or properties; do not preload every recipe.
+## Select a representation from content
+1. Separate source content, the reader's question, any requested effect and the authorized edit location. The effect request is not display copy. Suggestion-only requests produce candidate forms and reasons, not edits; implement only when drawing/editing is authorized.
+2. Extract entities, peer categories, explicit sequence, containment, interacting parties, comparison dimensions, numbers and formulas. Distinguish stated relations from inference. Preserve wording, facts and order; map existing bold labels to titles and remaining text to bodies without adding summaries or conclusions.
+3. Honor a specified effect first. Otherwise read `references/visual-selection.md` on demand and choose the simplest supported form that answers the reader's question. Do not invent arrows, causation, stages or values. Keep ordinary prose/lists when drawing adds no explanatory value.
+4. Read `references/composition-patterns.md` to decompose the form into containers, content leaves, repeated units and justified connectors; compose around the content instead of copying a rigid whole-diagram template. Read `references/layout-recipes.md` only for equal-card tokens and responsive details.
+5. Choose Play only when varying an input is useful and source formulas/data exist. Check `references/static-play.md`; do not freely mix static and Play tags. For ambiguous relations, use neutral grouping or identify the uncertainty rather than guessing.
+6. Audit against the source: account for every fact, justify every connector, separate decoration from topology and avoid information loss through shortening/clipping. Then follow scan/apply/check below. Consult the catalog only for uncertain components/props, not every reference up front. Passing checks is not browser verification.
 
 ## Workflow
 1. Work from the site root. Read references/workflow.md and references/static-play.md. When an attribute is unclear, consult the relevant reference or `npx --no-install garden ui prompt` for the live catalog. Compose authoring uses lowercase tags, not legacy PascalCase or YAML slots.
