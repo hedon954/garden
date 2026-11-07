@@ -1,6 +1,11 @@
 # Changelog
 
-## 0.14.0
+## 0.14.1
+
+The first published release of the 0.14 Compose unification batch. The immutable `v0.14.0` tag was not published to npm because its CI tests failed.
+
+- Make browser release gates wait for real hydration and isolated sandbox readiness with bounded timeouts, retaining all behavior assertions.
+- Build the standalone preview into test-owned output so browser tests also pass on a clean checkout without prebuilt local artifacts.
 
 ### Breaking
 
