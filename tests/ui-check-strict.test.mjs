@@ -18,7 +18,7 @@ test('draft and published files obey identical compile and syntax rules', () => 
    fs.writeFileSync(path.join(root,'post.md'),`---\ndraft: ${draft}\n---\n${body}\n`);
    const r=spawnSync(process.execPath,[cli,'check','post.md','--standalone','--no-copy'],{cwd:root,env:{...process.env,GARDEN_SITE:root,GARDEN_UI_NO_COPY:'1'},encoding:'utf8'});
    assert.equal(r.status,expected,`${name} draft=${draft}: ${r.stderr}`);
-   if(expected){const prompt=fs.readFileSync(path.join(root,'.garden/ui-fix-prompt.md'),'utf8');assert.ok(prompt.includes(body));assert.ok(prompt.includes('post.md'));}
+   if(expected){const prompt=fs.readFileSync(path.join(root,'.garden/ui-fix-prompt.md'),'utf8');assert.ok(prompt.includes(body));assert.ok(prompt.includes('post.md'));if(name==='invalid'){assert.ok(prompt.includes('--at 4 --base '));assert.ok(!prompt.includes('intent-hash: null'));}}
   }
  } finally {fs.rmSync(root,{recursive:true,force:true})}
 });

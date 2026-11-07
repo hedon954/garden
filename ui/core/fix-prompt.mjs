@@ -21,7 +21,7 @@ export function buildFixPrompt(problems, { standaloneReference = null, lang = "z
   ];
   problems.forEach((problem, index) => {
     const { file, block, diagnostics } = problem;
-    const target = block.id ? `id: ${block.id}` : `intent-hash: ${block.intentHash}`;
+    const target = block.id ? `id: ${block.id}` : block.intentHash ? `intent-hash: ${block.intentHash}` : `--at ${block.startLine}${block.hash ? ` --base ${block.hash}` : ""}`;
     lines.push(t.promptItem(index + 1, file, block.startLine, block.endLine, target));
     if (block.lang === "garden-idea") lines.push(t.promptGardenIdea);
     if (block.lang === "garden-compose" && block.status === "uncompiled") lines.push(t.promptCompose);
