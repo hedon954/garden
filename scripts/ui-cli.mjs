@@ -1,3 +1,4 @@
+import {composeStyleReference} from "./compose-style-reference.mjs";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
@@ -285,7 +286,7 @@ switch (command) {
     process.stdout.write(promptText({ studio: flag("studio") }));
     break;
   case "schema":
-    process.stdout.write(`${JSON.stringify(composeSchema(), null, 2)}\n`);
+    process.stdout.write(`${JSON.stringify({...composeSchema(),styleReference:composeStyleReference(gardenPackageRoot)}, null, 2)}\n`);
     break;
   case "catalog":
     commandCatalog();

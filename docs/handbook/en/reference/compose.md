@@ -26,7 +26,7 @@ Use `garden compose`. Select by the reader's task, not by another fence name:
 | Article text and useful HTML | `markdown` and `html` content islands |
 | Independent executable illustration | Play `sandbox` with literal html/css/js; isolated offline iframe |
 
-The authoritative, demand-loaded catalog is `npx garden ui schema`: actual semantic fields, Play props/defaults/child contracts, icon names, safe HTML tags/attributes/CSS properties. `npx garden ui prompt` adds working recipes. These are generated from the validators; do not maintain a second exhaustive tag list. Static layout normalization is not a universal HTML/CSS API: inspect the normalized tree and output because some unsupported static layout attributes are ignored. Semantic unknown fields fail validation.
+The authoritative, demand-loaded catalog is `npx garden ui schema`: actual semantic fields, Play props/defaults/child contracts, icon names, safe HTML tags/attributes/CSS properties. `npx garden ui prompt` adds working recipes. `styleReference` also extracts current font/layout declarations, selectors, responsive conditions and source order from the installed stylesheets; it reports source defaults, not universal computed values. These are generated from the validators and actual styles; do not maintain a second exhaustive tag list. Static layout normalization is not a universal HTML/CSS API: inspect the normalized tree and output because some unsupported static layout attributes are ignored. Semantic unknown fields fail validation.
 
 ## Relationships → hierarchy → layout → style → actual output
 
@@ -59,7 +59,7 @@ Nested paragraphs need separate `text` leaves or an article content island. Two 
 </figure>
 ```
 
-For a native editorial list the same relationship is expressed with `icon-list` containing `entry icon="…" title="…"`, and multiple `text` children per entry. Native scenes preserve the app's keyboard/selection/detail/file-preview behavior when rendered by the Garden article host. A standalone static export is a readable fallback, not an identical interactive host.
+For a native editorial list the same relationship is expressed with `icon-list` containing `entry icon="…" title="…"`, and multiple `text` children per entry. Native paragraph children are lowered to text strings: their nested text size/alignment/layout properties are not carried into the native scene. Use a generic layout with text size controls for such precision; do not assume identical nested styling contracts. Native scenes preserve the app's keyboard/selection/detail/file-preview behavior when rendered by the Garden article host. A standalone static export is a readable fallback, not an identical interactive host.
 
 ## Typography and complete-theme context
 
