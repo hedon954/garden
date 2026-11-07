@@ -15,7 +15,7 @@ badge: compose
 
 ## 共用 token
 
-多数布局标签共用；颜色只走 Garden 主题变量（Claude 纸色）。
+多数布局标签共用；默认颜色使用 Garden 主题变量，也可通过 color / backgroundColor 显式覆盖（见下文）。
 
 | Token | 取值 |
 | :--- | :--- |

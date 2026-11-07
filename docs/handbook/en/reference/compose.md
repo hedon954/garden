@@ -15,7 +15,7 @@ Fence: ` ```garden compose `. Author intent stays in `<intent>` (not drawn). Unk
 
 ## Shared tokens
 
-Write once; most layout tags accept them. Colors come only from Garden theme variables (Claude paper).
+Write once; most layout tags accept them. Colors default to Garden theme variables; color / backgroundColor allow explicit overrides (see below).
 
 | Token | Values |
 | :--- | :--- |

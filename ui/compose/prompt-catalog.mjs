@@ -76,7 +76,7 @@ export function composeCatalogReference() {
     "### 写法要点",
     "- color / backgroundColor：布局与文字基础标签可写命名色、transparent、hex（含 alpha）、rgb/rgba/hsl/hsla 字面量。文字继承，背景不继承；不写则保留主题。Play 支持 stack/columns/card/caption/badge/stat/table；chart palette API 不变。禁止 style、url()、var() 或 CSS 声明。",
     "",
-    "- 叶子是 Markdown（标题、段落、`**强调**`、列表）；结构是目录标签。不要写 YAML 槽、色值、HTML、SVG、脚本或宽度。",
+    "- 叶子是 Markdown（标题、段落、`**强调**`、列表）；结构是目录标签。不要写 YAML 槽、HTML、SVG、脚本或宽度；自定义颜色只写 color / backgroundColor。",
     "- 芯片内部间距用 `gap={0}` / `gap={1}`；章节堆叠用 `gap={2}` / `gap={3}` 及以上。",
     "- 日横幅等宽：`row` 里每个 day 芯片 `flex:1`（`nowrap` + `size=\"sm\"`），不要用 between 把空日挤成内容宽。",
     "- tip 钉在右边：`justify=\"between\"`，tip/`caption` 侧 `flex:0`。",
