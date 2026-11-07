@@ -262,7 +262,9 @@ test("the ui prompt catalog includes compose and forbids arbitrary HTML", () => 
   const rules = fs.readFileSync(path.join(root, "ui/prompt/rules.md"), "utf8");
   const recipe = fs.readFileSync(path.join(root, "ui/prompt/recipes/compose.md"), "utf8");
   assert.match(rules, /garden compose/);
-  assert.match(recipe, /不要写色值、HTML、SVG、脚本/);
+  assert.match(recipe, /不要写 HTML、SVG、脚本/);
+  assert.match(recipe, /color \/ backgroundColor/);
+  assert.doesNotMatch(recipe, /不要写色值/);
   assert.doesNotMatch(rules, /也不要写 \{@body\b/u);
   assert.doesNotMatch(recipe, /也不要写 \{@body\b/u);
   assert.doesNotMatch(rules + "\n" + recipe, /不要写 \{@body\b/u);
