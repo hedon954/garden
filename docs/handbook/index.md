@@ -145,7 +145,7 @@ pages:
 <stack><metric label="正文阅读列" value="740" unit="px" caption="段落、代码块与列表的默认列宽"></metric><metric label="宽幅配图区" value="1040" unit="px" caption="截图按像素宽度的一半显示，像素宽度约 2000px 以上时展开到这个宽度"></metric><metric label="多列宽表区" value="1340" unit="px" caption="宽表格在桌面端向两侧对称外扩上限"></metric></stack>
 ```
 
-组件页包括各个 `garden` 围栏，以及链接卡片、来源胶囊和本地图片。说明图是 [compose](/garden/components/compose)。效果见左侧导航的 [组件总览](/garden/components)。
+组件页以 `garden compose` 为唯一 Garden 作者入口，另含链接卡片、来源胶囊和本地图片。内容、布局和交互在 [compose](/garden/components/compose) 内组合。效果见左侧导航的 [组件总览](/garden/components)。
 
 <h2 id="garden-admin-title">从初始化到日常写作</h2>
 
