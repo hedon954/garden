@@ -51,6 +51,26 @@
         "command": "garden.openCatalog",
         "title": "查看组件清单",
         "category": "Garden"
+      },
+      {
+        "command": "garden.foldBlock",
+        "title": "收起当前 Garden 块",
+        "category": "Garden"
+      },
+      {
+        "command": "garden.unfoldBlock",
+        "title": "展开当前 Garden 块",
+        "category": "Garden"
+      },
+      {
+        "command": "garden.foldAllBlocks",
+        "title": "收起全部 Garden 块",
+        "category": "Garden"
+      },
+      {
+        "command": "garden.unfoldAllBlocks",
+        "title": "展开全部 Garden 块",
+        "category": "Garden"
       }
     ],
     "keybindings": [
@@ -72,6 +92,26 @@
           "command": "garden.copyCompilePrompt",
           "when": "editorLangId == markdown",
           "group": "garden@2"
+        },
+        {
+          "command": "garden.foldBlock",
+          "when": "editorLangId == markdown",
+          "group": "garden@3"
+        },
+        {
+          "command": "garden.unfoldBlock",
+          "when": "editorLangId == markdown",
+          "group": "garden@3"
+        },
+        {
+          "command": "garden.foldAllBlocks",
+          "when": "editorLangId == markdown",
+          "group": "garden@3"
+        },
+        {
+          "command": "garden.unfoldAllBlocks",
+          "when": "editorLangId == markdown",
+          "group": "garden@3"
         }
       ],
       "commandPalette": [
@@ -81,6 +121,22 @@
         },
         {
           "command": "garden.copyCompilePrompt",
+          "when": "editorLangId == markdown"
+        },
+        {
+          "command": "garden.foldBlock",
+          "when": "editorLangId == markdown"
+        },
+        {
+          "command": "garden.unfoldBlock",
+          "when": "editorLangId == markdown"
+        },
+        {
+          "command": "garden.foldAllBlocks",
+          "when": "editorLangId == markdown"
+        },
+        {
+          "command": "garden.unfoldAllBlocks",
           "when": "editorLangId == markdown"
         }
       ]
@@ -109,7 +165,7 @@
         "garden.foldUiBodies": {
           "type": "boolean",
           "default": true,
-          "description": "打开稿件时折叠 ui 块的正文，只露出块头。"
+          "description": "打开稿件时使用 Markdown 原生折叠收起旧版 ui 整块，只露出围栏首行。"
         }
       }
     }

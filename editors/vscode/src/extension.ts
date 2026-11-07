@@ -8,15 +8,14 @@ import {
   renderStatic,
   resolveSidecarPath,
   scanMarkdown,
-  splitUiBody,
 } from "../../../ui/core/index.mjs";
 import { checkGardenMarkdown } from "../../../ui/garden/check.mjs";
+import { gardenFoldRanges, runGardenFold } from "./folding.mjs";
 import { pickerItems } from "../../../ui/garden/snippets.mjs";
 
 declare const __GARDEN_RECIPES__: { file: string; markdown: string }[];
 
 type Block = ReturnType<typeof scanMarkdown>[number];
-type Fence = ReturnType<typeof findBlocks>[number];
 type MarkdownToken = { info: string; content: string; map: [number, number] | null };
 type FenceRule = (tokens: MarkdownToken[], index: number, options: unknown, env: MarkdownEnv, self: { renderToken: (...args: unknown[]) => string }) => string;
 type MarkdownIt = { renderer: { rules: { fence?: FenceRule } } };
@@ -117,7 +116,7 @@ function extendMarkdownIt(md: MarkdownIt) {
 
 /* ---------- Diagnostics, CodeLens, folding ---------- */
 
-class BlockIndex implements vscode.CodeLensProvider, vscode.FoldingRangeProvider {
+class BlockIndex implements vscode.CodeLensProvider {
   private readonly blocks = new Map<string, Block[]>();
   private readonly timers = new Map<string, ReturnType<typeof setTimeout>>();
   private readonly changed = new vscode.EventEmitter<void>();
@@ -185,7 +184,12 @@ class BlockIndex implements vscode.CodeLensProvider, vscode.FoldingRangeProvider
       this.schedule(document, 0);
       return [];
     }
-    return blocks.flatMap((block) => {
+    const foldingLenses = gardenFoldRanges(document.getText()).map(({ start }) =>
+      new vscode.CodeLens(new vscode.Range(start, 0, start, 0), {
+        title: "收起 Garden 块", command: "garden.foldBlock", arguments: [document.uri, start],
+      }),
+    );
+    return [...foldingLenses, ...blocks.flatMap((block) => {
       const range = new vscode.Range(block.startLine - 1, 0, block.startLine - 1, 0);
       const errors = block.diagnostics.filter((item: { severity: string }) => item.severity === "error").length;
       const name = block.id ? ` · ${block.id}` : "";
@@ -201,25 +205,9 @@ class BlockIndex implements vscode.CodeLensProvider, vscode.FoldingRangeProvider
       }
       lenses.push(new vscode.CodeLens(range, { title: "组件清单", command: "garden.openCatalog" }));
       return lenses;
-    });
+    })];
   }
 
-  provideFoldingRanges(document: vscode.TextDocument) {
-    return uiBodyRanges(document.getText()).map(({ start, end }) => new vscode.FoldingRange(start, end, vscode.FoldingRangeKind.Region));
-  }
-}
-
-/** Lines (0-based) from the header's closing `---` to the last body line, so a fold leaves the header visible. */
-function uiBodyRanges(markdown: string) {
-  return findBlocks(markdown)
-    .filter((fence: Fence) => fence.lang === "ui" && fence.closed)
-    .flatMap((fence: Fence) => {
-      const { error, bodyLineOffset } = splitUiBody(fence.body);
-      if (error || !bodyLineOffset) return [];
-      const start = fence.bodyStartLine + bodyLineOffset - 2;
-      const end = fence.endLine - 2;
-      return end > start ? [{ start, end }] : [];
-    });
 }
 
 async function foldBodies(editor: vscode.TextEditor, folded: Set<string>) {
@@ -227,7 +215,9 @@ async function foldBodies(editor: vscode.TextEditor, folded: Set<string>) {
   if (editor.document.languageId !== "markdown" || folded.has(key)) return;
   folded.add(key);
   if (!vscode.workspace.getConfiguration("garden").get<boolean>("foldUiBodies", true)) return;
-  const starts = uiBodyRanges(editor.document.getText()).map((range) => range.start);
+  const starts = findBlocks(editor.document.getText())
+    .filter((fence) => fence.lang === "ui" && fence.closed && fence.endLine > fence.startLine)
+    .map((fence) => fence.startLine - 1);
   if (!starts.length) return;
   // Folding providers answer asynchronously after a document opens; folding too early is a no-op.
   await new Promise((resolve) => setTimeout(resolve, 600));
@@ -236,6 +226,22 @@ async function foldBodies(editor: vscode.TextEditor, folded: Set<string>) {
 }
 
 /* ---------- Commands ---------- */
+
+async function foldGarden(action: "fold" | "unfold", all: boolean, uri?: vscode.Uri, line?: number) {
+  const editor = vscode.window.activeTextEditor;
+  if (!editor || editor.document.languageId !== "markdown") return;
+  if (uri && uri.toString() !== editor.document.uri.toString()) return;
+  const changed = await runGardenFold({
+    markdown: editor.document.getText(),
+    line: line ?? editor.selection.active.line,
+    action,
+    all,
+    execute: (command: string, args: { selectionLines: number[]; levels: number; direction: string }) =>
+      vscode.commands.executeCommand(command, args),
+  });
+  if (!changed) void vscode.window.showInformationMessage(all ? "当前稿件没有已闭合的 Garden 块。" : "请把光标放在已闭合的 Garden 块内。");
+}
+
 
 async function insertIntent() {
   const editor = vscode.window.activeTextEditor;
@@ -348,7 +354,6 @@ export function activate(context: vscode.ExtensionContext) {
     index.diagnostics,
     vscode.languages.registerCodeLensProvider(selector, index),
     gardenCompletions(),
-    vscode.languages.registerFoldingRangeProvider(selector, index),
     vscode.workspace.onDidOpenTextDocument((document) => index.schedule(document, 0)),
     vscode.workspace.onDidChangeTextDocument((event) => index.schedule(event.document)),
     vscode.workspace.onDidSaveTextDocument((document) => index.schedule(document, 0)),
@@ -357,6 +362,10 @@ export function activate(context: vscode.ExtensionContext) {
       folded.delete(document.uri.toString());
     }),
     vscode.window.onDidChangeActiveTextEditor(track),
+    vscode.commands.registerCommand("garden.foldBlock", (uri?: vscode.Uri, line?: number) => foldGarden("fold", false, uri, line)),
+    vscode.commands.registerCommand("garden.unfoldBlock", () => foldGarden("unfold", false)),
+    vscode.commands.registerCommand("garden.foldAllBlocks", () => foldGarden("fold", true)),
+    vscode.commands.registerCommand("garden.unfoldAllBlocks", () => foldGarden("unfold", true)),
     vscode.commands.registerCommand("garden.insertIntent", insertIntent),
     vscode.commands.registerCommand("garden.copyCompilePrompt", copyCompilePrompt),
     vscode.commands.registerCommand("garden.openCatalog", () => openCatalog(context, () => lastMarkdown)),
