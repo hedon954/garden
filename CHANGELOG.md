@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.13.2
+
+- `garden dev` previews drafts and future scheduled posts by default; explicit `CONTENT_INCLUDE_DRAFTS=0` opts out. Initial sync and watcher inherit the setting; production commands remain draft-safe by default.
+- New-site templates and authoring instructions document plain `make dev`; regression tests cover preview-to-public regeneration.
+
 ## 0.13.1
 
 ### Fixed

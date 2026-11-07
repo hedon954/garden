@@ -59,10 +59,10 @@ make new DIR=network SLUG=tcp-bbr TITLE="TCP BBR Notes"
 > [!NOTE] Note
 > `SLUG` may only contain lowercase letters, digits, and hyphens (`a-z`, `0-9`, `-`), never `/`; pass subdirectories via `DIR`. `make new` reads only `SLUG`, `TITLE`, and `DIR`.
 
-Newly created files default to `draft: true`. Set `CONTENT_INCLUDE_DRAFTS=1` to preview drafts or future-dated (`publishAt`) posts locally:
+Newly created files default to `draft: true`. `make dev` previews drafts and future-dated (`publishAt`) posts by default. Use `CONTENT_INCLUDE_DRAFTS=0 make dev` to opt out. Production builds still exclude them by default:
 
 ```bash
-CONTENT_INCLUDE_DRAFTS=1 make dev
+make dev
 ```
 
 ### Creating a Thought
@@ -76,7 +76,7 @@ The site `Makefile` and `garden` CLI provide these commands:
 | Command | What It Runs |
 | :--- | :--- |
 | `make dev` | Runs `make prepare` to check dependencies, then runs `npx garden dev` (which syncs content and starts the dev server) |
-| `CONTENT_INCLUDE_DRAFTS=1 make dev` | Previews `draft: true` drafts and future `publishAt` posts alongside published content |
+| `CONTENT_INCLUDE_DRAFTS=0 make dev` | Optional: preview published posts only, excluding drafts and future posts |
 | `make new SLUG=xxx TITLE="Title" DIR=subdir` | Calls `npx garden new` to create a draft post under `content/posts/` (`DIR` is optional) |
 | `make check` | Runs `npx garden sync && npx garden build` in the site repo to verify content sync and the production build |
 | `npx garden check content/posts/xxx.md` | Checks a single Markdown post's title, component fields, code diffs, and local asset paths |

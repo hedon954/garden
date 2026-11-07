@@ -8,6 +8,8 @@ make new TITLE="你好，世界" SLUG=hello
 make dev
 ```
 
+`make dev`、`npm run dev` 和 `npx garden dev` 默认预览草稿及未来定时文章。可用 `CONTENT_INCLUDE_DRAFTS=0 make dev` 关闭；正式构建默认排除这些内容。
+
 第一次 `npx garden dev` 会补齐 Makefile 和 skill，并创建 `.env.local`。Cursor / Codex 打开这个仓库后会读到 `.agents/skills/`。要更新 skill，再运行 `npx garden skill`。
 
 `npx hd-garden init` 会把 VS Code / Cursor 与 Typora 的 Intelligent UI 插件放到 `.garden/editors/`，并在交互终端里询问要不要安装。之后可以运行 `npx garden editors install`（加 `--yes` 则直接安装，`--vscode` / `--typora` 只装一个）。Typora 需要先装 typora-community-plugin，再在「设置 → 已安装插件」里勾选。插件用来插入想法（一段给 `garden-ui` skill 编译的 `garden` 围栏，不是写好的 YAML）、预览组件、打开清单，并把「编译这篇」交给 skill。Typora 里输入 `/` 选 `/garden`，再从带小预览图的列表里选。

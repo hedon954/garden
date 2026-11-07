@@ -59,10 +59,10 @@ make new DIR=network SLUG=tcp-bbr TITLE="TCP BBR 拥塞控制笔记"
 > [!NOTE]
 > `SLUG` 只能包含小写字母、数字和连字符（`a-z`、`0-9`、`-`），不能包含 `/`；子目录必须用 `DIR` 参数传入。`make new` 只读取 `SLUG`、`TITLE` 和 `DIR` 三个变量。
 
-新建的文件默认带有 `draft: true`。本地预览草稿或未来定时文章（`publishAt`）时，加上环境变量 `CONTENT_INCLUDE_DRAFTS=1`：
+新建的文件默认带有 `draft: true`。`make dev` 默认预览草稿和未来定时文章（`publishAt`）；用 `CONTENT_INCLUDE_DRAFTS=0 make dev` 可关闭。正式构建仍默认排除它们：
 
 ```bash
-CONTENT_INCLUDE_DRAFTS=1 make dev
+make dev
 ```
 
 ### 新建随想
@@ -76,7 +76,7 @@ CONTENT_INCLUDE_DRAFTS=1 make dev
 | 命令 | 实际执行的操作 |
 | :--- | :--- |
 | `make dev` | 先执行 `make prepare` 检查依赖，再运行 `npx garden dev`（内部自动执行同步并启动开发服务器） |
-| `CONTENT_INCLUDE_DRAFTS=1 make dev` | 连同 `draft: true` 草稿和未到 `publishAt` 时间的文章一起预览 |
+| `CONTENT_INCLUDE_DRAFTS=0 make dev` | 可选：只预览已发布文章，排除草稿和未来定时文章 |
 | `make new SLUG=xxx TITLE="标题" DIR=子目录` | 调用 `npx garden new` 在 `content/posts/` 下生成新文章草稿（`DIR` 可省略） |
 | `make check` | 在站点仓库中运行 `npx garden sync && npx garden build`，验证全站同步与生产构建 |
 | `npx garden check content/posts/xxx.md` | 单独检查某篇 Markdown 文章的标题、组件字段、代码对比与本地附件路径 |

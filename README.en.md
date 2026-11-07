@@ -73,7 +73,7 @@ Ask your Agent to compile the post using the bundled `garden-ui` skill: it runs 
 ```bash
 make new SLUG=writing-pace TITLE="Writing Pace" # Create a draft post in content/posts/
 make dev                                        # Sync content and start the local server
-CONTENT_INCLUDE_DRAFTS=1 make dev               # Preview drafts and future publishAt posts
+CONTENT_INCLUDE_DRAFTS=0 make dev              # Preview published posts only (optional)
 make check                                      # Run garden sync and garden build
 make update MESSAGE="Add writing-pace post"     # Check, commit, and push to origin
 npx garden check content/posts/writing-pace.md  # Validate front matter, components, and assets

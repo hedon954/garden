@@ -67,12 +67,12 @@ async function main() {
   if (lang === "en") {
     console.log(`Created draft: ${path.relative(root, destination)}`);
     console.log(`Post URL: /blog/${[...segments, slug].join("/")}/`);
-    console.log("Preview: CONTENT_INCLUDE_DRAFTS=1 make dev");
+    console.log("Preview: make dev");
     console.log("Before publishing, fill in description, tags, and body, set draft to false, then run make update.");
   } else {
     console.log(`已创建草稿：${path.relative(root, destination)}`);
     console.log(`文章路径：/blog/${[...segments, slug].join("/")}/`);
-    console.log("预览：CONTENT_INCLUDE_DRAFTS=1 make dev");
+    console.log("预览：make dev");
     console.log("发布前请完善摘要、标签与正文，并将 draft 改为 false，再运行 make update。");
   }
 }

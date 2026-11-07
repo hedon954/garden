@@ -75,7 +75,7 @@ Obsidian 插件这一轮不随包安装。
 ```bash
 make new SLUG=writing-pace TITLE="慢慢写"      # 在 content/posts/ 下创建文章草稿
 make dev                                       # 同步内容并启动本地预览
-CONTENT_INCLUDE_DRAFTS=1 make dev              # 连同草稿和未来定时文章一起预览
+CONTENT_INCLUDE_DRAFTS=0 make dev             # 只预览已发布文章（可选）
 make check                                     # 运行 garden sync 与 garden build 验证全站
 make update MESSAGE="新增一篇文章"             # 检查通过后提交并推送到远端仓库
 npx garden check content/posts/writing-pace.md # 单独检查一篇文章的标题、组件与资源路径

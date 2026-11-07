@@ -14,4 +14,4 @@ Before running `make update` to push changes, verify the following items:
 | :--- | :--- |
 | `npx garden check content/posts/<slug>.md` | Checks a single post's component fields, code diffs, and local asset paths |
 | `make check` | Runs `npx garden sync && npx garden build` to validate the full site build |
-| `CONTENT_INCLUDE_DRAFTS=1 make dev` | Previews drafts and scheduled posts locally |
+| `make dev` | Previews drafts and scheduled posts locally |

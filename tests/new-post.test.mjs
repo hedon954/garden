@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { execFile } from "node:child_process";
-import { cp, mkdir, mkdtemp, readFile, readdir, rm, symlink } from "node:fs/promises";
+import { cp, mkdir, mkdtemp, readFile, readdir, rm, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -102,12 +102,21 @@ test("generated articles pass the real pipeline and are excluded from public out
   await symlink(path.join(project, "node_modules"), path.join(root, "node_modules"));
   await symlink(path.join(project, "ui"), path.join(root, "ui"), "dir");
   const output = path.join(root, ".garden/generated-content.ts");
-  for (const includeDrafts of ["0", "1"]) {
-    await exec(process.execPath, ["scripts/build-content.mjs"], {
-      cwd: root, env: { ...process.env, CONTENT_INCLUDE_DRAFTS: includeDrafts },
-    });
+  // Future publication is preview-only too. Reuse the same generated artifacts
+  // across preview -> public regeneration, as dev -> build does.
+  await run(root, ["TITLE=未来文章", "SLUG=future", "DIR=notes"]);
+  const futureFile = path.join(root, "content/posts/notes/future.md");
+  const future = (await readFile(futureFile, "utf8"))
+    .replace("draft: true", "draft: false\npublishAt: 2999-01-01");
+  await writeFile(futureFile, future);
+  for (const includeDrafts of ["1", "0", undefined]) {
+    const env = { ...process.env };
+    if (includeDrafts === undefined) delete env.CONTENT_INCLUDE_DRAFTS;
+    else env.CONTENT_INCLUDE_DRAFTS = includeDrafts;
+    await exec(process.execPath, ["scripts/build-content.mjs"], { cwd: root, env });
     const generated = await readFile(output, "utf8");
     assert.equal(generated.includes('"path": "notes/pipeline"'), includeDrafts === "1");
+    assert.equal(generated.includes('"path": "notes/future"'), includeDrafts === "1");
     if (includeDrafts === "1") {
       assert.match(generated, /"date": "\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\+08:00"/);
     }
