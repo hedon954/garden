@@ -2,7 +2,7 @@
 name: garden-post-review
 description: >-
   Reviews one specified Garden post in three steps: fix script-reported
-  structure errors, fix widgets with the chart skill, then suggest prose
+  structure errors, review existing widgets, then suggest prose
   improvements without editing. Use when the user asks to review or
   proofread a Garden blog post.
 ---
@@ -11,7 +11,7 @@ description: >-
 
 Review only the post the user named. Do the three steps in order; each step sees the post as the previous step left it.
 
-Before you start, run `npx garden ui scan content/posts/path.md`. If any block has `status` `uncompiled`, `stale` or `error`, handle it with [garden-ui](../garden-ui/SKILL.md) first, then go to step 1.
+Before you start, run `npx garden ui scan content/posts/path.md`. If any block has `status` `uncompiled`, `stale` or `error`, handle it with [garden-compose](../garden-compose/SKILL.md) first, then go to step 1.
 
 Hard check command (from the site root):
 
@@ -31,9 +31,9 @@ Run `garden check`. If there are `errors`, change only those entries, then run t
 - `reference-heading`: move the flagged reference-list heading into `references` and delete the heading.
 - If a widget file is missing, only fix a mistyped `src`. Do not build a new chart in this step.
 
-## 2. Review and fix charts with the chart skill
+## 2. Review and fix existing widgets
 
-Do this step only when the post has a `widget`. Read [garden-interactive-chart](../garden-interactive-chart/SKILL.md) first.
+Do this step only when the post has a `widget`.
 
 You may change the HTML in the same-name directory and the `caption` of its fence. Leave the surrounding prose alone. `caption` must be a one-sentence claim.
 

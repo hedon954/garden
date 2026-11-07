@@ -2,7 +2,7 @@
 name: garden-post-review
 description: >-
   Reviews one specified Garden post in three steps: fix script-reported
-  structure errors, fix widgets with the chart skill, then suggest prose
+  structure errors, review existing widgets, then suggest prose
   improvements without editing. Use when the user asks to 审查 / 审稿 /
   review a Garden blog post.
 ---
@@ -11,7 +11,7 @@ description: >-
 
 只审用户点名的稿。三步按顺序做，后一步看到的是前一步改完的稿。
 
-开始前先运行 `npx garden ui scan content/posts/路径.md`。有 `status` 为 `uncompiled`、`stale` 或 `error` 的块时，先按 [garden-ui](../garden-ui/SKILL.md) 处理完，再进入第 1 步。
+开始前先运行 `npx garden ui scan content/posts/路径.md`。有 `status` 为 `uncompiled`、`stale` 或 `error` 的块时，先按 [garden-compose](../garden-compose/SKILL.md) 处理完，再进入第 1 步。
 
 硬性检查命令（在站点根目录）：
 
@@ -31,9 +31,9 @@ stdout 是 JSON。`ok` 为 true 才算通过。不要自己再查一遍标题、
 - `reference-heading`：把 `## 参考` / `## 参考资料` 收进 `references`，删掉这个标题。`## 参考文献` 留在正文里。
 - 缺 widget 文件时，只修正写错的 `src`。不要在这一步新做图表。
 
-## 2. 图表按图表 skill 审并修
+## 2. 检查并修复已有 widget
 
-这一步只在稿里有 `widget` 时做。先读 [garden-interactive-chart](../garden-interactive-chart/SKILL.md)。
+这一步只在稿里有 `widget` 时做。
 
 可以改同名目录里的 HTML，以及对应围栏的 `caption`。周围正文不动。`caption` 必须是一句判断。
 
