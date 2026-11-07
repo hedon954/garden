@@ -1,9 +1,20 @@
+import { splitCompareLine } from "./compare-line.mjs";
 import {inspectComposeBody} from "../compose/inspect.mjs";
 import { CATALOG, suggestName } from "./catalog.mjs";
 import { isProseSteps, isTrivialInteractive } from "./enhance.mjs";
 import { blanksBetween, classifyFence, isFullCodeFence, scanFences } from "./parse.mjs";
 import { splitTitle } from "./title.mjs";
 import { compileUiBlock } from "../core/compile.mjs";
+
+function compareTooLong(node) {
+  const items = node.props?.items ?? node.items ?? [];
+  if (items.some(item => ["good", "bad"].includes(item?.verdict))) return false;
+  return items.some(item => {
+    const text = typeof item === "string" ? splitCompareLine(item)?.text ?? item :
+      Array.isArray(item.text) ? item.text.join("") : item.text ?? "";
+    return [...text.trim()].length > 60;
+  });
+}
 
 /**
  * Diagnostics for one Markdown file.
@@ -55,6 +66,13 @@ export function checkGardenMarkdown(markdown, { draft = false, title = "", title
     if (block.error?.code === "compose-invalid") {
       push(fence.line, "compose-invalid", block.error.message, "叶子写 Markdown，结构写 box、row、stack、steps、arrow、join、lanes 这些标签。");
       return;
+    }
+    if (block.name === "compose") {
+      for (const node of inspectComposeBody(fence.body)) {
+        if ((node.type === "compare" || node.type === "feature" && node.name === "compare") && compareTooLong(node)) {
+          push(fence.line, "compare-long", "对比格超过约 60 字。", "这一格改回原文的列表或段落。");
+        }
+      }
     }
     if(block.name==="compose")for(const node of inspectComposeBody(fence.body).filter(n=>n.type==="feature"&&n.name==="file")) {
       if((node.props.files??[node.props]).some(p=>p.resolved!==undefined))push(fence.line,"compose-file","resolved 由构建生成，不要手写。","作者只填写 file src 或 files/file。");

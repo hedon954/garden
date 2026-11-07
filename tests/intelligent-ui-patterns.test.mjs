@@ -5,58 +5,49 @@ import remarkGfm from "remark-gfm";
 import remarkParse from "remark-parse";
 import { unified } from "unified";
 import { remarkLinkCard } from "../app/lib/remark-link-card.mjs";
+import { FEATURE_FIELDS } from "../ui/compose/features.mjs";
 import { CATALOG, GARDEN_NAMES } from "../ui/garden/catalog.mjs";
 import { checkGardenMarkdown } from "../ui/garden/check.mjs";
 import { cardUrls, stripCardMarkers } from "../ui/garden/markdown-links.mjs";
 import { parseGardenBlock, scanFences } from "../ui/garden/parse.mjs";
 import { circled, crossing, labelFits, legendLine, placeLabels, RELATION_COMPACT_WIDTH, RELATION_LABEL_FONT_MIN, RELATION_NODE_FONT_MIN, relationEdges, relationHeights, relationLayout, relationLines } from "../ui/garden/relations.mjs";
 
-const parse = (info, body) => parseGardenBlock(info, body);
+const scene = body => {
+  const block = parseGardenBlock("garden compose", body);
+  const node = block.props?.nodes?.find(node => node.type === "feature");
+  return node ? {...block, props:node.props} : block;
+};
+const entities = n => Array.from({length:n}, (_,i)=>`<entity title="S${i+1}"/>`).join("");
 
-test("relations, list and choice are catalog blocks with English names; cycle and figure are gone", () => {
-  assert.equal(GARDEN_NAMES.includes("cycle"), false);
-  assert.equal(CATALOG.cycle, undefined);
-  assert.equal(GARDEN_NAMES.includes("figure"), false);
-  assert.equal(CATALOG.figure, undefined);
-  assert.equal(parse("garden figure", "image: ./diagram.svg\n").error?.code, "garden-name");
+test("Compose alone is public; semantic families are first-class children", () => {
+  assert.deepEqual(GARDEN_NAMES, ["compose"]);
+  assert.deepEqual(Object.keys(CATALOG), ["compose"]);
+  for (const body of ['<relations><entity title="A"/><entity title="B"/><entity title="C"/></relations>', '<icon-list><entry icon="book" title="A"/></icon-list>', '<choices><choice-option label="A"/></choices>']) assert.equal(scene(body).error, undefined);
   const css = readFileSync(new URL("../app/styles/a2.css", import.meta.url), "utf8");
   assert.doesNotMatch(css, /\.g-figure|\.g-explore|data-name="figure"/u);
-  for (const name of ["relations", "list", "choice"]) {
-    assert.ok(GARDEN_NAMES.includes(name), name);
-    assert.ok(CATALOG[name].example.startsWith(`\`\`\`garden ${name}`), `${name} example`);
-    const [fence] = scanFences(CATALOG[name].example);
-    const block = parse(`garden ${name}`, fence.body);
-    assert.equal(block.error, undefined, `${name}: ${block.error?.message}`);
-  }
 });
 
 test("relations keep items and links; nodes have no emphasis", () => {
-  const block = parse("garden relations", "items:\n  - title: A\n    text: a\n  - title: B\n  - title: C\nlinks:\n  - from: 2\n    to: 1\n    style: dashed\n    direction: both\n    label: feeds\ncaption: c");
+  const body = '<entity title="A"><text>a</text></entity><entity title="B"/><entity title="C"/>';
+  const block = scene(`<relations caption="c">${body}<edge from={2} to={1} style="dashed" direction="both" label="feeds"/></relations>`);
   assert.equal(block.error, undefined);
-  assert.deepEqual(block.props.links, [{ from: 2, to: 1, style: "dashed", direction: "both", label: "feeds" }]);
-  assert.deepEqual(CATALOG.relations.itemKeys, ["title", "text"]);
-  assert.deepEqual(CATALOG.relations.linkKeys, ["from", "to", "style", "direction", "label"]);
-  assert.equal(CATALOG.relations.keys.includes("loop"), false);
-  assert.match(parse("garden relations", "items: []\nloop: true").error.message, /loop/u);
+  assert.deepEqual(block.props.links, [{from:2,to:1,style:"dashed",direction:"both",label:"feeds"}]);
+  assert.deepEqual(FEATURE_FIELDS.entity, ["id","title","text"]);
+  assert.deepEqual(FEATURE_FIELDS.edge, ["from","to","style","direction","label"]);
+  assert.match(scene(`<relations loop="true">${body}</relations>`).error.message, /loop/u);
   const css = readFileSync(new URL("../app/styles/a2.css", import.meta.url), "utf8");
   assert.doesNotMatch(css, /is-accent|g-cycle/u);
 });
 
 test("relations links are checked: targets, style, direction, keys", () => {
-  const three = "items:\n  - title: A\n  - title: B\n  - title: C\nlinks:\n";
-  const bad = {
-    "  - from: 1\n    to: 9": /from\/to/u,
-    "  - from: 1\n    to: 1": /同一个/u,
-    "  - from: 1\n    to: 2\n    style: dotted": /style/u,
-    "  - from: 1\n    to: 2\n    direction: back": /direction/u,
-    "  - from: 1\n    to: 2\n    weight: 2": /weight/u,
-  };
-  for (const [links, message] of Object.entries(bad)) {
-    const block = parse("garden relations", three + links);
-    assert.equal(block.error?.code, "garden-relations", links);
-    assert.match(block.error.message, message);
+  const body='<entity title="A"/><entity title="B"/><entity title="C"/>';
+  const bad={'from={1} to={9}':/from\/to/u,'from={1} to={1}':/不同/u,'from={1} to={2} style="dotted"':/style/u,'from={1} to={2} direction="back"':/direction/u,'from={1} to={2} weight={2}':/weight/u};
+  for(const [attrs,message] of Object.entries(bad)) {
+    const block=scene(`<relations>${body}<edge ${attrs}/></relations>`);
+    assert.equal(block.error?.code,"compose-invalid", attrs);
+    assert.match(block.error.message,message);
   }
-  assert.equal(parse("garden relations", `${three}  - from: A\n    to: C`).error, undefined, "titles work as ends");
+  assert.equal(scene(`<relations>${body}<edge from="A" to="C"/></relations>`).error, undefined);
 });
 
 test("relations: spots sit on a circle, edges resolve, screen-reader lines list outgoing edges", () => {
@@ -82,45 +73,43 @@ test("relations: spots sit on a circle, edges resolve, screen-reader lines list 
   assert.deepEqual(lines[3], []);
 });
 
-test("showcase posts use relations with an explicit loop and a hub", () => {
+test("showcase posts preserve the explicit relation loop and hub", () => {
   for (const file of ["interface-patterns.md", "interface-patterns-en.md"]) {
-    const md = readFileSync(new URL(`../content/posts/${file}`, import.meta.url), "utf8");
-    assert.doesNotMatch(md, /garden cycle/u);
-    assert.equal(md.match(/```garden relations/gu).length, 2);
-    assert.match(md, /  - from: 4\n    to: 1\n/u);
-    assert.match(md, /direction: both/u);
+    const md=readFileSync(new URL(`../content/posts/${file}`,import.meta.url),"utf8");
+    assert.equal((md.match(/<relations[ >]/gu)??[]).length,2);
+    assert.match(md, /<edge from=\{4\} to=\{1\}/u);
+    assert.match(md, /direction="both"/u);
   }
 });
 
-test("list rows and list steps share one block", () => {
-  assert.equal(parse("garden list", "items:\n  - icon: search\n    text: 搜索").error, undefined);
-  const steps = parse("garden list", "items:\n  - icon: flask\n    title: 实验一\n    text:\n      - 第一段\n      - 第二段");
-  assert.equal(steps.error, undefined);
-  assert.equal(steps.props.items[0].text.length, 2);
+test("icon-list preserves simple rows and full multi-paragraph entries", () => {
+  assert.equal(scene('<icon-list><entry icon="search"><text>搜索</text></entry></icon-list>').error,undefined);
+  const block=scene('<icon-list><entry icon="flask" title="实验一"><text>第一段</text><text>第二段</text></entry></icon-list>');
+  assert.equal(block.error,undefined);
+  assert.deepEqual(block.props.items[0].text,["第一段","第二段"]);
 });
 
 test("choice options carry icon, value, text, label and reply", () => {
-  const block = parse("garden choice", "title: 选哪个？\nitems:\n  - icon: shield\n    value: ¥1\n    text: a\n    label: 可靠\n    reply: 好\ncaption: 示意");
-  assert.equal(block.error, undefined);
-  assert.equal(block.props.items[0].reply, "好");
+  const block=scene('<choices title="选哪个？" caption="示意"><choice-option icon="shield" value="¥1" label="可靠" reply="好"><text>a</text></choice-option></choices>');
+  assert.equal(block.error,undefined);
+  assert.deepEqual(block.props.items[0],{icon:"shield",value:"¥1",label:"可靠",reply:"好",text:"a"});
 });
 
 test("choice takes an optional none option with label and reply", () => {
-  const block = parse("garden choice", "items:\n  - value: A\n  - value: B\nnone:\n  label: 都不合适\n  reply: 好的");
-  assert.equal(block.error, undefined);
-  assert.deepEqual(block.props.none, { label: "都不合适", reply: "好的" });
-  for (const file of ["interface-patterns.md", "interface-patterns-en.md"]) {
-    assert.match(readFileSync(new URL(`../content/posts/${file}`, import.meta.url), "utf8"), /\nnone:\n  label: /u);
-  }
+  const block=scene('<choices><choice-option value="A"/><choice-option value="B"/><choice-option none label="都不合适" reply="好的"/></choices>');
+  assert.equal(block.error,undefined);
+  assert.deepEqual(block.props.none,{label:"都不合适",reply:"好的"});
+  for(const file of ["interface-patterns.md","interface-patterns-en.md"]) assert.match(readFileSync(new URL(`../content/posts/${file}`,import.meta.url),"utf8"), /<choice-option none label=/u);
 });
 
-test("compare accepts a good/bad verdict per item; card accepts a list of cards with takeaways", () => {
-  assert.ok(CATALOG.compare.itemKeys.includes("verdict"));
-  const verdicts = parse("garden compare", "items:\n  - title: 不好\n    verdict: bad\n    text: x\n  - title: 更好\n    verdict: good\n    text: y");
-  assert.equal(verdicts.error, undefined);
-  const cards = parse("garden card", "cards:\n  - url: https://example.com/\n    title: Example\n    takeaway: \"**可借鉴：** y\"\n    source:\n      - https://example.com/\n      - https://example.org/");
-  assert.equal(cards.error, undefined);
-  assert.equal(cards.props.cards[0].source.length, 2);
+test("compare preserves good/bad verdicts; resource groups preserve takeaways and sources", () => {
+  const verdicts=scene('<compare><item verdict="bad"><title>不好</title><text>x</text></item><item verdict="good"><title>更好</title><text>y</text></item></compare>');
+  assert.equal(verdicts.error,undefined);
+  assert.deepEqual(verdicts.props.items.map(i=>i.verdict),["bad","good"]);
+  const cards=scene('<resources><resource href="https://example.com/" title="Example" takeaway="**可借鉴：** y"><reference href="https://example.com/"/><reference href="https://example.org/"/></resource></resources>');
+  assert.equal(cards.error,undefined);
+  assert.equal(cards.props.cards[0].source.length,2);
+  assert.equal(cards.props.cards[0].takeaway,"**可借鉴：** y");
 });
 
 test("the checker accepts the showcase post as written", () => {
@@ -153,32 +142,31 @@ test("[site](url){source} draws an inline source chip and leaves no marker behin
   assert.deepEqual(cardUrls("[e.com](https://e.com/){source}"), []);
 });
 
-test("verdict compares stack, so the side-by-side length limit does not apply", () => {
-  const long = "x".repeat(90);
-  const verdict = checkGardenMarkdown(`\`\`\`garden compare\nitems:\n  - title: a\n    verdict: bad\n    text: ${long}\n\`\`\`\n`);
-  assert.equal(verdict.filter((item) => item.code === "compare-long").length, 0);
-  const plain = checkGardenMarkdown(`\`\`\`garden compare\nitems:\n  - title: a\n    text: ${long}\n\`\`\`\n`);
-  assert.equal(plain.filter((item) => item.code === "compare-long").length, 1);
-  // Only good/bad stack; any other verdict value stays side by side and is still checked.
-  const other = checkGardenMarkdown(`\`\`\`garden compare\nitems:\n  - title: a\n    verdict: maybe\n    text: ${long}\n\`\`\`\n`);
-  assert.equal(other.filter((item) => item.code === "compare-long").length, 1);
+test("verdict compares stack, while long side-by-side comparisons keep the prose warning", () => {
+  const long="x".repeat(90);
+  const check=body=>checkGardenMarkdown('```garden compose\n'+body+'\n```\n');
+  const verdict=check(`<compare><item verdict="bad"><title>a</title><text>${long}</text></item><item verdict="good"><title>b</title><text>Short</text></item></compare>`);
+  assert.equal(verdict.filter(i=>i.code==="compare-long").length,0);
+  const plain=check(`<compare><item><title>a</title><text>${long}</text></item><item><title>b</title><text>Short</text></item></compare>`);
+  assert.equal(plain.filter(i=>i.code==="compare-long").length,1);
+  const other=scene(`<compare><item verdict="maybe"><text>${long}</text></item><item><text>Short</text></item></compare>`);
+  assert.equal(other.error?.code,"compose-invalid");
+  assert.match(other.error.message,/verdict/u);
 });
 
 test("relations accept 3 to 6 elements and point to mermaid outside that", () => {
-  const items = (n) => `items:\n${Array.from({ length: n }, (_, i) => `  - title: S${i + 1}`).join("\n")}`;
-  for (const n of [3, 4, 5, 6]) {
-    const block = parse("garden relations", `${items(n)}\nlinks:\n  - from: 1\n    to: ${n}`);
-    assert.equal(block.error, undefined, `n=${n}`);
-    assert.equal(block.props.items.length, n);
+  for(const n of [3,4,5,6]) {
+    const block=scene(`<relations>${entities(n)}<edge from={1} to={${n}}/></relations>`);
+    assert.equal(block.error,undefined,`n=${n}`);
+    assert.equal(block.props.items.length,n);
   }
-  for (const n of [0, 1, 2, 7, 8]) {
-    const block = parse("garden relations", items(n) || "items: []");
-    assert.equal(block.error?.code, "garden-relations", `n=${n}`);
-    assert.match(block.error.message, /mermaid/u);
+  for(const n of [0,1,2,7,8]) {
+    const body=`<relations>${entities(n)}</relations>`;
+    const block=scene(body);
+    assert.equal(block.error?.code,"compose-invalid",`n=${n}`);
+    assert.match(block.error.message,/mermaid/u);
+    assert.equal(checkGardenMarkdown('```garden compose\n'+body+'\n```\n')[0]?.severity,"error");
   }
-  const diagnostics = checkGardenMarkdown(`\`\`\`garden relations\n${items(8)}\n\`\`\`\n`);
-  assert.equal(diagnostics.find((d) => d.code === "garden-relations")?.severity, "error");
-  assert.equal(checkGardenMarkdown("```garden cycle\nitems: []\n```\n")[0]?.code, "garden-name");
 });
 
 test("relations center: that node in the middle, the rest evenly on the ring", () => {
@@ -189,13 +177,13 @@ test("relations center: that node in the middle, the rest evenly on the ring", (
   assert.deepEqual(ring, [1, 2, 3, 4]);
   assert.equal(outer, 4);
   assert.equal(spots[1].s, -1, "first outer node on top");
-  assert.equal(parse("garden relations", "items:\n  - title: A\n  - title: B\n  - title: C\ncenter: B").error, undefined);
-  assert.equal(parse("garden relations", "items:\n  - title: A\n  - title: B\n  - title: C\ncenter: 2").error, undefined);
-  assert.match(parse("garden relations", "items:\n  - title: A\n  - title: B\n  - title: C\ncenter: Z").error.message, /center/u);
+  assert.equal(scene(`<relations center="S2">${entities(3)}</relations>`).error, undefined);
+  assert.equal(scene(`<relations center={2}>${entities(3)}</relations>`).error, undefined);
+  assert.match(scene(`<relations center="Z">${entities(3)}</relations>`).error.message, /center/u);
   assert.equal(relationLayout(3, -1).centre, -1, "no auto-detect");
   for (const file of ["interface-patterns.md", "interface-patterns-en.md"]) {
     const md = readFileSync(new URL(`../content/posts/${file}`, import.meta.url), "utf8");
-    assert.match(md, /\ncenter: (组织者|Organiser)\n/u);
+    assert.match(md, /center="(组织者|Organiser)"/u);
   }
 });
 
@@ -248,7 +236,7 @@ test("relations narrow screens keep the graph: same layout scaled, no card-list 
     for (const spot of outer) assert.ok((spot.w / 100) * width >= 80, "a node keeps room for a two-line title");
   }
   assert.equal(RELATION_COMPACT_WIDTH, 560);
-  const docs = ["docs/handbook/components/relations.md", "docs/handbook/en/components/relations.md", "ui/prompt/rules.md"].map((f) => readFileSync(new URL(`../${f}`, import.meta.url), "utf8"));
+  const docs = ["docs/handbook/reference/compose.md", "docs/handbook/en/reference/compose.md", "ui/prompt/rules.md"].map((f) => readFileSync(new URL(`../${f}`, import.meta.url), "utf8"));
   for (const doc of docs) assert.doesNotMatch(doc, /单列卡片|卡片下方的关系行|cards stack|card's relation line/u);
 });
 

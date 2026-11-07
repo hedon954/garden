@@ -61,7 +61,7 @@ export function compileFeature(name,attrs,children,fail) {
   case 'icon-list':expect('entry');legacy='list';props={...attrs,items:parts.map(n=>{compileFeature(n.tag,n.attrs,n.children,fail);return {...n.attrs,...(n.children.length?{text:paragraph(n.children)}:{})};})};break;
   case 'relations':{
    expect('entity','edge');const entities=records('entity');const links=records('edge');
-   if(entities.length<3||entities.length>6)fail('<relations> 需要3–6个 entity；更多要素请拆分。');
+   if(entities.length<3||entities.length>6)fail('<relations> 需要3–6个 entity；更多要素请拆分或使用 mermaid。');
    const ids=entities.map((e,i)=>String(e.id??e.title??i+1));if(new Set(ids).size!==ids.length)fail('<relations> entity id/title 必须唯一。');
    const index=value=>{const exact=ids.indexOf(String(value));return exact>=0?exact:relationIndex(value,entities.map(e=>String(e.title??'')));};
    const mapped=links.map(edge=>{const from=index(edge.from),to=index(edge.to);if(from<0||to<0||from===to)fail('<edge> from/to 必须引用不同的现有 entity id、标题或1起序号。');if(edge.style&&!['solid','dashed'].includes(edge.style))fail('<edge> style 只能是 solid/dashed。');if(edge.direction&&!['one','both'].includes(edge.direction))fail('<edge> direction 只能是 one/both。');return {...edge,from:from+1,to:to+1};});
