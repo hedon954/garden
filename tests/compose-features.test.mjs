@@ -52,3 +52,10 @@ test('lowercase sandbox shares the existing isolated JS/CSS runtime and rejects 
   const play=parsePlayCompose({id:'sandbox-test'},body(html));assert.equal(compileUiBlock(play.uiSource).check.ok,expected);
  }
 });
+
+test('plain comparison lines preserve punctuation, code, emphasis and all paragraphs',()=>{
+ const lines=['**FIFO 的优势**：跨度在队列中"陈酿"。','`intra-system communication`: 应用程序内部的交互。'];
+ const parsed=parseCompose(`<figure frame="none"><compare>${lines.map(line=>`<item><text>${line}</text></item>`).join('')}</compare></figure>`);
+ assert.equal(parsed.ok,true,JSON.stringify(parsed.error));assert.deepEqual(parsed.doc.nodes[0].children[0].props.items,lines);
+ for(const line of ['FIFO 的优势','intra-system communication']){assert.ok(composeText(parsed.doc).includes(line));assert.ok(renderCompose(parsed.doc).includes(line));}
+});

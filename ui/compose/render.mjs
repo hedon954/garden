@@ -144,13 +144,23 @@ function paintHtml(html, node = {}) {
   });
 }
 
+function featureVisibleParts(props) {
+  const visible = new Set(["title","label","description","caption","text","value","unit","meta","takeaway","reply","note","date","x","y","name"]);
+  const parts = [];
+  const walk = (value,key="") => {
+    if(Array.isArray(value)) value.forEach(item=>walk(item,key));
+    else if(value && typeof value==="object") Object.entries(value).forEach(([k,v])=>walk(v,k));
+    else if((visible.has(key)||key==="items"||key==="points")&&value!=null) parts.push(String(value));
+  };
+  walk(props);
+  return parts;
+}
+
 function renderNodeContent(node, ctx) {
   switch (node.type) {
     case "feature": {
       const payload = encodeURIComponent(JSON.stringify({ name: node.name, props: node.props, composeFeature: true }));
-      const p = node.props;
-      const items = p.items ?? p.data ?? p.files ?? [];
-      const text = [p.title, p.description, p.text, p.value, p.caption, ...items.flatMap(item => [item.title, item.label, item.x, item.y, item.value, ...(Array.isArray(item.text) ? item.text : [item.text])])].filter(value => value != null).map(value => textHtml(String(value))).join("<br>");
+      const text = featureVisibleParts(node.props).map(textHtml).join("<br>");
       return `<garden-block data-payload="${payload}"><section class="g-compose-feature-fallback">${text}</section></garden-block>`;
     }
     case "content":
@@ -395,11 +405,7 @@ export function composeText(doc) {
     if (item.kpi?.value) parts.push(item.kpi.value);
     if (item.kpi?.unit) parts.push(item.kpi.unit);
     if (item.kpi?.label) parts.push(item.kpi.label);
-    if (item.type === "feature") {
-      const visible = new Set(["title","label","description","caption","text","value","unit","meta","site","takeaway","reply","note","date"]);
-      const walk = (value,key="") => { if (Array.isArray(value)) value.forEach(v=>walk(v,key)); else if(value && typeof value==="object") Object.entries(value).forEach(([k,v])=>walk(v,k)); else if(visible.has(key)&&value!=null) parts.push(articleContentText(String(value))); };
-      walk(item.props);
-    }
+    if (item.type === "feature") parts.push(...featureVisibleParts(item.props).map(articleContentText));
     if (item.type === "content") parts.push(articleContentText(item.source));
     if (item.type === "icon" && item.name) parts.push(item.name);
   };

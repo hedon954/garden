@@ -443,7 +443,10 @@ function elementNode(tag, children) {
     }
     case "compare": {
       const items = children.filter((child) => child.type === "item");
-      if (items.some(item => item.verdict)) return {type:"feature",name:"compare",tag:"compare",props:{items:items.map(item=>({title:item.title,text:item.children.filter(child=>child.type==="text").map(child=>child.text),...(item.verdict?{verdict:item.verdict}:{})}))}};
+      if (items.some(item => item.verdict) || items.every(item => !item.title && item.children.length === 1 && item.children[0].type === "text" && item.tone === "plain")) {
+        if (items.length < 2 || items.length > 4) fail("compare 要有 2 到 4 项。");
+        return {type:"feature",name:"compare",tag:"compare",props:{items:items.map(item=> !item.title && !item.verdict && item.children.length===1 ? item.text : {title:item.title,text:item.children.filter(child=>child.type==="text").map(child=>child.text),...(item.verdict?{verdict:item.verdict}:{})})}};
+      }
       if (items.length < 2 || items.length > 4) fail("compare 要有 2 到 4 项。");
       return { type: "compare", items };
     }
