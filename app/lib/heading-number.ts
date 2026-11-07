@@ -13,10 +13,5 @@ const NUMBERED_ARTICLE = /^#{2,3}[ \t]+\d/m;
 /** True when the article writes its own section numbers (`## 2. …`). */
 export const articleUsesHeadingNumbers = (markdown: string) => NUMBERED_ARTICLE.test(markdown);
 
-/**
- * Whether h2/h3 get automatic numbers. Off when the author writes numbers, or
- * when the front matter says `numbering: false`. Author-written numbers are
- * always kept.
- */
-export const autoNumbersHeadings = (markdown: string, numbering?: boolean) =>
-  numbering !== false && !articleUsesHeadingNumbers(markdown);
+/** Compatibility export: headings are now always rendered literally. */
+export const autoNumbersHeadings = () => false;

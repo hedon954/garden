@@ -17,3 +17,5 @@ make dev
 评论默认关闭。发布前打开 [Giscus](https://giscus.app/zh-CN)，把仓库、仓库 ID、分类、分类 ID 写入 `.env.local`，并在 GitHub Actions Variables 设置同名的 `GISCUS_REPO`、`GISCUS_REPO_ID`、`GISCUS_CATEGORY`、`GISCUS_CATEGORY_ID`。留空会让发布失败。确定不开放评论时，把 `GISCUS_DISABLED` 设为 `1`。
 
 升级引擎：把 `package.json` 里的 `hd-garden` 改到新版本，例如 `^0.4.0`，再运行 `npm install`。
+
+再次运行 `make dev` 会先温和停止经验证属于同一项目的旧 Vinext，再启动新服务；不会按端口号杀死无关进程。修改、新建或删除 Markdown 会自动更新预览。标题按原文显示；范围 `4~6` 不作删除线，显式删除线用 `~~删除线~~`。

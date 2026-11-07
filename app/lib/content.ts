@@ -80,39 +80,22 @@ export { splitHeadingNumber };
  * Parses the same Markdown heading text that ReactMarkdown sends to
  * rehype-slug. Every heading depth advances the slugger so headings outside
  * the H2-H5 TOC range cannot shift the IDs shown in the directory.
- * `no` follows the prototype: keep an author-written number, otherwise
- * auto-number h2/h3 only when the article has no numbered headings and its
- * front matter does not say `numbering: false`.
+ * Heading text is literal: no synthetic numbers and no extraction of authored numbers.
  */
-export const extractHeadings = (markdown: string, { numbering }: { numbering?: boolean } = {}) => {
+export const extractHeadings = (markdown: string, _options: { numbering?: boolean } = {}) => {
+  // Accept the legacy option without changing authored heading text.
+  void _options;
   const slugger = new GithubSlugger();
-  const autoNumber = autoNumbersHeadings(markdown, numbering);
   const base = articleHeadingBase(markdown);
   const headings: Array<{ depth: number; text: string; id: string; no?: string }> = [];
   const tree = unified().use(remarkParse).use(markdownPlugins).parse(markdown);
-  let h2 = 0;
-  let h3 = 0;
 
   visit(tree, "heading", (node) => {
     const raw = toString(node).trim();
     const id = slugger.slug(raw);
     if (!(raw && node.depth >= 2 && node.depth <= 5)) return;
     const level = displayHeadingLevel(node.depth, base);
-    let text = raw;
-    let no: string | undefined;
-    if (level === 2 || level === 3) {
-      const split = splitHeadingNumber(raw);
-      if (split) {
-        no = split.no;
-        text = split.text;
-        if (level === 2) { h2 += 1; h3 = 0; }
-        else h3 += 1;
-      } else if (autoNumber) {
-        if (level === 2) { h2 += 1; h3 = 0; no = String(h2); }
-        else { h3 += 1; no = h2 ? `${h2}.${h3}` : String(h3); }
-      }
-    }
-    headings.push({ depth: level, text, id, ...(no ? { no } : {}) });
+    headings.push({ depth: level, text: raw, id });
   });
 
   return headings;

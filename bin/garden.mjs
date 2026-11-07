@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { randomBytes } from "node:crypto";
 import { spawnSync } from "node:child_process";
+import { startDev } from "../scripts/dev-server.mjs";
 import fs from "node:fs";
 import path from "node:path";
 import { createRequire } from "node:module";
@@ -312,12 +313,19 @@ function ensureDevGitHubLogin() {
   if (!/^GITHUB_SESSION_SECRET=\S+/m.test(text)) {
     text = upsertEnv(text, "GITHUB_SESSION_SECRET", randomBytes(32).toString("base64url"));
   }
-  fs.writeFileSync(local, text.endsWith("\n") ? text : `${text}\n`);
+  const next = text.endsWith("\n") ? text : `${text}\n`;
+  if (!fs.existsSync(local) || fs.readFileSync(local, "utf8") !== next) fs.writeFileSync(local, next);
 }
 
 async function runVinext(vinextArgs, { copyDist = false } = {}) {
-  await sync();
   const cwd = vinextRoot();
+  if (vinextArgs[0] === "dev") {
+    const { finished } = await startDev({ cwd, executable: resolveVinext(), args: vinextArgs.slice(1), env: siteEnv(), prepare: sync });
+    const result = await finished;
+    if (result.status !== 0) process.exit(result.status || 1);
+    return;
+  }
+  await sync();
   const result = spawnSync(process.execPath, [resolveVinext(), ...vinextArgs], {
     cwd,
     env: siteEnv(),

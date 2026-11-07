@@ -365,7 +365,6 @@ export function TableOfContents({
             onFocus={() => prefetchHeadingLayout(node.id)}
             aria-current={activeId === node.id ? "location" : undefined}
           >
-            {node.no ? <span className="t-no">{node.no}</span> : null}
             {node.text}
           </a>
           {node.children.length > 0 ? (

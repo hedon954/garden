@@ -9,4 +9,4 @@ import remarkMath from "remark-math";
  * (app/lib/markdown-plugins.ts); a previewed Markdown file uses this list as
  * is (scripts/file-preview.mjs), so both read the same Markdown the same way.
  */
-export const markdownSyntaxPlugins = [remarkGfm, remarkCjkFriendly, remarkBreaks, remarkMath];
+export const markdownSyntaxPlugins = [[remarkGfm, { singleTilde: false }], remarkCjkFriendly, remarkBreaks, remarkMath];

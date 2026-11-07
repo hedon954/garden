@@ -5,12 +5,11 @@ import { remarkA2 } from "../lib/remark-a2.mjs";
 import { remarkLinkCard } from "../lib/remark-link-card.mjs";
 import {
   Children,
-  cloneElement,
   isValidElement,
   type HTMLAttributes,
   type ReactNode,
 } from "react";
-import { articleHeadingBase, autoNumbersHeadings, displayHeadingLevel, splitHeadingNumber } from "../lib/content";
+import { articleHeadingBase, displayHeadingLevel } from "../lib/content";
 import Link from "next/link";
 import ReactMarkdown from "react-markdown";
 import rehypeRaw from "rehype-raw";
@@ -150,31 +149,7 @@ function CodeBlock({
   );
 }
 
-function stripPrefix(children: ReactNode, prefix: string): ReactNode {
-  let rest = prefix;
-  const walk = (node: ReactNode): ReactNode => {
-    if (!rest) return node;
-    if (typeof node === "string" || typeof node === "number") {
-      const value = String(node);
-      if (value.startsWith(rest)) {
-        const kept = value.slice(rest.length);
-        rest = "";
-        return kept;
-      }
-      if (rest.startsWith(value)) {
-        rest = rest.slice(value.length);
-        return "";
-      }
-      return value;
-    }
-    if (Array.isArray(node)) return node.map(walk);
-    if (isValidElement<{ children?: ReactNode }>(node)) {
-      return cloneElement(node, undefined, walk(node.props.children));
-    }
-    return node;
-  };
-  return walk(children);
-}
+
 
 
 /**
@@ -227,36 +202,18 @@ const headingText = (children: ReactNode) => {
   return parts.join("");
 };
 
-export function MarkdownArticle({ content, numbering, lang, fieldTables, refDemos, handbook }: { content: string; numbering?: boolean; lang?: UiLang; fieldTables?: boolean; refDemos?: boolean; handbook?: boolean }) {
+export function MarkdownArticle({ content, lang, fieldTables, refDemos, handbook }: { content: string; numbering?: boolean; lang?: UiLang; fieldTables?: boolean; refDemos?: boolean; handbook?: boolean }) {
   const internalRoute = handbook ? handbookRoute : siteRoute;
   const t = ui(lang);
   // Optional layer 2: a Worker that refreshes card text. Without it, cards stay as built.
   const cardWorker = content.includes("{card}") ? siteConfig.linkPreview?.worker : undefined;
-  const numbers = { h2: 0, h3: 0 };
-  const autoNumber = autoNumbersHeadings(content, numbering);
   const headingBase = articleHeadingBase(content);
-  const section = (depth: 2 | 3, children: ReactNode) => {
-    const raw = headingText(children).trim();
-    const split = splitHeadingNumber(raw);
-    if (split) {
-      if (depth === 2) { numbers.h2 += 1; numbers.h3 = 0; }
-      else numbers.h3 += 1;
-      const prefix = raw.slice(0, raw.length - split.text.length);
-      return { no: split.no, children: stripPrefix(children, prefix) };
-    }
-    if (!autoNumber) return { no: "", children };
-    if (depth === 2) { numbers.h2 += 1; numbers.h3 = 0; return { no: String(numbers.h2), children }; }
-    numbers.h3 += 1;
-    return { no: numbers.h2 ? `${numbers.h2}.${numbers.h3}` : String(numbers.h3), children };
-  };
   const heading = (source: 2 | 3 | 4, children: ReactNode, props: HTMLAttributes<HTMLHeadingElement> & { node?: unknown }) => {
     const level = displayHeadingLevel(source, headingBase);
     const Tag = level === 2 ? "h2" : level === 3 ? "h3" : "h4";
     const domProps = { ...props };
     Reflect.deleteProperty(domProps, "node");
-    if (level > 3) return <Tag {...domProps}>{children}</Tag>;
-    const sectioned = section(level as 2 | 3, children);
-    return <Tag {...domProps}>{sectioned.no ? <span className="sec-no">{sectioned.no}</span> : null}{sectioned.children}</Tag>;
+    return <Tag {...domProps}>{children}</Tag>;
   };
   const gardenComponents = {
     "garden-linkcard": (props: Record<string, string | undefined>) => (
