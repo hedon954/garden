@@ -162,14 +162,14 @@ function commandCheck() {
   const problems = [];
   const warnings = [];
   for (const target of files) {
-    const { blocks, draft } = scanTarget(target);
+    const { blocks } = scanTarget(target);
     for (const block of blocks) {
       const errors = block.diagnostics.filter((item) => item.severity === "error");
       for (const item of block.diagnostics.filter((entry) => entry.severity === "warning")) {
         warnings.push(`${target.file}:${item.line}  ${block.id ?? "-"}  ${item.code}  ${item.message}`);
       }
       const uncompiledCompose = block.lang === "garden-compose" && block.status === "uncompiled";
-      if ((block.lang === "intent" || block.lang === "garden-idea" || uncompiledCompose) && !draft) problems.push({ file: target.file, block, diagnostics: [] });
+      if ((block.lang === "intent" || block.lang === "garden-idea" || uncompiledCompose)) problems.push({ file: target.file, block, diagnostics: [] });
       else if (errors.length) problems.push({ file: target.file, block, diagnostics: errors });
     }
   }
