@@ -46,7 +46,7 @@ export function GardenBlock({ dataPayload }: { dataPayload?: string }) {
       if (block.error?.code === "compose-uncompiled") return <GardenIdea text={String(block.idea || block.children || "")} />;
       if (block.error) return <GardenUnknown name="compose" />;
       if (block.mode === "play") {
-        // DIL play: prefer lowered uiSource from ui/compose/dil.mjs. children alone is TEMP legacy.
+        // Play receives lowered restricted source or a validated build payload.
         return (
           <GardenInteractive
             renderScene={source => { const parsed=parseCompose(source); return parsed.ok ? <GardenBlock dataPayload={encodeURIComponent(JSON.stringify({name:"compose",props:{...parsed.doc,frame:"none"}}))}/> : null; }}
@@ -60,7 +60,7 @@ export function GardenBlock({ dataPayload }: { dataPayload?: string }) {
           />
         );
       }
-      return <div className="g-compose-host"><ReactMarkdown rehypePlugins={[rehypeRaw]} components={composeComponents}>{renderCompose(props)}</ReactMarkdown></div>;
+      return <div className="g-compose-host"><ReactMarkdown rehypePlugins={[rehypeRaw]} components={composeComponents as Components}>{renderCompose(props)}</ReactMarkdown></div>;
     case "file":
       // Post bodies render file cards on the server (MarkdownArticle); this path has no Markdown preview.
       return <GardenFile props={props} lang={lang} />;
