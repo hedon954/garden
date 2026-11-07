@@ -1328,3 +1328,12 @@
 .garden-ui-color-scope[data-custom-color], .garden-ui-color-scope[data-custom-color] * { color: var(--compose-color); }
 .garden-ui-color-scope { display: contents; }
 .garden-ui-color-scope[data-custom-background] > * { background-color: var(--compose-background); }
+
+/* Scene framing is independent of card/box frames. Keep normal document flow. */
+.g-compose[data-frame="none"] {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  padding: 0;
+  box-shadow: none;
+}

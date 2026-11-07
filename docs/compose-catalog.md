@@ -72,3 +72,7 @@
 - 布局标签可自由嵌套（上限约 10 层 / 220 节点）。
 - Markdown 写在标签之间或标签内均可；`##` → title，段落 → text。
 - `box` 内第一个 `title`/`badge` 会提成卡面属性（兼容旧图）；其余子节点原样渲染，故可在卡内放 `icon` + `row` + `caption`。
+
+## Scene frame
+
+Static Compose keeps its default outer frame. To opt out, wrap the whole scene in a single outer `<figure frame="none">…</figure>`. `frame="card"` explicitly retains the default. This removes only scene border, radius, background and padding, not inner card frames or normal figure margins. Nested or sibling scene-frame declarations and unsupported frame values fail compilation. This is distinct from `box frame="text"` and Play block headers.

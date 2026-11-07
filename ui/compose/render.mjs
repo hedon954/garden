@@ -373,7 +373,7 @@ export function renderCompose(doc, options = {}) {
   const header = head.length ? `<header class="g-compose-head">${head.join("")}</header>` : "";
   const body = (doc?.nodes ?? []).map((node) => renderNode(node, ctx)).join("");
   const label = doc?.title ? ` aria-label="${esc(doc.title)}"` : "";
-  return `<figure class="g-compose"${label}><div class="g-compose-body">${header}${body}</div></figure>`;
+  return `<figure class="g-compose"${doc?.frame === "none" ? ' data-frame="none"' : ""}${label}><div class="g-compose-body">${header}${body}</div></figure>`;
 }
 
 /** Reader-visible strings. Intent, ids, and prop names stay out. */

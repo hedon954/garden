@@ -480,8 +480,10 @@ function elementNode(tag, children) {
     case "field":
     case "header":
     case "footer":
-    case "figure":
       return layoutNode(name, attrs, children, { gap: name === "field" ? 1 : 2 });
+    case "figure":
+      if (attrs.frame === true) fail('figure 的 frame 要写 "card" 或 "none"。');
+      return { ...layoutNode(name, attrs, children, { gap: 2 }), ...(attrs.frame != null ? { frame: enumAttr(attrs, "frame", new Set(["card", "none"]), "card") } : {}) };
     case "code":
     case "pre":
       return { type: "code", text: inlineText(children), language: attrs.language || attrs.lang ? String(attrs.language || attrs.lang) : "" };
@@ -682,6 +684,7 @@ function parseRegion(src, from, stop, depth, state) {
       if (tag.name !== stop) fail(`多出来的 </${tag.name}>。`);
       return { nodes, index: tag.end };
     }
+    if (tag.name === "figure" && tag.attrs.frame != null && depth > 0) fail("figure 的 frame 只能用于唯一的最外层 figure。");
     if (depth + 1 > MAX_DEPTH) fail("嵌套太深（最多 10 层）。");
     state.nodes += 1;
     if (state.nodes > MAX_NODES) fail("节点太多（最多 220 个）。");
@@ -723,11 +726,13 @@ export function parseCompose(body) {
     const rest = intentMatch ? text.replace(intentMatch[0], "") : text;
     const { nodes } = parseRegion(rest, 0, "", 0, { nodes: 0 });
     if (!nodes.length) return uncompiled();
+    const scene = nodes.length === 1 && nodes[0].type === "figure" ? nodes[0] : null;
+    if (!scene && nodes.some(node => node.type === "figure" && node.frame)) fail("figure 的 frame 只能用于唯一的最外层 figure。");
     if (countNodes(nodes) > MAX_NODES) fail("节点太多（最多 220 个）。");
     return {
       ok: true,
       uncompiled: false,
-      doc: { title: "", caption: "", intent, nodes },
+      doc: { title: "", caption: "", intent, nodes, ...(scene?.frame ? { frame: scene.frame } : {}) },
       error: null,
     };
   } catch (error) {
