@@ -5,7 +5,8 @@ import { build } from "esbuild";
 import { gardenPackageRoot } from "./garden-paths.mjs";
 
 const root = gardenPackageRoot;
-const out = path.join(root, "ui", "preview", "dist");
+// Tests build into an owned temporary directory, without relying on or replacing local artifacts.
+const out = process.argv[2] ? path.resolve(process.argv[2]) : path.join(root, "ui", "preview", "dist");
 fs.rmSync(out, { recursive: true, force: true });
 fs.mkdirSync(out, { recursive: true });
 
