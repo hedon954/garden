@@ -14,6 +14,7 @@ The forms below are examples accumulated from practice, not an exhaustive taxono
 | Content cue / 读者问题 | Components and arrangement / 组合 | Cautions / 边界 |
 |---|---|---|
 | Peer categories: which responsibilities/items? / 并列类别 | `grid` + repeated `card` containing source `title`/`text`; 1–6 columns; equal-card reference for tokens | No arrows or implied ranking; card titles from source labels, not invented summaries. |
+| Independent explanations with an icon rail / 图标窄栏的独立条目 | `stack` repeats `row → icon + group(title/body paragraphs)`; `divider` between rows; layout-recipes.md | Not a workflow; title and every body paragraph share the right column, never full-width body below an icon/title row. |
 | A small independent list / 简单条目 | Markdown list; if a composed scene is useful, `list` + `list-item`, or `stack` of text/cards | A checklist is not automatically a workflow. Prefer plain Markdown when equivalent. |
 | Explicit linear sequence / 顺序链 | `stack` of cards with `arrow dir="down"`; `row` with right arrows only for short justified sequences | Arrows mean the stated relation; do not invent causation. Vertical is safer for long text and narrow screens. |
 | Ordered stages with optional details / 分步解释 | `steps` with `step` and `title`/`text`; `note` with stable step id for disclosure | 1–8 steps; built-in sequence arrows. Not proportional time, a simulation or a promise of arbitrary nested layouts. |

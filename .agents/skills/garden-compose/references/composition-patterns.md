@@ -21,6 +21,7 @@ This is a discovery index, not a duplicated prop manual. Inspect only the needed
 | Spatial arrangement / 排列 | Static `stack`, `row`, `columns`, `grid`, `grid-item`; query current tokens for spacing/alignment. |
 | Group and frame / 分组框架 | `card`, `box`, `pill`, `band`; frames.md for enclosure styles, not new semantic relations. |
 | Content and emphasis / 内容与强调 | `title`, `text`, `caption`, `badge`, `label`, `kpi`, `icon`, `callout`; exact icon names/props from live catalog, colors.md for intentional accents. |
+| Visual boundaries / 视觉分隔 | `divider` / `separator`; use as outer layout children; parent filtering and margins in rendering-model.md. |
 | Schematic connections / 简图连接 | `arrow`, `fan`, `join`; bounded `lanes`/`actor`/`message` for explicit inter-party exchanges. |
 | Structured presentation / 结构化呈现 | `steps`/`step`/`note`, `compare`/`item`, `list`/`list-item`, static `table` family, `tabs`/`tab`; verify each parent's child contract. |
 | Parameter experiments / 参数实验 | Play state/derived expressions + lowercase controls and output/chart subset; static-play.md and live catalog for supported bindings/children. |
@@ -36,7 +37,7 @@ Apply these operations to relations, not to a fixed named diagram:
 
 ## When no existing pattern fits · 无现成表示方式时
 1. List required content units and exact relations without choosing a recipe name. Keep author-specified effects and edit scope as constraints.
-2. Pick the minimum primitives for those relations; inspect their actual parent/child contracts and capabilities. A parseable tag is not proof every nested child will render.
+2. Derive alignment groups and the container hierarchy first (rendering-model.md); shared left edges require shared content containers, not merely a list of visual objects. Pick the minimum primitives for those relations; inspect their actual parent/child contracts and capabilities. A parseable tag is not proof every nested child will render.
 3. Build the smallest local candidate, then compose it into the full scene using the operations above. Reuse a matching substructure even if the overall form is new. Keep source wording intact; remove unnecessary decoration, not facts.
 4. Parse/check and inspect rendered output for retained leaves/relations; verify browser layout/interaction when available. Preserve hash-protected apply for existing article targets. A failed candidate calls for correcting the composition, not inventing props or declaring the entire idea unsupported.
 5. Only after a concrete engine boundary is identified, name the missing capability and offer a faithful simpler arrangement, separate scenes or a suitable existing non-Compose format. Do not silently change formats or bypass checks.
