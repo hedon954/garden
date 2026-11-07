@@ -1,51 +1,120 @@
-# Rendering model · 从结构推导真实排版
+# Operational rendering model · 渲染机制
 
-本参考解释经过验证的行为与查证方法，不是另一份标签白名单。标签、属性、枚举和图标名称以当前 `garden ui prompt` 为入口；运行结果以本地安装引擎为准。需要某种组合时只读相关部分，不将整份手册塞入作者提示词。
+先读关系，再建层级，不靠堆图标/标题/文字/线条碰运气。以下事实来自当前解析器、真实 CSS 和完整主题回归；需要细节时按需导出 schema，不能把手抄表当另一份目录。
 
-## 执行：关系 → 层级 → 布局 → 样式 → 实际渲染
-1. 从原文确定实体、同级/包含关系、顺序；从参考图另外抽取几何约束：哪些元素共享左边界、哪些同行、谁独占固定窄栏、谁占剩余宽度、哪里跨栏、何处分隔。不能只识别“图标、标题、正文、线”四种对象。
-2. 先写出容器树。需要共同对齐的标题与多段正文必须放进同一个右栏容器；不是把图标与标题做一行，再把正文放到外层。每个同级内容单元重复相同子树。
-3. 核实容器的布局机制和上下文：父元素怎样分配宽度、子元素是否会等分、默认是否换行、嵌套是否有额外间距、窄屏规则是否改排列。不要只凭标签名判断布局。
-4. 最后选择字体、强调、间距、边框。明确“容器对齐/子项排列”和“文字对齐”不是同一回事；不要在祖先上加 center 再期待后代自动左对齐。指定视觉效果不能成为编造属性/任意 CSS 的理由。
-5. 先检查，再渲染完整主题下的最小局部，确认通过后重复组合。检查不能代替几何和视觉验收。
+## 可执行心智模型
+- 关系决定共同容器：一个图标对应的标题与所有正文要属于一个重复单元；标题和正文必须同在右侧容器。分隔整条目时 divider 放两条 row 之间，而非右栏内。
+- row 默认 wrap/stretch、8px gap；直接 card/stack/title/text 共分可用宽度，icon 固定不缩。窄屏默认会改行流；需要持续图标栏用 wrap="nowrap" 并测试不溢出。
+- row > stack 有 **12px 顶部 padding**；不能假定任意嵌套同样表现。group 为 width:100%、min-width:0 的纵向容器，能在固定 icon 旁收缩，支持 gap，避开该上下文顶距。prose 不能凭空赋予未实现的 gap 行为。
+- align="center" 可能同时触发容器对齐与 text-align，并向子孙继承。当前 title/text 的显式 align="start" 会保留并输出 data-align。用一个共享 group 和显式开始对齐，不要把 title 独立成横向等分栏、正文又放回全宽。
+- icon 名查 schema/icons 实际目录；不存在报错。SVG width 属性不等于最终像素：当前 CSS sm13、md15、lg18、xl22px，小卡上下文另有覆盖，必须测 computed/rect。
+- 多段正文分别放 text，或用 markdown/html 岛保存真实 p。text 内空行是 inline break，不是独立段落。图标签有截断/行钳制时不能塞完整正文去丢字。
 
-## 权威行为从哪里查
-- `ui/compose/markup.mjs`：属性实际读取、枚举、默认值、父子筛选、静态 Markdown 到节点的转换。
-- `ui/compose/render.mjs`：节点到 DOM、默认包装、哪些属性实际输出、段落如何渲染。
-- `ui/compose/compose.css`：直接子元素选择器、宽度分配、上下文样式和媒体查询。
-- 主题：`app/globals.css` → `app/styles/tokens.css` → `app/styles/a2.css` → `app/styles/shell.css`；以站点实际加载顺序为准。必须保留实际 `.markdown-body`/文章祖先；仅复制组件 CSS 或基础变量不是完整主题测试。
+## 默认与显式样式
+普通正文默认继承实际文章动态字体/字号；不再使用固定正文像素基线。text/title 的 sm=.875em、lg=1.125em、xl=1.25em，md 保持基线；title 默认 600/1.4。外层 figure 标题18px、caption14px及控件/图标签等是语义角色，不应全局拉成正文。其他语义尺寸及实际上下文见下表与完整主题。显式字体变化必须有信息层级依据，不缩字替代排版。
 
-目录是发现入口，不等于完整行为契约。例如当前目录的“任意子元素”不表示每个子元素同样分宽；属性被接受也不代表被读取。陌生组合按上述三层源码只查相关分支，记录具体行为；不能把未查证的印象写成支持能力。可把反复验证的上下文行为持续补入这一份参考，不在多个配方复制一套可能过期的属性表。
+## 查契约而非猜
+`garden ui schema` 从真实 Play 目录、语义字段验证器、图标与安全内容验证器生成；保存 JSON 后只读所需组件。Play 有 props 默认值与直接子项约束，语义场景未知属性报错。静态通用布局部分未知属性会静默丢弃，schema 的 propertyPolicy 明示这一限制；styleReference 从实际 CSS 自动抽取字体/布局声明、选择器、媒体条件和源顺序，是源默认而非用户文章 computed 常量。原生场景的 text 子项降为文字，嵌套 size/align 等不会传递；需要精确文字布局时用通用布局与已实现的 size 控制。首次用法须检查归一化树与真实 DOM/CSS，不能宣称所有接受的属性都生效。未暴露的某个静态默认不应靠标签名推断。
 
-## 已核实的局部行为
-| 元件/上下文 | 实际行为与后果 |
-|---|---|
-| 外层场景 | `renderCompose` 总会生成外层 figure；默认有框。唯一最外层 `<figure frame="none">…</figure>` 可移除场景边框、圆角、背景和内边距；不移除内部 card，不改变正常外边距。与 box frame 或 Play 头部不是同一契约。 |
-| row | flex；默认 wrap、stretch；gap 默认为 8px。直接 card/stack/title/text 被设为 `flex:1 1 0`，不要用两个 stack 期待自动得到固定窄图标栏。 |
-| row + icon | icon 是固定大小、不伸缩的直接子项；md 15px、xl 22px。相同 size 保持重复项的图标栏等宽，不需要编造 width。名字必须查实际图标目录；不存在的名字会报错。 |
-| row + group | group 是纵向 flex 容器，width:100%、min-width:0；flex 收缩后占图标与 gap 之外的宽度。group 支持 gap；内部所有独立 text 共用左边界。已在完整主题下验证。 |
-| row + prose | prose 也为纵向容器，width:100%；但解析器只保留 children，不读取 gap。因此不要给 prose 编造可控 gap。其 CSS 间距会继承祖先 `--gc-gap`。prose 内 title 自身默认不居中；完整主题下已验证 title size="lg" 与正文共用左边界。若祖先开启 center，仍须检查继承结果。 |
-| row > stack | 有专门的 padding-top:12px；其直接 title 又有专门 font 规则。不能把已验证 group 随意替换为 stack，并假设同样的顶部与字号。 |
-| 标题/正文 | title 默认 14px/1.3、500；text 默认 15px/1.6、400。要标题与正文同字号，用单独 text 加 **原文标题**，不是 caption。每个原始段落单独 text；一个 text 的空行只是 `<br><br>`，不是独立段落。实际主题可能覆盖最终值，须测 computed style。 |
-| 对齐 | row align=center 不仅改变交叉轴，还会使文字居中；stack align=center 同样影响后代。align=start 当前不输出显式 data-align，不可声称它会生成 flex-start CSS。本配方不需要中心对齐。 |
-| 窄屏 ≤800px | 普通 row 变纵向；nowrap 保持横向并启用横向溢出机制，row gap 被改为4px。右栏仍须可收缩，必须测长正文无横向溢出，不能只看到 nowrap 就宣称移动端正确。 |
-| divider | 渲染为 hr，1px 上边线，固定上下 margin；放在外层 stack 的两个 row 之间。普通 list 会筛掉直接 divider，即使解析成功。不能把它当任意父级都能保留的装饰。 |
+下面是可直接执行且已验证的机制、配方、内容边界和视觉检查：
 
-## 实际验收与证据层级
-- **语法接受**：parse/check 成功。未知标签或图标会报错；某些未读取属性和被筛选子项可能静默丢失，不能靠“无报错”判断完成。
-- **渲染保留**：SSR HTML 中应能逐项找到原文、独立正文段落、图标和分隔线；数清重复项与分隔线。
-- **几何正确**：完整文章 CSS 顺序与祖先上下文；桌面及窄屏分别检查标题、各段正文左边界相同且在图标右侧，所有图标列对齐，标题非居中，正文不跨回图标列，无卡片/箭头和横向溢出；截图检查视觉密度。
-- **模型可靠性**：手写 DIL 通过上述检查，只能证明该组合能工作，不能证明新的模型仅凭作者一句需求就会稳定生成。若做独立模型试验，另记输入、环境和实际输出。
+## One entry, component selection inside it
 
-仓库已有完整主题浏览器回归：`node --test tests/compose-editorial-layout.test.mjs`；无 Chrome 时会 skip，不能报告浏览器通过。已有文章必须使用授权范围与 hash 保护，不能为了验证擅自改正文。
+Use `garden compose`. Select by the reader's task, not by another fence name:
 
-## English execution reference
-- Extract semantic relations from the source and geometric constraints from the reference independently. Identify shared edges, same-row items, fixed versus flexible columns, spanning content and separators. Preserve source facts and wording.
-- Build the container tree first: elements sharing a text-column edge belong to one content container. A row of icon plus heading followed by an outer body is a different layout from icon plus a shared heading/body column.
-- Inspect the current relevant branches of `ui/compose/markup.mjs`, `render.mjs`, and `compose.css`, then the actual article theme and ancestor context. The catalog is a discovery entry, not a full behavioral contract. Do not load the whole catalog into a prompt.
-- Current verified behaviors: row defaults to wrapping/stretch, 8px gap. Direct card/stack/title/text share flex space; a direct icon is fixed (md 15px, xl 22px). A direct group is a width:100%, min-width:0 vertical container with a supported gap; it shrinks beside the icon. Prose keeps children but does not read a gap prop. A direct row>stack receives 12px top padding and contextual title styling.
-- `title` defaults to 14px/1.3, weight 500; `text` to 15px/1.6, weight 400, before theme overrides. A separate bold text heading keeps the body size. Each original paragraph gets its own text; blank lines inside one text become breaks, not independent paragraphs. Ancestor center alignment can center text; align=start does not emit a data-align override.
-- At viewport <=800px a normal row stacks; nowrap stays horizontal, gains overflow behavior and a 4px row gap. Test long content rather than assuming nowrap proves mobile correctness. A divider is an hr with a 1px line and vertical margins; list filters out direct dividers even if parsing succeeds.
-- Static scenes retain their default frame. A sole outer `figure frame="none"` removes scene border, radius, background and padding, not internal cards or normal scene margins. This is not a Play header or an internal box setting.
-- Keep four evidence levels distinct: accepted syntax; retained SSR leaves; correct geometry/appearance under the complete theme at wide and narrow viewports; independent model-generation reliability. Hand-authored passing DIL proves only the tested combination, not that a fresh model reliably generates it from a short request.
-- Regression entry: `node --test tests/compose-editorial-layout.test.mjs`. A skipped browser test is not a pass. For existing articles, retain authorized scope and hash-protected writes.
+| Need | Compose structure |
+| :--- | :--- |
+| Reference material and takeaways | `resources/resource`, nested `point`, `reference` |
+| Key results | `metric` with label, value, unit, caption, paragraphs and references |
+| Time or stages | `timeline/event` |
+| Alternatives and verdicts | `compare/item` |
+| Icon-led editorial paragraphs | `icon-list/entry` or a small `icon` beside one shared text container |
+| Download and preview | `files/file` or one `file src="…"` |
+| Connected concepts | `relations/entity/edge`, stable ids; 3–6 entities |
+| Rich selectable cards and replies | `choices/choice-option`, optional `none` option |
+| Discrete bars and exact values | `plot/datum`; expandable data table |
+| Parameter-dependent results | Play declarations, controls, `chart/bar/line`, `pie`, `table` |
+| Article text and useful HTML | `markdown` and `html` content islands |
+| Independent executable illustration | Play `sandbox` with literal html/css/js; isolated offline iframe |
+
+The authoritative, demand-loaded catalog is `npx garden ui schema`: actual semantic fields, Play props/defaults/child contracts, icon names, safe HTML tags/attributes/CSS properties. `npx garden ui prompt` adds working recipes. `styleReference` also extracts current font/layout declarations, selectors, responsive conditions and source order from the installed stylesheets; it reports source defaults, not universal computed values. These are generated from the validators and actual styles; do not maintain a second exhaustive tag list. Static layout normalization is not a universal HTML/CSS API: inspect the normalized tree and output because some unsupported static layout attributes are ignored. Semantic unknown fields fail validation.
+
+## Relationships → hierarchy → layout → style → actual output
+
+First identify what belongs together. A heading and all its paragraphs must share a container. Next choose columns and proportions, then alignments and typography. Only then add surfaces and decorative details.
+
+A static `row` wraps by default. Its direct text/title/stack/card children share available width (`flex: 1 1 0`), whereas an icon is content-sized. A heading placed directly in that row is a sibling column, not the heading of a paragraph below the row. `align="center"` on a row changes more than vertical placement: theme rules also center text. A centered stack propagates text alignment. For an editorial list use explicit start alignment on children of a shared right-hand group; do not center each title independently.
+
+Direct `row > stack` has 12px top padding in the current theme. A `group` is a width:100%, min-width:0 vertical container that shrinks beside the fixed icon and reads gap without that contextual padding; use it when icon and heading must begin on the same top line. Explicit `align="start"` survives normalization and emits data-align.
+
+Nested paragraphs need separate `text` leaves or an article content island. Two unrelated top-level leaves do not establish a shared right column. Put a full-width divider **between rows**, not inside the right text container, if the rule must span the icon column too. `divider` and `separator` are real primitives, not text lines.
+
+```garden compose
+<figure frame="none">
+<row wrap="nowrap" align="start" gap="4">
+  <icon name="book-open" size="xl"/>
+  <group gap="2">
+    <title align="start">Test heading — not article content</title>
+    <text align="start">Explicit test paragraph: the heading and this body share the same right column. Keep the author's complete text; do not shrink or summarize it to fit.</text>
+    <text align="start">A second independent test paragraph stays in that column.</text>
+  </group>
+</row>
+<divider/>
+<row wrap="nowrap" align="start" gap="4">
+  <icon name="users" size="xl"/>
+  <group gap="2">
+    <title align="start">Second test heading</title>
+    <text align="start">Another test body, aligned with its heading rather than spanning the icon column.</text>
+  </group>
+</row>
+</figure>
+```
+
+For a native editorial list the same relationship is expressed with `icon-list` containing `entry icon="…" title="…"`, and multiple `text` children per entry. Native paragraph children are lowered to text strings: their nested text size/alignment/layout properties are not carried into the native scene. Use a generic layout with text size controls for such precision; do not assume identical nested styling contracts. Native scenes preserve the app's keyboard/selection/detail/file-preview behavior when rendered by the Garden article host. A standalone static export is a readable fallback, not an identical interactive host.
+
+## Typography and complete-theme context
+
+Default body text inherits the **actual article's** family, size and line height. There is no universal pixel baseline. This includes ordinary static text, list bodies and native readable prose; changing the article typography configuration must propagate. Semantic headings, graph labels, values, captions and controls intentionally retain their hierarchy.
+
+| Element/context | Actual source rule / intentional variation |
+| :--- | :--- |
+| Static `text` and `title` | Inherit body size; title weight 600, line height 1.4. `size="sm"` .875em; `lg` 1.125em; `xl` 1.25em. `md` keeps the baseline. |
+| Static outer figure title/caption | Source defaults 18px/14px, not ordinary body; actual cascade still matters. |
+| Static inline caption | Own semantic style; `sm` 11px, `lg` 16px. Not a body substitute. |
+| Native icon-list entry title/body | Title weight 600; body inherits article. Group heading uses `--fs-small`. |
+| Native choice value | 22px; narrow rule 20px. Option body inherits article. |
+| Native relation ring | Compact/context-dependent labels and line clamps; detail prose inherits article. Do not treat a ring label as a long paragraph. |
+| Play components | Query schema defaults and complete theme. Their controls/KPI/graph semantics are not globally changed to body size. |
+
+Use explicit variation only for a meaningful hierarchy. Never shrink body text globally to fit a screenshot or discard facts to avoid wrapping. Inspect actual computed styles with globals → tokens → article theme → shell in the real order, on desktop and narrow widths; base component CSS alone does not prove the final result.
+
+## Markdown, safe HTML, and execution
+
+`text`, `title` and captions are inline contexts: `**bold**`, `_emphasis_`, backticks, `[links](https://example.com)`, `~~strike~~` and safe inline HTML such as `<u>underline</u>`. `<u>` is HTML, not standard Markdown.
+
+Use `markdown` or `html` islands for full paragraphs, lists, headings, blockquotes, code blocks, tables, images, details/summary and other allowlisted article content. The islands share the article Markdown/GFM and safe-HTML renderer; they are not arbitrary component trees. Static text outside islands is a lightweight layout shorthand, **not** the whole article block grammar. Play islands are literal content, not interpolated expressions. Keep state and expressions in Play component nodes outside them.
+
+```garden compose
+<figure frame="none">
+<markdown>
+### Explicit test content
+
+**Bold**, _emphasis_, `code`, [link](https://example.com), ~~strike~~ and <u>underline</u>.
+
+- A full Markdown list
+- Another test item
+
+<details><summary>Safe HTML details</summary><p>Useful article HTML can coexist with Markdown.</p></details>
+</markdown>
+</figure>
+```
+
+Safe HTML supports allowlisted local `style` properties, including useful layout and typography; inspect the generated schema for the actual set. Unsupported tags/properties, events, unsafe URLs, executable scripts and network CSS functions report diagnostics. Do not expand the article allowlist into arbitrary execution. An intentional executable demo uses `sandbox` inside the **same Compose entry**, with literal html/css/js and no parent origin access. Sandbox layout is its own document, not inherited article prose.
+
+## Verification levels
+
+1. Run `npx garden ui check <file>` (and `npx garden check <file>` for real file paths). Preserve original text/resources and inspect diagnostics.
+2. Parse/render the actual scene; confirm accepted properties survive normalization and meaningful content appears.
+3. Inspect the complete-theme render: icon rail fixed, heading and **all** paragraphs share the same right edge/left edge, no centered headings or full-width body beneath a detached icon row, dividers outside rows, no unintended cards/arrows, no horizontal overflow.
+4. Check desktop and narrow screenshots plus geometry/computed styles; exercise choices, relations, file previews, state updates and sandbox behavior when used.
+5. A hand-authored passing scene proves engine capability, not that an independent model reliably produces it from a short prompt. Report those claims separately.

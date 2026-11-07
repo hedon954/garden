@@ -34,3 +34,22 @@ intent: |
 ```
 
 For charts use current prompt/catalog and the engine handbook Compose chart examples. Play supports palette series/categorical, yStep, overflow expand/clip, legend auto/show/hide and legendPosition top/bottom; do not assume static diagram controls have live state.
+
+## Rich article content / 富文本
+
+完整 Markdown 和安全 HTML 用内容岛，不在行内 text 中模拟块结构。允许范围以 schema 的 content 字段为准；可执行演示用同入口的 sandbox。
+
+```garden compose
+<figure frame="none">
+<markdown>
+### Explicit test content
+
+**Bold**, _emphasis_, `code`, [link](https://example.com), ~~strike~~ and <u>underline</u>.
+
+- Full Markdown list
+- Second item
+
+<details><summary>Details</summary><p>Safe article HTML.</p></details>
+</markdown>
+</figure>
+```

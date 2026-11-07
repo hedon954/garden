@@ -1,17 +1,12 @@
 ---
 name: garden-post-review
-description: >-
-  Reviews one specified Garden post in three steps: fix script-reported
-  structure errors, review existing widgets, then suggest prose
-  improvements without editing. Use when the user asks to review or
-  proofread a Garden blog post.
+description: "Review one specified Garden post: fix script-reported structure errors, verify existing Compose blocks, then suggest prose improvements without editing."
 ---
-
 # Review a Garden post
 
 Review only the post the user named. Do the three steps in order; each step sees the post as the previous step left it.
 
-Before you start, run `npx garden ui scan content/posts/path.md`. If any block has `status` `uncompiled`, `stale` or `error`, handle it with [garden-compose](../garden-compose/SKILL.md) first, then go to step 1.
+Before you start, run `npx garden ui scan content/posts/path.md`. If any block has `status` `uncompiled` or `error`, handle it with [garden-compose](../garden-compose/SKILL.md) first, then go to step 1.
 
 Hard check command (from the site root):
 
@@ -29,17 +24,11 @@ Run `garden check`. If there are `errors`, change only those entries, then run t
 - Do not fix structural issues the script did not report.
 - `references` is recommended further reading. It does not have to match the links in the body one to one. Do not add an entry because the body has a link, and do not remove one because the body never mentions it.
 - `reference-heading`: move the flagged reference-list heading into `references` and delete the heading.
-- If a widget file is missing, only fix a mistyped `src`. Do not build a new chart in this step.
+- If a Compose block file is missing, only fix a mistyped `src`. Do not build a new chart in this step.
 
-## 2. Review and fix existing widgets
+## 2. Review existing Compose blocks
 
-Do this step only when the post has a `widget`.
-
-You may change the HTML in the same-name directory and the `caption` of its fence. Leave the surrounding prose alone. `caption` must be a one-sentence claim.
-
-Run `garden check` again afterwards, until it passes.
-
-Skip this step when there is no `widget`.
+Only repair existing authorized Compose blocks using garden-compose's scan → base-protected apply → check workflow. Preserve complete prose, resources and ordering; layouts, content islands, native scenes and necessary interactions stay in the single entry. Do not edit surrounding prose. Verify actual complete-theme desktop/narrow layout and interactions, or disclose the missing visual verification. Skip this step when no Compose block exists; do not turn the post into a collection of components.
 
 ## 3. Read the whole post; suggestions only
 

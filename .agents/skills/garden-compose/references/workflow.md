@@ -24,4 +24,4 @@ node .agents/skills/garden-compose/scripts/check.mjs content/posts/post.md
 
 ## Prose outside a fence · 围栏外的原文
 
-Separate the source paragraphs/list items from the requested effect. At the authorized location, create one idea fence with both preserved verbatim inside `<intent>`, then scan it. Initial insertion is distinct from replacing a block: `apply` requires a scanned existing target. For existing blocks, use scan → candidate → apply with the original base hash → check. Preserve unrelated prose and render the source once. / 分离原文与效果要求，在授权位置首次创建 intent 围栏后扫描；已有块始终带原 base hash 写回并复检，不把 apply 当作插入 API，不重复展示原文。
+Separate the source paragraphs/list items from the requested effect. At the authorized location, create one `garden compose` intent block preserving both verbatim, then scan it. Initial insertion is distinct from replacing a block: `apply` requires a scanned existing target. For existing blocks, use scan → candidate → apply with the original base hash → check. Preserve unrelated prose and render the source once. / 分离原文与效果要求，在授权位置首次创建 `garden compose` 意图块后扫描；已有块始终带原 base hash 写回并复检，不把 apply 当作插入 API，不重复展示原文。

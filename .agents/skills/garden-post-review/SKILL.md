@@ -1,17 +1,12 @@
 ---
 name: garden-post-review
-description: >-
-  Reviews one specified Garden post in three steps: fix script-reported
-  structure errors, review existing widgets, then suggest prose
-  improvements without editing. Use when the user asks to 审查 / 审稿 /
-  review a Garden blog post.
+description: "Review one specified Garden post: fix script-reported structure errors, verify existing Compose blocks, then suggest prose improvements without editing."
 ---
-
 # 审查一篇 Garden 博文
 
 只审用户点名的稿。三步按顺序做，后一步看到的是前一步改完的稿。
 
-开始前先运行 `npx garden ui scan content/posts/路径.md`。有 `status` 为 `uncompiled`、`stale` 或 `error` 的块时，先按 [garden-compose](../garden-compose/SKILL.md) 处理完，再进入第 1 步。
+开始前先运行 `npx garden ui scan content/posts/路径.md`。有 `status` 为 `uncompiled` 或 `error` 的块时，先按 [garden-compose](../garden-compose/SKILL.md) 处理完，再进入第 1 步。
 
 硬性检查命令（在站点根目录）：
 
@@ -29,17 +24,11 @@ stdout 是 JSON。`ok` 为 true 才算通过。不要自己再查一遍标题、
 - 脚本没报的结构问题不要顺手改。
 - `references` 是推荐额外阅读，不必和正文里的外链一一对应。不要因为正文有链接就补进表，也不要因为表里的材料正文没提到就删掉。
 - `reference-heading`：把 `## 参考` / `## 参考资料` 收进 `references`，删掉这个标题。`## 参考文献` 留在正文里。
-- 缺 widget 文件时，只修正写错的 `src`。不要在这一步新做图表。
+- Compose 文件缺失时，只核对并修正写错的 `file src`；不凭空补附件或新增图表。
 
-## 2. 检查并修复已有 widget
+## 2. 检查既有 Compose
 
-这一步只在稿里有 `widget` 时做。
-
-可以改同名目录里的 HTML，以及对应围栏的 `caption`。周围正文不动。`caption` 必须是一句判断。
-
-改完再跑一次 `garden check`，直到通过。
-
-没有 `widget` 就跳过这一步。
+只处理已存在且获授权修复的 Compose 块，按 garden-compose 的 scan → 带 base hash 的 apply → check 流程。保留完整原文、资源与顺序；内容岛、布局、原生场景和必要交互都在同一入口，不改周围正文。对实际用到的布局/交互做完整主题、桌面/窄屏检查；没做视觉验收就明说，不把脚本通过当作外观通过。没有 Compose 则跳过，不主动把文章改成组件集合。
 
 ## 3. 通读整篇，只出建议
 
