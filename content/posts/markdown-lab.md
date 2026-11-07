@@ -313,15 +313,13 @@ done
   <p>Typora 文件中的 details / summary 会保留为可交互的折叠区域。</p>
 </details>
 
-```garden html
-code: |
-  <p class="garden-html-probe">静态 HTML 块</p>
+```garden compose
+<figure frame="none"><html><p class="garden-html-probe">静态 HTML 块</p>
+</html></figure>
 ```
 
-```garden compare
-items:
-  - "**程序化**：结构化、强状态、可以穷举的场景。"
-  - "大模型: 非结构化、需要理解语境的场景。"
+```garden compose
+<figure frame="none"><compare><item><text>**程序化**：结构化、强状态、可以穷举的场景。</text></item><item><text>大模型: 非结构化、需要理解语境的场景。</text></item></compare></figure>
 ```
 
 ---

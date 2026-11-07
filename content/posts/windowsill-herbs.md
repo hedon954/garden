@@ -15,47 +15,22 @@ cover: windowsill-herbs.svg
 
 罗勒要见光，薄荷更耐阴。浇法也不一样。
 
-```garden compare
-items:
-  - title: 罗勒
-    text: 土面发白再浇透，托盘里的水倒掉。
-  - title: 薄荷
-    text: 土保持微湿，避开正午的直射光。
+```garden compose
+<figure frame="none"><compare><item><title>罗勒</title><text>土面发白再浇透，托盘里的水倒掉。</text></item><item><title>薄荷</title><text>土保持微湿，避开正午的直射光。</text></item></compare></figure>
 ```
 
 ## 这季记下的数
 
 种子是三月中旬播的。盆不深，第一次剪叶等到第六周。
 
-```garden stat
-items:
-  - label: 发芽
-    value: 7
-    unit: 天
-  - label: 盆深
-    value: 15
-    unit: 厘米
-  - label: 第一次剪叶
-    value: 6
-    unit: 周
+```garden compose
+<figure frame="none"><stack><metric label="发芽" value={7} unit="天"></metric><metric label="盆深" value={15} unit="厘米"></metric><metric label="第一次剪叶" value={6} unit="周"></metric></stack></figure>
 ```
 
 ## 从播种到剪叶
 
-```garden timeline
-items:
-  - date: 3月12日
-    title: 播种
-    text: 罗勒和薄荷各一盆，覆土不超过半厘米。
-  - date: 3月19日
-    title: 出苗
-    text: 罗勒先露头，薄荷晚了两天。
-  - date: 4月2日
-    title: 间苗
-    text: 每盆留下最壮的两株。
-  - date: 5月1日
-    title: 第一次剪叶
-    text: 只剪顶端，留下至少四片叶。
+```garden compose
+<figure frame="none"><timeline><event date="3月12日" title="播种"><text>罗勒和薄荷各一盆，覆土不超过半厘米。</text></event><event date="3月19日" title="出苗"><text>罗勒先露头，薄荷晚了两天。</text></event><event date="4月2日" title="间苗"><text>每盆留下最壮的两株。</text></event><event date="5月1日" title="第一次剪叶"><text>只剪顶端，留下至少四片叶。</text></event></timeline></figure>
 ```
 
 > [!NOTE]
@@ -65,15 +40,8 @@ items:
 
 从第二周起，每周一量一次最高的那片叶。
 
-```garden chart
-type: bar
-title: 罗勒株高
-x: ["第2周", "第3周", "第4周", "第5周", "第6周"]
-series:
-  - name: 株高
-    data: [4, 8, 13, 18, 22]
-unit: cm
-caption: 第六周剪叶前，罗勒大约 22 厘米。
+```garden compose
+<figure frame="none"><plot title="罗勒株高" unit="cm" caption="第六周剪叶前，罗勒大约 22 厘米。" type="bar"><datum x="第2周" y={4}/><datum x="第3周" y={8}/><datum x="第4周" y={13}/><datum x="第5周" y={18}/><datum x="第6周" y={22}/></plot></figure>
 ```
 
 ## 窗台怎么摆
@@ -117,37 +85,10 @@ intent: |
 
 浇下去的水不会停在表面。它慢慢渗过土层，最后从排水孔滴出来。
 
-```garden html
-title: 水从土面渗到排水孔，大约要一分钟。
-code: |
-  <style>
-    html, body { margin: 0; background: transparent; color: #3c342c; font: 15px/1.5 ui-sans-serif, sans-serif; }
-    svg { display: block; width: 100%; height: auto; }
-  </style>
-  <svg viewBox="0 0 640 280" role="img" aria-label="水从土面渗到盆底">
-    <rect x="180" y="36" width="280" height="200" rx="18" fill="#efe6d6" stroke="#cbbfa8"/>
-    <rect id="water" x="196" y="48" width="248" height="16" fill="#7ea4c4" opacity="0.85"/>
-    <rect x="196" y="150" width="248" height="70" fill="#8b6a45"/>
-    <circle cx="320" cy="214" r="8" fill="#5c4632"/>
-    <text x="320" y="268" text-anchor="middle" font-size="14" fill="#3c342c">排水孔</text>
-  </svg>
-  <script>
-    var water = document.getElementById("water");
-    var y = 48;
-    var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (reduce) {
-      water.setAttribute("y", "168");
-      water.setAttribute("height", "36");
-    } else {
-      (function tick() {
-        y += 0.45;
-        if (y > 168) y = 48;
-        water.setAttribute("y", String(y));
-        water.setAttribute("height", String(Math.max(16, 204 - y)));
-        requestAnimationFrame(tick);
-      })();
-    }
-  </script>
+```garden compose
+caption: "水从土面渗到排水孔，大约要一分钟。"
+---
+<sandbox title={"水从土面渗到排水孔，大约要一分钟。"} html={"\n<svg viewBox=\"0 0 640 280\" role=\"img\" aria-label=\"水从土面渗到盆底\">\n  <rect x=\"180\" y=\"36\" width=\"280\" height=\"200\" rx=\"18\" fill=\"#efe6d6\" stroke=\"#cbbfa8\"/>\n  <rect id=\"water\" x=\"196\" y=\"48\" width=\"248\" height=\"16\" fill=\"#7ea4c4\" opacity=\"0.85\"/>\n  <rect x=\"196\" y=\"150\" width=\"248\" height=\"70\" fill=\"#8b6a45\"/>\n  <circle cx=\"320\" cy=\"214\" r=\"8\" fill=\"#5c4632\"/>\n  <text x=\"320\" y=\"268\" text-anchor=\"middle\" font-size=\"14\" fill=\"#3c342c\">排水孔</text>\n</svg>\n\n"} css={"\n  html, body { margin: 0; background: transparent; color: #3c342c; font: 15px/1.5 ui-sans-serif, sans-serif; }\n  svg { display: block; width: 100%; height: auto; }\n"} js={"\n  var water = document.getElementById(\"water\");\n  var y = 48;\n  var reduce = window.matchMedia(\"(prefers-reduced-motion: reduce)\").matches;\n  if (reduce) {\n    water.setAttribute(\"y\", \"168\");\n    water.setAttribute(\"height\", \"36\");\n  } else {\n    (function tick() {\n      y += 0.45;\n      if (y > 168) y = 48;\n      water.setAttribute(\"y\", String(y));\n      water.setAttribute(\"height\", String(Math.max(16, 204 - y)));\n      requestAnimationFrame(tick);\n    })();\n  }\n"}/>
 ```
 
 ## 浇水纸条
@@ -178,10 +119,8 @@ code: |
 
 想核对叶子是不是对生、花是不是穗状时，看这一页。
 
-```garden card
-url: https://zh.wikipedia.org/wiki/%E7%BD%97%E5%8B%92
-title: 罗勒
-description: 叶子对生，花排成穗。窗台上的那盆对得上。
+```garden compose
+<figure frame="none"><resource title="罗勒" href="https://zh.wikipedia.org/wiki/%E7%BD%97%E5%8B%92"><text>叶子对生，花排成穗。窗台上的那盆对得上。</text></resource></figure>
 ```
 
 > [!TIP]
