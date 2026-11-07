@@ -74,6 +74,7 @@ if (posts.length) {
     console.error('结构检查异常，详情：.garden/check-structure-error.log');
   }
 }
-const compose = run('ui-cli.mjs', ['check', ...(diffMode ? changed : selected ? [selected] : ['--all']), '--standalone', '--no-copy']);
-if (structure || compose) console.error('Content checks failed; build/lint stages were not started. Compose repair prompt (when needed): .garden/ui-fix-prompt.md');
+const compose = run('ui-cli.mjs', ['check', ...(diffMode ? changed : selected ? [selected] : ['--all']), '--no-copy']);
+if (structure && !compose) console.error('请调用 garden-post-review skill（.agents/skills/garden-post-review/SKILL.md），按以上文件、行号和错误码修复结构问题，保留其他正文，完成后重新校验。');
+if (structure || compose) console.error('检查失败，未启动后续构建、lint 或测试。');
 process.exit(structure || compose ? 1 : 0);

@@ -52,17 +52,17 @@ $ npx garden ui apply content/posts/writing-pace.md --intent-hash cb3a3569 --fil
 {"ok":true,"file":"content/posts/writing-pace.md","kind":"garden","line":9}
 ```
 
-### 3. 提交前钩子检查并生成修复提示词
+### 3. 提交前钩子检查并调用修复技能
 
-首次运行 `garden sync` 或 `garden dev` 时，Garden 会在 `.git/hooks/pre-commit` 写入 `exec npx --no-install garden ui check --staged --quiet`。如果作者在第 2 步之前直接提交，钩子会拦下提交，并显示诊断和完整提示词的保存路径：
+首次运行 `garden sync` 或 `garden dev` 时，Garden 会在 `.git/hooks/pre-commit` 写入 `exec npx --no-install garden ui check --staged --quiet`。如果作者在第 2 步之前直接提交，钩子会拦下提交，并显示诊断和调用项目技能的短指令：
 
 ```console
 $ git commit -m "写作节奏"
 content/posts/writing-pace.md:9  -  garden-idea  还有没编译的想法
-已写入 .garden/ui-fix-prompt.md。
+请调用 garden-compose skill（.agents/skills/garden-compose/SKILL.md），修复以上错误块后重新校验。
 ```
 
-终端只显示诊断与提示词路径，不展开原文和组件目录。把 `.garden/ui-fix-prompt.md` 的内容交给 AI；直接运行检查时可复制到剪贴板，`make check` 则关闭自动复制。修复后钩子静默返回 `0`。
+终端只显示诊断和一条指向项目 `garden-compose` skill 的短指令；默认不写文件、不复制剪贴板、不输出原文或组件目录。修复后钩子静默返回 `0`。
 
 ### 4. 页面渲染结果
 
@@ -84,7 +84,7 @@ intent: |
 ```
 
 > [!IMPORTANT] 人和 Agent 用同一套工具
-> Agent 找块用的 `npx garden ui scan`、写回用的 `npx garden ui apply`、自查用的 `npx garden ui check`，和作者提交时 pre-commit 钩子运行的检查是同一组命令。钩子拦截时保存的提示词，就是发给 Agent 的下一步指令。详见 [用 AI 写作](/garden/ai-writing)。
+> Agent 找块用的 `npx garden ui scan`、写回用的 `npx garden ui apply`、自查用的 `npx garden ui check`，和作者提交时 pre-commit 钩子运行的检查是同一组命令。钩子拦截时给出的技能调用短指令，就是发给 Agent 的下一步。详见 [用 AI 写作](/garden/ai-writing)。
 
 下面几节介绍不用 Agent 也会自动生效的版面与组件规则。
 

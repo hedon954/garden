@@ -26,7 +26,7 @@ test('shipped examples and wrappers pass authoritative CLI checks in an isolated
   const scan=run('scan',['post.md'],root);assert.equal(scan.status,0,scan.stderr);assert.doesNotThrow(()=>JSON.parse(scan.stdout));
   const prompt=run('prompt',[],root);assert.equal(prompt.status,0,prompt.stderr);assert.match(prompt.stdout,/backgroundColor/);assert.doesNotMatch(prompt.stdout,/不要写(?:脚本、)?色值/);
   fs.writeFileSync(path.join(root,'post.md'),'```garden compose\n两个卡片\n```\n');
-  const failed=run('check',['post.md'],root);assert.equal(failed.status,1,failed.stderr);assert.match(fs.readFileSync(path.join(root,'.garden/ui-fix-prompt.md'),'utf8'),/两个卡片/);
+  const failed=run('check',['post.md'],root);assert.equal(failed.status,1,failed.stderr);assert.match(failed.stderr,/garden-compose skill/);assert.equal(fs.existsSync(path.join(root,'.garden/ui-fix-prompt.md')),false);
   fs.writeFileSync(path.join(root,'replacement.md'),fences[0]);
   const applied=run('apply',['post.md','--at','1','--file','replacement.md'],root);assert.equal(applied.status,0,applied.stderr);
   assert.equal(run('check',['post.md'],root).status,0);

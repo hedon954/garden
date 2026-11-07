@@ -25,7 +25,7 @@ test('diff covers staged, unstaged, untracked and renamed destinations; skips un
   write(root,'content/posts/新增 draft with spaces.md');write(root,'outside.md','not a post');
   const r=run(root);assert.equal(r.status,1);assert.match(r.stdout,/4 changed Markdown/);assert.match(r.stdout,/重命名 destination.md/);assert.match(r.stdout,/新增 draft with spaces.md/);
   assert.doesNotMatch(r.stdout,/unchanged-invalid|deleted\.md|outside\.md/);assert.match(r.stderr,/compose-uncompiled/);
-  assert.match(fs.readFileSync(path.join(root,'.garden/ui-fix-prompt.md'),'utf8'),/白话待编译/);
+  assert.match(r.stderr,/garden-compose skill/);assert.equal(fs.existsSync(path.join(root,'.garden/ui-fix-prompt.md')),false);
  }finally{fs.rmSync(root,{recursive:true,force:true});}
 });
 test('non-Git and unborn repositories fail safely without checking everything',()=>{

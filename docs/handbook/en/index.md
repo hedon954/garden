@@ -52,17 +52,17 @@ $ npx garden ui apply content/posts/writing-pace.md --intent-hash 8866427a --fil
 {"ok":true,"file":"content/posts/writing-pace.md","kind":"garden","line":9}
 ```
 
-### 3. The Pre-commit Hook Checks and Saves a Fix Prompt
+### 3. The Pre-commit Hook Checks and Points to the Project Skill
 
-On the first `garden sync` or `garden dev` run, Garden writes `exec npx --no-install garden ui check --staged --quiet` to `.git/hooks/pre-commit`. If the author commits before step 2, the hook blocks the commit and shows diagnostics and the saved AI prompt path:
+On the first `garden sync` or `garden dev` run, Garden writes `exec npx --no-install garden ui check --staged --quiet` to `.git/hooks/pre-commit`. If the author commits before step 2, the hook blocks the commit and shows diagnostics and a short project-skill instruction:
 
 ```console
 $ git commit -m "Writing pace"
 content/posts/writing-pace.md:9  -  garden-idea  uncompiled idea remaining
-Wrote .garden/ui-fix-prompt.md.
+Use garden-compose skill (.agents/skills/garden-compose/SKILL.md), fix the failing blocks, then recheck.
 ```
 
-The terminal shows diagnostics and the saved prompt path, not the source or catalog. Give the AI the contents of `.garden/ui-fix-prompt.md`. Direct checks may copy it when a clipboard command is available; `make check` disables clipboard copying. After the block is fixed, the hook exits silently with code `0`.
+The terminal shows diagnostics and a short instruction to load the project `garden-compose` skill. No file, clipboard copy, source dump, or catalog export is produced by default. After repair, the hook exits silently with code `0`.
 
 ### 4. The Rendered Result
 

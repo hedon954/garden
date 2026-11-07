@@ -109,15 +109,15 @@ const cli = (dir, ...args) => spawnSync(process.execPath, [path.join(root, "bin/
   env: { ...process.env, GARDEN_SITE: dir, GARDEN_UI_NO_COPY: "1" },
 });
 
-test("garden ui check (the pre-commit hook's command) fails on garden blocks and saves the prompt without printing it", () => {
+test("garden ui check (the pre-commit hook's command) fails on garden blocks and prints a short skill instruction without exporting a prompt", () => {
   const dir = site(post());
   const result = cli(dir, "check", "content/posts/a.md", "--no-copy");
   assert.equal(result.status, 1);
   assert.match(result.stderr, /content\/posts\/a\.md:9 {2}- {2}garden-idea {2}还有没编译的想法/u);
   assert.match(result.stderr, /kv {2}ui-component/u);
-  assert.match(result.stderr, /已写入 \.garden\/ui-fix-prompt\.md/u);
+  assert.match(result.stderr, /garden-compose skill/u);
   assert.doesNotMatch(result.stderr, /发给 AI 的修复提示词|no-verify/u);
-  assert.ok(fs.existsSync(path.join(dir, ".garden/ui-fix-prompt.md")));
+  assert.equal(fs.existsSync(path.join(dir, ".garden/ui-fix-prompt.md")), false);
 });
 
 test("garden ui check prints English messages when site locale is en", () => {
@@ -127,9 +127,9 @@ test("garden ui check prints English messages when site locale is en", () => {
   assert.equal(result.status, 1);
   assert.match(result.stderr, /content\/posts\/a\.md:9 {2}- {2}garden-idea {2}uncompiled idea remaining/u);
   assert.doesNotMatch(result.stderr, /Fix prompt for AI|no-verify/u);
-  assert.match(result.stderr, /Wrote \.garden\/ui-fix-prompt\.md/u);
+  assert.match(result.stderr, /garden-compose skill/u);
   assert.match(result.stderr, /kv {2}ui-component/u);
-  assert.ok(fs.existsSync(path.join(dir, ".garden/ui-fix-prompt.md")));
+  assert.equal(fs.existsSync(path.join(dir, ".garden/ui-fix-prompt.md")), false);
 });
 
 test("garden ui check --staged reads the staged version", () => {
@@ -190,7 +190,7 @@ test("the handbook's AI-writing example matches what the commands print", () => 
   assert.ok(enOverview.includes(`"intentHash": ${JSON.stringify(enBlock.intentHash)}`), enBlock.intentHash);
   const enCheck = cli(enDir, "check", "content/posts/writing-pace.md", "--no-copy");
   assert.match(enCheck.stderr, /uncompiled idea remaining/u);
-  assert.match(enCheck.stderr, /Wrote \.garden\/ui-fix-prompt\.md/u);
+  assert.match(enCheck.stderr, /garden-compose skill/u);
   const enDiagnostic = enCheck.stderr.split("\n")[0];
   assert.ok(enOverview.includes(enDiagnostic) && enAi.includes(enDiagnostic), enDiagnostic);
   for (const line of enCheck.stderr.split("\n").slice(2, 9)) {

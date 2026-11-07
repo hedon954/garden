@@ -126,18 +126,6 @@ function scanTarget(target) {
   return { markdown, blocks, draft: isDraft(markdown) };
 }
 
-function copyToClipboard(text) {
-  const candidates = process.platform === "darwin"
-    ? [["pbcopy", []]]
-    : process.platform === "win32"
-      ? [["clip", []]]
-      : [["wl-copy", []], ["xclip", ["-selection", "clipboard"]], ["xsel", ["--clipboard", "--input"]]];
-  for (const [binary, args] of candidates) {
-    const result = spawnSync(binary, args, { input: text });
-    if (result.status === 0) return true;
-  }
-  return false;
-}
 
 function commandScan() {
   const files = targets();
@@ -157,7 +145,7 @@ function commandCheck() {
   const files = targets();
   if (!files.length) {
     if (flag("staged")) process.exit(0);
-    fail("用法：garden ui check content/posts/文章.md [--staged] [--all] [--standalone]");
+    fail("用法：garden ui check content/posts/文章.md [--staged] [--all] [--out 文件 --standalone]");
   }
   const problems = [];
   const warnings = [];
@@ -192,12 +180,23 @@ function commandCheck() {
       process.stderr.write(`${problem.file}:${item.line}  ${problem.block.id ?? "-"}  ${item.code}  ${item.message}\n`);
     }
   }
-  const prompt = buildFixPrompt(problems, { standaloneReference: flag("standalone") ? promptText() : null, lang: cliLang });
-  const promptFile = path.join(siteRoot, ".garden", "ui-fix-prompt.md");
-  fs.mkdirSync(path.dirname(promptFile), { recursive: true });
-  fs.writeFileSync(promptFile, prompt);
-  const copied = !flag("no-copy") && process.env.GARDEN_UI_NO_COPY !== "1" && copyToClipboard(prompt);
-  process.stderr.write(t.promptWritten(toPosix(path.relative(siteRoot, promptFile)), copied));
+  const locators = problems.map(({ file, block, diagnostics }) => {
+    const code = diagnostics.length ? [...new Set(diagnostics.map(item => item.code))].join(",") : block.lang === "garden-compose" ? "compose-uncompiled" : `${block.lang}-uncompiled`;
+    return `${file}:${block.startLine}–${block.endLine} ${code}`;
+  }).join("；");
+  process.stderr.write(cliLang === "en"
+    ? `Use the garden-compose skill (read .agents/skills/garden-compose/SKILL.md) to fix: ${locators}. Change only the failing blocks, preserve other prose, then recheck.\n`
+    : `请调用 garden-compose skill（先读取 .agents/skills/garden-compose/SKILL.md），修复：${locators}。只改错误块，保留其他正文，完成后重新校验。\n`);
+  // Export is explicit. Legacy wrappers passing --standalone alone stay concise:
+  // the flag enriches an explicitly requested --out file, never creates one itself.
+  const output = option("out");
+  if (output) {
+    const prompt = buildFixPrompt(problems, { standaloneReference: flag("standalone") ? promptText() : null, lang: cliLang });
+    const promptFile = path.resolve(siteRoot, output);
+    fs.mkdirSync(path.dirname(promptFile), { recursive: true });
+    fs.writeFileSync(promptFile, prompt);
+    process.stderr.write(t.promptWritten(toPosix(path.relative(siteRoot, promptFile)), false));
+  }
   process.exit(1);
 }
 
@@ -301,7 +300,8 @@ switch (command) {
     fail(`用法：garden ui <scan|check|apply|prompt|schema|catalog>
 
   garden ui scan <稿件.md>                 列出块、状态、行号和哈希（JSON）
-  garden ui check <稿件.md>... | --staged | --all [--standalone]
+  garden ui check <稿件.md>... | --staged | --all [--out 文件] [--standalone]
+    默认只输出诊断和技能调用指令；--out 显式导出，--standalone 仅为导出附加完整参考
                                            检查 garden 想法和 garden interactive（以及旧的 ui / intent 块），失败时给出修复提示词
   garden ui apply <稿件.md> --id <id> [--base <哈希>] [--file 新内容.md]
                                            只替换一块，围栏外逐字节不变
