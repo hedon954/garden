@@ -1,4 +1,5 @@
 "use client";
+import { isColor, colorStyles } from "../core/color.mjs";
 
 import { createContext, createElement, Fragment, useCallback, useContext, useMemo, useState, type ReactNode } from "react";
 import { createBudget, evaluate } from "../core/expr.mjs";
@@ -181,7 +182,11 @@ export function RenderNode({ node, env }: { node: UiNode; env: Env }): ReactNode
       const component = node.n ? registry.get(node.n) : undefined;
       if (!component) return <span className="garden-ui-unknown">{tx.unknownComponent(String(node.n))}</span>;
       // Registry entries are module-level functions, so their identity is stable across renders.
-      return createElement(component, { node, env });
+      const rendered = createElement(component, { node, env });
+      const color = propValue(runtime, node, "color", env);
+      const backgroundColor = propValue(runtime, node, "backgroundColor", env);
+      if (!isColor(color) && !isColor(backgroundColor)) return rendered;
+      return <div className="garden-ui-color-scope" data-custom-color={isColor(color) ? "true" : undefined} data-custom-background={isColor(backgroundColor) ? "true" : undefined} style={colorStyles(color, backgroundColor)}>{rendered}</div>;
     }
     default:
       return null;

@@ -180,3 +180,10 @@ badge: compose
 - 嵌套约 10 层 / 约 220 节点。
 - 只有白话、没有标签时报 `compose-uncompiled`。
 - Play（`{@body}`、`{#if}` …）见仓库 `docs/compose-dil.md`；静态围栏里的控件标签画成默认态快照。
+
+## 自定义文字与背景颜色
+
+`color` 设置文字颜色（子内容继承，可在子级覆盖）；`backgroundColor` 设置当前容器背景（不继承）。支持 CSS 命名色、`transparent`、`currentColor`、#RGB/#RGBA/#RRGGBB/#RRGGBBAA、rgb()/rgba()/hsl()/hsla()（含 alpha）；不接受 url()、var()、calc()、任意 CSS 声明或 style。未指定时保留原 tone / 主题配色。背景可用透明度，不改变字体家族。
+
+静态：box/card、row/stack/columns/grid/grid-item、pill/band、group/field/header/footer/figure、title/text/caption/label/prose/badge、kpi/stat、list、table/tr/th/td/thead/tbody。Play：stack/columns/card/caption/badge/stat/table；两项颜色必须写字面量。静态的 `background` 仍是已有语义 token。图表的 palette/tone API 不变，不能把 color 当系列颜色。显式颜色不会自动切换深色主题，作者需检查对比度。
+

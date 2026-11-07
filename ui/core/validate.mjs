@@ -1,3 +1,4 @@
+import { isColor } from "./color.mjs";
 import { COMPONENTS, COMPONENT_NAMES, TONES } from "./catalog.mjs";
 import { sandboxLimit, sandboxRemote } from "../host.mjs";
 import { analyzeExpr, createBudget, evaluate, ExprError } from "./expr.mjs";
@@ -60,6 +61,8 @@ const propExpression = (prop) => (prop.k === "expr" ? prop.e : { type: "Literal"
 /** Checks a literal or evaluated value against a prop spec. Returns a reason or null. */
 function typeProblem(spec, value) {
   switch (spec.type) {
+    case "color":
+      return isColor(value) ? null : "需要合法颜色：命名色、hex、rgb 或 hsl";
     case "string":
       return typeof value === "string" || typeof value === "number" ? null : "需要文字";
     case "number":

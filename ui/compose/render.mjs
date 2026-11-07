@@ -1,3 +1,4 @@
+import { isColor } from "../core/color.mjs";
 import { iconSvg } from "./icons.mjs";
 import { SPACING_PX } from "./tokens.mjs";
 
@@ -62,7 +63,7 @@ function badgeHtml(badge) {
   const index = /^[①②③④⑤⑥⑦⑧⑨]$/u.test(badge.text);
   const cls = index ? "g-compose-index" : "g-compose-badge";
   const size = badge.size ? ` data-size="${esc(badge.size)}"` : "";
-  return `<span class="${cls}" data-tone="${esc(badge.tone || "accent")}"${size}>${textHtml(badge.text)}</span>`;
+  return paintHtml(`<span class="${cls}" data-tone="${esc(badge.tone || "accent")}"${size}>${textHtml(badge.text)}</span>`, badge);
 }
 
 const SHIELD = iconSvg("shield") || "";
@@ -131,6 +132,22 @@ function meterBar(node, kind) {
 }
 
 function renderNode(node, ctx) {
+  const html = renderNodeContent(node, ctx);
+  return paintHtml(html, node);
+}
+
+function paintHtml(html, node = {}) {
+  const color = isColor(node?.color) ? node.color : null;
+  const background = isColor(node?.backgroundColor) ? node.backgroundColor : null;
+  if (!color && !background) return html;
+  const style = `${color ? `--compose-color:${color};color:${color};` : ""}${background ? `background-color:${background};` : ""}`;
+  return html.replace(/^<([a-z][\w-]*)([^>]*?)>/u, (_all, tag, attrs) => {
+    const styled = /style="([^"]*)"/u.test(attrs) ? attrs.replace(/style="([^"]*)"/u, (_s, old) => `style="${old};${esc(style)}"`) : `${attrs} style="${esc(style)}"`;
+    return `<${tag}${styled}${color ? ' data-custom-color="true"' : ""}>`;
+  });
+}
+
+function renderNodeContent(node, ctx) {
   switch (node.type) {
     case "stack":
     case "columns":
@@ -305,7 +322,7 @@ function faceOf(node, ctx, phrasing) {
   const titleClass = node.type === "card" ? "g-compose-card-title" : "g-compose-step-title";
   const textClass = node.type === "card" ? "g-compose-card-text" : "g-compose-step-text";
   const mark = node.mark === "shield" ? SHIELD : "";
-  const title = node.title ? `<span class="${titleClass}">${mark}${textHtml(node.title)}</span>` : "";
+  const title = node.title ? paintHtml(`<span class="${titleClass}">${mark}${textHtml(node.title)}</span>`, node.titleStyle || {}) : "";
   const text = node.text ? `<span class="${textClass}">${textHtml(node.text)}</span>` : "";
   const head = badgeHtml(node.badge) || title
     ? `<span class="g-compose-card-line">${badgeHtml(node.badge)}${title}</span>`

@@ -180,3 +180,10 @@ Play-level chart samples (static eight bars, fusion weight slider) live on [Diag
 - Nesting ~10 levels / ~220 nodes.
 - Uncompiled prose-only fences report `compose-uncompiled`.
 - Play path (`{@body}`, `{#if}`, …) is documented in the repo `docs/compose-dil.md`; static fences render default-state snapshots for control tags.
+
+## Custom text and background colors
+
+`color` controls text (inherited; children may override). `backgroundColor` paints only the current surface (not inherited). Both accept literal CSS named colors, transparent/currentColor, 3/4/6/8-digit hex, rgb/rgba/hsl/hsla with optional alpha. URLs, var(), calc(), declarations and arbitrary style are rejected by the same SSR/browser validator. Defaults preserve tone and theme; no font-family change. Explicit colors are not automatically dark-mode adapted: check contrast.
+
+Static primitives: box/card, row/stack/columns/grid/grid-item, pill/band, group/field/header/footer/figure, title/text/caption/label/prose/badge, kpi/stat, list, table/tr/th/td/thead/tbody. Play: stack/columns/card/caption/badge/stat/table. Colors must be literals. Existing static `background` semantic tokens and chart palette/series-tone APIs are unchanged; these props do not set chart series colors.
+

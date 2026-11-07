@@ -527,6 +527,14 @@ export const COMPONENTS = {
   },
 };
 
+// Shared literal-only presentation contract; deliberately not chart-series colors.
+for (const name of ["Stack", "Columns", "Card", "Caption", "Badge", "Stat", "Table"]) {
+  Object.assign(COMPONENTS[name].props, {
+    color: { type: "color", literal: true, desc: "Text color: named/hex/rgb/hsl; inherited by descendants" },
+    backgroundColor: { type: "color", literal: true, desc: "Background color, including transparent/alpha; not inherited" },
+  });
+}
+
 export const COMPONENT_NAMES = Object.keys(COMPONENTS);
 
 /** JSON description for editor plugins and `garden ui schema`. */

@@ -1,3 +1,4 @@
+import { isColor } from "../core/color.mjs";
 /**
  * One-shot compile of a compose fence.
  * Leaves are Markdown. Composition is a catalog of tags + design tokens.
@@ -307,8 +308,9 @@ function boxNode(attrs, children, frame) {
     tone: enumAttr(attrs, "tone", TONES, "plain"),
     mark: attrs.mark === "shield" ? "shield" : "",
     title: title?.text || "",
+    titleStyle: title ? { color: title.color, backgroundColor: title.backgroundColor } : null,
     text: "",
-    badge: badge ? { text: badge.text, tone: badge.tone || "accent" } : null,
+    badge: badge ? { text: badge.text, tone: badge.tone || "accent", color: badge.color, backgroundColor: badge.backgroundColor } : null,
     kpi: null,
     children: rest,
     ...tokens,
@@ -423,7 +425,7 @@ function elementNode(tag, children) {
         title: title?.text || "",
         text: text?.text || "",
         tone: enumAttr(attrs, "tone", TONES, "plain"),
-        badge: badge ? { text: badge.text, tone: badge.tone || "accent" } : null,
+        badge: badge ? { text: badge.text, tone: badge.tone || "accent", color: badge.color, backgroundColor: badge.backgroundColor } : null,
         kpi: null,
         note: note?.text || "",
       };
@@ -654,6 +656,17 @@ function voidNode(tag) {
   return { type: "divider" };
 }
 
+const COLOR_TAGS = new Set(["box", "card", "row", "stack", "columns", "grid", "grid-item", "pill", "band", "group", "field", "header", "footer", "figure", "title", "text", "caption", "label", "prose", "badge", "kpi", "stat", "list", "table", "tr", "th", "td", "thead", "tbody"]);
+function withColors(node, tag) {
+  for (const key of ["color", "backgroundColor"]) {
+    if (tag.attrs[key] === undefined) continue;
+    if (!COLOR_TAGS.has(tag.name)) fail(`${tag.name} 不支持 ${key}。`);
+    if (!isColor(tag.attrs[key])) fail(`${key} 需要合法颜色（命名色、hex、rgb 或 hsl）。`);
+    node[key] = tag.attrs[key].trim();
+  }
+  return node;
+}
+
 function parseRegion(src, from, stop, depth, state) {
   const nodes = [];
   let i = from;
@@ -675,12 +688,12 @@ function parseRegion(src, from, stop, depth, state) {
     if (tag.self || VOID.has(tag.name)) {
       if (!tag.self && !VOID.has(tag.name)) fail(`${tag.name} 没有闭合。`);
       if (!VOID.has(tag.name)) fail(`${tag.name} 不能自闭合。`);
-      nodes.push(voidNode(tag));
+      nodes.push(withColors(voidNode(tag), tag));
       i = tag.end;
       continue;
     }
     const inner = parseRegion(src, tag.end, tag.name, depth + 1, state);
-    nodes.push(elementNode(tag, inner.nodes));
+    nodes.push(withColors(elementNode(tag, inner.nodes), tag));
     i = inner.index;
   }
   if (stop) fail(`缺少 </${stop}>。`);
