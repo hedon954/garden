@@ -1,3 +1,4 @@
+import {inspectComposeBody} from "../compose/inspect.mjs";
 import { CATALOG, suggestName } from "./catalog.mjs";
 import { isProseSteps, isTrivialInteractive } from "./enhance.mjs";
 import { blanksBetween, classifyFence, isFullCodeFence, scanFences } from "./parse.mjs";
@@ -54,6 +55,9 @@ export function checkGardenMarkdown(markdown, { draft = false, title = "", title
     if (block.error?.code === "compose-invalid") {
       push(fence.line, "compose-invalid", block.error.message, "叶子写 Markdown，结构写 box、row、stack、steps、arrow、join、lanes 这些标签。");
       return;
+    }
+    if(block.name==="compose")for(const node of inspectComposeBody(fence.body).filter(n=>n.type==="feature"&&n.name==="file")) {
+      if((node.props.files??[node.props]).some(p=>p.resolved!==undefined))push(fence.line,"compose-file","resolved 由构建生成，不要手写。","作者只填写 file src 或 files/file。");
     }
     if (block.name === "compose" && block.mode === "play") {
       const source = `${fence.body}\n${block.children}`;

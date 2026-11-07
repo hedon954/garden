@@ -163,8 +163,8 @@ test("Markdown in a post's same-name folder is named, unless the post offers it 
 
 ## 正文
 
-\`\`\`garden file
-src: ./sample/notes.md
+\`\`\`garden compose
+<file src="./sample/notes.md"/>
 \`\`\`
 `));
   assert.equal(result.ok, true, JSON.stringify(result));
@@ -191,8 +191,8 @@ src: ./sample/notes.md
   await rm(path.join(folder, "old"), { recursive: true });
   const clean = await check(root, post(`---
 
-\`\`\`garden file
-src: ./sample/notes.md
+\`\`\`garden compose
+<file src="./sample/notes.md"/>
 \`\`\`
 `));
   assert.deepEqual(clean.results[0].warnings.filter((item) => item.code === "folder-markdown"), []);

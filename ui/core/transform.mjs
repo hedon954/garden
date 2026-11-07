@@ -1,3 +1,4 @@
+import {composeMarkdown} from "../compose/distribution.mjs";
 import {stripCardMarkers} from "../garden/markdown-links.mjs";
 import {parseUiBody} from "./parse.mjs";
 import {compileUiBlock,readPayload} from "./compile.mjs";
@@ -82,9 +83,9 @@ export function contentForFeed(content,{pageUrl="",siteUrl=""}={}) {
   return replaceFences(stripCardMarkers(source),fence=>{const c=readCompose(fence);return c?c.play?(c.payload?snapshot(c.payload):""):c.ok?readableHtml(renderCompose(c.doc,{scope:`feed${fence.startLine}`}),{siteUrl}):"":undefined;});
 }
 export function contentForDistribution(content,{pageUrl="",siteUrl=""}={}) {
-  const snapshot=p=>`${renderStatic(p,"markdown")}\n\n*${p.caption}*${pageUrl?`\n\n[在原文中交互](${pageUrl}#ui-${p.id})`:""}`;
+  const snapshot=p=>`${renderStatic(p,"markdown",{siteUrl})}\n\n*${p.caption}*${pageUrl?`\n\n[在原文中交互](${pageUrl}#ui-${p.id})`:""}`;
   const source=replaceElements(content,block=>{const p=block.payload?readPayload(JSON.stringify(block.payload)):null;return p?snapshot(p):block.composeFeature&&block.name==="file"?fileFeedMarkdown(block.props,{siteUrl}):undefined;});
-  return replaceFences(stripCardMarkers(source),fence=>{const c=readCompose(fence);return c?c.play?(c.payload?snapshot(c.payload):""):c.ok?composeText(c.doc):"":undefined;});
+  return replaceFences(stripCardMarkers(source),fence=>{const c=readCompose(fence);return c?c.play?(c.payload?snapshot(c.payload):""):c.ok?composeMarkdown(c.doc,{siteUrl}):"":undefined;});
 }
 export function collectDataSources(markdown) {
   const sources=new Set();

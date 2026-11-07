@@ -1,9 +1,10 @@
-// Node only: where a `garden file` src points on disk. Kept apart from
+import {inspectComposeBody} from "../compose/inspect.mjs";
+// Node only: where a Compose file src points on disk. Kept apart from
 // file-block.mjs so the page bundle never pulls in node:path.
 import fs from "node:fs";
 import path from "node:path";
 import { isRemoteSrc, LARGE_FILE_BYTES, formatSize, maskHtmlComments, readFileProps } from "./file-block.mjs";
-import { parseGardenBlock, parseGardenInfo, scanFences } from "./parse.mjs";
+import { parseGardenInfo, scanFences } from "./parse.mjs";
 
 /**
  * Absolute path of a repo file named by a relative `src`, resolved next to the
@@ -35,10 +36,10 @@ export function resolveRepoFile(src, markdownPath, contentRoot) {
 export function checkFileSources(markdown, markdownPath, contentRoot) {
   const diagnostics = [];
   for (const fence of scanFences(maskHtmlComments(markdown))) {
-    if (parseGardenInfo(fence.info)?.name !== "file") continue;
-    const block = parseGardenBlock(fence.info, fence.body);
-    if (!block || block.error || block.props.resolved !== undefined) continue;
-    for (const file of readFileProps(block.props).files) {
+    if(parseGardenInfo(fence.info)?.name!=="compose")continue;
+    for(const node of inspectComposeBody(fence.body).filter(node=>node.type==="feature"&&node.name==="file")) {
+    if(node.props.resolved!==undefined){diagnostics.push({line:fence.line,code:"compose-file",severity:"error",message:"resolved 由构建生成，不要手写。",suggestion:"作者只写 file src 或 files/file。"});continue;}
+    for (const file of readFileProps(node.props).files) {
       if (!file.src || isRemoteSrc(file.src) || file.src.startsWith("/")) continue;
       const resolved = resolveRepoFile(file.src, markdownPath, contentRoot);
       if (resolved.error) {
@@ -60,6 +61,7 @@ export function checkFileSources(markdown, markdownPath, contentRoot) {
         });
       }
     }
+  }
   }
   return diagnostics;
 }

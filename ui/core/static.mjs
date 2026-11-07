@@ -1,3 +1,4 @@
+import {composeMarkdown} from "../compose/distribution.mjs";
 import { parseCompose, renderCompose, composeText } from "../compose/index.mjs";
 import { articleContentText, articleUrl, renderArticleContent } from "../garden/article-content.mjs";
 import { TONE_LABELS } from "./catalog.mjs";
@@ -485,11 +486,11 @@ function inlineMarkdown(inline) {
   }).join("");
 }
 
-export function docToMarkdown(doc, indent = "") {
+export function docToMarkdown(doc, indent = "",options={}) {
   return doc.map((block) => {
     switch (block.k) {
       case "scene":
-        return `${indent}${composeText(block.doc)}`;
+        return `${indent}${composeMarkdown(block.doc,options)}`;
       case "content":
         return `${indent}${block.source}`;
       case "p":
@@ -497,11 +498,11 @@ export function docToMarkdown(doc, indent = "") {
       case "list":
         return block.items.map((item, index) => {
           const bullet = block.ordered ? `${index + 1}. ` : "- ";
-          const body = docToMarkdown(item, `${indent}${" ".repeat(bullet.length)}`).trimStart();
+          const body = docToMarkdown(item, `${indent}${" ".repeat(bullet.length)}`,options).trimStart();
           return `${indent}${bullet}${body}`;
         }).join("\n");
       case "quote":
-        return docToMarkdown(block.blocks).split("\n").map((line) => `${indent}> ${line}`).join("\n");
+        return docToMarkdown(block.blocks,"",options).split("\n").map((line) => `${indent}> ${line}`).join("\n");
       case "hr":
         return `${indent}---`;
       case "table": {
@@ -547,9 +548,9 @@ export function docToText(doc) {
   }).filter(Boolean).join(" ");
 }
 
-export function renderStatic(payload, format = "html") {
+export function renderStatic(payload, format = "html",options={}) {
   const doc = toDoc(payload);
-  if (format === "markdown") return docToMarkdown(doc);
+  if (format === "markdown") return docToMarkdown(doc,"",options);
   if (format === "text") return docToText(doc);
   return docToHtml(doc);
 }

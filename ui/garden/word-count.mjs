@@ -15,16 +15,8 @@
  * - Tables are included (the cell text).
  * - Math is included as the text KaTeX emits (visible glyphs and the MathML
  *   annotation). The TeX source is not counted a second time on top of that.
- * - Garden block props are not counted as YAML keys. Only text the widget
- *   actually emits is counted:
- *   - `garden html` that is a full document (the demo's `sandbox` fence) goes
- *     into an iframe `srcdoc` attribute. The tag strip deletes the attribute,
- *     so the document and its props are excluded. A `fallback:` line is
- *     emitted in `<noscript>` and is counted.
- *   - `garden html` that is already a widget fragment is inlined, so its text
- *     (including `<script>` text) is counted.
- *   - `garden compose` counts the title, caption, card text, and notes. The
- *     author's `intent` and ids stay out.
+ * - Compose counts reader-visible static/native text and the default Play
+ *   snapshot. Author intent, compiled payload attributes and sandbox source stay out.
  * - A heading written `## 1.2 Title` keeps the digits (they move into
  *   `.sec-no`). The dot is dropped. The space was never going to be counted.
  *
@@ -34,9 +26,9 @@
  */
 import katex from "katex";
 import { Marked } from "marked";
-import { parse as parseYaml } from "yaml";
-import { composeText, parseCompose } from "../compose/index.mjs";
-import { fileSearchText } from "./file-block.mjs";
+import {contentToSearchText} from "../core/transform.mjs";
+import {readPayload} from "../core/compile.mjs";
+import {renderStatic} from "../core/static.mjs";
 
 const marked = new Marked({
   gfm: true,
@@ -96,78 +88,16 @@ function escapeHtml(value) {
     .replace(/"/g, "&quot;");
 }
 
-function splitProps(body) {
-  const text = String(body ?? "").replace(/\s+$/u, "");
-  const lines = text.split("\n");
-  const sep = lines.findIndex((line, index) => index > 0 && /^---\s*$/u.test(line));
-  if (sep === -1) return { yamlText: text, children: "" };
-  return { yamlText: lines.slice(0, sep).join("\n"), children: lines.slice(sep + 1).join("\n").replace(/^\n/u, "") };
-}
-
-function readYaml(yamlText) {
-  try {
-    const parsed = yamlText.trim() ? parseYaml(yamlText) : {};
-    return parsed && typeof parsed === "object" ? parsed : {};
-  } catch {
-    return null;
-  }
-}
-
-function isHtmlDocument(body) {
-  return /^\s*(?:<!doctype|<html|<style|<script)/iu.test(body);
-}
-
-function sandboxHtml(title, body) {
-  const fallback = /^fallback:\s*(.*)$/mu.exec(body);
-  const src = fallback ? body.replace(/^fallback:\s*.*(?:\n|$)/mu, "") : body;
-  const noscript = fallback ? `<noscript><p>${escapeHtml(fallback[1])}</p></noscript>` : "";
-  return `<div class="g-sandbox"><iframe title="${escapeHtml(title)}" srcdoc="${escapeHtml(src)}"></iframe>${noscript}</div>`;
-}
-
-function inline(value) {
-  return marked.parseInline(String(value ?? ""), { async: false });
-}
-
-function visibleStrings(value, html) {
-  if (typeof value === "string") html.push(inline(value));
-  else if (Array.isArray(value)) value.forEach((item) => visibleStrings(item, html));
-  else if (value && typeof value === "object") {
-    for (const [key, item] of Object.entries(value)) {
-      if (key === "id" || key === "url" || key === "src" || key === "svg" || key === "svgFile") continue;
-      visibleStrings(item, html);
-    }
-  }
-}
-
-function gardenHtml(info, body) {
-  const name = info.trim().split(/\s+/u)[0]?.toLowerCase() ?? "";
-  const { yamlText, children } = splitProps(body);
-  if (name === "html" || name === "interactive") {
-    const data = readYaml(yamlText) ?? {};
-    const title = typeof data.title === "string" ? data.title : "";
-    const document = children.trim() ? children : body;
-    if (!children.trim() || isHtmlDocument(document)) return sandboxHtml(title, document);
-    return document;
-  }
-  if (name === "file") {
-    // Only what the card shows: titles and notes, not the previewed document.
-    return `<p>${escapeHtml(fileSearchText(readYaml(yamlText) ?? {}))}</p>`;
-  }
-  if (name === "compose") {
-    const result = parseCompose(body);
-    if (!result.ok) return `<p>${escapeHtml(body)}</p>`;
-    return `<p>${escapeHtml(composeText(result.doc))}</p>`;
-  }
-  const data = readYaml(yamlText);
-  if (!data) return `<pre class="code"><code>${escapeHtml(body)}</code></pre>`;
-  const bits = [];
-  visibleStrings(data, bits);
-  if (children.trim()) bits.push(children);
-  return bits.join("");
+function gardenHtml(body) {
+  const marker="`".repeat(Math.max(3,...[...body.matchAll(/`+/gu)].map(m=>m[0].length+1)));
+  return `<p>${escapeHtml(contentToSearchText(`${marker}garden compose\n${body}\n${marker}`))}</p>`;
 }
 
 function renderBlocks(markdown) {
-  const lines = String(markdown ?? "").split("\n");
+  const source=String(markdown??"").replace(/<garden-block data-payload="([^"]+)">([\s\S]*?)<\/garden-block>/gu,(raw,encoded,fallback)=>{
+    try{const block=JSON.parse(decodeURIComponent(encoded));const p=block.payload?readPayload(JSON.stringify(block.payload)):null;return p?`<p>${escapeHtml(p.caption+" "+renderStatic(p,"text"))}</p>`:fallback;}catch{return raw;}
+  });
+  const lines = source.split("\n");
   const parts = [];
   let buffer = [];
   const flush = () => {
@@ -190,9 +120,9 @@ function renderBlocks(markdown) {
       body.push(lines[index]);
       index += 1;
     }
-    if (lang === "garden") {
+    if (/^garden\s+compose(?:\s|$)/iu.test(info)) {
       flush();
-      parts.push(gardenHtml(info.slice("garden".length).trim(), body.join("\n")));
+      parts.push(gardenHtml(body.join("\n")));
     } else {
       buffer.push(lines[index - body.length - 1], ...body, lines[index] ?? marker);
     }

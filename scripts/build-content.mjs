@@ -32,7 +32,7 @@ import { readFileSizeCache } from "./file-sizes.mjs";
 import { previewDocument, previewFileName, renderFilePreview } from "./file-preview.mjs";
 import { ensureExcalidrawSvg, isExcalidrawPath } from "./excalidraw.mjs";
 import { embedExcalidrawImages, embedExcalidrawImgTags } from "../ui/garden/excalidraw-inline.mjs";
-import { parseGardenBlock, parseGardenInfo, scanFences } from "../ui/garden/parse.mjs";
+import { parseGardenInfo, scanFences } from "../ui/garden/parse.mjs";
 import { checkGardenMarkdown } from "../ui/garden/check.mjs";
 import {
   fileIcon,
@@ -241,103 +241,9 @@ function rewriteMarkdownAssets(content, markdownPath, sourcePath, options = {}) 
   return embedExcalidrawImgTags(embedExcalidrawImages(withAssets, read), read);
 }
 
-function markdownStem(markdownPath) {
-  return path.basename(markdownPath, path.extname(markdownPath));
-}
-
-const widgetExtensions = new Set([".html", ".pdf"]);
-
-function assertWidgetSidecar(src, markdownPath, sourcePath) {
-  const [assetPath] = src.split(/(?=[?#])/u, 2);
-  const decodedPath = decodeURIComponent(assetPath.replace(/^<|>$/g, ""));
-  if (isExternalAsset(decodedPath)) {
-    fail(sourcePath, "widget src 必须是同名目录里的本地 .html 或 .pdf，不能使用远程地址");
-  }
-
-  const absoluteSource = path.resolve(path.dirname(markdownPath), decodedPath);
-  const stem = markdownStem(markdownPath);
-  const sidecarRoot = path.join(path.dirname(markdownPath), stem);
-  const relativeToSidecar = path.relative(sidecarRoot, absoluteSource);
-  const extension = path.extname(absoluteSource).toLowerCase();
-  if (
-    relativeToSidecar.startsWith("..") ||
-    path.isAbsolute(relativeToSidecar) ||
-    !widgetExtensions.has(extension)
-  ) {
-    fail(
-      sourcePath,
-      `widget src 必须位于同名目录 ${stem}/ 内的 .html 或 .pdf，例如 ./${stem}/diagram.html`,
-    );
-  }
-  return absoluteSource;
-}
-
-function inferWidgetKind(absoluteSource) {
-  const extension = path.extname(absoluteSource).toLowerCase();
-  if (extension === ".pdf") return "pdf";
-  const html = fs.readFileSync(absoluteSource, "utf8");
-  return /source:\s*["']garden-chart["']/u.test(html) ? "chart" : "html";
-}
-
-function resolveWidgetKind(requested, absoluteSource, sourcePath) {
-  const inferred = inferWidgetKind(absoluteSource);
-  if (requested == null || requested === "") return inferred;
-  if (typeof requested !== "string") fail(sourcePath, "widget kind 必须是 chart、html 或 pdf");
-  const kind = requested.trim();
-  if (!["chart", "html", "pdf"].includes(kind)) {
-    fail(sourcePath, "widget kind 必须是 chart、html 或 pdf");
-  }
-  const extension = path.extname(absoluteSource).toLowerCase();
-  if (kind === "pdf" && extension !== ".pdf") fail(sourcePath, "kind: pdf 只能用于 .pdf");
-  if ((kind === "chart" || kind === "html") && extension !== ".html") {
-    fail(sourcePath, `kind: ${kind} 只能用于 .html`);
-  }
-  return kind;
-}
-
-function rewriteWidgetFences(content, markdownPath, sourcePath) {
-  return content.replace(
-    /(^|\n)(`{3,}|~{3,})widget[ \t]*\r?\n([\s\S]*?)\r?\n\2[ \t]*(?=\r?\n|$)/gu,
-    (match, lead, fence, body) => {
-      let data;
-      try {
-        data = parseYaml(body);
-      } catch {
-        fail(sourcePath, "widget 围栏不是有效的 YAML");
-      }
-      if (data == null || typeof data !== "object" || Array.isArray(data)) {
-        fail(sourcePath, "widget 围栏必须是包含 src 与 caption 的 YAML 对象");
-      }
-
-      const caption = typeof data.caption === "string" ? data.caption.trim() : "";
-      const src = typeof data.src === "string" ? data.src.trim() : "";
-      if (!caption) {
-        fail(sourcePath, "widget 缺少 caption；它必须是一句判断，供搜索、RSS 和无脚本读者阅读");
-      }
-      if (!src) {
-        fail(
-          sourcePath,
-          `widget 缺少 src；把文件放进同名目录，再写 src: ./${markdownStem(markdownPath)}/name.html 或 ./${markdownStem(markdownPath)}/name.pdf`,
-        );
-      }
-
-      const absoluteSource = assertWidgetSidecar(src, markdownPath, sourcePath);
-      const next = {
-        src: copyLocalAsset(src, markdownPath, sourcePath),
-        caption,
-        kind: resolveWidgetKind(data.kind, absoluteSource, sourcePath),
-      };
-      if (typeof data.height === "number" && Number.isFinite(data.height) && data.height > 0) {
-        next.height = Math.round(data.height);
-      }
-      return `${lead}${fence}widget\n${stringifyYaml(next).trimEnd()}\n${fence}`;
-    },
-  );
-}
-
 const remoteFileSizes = readFileSizeCache(root).files;
 
-/** One file of a `garden file` fence, resolved for the page. */
+/** One file of a `Compose file` fence, resolved for the page. */
 function resolveFileEntry(file, markdownPath, sourcePath, options = {}) {
   const allowedRoot = options.allowedRoot ?? contentRoot;
   const assetOptions = options.assetOptions ?? {};
@@ -362,8 +268,8 @@ function resolveFileEntry(file, markdownPath, sourcePath, options = {}) {
     return { ...entry, url: `${basePath}${src}`, remote: false, preview: "", ...(size > 0 ? { size } : {}) };
   }
   const resolved = resolveRepoFile(src, markdownPath, allowedRoot);
-  if (resolved.error) fail(sourcePath, `garden file：${resolved.error}`);
-  const missingMessage = `garden file 找不到 ${src}；src 相对这篇 Markdown 所在的目录`;
+  if (resolved.error) fail(sourcePath, `Compose file：${resolved.error}`);
+  const missingMessage = `Compose file 找不到 ${src}；src 相对这篇 Markdown 所在的目录`;
   if (!fs.existsSync(resolved.path) || !fs.statSync(resolved.path).isFile()) fail(sourcePath, missingMessage);
   const url = copyLocalAsset(src, markdownPath, sourcePath, { ...assetOptions, missingMessage });
   const preview = previewKind(src, { remote: false });
@@ -381,7 +287,7 @@ function resolveFileEntry(file, markdownPath, sourcePath, options = {}) {
 }
 
 /**
- * `garden file` fences: resolve every src next to the Markdown file, copy repo
+ * `Compose file` fences: resolve every src next to the Markdown file, copy repo
  * files to the public folder, and replace the YAML with `resolved:` data the
  * page renders without reading the file system.
  */
@@ -413,35 +319,8 @@ function rewriteComposeFiles(content, markdownPath, sourcePath, options) {
   return lines.join("\n");
 }
 
-function rewriteFileFences(content, markdownPath, sourcePath, options = {}) {
-  content = rewriteComposeFiles(content, markdownPath, sourcePath, options);
-  const fences = scanFences(maskHtmlComments(content)).filter((fence) => parseGardenInfo(fence.info)?.name === "file" && !fence.unclosed);
-  if (!fences.length) return content;
-  const lines = content.split("\n");
-  for (const fence of [...fences].reverse()) {
-    const block = parseGardenBlock(fence.info, fence.body);
-    if (block?.error) fail(sourcePath, `第 ${fence.line} 行 garden file：${block.error.message}`);
-    if (block.props.resolved) fail(sourcePath, `第 ${fence.line} 行 garden file：resolved 由构建生成，不要手写`);
-    const read = readFileProps(block.props);
-    if (read.errors.length) fail(sourcePath, `第 ${fence.line} 行 garden file：${read.errors.join("；")}`);
-    const resolved = {
-      layout: read.layout,
-      ...(read.title ? { title: read.title } : {}),
-      files: read.files.map((file) => resolveFileEntry(file, markdownPath, sourcePath, options)),
-      // The YAML as written, so a page that shows its own source (the
-      // component reference) shows what the author typed, not this data.
-      source: fence.body.replace(/\n$/u, ""),
-    };
-    const indent = " ".repeat(fence.indent);
-    lines.splice(
-      fence.line - 1,
-      fence.endLine - fence.line + 1,
-      `${indent}${fence.marker}${fence.info}`,
-      `${indent}resolved: ${JSON.stringify(resolved)}`,
-      `${indent}${fence.marker}`,
-    );
-  }
-  return lines.join("\n");
+function rewriteFileFences(content, markdownPath, sourcePath, options={}) {
+  return rewriteComposeFiles(content,markdownPath,sourcePath,options);
 }
 
 function rewriteUiFences(content, markdownPath, sourcePath, lineOffset, assetOptions = {}) {
@@ -574,12 +453,8 @@ function validateAndNormalize(data, content, markdownPath, kind, sourcePath, lin
       : undefined,
     media: normalizeMedia(data.media, markdownPath, sourcePath),
     content: rewriteFileFences(
-      rewriteWidgetFences(
-        rewriteMarkdownAssets(
-          rewriteUiFences(content.trim(), markdownPath, sourcePath, lineOffset + leadingLines(content)),
-          markdownPath,
-          sourcePath,
-        ),
+      rewriteMarkdownAssets(
+        rewriteUiFences(content.trim(), markdownPath, sourcePath, lineOffset + leadingLines(content)),
         markdownPath,
         sourcePath,
       ),
@@ -597,7 +472,7 @@ function readMarkdownTree(directory, kind) {
 
   return fs.readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
     const fullPath = path.join(directory, entry.name);
-    // `post.md` + `post/` is the post's own folder of files (garden html, garden file):
+    // `post.md` + `post/` is the post's own folder of files (Compose resources and files):
     // Markdown inside it is a file to download or preview, not another post.
     if (entry.isDirectory()) return fs.existsSync(`${fullPath}.md`) ? [] : readMarkdownTree(fullPath, kind);
     if (!entry.name.endsWith(".md")) return [];

@@ -4,7 +4,7 @@ import matter from "gray-matter";
 import { parse as parseYaml } from "yaml";
 import { canonicalSiteDate } from "./site-date.mjs";
 import { gardenSiteRoot } from "./garden-paths.mjs";
-import { checkUiBlock } from "../ui/core/validate.mjs";
+import {checkComposeFence} from "../ui/core/scan.mjs";
 import { checkGardenMarkdown } from "../ui/garden/check.mjs";
 import { checkFileSources } from "../ui/garden/file-paths.mjs";
 import { inlineLinkParts, inlineLinkPattern } from "../ui/garden/markdown-destination.mjs";
@@ -53,8 +53,6 @@ const normalizeUrl = (value) => {
     return value.trim();
   }
 };
-
-const markdownStem = (markdownPath) => path.basename(markdownPath, path.extname(markdownPath));
 
 const assertLocalFile = (errors, value, baseDir, sourcePath, line, label) => {
   if (!value || isExternalAsset(value)) return;
@@ -111,98 +109,6 @@ const checkReferences = (data, sourcePath, errors) => {
   });
 };
 
-const checkWidget = (errors, body, markdownPath, sourcePath, line) => {
-  let data;
-  try {
-    data = parseYaml(body);
-  } catch {
-    error(errors, "widget-yaml", line, `${sourcePath}: widget 围栏不是有效的 YAML`);
-    return;
-  }
-  if (data == null || typeof data !== "object" || Array.isArray(data)) {
-    error(errors, "widget-yaml", line, `${sourcePath}: widget 围栏必须是包含 src 与 caption 的 YAML 对象`);
-    return;
-  }
-  const caption = typeof data.caption === "string" ? data.caption.trim() : "";
-  const src = typeof data.src === "string" ? data.src.trim() : "";
-  if (!caption) error(errors, "widget-caption", line, `${sourcePath}: widget 缺少 caption`);
-  if (!src) {
-    error(errors, "widget-src", line, `${sourcePath}: widget 缺少 src`);
-    return;
-  }
-  const [assetPath] = src.split(/(?=[?#])/u, 2);
-  const decoded = decodeURIComponent(assetPath.replace(/^<|>$/gu, ""));
-  if (isExternalAsset(decoded)) {
-    error(errors, "widget-src", line, `${sourcePath}: widget src 必须是同名目录里的本地 .html 或 .pdf`);
-    return;
-  }
-  const absolute = path.resolve(path.dirname(markdownPath), decoded);
-  const sidecar = path.join(path.dirname(markdownPath), markdownStem(markdownPath));
-  const relative = path.relative(sidecar, absolute);
-  const extension = path.extname(absolute).toLowerCase();
-  if (relative.startsWith("..") || path.isAbsolute(relative) || ![".html", ".pdf"].includes(extension)) {
-    error(
-      errors,
-      "widget-src",
-      line,
-      `${sourcePath}: widget src 必须位于同名目录 ${markdownStem(markdownPath)}/ 内的 .html 或 .pdf`,
-    );
-    return;
-  }
-  if (!fs.existsSync(absolute)) {
-    error(errors, "widget-missing", line, `${sourcePath}: 找不到 widget 文件 ${src}`);
-    return;
-  }
-  if (data.kind == null || data.kind === "") return;
-  if (typeof data.kind !== "string" || !["chart", "html", "pdf"].includes(data.kind.trim())) {
-    error(errors, "widget-kind", line, `${sourcePath}: widget kind 必须是 chart、html 或 pdf`);
-    return;
-  }
-  const kind = data.kind.trim();
-  if (kind === "pdf" && extension !== ".pdf") {
-    error(errors, "widget-kind", line, `${sourcePath}: kind: pdf 只能用于 .pdf`);
-  }
-  if ((kind === "chart" || kind === "html") && extension !== ".html") {
-    error(errors, "widget-kind", line, `${sourcePath}: kind: ${kind} 只能用于 .html`);
-  }
-};
-
-const checkEmbed = (errors, body, sourcePath, line) => {
-  let data;
-  try {
-    data = parseYaml(body);
-  } catch {
-    error(errors, "embed-url", line, `${sourcePath}: embed 围栏不是有效的 YAML`);
-    return;
-  }
-  const url = data && typeof data === "object" && !Array.isArray(data) ? data.url : undefined;
-  if (typeof url !== "string" || !url.trim()) {
-    error(errors, "embed-url", line, `${sourcePath}: embed 缺少 url`);
-    return;
-  }
-  try {
-    const parsed = new URL(url.trim());
-    if (parsed.protocol !== "http:" && parsed.protocol !== "https:") throw new Error("protocol");
-  } catch {
-    error(errors, "embed-url", line, `${sourcePath}: embed url 必须是 http 或 https 链接`);
-  }
-};
-
-const checkUi = (errors, warnings, body, markdownPath, sourcePath, line) => {
-  const relative = path.relative(path.join(siteRoot, "content"), markdownPath).split(path.sep).join("/");
-  const result = checkUiBlock(body, {
-    lineOffset: line,
-    markdownPath: relative,
-    readData: (src) => {
-      const absolute = path.resolve(path.dirname(markdownPath), src);
-      return fs.existsSync(absolute) ? fs.readFileSync(absolute, "utf8") : undefined;
-    },
-  });
-  for (const item of result.diagnostics) {
-    (item.severity === "warning" ? warnings : errors).push({ code: item.code, line: item.line, message: `${sourcePath}: ${item.message}` });
-  }
-};
-
 const scanBody = (errors, content, markdownPath, sourcePath, { warnings = [], draft = false } = {}) => {
   let fence = null;
   let previousDepth = 2;
@@ -212,11 +118,10 @@ const scanBody = (errors, content, markdownPath, sourcePath, { warnings = [], dr
     const opener = line.match(/^(`{3,}|~{3,})(.*)$/u);
     if (fence) {
       if (opener && opener[1][0] === fence.marker && opener[1].length >= fence.marker.length && !opener[2].trim()) {
-        if (fence.lang === "widget") checkWidget(errors, fence.body.join("\n"), markdownPath, sourcePath, fence.line);
-        if (fence.lang === "embed") checkEmbed(errors, fence.body.join("\n"), sourcePath, fence.line);
-        if (fence.lang === "ui") checkUi(errors, warnings, fence.body.join("\n"), markdownPath, sourcePath, fence.line);
-        if (fence.lang === "intent" && !draft) {
-          error(errors, "intent-uncompiled", fence.line, `${sourcePath}: 还有没编译的 intent 块；对 AI 说「编译这篇」`);
+        if(fence.lang==="garden"&&/^compose(?:\s|$)/u.test(fence.info)) {
+          const relative=path.relative(path.join(siteRoot,"content"),markdownPath).split(path.sep).join("/");
+          const check=checkComposeFence({body:fence.body.join("\n"),info:fence.info,startLine:fence.line},{markdownPath:relative,readData:src=>{const file=path.resolve(path.dirname(markdownPath),src);return fs.existsSync(file)?fs.readFileSync(file,"utf8"):undefined;}});
+          for(const d of check.diagnostics??[])(d.severity==="warning"?warnings:errors).push({...d,message:`${sourcePath}: ${d.message}`});
         }
         fence = null;
       } else {
@@ -225,7 +130,7 @@ const scanBody = (errors, content, markdownPath, sourcePath, { warnings = [], dr
       return;
     }
     if (opener) {
-      fence = { marker: opener[1], lang: opener[2].trim().split(/\s+/u)[0]?.toLowerCase() ?? "", body: [], line: lineNumber };
+      fence = { marker: opener[1], lang: opener[2].trim().split(/\s+/u)[0]?.toLowerCase() ?? "", info:opener[2].trim().split(/\s+/u).slice(1).join(" "), body: [], line: lineNumber };
       return;
     }
 
@@ -254,8 +159,7 @@ const scanBody = (errors, content, markdownPath, sourcePath, { warnings = [], dr
     }
   });
 
-  if (fence?.lang === "widget") checkWidget(errors, fence.body.join("\n"), markdownPath, sourcePath, fence.line);
-  if (fence?.lang === "embed") checkEmbed(errors, fence.body.join("\n"), sourcePath, fence.line);
+
 };
 
 const markdownBelow = (directory) =>

@@ -1,3 +1,6 @@
+import {parse as parseYaml} from "yaml";
+import {inspectComposeBody} from "../ui/compose/inspect.mjs";
+import {findBlocks} from "../ui/core/fence.mjs";
 import assert from "node:assert/strict";
 import { execFile } from "node:child_process";
 import fs from "node:fs";
@@ -27,15 +30,19 @@ import {
 import { checkFileSources, resolveRepoFile } from "../ui/garden/file-paths.mjs";
 import { PREVIEW_TOKENS, highlightRules, previewDocument, previewFileName, renderFilePreview } from "../scripts/file-preview.mjs";
 import { probeFileSize, readFileSizeCache, refreshFileSizes, remoteFileSources } from "../scripts/file-sizes.mjs";
-import { contentForDistribution, contentForFeed, contentToSearchText } from "../ui/core/transform.mjs";
+import { contentForDistribution, contentForFeed, contentToSearchText, transformUiContent } from "../ui/core/transform.mjs";
 import { countDemoWords } from "../ui/garden/word-count.mjs";
 
 const execFileAsync = promisify(execFile);
 const projectRoot = path.resolve(new URL("../", import.meta.url).pathname);
-const fence = (body) => `\`\`\`garden file\n${body}\n\`\`\``;
+// Compact property fixtures serialize into the sole public Compose syntax.
+const attrs=o=>Object.entries(o).map(([k,v])=>` ${k}=${JSON.stringify(k==="resolved"?encodeURIComponent(JSON.stringify(v)):String(v))}`).join("");
+const source=body=>{const p=parseYaml(body);return p.files?`<files${attrs(Object.fromEntries(Object.entries(p).filter(([k])=>k!=="files")))}>${p.files.map(f=>`<file${attrs(typeof f==="string"?{src:f}:f)}/>`).join("")}</files>`:`<file${attrs(p)}/>`;};
+const fence=body=>`\`\`\`garden compose\n${source(body)}\n\`\`\``;
+const parseFile=body=>{const block=parseGardenBlock("garden compose",source(body));return block.error?block:inspectComposeBody(source(body))[0];};
 
-test("garden file parses one file, a group, and rejects unknown keys", () => {
-  const single = parseGardenBlock("garden file", "src: ./post/spec.zip\nnote: 规格包");
+test("Compose parses one file, a group, and rejects unknown keys", () => {
+  const single = parseFile("src: ./post/spec.zip\nnote: 规格包");
   assert.equal(single.name, "file");
   assert.equal(single.error, undefined);
   assert.deepEqual(readFileProps(single.props), {
@@ -45,19 +52,19 @@ test("garden file parses one file, a group, and rejects unknown keys", () => {
     errors: [],
   });
 
-  const group = parseGardenBlock("garden file", "title: 文档\nfiles:\n  - src: ./post/a.md\n    title: 需求\n  - ./post/b.html");
+  const group = parseFile("title: 文档\nfiles:\n  - src: ./post/a.md\n    title: 需求\n  - ./post/b.html");
   assert.equal(group.error, undefined);
   const read = readFileProps(group.props);
   assert.equal(read.layout, "group");
   assert.equal(read.title, "文档");
   assert.deepEqual(read.files.map((file) => [file.src, file.title]), [["./post/a.md", "需求"], ["./post/b.html", ""]]);
 
-  const unknown = parseGardenBlock("garden file", "src: ./a.zip\ncaption: 不支持");
-  assert.equal(unknown.error.code, "garden-yaml");
+  const unknown = parseFile("src: ./a.zip\ncaption: 不支持");
+  assert.equal(unknown.error.code, "compose-invalid");
   assert.match(unknown.error.message, /caption/u);
 
   // The build writes `resolved`; the parser accepts it so the page can read it.
-  assert.equal(parseGardenBlock("garden file", 'resolved: {"layout":"single","files":[]}').error, undefined);
+  assert.equal(parseFile('resolved: {"layout":"single","files":[]}').error, undefined);
 });
 
 test("readFileProps reports what an author has to fix", () => {
@@ -71,10 +78,10 @@ test("readFileProps reports what an author has to fix", () => {
 test("garden check flags a broken file block and a hand-written resolved", () => {
   const codes = (markdown) => checkGardenMarkdown(markdown).map((item) => item.code);
   assert.deepEqual(codes(fence("src: ./a/b.zip")), []);
-  assert.deepEqual(codes(fence("note: 没写 src")), ["garden-file"]);
-  assert.deepEqual(codes(fence("files:\n  - src: ./a.md\n    size: 1")), ["garden-file"]);
+  assert.deepEqual(codes(fence("note: 没写 src")), ["compose-invalid"]);
+  assert.deepEqual(codes(fence("files:\n  - src: ./a.md\n    size: 1")), ["compose-invalid"]);
   const resolved = checkGardenMarkdown(fence('resolved: {"files":[]}'));
-  assert.equal(resolved[0].code, "garden-file");
+  assert.equal(resolved[0].code, "compose-file");
   assert.match(resolved[0].message, /构建生成/u);
 });
 
@@ -294,14 +301,14 @@ test("search, word count, RSS and distribution see titles and notes, not the pre
       { name: "kit.zip", title: "资料包", url: "https://oss.example.com/kit.zip", format: "ZIP", remote: true },
     ],
   };
-  const built = `开头\n\n\`\`\`garden file\nresolved: ${JSON.stringify(props)}\n\`\`\`\n\n结尾`;
+  const built = `开头\n\n${fence("resolved: "+JSON.stringify(props))}\n\n结尾`;
   const search = contentToSearchText(built);
-  assert.match(search, /种植资料 浇水记录 前四周 资料包/u);
+  assert.match(search, /种植资料[\s\S]*浇水记录[\s\S]*前四周[\s\S]*资料包/u);
   assert.doesNotMatch(search, /preview\.html|resolved|media/u);
   assert.doesNotMatch(countDemoWords ? String(countDemoWords(built)) : "", /NaN/u);
   const feed = contentForFeed(built, { siteUrl: "https://blog.example.org" });
-  assert.match(feed, /\[浇水记录\]\(<https:\/\/blog\.example\.org\/media\/posts\/a\/log\.md>\)（MD · 654 B）：前四周/u);
-  assert.match(feed, /\[资料包\]\(<https:\/\/oss\.example\.com\/kit\.zip>\)（ZIP）/u);
+  assert.match(feed, /<a href="https:\/\/blog\.example\.org\/media\/posts\/a\/log\.md">浇水记录<\/a>（MD · 654 B）：前四周/u);
+  assert.match(feed, /<a href="https:\/\/oss\.example\.com\/kit\.zip">资料包<\/a>（ZIP）/u);
   assert.doesNotMatch(feed, /preview\.html/u);
   assert.match(contentForDistribution(built, { siteUrl: "https://blog.example.org" }), /\[资料包\]/u);
   assert.equal(fileSearchText({ src: "./a/kit.zip", note: "说明" }), "kit.zip 说明");
@@ -361,14 +368,9 @@ test("the build copies repo files, writes the Markdown preview to its own file, 
     // The sidecar Markdown is a file, not a post.
     assert.doesNotMatch(generated, /"slug": "guide"/u);
     const content = JSON.parse(/"content": ("(?:[^"\\]|\\.)*")/u.exec(generated)[1]);
-    const blocks = [...content.matchAll(/^resolved: (.*)$/gmu)].map((match) => JSON.parse(match[1]));
-    assert.equal(blocks.length, 2);
-    assert.deepEqual(blocks[0], {
-      layout: "single",
-      files: [{ name: "data.csv", title: "<b>数据</b>", format: "CSV", icon: "file", url: "/media/posts/notes/kit/data.csv", size: 8, remote: false, preview: "" }],
-      // The YAML as written, for pages that show a block's own source.
-      source: "src: ./kit/data.csv\ntitle: <b>数据</b>",
-    });
+    const blocks=findBlocks(content).flatMap(f=>inspectComposeBody(f.body)).filter(n=>n.type==="feature"&&n.name==="file").map(n=>n.props.resolved);
+    assert.equal(blocks.length,2);
+    assert.deepEqual(blocks[0].files,[{name:"data.csv",title:"<b>数据</b>",format:"CSV",icon:"file",url:"/media/posts/notes/kit/data.csv",size:8,remote:false,preview:""}]);
     const [guide, demo, big, unknown] = blocks[1].files;
     assert.equal(blocks[1].title, "一组");
     assert.equal(guide.preview, "md");
@@ -389,7 +391,7 @@ test("the build copies repo files, writes the Markdown preview to its own file, 
     assert.ok(fs.existsSync(path.join(site, "public", "media", "posts", "notes", "kit", "data.csv")));
     assert.ok(fs.existsSync(path.join(site, "public", "media", "posts", "notes", "kit", "pic.png")));
     // A fence shown inside a longer code block is an example, left as written.
-    assert.match(content, /src: \.\/kit\/not-resolved-inside-an-example\.zip/u);
+    assert.match(content, /src="\.\/kit\/not-resolved-inside-an-example\.zip"/u);
   } finally {
     await rm(site, { recursive: true, force: true });
   }
@@ -397,7 +399,7 @@ test("the build copies repo files, writes the Markdown preview to its own file, 
 
 test("the build fails on a missing file or a file outside content/", async () => {
   for (const [body, message] of [
-    [fence("src: ./kit/missing.pdf"), /garden file 找不到 \.\/kit\/missing\.pdf/u],
+    [fence("src: ./kit/missing.pdf"), /Compose file 找不到 \.\/kit\/missing\.pdf/u],
     [fence("src: ../../../../site.config.yaml"), /文件必须放在 content 目录里/u],
     [fence("note: 没有 src"), /缺少 src/u],
   ]) {
@@ -509,4 +511,13 @@ test("Compose native files retain real build asset copies and previews", async (
     assert.match(renderCompose(parsed.doc),/garden-block/);
     assert.equal(await readFile(path.join(site,"public/media/posts/notes/kit/data.csv"),"utf8"),"a,b\n1,2\n");
   } finally { await rm(site,{recursive:true,force:true}); }
+});
+
+test("Play native files keep actionable distribution links and word-count excludes intent and compiler data",()=>{
+ const source='```garden compose #file-export\ncaption: Download test\nintent: PRIVATE-AUTHOR-NOTE\n---\n{@body const [n,setN]=DIL.useState(1)}\n<file src="https://example.com/data.csv" title="Download data"/>\n```';
+ const built=transformUiContent(source);assert.deepEqual(built.errors,[]);
+ const output=contentForDistribution(built.content);assert.match(output,/\[Download data\]\(<https:\/\/example\.com\/data\.csv>\)/u);
+ assert.doesNotMatch(output,/PRIVATE-AUTHOR-NOTE|data-payload/u);
+ assert.equal(countDemoWords(source),countDemoWords(built.content));
+ assert.equal(countDemoWords(source),countDemoWords(source.replace("PRIVATE-AUTHOR-NOTE","A much longer private note that must not count")));
 });

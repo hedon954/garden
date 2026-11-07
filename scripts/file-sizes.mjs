@@ -1,6 +1,7 @@
 #!/usr/bin/env node
+import {inspectComposeBody} from "../ui/compose/inspect.mjs";
 /**
- * Sizes of remote files named in `garden file` fences (OSS and other https
+ * Sizes of remote files named in Compose file scenes (OSS and other https
  * links), so the card can say 「ZIP · 48 MB」 without the page asking anyone.
  *
  * Every build sends one HEAD request per URL (a one-byte range request when
@@ -14,7 +15,7 @@ import { pathToFileURL } from "node:url";
 import matter from "gray-matter";
 import { isPublicUrl } from "./link-meta-core.mjs";
 import { assertPublicDns, pool } from "./link-assets.mjs";
-import { scanFences, parseGardenBlock } from "../ui/garden/parse.mjs";
+import { scanFences, parseGardenInfo } from "../ui/garden/parse.mjs";
 import { isRemoteSrc, maskHtmlComments, readFileProps } from "../ui/garden/file-block.mjs";
 
 export const CACHE_FILE = "file-sizes.json";
@@ -30,14 +31,13 @@ export function readFileSizeCache(siteRoot) {
   }
 }
 
-/** Remote `src` values in the `garden file` fences of one Markdown body. */
+/** Remote `src` values in the Compose file scenes of one Markdown body. */
 export function remoteFileSources(markdown) {
   const found = [];
   for (const fence of scanFences(maskHtmlComments(markdown))) {
-    if (!/^garden\s+file\b/iu.test(fence.info ?? "")) continue;
-    const block = parseGardenBlock(fence.info, fence.body);
-    if (!block || block.error) continue;
-    for (const file of readFileProps(block.props).files) if (isRemoteSrc(file.src)) found.push(file.src);
+    if(parseGardenInfo(fence.info)?.name!=="compose")continue;
+    for(const node of inspectComposeBody(fence.body).filter(node=>node.type==="feature"&&node.name==="file"))
+      for(const file of readFileProps(node.props).files)if(isRemoteSrc(file.src))found.push(file.src);
   }
   return [...new Set(found)];
 }
