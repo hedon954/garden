@@ -119,3 +119,10 @@ The Obsidian plugin is not installed by this command.
 
    That writes `.garden/ui-catalog.html`.
 4. **Compile with the skill.** Copy compile prompt. On an English site (`locale: en_US`) the clipboard text is `Compile this post:` plus the post path. Paste it to an Agent that has the `garden-compose` skill. The skill runs `npx garden ui scan`, reads `npx garden ui prompt`, and replaces only that fence with `npx garden ui apply`. The plugin does not call a model. Check the result with `npx garden ui check` or the pre-commit hook.
+
+
+## Strict local check
+
+Run `make check` to check every article structure and every Compose/UI block in the working tree, including drafts and untracked files. No staging is needed. Both checks run even if structural errors are found, so `.garden/ui-fix-prompt.md` is still generated for Compose failures. No AI call or clipboard copy happens.
+
+`make check FILE=content/posts/post.md` limits the content preflight to that file. After preflight succeeds, the existing full-site sync/build stages still run. The engine repository retains its lint/test stages instead. Failure exits nonzero and skips these later stages. This is compilation/validation, not an automatic formatting or repair command.

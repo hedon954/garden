@@ -4,14 +4,15 @@ MESSAGE ?= Update blog
 
 .PHONY: help new embed skill prepare dev check build update
 
-unexport TITLE SLUG DIR URL
+unexport TITLE SLUG DIR URL FILE
 export GARDEN_NEW_TITLE := $(value TITLE)
 export GARDEN_NEW_SLUG := $(value SLUG)
 export GARDEN_NEW_DIR := $(value DIR)
 export GARDEN_EMBED_URL := $(value URL)
+export GARDEN_CHECK_FILE := $(value FILE)
 
 help:
-	@printf "%s\n" "Common Garden commands:" "  make new                 Create a post draft with the engine" '  make new TITLE="Post title" SLUG=my-post DIR=writing' '  make embed URL="https://example.com"  Fetch external page metadata' "  make skill               Install interactive chart skills" "  make dev                 Install dependencies and preview locally" "  make build               Build the public site" "  make update              Check, commit, and push to publish"
+	@printf "%s\n" "Common Garden commands:" "  make new                 Create a post draft with the engine" '  make new TITLE="Post title" SLUG=my-post DIR=writing' '  make embed URL="https://example.com"  Fetch external page metadata' "  make skill               Install interactive chart skills" "  make dev                 Install dependencies and preview locally" "  make check               Strict all-content preflight, then sync/build (FILE=path for one file preflight)" "  make build               Build the public site" "  make update              Check, commit, and push to publish"
 
 new: prepare
 	npx garden new
@@ -29,6 +30,7 @@ dev: prepare
 	npx garden dev
 
 check: prepare
+	npx --no-install garden verify
 	npx garden sync && npx garden build
 
 build: prepare

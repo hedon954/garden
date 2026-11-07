@@ -119,3 +119,10 @@ Obsidian 插件这一轮不随包安装。
 
    生成 `.garden/ui-catalog.html`。
 4. **交给 skill 编译。** 「复制编译提示词」在中文站点得到 `编译这篇：<相对路径>`，在 `locale: en_US` 的站点得到 `Compile this post: <相对路径>`。把这句话发给装了 `garden-compose` skill 的 Agent。它会运行 `npx garden ui scan`，阅读 `npx garden ui prompt`，再用 `npx garden ui apply` 只替换这一块。插件本身不调用模型。写完用 `npx garden ui check` 或提交前钩子再查一遍。
+
+
+## 本地严格检查
+
+运行 `make check`：检查工作区所有文章的结构和全部 Compose/UI 块，包含草稿与未跟踪的新稿，不必先暂存。结构错误不会阻止 Compose 检查；有待编译/错误块时仍生成 `.garden/ui-fix-prompt.md`，把全文给 AI 即可。不会调用 AI 或复制剪贴板。
+
+`make check FILE=content/posts/文章.md` 只限制内容预检范围；通过后仍执行原来的全站 sync/build（引擎仓库保留 lint/test）。预检失败返回非零并跳过后续阶段。这是编译/校验，不是自动格式化或自动改稿。
