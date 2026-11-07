@@ -1,3 +1,4 @@
+import {rehypeGardenBlocks} from "../lib/rehype-garden-blocks.mjs";
 import { UiLangProvider } from "./UiLang";
 import { siteLang, ui, type UiLang } from "../lib/i18n";
 import { markdownPlugins } from "../lib/markdown-plugins";
@@ -252,6 +253,7 @@ export function MarkdownArticle({ content, lang, fieldTables, refDemos, handbook
         remarkPlugins={[...(refDemos ? [remarkRefDemos] : []), ...markdownPlugins, remarkLinkCard, [remarkA2, { imageSize: (src: string) => lookupImageSize(imageSizes, src), lang: lang ?? siteLang }]]}
         rehypePlugins={[
           rehypeRaw,
+          rehypeGardenBlocks,
           rehypeKatex,
           rehypeSlug,
           // Not rehype-autolink-headings "wrap": a heading with a link in it would nest <a> in <a> (React #418).
