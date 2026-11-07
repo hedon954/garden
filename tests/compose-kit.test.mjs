@@ -4,14 +4,14 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import {spawnSync} from 'node:child_process';
-import {managedSkillBundle} from '../scripts/managed-skills.mjs';
+import {managedSkillBundle,installManagedSkills} from '../scripts/managed-skills.mjs';
 const engineRoot=new URL('../',import.meta.url).pathname;
 const kit=path.join(engineRoot,'.agents/skills/garden-compose');
 function run(script,args,cwd){return spawnSync(process.execPath,[path.join(kit,'scripts',script+'.mjs'),...args],{cwd,env:{...process.env,GARDEN_SITE:cwd,GARDEN_UI_NO_COPY:'1'},encoding:'utf8'});}
 test('English entry point overlays shared kit recursively without writing any skills',()=>{
  const en=managedSkillBundle({engineRoot,name:'garden-compose',lang:'en'}),zh=managedSkillBundle({engineRoot,name:'garden-compose'});
  assert.match(en['SKILL.md'].toString(),/Select, compose and validate/);
- for(const name of ['scripts/check.mjs','scripts/apply.mjs','references/static-play.md','references/colors.md','references/examples.md','references/layout-recipes.md','references/visual-selection.md','references/composition-patterns.md'])assert.deepEqual(en[name],zh[name]);
+ for(const name of ['scripts/check.mjs','scripts/apply.mjs','references/static-play.md','references/colors.md','references/examples.md','references/layout-recipes.md','references/visual-selection.md','references/composition-patterns.md','references/rendering-model.md'])assert.deepEqual(en[name],zh[name]);
 });
 test('shipped examples and wrappers pass authoritative CLI checks in an isolated site',()=>{
  const root=fs.mkdtempSync(path.join(os.tmpdir(),'compose-kit-'));
@@ -24,7 +24,9 @@ test('shipped examples and wrappers pass authoritative CLI checks in an isolated
   assert.equal(fences.length,2);
   const recipe=fs.readFileSync(path.join(kit,'references/layout-recipes.md'),'utf8');
   const cards=[...recipe.matchAll(/^```garden compose[^\n]*\n[\s\S]*?^```/gm)].map(m=>m[0]);
-  assert.equal(cards.length,1);fences.push(...cards);
+  assert.ok(cards.length>=2,'card and editorial recipes must be present');fences.push(...cards);
+  const patterns=fs.readFileSync(path.join(kit,'references/composition-patterns.md'),'utf8');
+  fences.push(...[...patterns.matchAll(/^```garden compose[^\n]*\n[\s\S]*?^```/gm)].map(m=>m[0]));
   for(const fence of fences){fs.writeFileSync(path.join(root,'post.md'),fence+'\n');const r=run('check',['post.md'],root);assert.equal(r.status,0,r.stderr);}
   const scan=run('scan',['post.md'],root);assert.equal(scan.status,0,scan.stderr);assert.doesNotThrow(()=>JSON.parse(scan.stdout));
   const prompt=run('prompt',[],root);assert.equal(prompt.status,0,prompt.stderr);assert.match(prompt.stdout,/backgroundColor/);assert.doesNotMatch(prompt.stdout,/不要写(?:脚本、)?色值/);
@@ -42,5 +44,19 @@ test('shipped examples and wrappers pass authoritative CLI checks in an isolated
   assert.equal(run('apply',['post.md','--at','1','--file','replacement.md'],root).status,1);
   assert.equal(fs.readFileSync(path.join(root,'post.md'),'utf8'),before);
 
+ }finally{fs.rmSync(root,{recursive:true,force:true});}
+});
+
+test('both locales install every shared operational reference verbatim',()=>{
+ const root=fs.mkdtempSync(path.join(os.tmpdir(),'compose-kit-locales-'));
+ try{
+  for(const lang of ['zh','en']){
+   const siteRoot=path.join(root,lang);
+   installManagedSkills({engineRoot,siteRoot,lang,log:()=>{}});
+   const expected=managedSkillBundle({engineRoot,name:'garden-compose',lang});
+   for(const [relative,bytes] of Object.entries(expected))assert.deepEqual(fs.readFileSync(path.join(siteRoot,'.agents/skills/garden-compose',relative)),bytes,lang+':'+relative);
+   assert.match(expected['SKILL.md'].toString(),/rendering-model\.md/);
+   assert.ok(expected['references/rendering-model.md']);
+  }
  }finally{fs.rmSync(root,{recursive:true,force:true});}
 });
