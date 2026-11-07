@@ -39,7 +39,7 @@ test("the site template's package.json is valid JSON and pins no engine version 
   assert.equal(template.dependencies?.[engine.name], undefined);
 });
 
-test("garden init writes a site whose package.json parses and pins the current engine, and zh init output is unchanged", (t) => {
+test("garden init writes a site whose package.json parses and pins the current engine, and zh templates remain unchanged alongside managed metadata", (t) => {
   const { parent, site, stdout } = initSite();
   t.after(() => rmSync(parent, { recursive: true, force: true }));
   const pkg = JSON.parse(readFileSync(path.join(site, "package.json"), "utf8"));
@@ -66,6 +66,8 @@ test("garden init writes a site whose package.json parses and pins the current e
   const editorFiles = listFiles(path.join(root, "editors/dist")).map((file) => `.garden/editors/${file}`);
   assert.deepEqual(nonSkillFiles, [
     ".garden/editors/.install-offered",
+    ".garden/managed-skills.json",
+    "AGENTS.md",
     ".gitignore",
     "Makefile",
     "README.md",
