@@ -1,6 +1,6 @@
 ---
 title: Compose reference
-navTitle: Compose
+navTitle: compose
 description: One author entry, executable rendering contracts and verification.
 section: reference
 order: 6
@@ -27,6 +27,8 @@ Use `garden compose`. Select by the reader's task, not by another fence name:
 | Independent executable illustration | Play `sandbox` with literal html/css/js; isolated offline iframe |
 
 The authoritative, demand-loaded catalog is `npx garden ui schema`: actual semantic fields, Play props/defaults/child contracts, icon names, safe HTML tags/attributes/CSS properties. `npx garden ui prompt` adds working recipes. `styleReference` also extracts current font/layout declarations, selectors, responsive conditions and source order from the installed stylesheets; it reports source defaults, not universal computed values. These are generated from the validators and actual styles; do not maintain a second exhaustive tag list. Static layout normalization is not a universal HTML/CSS API: inspect the normalized tree and output because some unsupported static layout attributes are ignored. Semantic unknown fields fail validation.
+
+See the executable [Compose active-hours chart](/garden/en/components/compose#ui-compose-chart-active-hours).
 
 ## Relationships → hierarchy → layout → style → actual output
 

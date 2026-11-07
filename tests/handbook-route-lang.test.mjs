@@ -392,8 +392,8 @@ test("English handbook header, code tabs and copy buttons are English", async ()
 
 test("interactive runtime chrome follows the handbook language", async () => {
   // The y label (分钟 in the sample) is the author's; the instruction around it is chrome.
-  assert.match(await html("/garden/en/components/interactive"), /, use the left and right arrow keys to read each point"/u);
-  assert.match(await html("/garden/components/interactive"), /，左右方向键查看各点"/u);
+  assert.match(await html("/garden/en/components/compose"), /, use the left and right arrow keys to read each point"/u);
+  assert.match(await html("/garden/components/compose"), /，左右方向键查看各点"/u);
 });
 
 test("Chinese handbook keeps the Chinese chrome", async () => {
@@ -423,7 +423,7 @@ test("the language switch keeps the basePath: /repo/garden/x/ ⇄ /repo/garden/e
   assert.equal(swapHandbookLang("/garden/en/ai-writing/", "zh"), "/garden/ai-writing/");
   assert.equal(swapHandbookLang("/garden/", "en"), "/garden/en/");
   assert.equal(swapHandbookLang("/garden/en/", "zh"), "/garden/");
-  assert.equal(swapHandbookLang("/garden-docs-v6/garden/components/compare/", "en"), "/garden-docs-v6/garden/en/components/compare/");
+  assert.equal(swapHandbookLang("/garden-docs-v6/garden/reference/compose/", "en"), "/garden-docs-v6/garden/en/reference/compose/");
   assert.equal(swapHandbookLang("/garden-docs-v6/garden/en/", "zh"), "/garden-docs-v6/garden/");
   assert.equal(swapHandbookLang("/blog/x/", "en"), null);
 });
@@ -434,7 +434,7 @@ test("the infinite-scroll link carries the basePath", async () => {
 });
 
 test("<html lang> is en on English handbook pages and zh-CN on Chinese ones (worker)", async () => {
-  for (const path of ["/garden/en", "/garden/en/ai-writing", "/garden/en/components/compare"]) assert.match(await fetchRoute(path, 200), /<html[^>]*\slang="en"/u, path);
+  for (const path of ["/garden/en", "/garden/en/ai-writing", "/garden/en/reference/compose"]) assert.match(await fetchRoute(path, 200), /<html[^>]*\slang="en"/u, path);
   for (const path of ["/garden", "/garden/ai-writing", "/blog", "/thoughts"]) assert.match(await fetchRoute(path, 200), /<html[^>]*\slang="zh-CN"/u, path);
 });
 

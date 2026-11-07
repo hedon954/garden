@@ -1,6 +1,6 @@
 ---
 title: 组件参考 · Compose
-navTitle: Compose
+navTitle: compose
 description: 单一作者入口、可执行渲染契约与验证。
 section: reference
 order: 6
@@ -29,6 +29,8 @@ Use `garden compose`. Select by the reader's task, not by another fence name:
 | Independent executable illustration | Play `sandbox` with literal html/css/js; isolated offline iframe |
 
 The authoritative, demand-loaded catalog is `npx garden ui schema`: actual semantic fields, Play props/defaults/child contracts, icon names, safe HTML tags/attributes/CSS properties. `npx garden ui prompt` adds working recipes. `styleReference` also extracts current font/layout declarations, selectors, responsive conditions and source order from the installed stylesheets; it reports source defaults, not universal computed values. These are generated from the validators and actual styles; do not maintain a second exhaustive tag list. Static layout normalization is not a universal HTML/CSS API: inspect the normalized tree and output because some unsupported static layout attributes are ignored. Semantic unknown fields fail validation.
+
+图表的可运行示例见[Compose 活跃时段图](/garden/components/compose#ui-compose-chart-active-hours)。
 
 ## Relationships → hierarchy → layout → style → actual output
 
