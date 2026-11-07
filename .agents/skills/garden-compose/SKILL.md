@@ -1,14 +1,18 @@
 ---
 name: garden-compose
-description: 在 Garden 项目中编译、修复、校验 garden compose 想法块、静态说明图和可交互 DIL；用户要把检查提示交给 AI 时也使用。
+description: 在 Garden 项目中根据作者原文和一句视觉效果需求创建、编译、修复、校验 garden compose 静态说明图和交互 DIL；横向等宽卡片、并排卡片等自然语言需求即触发，无须作者点名技能；也处理检查错误。
 ---
 # Garden Compose
 
 这是项目技能，不安装到全局。只修改用户授权的文章/块，不发布、不自动改其他文章。
 
+## 作者只给原文和效果
+作者提供原文（段落或列表）加一句“使用 garden compose 来呈现横向等宽卡片”就足够；即使请求在围栏外，也直接进入本技能。不要要求作者写技能名、标签、响应式规则、边框、标题或检查命令。保留原文事实、措辞和顺序；布局、必要的内容映射与校验由 AI 完成。已有加粗标签可作为卡片标题，不另造标题或摘要。
+横向等宽卡片按需读取 references/layout-recipes.md；只有相关属性不确定时才查目录，不预加载所有配方或把实现说明贴回作者。
+
 ## 流程
 1. 在站点根目录工作。先读本技能 references/workflow.md 与 references/static-play.md。不确定属性时，以 `npx --no-install garden ui prompt` 和引擎的实际检查为准；不要把旧 PascalCase UI/YAML 槽当成 Compose 作者语言。
-2. 运行 `node .agents/skills/garden-compose/scripts/scan.mjs content/posts/文章.md`，保存目标的行号、id（如有）、hash、原始意图和 diagnostics。对已编译且无问题的块不重写。纯「哪里适合交互」请求只给建议，不写文件。
+2. 原文尚无围栏时，只在授权位置把原文与效果要求原样放进一个 `<intent>` 围栏，再 scan；不改其他正文。已存在块直接 scan。运行 `node .agents/skills/garden-compose/scripts/scan.mjs content/posts/文章.md`，保存目标的行号、id（如有）、hash、原始意图和 diagnostics。对已编译且无问题的块不重写。纯「哪里适合交互」请求只给建议，不写文件。
 3. 运行 `node .agents/skills/garden-compose/scripts/check.mjs content/posts/文章.md`。失败时依据终端的文件、行号和错误码，再 scan 读取目标原文和哈希后修复。默认不写提示词文件、不操作剪贴板、不调用模型。draft 与 published 完全同规则，未编译白话、坏标签均失败；没有草稿豁免。这是编译/修复，不是缩进格式化。
 4. 读 `references/colors.md`、`references/frames.md`、`references/examples.md`，按需读取。保留事实、原始意图和既有 id；输出一个完整 `garden compose` 围栏。作者写小写标签，Play 才用 `{@body}`、状态、表达式、条件/循环。不写任意 HTML/CSS/JS，不编造数据、图标名或属性。复杂功能超出目录时明确说明缺口；不要无声转成 html/widget。
 5. 把候选围栏存到临时 Markdown 文件。只用 scripts/apply.mjs 调用权威 CLI 写回目标块：有 id 用 `--id`，无 id 用 scan 的 `--at` 行号；总是加原来的 `--base` hash，再用 `--file` 给出候选文件。没有 id 且没有 intentHash 的坏块不能用 `intent-hash: null` 定位。写回前如原文变了，重新 scan，不移除 base 保护强行覆盖。

@@ -21,3 +21,7 @@ node .agents/skills/garden-compose/scripts/check.mjs content/posts/post.md
 ```
 
 有稳定 id 时用 `--id ID` 替换 `--at TARGET_LINE`。仅对 scan 实际给出的非空 intentHash 可用 `--intent-hash HASH`。坏标记没有 id/intentHash 时用行号 + base，绝不用 null。`--base` 是完整原围栏的 hash，不是 intentHash。apply 支持 `--file` 或 stdin；会真的写文件，没有 `--dry-run`。单块失败需重新读取，不手工整篇覆盖。脚本不自动提交、发布、安装依赖或调用模型。
+
+## Prose outside a fence · 围栏外的原文
+
+An author may supply ordinary paragraphs/list items and one sentence describing the desired Compose effect. Do not ask them to rewrite this into DIL, name a skill or run commands. At the authorized location, create one idea fence with the verbatim source and requested effect inside `<intent>`, then scan it. This initial insertion is distinct from replacing an existing block: `apply` requires a scanned existing target. Existing blocks always use scan → candidate → apply with the original base hash → check. Preserve unrelated prose; do not duplicate source text into the visible result. / 作者原文加效果即可；仅首次创建目标围栏需要受限插入，后续修改必须走现有 scan/apply/check 与并发保护，不把 apply 当作不存在目标的插入 API。
