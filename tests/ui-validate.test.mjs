@@ -1,6 +1,5 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { intentHash } from "../ui/core/fence.mjs";
 import { checkUiBlock } from "../ui/core/validate.mjs";
 
 const block = (body, header = "id: demo\ncaption: 一句判断") => `---\n${header}\n---\n${body}`;
@@ -29,12 +28,10 @@ test("requires id and caption in the block header and rejects unknown keys", () 
   assert.deepEqual(errorCodes("<State a={1} />", "id: Bad_Id\ncaption: b"), ["ui-id"]);
 });
 
-test("flags a stale block as a warning, reading compiled from raw text", () => {
-  const stale = checkUiBlock(block("<State a={1} />", "id: a\ncaption: b\nintent: 原话\ncompiled: 12e45678"));
-  assert.equal(stale.ok, true);
-  assert.deepEqual(stale.diagnostics.map((item) => [item.code, item.severity]), [["ui-stale", "warning"]]);
-  const fresh = checkUiBlock(block("<State a={1} />", `id: a\ncaption: b\nintent: 原话\ncompiled: ${intentHash("原话")}`));
-  assert.deepEqual(fresh.diagnostics, []);
+test("interactive headers reject undocumented metadata rather than silently accepting it", () => {
+  const result = checkUiBlock(block("<State a={1} />", "id: a\ncaption: b\nintent: 原话\nstamp: 12e45678"));
+  assert.equal(result.ok, false);
+  assert.deepEqual(result.diagnostics.map(item => [item.code, item.severity]), [["ui-header", "error"]]);
 });
 
 test("unknown components get ui-component", () => {

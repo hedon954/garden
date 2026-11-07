@@ -19,7 +19,7 @@ import {
   runExpect,
 } from "./state.mjs";
 
-const HEADER_KEYS = new Set(["id", "caption", "intent", "compiled", "expect", "frame"]);
+const HEADER_KEYS = new Set(["id", "caption", "intent", "expect", "frame"]);
 const MAX_ELEMENTS = 200;
 const CONSTANT_NAMES = new Set(["PI", "E", "undefined", "NaN", "Infinity"]);
 const INLINE_TYPES = new Set(["text", "x", "strong", "em", "code", "br", "link", "rich"]);

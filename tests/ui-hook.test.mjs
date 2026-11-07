@@ -14,18 +14,16 @@ const block = (component) => [
   "description: 提交前检查",
   "---",
   "",
-  "```ui",
-  "---",
-  "id: knob",
+  "```garden compose #knob",
   "caption: 一个可以拧的数。",
   "---",
-  "<State n={1} />",
+  "{@body const [n, setN] = DIL.useState(1)}",
   `<${component} bind="n" label="n" min={1} max={4} />`,
   "```",
   "",
 ].join("\n");
 
-test("the pre-commit hook refuses a broken staged ui block and judges the staged version", async () => {
+test("the pre-commit hook refuses a broken staged Compose block and judges the staged version", async () => {
   const repo = await mkdtemp(path.join(tmpdir(), "garden-hook-"));
   const env = { ...process.env, GARDEN_SITE: "", GARDEN_UI_NO_COPY: "1" };
   const run = (command, args) => spawnSync(command, args, { cwd: repo, encoding: "utf8", env });
@@ -45,11 +43,11 @@ test("the pre-commit hook refuses a broken staged ui block and judges the staged
 
     const post = path.join(repo, "content", "posts", "knob.md");
     await mkdir(path.dirname(post), { recursive: true });
-    await writeFile(post, block("Slidr"));
+    await writeFile(post, block("slidr"));
     git("add", "-A");
     assert.notEqual(commit("broken"), 0);
 
-    await writeFile(post, block("Slider"));
+    await writeFile(post, block("slider"));
     assert.notEqual(commit("fixed but not staged"), 0);
 
     git("add", "-A");
