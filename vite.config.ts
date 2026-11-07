@@ -45,7 +45,15 @@ const localBindingConfig = {
 };
 
 function gardenContent() {
-  const sync = (mode?: "preview") => {
+  const sync = (mode?: "preview", { refreshLinks = false } = {}) => {
+    if (refreshLinks && process.env.GARDEN_OFFLINE !== "1") {
+      // Same entry as `garden links` / formal build. link-assets keeps usable cache on failure.
+      spawnSync(process.execPath, [path.join(gardenPackageRoot, "scripts", "link-assets.mjs")], {
+        cwd: siteRoot,
+        env: { ...process.env, GARDEN_SITE: siteRoot },
+        stdio: "inherit",
+      });
+    }
     return spawnSync(process.execPath, [path.join(gardenPackageRoot, "scripts", "build-content.mjs")], {
       cwd: siteRoot,
       env: { ...process.env, GARDEN_SITE: siteRoot, ...(mode ? { GARDEN_CONTENT_MODE: mode } : {}) },
@@ -86,7 +94,7 @@ function gardenContent() {
         // Coalesce editor atomic writes/renames; regenerate before asking browsers
         // to reload, including newly created and deleted Markdown routes.
         pending = setTimeout(() => {
-          const result = sync("preview");
+          const result = sync("preview", { refreshLinks: true });
           if (result.status === 0) {
             // The generator is synchronous; filesystem notifications have not
             // necessarily reached Vite yet. Invalidate generated imports before
@@ -99,7 +107,7 @@ function gardenContent() {
             }
             server.ws.send({ type: "full-reload" });
           }
-        }, 100);
+        }, 800);
       };
       server.watcher.on("add", onContentEvent);
       server.watcher.on("change", onContentEvent);
