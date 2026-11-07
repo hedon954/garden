@@ -1351,3 +1351,14 @@
 .g-compose-content > :last-child { margin-bottom: 0; }
 .g-compose-content pre, .g-compose-content table { max-width: 100%; overflow-x: auto; }
 .g-compose-content img { max-width: 100%; height: auto; }
+
+/* Native semantic scenes share the surrounding article's body typography.
+   Graph labels, metric values, captions and controls retain semantic sizing. */
+.markdown-body .g-compose :is(.g-choice-x, .g-tl-x, .g-stat-t, .g-cmp p, .g-verdict p, .g-entity-list p),
+.markdown-body .g-compose .g-entity-b > p:not(.g-entity-m) {
+  font-size: inherit;
+  font-family: inherit;
+}
+.markdown-body .g-compose :is(.g-choice-h, .g-choice-v, .g-choice-l, .g-list-h, .g-rel-t, .g-rel-x, .g-rel-detail-t, .g-rel-detail-x, .g-tl-t, .g-entity-t, .g-entity-lt, .g-entity-m, .g-stat-l, .g-stat-n, .g-stat-c, .g-verdict h4, .g-cmp h4) {
+  font-family: inherit;
+}
