@@ -1,5 +1,5 @@
 /**
- * The 预览 of a Markdown file in a `garden file` block, rendered at build time.
+ * The 预览 of a Markdown file in a Compose `<file>` component, rendered at build time.
  *
  * The HTML goes to its own file next to the copied Markdown and is fetched
  * only when a reader opens the preview, so the article page does not carry

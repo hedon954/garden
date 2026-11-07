@@ -492,7 +492,7 @@ function help() {
   garden embed            拉取外链摘要
   garden links            重新拉取外链图标与卡片元数据（dev / build 时也会自动做）
   garden images           读取新的远程图片尺寸，写入 .garden/image-sizes.json（build 时会自动做）
-  garden files            读取 garden file 里远程文件的大小，写入 file-sizes.json（build 时会自动做）
+  garden files            读取 Compose <file> 里远程文件的大小，写入 file-sizes.json（build 时会自动做）
   garden init [目录]      创建只含稿和配置的新站点
   garden check <文章.md>  检查一篇博文的硬性结构
   garden verify [文章.md|--diff] 全量/单篇/改动文档严格预检（包含草稿；make check 使用）
@@ -530,7 +530,7 @@ async function main() {
       if (process.env.GARDEN_OFFLINE !== "1") runNode("scripts/link-assets.mjs");
       // Remote image sizes: only new images are probed; the rest come from image-sizes.json.
       if (process.env.GARDEN_OFFLINE !== "1") runNode("scripts/image-sizes.mjs");
-      // Sizes of remote files in garden file blocks; failures fall back to file-sizes.json.
+      // Sizes of remote files in Compose file components; failures fall back to file-sizes.json.
       if (process.env.GARDEN_OFFLINE !== "1") runNode("scripts/file-sizes.mjs");
       await runVinext(["build", ...rest], { copyDist: true });
       // /favicon.ico from the site's own icon (brand.favicon).

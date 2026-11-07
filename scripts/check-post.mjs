@@ -185,7 +185,7 @@ const checkFolderMarkdown = (warnings, absolute, raw) => {
   const warn = (file, post) => warnings.push({
     code: "folder-markdown",
     line: 1,
-    message: `${path.relative(siteRoot, file)}: 在 ${path.relative(siteRoot, post)} 的同名目录里，不会作为文章发布。建议：它是给读者下载或预览的文件，就在文章里用 garden file 引用；要单独发布，把它移出 ${path.relative(siteRoot, post.replace(/\.md$/u, ""))}/。`,
+    message: `${path.relative(siteRoot, file)}: 在 ${path.relative(siteRoot, post)} 的同名目录里，不会作为文章发布。建议：它是给读者下载或预览的文件，就在文章的 garden compose 里用 <file> 引用；要单独发布，把它移出 ${path.relative(siteRoot, post.replace(/\.md$/u, ""))}/。`,
   });
   const folder = absolute.replace(/\.md$/u, "");
   if (fs.existsSync(folder) && fs.statSync(folder).isDirectory()) {

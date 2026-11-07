@@ -571,7 +571,7 @@ function checkCommandString(cmdText, file, lineNumber, facts, issues) {
     if (gardenArgs !== null) {
       const sub = gardenArgs[0];
       if (!sub) continue;
-      // In inline prose, `garden stat` / `garden file` / `garden <name>` etc. (without `npx`)
+      // In inline prose, component names / `garden <name>` etc. (without `npx`)
       // can be a Markdown fence header reference (` ```garden stat `) when `sub` is a known component name
       // or a `<name>` placeholder and there are no extra args or only `#id`.
       if (
@@ -1112,7 +1112,7 @@ function findDisallowedEnCjk(line, { allowTitleSplit = false } = {}) {
 
 /**
  * Extract local relative file paths included or embedded by an English handbook Markdown page
- * (Markdown images, HTML media tags, and `garden file` / `garden html` fences).
+ * (Markdown images, HTML media tags, and Compose file / HTML components).
  */
 function extractIncludedHandbookFiles(markdown, mdFile, root = ROOT) {
   const handbookRoot = path.join(root, "docs/handbook");

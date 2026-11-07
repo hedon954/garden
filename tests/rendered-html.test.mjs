@@ -930,7 +930,7 @@ test("/tags links point at the filtered list, shaped by trailingSlash (/blog?t=â
   assert.match(redirect, /siteHref\(tagFilterHref\(tags, ARTICLE_TAG_LIST\)\)/u);
 });
 
-test("garden file renders cards on the server; the Markdown preview stays out of the page and is fetched on demand", async () => {
+test("Compose file renders cards on the server; the Markdown preview stays out of the page and is fetched on demand", async () => {
   const response = await render("/blog/windowsill-herbs-kit");
   assert.equal(response.status, 200);
   const html = await response.text();

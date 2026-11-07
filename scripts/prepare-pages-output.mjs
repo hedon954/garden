@@ -23,7 +23,7 @@ const forbiddenFileNames = new Set([
   "wrangler.jsonc",
 ]);
 const forbiddenExtensions = new Set([".map", ".md", ".ts", ".tsx"]);
-// The build copies into media/ only the files a post links to (images, garden file downloads):
+// The build copies into media/ only the files a post links to (images, Compose file downloads):
 // a Markdown file there is a download the author offers, not leaked source.
 const publishedExtensions = { media: new Set([".md"]) };
 
