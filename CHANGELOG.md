@@ -1,5 +1,24 @@
 # Changelog
 
+## 0.14.0
+
+### Breaking
+
+- Make `garden compose` the single author entry for static content and Play: migrate shipped examples and remove deprecated named fences, PascalCase author compatibility, obsolete adapters and catalog guidance. Existing sites must migrate old author syntax before upgrading.
+
+### Added
+
+- Compose semantic scenes for resources, metrics, timelines, relationships, choices, icon lists, charts, files and comparisons, including isolated sandbox and Play rendering.
+- Shared Markdown and safe HTML content, article-inherited typography, explicit frameless layouts, source-derived rendering references and a unified bilingual Compose skill kit with visual-selection and composition recipes.
+- VS Code / Cursor Garden block folding commands and native Markdown gutter folding.
+- Strict draft and published-content preflight, concise actionable diagnostics, and `make check diff` for changed documents.
+
+### Fixed
+
+- Preserve literal code and comparison text, semantic source metadata, file validation and export behavior across Compose rendering paths.
+- Keep shared article rendering browser-safe, avoiding the PostCSS default-export preview failure; align list spacing and heading hierarchy with article prose.
+- Refresh link metadata incrementally during development, preserve usable caches on failures, and store generated metadata in ignored Garden caches reusable by deployment.
+
 ## 0.13.3
 
 - Safely replace a verified same-runtime Vinext dev process on repeated `garden dev`; serialize concurrent starts and refuse unproven process ownership instead of killing arbitrary port owners.
