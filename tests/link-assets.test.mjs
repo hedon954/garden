@@ -260,7 +260,7 @@ test("external links show the local favicon before the text", () => {
   assert.match(bin, /async function sync\(\{ refreshLinks = false \} = \{\}\)/u);
   assert.match(bin, /prepare: \(\) => sync\(\{ refreshLinks: true \}\)/u);
   const vite = fs.readFileSync(new URL("../vite.config.ts", import.meta.url), "utf8");
-  assert.match(vite, /sync\("preview", \{ refreshLinks: true \}\)/u);
+  assert.match(vite, /sync\("preview", \{ refreshLinks: true, files \}\)/u);
   assert.match(vite, /"scripts", "link-assets\.mjs"/u);
   assert.match(vite, /\}, 800\);/u);
 });

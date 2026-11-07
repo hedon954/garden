@@ -9,6 +9,7 @@
  * when a fetch fails the cached copy stays, and when there is none the link
  * simply shows no icon. Network trouble never fails the build.
  */
+import { execFileSync } from "node:child_process";
 import { lookup } from "node:dns/promises";
 import crypto from "node:crypto";
 import fs from "node:fs";
@@ -61,7 +62,7 @@ function readSiteConfig(siteRoot) {
 }
 
 /** Jump links across every post: the sites (for favicons) and the URLs. */
-export function collectSiteLinks(siteRoot, env = process.env) {
+export function collectSiteLinks(siteRoot, env = process.env, files = markdownFiles(path.join(siteRoot, "content"))) {
   const config = readSiteConfig(siteRoot);
   // Ordinary same-site prose links need no favicon fetch. Card URLs — same-site
   // or external — share one OG/link-assets path.
@@ -69,7 +70,7 @@ export function collectSiteLinks(siteRoot, env = process.env) {
   const hosts = new Map();
   const cards = new Set();
   const urls = new Set();
-  for (const file of markdownFiles(path.join(siteRoot, "content"))) {
+  for (const file of files) {
     const { content } = matter(fs.readFileSync(file, "utf8"));
     for (const { url, card } of markdownLinks(content)) {
       if (!isPublicUrl(url)) continue;
@@ -127,6 +128,7 @@ const digest = (bytes) => crypto.createHash("sha256").update(bytes).digest("hex"
  */
 export async function refreshLinkAssets({
   siteRoot,
+  files,
   fetch: fetcher = globalThis.fetch,
   dnsCheck = true,
   concurrency = 8,
@@ -134,13 +136,13 @@ export async function refreshLinkAssets({
   log = () => {},
 } = {}) {
   const cache = readLinkCache(siteRoot);
-  const next = emptyCache();
+  const next = files ? structuredClone(cache) : emptyCache();
   const stats = { fetched: 0, cached: 0, missing: 0 };
   const cardStats = { fetched: 0, cached: 0, missing: 0 };
   let hosts;
   let cards;
   try {
-    ({ hosts, cards } = collectSiteLinks(siteRoot));
+    ({ hosts, cards } = collectSiteLinks(siteRoot, process.env, files));
   } catch (error) {
     log(`链接资源：读取文章失败，沿用缓存（${error.message}）`);
     return { cache, stats };
@@ -217,7 +219,7 @@ export async function refreshLinkAssets({
   next.favicons = Object.fromEntries(Object.entries(next.favicons).sort(([a], [b]) => a.localeCompare(b)));
   try {
     fs.writeFileSync(path.join(siteRoot, CACHE_FILE), `${JSON.stringify(next, null, 2)}\n`);
-    pruneAssets(siteRoot, next);
+    if (!files) pruneAssets(siteRoot, next);
   } catch (error) {
     log(`链接资源：写缓存失败（${error.message}）`);
   }
@@ -281,12 +283,33 @@ export function linkAssetsForRender(siteRoot, basePath = "") {
   return { favicons, cards };
 }
 
+/** Dev first run: Git working-tree diff + untracked; later: persisted content hashes. */
+export async function refreshDevLinkAssets({ siteRoot, files, ...options }) {
+  const stateFile = path.join(siteRoot, ".garden", "dev-link-hashes.json");
+  const previous = readJson(stateFile, null);
+  const current = Object.fromEntries(markdownFiles(path.join(siteRoot, "content")).map(file => [path.relative(siteRoot, file), digest(fs.readFileSync(file))]));
+  let selected;
+  if (files) selected = files.map(file => path.relative(siteRoot, file));
+  else if (previous) selected = Object.keys(current).filter(file => previous[file] !== current[file]);
+  else {
+    try {
+      const git = args => execFileSync("git", args, { cwd: siteRoot, encoding: "utf8" }).split("\0").filter(Boolean);
+      selected = [...git(["diff", "HEAD", "--name-only", "-z", "--", "content"]), ...git(["ls-files", "--others", "--exclude-standard", "-z", "--", "content"])];
+    } catch { selected = Object.keys(current); }
+  }
+  const changed = [...new Set(selected)].filter(file => Object.hasOwn(current, file)).map(file => path.join(siteRoot, file));
+  const result = await refreshLinkAssets({ siteRoot, ...options, files: changed });
+  fs.mkdirSync(path.dirname(stateFile), { recursive: true });
+  fs.writeFileSync(stateFile, JSON.stringify(current));
+  return result;
+}
+
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const siteRoot = process.env.GARDEN_SITE ? path.resolve(process.env.GARDEN_SITE) : process.cwd();
   if (process.env.GARDEN_OFFLINE === "1") {
     process.stdout.write("链接资源：离线模式，沿用缓存\n");
   } else {
-    await refreshLinkAssets({ siteRoot, log: (line) => process.stdout.write(`${line}\n`) }).catch((error) => {
+    await (process.argv.includes("--dev") ? refreshDevLinkAssets : refreshLinkAssets)({ siteRoot, files: process.env.GARDEN_LINK_FILES ? JSON.parse(process.env.GARDEN_LINK_FILES) : undefined, log: (line) => process.stdout.write(`${line}\n`) }).catch((error) => {
       process.stdout.write(`链接资源：跳过（${error.message}）\n`);
     });
   }

@@ -33,7 +33,7 @@ test("dev default is process-local and sync precedes Vinext with inherited env",
   assert.match(runner, /env: siteEnv\(\)/u);
   const watcher = fs.readFileSync(new URL("../vite.config.ts", import.meta.url), "utf8");
   assert.match(watcher, /env: \{ \.\.\.process\.env, GARDEN_SITE: siteRoot/u);
-  assert.match(watcher, /sync\("preview", \{ refreshLinks: true \}\)/u);
+  assert.match(watcher, /sync\("preview", \{ refreshLinks: true, files \}\)/u);
   assert.match(watcher, /"scripts", "link-assets\.mjs"/u);
   assert.match(watcher, /\}, 800\);/u);
 });

@@ -45,12 +45,12 @@ const localBindingConfig = {
 };
 
 function gardenContent() {
-  const sync = (mode?: "preview", { refreshLinks = false } = {}) => {
+  const sync = (mode?: "preview", { refreshLinks = false, files = [] as string[] } = {}) => {
     if (refreshLinks && process.env.GARDEN_OFFLINE !== "1") {
       // Same entry as `garden links` / formal build. link-assets keeps usable cache on failure.
-      const links = spawnSync(process.execPath, [path.join(gardenPackageRoot, "scripts", "link-assets.mjs")], {
+      const links = spawnSync(process.execPath, [path.join(gardenPackageRoot, "scripts", "link-assets.mjs"), "--dev"], {
         cwd: siteRoot,
-        env: { ...process.env, GARDEN_SITE: siteRoot },
+        env: { ...process.env, GARDEN_SITE: siteRoot, GARDEN_LINK_FILES: JSON.stringify(files) },
         stdio: "inherit",
       });
       if (links.status !== 0) console.warn("链接资源：刷新失败，沿用可用缓存");
@@ -88,14 +88,18 @@ function gardenContent() {
       const configFile = path.join(siteRoot, "site.config.yaml");
       server.watcher.add([contentDir, configFile]);
       let pending: ReturnType<typeof setTimeout> | undefined;
+      const changedFiles = new Set<string>();
       const onContentEvent = (file: string) => {
         const relative = path.relative(contentDir, file);
         if (file !== configFile && (relative.startsWith("..") || path.isAbsolute(relative))) return;
+        changedFiles.add(file);
         clearTimeout(pending);
         // Coalesce editor atomic writes/renames; regenerate before asking browsers
         // to reload, including newly created and deleted Markdown routes.
         pending = setTimeout(() => {
-          const result = sync("preview", { refreshLinks: true });
+          const files = [...changedFiles];
+          changedFiles.clear();
+          const result = sync("preview", { refreshLinks: true, files });
           if (result.status === 0) {
             // The generator is synchronous; filesystem notifications have not
             // necessarily reached Vite yet. Invalidate generated imports before

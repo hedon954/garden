@@ -291,7 +291,7 @@ async function sync({ refreshLinks = false } = {}) {
   // Same path as `garden links` / formal build: collect Markdown URLs (incl. drafts),
   // refresh link-assets.json + public assets, then regenerate. Failures keep usable cache.
   if (refreshLinks && process.env.GARDEN_OFFLINE !== "1") {
-    const links = spawnSync(process.execPath, [path.join(gardenPackageRoot, "scripts/link-assets.mjs")], { cwd: siteRoot, env: siteEnv(), stdio: "inherit" });
+    const links = spawnSync(process.execPath, [path.join(gardenPackageRoot, "scripts/link-assets.mjs"), "--dev"], { cwd: siteRoot, env: siteEnv(), stdio: "inherit" });
     if (links.status !== 0) console.warn("链接资源：刷新失败，沿用可用缓存");
   }
   runNode("scripts/build-content.mjs");
