@@ -31,6 +31,13 @@ const SERIES_PROPS = {
  * - string[]: only these components
  */
 export const COMPONENTS = {
+  Scene: {
+    group: "媒体与代码", phase: 1,
+    summary: "Compose 原生语义场景；内部编译节点，作者直接组合 resource/relations/choices 等标签",
+    props: {source:{type:"string",literal:true,required:true,desc:"静态语义子树；不执行状态表达式"}},
+    children:"none",
+    example: `<Scene source={'<metric label="Readers" value="80"/>'} />`,
+  },
   Content: {
     group: "媒体与代码", phase: 1,
     summary: "共享文章 Markdown 与安全 HTML 内容岛；作者使用 <markdown> 或 <html>",

@@ -1,3 +1,4 @@
+import { parseCompose, renderCompose, composeText } from "../compose/index.mjs";
 import { articleContentText, articleUrl, renderArticleContent } from "../garden/article-content.mjs";
 import { TONE_LABELS } from "./catalog.mjs";
 import { createBudget, evaluate } from "./expr.mjs";
@@ -363,6 +364,8 @@ export function toDoc(payload) {
             : []),
         ];
       }
+      case "Scene":
+        return [{k:"scene",doc:parseCompose(String(v("source")??"")).doc}];
       case "Content":
         return [{ k: "content", source: String(v("source") ?? "") }];
       case "Code": {
@@ -429,6 +432,8 @@ function inlineHtml(inline) {
 export function docToHtml(doc) {
   return doc.map((block) => {
     switch (block.k) {
+      case "scene":
+        return renderCompose({...block.doc,frame:"none"});
       case "content":
         return renderArticleContent(block.source);
       case "p":
@@ -483,6 +488,8 @@ function inlineMarkdown(inline) {
 export function docToMarkdown(doc, indent = "") {
   return doc.map((block) => {
     switch (block.k) {
+      case "scene":
+        return `${indent}${composeText(block.doc)}`;
       case "content":
         return `${indent}${block.source}`;
       case "p":
@@ -518,6 +525,8 @@ export function docToMarkdown(doc, indent = "") {
 export function docToText(doc) {
   return doc.map((block) => {
     switch (block.k) {
+      case "scene":
+        return composeText(block.doc);
       case "content":
         return articleContentText(block.source);
       case "p":

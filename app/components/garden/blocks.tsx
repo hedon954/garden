@@ -432,7 +432,7 @@ export function GardenHtml({ props, children }: { props: Record<string, unknown>
   return <FullscreenFrame label={title}><StaticGardenHtml code={code} /></FullscreenFrame>;
 }
 
-export function GardenInteractive({ block }: { block: { id?: string | null; props: Record<string, unknown>; children?: string; uiSource?: string } }) {
+export function GardenInteractive({ block, renderScene }: { renderScene?: (source: string) => React.ReactNode; block: { id?: string | null; props: Record<string, unknown>; children?: string; uiSource?: string } }) {
   const t = useUi();
   const lang = useUiLang();
   // Prefer DIL-lowered uiSource from compose/dil.mjs; else build from PascalCase children (TEMP legacy).
@@ -455,7 +455,7 @@ export function GardenInteractive({ block }: { block: { id?: string | null; prop
     <RuntimeLangProvider lang={lang}>
     <FullscreenFrame label={String(header.caption || t.interactive)}>
       <div className="g-play">
-        <UiFigure payload={payload as UiPayload} />
+        <UiFigure payload={payload as UiPayload} host={renderScene ? {renderScene} : undefined} />
       </div>
     </FullscreenFrame>
     </RuntimeLangProvider>

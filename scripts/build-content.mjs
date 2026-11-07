@@ -1,3 +1,4 @@
+import { mapNativeScenes } from "../ui/compose/scenes.mjs";
 import { parseCompose } from "../ui/compose/index.mjs";
 import { looksLikePlayCompose } from "../ui/compose/dil.mjs";
 import crypto from "node:crypto";
@@ -385,10 +386,13 @@ function resolveFileEntry(file, markdownPath, sourcePath, options = {}) {
  * page renders without reading the file system.
  */
 function rewriteComposeFiles(content, markdownPath, sourcePath, options) {
-  const fences = scanFences(maskHtmlComments(content)).filter(fence => parseGardenInfo(fence.info)?.name === "compose" && !fence.unclosed && !looksLikePlayCompose(fence.body));
+  const fences = scanFences(maskHtmlComments(content)).filter(fence => parseGardenInfo(fence.info)?.name === "compose" && !fence.unclosed);
   const lines = content.split("\n");
   for (const fence of [...fences].reverse()) {
-    const parsed = parseCompose(fence.body);
+    const scenes = [];
+    if (looksLikePlayCompose(fence.body)) mapNativeScenes(fence.body, source => {scenes.push(parseCompose(source));return source;});
+    else scenes.push(parseCompose(fence.body));
+    const parsed = {ok:scenes.every(scene=>scene.ok),doc:{nodes:scenes.flatMap(scene=>scene.doc?.nodes??[])}};
     if (!parsed.ok) continue; // Existing authoritative check reports syntax diagnostics.
     const files = [];
     const walk = nodes => { for (const node of nodes) { if (node.type === "feature" && node.name === "file") files.push(node); if (node.children) walk(node.children); } };

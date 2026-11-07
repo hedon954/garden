@@ -1,4 +1,5 @@
 "use client";
+import { parseCompose, renderCompose } from "../compose/index.mjs";
 import { articleUrl, renderArticleContent } from "../garden/article-content.mjs";
 import { isColor, colorStyles } from "../core/color.mjs";
 
@@ -28,6 +29,7 @@ export type Runtime = {
 const RuntimeContext = createContext<Runtime | null>(null);
 
 export type UiHost = {
+  renderScene?: (source: string) => ReactNode;
   openUrl?: (url: string) => void;
   issuePrompt?: (text: string) => void;
   copy?: (text: string) => void;
@@ -184,6 +186,7 @@ export function RenderNode({ node, env }: { node: UiNode; env: Env }): ReactNode
           </>
         );
       }
+      if (node.n === "Scene" && node.p?.source?.k === "lit") return <NativeScene source={String(node.p.source.v ?? "")} />;
       if (node.n === "Content" && node.p?.source?.k === "lit") return <div className="g-compose-content" dangerouslySetInnerHTML={{ __html: renderArticleContent(String(node.p.source.v ?? "")) }} />;
       const component = node.n ? registry.get(node.n) : undefined;
       if (!component) return <span className="garden-ui-unknown">{tx.unknownComponent(String(node.n))}</span>;
@@ -231,6 +234,13 @@ function carryOver(defaults: Record<string, unknown>, previous: Record<string, u
     if (Object.hasOwn(defaults, name) && typeof defaults[name] === typeof value) next[name] = value;
   }
   return next;
+}
+
+function NativeScene({source}:{source:string}) {
+  const host=useHost();
+  if(host.renderScene) return <>{host.renderScene(source)}</>;
+  const parsed=parseCompose(source);
+  return parsed.ok ? <div data-scene-fallback="read-only" dangerouslySetInnerHTML={{__html:renderCompose({...parsed.doc,frame:"none"})}}/> : null;
 }
 
 const EMPTY_HOST: UiHost = {};

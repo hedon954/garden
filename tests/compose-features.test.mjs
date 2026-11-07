@@ -5,6 +5,9 @@ import path from 'node:path';
 import {tmpdir} from 'node:os';
 import {build} from 'esbuild';
 import {parse as yaml} from 'yaml';
+import {parsePlayCompose} from '../ui/compose/dil.mjs';
+import {compileUiBlock} from '../ui/core/compile.mjs';
+import {renderStatic} from '../ui/core/static.mjs';
 import {parseCompose,renderCompose,composeText} from '../ui/compose/index.mjs';
 const root=path.resolve(import.meta.dirname,'..');
 const examples=[
@@ -27,7 +30,12 @@ test('native semantic components render through the real app components, not sta
   try {
    await build({stdin:{contents:`import {GardenBlock} from './app/components/garden/GardenBlock';import {createElement} from 'react';import {renderToStaticMarkup} from 'react-dom/server';export const render=block=>renderToStaticMarkup(createElement(GardenBlock,{dataPayload:encodeURIComponent(JSON.stringify(block))}));`,resolveDir:root,loader:'tsx'},bundle:true,packages:'external',platform:'node',format:'esm',jsx:'automatic',alias:{'@garden/site-config':configFile},outfile,logLevel:'silent'});
    const {render}=await import(outfile);
-   for(const [source,marker] of examples){const parsed=parseCompose(source);assert.equal(parsed.ok,true,JSON.stringify(parsed.error));assert.match(renderCompose(parsed.doc),/garden-block/);const html=render({name:'compose',props:parsed.doc});assert.ok(html.includes(marker),`${marker}: ${html}`);if(source.includes('<u>'))assert.match(html,/<u>/);}
+   for(const [source,marker] of examples){const parsed=parseCompose(source);assert.equal(parsed.ok,true,JSON.stringify(parsed.error));assert.match(renderCompose(parsed.doc),/garden-block/);const html=render({name:'compose',props:parsed.doc});assert.ok(html.includes(marker),`${marker}: ${html}`);if(source.includes('<u>'))assert.match(html,/<u>/);
+    const play=parsePlayCompose({id:'scene-test'},`caption: Native scene behavior\n---\n{@body const [n,setN]=DIL.useState(1)}\n${source}\n<slider label="n" min={1} max={3} value={n} onChange={setN}/>`);
+    const compiled=compileUiBlock(play.uiSource);assert.equal(compiled.check.ok,true,JSON.stringify(compiled.check.diagnostics));
+    const playHtml=render({...play,name:'compose',mode:'play'});assert.ok(playHtml.includes(marker),`${marker}: ${playHtml}`);if(source.includes('<u>'))assert.match(playHtml,/<u>/);
+    assert.ok(renderStatic(compiled.payload,'text').length>0);
+   }
   }finally{await fs.rm(outfile,{force:true});}
  }finally{await fs.rm(dir,{recursive:true,force:true});}
 });
@@ -36,4 +44,11 @@ test('feature contracts reject discarded attributes, bad references, missing sou
  const parsed=parseCompose('<icon-list><entry title="Heading"><text>First</text><text>Second</text></entry></icon-list>');assert.equal(composeText(parsed.doc),'Heading\nFirst\nSecond');
  assert.doesNotMatch(composeText(parsed.doc),/"items"|"text"/);
  const compare=parseCompose('<compare><item><title>One</title><text>First</text><text>Second</text></item><item><text>Other</text></item></compare>');assert.match(renderCompose(compare.doc),/Second/);
+});
+
+test('lowercase sandbox shares the existing isolated JS/CSS runtime and rejects external scripts',()=>{
+ const body = html => `caption: Sandbox counter updates\n---\n<sandbox title="Counter" html={${JSON.stringify(html)}} css="p{color:red}" js="document.getElementById('n').textContent='1'"/>`;
+ for(const [html,expected] of [['<p id="n">0</p>',true],['<script src="https://example.com/a.js"></script>',false]]){
+  const play=parsePlayCompose({id:'sandbox-test'},body(html));assert.equal(compileUiBlock(play.uiSource).check.ok,expected);
+ }
 });

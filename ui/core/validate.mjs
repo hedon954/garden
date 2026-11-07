@@ -1,3 +1,4 @@
+import { parseCompose } from "../compose/index.mjs";
 import { renderArticleContent } from "../garden/article-content.mjs";
 import { isColor } from "./color.mjs";
 import { COMPONENTS, COMPONENT_NAMES, TONES } from "./catalog.mjs";
@@ -227,6 +228,10 @@ export function checkUiBlock(body, options = {}) {
       const suggestion = suggestComponent(node.n);
       add("ui-component", bodyLine(node.l), `组件 <${node.n}> 不在目录里${suggestion ? `，是不是 <${suggestion}>？` : ""}`);
       return;
+    }
+    if (node.n === "Scene" && node.p.source?.k === "lit") {
+      const parsed = parseCompose(String(node.p.source.v));
+      if (!parsed.ok) add("compose-scene",bodyLine(node.l),parsed.error?.message ?? "无效的语义场景");
     }
     if (node.n === "Content" && node.p.source?.k === "lit") {
       try { renderArticleContent(String(node.p.source.v)); }

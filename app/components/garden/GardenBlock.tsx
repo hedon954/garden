@@ -4,6 +4,7 @@ import ReactMarkdown from "react-markdown";
 import rehypeRaw from "rehype-raw";
 import { ComposeContentProvider } from "./AuthorRich";
 import { useUiLang } from "../UiLang";
+import { parseCompose } from "../../../ui/compose/index.mjs";
 import { renderCompose } from "../../../ui/compose/render.mjs";
 import { readGardenPayload } from "../../lib/remark-garden.mjs";
 import {
@@ -20,6 +21,10 @@ import {
 } from "./blocks";
 import { GardenFile } from "./GardenFile";
 import { GardenChoice, GardenList, GardenRelations } from "./patterns";
+
+const composeComponents = {
+  "garden-block": (nested: {dataPayload?:string;"data-payload"?:string}) => <GardenBlock dataPayload={nested.dataPayload??nested["data-payload"]}/>,
+};
 
 export function GardenBlock({ dataPayload }: { dataPayload?: string }) {
   const lang = useUiLang();
@@ -51,6 +56,7 @@ export function GardenBlock({ dataPayload }: { dataPayload?: string }) {
         // DIL play: prefer lowered uiSource from ui/compose/dil.mjs. children alone is TEMP legacy.
         return (
           <GardenInteractive
+            renderScene={source => { const parsed=parseCompose(source); return parsed.ok ? <GardenBlock dataPayload={encodeURIComponent(JSON.stringify({name:"compose",props:{...parsed.doc,frame:"none"}}))}/> : null; }}
             block={{
               id: block.id,
               props,
@@ -60,10 +66,7 @@ export function GardenBlock({ dataPayload }: { dataPayload?: string }) {
           />
         );
       }
-      return <div className="g-compose-host"><ReactMarkdown rehypePlugins={[rehypeRaw]} components={{
-        p: ({children}) => <p>{children}</p>,
-        ...{"garden-block": (nested: {dataPayload?:string;"data-payload"?:string}) => <GardenBlock dataPayload={nested.dataPayload??nested["data-payload"]}/>},
-      }}>{renderCompose(props)}</ReactMarkdown></div>;
+      return <div className="g-compose-host"><ReactMarkdown rehypePlugins={[rehypeRaw]} components={composeComponents}>{renderCompose(props)}</ReactMarkdown></div>;
     case "html":
       return <GardenHtml props={props}>{String(block.children ?? "")}</GardenHtml>;
     case "interactive":

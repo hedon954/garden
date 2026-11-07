@@ -11,6 +11,7 @@
  */
 
 import { parse as parseYaml, stringify } from "yaml";
+import { mapNativeScenes } from "./scenes.mjs";
 
 /** PascalCase interactive tags — author language we are retiring. */
 const LEGACY_TAG_RE =
@@ -22,7 +23,7 @@ const DIL_EACH_RE = /\{#each\b/u;
 
 /** Lowercase play-only tags. Do NOT list diagram tags (stack/card/badge/…) — those would steal static compose fences. */
 const PLAY_TAG_RE =
-  /<\/?(?:slider|button|choice|segmented-control|toggle|stat|chart|pie|pie-chart|meter|checklist|stepper)\b/iu;
+  /<\/?(?:slider|button|choice|segmented-control|toggle|stat|chart|pie|pie-chart|meter|checklist|stepper|sandbox)\b/iu;
 
 const TAG_MAP = {
   slider: "Slider",
@@ -50,6 +51,7 @@ const TAG_MAP = {
   slice: "Slice",
   divider: "Divider",
   reset: "Reset",
+  sandbox: "Sandbox",
 };
 
 const MATH_FNS = [
@@ -58,11 +60,11 @@ const MATH_FNS = [
 ];
 
 export function looksLikeLegacyPlay(body) {
-  return LEGACY_TAG_RE.test(String(body ?? "").replace(/<(markdown|html)>[\s\S]*?<\/\1>/giu, ""));
+  return LEGACY_TAG_RE.test(mapNativeScenes(String(body ?? "").replace(/<(markdown|html)>[\s\S]*?<\/\1>/giu, ""), () => ""));
 }
 
 export function looksLikeDilPlay(body) {
-  const text = String(body ?? "").replace(/<(markdown|html)>[\s\S]*?<\/\1>/giu, "");
+  const text = mapNativeScenes(String(body ?? "").replace(/<(markdown|html)>[\s\S]*?<\/\1>/giu, ""), () => "");
   return DIL_BODY_RE.test(text) || DIL_IF_RE.test(text) || DIL_EACH_RE.test(text) || PLAY_TAG_RE.test(text);
 }
 
@@ -366,9 +368,14 @@ export function dilToUiSource({ id, props = {}, body = "" }) {
   const { tree } = splitHeader(String(body ?? ""));
   const headerProps = { ...props, id: id || props.id || "compose-play" };
   const islands = [];
-  const masked = tree.replace(/<(markdown|html)>([\s\S]*?)<\/\1>/giu, (_whole, _tag, source) => {
+  let masked = tree.replace(/<(markdown|html)>([\s\S]*?)<\/\1>/giu, (_whole, _tag, source) => {
     const token = `GARDENCONTENTISLAND${islands.length}END`;
-    islands.push({ token, source });
+    islands.push({ token, source, component: "Content" });
+    return token;
+  });
+  masked = mapNativeScenes(masked, source => {
+    const token = `GARDENCONTENTISLAND${islands.length}END`;
+    islands.push({token, source, component:"Scene"});
     return token;
   });
   const { state, lets, errors, rest } = parseBodies(masked);
@@ -378,7 +385,7 @@ export function dilToUiSource({ id, props = {}, body = "" }) {
   const children = [emitDecls(state, lets), rewriteTags(expandControl(rest))]
     .filter((part) => String(part).trim())
     .join("\n\n");
-  const restored = islands.reduce((value, island) => value.replace(island.token, `<Content source={${JSON.stringify(island.source)}} />`), children);
+  const restored = islands.reduce((value, island) => value.replace(island.token, `<${island.component} source={${JSON.stringify(island.source)}} />`), children);
   return buildUiSource(headerProps, restored, false, true);
 }
 
