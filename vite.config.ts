@@ -48,11 +48,12 @@ function gardenContent() {
   const sync = (mode?: "preview", { refreshLinks = false } = {}) => {
     if (refreshLinks && process.env.GARDEN_OFFLINE !== "1") {
       // Same entry as `garden links` / formal build. link-assets keeps usable cache on failure.
-      spawnSync(process.execPath, [path.join(gardenPackageRoot, "scripts", "link-assets.mjs")], {
+      const links = spawnSync(process.execPath, [path.join(gardenPackageRoot, "scripts", "link-assets.mjs")], {
         cwd: siteRoot,
         env: { ...process.env, GARDEN_SITE: siteRoot },
         stdio: "inherit",
       });
+      if (links.status !== 0) console.warn("链接资源：刷新失败，沿用可用缓存");
     }
     return spawnSync(process.execPath, [path.join(gardenPackageRoot, "scripts", "build-content.mjs")], {
       cwd: siteRoot,

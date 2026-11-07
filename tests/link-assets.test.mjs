@@ -258,7 +258,6 @@ test("external links show the local favicon before the text", () => {
   const bin = fs.readFileSync(new URL("../bin/garden.mjs", import.meta.url), "utf8");
   assert.match(bin, /case "build":\s*\/\/[^\n]*\n\s*if \(process\.env\.GARDEN_OFFLINE !== "1"\) runNode\("scripts\/link-assets\.mjs"\);/u);
   assert.match(bin, /async function sync\(\{ refreshLinks = false \} = \{\}\)/u);
-  assert.match(bin, /if \(refreshLinks && process\.env\.GARDEN_OFFLINE !== "1"\) \{\s*runNode\("scripts\/link-assets\.mjs"\);/u);
   assert.match(bin, /prepare: \(\) => sync\(\{ refreshLinks: true \}\)/u);
   const vite = fs.readFileSync(new URL("../vite.config.ts", import.meta.url), "utf8");
   assert.match(vite, /sync\("preview", \{ refreshLinks: true \}\)/u);

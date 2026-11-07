@@ -37,3 +37,12 @@ test("dev default is process-local and sync precedes Vinext with inherited env",
   assert.match(watcher, /"scripts", "link-assets\.mjs"/u);
   assert.match(watcher, /\}, 800\);/u);
 });
+
+test("initial and watched link refresh failures warn without exiting before content sync", () => {
+  const initial = cli.slice(cli.indexOf("async function sync("), cli.indexOf("async function runVinext("));
+  const watcher = fs.readFileSync(new URL("../vite.config.ts", import.meta.url), "utf8");
+  for (const source of [initial, watcher]) {
+    assert.match(source, /if \(links.status !== 0\) console.warn\("链接资源：刷新失败，沿用可用缓存"\)/u);
+    assert.doesNotMatch(source, /runNode\("scripts\/link-assets.mjs"\)/u);
+  }
+});
