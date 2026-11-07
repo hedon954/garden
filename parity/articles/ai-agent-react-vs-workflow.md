@@ -197,27 +197,12 @@ demo 阶段当然是说得过去了，做 demo 谁不会呢？AI 时代，是个
 
 ### 更现实的答案：Macro Workflow + Micro ReAct
 
-```garden html
-title: HTML
+```garden compose
+frame: none
+caption: "HTML"
 ---
-<style>
-:host{display:block}
-.wf{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font:500 14px/1.4 -apple-system,"PingFang SC","Noto Sans SC",sans-serif;color:var(--ink)}
-.n{padding:9px 12px;border:1px solid var(--rule-strong);border-radius:8px;background:var(--card)}
-.ar{color:var(--muted)}
-.loop{padding:8px 10px 10px;border:1.5px dashed var(--blue);border-radius:10px;background:var(--blue-tint)}
-.loop b{display:block;font-size:12px;color:var(--blue);margin-bottom:6px}
-.loop .row{display:flex;gap:6px;align-items:center;font-size:13px}
-.loop .row span{padding:5px 8px;border-radius:6px;background:var(--card);border:1px solid var(--blue-line)}
-.cap{margin:10px 0 0;font:13px/1.5 -apple-system,"PingFang SC",sans-serif;color:var(--muted)}
-</style>
-<div class="wf" role="img" aria-label="Workflow 主流程中的一个节点是被关在小闭环里的 ReAct">
-<span class="n">主流程</span><span class="ar">→</span><span class="n">状态机</span><span class="ar">→</span>
-<span class="loop"><b>Micro ReAct（小闭环）</b><span class="row"><span>Thought</span>→<span>Action</span>→<span>Observation</span>↺</span></span>
-<span class="ar">→</span><span class="n">校验 / 兜底</span><span class="ar">→</span><span class="n">输出</span></div>
-<p class="cap">Macro Workflow：主流程、状态机、成本控制、权限控制、异常兜底、观测指标和业务确定性。示意图，节点顺序为示例。</p>
+<sandbox title={"HTML"} html={"\n<div class=\"wf\" role=\"img\" aria-label=\"Workflow 主流程中的一个节点是被关在小闭环里的 ReAct\">\n<span class=\"n\">主流程</span><span class=\"ar\">→</span><span class=\"n\">状态机</span><span class=\"ar\">→</span>\n<span class=\"loop\"><b>Micro ReAct（小闭环）</b><span class=\"row\"><span>Thought</span>→<span>Action</span>→<span>Observation</span>↺</span></span>\n<span class=\"ar\">→</span><span class=\"n\">校验 / 兜底</span><span class=\"ar\">→</span><span class=\"n\">输出</span></div>\n<p class=\"cap\">Macro Workflow：主流程、状态机、成本控制、权限控制、异常兜底、观测指标和业务确定性。示意图，节点顺序为示例。</p>\n"} css={"\n:host{display:block}\n.wf{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font:500 14px/1.4 -apple-system,\"PingFang SC\",\"Noto Sans SC\",sans-serif;color:var(--ink)}\n.n{padding:9px 12px;border:1px solid var(--rule-strong);border-radius:8px;background:var(--card)}\n.ar{color:var(--muted)}\n.loop{padding:8px 10px 10px;border:1.5px dashed var(--blue);border-radius:10px;background:var(--blue-tint)}\n.loop b{display:block;font-size:12px;color:var(--blue);margin-bottom:6px}\n.loop .row{display:flex;gap:6px;align-items:center;font-size:13px}\n.loop .row span{padding:5px 8px;border-radius:6px;background:var(--card);border:1px solid var(--blue-line)}\n.cap{margin:10px 0 0;font:13px/1.5 -apple-system,\"PingFang SC\",sans-serif;color:var(--muted)}\n"} js={""}/>
 ```
-
 所以，综上所述，在笔者有限的认知看来，只要大模型的底层原理没有发生本质改变，传统业务为了 AI 而 AI，强行套上一个全局 ReAct Agent，从一开始就大概率不是一条好路。
 
 更现实的选择是：Workflow 作为主控流，ReAct 作为局部能力。

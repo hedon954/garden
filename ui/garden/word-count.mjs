@@ -20,7 +20,8 @@
  * - A heading written `## 1.2 Title` keeps the digits (they move into
  *   `.sec-no`). The dot is dropped. The space was never going to be counted.
  *
- * The Go parity article comes out at 34,714. Its diagrams are static SVG, so
+ * The Go parity article prose/static-SVG baseline is 34,714; its Compose
+ * sandbox caption and static interactive fallback are counted in addition. So
  * the count includes SVG text and the surrounding prose, and it does not
  * include the old annotated-diagram tab labels.
  */
