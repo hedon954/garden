@@ -1,3 +1,4 @@
+import {editorPreviewCss} from "./editor-preview-css.mjs";
 import fs from "node:fs";
 import path from "node:path";
 import { build } from "esbuild";
@@ -15,15 +16,15 @@ const shared = {
   jsx: "automatic",
   platform: "browser",
   target: ["es2020"],
-  define: { "process.env.NODE_ENV": '"production"' },
-  alias: { mermaid: path.join(root, "ui", "preview", "mermaid-shim.ts") },
+  define: { "process.env.NODE_ENV": '"production"', "process.env.NEXT_PUBLIC_BASE_PATH":'""' },
+  alias: { "@garden/site-config":path.join(root,"ui","preview","site-config.ts"), mermaid: path.join(root, "ui", "preview", "mermaid-shim.ts") },
   legalComments: "none",
   logLevel: "warning",
 };
 
 await build({ ...shared, format: "iife", globalName: "GardenUI", outfile: path.join(out, "garden-ui.iife.js") });
 await build({ ...shared, format: "esm", outfile: path.join(out, "garden-ui.esm.js") });
-fs.copyFileSync(path.join(root, "ui", "react", "ui.css"), path.join(out, "garden-ui.css"));
+fs.writeFileSync(path.join(out,"garden-ui.css"),editorPreviewCss(root));
 
 const size = (file) => `${(fs.statSync(path.join(out, file)).size / 1024).toFixed(0)} KB`;
 process.stdout.write(`预览包已生成：garden-ui.iife.js ${size("garden-ui.iife.js")}，garden-ui.esm.js ${size("garden-ui.esm.js")}，garden-ui.css\n`);

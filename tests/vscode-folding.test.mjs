@@ -5,8 +5,8 @@ import { gardenFoldRanges, runGardenFold } from "../editors/vscode/src/folding.m
 
 const compose = ["```garden compose", "<intent>说明</intent>", "<view><text>正文</text></view>", "```"].join("\n");
 
-test("folds uncompiled and compiled Compose, tilde fences and legacy blocks", () => {
-  for (const text of [compose, "~~~garden compose\n原文\n~~~", "```garden\n想法\n```", "```ui\nbody\n```", "```intent id\nidea\n```", "```widget\nid: x\n```"])
+test("folds uncompiled and compiled Compose and tilde fences", () => {
+  for (const text of [compose, "~~~garden compose\n原文\n~~~"])
     assert.deepEqual(gardenFoldRanges(text), [{ start: 0, end: text.split("\n").length - 1 }]);
 });
 

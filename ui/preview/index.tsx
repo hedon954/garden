@@ -1,18 +1,22 @@
 import { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
-import { CATALOG_VERSION, COMPONENT_NAMES } from "../core/catalog.mjs";
+import { CATALOG_VERSION } from "../core/catalog.mjs";
 import { compileUiBlock } from "../core/compile.mjs";
-import { scanFences, splitUiBody } from "../core/fence.mjs";
-import { parseUiBody } from "../core/parse.mjs";
+import { scanFences } from "../core/fence.mjs";
+import {parseGardenBlock} from "../garden/parse.mjs";
+import {GardenBlock} from "../../app/components/garden/GardenBlock";
+import {UiLangProvider} from "../../app/components/UiLang";
 import { renderStatic } from "../core/static.mjs";
 import { collectDataSources } from "../core/transform.mjs";
-import { suggestComponent } from "../core/validate.mjs";
+
 import { CatalogPage, type RecipeSource } from "../react/CatalogPage";
-import { IntentCard, UiErrorCard, UiFigure, type Diagnostic, type UiPayload } from "../react/index";
+import { RuntimeLangProvider, IntentCard, UiErrorCard, type Diagnostic } from "../react/index";
 
 export type PreviewOptions = {
   theme?: "light" | "dark";
+  lang?: "zh" | "en";
   mode?: "interactive" | "static";
+  onCopyPrompt?:()=>void;
   /** Reads a path relative to the Markdown file, for Data files. */
   readFile?: (relativePath: string) => Promise<string | undefined> | string | undefined;
   /** Same-name-directory path as written, mapped to a URL the host can display. */
@@ -22,23 +26,6 @@ export type PreviewOptions = {
   /** File line of the opening fence, so errors cite the line numbers the editor shows. */
   fenceLine?: number;
 };
-
-type ParsedNode = { t: string; n?: string; c?: ParsedNode[] };
-
-/** A name with no close catalog match is likely newer than this plugin rather than a typo. */
-function hasNewerComponent(body: string) {
-  const { bodyText, error } = splitUiBody(body);
-  if (error) return false;
-  const { root } = parseUiBody(bodyText) as { root: ParsedNode | null };
-  const known = new Set<string>(COMPONENT_NAMES);
-  const unknown: string[] = [];
-  const walk = (node: ParsedNode) => {
-    if (node.t === "el" && node.n && !known.has(node.n)) unknown.push(node.n);
-    node.c?.forEach(walk);
-  };
-  if (root) walk(root);
-  return unknown.some((name) => !suggestComponent(name));
-}
 
 const CONTROLS = "input, button, select, textarea, a, [role='button'], [role='slider'], [role='tab'], [role='checkbox'], [tabindex]";
 const ISOLATED_EVENTS = ["pointerdown", "mousedown", "mouseup", "click", "keydown", "keyup", "keypress", "input", "beforeinput"];
@@ -66,7 +53,7 @@ function bodyOf(source: string) {
 
 function Preview({ source, options }: { source: string; options: PreviewOptions }) {
   const body = bodyOf(source);
-  const sources = collectDataSources(`\`\`\`ui\n${body}\n\`\`\``);
+  const sources = collectDataSources(`\`\`\`garden compose\n${body}\n\`\`\``);
   const sourcesKey = sources.join("\n");
   const [files, setFiles] = useState<{ key: string; data: Record<string, string> }>({ key: "", data: {} });
 
@@ -86,54 +73,22 @@ function Preview({ source, options }: { source: string; options: PreviewOptions 
   }, [sourcesKey, options.readFile]);
 
   const loading = Boolean(sourcesKey && options.readFile && files.key !== sourcesKey);
-  const { payload, check } = compileUiBlock(body, {
-    lineOffset: options.fenceLine ?? 1,
-    readData: (src: string) => files.data[src],
-    skipData: !options.readFile,
-    markdownPath: null,
-    resolveAsset: null,
-  });
-  const theme = options.theme ?? "light";
-  if (loading) return <div className="garden-ui-preview" data-theme={theme}><p className="garden-ui-preview-note">正在读取数据文件…</p></div>;
-  if (!payload) {
-    const diagnostics = (check.diagnostics as Diagnostic[]).filter((item) => item.severity === "error");
-    const newer = diagnostics.some((item) => item.code === "ui-component") && hasNewerComponent(body);
-    const header = (check as { header?: { id?: unknown; caption?: unknown } | null }).header;
-    return (
-      <div className="garden-ui-preview" data-theme={theme}>
-        {newer ? <p className="garden-ui-preview-note">块里有这个插件不认识的组件，预览需要更新 Garden 插件。</p> : null}
-        <UiErrorCard
-          caption={typeof header?.caption === "string" ? header.caption : ""}
-          diagnostics={diagnostics}
-          id={typeof header?.id === "string" ? header.id : null}
-        />
-      </div>
-    );
+  const block=parseGardenBlock("garden compose",body);
+  const theme=options.theme??"light";
+  if(loading)return <div className="garden-ui-preview" data-theme={theme}><p className="garden-ui-preview-note">正在读取数据文件…</p></div>;
+  if(!block||block.error){
+    if(block?.error?.code==="compose-uncompiled")return <div className="garden-ui-preview" data-theme={theme}><IntentCard text={body} onCopyPrompt={options.onCopyPrompt}/></div>;
+    return <div className="garden-ui-preview" data-theme={theme}><UiErrorCard caption="Compose" diagnostics={[{code:block?.error?.code??"compose-invalid",message:block?.error?.message??"无效的 Compose",line:options.fenceLine??1,severity:"error"}]}/></div>;
   }
-  const typed = payload as UiPayload;
-  if (options.resolveAsset) {
-    const rewrite = (node: UiPayload["root"]): UiPayload["root"] => {
-      if (node.t === "el" && node.n === "Image" && node.p?.src?.k === "lit") {
-        return { ...node, p: { ...node.p, src: { k: "lit", v: options.resolveAsset?.(String(node.p.src.v)) } } };
-      }
-      return node.c ? { ...node, c: node.c.map(rewrite) } : node;
-    };
-    typed.root = rewrite(typed.root);
+  let ready:Record<string,unknown>={...block};
+  if(block.mode==="play"){
+    const {payload,check}=compileUiBlock(block.uiSource??"",{readData:(src:string)=>files.data[src],skipData:!options.readFile,resolveAsset:options.resolveAsset??null,markdownPath:null});
+    if(!payload)return <div className="garden-ui-preview" data-theme={theme}><UiErrorCard caption="Compose" diagnostics={check.diagnostics as Diagnostic[]}/></div>;
+    if(options.mode==="static")return <div className="garden-ui-preview" data-theme={theme}><div className="markdown-body prose" dangerouslySetInnerHTML={{__html:renderStatic(payload,"html")}}/></div>;
+    ready={...ready,payload};
   }
-  const stale = (check.diagnostics as Diagnostic[]).some((item) => item.code === "ui-stale");
-  return (
-    <div className="garden-ui-preview" data-theme={theme}>
-      {stale ? <p className="garden-ui-preview-note">原话改过了，还没重编译。</p> : null}
-      {options.mode === "static" ? (
-        <figure className="garden-ui" data-frame={(typed as {frame?: string}).frame === "none" ? "none" : "card"} lang="en-US">
-          <div className="garden-ui-body garden-ui-static" dangerouslySetInnerHTML={{ __html: renderStatic(typed, "html") }} />
-          <figcaption>{typed.caption}</figcaption>
-        </figure>
-      ) : (
-        <UiFigure payload={typed} />
-      )}
-    </div>
-  );
+  return <div className="garden-ui-preview" data-theme={theme}><UiLangProvider lang={options.lang}><div className="markdown-body prose"><GardenBlock dataPayload={encodeURIComponent(JSON.stringify(ready))}/></div></UiLangProvider></div>;
+
 }
 
 function mount(element: HTMLElement, draw: (root: ReturnType<typeof createRoot>) => void) {
@@ -145,34 +100,11 @@ function mount(element: HTMLElement, draw: (root: ReturnType<typeof createRoot>)
 export function render(element: HTMLElement, source: string, options: PreviewOptions = {}) {
   let current = { source, options };
   const release = options.isolateEvents ? isolate(element) : null;
-  const root = mount(element, (target) => target.render(<Preview source={current.source} options={current.options} />));
+  const root = mount(element, (target) => target.render(<RuntimeLangProvider lang={current.options.lang??"zh"}><Preview source={current.source} options={current.options} /></RuntimeLangProvider>));
   return {
     update(nextSource: string, nextOptions: PreviewOptions = current.options) {
       current = { source: nextSource, options: nextOptions };
-      root.render(<Preview source={current.source} options={current.options} />);
-    },
-    destroy() {
-      release?.();
-      root.unmount();
-    },
-  };
-}
-
-type IntentOptions = { id?: string | null; theme?: "light" | "dark"; onCopyPrompt?: () => void; isolateEvents?: boolean };
-
-export function renderIntent(element: HTMLElement, text: string, options: IntentOptions = {}) {
-  const release = options.isolateEvents ? isolate(element) : null;
-  const draw = (nextText: string, next: IntentOptions) => (
-    <div className="garden-ui-preview" data-theme={next.theme ?? "light"}>
-      <IntentCard text={bodyOf(nextText).trim()} id={next.id} onCopyPrompt={next.onCopyPrompt} />
-    </div>
-  );
-  let current = options;
-  const root = mount(element, (target) => target.render(draw(text, current)));
-  return {
-    update(nextText: string, nextOptions: IntentOptions = current) {
-      current = nextOptions;
-      root.render(draw(nextText, current));
+      root.render(<RuntimeLangProvider lang={current.options.lang??"zh"}><Preview source={current.source} options={current.options} /></RuntimeLangProvider>);
     },
     destroy() {
       release?.();

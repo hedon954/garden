@@ -1,7 +1,6 @@
 import { resolveSidecarPath } from "../../../ui/core/fence.mjs";
 import { pickerItems, slashQuery, suggestHtml } from "../../../ui/garden/snippets.mjs";
-import { render, renderIntent } from "../../../ui/preview/index";
-import { parse as parseYaml } from "yaml";
+import { render } from "../../../ui/preview/index";
 
 // typora-community-plugin exposes its core on this symbol; its own build plugin rewrites imports to the same lookup.
 type Dispose = () => void;
@@ -158,9 +157,7 @@ export default class GardenTyporaPlugin extends core.Plugin {
 
   onload() {
     const { codeblock } = this.app.features.markdownEditor;
-    this.register(codeblock.registerMode({ lang: "ui", mode: codeMode, render: (code) => this.mount("ui", code) }));
-    this.register(codeblock.registerMode({ lang: "intent", mode: codeMode, render: (code) => this.mount("intent", code) }));
-    this.register(codeblock.registerMode({ lang: "garden", mode: codeMode, render: (code) => this.previewGarden(code) }));
+    this.register(codeblock.registerMode({ lang: "garden", mode: codeMode, render: (code) => this.mount(code) }));
     this.registerCommand({
       id: "insert-intent",
       title: "插入 Garden 块",
@@ -188,21 +185,11 @@ export default class GardenTyporaPlugin extends core.Plugin {
     }
   }
 
-  private mount(lang: "ui" | "intent", code: string) {
+  private mount(code:string) {
     this.sweep();
-    const host = document.createElement("div");
-    host.className = "garden-ui-typora";
-    const handle =
-      lang === "ui"
-        ? render(host, code, {
-            theme: theme(),
-            isolateEvents: true,
-            readFile: (src) => this.readSidecar(src),
-            resolveAsset: (src) => this.assetUrl(src),
-          })
-        : renderIntent(host, code, { theme: theme(), isolateEvents: true, onCopyPrompt: () => void this.copyPrompt() });
-    this.mounted.add({ host, handle, created: Date.now() });
-    return host;
+    const host=document.createElement("div");host.className="garden-ui-typora";
+    const handle=render(host,code,{theme:theme(),isolateEvents:true,readFile:src=>this.readSidecar(src),resolveAsset:src=>this.assetUrl(src),onCopyPrompt:()=>void this.copyPrompt()});
+    this.mounted.add({host,handle,created:Date.now()});return host;
   }
 
   private sidecarPath(src: string) {
@@ -225,94 +212,6 @@ export default class GardenTyporaPlugin extends core.Plugin {
   private assetUrl(src: string) {
     const path = this.sidecarPath(src);
     return path ? `file://${encodeURI(path.replaceAll("\\", "/"))}` : src;
-  }
-
-  private previewGarden(code: string) {
-    const host = document.createElement("div");
-    host.className = "garden-ui-typora";
-    if (/<script\b/iu.test(code)) {
-      const note = document.createElement("p");
-      note.textContent = "含脚本的 html 在预览里不执行。";
-      const pre = document.createElement("pre");
-      pre.textContent = code;
-      host.append(note, pre);
-      return host;
-    }
-    if (/<(State|Slider|Let|Chart|Steps|Step)\b/u.test(code)) {
-      const pre = document.createElement("pre");
-      pre.textContent = code;
-      host.append(pre);
-      return host;
-    }
-    if (/<[a-z][\s\S]*>/iu.test(code)) {
-      const shadow = host.attachShadow({ mode: "open" });
-      shadow.innerHTML = code;
-      return host;
-    }
-    let data: Record<string, unknown> | null = null;
-    try {
-      const parsed = parseYaml(code);
-      if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) data = parsed as Record<string, unknown>;
-    } catch {
-      data = null;
-    }
-    if (!data) {
-      host.textContent = code.trim();
-      return host;
-    }
-    if (typeof data.src === "string" || Array.isArray(data.files)) {
-      // garden file: one line per file, the name (or title) and its note.
-      const files = Array.isArray(data.files) ? data.files : [data];
-      if (Array.isArray(data.files) && typeof data.title === "string") {
-        const heading = document.createElement("strong");
-        heading.textContent = data.title;
-        host.append(heading);
-      }
-      const list = document.createElement("ul");
-      for (const raw of files) {
-        const file = (typeof raw === "string" ? { src: raw } : raw ?? {}) as Record<string, unknown>;
-        const src = String(file.src ?? "");
-        const row = document.createElement("li");
-        row.textContent = [file.title ?? src.split(/[?#]/u, 1)[0].split("/").pop(), file.note].filter(Boolean).join(" — ");
-        list.append(row);
-      }
-      host.append(list);
-      return host;
-    }
-    const items = Array.isArray(data.items) ? data.items : null;
-    if (items?.every((item) => item && typeof item === "object" && "date" in item)) {
-      const list = document.createElement("ol");
-      for (const item of items as Array<Record<string, unknown>>) {
-        const row = document.createElement("li");
-        row.textContent = `${item.date ?? ""} ${item.title ?? ""} ${item.text ?? ""}`.trim();
-        list.append(row);
-      }
-      host.append(list);
-      return host;
-    }
-    if (items) {
-      const list = document.createElement("ul");
-      for (const item of items as Array<Record<string, unknown>>) {
-        const row = document.createElement("li");
-        row.textContent = `${item.title ?? item.label ?? ""} ${item.value ?? ""} ${item.text ?? item.unit ?? ""}`.trim();
-        list.append(row);
-      }
-      host.append(list);
-      return host;
-    }
-    if (typeof data.title === "string" || typeof data.url === "string") {
-      const title = document.createElement("strong");
-      title.textContent = String(data.title ?? data.url);
-      host.append(title);
-      if (typeof data.description === "string") {
-        const text = document.createElement("p");
-        text.textContent = data.description;
-        host.append(text);
-      }
-      return host;
-    }
-    host.textContent = code.trim();
-    return host;
   }
 
   private async insertIntent() {

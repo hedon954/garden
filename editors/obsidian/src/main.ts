@@ -8,10 +8,10 @@ import {
   SuggestModal,
   type App,
   type Editor,
-  type MarkdownPostProcessorContext,
+  type 
 } from "obsidian";
 import { resolveSidecarPath } from "../../../ui/core/fence.mjs";
-import { intentFence, render, renderCatalog, renderIntent, starters } from "../../../ui/preview/index";
+import { composeFence, render, renderCatalog, starters } from "../../../ui/preview/index";
 
 declare const __GARDEN_RECIPES__: { file: string; markdown: string }[];
 
@@ -36,7 +36,7 @@ function insertFence(editor: Editor, fence: string, cursorOffset: number) {
 }
 
 function insertIntent(editor: Editor, text: string) {
-  insertFence(editor, intentFence(text), 1);
+  insertFence(editor, composeFence(text), 1);
   const blank = text.indexOf("「」");
   if (blank >= 0) editor.setCursor({ line: editor.getCursor().line, ch: blank + 1 });
 }
@@ -122,7 +122,7 @@ export default class GardenUiPlugin extends Plugin {
   private readonly children = new Set<BlockChild>();
 
   async onload() {
-    this.registerMarkdownCodeBlockProcessor("ui", (source, el, ctx) => {
+    this.registerMarkdownCodeBlockProcessor("garden", (source, el, ctx) => {
       const fenceLine = (ctx.getSectionInfo(el)?.lineStart ?? 0) + 1;
       ctx.addChild(
         new BlockChild(
@@ -131,25 +131,10 @@ export default class GardenUiPlugin extends Plugin {
             render(target, source, {
               theme: theme(),
               isolateEvents: true,
+              onCopyPrompt:()=>void this.copyPrompt(ctx.sourcePath),
               fenceLine,
               readFile: (src) => this.readSidecar(ctx.sourcePath, src),
               resolveAsset: (src) => this.assetUrl(ctx.sourcePath, src),
-            }),
-          this.children,
-        ),
-      );
-    });
-
-    this.registerMarkdownCodeBlockProcessor("intent", (source, el, ctx) => {
-      ctx.addChild(
-        new BlockChild(
-          el,
-          (target) =>
-            renderIntent(target, source, {
-              id: this.intentId(el, ctx),
-              theme: theme(),
-              isolateEvents: true,
-              onCopyPrompt: () => void this.copyPrompt(ctx.sourcePath),
             }),
           this.children,
         ),
@@ -196,13 +181,6 @@ export default class GardenUiPlugin extends Plugin {
 
   onunload() {
     this.children.clear();
-  }
-
-  private intentId(el: HTMLElement, ctx: MarkdownPostProcessorContext) {
-    const info = ctx.getSectionInfo(el);
-    if (!info) return null;
-    const opening = info.text.split("\n")[info.lineStart] ?? "";
-    return opening.replace(/^\s*(`{3,}|~{3,})\s*intent\s*/u, "").split(/\s+/u)[0] || null;
   }
 
   private async readSidecar(sourcePath: string, src: string) {

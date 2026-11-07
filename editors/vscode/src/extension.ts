@@ -1,11 +1,10 @@
+import {previewCompose} from "../../../ui/compose/preview.mjs";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import * as vscode from "vscode";
 import {
   collectDataSources,
-  compileUiBlock,
   findBlocks,
-  renderStatic,
   resolveSidecarPath,
   scanMarkdown,
 } from "../../../ui/core/index.mjs";
@@ -22,7 +21,7 @@ type MarkdownIt = { renderer: { rules: { fence?: FenceRule } } };
 type MarkdownEnv = { currentDocument?: vscode.Uri } | undefined;
 
 const MAX_DATA_BYTES = 200 * 1024;
-const STATUS_LABEL: Record<string, string> = { ok: "正常", error: "有错", stale: "过期", uncompiled: "未编译" };
+const STATUS_LABEL: Record<string, string> = { ok: "正常", error: "有错", uncompiled: "未编译" };
 
 const escapeHtml = (value: string) =>
   value.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;");
@@ -43,7 +42,7 @@ function readSidecar(markdownPath: string, src: string) {
   }
 }
 
-/** English sites (`locale: en_US`) use the English garden-ui skill trigger. */
+/** English sites (`locale: en_US`) use the English garden-compose skill trigger. */
 function englishSite(start: string) {
   let dir = path.dirname(start);
   for (let i = 0; i < 8; i += 1) {
@@ -67,48 +66,27 @@ function compilePrompt(uri: vscode.Uri) {
 
 /* ---------- Markdown preview ---------- */
 
-function uiHost(token: MarkdownToken, env: MarkdownEnv) {
+function composeHost(token: MarkdownToken, env: MarkdownEnv) {
   const markdownPath = markdownPathOf(env?.currentDocument);
   const files: Record<string, string> = {};
   if (markdownPath) {
-    for (const src of collectDataSources(`\`\`\`ui\n${token.content}\n\`\`\``)) {
+    for (const src of collectDataSources(`\`\`\`${token.info}\n${token.content}\n\`\`\``)) {
       const text = readSidecar(markdownPath, src);
       if (typeof text === "string") files[src] = text;
     }
   }
   const fenceLine = token.map ? token.map[0] + 1 : 1;
-  const { payload, check } = compileUiBlock(token.content, {
-    lineOffset: fenceLine,
-    markdownPath: null,
-    readData: (src: string) => files[src],
-    skipData: !markdownPath,
-    resolveAsset: null,
-  });
-  const snapshot = payload
-    ? `<figure class="garden-ui"><div class="garden-ui-body garden-ui-static">${renderStatic(payload, "html")}</div><figcaption>${escapeHtml(String(payload.caption))}</figcaption></figure>`
-    : `<figure class="garden-ui garden-ui-error"><div class="garden-ui-body"><p class="garden-ui-error-title">这块交互有错误</p><ul class="garden-ui-diagnostics">${check.diagnostics
-        .filter((item: { severity: string }) => item.severity === "error")
-        .map((item: { code: string; line: number; message: string }) => `<li><code>${escapeHtml(item.code)}</code> 第 ${item.line} 行 ${escapeHtml(item.message)}</li>`)
-        .join("")}</ul></div></figure>`;
+  const preview=previewCompose(token.content,{info:token.info,readData:(src:string)=>files[src],skipData:!markdownPath});
+  const snapshot=preview.html||`<blockquote>${escapeHtml(preview.diagnostics.map((d:{message:string})=>d.message).join("；"))}</blockquote>`;
   const line = token.map ? ` data-line="${token.map[0]}"` : "";
-  return `<div class="garden-ui-host code-line"${line} data-garden-lang="ui" data-garden-fence-line="${fenceLine}" data-garden-source="${toBase64(token.content)}" data-garden-files="${toBase64(JSON.stringify(files))}">${snapshot}</div>\n`;
-}
-
-function intentHost(token: MarkdownToken, env: MarkdownEnv) {
-  const id = token.info.trim().split(/\s+/u)[1] ?? "";
-  const document = env?.currentDocument;
-  const prompt = document ? compilePrompt(document) : "";
-  const line = token.map ? ` data-line="${token.map[0]}"` : "";
-  return `<div class="garden-ui-host code-line"${line} data-garden-lang="intent" data-garden-id="${escapeHtml(id)}" data-garden-prompt="${escapeHtml(prompt)}" data-garden-source="${toBase64(token.content)}"><blockquote>${escapeHtml(token.content.trim())}</blockquote></div>\n`;
+  return `<div class="garden-ui-host code-line"${line} data-garden-lang="compose" data-garden-prompt="${env?.currentDocument?escapeHtml(compilePrompt(env.currentDocument)):""}" data-garden-fence-line="${fenceLine}" data-garden-source="${toBase64(token.content)}" data-garden-files="${toBase64(JSON.stringify(files))}">${snapshot}</div>\n`;
 }
 
 function extendMarkdownIt(md: MarkdownIt) {
   const fallback = md.renderer.rules.fence;
   md.renderer.rules.fence = (tokens, index, options, env, self) => {
     const token = tokens[index];
-    const lang = token.info.trim().split(/\s+/u)[0];
-    if (lang === "ui") return uiHost(token, env);
-    if (lang === "intent") return intentHost(token, env);
+    if (/^garden\s+compose(?:\s|$)/u.test(token.info.trim())) return composeHost(token, env);
     return fallback ? fallback(tokens, index, options, env, self) : self.renderToken(tokens, index, options);
   };
   return md;
@@ -144,7 +122,7 @@ class BlockIndex implements vscode.CodeLensProvider {
       markdownPath,
       readData: markdownPath ? (src: string) => readSidecar(markdownPath, src) : null,
       skipData: !markdownPath,
-    }).filter((block) => block.lang === "ui" || block.lang === "intent");
+    });
     this.blocks.set(document.uri.toString(), blocks);
     const last = Math.max(0, document.lineCount - 1);
     const text = document.getText();
@@ -216,7 +194,7 @@ async function foldBodies(editor: vscode.TextEditor, folded: Set<string>) {
   folded.add(key);
   if (!vscode.workspace.getConfiguration("garden").get<boolean>("foldUiBodies", true)) return;
   const starts = findBlocks(editor.document.getText())
-    .filter((fence) => fence.lang === "ui" && fence.closed && fence.endLine > fence.startLine)
+    .filter((fence) => fence.lang === "garden-compose" && fence.closed && fence.endLine > fence.startLine)
     .map((fence) => fence.startLine - 1);
   if (!starts.length) return;
   // Folding providers answer asynchronously after a document opens; folding too early is a no-op.

@@ -4,20 +4,20 @@ import { marked } from "marked";
 import { useMemo, useState, useSyncExternalStore } from "react";
 import { COMPONENTS, GROUPS } from "../core/catalog.mjs";
 import { CATALOG, offeredGardenNames } from "../garden/catalog.mjs";
-import { compileUiBlock } from "../core/compile.mjs";
+import { previewCompose } from "../compose/preview.mjs";
+import { AUTHOR_PLAY_TAGS } from "../compose/dil.mjs";
+import { GardenBlock } from "../../app/components/garden/GardenBlock";
 import { DEMOS, demoFence } from "../core/demos.mjs";
 import { scanFences } from "../core/fence.mjs";
-import { UiFigure } from "./index";
 import { parseRecipe, type RecipeSource } from "./recipes";
-import type { UiPayload } from "./types";
 
 export type { RecipeSource } from "./recipes";
 
-function payloadOf(fence: string | null): UiPayload | null {
-  if (!fence) return null;
-  const body = scanFences(fence)[0]?.body;
-  if (!body) return null;
-  return (compileUiBlock(body).payload as UiPayload | null) ?? null;
+const AUTHOR_NAMES = Object.fromEntries(Object.entries(AUTHOR_PLAY_TAGS).map(([author, internal]) => [internal, author]));
+
+function previewOf(fence: string | null) {
+  const parsed = fence ? scanFences(fence)[0] : null;
+  return parsed ? previewCompose(parsed.body, {info: `${parsed.lang} ${parsed.info}`}) : null;
 }
 
 function StartButton({ fence, onStart }: { fence: string; onStart?: (fence: string) => void }) {
@@ -83,7 +83,7 @@ function subscribeCatalogHash(onStoreChange: () => void) {
 function categoryFromHash(hash: string): string {
   const id = hash.replace(/^#/, "");
   if (id.startsWith("component-")) {
-    const spec = COMPONENTS[id.slice("component-".length) as keyof typeof COMPONENTS] as Spec | undefined;
+    const spec = COMPONENTS[AUTHOR_PLAY_TAGS[id.slice("component-".length) as keyof typeof AUTHOR_PLAY_TAGS] as keyof typeof COMPONENTS] as Spec | undefined;
     if (spec?.group) return spec.group;
   } else if (id === "配方" || id.startsWith("recipe-")) return "配方";
   else {
@@ -114,7 +114,7 @@ export function CatalogPage({ recipes = [], onStart }: { recipes?: RecipeSource[
   const matchesComponent = (name: string) => {
     if (!normalized) return true;
     const spec = COMPONENTS[name as keyof typeof COMPONENTS];
-    return [name, spec.summary, ...spec.phrases].some((text) => text.toLowerCase().includes(normalized));
+    return [AUTHOR_NAMES[name] ?? name, spec.summary, ...spec.phrases].some((text) => text.toLowerCase().includes(normalized));
   };
   const recipeMatches = (title: string, intro: string) => !normalized || title.toLowerCase().includes(normalized) || intro.toLowerCase().includes(normalized);
 
@@ -129,10 +129,10 @@ export function CatalogPage({ recipes = [], onStart }: { recipes?: RecipeSource[
       }));
     }
     return Object.keys(COMPONENTS)
-      .filter((component) => COMPONENTS[component as keyof typeof COMPONENTS].group === name && component in DEMOS && matchesComponent(component))
+      .filter((component) => COMPONENTS[component as keyof typeof COMPONENTS].group === name && component in DEMOS && component in AUTHOR_NAMES && matchesComponent(component))
       .map((component) => ({
-        id: `component-${component}`,
-        title: component,
+        id: `component-${AUTHOR_NAMES[component]}`,
+        title: AUTHOR_NAMES[component],
         fence: demoFence(component),
         spec: COMPONENTS[component as keyof typeof COMPONENTS] as Spec,
         intro: "",
@@ -152,7 +152,7 @@ export function CatalogPage({ recipes = [], onStart }: { recipes?: RecipeSource[
     <div className="garden-catalog">
       <section className="garden-author-catalog">
         <h2>写作块</h2>
-        <p>文章组件只使用 <code>garden compose</code>。在同一个入口内组合正文、图形、资源和交互；下方是渲染器内部组件契约。</p>
+        <p>文章组件只使用 <code>garden compose</code>。在同一个入口内组合正文、图形、资源和交互；下方的组件示例也使用同一个 Compose 入口。</p>
         <ul>
           {offeredGardenNames().map((name) => {
             const spec = CATALOG[name as keyof typeof CATALOG];
@@ -171,7 +171,7 @@ export function CatalogPage({ recipes = [], onStart }: { recipes?: RecipeSource[
       {cards.length ? (
         <div className="garden-catalog-grid">
           {cards.map((card) => {
-            const payload = payloadOf(card.fence);
+            const preview = previewOf(card.fence);
             const open = openId === card.id;
             return (
               <article key={card.id} className="garden-catalog-card" id={card.id}>
@@ -179,7 +179,7 @@ export function CatalogPage({ recipes = [], onStart }: { recipes?: RecipeSource[
                   {card.title}
                 </button>
                 <div className="garden-catalog-well">
-                  {payload ? <UiFigure payload={payload} /> : <p className="garden-catalog-empty">没有预览</p>}
+                  {preview?.block ? <GardenBlock dataPayload={encodeURIComponent(JSON.stringify(preview.block))} /> : <p className="garden-catalog-empty">{preview?.diagnostics.map((item: {message: string}) => item.message).join("；") || "没有预览"}</p>}
                 </div>
                 {open ? (
                   <div className="garden-catalog-more">
@@ -188,7 +188,7 @@ export function CatalogPage({ recipes = [], onStart }: { recipes?: RecipeSource[
                     {card.intro ? <div className="garden-catalog-intro" dangerouslySetInnerHTML={{ __html: marked.parse(card.intro, { async: false }) as string }} /> : null}
                     {card.spec ? <PropTable spec={card.spec} /> : null}
                     {card.fence ? <pre><code>{card.fence}</code></pre> : null}
-                    {card.fence && payload ? <StartButton fence={card.fence} onStart={onStart} /> : null}
+                    {card.fence && preview?.block ? <StartButton fence={card.fence} onStart={onStart} /> : null}
                   </div>
                 ) : null}
               </article>

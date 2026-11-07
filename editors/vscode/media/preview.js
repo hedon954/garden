@@ -57,22 +57,9 @@
       release(host);
       host.replaceChildren();
       const text = decode(source);
-      let handle;
-      if (host.getAttribute("data-garden-lang") === "intent") {
-        const prompt = host.getAttribute("data-garden-prompt");
-        handle = window.GardenUI.renderIntent(host, text, {
-          id: host.getAttribute("data-garden-id") || null,
-          theme: currentTheme,
-          onCopyPrompt: prompt ? () => copy(prompt) : undefined,
-        });
-      } else {
-        const data = files ? JSON.parse(decode(files)) : {};
-        handle = window.GardenUI.render(host, text, {
-          theme: currentTheme,
-          fenceLine: Number(host.getAttribute("data-garden-fence-line")) || 1,
-          readFile: (src) => data[src],
-        });
-      }
+      const data=files?JSON.parse(decode(files)):{};
+      const prompt=host.getAttribute("data-garden-prompt");
+      const handle=window.GardenUI.render(host,text,{theme:currentTheme,fenceLine:Number(host.getAttribute("data-garden-fence-line"))||1,readFile:src=>data[src],onCopyPrompt:prompt?()=>copy(prompt):undefined});
       mounted.set(host, { key, handle });
     }
   }

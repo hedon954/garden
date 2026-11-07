@@ -1,3 +1,4 @@
+import {editorPreviewCss} from "../../scripts/editor-preview-css.mjs";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -18,14 +19,14 @@ await build({
   format: "esm",
   target: "es2020",
   jsx: "automatic",
-  alias: { mermaid: path.join(root, "ui", "preview", "mermaid-shim.ts") },
-  define: { "process.env.NODE_ENV": '"production"' },
+  alias: { "@garden/site-config":path.join(root,"ui","preview","site-config.ts"), mermaid: path.join(root, "ui", "preview", "mermaid-shim.ts") },
+  define: { "process.env.NODE_ENV": '"production"', "process.env.NEXT_PUBLIC_BASE_PATH":'""' },
   legalComments: "none",
   logLevel: "warning",
 });
 
 const css = [
-  fs.readFileSync(path.join(root, "ui", "react", "ui.css"), "utf8"),
+  editorPreviewCss(root),
   ".garden-ui-typora { margin: 0.25em 0; text-align: left; white-space: normal; }",
   ".garden-suggest { display: flex; align-items: center; gap: 8px; }",
   ".garden-suggest-thumb { width: 72px; height: 48px; object-fit: cover; border-radius: 4px; background: #f6f3ec; flex: none; }",

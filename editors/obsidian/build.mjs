@@ -1,3 +1,4 @@
+import {editorPreviewCss} from "../../scripts/editor-preview-css.mjs";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -25,13 +26,13 @@ await build({
   target: "es2020",
   jsx: "automatic",
   external: ["obsidian", "electron", "@codemirror/*", "@lezer/*"],
-  alias: { mermaid: path.join(root, "ui", "preview", "mermaid-shim.ts") },
-  define: { __GARDEN_RECIPES__: JSON.stringify(recipes), "process.env.NODE_ENV": '"production"' },
+  alias: { "@garden/site-config":path.join(root,"ui","preview","site-config.ts"), mermaid: path.join(root, "ui", "preview", "mermaid-shim.ts") },
+  define: { __GARDEN_RECIPES__: JSON.stringify(recipes), "process.env.NODE_ENV": '"production"', "process.env.NEXT_PUBLIC_BASE_PATH":'""' },
   legalComments: "none",
   logLevel: "warning",
 });
 
-const css = [fs.readFileSync(path.join(root, "ui", "react", "ui.css"), "utf8"), fs.readFileSync(path.join(here, "src", "styles.css"), "utf8")];
+const css = [editorPreviewCss(root), fs.readFileSync(path.join(here, "src", "styles.css"), "utf8")];
 fs.writeFileSync(path.join(out, "styles.css"), css.join("\n"));
 fs.copyFileSync(path.join(here, "manifest.json"), path.join(out, "manifest.json"));
 
