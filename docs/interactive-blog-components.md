@@ -185,7 +185,7 @@ MDX 能嵌三个现成 React 组件，但会拆开现在这条作者链路：
 1. `make new`，Typora 写正文、公式、Mermaid，和现在一样。
 2. 需要读者动手时，在稿件旁建同名目录，按 [garden-interactive-chart skill](../.agents/skills/garden-interactive-chart/SKILL.md) 写 HTML；可从 [widget-kind-examples/](./widget-kind-examples/) 抄最近的同类例子。
 3. 在正文贴一段 `widget` 围栏，写 `src` 和 `caption`。
-4. `CONTENT_INCLUDE_DRAFTS=1 make dev` 看嵌入结果；路径写错时看和 `embed` 同类的错误句。也可直接用浏览器打开那份 HTML。
+4. `make dev` 看嵌入结果；路径写错时看和 `embed` 同类的错误句。也可直接用浏览器打开那份 HTML。
 5. 同名目录 HTML 不在管理后台里搭。单块 `ui` 可以在后台的组件工作台里打磨，见 [Intelligent UI 写作层](./intelligent-ui.md#113-组件工作台)；长文仍是本地编辑器 + Git。
 
 ---

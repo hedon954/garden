@@ -522,6 +522,10 @@ async function main() {
       await sync();
       break;
     case "dev":
+      // Preview drafts by default, without overriding an explicit opt-out.
+      // Scoped to this CLI process: sync, Vinext and its watcher inherit it;
+      // later build/check commands do not.
+      process.env.CONTENT_INCLUDE_DRAFTS ??= "1";
       ensureDevGitHubLogin();
       await runVinext(["dev", ...rest]);
       break;

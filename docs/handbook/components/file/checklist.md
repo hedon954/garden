@@ -14,4 +14,4 @@
 | :--- | :--- |
 | `npx garden check content/posts/<slug>.md` | 检查单篇文章的组件字段、代码对比与图片附件路径 |
 | `make check` | 运行 `npx garden sync && npx garden build` 校验全站构建 |
-| `CONTENT_INCLUDE_DRAFTS=1 make dev` | 在本地连同草稿和定时文章一起预览 |
+| `make dev` | 在本地连同草稿和定时文章一起预览 |

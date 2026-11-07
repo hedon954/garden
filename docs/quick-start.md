@@ -69,7 +69,7 @@ author:
 make dev
 ```
 
-第一次运行会自动安装依赖并创建 `.env.local`。默认不会展示草稿和未来定时文章；需要预览时使用 `CONTENT_INCLUDE_DRAFTS=1 make dev`。
+第一次运行会自动安装依赖并创建 `.env.local`。开发预览默认展示草稿和未来定时文章；用 `CONTENT_INCLUDE_DRAFTS=0 make dev` 可关闭。正式构建仍默认排除它们。
 
 ## 5. 发布第一篇文章
 
@@ -81,7 +81,7 @@ make new TITLE="你好，世界" SLUG=hello
 
 这会生成 `content/posts/hello.md` 草稿，不需要先安装 npm 依赖或配置站点身份。直接运行 `make new` 也能自动命名；更多参数见[新建文章](content-authoring.md#新建一篇博文)。
 
-打开生成的文件，完善摘要和正文；用 `CONTENT_INCLUDE_DRAFTS=1 make dev` 预览，准备发布时将 `draft` 改为 `false`。
+打开生成的文件，完善摘要和正文；用 `make dev` 预览，准备发布时将 `draft` 改为 `false`。
 
 也可以直接在 GitHub 网页中手动新建 `content/posts/hello.md`：
 

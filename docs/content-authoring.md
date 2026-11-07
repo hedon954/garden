@@ -25,7 +25,7 @@ make new TITLE="Go 垃圾回收笔记" SLUG=gc DIR=go/runtime
 打开生成的 Markdown，完善摘要、标签和正文。预览草稿：
 
 ```bash
-CONTENT_INCLUDE_DRAFTS=1 make dev
+make dev
 ```
 
 准备发布时，将 `draft` 改为 `false`，再运行 `make update MESSAGE="发布新文章"`。`make update` 会检查、提交并推送工作区中的所有改动。
@@ -182,7 +182,7 @@ title: 水从土面渗到排水孔，大约要一分钟。
 ```
 ````
 
-`src` 必须指向该同名目录里的本地 `.html` 或 `.pdf`，`caption` 必须是一句判断（搜索、RSS、关脚本的读者都靠它）。构建会复制文件、改写路径，并区分两种打开方式：带 `garden-chart` 高度回报的 HTML 是可交互图表，直接铺在正文里；普通 HTML 页面和 PDF 默认收成示意入口，读者点「展开」后再加载。Typora 只显示这段短 YAML；要看效果，直接打开文件，或运行 `CONTENT_INCLUDE_DRAFTS=1 make dev`。
+`src` 必须指向该同名目录里的本地 `.html` 或 `.pdf`，`caption` 必须是一句判断（搜索、RSS、关脚本的读者都靠它）。构建会复制文件、改写路径，并区分两种打开方式：带 `garden-chart` 高度回报的 HTML 是可交互图表，直接铺在正文里；普通 HTML 页面和 PDF 默认收成示意入口，读者点「展开」后再加载。Typora 只显示这段短 YAML；要看效果，直接打开文件，或运行 `make dev`。
 
 第一次 `npx garden sync` 或 `npx garden dev` 会把引擎自带的 skill 装进 `.agents/skills/`。审查一篇稿时，对 AI 说审查这篇，并给出文件路径；硬性结构用 `npx garden check content/posts/文章.md`。五种原语、视觉规范和 AI 写法见 [可交互组件](interactive-blog-components.md) 与 [.agents/skills/garden-interactive-chart](../.agents/skills/garden-interactive-chart/SKILL.md)。拓扑仍用 Mermaid；只有读者需要自己走一步或拧旋钮时才加图表。
 

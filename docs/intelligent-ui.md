@@ -186,7 +186,7 @@ batch 为 {batch}、序列 {thousands(seq)} 时，KV cache 要 **{bytes(mem)}**�
 
 `intent` 围栏的信息串可以带 id：` ```intent kv-memory `。没写时 skill 从原文取一个短 id。id 用小写字母、数字和连字符，篇内唯一。
 
-本文说的"本地预览"指 `CONTENT_INCLUDE_DRAFTS=1 make dev`；"草稿预览"指后台的 `/admin/preview` 页面（11.6）。两者对 `intent` 和坏块的显示相同。
+本文说的"本地预览"指 `make dev`；"草稿预览"指后台的 `/admin/preview` 页面（11.6）。两者对 `intent` 和坏块的显示相同。
 
 适用范围是 `content/` 下所有 Markdown：博文和随想都按同一套规则处理，专栏引用博文，自然包含在内。
 
