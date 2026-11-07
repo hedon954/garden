@@ -10,7 +10,7 @@ badge: compare
 ```garden compare
 items:
   - title: Describe the change in one sentence
-    text: Idea block under full code; garden-ui writes the diff.
+    text: Idea block under full code; garden-compose writes the diff.
   - title: Write the diff by hand
     text: Place a diff below full code; alone it raises diff-orphan.
 ```

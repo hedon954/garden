@@ -67,7 +67,7 @@ func openStore(path string) (*Store, error) {
 ```
 ````
 
-Agent 按 `garden-ui` skill 会通过 `npx garden ui apply` 把这段想法替换成紧挨着完整代码的 `diff` 围栏（详见 [用 AI 写作](/garden/ai-writing)）。页面渲染时会把这两段合成一个可切换 **「代码」** 和 **「对比上一版」** 的代码框，右上角的复制按钮始终复制新版完整代码：
+Agent 按 `garden-compose` skill 会通过 `npx garden ui apply` 把这段想法替换成紧挨着完整代码的 `diff` 围栏（详见 [用 AI 写作](/garden/ai-writing)）。页面渲染时会把这两段合成一个可切换 **「代码」** 和 **「对比上一版」** 的代码框，右上角的复制按钮始终复制新版完整代码：
 
 ```go
 func openStore(path string) (*Store, error) {

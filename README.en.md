@@ -21,7 +21,7 @@ The published npm package is `hd-garden`; once installed inside a site, you can 
 
 ## 2. Write interactives in VS Code, Cursor, and Typora
 
-The Intelligent UI plugins ship inside `hd-garden`. You do not compile them in the site. They insert a one-sentence idea, preview the rendered component in the editor, open the component catalog, and hand the post to the `garden-ui` skill to compile.
+The Intelligent UI plugins ship inside `hd-garden`. You do not compile them in the site. They insert a one-sentence idea, preview the rendered component in the editor, open the component catalog, and hand the post to the `garden-compose` skill to compile.
 
 `npx hd-garden init` copies the files to `.garden/editors/` (a `.vsix` for VS Code / Cursor, and the Typora plugin). In an interactive terminal it asks about VS Code / Cursor first, then Typora. The first `npx garden sync` (`make dev` syncs first) asks again if that prompt has not happened yet. `y` installs; pressing Enter skips.
 
@@ -36,11 +36,11 @@ npx garden editors install --typora        # Typora only
 
 ### VS Code / Cursor
 
-- **Insert an idea**: `Cmd+Alt+I` on macOS, `Ctrl+Alt+I` on Windows and Linux. The Command Palette and the editor context menu have the same Garden command. It inserts a plain `garden` fence: a short brief for the `garden-ui` skill, which compiles it later. In Typora, type `/` and choose `/garden`; the next list gives each component a small preview image.
+- **Insert an idea**: `Cmd+Alt+I` on macOS, `Ctrl+Alt+I` on Windows and Linux. The Command Palette and the editor context menu have the same Garden command. It inserts a plain `garden` fence: a short brief for the `garden-compose` skill, which compiles it later. In Typora, type `/` and choose `/garden`; the next list gives each component a small preview image.
 - **Preview**: Open the Markdown preview. A `ui` fence renders the same component as the blog. An `intent` fence renders as an idea card. The extension reads sidecar data files next to the post.
 - **Check**: Errors show up in the Problems panel and as squiggles in the source. A CodeLens above each block says whether it is ok, broken, stale, or not compiled yet.
 - **Catalog**: The Garden catalog command inserts a recipe at the cursor when you choose to start from it. The same catalog from the terminal is `npx garden ui catalog` (it writes `.garden/ui-catalog.html`).
-- **Compile**: Copy the compile prompt. On an English site (`locale: en_US`) it is `Compile this post:` plus the path. Paste that to an Agent that has the `garden-ui` skill. The skill runs `npx garden ui scan`, reads `npx garden ui prompt`, and writes the fence back with `npx garden ui apply`. The plugin does not call a model and does not store a key.
+- **Compile**: Copy the compile prompt. On an English site (`locale: en_US`) it is `Compile this post:` plus the path. Paste that to an Agent that has the `garden-compose` skill. The skill runs `npx garden ui scan`, reads `npx garden ui prompt`, and writes the fence back with `npx garden ui apply`. The plugin does not call a model and does not store a key.
 
 When `code` or `cursor` is on `PATH`, `garden editors install` runs `--install-extension`. If both commands exist, it installs into both. Without a CLI, open the Extensions view, choose the `...` menu, then **Install from VSIX**, and select the file under `.garden/editors/vscode/`.
 
@@ -50,7 +50,7 @@ Typora has no official plugin API. Install [typora-community-plugin](https://git
 
 The plugin is copied to `~/.typora/community-plugins/plugins/hedon954.garden-intelligent-ui/`. On macOS it is also copied to `~/Library/Application Support/abnerworks.Typora/plugins/plugins/hedon954.garden-intelligent-ui/`, which is the directory the Installed Plugins list reads. Open Typora and enable Garden Intelligent UI under Settings, Installed plugins.
 
-Use it the same way as VS Code: leaving a fence previews `ui` / `intent` (as with Mermaid, click into the fence to edit the source; clicks on sliders and buttons stay in the preview). Type `/`, choose `/garden`, or use the insert command (`Ctrl+Alt+I` on Windows and Linux; on macOS, Option rewrites the key, so record a shortcut under Settings, Keyboard Shortcuts). Copy compile prompt hands the post to the `garden-ui` skill.
+Use it the same way as VS Code: leaving a fence previews `ui` / `intent` (as with Mermaid, click into the fence to edit the source; clicks on sliders and buttons stay in the preview). Type `/`, choose `/garden`, or use the insert command (`Ctrl+Alt+I` on Windows and Linux; on macOS, Option rewrites the key, so record a shortcut under Settings, Keyboard Shortcuts). Copy compile prompt hands the post to the `garden-compose` skill.
 
 A Typora upgrade overwrites the community framework inside the app. Reinstall typora-community-plugin, then enable this plugin again. The fences stay in the Markdown, and `make dev` still previews them.
 
@@ -66,7 +66,7 @@ Where you want a component or interactive calculation, write an unnamed `garden`
 ```
 ````
 
-Ask your Agent to compile the post using the bundled `garden-ui` skill: it runs `npx garden ui scan` to locate uncompiled or broken blocks, reads the component catalog from `npx garden ui prompt`, generates a `garden compose` block (or `card`, `stat`, `compare`, `timeline`, `chart`, `figure`, `html`, `file`, `relations`, `list`, `choice`, or a `diff` block right below a code snippet), and writes only that fence back via `npx garden ui apply`. If you run `git commit` before compiling, the pre-commit hook runs `npx --no-install garden ui check --staged --quiet`, stops the commit, and prints a ready-to-paste fix prompt for your AI.
+Ask your Agent to compile the post using the bundled `garden-compose` skill: it runs `npx garden ui scan` to locate uncompiled or broken blocks, reads the component catalog from `npx garden ui prompt`, generates a `garden compose` block (or `card`, `stat`, `compare`, `timeline`, `chart`, `figure`, `html`, `file`, `relations`, `list`, `choice`, or a `diff` block right below a code snippet), and writes only that fence back via `npx garden ui apply`. If you run `git commit` before compiling, the pre-commit hook runs `npx --no-install garden ui check --staged --quiet`, stops the commit, and prints a ready-to-paste fix prompt for your AI.
 
 ## 4. Common commands
 

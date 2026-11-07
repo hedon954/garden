@@ -93,7 +93,7 @@ make check
 
 ## 5. Editor Plugins
 
-To write an interactive component, insert an idea in VS Code, Cursor, or Typora, preview it, open the catalog, and let the `garden-ui` skill compile it. The plugins ship inside `hd-garden`. You do not compile them yourself.
+To write an interactive component, insert an idea in VS Code, Cursor, or Typora, preview it, open the catalog, and let the `garden-compose` skill compile it. The plugins ship inside `hd-garden`. You do not compile them yourself.
 
 `npx hd-garden init` copies the files to `.garden/editors/`. An interactive terminal asks whether to install VS Code / Cursor and whether to install Typora. The first `npx garden sync` asks again if that prompt has not happened yet. With no TTY, `CI=1`, or `GARDEN_SKIP_EDITORS=1`, Garden only prints the hint. Install later with:
 

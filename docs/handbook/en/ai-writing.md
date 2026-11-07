@@ -23,14 +23,13 @@ Let the reader drag daily word count and writing days per week to see how many w
 
 Draft posts (`draft: true`) may keep uncompiled idea fences; in non-draft posts, both `npx garden ui check` and `npx garden check` report a `garden-idea` error. Depending on the content, the Agent compiles the idea into a built-in component (`garden compose`, `card`, `stat`, `compare`, and others) or replaces it with plain prose when a paragraph is clearer.
 
-## 2. Three Bundled Skills
+## 2. Two Bundled Skills
 
-Three skills live in `.agents/skills/` at the root of the site repository. `npx hd-garden init` installs them when creating a site, the first `npx garden sync` or `npx garden dev` fills in any missing skill files, and `npx garden skill` reinstalls them on demand.
+Two skills live in `.agents/skills/` at the root of the site repository. `npx hd-garden init` installs them when creating a site, the first `npx garden sync` or `npx garden dev` recursively updates managed skill files, backing up local edits under `.garden/skill-backups/`, and `npx garden skill` reinstalls them on demand.
 
 | Skill Name | Example Trigger Prompt | What It Does |
 | :--- | :--- | :--- |
-| `garden-ui` | "Compile this post: content/posts/writing-pace.md", "Recompile writing-pace", or pasting a fix prompt | Scans `uncompiled`, `stale`, and `error` blocks, generates components, and writes them back via `npx garden ui apply`; asking where interactive blocks fit runs read-only suggestion mode and returns up to 5 ready-to-paste idea fences |
-| `garden-interactive-chart` | Canvas animations or simulations beyond the built-in component catalog | Writes a standalone `.html` file inside the post's sidecar directory and embeds it in the post with a `garden html` fence |
+| `garden-compose` | "Compile this post: content/posts/writing-pace.md", "Recompile writing-pace", or pasting a fix prompt | Scans `uncompiled`, `stale`, and `error` blocks, generates components, and writes them back via `npx garden ui apply`; asking where interactive blocks fit runs read-only suggestion mode and returns up to 5 ready-to-paste idea fences |
 | `garden-post-review` | "Review post: content/posts/writing-pace.md" | Fixes structural errors reported by `npx garden check`, repairs interactive blocks against the chart rules, and reads the full post to offer editorial suggestions without rewriting prose |
 
 ## 3. `garden ui` Subcommands and Post Checks
@@ -80,7 +79,7 @@ Compared with the previous version: split the title into two lines with " | " in
 ```
 ````
 
-Following the `garden-ui` skill, the Agent replaces that idea fence with a `diff` fence right below the code block. The page merges the adjacent code and `diff` fences into a single code frame with a toggle between the full code and the diff; see [Writing Posts & Thoughts](/garden/en/writing) for the hand-written `diff` format.
+Following the `garden-compose` skill, the Agent replaces that idea fence with a `diff` fence right below the code block. The page merges the adjacent code and `diff` fences into a single code frame with a toggle between the full code and the diff; see [Writing Posts & Thoughts](/garden/en/writing) for the hand-written `diff` format.
 
 ## 6. Insert, Preview, and Compile from the Editor
 
@@ -95,10 +94,10 @@ npx garden editors install --typora
 
 A component then takes four steps:
 
-1. **Insert an idea.** Where the component should go, run the Garden insert command (`Cmd+Alt+I` on macOS, `Ctrl+Alt+I` on Windows and Linux in VS Code / Cursor). In Typora, type `/` and choose `/garden` to open a picker with a small preview image on each row; the command shortcut is `Ctrl+Alt+I` on Windows and Linux, and macOS needs a shortcut recorded under Settings, Keyboard Shortcuts. The insertion is a plain `garden` fence whose body tells the `garden-ui` skill which component to compile and which facts to include.
+1. **Insert an idea.** Where the component should go, run the Garden insert command (`Cmd+Alt+I` on macOS, `Ctrl+Alt+I` on Windows and Linux in VS Code / Cursor). In Typora, type `/` and choose `/garden` to open a picker with a small preview image on each row; the command shortcut is `Ctrl+Alt+I` on Windows and Linux, and macOS needs a shortcut recorded under Settings, Keyboard Shortcuts. The insertion is a plain `garden` fence whose body tells the `garden-compose` skill which component to compile and which facts to include.
 2. **Preview.** Open the Markdown preview, or in Typora move the cursor out of the fence. An `intent` block shows as an idea card. After the skill writes a `ui` block, the preview matches the blog. VS Code / Cursor also report errors in Problems and in the CodeLens above the block.
 3. **Open the catalog.** Use the catalog command, or run `npx garden ui catalog` and open `.garden/ui-catalog.html`. Starting from a recipe inserts it at the cursor when you already know which component you want.
-4. **Compile.** Copy the compile prompt. On an English site the clipboard text is `Compile this post:` plus the post path. Paste it to the `garden-ui` skill. The Agent locates the block with `npx garden ui scan`, reads the rules with `npx garden ui prompt`, and writes it back with `npx garden ui apply`. The plugin does not call a model.
+4. **Compile.** Copy the compile prompt. On an English site the clipboard text is `Compile this post:` plus the post path. Paste it to the `garden-compose` skill. The Agent locates the block with `npx garden ui scan`, reads the rules with `npx garden ui prompt`, and writes it back with `npx garden ui apply`. The plugin does not call a model.
 
 **Typora prerequisite.** Install [typora-community-plugin](https://github.com/typora-community-plugin/typora-community-plugin/blob/main/docs/en-us/user-guide/1a-installation.md) first. `npx garden editors install --typora` copies the plugin to `~/.typora/community-plugins/plugins/hedon954.garden-intelligent-ui/`. On macOS it also copies to `~/Library/Application Support/abnerworks.Typora/plugins/plugins/hedon954.garden-intelligent-ui/`. Enable Garden Intelligent UI under Settings, Installed plugins. A Typora upgrade overwrites the community framework; reinstall the framework, then enable the plugin again. If `code` or `cursor` is not on `PATH`, use Install from VSIX in the Extensions view and select the file under `.garden/editors/vscode/`. Install details are in [Checks & Shortcuts](/garden/en/workflow).
 

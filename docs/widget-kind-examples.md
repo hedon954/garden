@@ -1,6 +1,6 @@
 # 五种图表原语的完整例子
 
-给作者和 AI 抄。每种原语一份可打开的 HTML，以及正文里那段短 `widget` 围栏。语法与约束见 [interactive-blog-components.md](./interactive-blog-components.md)。写新图时跟 [garden-interactive-chart skill](../.agents/skills/garden-interactive-chart/SKILL.md)。
+给作者和 AI 抄。每种原语一份可打开的 HTML，以及正文里那段短 `widget` 围栏。语法与约束见 [interactive-blog-components.md](./interactive-blog-components.md)。写新图时跟 [garden-compose skill](../.agents/skills/garden-compose/SKILL.md)。
 
 图表文件都在 [widget-kind-examples/](./widget-kind-examples/)：与本文同名的目录，目录里每一份 HTML 是一张可交互图表。对照 [Christy 原文](https://www.christyjacob.dev/blog/kv-caching) 三个 widget 的行为副本见文末；复刻规则：行为 100% 一致，只换颜色与 Garden 浅色纸面。
 

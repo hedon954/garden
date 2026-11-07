@@ -2,7 +2,7 @@
 
 Christy Jacob 的 [KV Caching](https://www.christyjacob.dev/blog/kv-caching) 证明一件事：有些机制只靠公式和 Mermaid 讲不透，读者得自己走一步、拧一下旋钮。那三个 widget（自回归浪费动画、Prefill/Decode 步进、显存曲线）只是火花，不是产品范围。先行调研见 [kv-caching-presentation.md](./kv-caching-presentation.md)。
 
-本文从 **garden-blog 现有文章对读者的具体限制** 出发，收成一小套原语，并规定作者怎么把图表嵌进 Typora 稿——**复杂交互不写进 Markdown**。完整例子见 [widget-kind-examples.md](./widget-kind-examples.md)；写图表时先读仓库里的 [garden-interactive-chart skill](../.agents/skills/garden-interactive-chart/SKILL.md)。
+本文从 **garden-blog 现有文章对读者的具体限制** 出发，收成一小套原语，并规定作者怎么把图表嵌进 Typora 稿——**复杂交互不写进 Markdown**。完整例子见 [widget-kind-examples.md](./widget-kind-examples.md)；写图表时先读仓库里的 [garden-compose skill](../.agents/skills/garden-compose/SKILL.md)。
 
 本文讲的是手写 HTML 的 `widget`，"复杂交互不写进 Markdown"也只针对它。作者用自然语言描述、由 AI 编译、写在原位置的 `ui` 块见 [Intelligent UI 写作层](./intelligent-ui.md)。
 
@@ -183,7 +183,7 @@ MDX 能嵌三个现成 React 组件，但会拆开现在这条作者链路：
 ### 3.5 作者工作流
 
 1. `make new`，Typora 写正文、公式、Mermaid，和现在一样。
-2. 需要读者动手时，在稿件旁建同名目录，按 [garden-interactive-chart skill](../.agents/skills/garden-interactive-chart/SKILL.md) 写 HTML；可从 [widget-kind-examples/](./widget-kind-examples/) 抄最近的同类例子。
+2. 需要读者动手时，在稿件旁建同名目录，按 [garden-compose skill](../.agents/skills/garden-compose/SKILL.md) 写 HTML；可从 [widget-kind-examples/](./widget-kind-examples/) 抄最近的同类例子。
 3. 在正文贴一段 `widget` 围栏，写 `src` 和 `caption`。
 4. `make dev` 看嵌入结果；路径写错时看和 `embed` 同类的错误句。也可直接用浏览器打开那份 HTML。
 5. 同名目录 HTML 不在管理后台里搭。单块 `ui` 可以在后台的组件工作台里打磨，见 [Intelligent UI 写作层](./intelligent-ui.md#113-组件工作台)；长文仍是本地编辑器 + Git。

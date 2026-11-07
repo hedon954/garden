@@ -25,7 +25,7 @@
 - `<lanes>` 里写 `<actor>` 和 `<message from="1" to="2" tone="forward">`
 - `<steps>` 里每步一个 `<step id="sync">`，要点开的说明写 `<note>`
 - `<compare>` 里 2 到 4 个 `<item>`。`<callout tone="tip">` 的 tone 是 `note`、`tip`、`warn`
-- 不要写色值、HTML、SVG、脚本或宽度。颜色走主题变量。窄屏会收成一列
+- 不要写 HTML、SVG、脚本或宽度。默认沿用主题；受支持标签可用 color / backgroundColor 指定颜色字面量（含 transparent），禁止任意 style/CSS 声明。窄屏会收成一列
 
 **骨架（静态）：**
 

@@ -44,7 +44,7 @@ garden compose fence
 ## 和 ChatGPT Intelligent UI 的对齐点
 
 - 同：Markdown + 目录标签同树、token 化间距/表面、一等 icon、自由嵌套。
-- 不同：颜色走 Claude 纸色 token；一拍静态渲染；无 Worker/流式/AppBlock。
+- 不同：默认沿用主题色，受支持标签可用 `color` / `backgroundColor` 颜色字面量；一拍静态渲染；无 Worker/流式/AppBlock。
 
 ## Chart 域 / 色板 / 外壳（play）
 

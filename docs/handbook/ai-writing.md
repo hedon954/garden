@@ -23,14 +23,13 @@ order: 2
 
 草稿（`draft: true`）里可以保留未编译的想法；非草稿文章里还有未编译的想法时，`npx garden ui check` 和 `npx garden check` 都会报 `garden-idea` 错误。Agent 会根据内容把想法编译成 `garden compose`、`card`、`stat`、`compare` 等内置组件，或者在一段话就能说清时直接写回普通段落。
 
-## 2. 随包安装的三个 skill
+## 2. 随包安装的两个 skill
 
-三个 skill 存放在站点根目录的 `.agents/skills/` 下。`npx hd-garden init` 建站时会自动安装，首次运行 `npx garden sync` 或 `npx garden dev` 时会补齐缺失的 skill，运行 `npx garden skill` 可手动重装。
+两个 skill 存放在站点根目录的 `.agents/skills/` 下。`npx hd-garden init` 建站时会自动安装，首次运行 `npx garden sync` 或 `npx garden dev` 时会递归更新引擎管理的 skill（本地修改先备份到 `.garden/skill-backups/`），运行 `npx garden skill` 可手动重装。
 
 | Skill 名称 | 触发话术示例 | 执行操作 |
 | :--- | :--- | :--- |
-| `garden-ui` | 「编译这篇：content/posts/writing-pace.md」「重编译 writing-pace」或直接粘贴修复提示词 | 扫描 `uncompiled`、`stale`、`error` 状态的块，按规则生成组件并用 `npx garden ui apply` 写回；说「这篇哪里适合交互」则进入只读建议模式，最多挑出 5 处可直接粘贴的想法草稿 |
-| `garden-interactive-chart` | 组件目录表达不了的画布动画或模拟 | 在文章同名目录下编写独立 `.html` 文件，正文中只用 `garden html` 围栏嵌入 |
+| `garden-compose` | 「编译这篇：content/posts/writing-pace.md」「重编译 writing-pace」或直接粘贴修复提示词 | 扫描 `uncompiled`、`stale`、`error` 状态的块，按规则生成组件并用 `npx garden ui apply` 写回；说「这篇哪里适合交互」则进入只读建议模式，最多挑出 5 处可直接粘贴的想法草稿 |
 | `garden-post-review` | 「审稿：content/posts/writing-pace.md」 | 先修 `npx garden check` 报出的结构错误，再按图表规范修交互块，最后通读全文只给修改建议而不改稿 |
 
 ## 3. `garden ui` 子命令与整篇检查
@@ -80,7 +79,7 @@ pages:
 ```
 ````
 
-Agent 按 `garden-ui` skill 会把这个想法块替换成一段紧挨着完整代码的 `diff` 围栏。页面渲染时会把完整代码和 `diff` 合成一个带「代码 / 对比上一版」切换按钮的代码框，手写 `diff` 的规则见 [写文章与随想](/garden/writing)。
+Agent 按 `garden-compose` skill 会把这个想法块替换成一段紧挨着完整代码的 `diff` 围栏。页面渲染时会把完整代码和 `diff` 合成一个带「代码 / 对比上一版」切换按钮的代码框，手写 `diff` 的规则见 [写文章与随想](/garden/writing)。
 
 ## 6. 在编辑器里插入、预览，再交给 skill 编译
 
@@ -95,7 +94,7 @@ npx garden editors install --typora
 
 装好之后，一篇组件通常是这四步：
 
-1. **插入想法。** 在要放组件的位置运行「插入 Garden 块」（VS Code / Cursor 的快捷键是 macOS `Cmd+Alt+I`，Windows / Linux `Ctrl+Alt+I`）。Typora 里输入 `/` 后选 `/garden`，下一层列表每一项有一张小预览图；命令的快捷键在 Windows / Linux 是 `Ctrl+Alt+I`，macOS 需要在「设置 → 快捷键」里自己录。插入的是给 `garden-ui` skill 编译的想法围栏，例如选「资源卡」得到：
+1. **插入想法。** 在要放组件的位置运行「插入 Garden 块」（VS Code / Cursor 的快捷键是 macOS `Cmd+Alt+I`，Windows / Linux `Ctrl+Alt+I`）。Typora 里输入 `/` 后选 `/garden`，下一层列表每一项有一张小预览图；命令的快捷键在 Windows / Linux 是 `Ctrl+Alt+I`，macOS 需要在「设置 → 快捷键」里自己录。插入的是给 `garden-compose` skill 编译的想法围栏，例如选「资源卡」得到：
 
    ````markdown
    ```garden
@@ -104,7 +103,7 @@ npx garden editors install --typora
    ````
 2. **预览。** 打开 Markdown 预览，或在 Typora 里把光标移出围栏。`intent` 显示成想法卡片；skill 写回 `ui` 之后，预览画成和博客一样的组件。错误会标在源码上（VS Code / Cursor 的「问题」面板和 CodeLens）。
 3. **看清单。** 命令「查看组件清单」，或在终端运行 `npx garden ui catalog` 打开 `.garden/ui-catalog.html`。清单里的「用它开始」把配方插进当前稿件，适合已经知道要用哪一种组件的时候。
-4. **编译。** 「复制编译提示词」。中文站点得到 `编译这篇：<相对路径>`，英文站点得到 `Compile this post: <相对路径>`。把这句话发给 `garden-ui` skill。Agent 用 `npx garden ui scan` 定位，用 `npx garden ui prompt` 读规则，用 `npx garden ui apply` 写回。插件不调用模型。
+4. **编译。** 「复制编译提示词」。中文站点得到 `编译这篇：<相对路径>`，英文站点得到 `Compile this post: <相对路径>`。把这句话发给 `garden-compose` skill。Agent 用 `npx garden ui scan` 定位，用 `npx garden ui prompt` 读规则，用 `npx garden ui apply` 写回。插件不调用模型。
 
 **Typora 的前提。** 先安装 [typora-community-plugin](https://github.com/typora-community-plugin/typora-community-plugin/blob/main/docs/en-us/user-guide/1a-installation.md)。`npx garden editors install --typora` 把插件复制到 `~/.typora/community-plugins/plugins/hedon954.garden-intelligent-ui/`（macOS 同时写到 `~/Library/Application Support/abnerworks.Typora/plugins/plugins/hedon954.garden-intelligent-ui/`），然后在「设置 → 已安装插件」里勾选 Garden Intelligent UI。升级 Typora 会覆盖社区框架，需要重装框架后再勾选。没找到 `code` 或 `cursor` 时，用扩展视图的 Install from VSIX 选择 `.garden/editors/vscode/` 里的文件。安装细节见 [语法检查与快捷输入](/garden/workflow)。
 

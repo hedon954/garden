@@ -25,7 +25,7 @@ Garden 是一个 Claude 风格的博客框架，文章用 Markdown 写，组件�
 
 ### 2. Agent 扫描并写回组件
 
-对 Agent 说「编译这篇：content/posts/writing-pace.md」。Agent 按站点里的 `garden-ui` skill 先运行 `npx garden ui scan`，拿到这一块的行号、原话和哈希：
+对 Agent 说「编译这篇：content/posts/writing-pace.md」。Agent 按站点里的 `garden-compose` skill 先运行 `npx garden ui scan`，拿到这一块的行号、原话和哈希：
 
 ```console
 $ npx garden ui scan content/posts/writing-pace.md
@@ -64,7 +64,7 @@ content/posts/writing-pace.md:9  -  garden-idea  还有没编译的想法
 请处理下面 Garden 博文里列出的块：没编译的想法要编译，有错误的交互块要修好。
 
 要求：
-- 先运行 npx garden ui prompt，读组件目录和规则；仓库里有 garden-ui skill 时按它的流程做。
+- 先运行 npx garden ui prompt，读组件目录和规则；仓库里有 garden-compose skill 时按它的流程做。
 - 只改列出的块，用 npx garden ui apply <稿件> --id <id> 写回（没有 id 的想法用 --intent-hash），不要直接编辑稿件。
 - 不改作者原话的意思。改完运行 npx garden ui check <稿件>，直到通过。
 - 如果你不能访问这个仓库，就只回复每块修好后的完整围栏。

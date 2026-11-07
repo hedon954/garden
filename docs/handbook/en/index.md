@@ -25,7 +25,7 @@ Let the reader drag daily word count and writing days per week to see how many w
 
 ### 2. The Agent Scans and Writes Back the Component
 
-Tell the Agent to compile `content/posts/writing-pace.md`. Following the `garden-ui` skill in the repository, the Agent first runs `npx garden ui scan` to read the line number, original wording, and hash:
+Tell the Agent to compile `content/posts/writing-pace.md`. Following the `garden-compose` skill in the repository, the Agent first runs `npx garden ui scan` to read the line number, original wording, and hash:
 
 ```console
 $ npx garden ui scan content/posts/writing-pace.md
@@ -64,7 +64,7 @@ content/posts/writing-pace.md:9  -  garden-idea  uncompiled idea remaining
 Handle the Garden post blocks listed below: compile uncompiled ideas, and fix interactive blocks that have errors.
 
 Rules:
-- First run npx garden ui prompt and read the component catalog and rules; if the repo has the garden-ui skill, follow its flow.
+- First run npx garden ui prompt and read the component catalog and rules; if the repo has the garden-compose skill, follow its flow.
 - Change only the listed blocks. Write them back with npx garden ui apply <post> --id <id> (use --intent-hash for ideas without an id). Do not edit the post by hand.
 - Keep the author's meaning. When done, run npx garden ui check <post> until it passes.
 - If you cannot access this repository, reply with only the finished fence for each block.

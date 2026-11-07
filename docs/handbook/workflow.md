@@ -78,14 +78,13 @@ Garden 通过以下三种方式提供组件模板与智能辅助：
 2. **代码片段模板文件**：`hd-garden` 包内的 `templates/` 目录自带两份模板文件：
    - `templates/garden-blocks.md`：想法块和内置组件的可复制 Markdown 模板。
    - `templates/garden-snippets.plist`：macOS 系统文本替换词条（可拖入「系统设置 → 键盘 → 文本替换」），触发词是 `;gidea`（也可以输入 `;garden想法`）、`;gcard`、`;gstat`、`;gcompare`、`;gtimeline`、`;gchart`、`;gcompose`、`;ghtml`、`;ginteractive`、`;gfile`、`;grel`、`;glist`、`;gchoice`。`;gcompose` 展开成带一句白话的 `garden compose`；其余展开成对应围栏。
-3. **安装 AI Agent 技能（`npx garden skill`）**：在站点目录运行 `npx garden skill`（`npx hd-garden init` 时也会自动执行），会把三个技能复制到站点根目录下的 `.agents/skills/`：
-   - `garden-ui`：把文章里的 `garden` 想法描述编译成具体的组件围栏。
-   - `garden-interactive-chart`：根据文章数据编写 `interactive`、`chart`、`compose` 与 `html` 组件。
+3. **安装 AI Agent 技能（`npx garden skill`）**：在站点目录运行 `npx garden skill`（`npx hd-garden init` 时也会自动执行），会把两个技能复制到站点根目录下的 `.agents/skills/`：
+   - `garden-compose`：把文章里的 `garden` 想法描述编译成具体的组件围栏。
    - `garden-post-review`：按排版与组件规范审阅整篇文章。
 
 ## 5. VS Code、Cursor 与 Typora 插件
 
-Intelligent UI 插件是写交互组件的编辑器入口：插入一句想法、在编辑器里预览、打开组件清单，再把编译交给 `garden-ui` skill。插件随 `hd-garden` 发布，站点不用从 `editors/vscode` 或 `editors/typora` 源码编译。
+Intelligent UI 插件是写交互组件的编辑器入口：插入一句想法、在编辑器里预览、打开组件清单，再把编译交给 `garden-compose` skill。插件随 `hd-garden` 发布，站点不用从 `editors/vscode` 或 `editors/typora` 源码编译。
 
 ### 安装
 
@@ -110,7 +109,7 @@ Obsidian 插件这一轮不随包安装。
 
 ### 在编辑器里怎么用
 
-1. **插入想法。** VS Code / Cursor：macOS 用 `Cmd+Alt+I`，Windows / Linux 用 `Ctrl+Alt+I`，或命令「插入 Garden 块」。Typora：输入 `/` 后选 `/garden`（下一层列表每一项有一张小预览图），或命令「插入 Garden 块」直接打开组件列表（Windows / Linux 默认 `Ctrl+Alt+I`，macOS 请到「设置 → 快捷键」里自己录，因为 Option 会改写按键）。插入的是不带组件名的 `garden` 围栏，正文说明要写成哪种组件、写上哪些事实，交给 `garden-ui` skill 编译。
+1. **插入想法。** VS Code / Cursor：macOS 用 `Cmd+Alt+I`，Windows / Linux 用 `Ctrl+Alt+I`，或命令「插入 Garden 块」。Typora：输入 `/` 后选 `/garden`（下一层列表每一项有一张小预览图），或命令「插入 Garden 块」直接打开组件列表（Windows / Linux 默认 `Ctrl+Alt+I`，macOS 请到「设置 → 快捷键」里自己录，因为 Option 会改写按键）。插入的是不带组件名的 `garden` 围栏，正文说明要写成哪种组件、写上哪些事实，交给 `garden-compose` skill 编译。
 2. **预览。** 打开 Markdown 预览（Typora 里光标离开围栏即可）。`ui` 块画成和博客一样的组件，`intent` 块显示成想法卡片。点滑杆、按钮不会跳回源码。
 3. **看组件清单。** VS Code / Cursor 里用「查看组件清单」，点「用它开始」把配方插进当前稿件。终端里的同一份清单：
 
@@ -119,4 +118,4 @@ Obsidian 插件这一轮不随包安装。
    ```
 
    生成 `.garden/ui-catalog.html`。
-4. **交给 skill 编译。** 「复制编译提示词」在中文站点得到 `编译这篇：<相对路径>`，在 `locale: en_US` 的站点得到 `Compile this post: <相对路径>`。把这句话发给装了 `garden-ui` skill 的 Agent。它会运行 `npx garden ui scan`，阅读 `npx garden ui prompt`，再用 `npx garden ui apply` 只替换这一块。插件本身不调用模型。写完用 `npx garden ui check` 或提交前钩子再查一遍。
+4. **交给 skill 编译。** 「复制编译提示词」在中文站点得到 `编译这篇：<相对路径>`，在 `locale: en_US` 的站点得到 `Compile this post: <相对路径>`。把这句话发给装了 `garden-compose` skill 的 Agent。它会运行 `npx garden ui scan`，阅读 `npx garden ui prompt`，再用 `npx garden ui apply` 只替换这一块。插件本身不调用模型。写完用 `npx garden ui check` 或提交前钩子再查一遍。

@@ -23,7 +23,7 @@ make dev
 
 ## 2. 在 VS Code、Cursor 和 Typora 里写交互
 
-Intelligent UI 插件随 `hd-garden` 一起发布，不用在站点里编译源码。它做四件事：插入一句想法、在编辑器里预览画好的组件、打开组件清单，以及把「编译这篇」交给 `garden-ui` skill。
+Intelligent UI 插件随 `hd-garden` 一起发布，不用在站点里编译源码。它做四件事：插入一句想法、在编辑器里预览画好的组件、打开组件清单，以及把「编译这篇」交给 `garden-compose` skill。
 
 `npx hd-garden init` 把产物复制到站点的 `.garden/editors/`（VS Code 的 `.vsix`，以及 Typora 插件目录）。终端可交互时，会先问要不要装进 VS Code / Cursor，再问要不要装进 Typora。第一次 `npx garden sync`（`make dev` 会先同步）如果还没问过，会再问一次。回答 `y` 才会安装；直接回车是不装。
 
@@ -38,11 +38,11 @@ npx garden editors install --typora        # 只装 Typora
 
 ### VS Code / Cursor
 
-- **插入想法**：macOS 用 `Cmd+Alt+I`，Windows / Linux 用 `Ctrl+Alt+I`，或命令「插入 Garden 块」。插入的是不带组件名的 `garden` 围栏，正文用中文告诉你要写什么，交给 `garden-ui` skill 编译。Typora 里先输入 `/` 选 `/garden`，再从带小预览图的列表里选组件。
+- **插入想法**：macOS 用 `Cmd+Alt+I`，Windows / Linux 用 `Ctrl+Alt+I`，或命令「插入 Garden 块」。插入的是不带组件名的 `garden` 围栏，正文用中文告诉你要写什么，交给 `garden-compose` skill 编译。Typora 里先输入 `/` 选 `/garden`，再从带小预览图的列表里选组件。
 - **预览**：打开 Markdown 预览。`ui` 围栏画成和博客一样的组件，`intent` 围栏显示成想法卡片。同名目录里的数据文件由扩展读取。
 - **检查**：错误进「问题」面板，并在源码上画波浪线。每个块上方的 CodeLens 标出正常、有错、过期或未编译。
 - **组件清单**：命令「查看组件清单」。点「用它开始」把配方插进当前稿件。终端里的同一份清单是 `npx garden ui catalog`（生成 `.garden/ui-catalog.html`）。
-- **编译**：命令「复制编译提示词」。中文站点复制 `编译这篇：<相对路径>`，英文站点（`locale: en_US`）复制 `Compile this post: <相对路径>`。把这句话发给装了 `garden-ui` skill 的 Agent，由它 `npx garden ui scan`、读 `npx garden ui prompt`、再 `npx garden ui apply`。插件不调用模型，也不保存密钥。
+- **编译**：命令「复制编译提示词」。中文站点复制 `编译这篇：<相对路径>`，英文站点（`locale: en_US`）复制 `Compile this post: <相对路径>`。把这句话发给装了 `garden-compose` skill 的 Agent，由它 `npx garden ui scan`、读 `npx garden ui prompt`、再 `npx garden ui apply`。插件不调用模型，也不保存密钥。
 
 本机有 `code` 或 `cursor` 命令时，`garden editors install` 会执行 `--install-extension`。两个命令都在时，会各装一次。没有命令行时，打开扩展视图，点右上角「…」，选 **Install from VSIX**（从 VSIX 安装），文件在 `.garden/editors/vscode/`。
 
@@ -52,7 +52,7 @@ Typora 没有官方插件接口。先按 [typora-community-plugin 的安装说�
 
 插件文件复制到 `~/.typora/community-plugins/plugins/hedon954.garden-intelligent-ui/`。macOS 同时写到 `~/Library/Application Support/abnerworks.Typora/plugins/plugins/hedon954.garden-intelligent-ui/`。打开 Typora，在「设置 → 已安装插件」里勾选 Garden Intelligent UI。
 
-用法和 VS Code 同一套：光标离开围栏时预览 `ui` / `intent`（和 Mermaid 一样，点进围栏编辑源码；点滑杆或按钮不会跳进源码）；先输入 `/` 再选 `/garden`，或用命令「插入 Garden 块」，都会插入想法围栏（Windows / Linux 默认 `Ctrl+Alt+I`，macOS 的 Option 会改写按键，请到「设置 → 快捷键」里自己录）；「Garden：复制编译提示词」交给 `garden-ui` skill。
+用法和 VS Code 同一套：光标离开围栏时预览 `ui` / `intent`（和 Mermaid 一样，点进围栏编辑源码；点滑杆或按钮不会跳进源码）；先输入 `/` 再选 `/garden`，或用命令「插入 Garden 块」，都会插入想法围栏（Windows / Linux 默认 `Ctrl+Alt+I`，macOS 的 Option 会改写按键，请到「设置 → 快捷键」里自己录）；「Garden：复制编译提示词」交给 `garden-compose` skill。
 
 升级 Typora 会覆盖社区框架改过的程序文件，插件跟着失效。需要重新安装 typora-community-plugin，再勾选本插件。稿件里的围栏原文还在，也可以用 `make dev` 预览。
 
@@ -68,7 +68,7 @@ Obsidian 插件这一轮不随包安装。
 ```
 ````
 
-让 Agent 按站点里的 `garden-ui` skill 处理这篇稿件：Agent 先用 `npx garden ui scan` 读取待编译块的哈希，再读 `npx garden ui prompt` 的组件规则，生成 `garden compose`（或 `card`、`stat`、`compare`、`timeline`、`chart`、`compose`、`html`、`file`、`relations`、`list`、`choice` 等内置组件，或在完整代码下方生成 `diff`），最后用 `npx garden ui apply` 只替换该围栏。如果你在编译前直接 `git commit`，pre-commit 钩子会运行同一条 `npx --no-install garden ui check --staged --quiet` 拦下提交，并打印一段可直接粘贴给 AI 的修复提示词。
+让 Agent 按站点里的 `garden-compose` skill 处理这篇稿件：Agent 先用 `npx garden ui scan` 读取待编译块的哈希，再读 `npx garden ui prompt` 的组件规则，生成 `garden compose`（或 `card`、`stat`、`compare`、`timeline`、`chart`、`compose`、`html`、`file`、`relations`、`list`、`choice` 等内置组件，或在完整代码下方生成 `diff`），最后用 `npx garden ui apply` 只替换该围栏。如果你在编译前直接 `git commit`，pre-commit 钩子会运行同一条 `npx --no-install garden ui check --staged --quiet` 拦下提交，并打印一段可直接粘贴给 AI 的修复提示词。
 
 ## 4. 常用命令
 

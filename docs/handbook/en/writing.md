@@ -67,7 +67,7 @@ Compared with the previous version: open the store with ModeWAL instead of ModeJ
 ```
 ````
 
-Following the `garden-ui` skill, the Agent runs `npx garden ui apply` to replace that idea fence with a `diff` fence right below the code block (see [Writing with AI](/garden/en/ai-writing)). The page combines the two adjacent blocks into a single code frame with tabs for the full code and the diff against the previous version, while the copy button always copies the new full code:
+Following the `garden-compose` skill, the Agent runs `npx garden ui apply` to replace that idea fence with a `diff` fence right below the code block (see [Writing with AI](/garden/en/ai-writing)). The page combines the two adjacent blocks into a single code frame with tabs for the full code and the diff against the previous version, while the copy button always copies the new full code:
 
 ```go
 func openStore(path string) (*Store, error) {

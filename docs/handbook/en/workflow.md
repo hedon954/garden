@@ -78,14 +78,13 @@ Garden provides three ways to insert or generate components quickly:
 2. **Snippet template files**: The `templates/` directory inside `hd-garden` includes two template files:
    - `templates/garden-blocks.md`: Copyable Markdown templates for idea fences and the built-in components.
    - `templates/garden-snippets.plist`: macOS text replacements (drag into **System Settings → Keyboard → Text Replacements**) with triggers `;gidea`, `;gcard`, `;gstat`, `;gcompare`, `;gtimeline`, `;gchart`, `;gcompose`, `;ghtml`, `;ginteractive`, `;gfile`, `;grel`, `;glist`, and `;gchoice`. `;gcompose` expands to a `garden compose` fence with one sentence. The others expand to their fences.
-3. **Install AI Agent skills (`npx garden skill`)**: Running `npx garden skill` in a site repository (also run automatically during `npx hd-garden init`) copies three skills into `.agents/skills/`:
-   - `garden-ui`: Compiles natural-language `garden` idea fences into concrete component blocks.
-   - `garden-interactive-chart`: Authors `interactive`, `chart`, `compose`, and `html` components from article data.
+3. **Install AI Agent skills (`npx garden skill`)**: Running `npx garden skill` in a site repository (also run automatically during `npx hd-garden init`) copies two skills into `.agents/skills/`:
+   - `garden-compose`: Compiles natural-language `garden` idea fences into concrete component blocks.
    - `garden-post-review`: Reviews an entire post against layout and component rules.
 
 ## 5. VS Code, Cursor, and Typora Plugins
 
-The Intelligent UI plugins are the editor entry point for interactive components: insert a one-sentence idea, preview it, open the catalog, then hand compilation to the `garden-ui` skill. They ship inside `hd-garden`. A site does not compile `editors/vscode` or `editors/typora` from source.
+The Intelligent UI plugins are the editor entry point for interactive components: insert a one-sentence idea, preview it, open the catalog, then hand compilation to the `garden-compose` skill. They ship inside `hd-garden`. A site does not compile `editors/vscode` or `editors/typora` from source.
 
 ### Install
 
@@ -110,7 +109,7 @@ The Obsidian plugin is not installed by this command.
 
 ### Use the plugins while writing
 
-1. **Insert an idea.** In VS Code / Cursor, use `Cmd+Alt+I` on macOS or `Ctrl+Alt+I` on Windows and Linux, or the Garden insert command. In Typora, type `/` and choose `/garden` (the next list has a small preview image on each row), or use the insert command to open the component list directly; Windows and Linux default to `Ctrl+Alt+I`. On macOS, record a shortcut under Settings, Keyboard Shortcuts, because Option rewrites the key. The insertion is a plain `garden` fence: a short brief naming the component and the facts to mention, which the `garden-ui` skill compiles later.
+1. **Insert an idea.** In VS Code / Cursor, use `Cmd+Alt+I` on macOS or `Ctrl+Alt+I` on Windows and Linux, or the Garden insert command. In Typora, type `/` and choose `/garden` (the next list has a small preview image on each row), or use the insert command to open the component list directly; Windows and Linux default to `Ctrl+Alt+I`. On macOS, record a shortcut under Settings, Keyboard Shortcuts, because Option rewrites the key. The insertion is a plain `garden` fence: a short brief naming the component and the facts to mention, which the `garden-compose` skill compiles later.
 2. **Preview.** Open the Markdown preview. In Typora, move the cursor out of the fence. A `ui` block renders the same component as the blog. An `intent` block renders as an idea card. Clicks on sliders and buttons stay in the preview.
 3. **Open the catalog.** In VS Code / Cursor, the catalog command inserts a recipe at the cursor. The terminal builds the same page:
 
@@ -119,4 +118,4 @@ The Obsidian plugin is not installed by this command.
    ```
 
    That writes `.garden/ui-catalog.html`.
-4. **Compile with the skill.** Copy compile prompt. On an English site (`locale: en_US`) the clipboard text is `Compile this post:` plus the post path. Paste it to an Agent that has the `garden-ui` skill. The skill runs `npx garden ui scan`, reads `npx garden ui prompt`, and replaces only that fence with `npx garden ui apply`. The plugin does not call a model. Check the result with `npx garden ui check` or the pre-commit hook.
+4. **Compile with the skill.** Copy compile prompt. On an English site (`locale: en_US`) the clipboard text is `Compile this post:` plus the post path. Paste it to an Agent that has the `garden-compose` skill. The skill runs `npx garden ui scan`, reads `npx garden ui prompt`, and replaces only that fence with `npx garden ui apply`. The plugin does not call a model. Check the result with `npx garden ui check` or the pre-commit hook.

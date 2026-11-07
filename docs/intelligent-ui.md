@@ -454,9 +454,9 @@ skill 和工作台的系统提示词都带这几条；`garden check` 能查的�
 
 ---
 
-## 10. skill：`garden-ui`
+## 10. skill：`garden-compose`
 
-路径是 `.agents/skills/garden-ui/SKILL.md`，随 `garden skill` 装进站点。
+路径是 `.agents/skills/garden-compose/SKILL.md`，随 `garden skill` 装进站点。
 
 触发语：
 
@@ -473,7 +473,7 @@ skill 和工作台的系统提示词都带这几条；`garden check` 能查的�
 3. 读每块的原话和所在小节，三选一：
    - 写回正文（散文、表格或 Mermaid）；
    - 写 `ui`；
-   - 写 `widget`：目录表达不了的画布动画、音频、物理模拟等，按 [garden-interactive-chart](../.agents/skills/garden-interactive-chart/SKILL.md) 写同名目录 HTML，并在 `widget` 的 YAML 里加 `intent`。
+   - 写 `widget`：目录表达不了的画布动画、音频、物理模拟等，按 [garden-compose](../.agents/skills/garden-compose/SKILL.md) 写同名目录 HTML，并在 `widget` 的 YAML 里加 `intent`。
 4. 写 `ui` 时：原话原样进 `intent`；`caption` 摘原话里的判断，原话没有判断句就先补一句；有已知点就写 `expect`；数据写在块里，原话提到已有文件时才用 `Data`。块太大就拆成两块，不挪到别的文件。
 5. 每块用 `npx garden ui apply` 写回（见下），全部写完后 `npx garden check <稿件>` 直到通过。同一块连续三次修不好，就停下来报告诊断。
 6. 回复一张表：id、选择（正文 / ui / widget）、用了哪份配方、做了哪些假设、`expect` 写了什么。
@@ -812,7 +812,7 @@ exec npx --no-install garden ui check --staged --quiet
 请修复下面 Garden 博文里有错误的 ui 块。
 
 要求：
-- 先运行 npx garden ui prompt，读组件目录和规则；仓库里有 garden-ui skill 时按它的流程做。
+- 先运行 npx garden ui prompt，读组件目录和规则；仓库里有 garden-compose skill 时按它的流程做。
 - 只改列出的块，用 npx garden ui apply <稿件> --id <id> 写回，不要直接编辑稿件。
 - 不改 intent 的原意。修好后运行 npx garden ui check <稿件>，直到通过。
 - 如果你不能访问这个仓库，就只回复每块修好后的完整围栏。
@@ -871,7 +871,7 @@ caption: 显存与 batch、序列长度都成正比；batch 8、序列 32K 就�
 | `ui/prompt/build.mjs` | 拼出 `garden ui prompt` 的输出：`rules.md` + 从 `catalog.mjs` 生成的组件参考 + 全部配方。工作台在此之后再接上 `studio.md` |
 | `ui/preview/` | 编辑器预览包入口（12.2）；`scripts/build-ui-preview.mjs` 用 esbuild 打包 |
 | `editors/vscode/`、`editors/obsidian/`、`editors/typora/` | 三个编辑器插件的源码，各自有 `build.mjs`、`tsconfig.json` 和安装说明；根目录的 `tsconfig.json` 排除 `editors/`。`npm run editors:build` 构建三个源码目录；`npm run editors:pack` 只把 VS Code 与 Typora 的可安装产物打进 `editors/dist/`（Obsidian 这一轮不随包下发） |
-| `.agents/skills/garden-ui/` | 编译 skill（第 10 节），随 `garden skill` 装进站点 |
+| `.agents/skills/garden-compose/` | 编译 skill（第 10 节），随 `garden skill` 装进站点 |
 | `ui/evals/cases.yaml` | 提示词回归集：20 段 `intent`，每段写明期望出现的组件、是否必须写 `expect`，或期望给出"提醒" |
 
 ### 14.2 站点接入
@@ -1006,7 +1006,7 @@ React 组件、后台和插件靠预览和手动验收，不写快照测试。�
 
 ### 阶段 2：写作链路
 
-1. `garden-ui` skill 和配方；审查 skill 接入。
+1. `garden-compose` skill 和配方；审查 skill 接入。
 2. `Data` 组件。
 3. 组件清单：`CatalogPage`、后台 `/admin/ui/catalog`、`garden ui catalog`。
 4. 组件工作台：四种起点、生成、修改、修复循环、手改实时重绘、预览切换、本地保存、复制围栏和写回命令；总览卡片。"从稿件打开"要用到 `GET /api/admin/ui/blocks` 和 `GET /api/admin/posts/source`，这两个接口在这一阶段做。
