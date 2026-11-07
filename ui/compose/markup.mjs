@@ -127,21 +127,24 @@ function looksLikeYamlSlots(text) {
 function parseAttrs(raw) {
   const source = raw.replace(/\/\s*$/u, "").trim();
   const attrs = {};
-  const re = /([A-Za-z][\w-]*)\s*(?:=\s*(?:"([^"]*)"|'([^']*)'|\{([^{}]*)\}))?/gu;
-  let match;
-  let consumed = "";
-  while ((match = re.exec(source))) {
-    consumed += match[0];
-    const name = match[1];
-    if (match[4] != null) {
-      const expr = match[4].trim();
-      if (!/^-?\d+$/u.test(expr)) fail(`属性 ${name} 不支持表达式。`);
-      attrs[name] = expr;
-    } else if (match[2] != null) attrs[name] = match[2];
-    else if (match[3] != null) attrs[name] = match[3];
-    else attrs[name] = true;
+  const re = /\s*([A-Za-z][\w-]*)\s*(?:=\s*("(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|\{[^{}]*\}))?/y;
+  const unquote=value=>{
+    if(value[0]==='"'){try{return JSON.parse(value);}catch{}}
+    return value.slice(1,-1).replace(/\\(["'\\])/gu,"$1");
+  };
+  let offset=0;
+  while(offset<source.length){
+    re.lastIndex=offset;const match=re.exec(source);
+    if(!match)fail("标签属性写坏了。");
+    const [,name,value]=match;
+    if(Object.hasOwn(attrs,name))fail(`属性 ${name} 重复。`);
+    if(value?.startsWith("{")){
+      const expr=value.slice(1,-1).trim();
+      if(!/^-?\d+$/u.test(expr))fail(`属性 ${name} 不支持表达式。`);
+      attrs[name]=expr;
+    }else attrs[name]=value===undefined?true:unquote(value);
+    offset=re.lastIndex;
   }
-  if (consumed.replace(/\s+/gu, "") !== source.replace(/\s+/gu, "")) fail("标签属性写坏了。");
   return attrs;
 }
 
@@ -150,7 +153,7 @@ function findTag(src, from) {
   while (i < src.length) {
     const lt = src.indexOf("<", i);
     if (lt < 0) return null;
-    const match = /^<\/?([A-Za-z][\w-]*)\b([^>]*)>/u.exec(src.slice(lt));
+    const match = /^<\/?([A-Za-z][\w-]*)\b((?:"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|[^"'<>])*)>/u.exec(src.slice(lt));
     if (!match) {
       i = lt + 1;
       continue;
