@@ -126,3 +126,6 @@ The Obsidian plugin is not installed by this command.
 Run `make check` to check every article structure and every Compose/UI block in the working tree, including drafts and untracked files. No staging is needed. Both checks run even if structural errors are found, so `.garden/ui-fix-prompt.md` is still generated for Compose failures. No AI call or clipboard copy happens.
 
 `make check FILE=content/posts/post.md` limits the content preflight to that file. After preflight succeeds, the existing full-site sync/build stages still run. The engine repository retains its lint/test stages instead. Failure exits nonzero and skips these later stages. This is compilation/validation, not an automatic formatting or repair command.
+
+
+`make check diff` checks only changed Markdown documents under `content/`: tracked working-tree changes against HEAD (including staged changes) plus untracked files. It reads current working-tree contents, deduplicates paths, uses rename destinations and skips deleted files. It does not run all-site sync/build/lint/tests, even with `make -j check diff`. No changes is a successful no-op; missing Git/HEAD is an explicit error, never an all-content fallback. `garden verify --diff` is the underlying command. Diff mode overrides FILE; plain `make check` is unchanged.

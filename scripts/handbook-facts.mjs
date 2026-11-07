@@ -62,6 +62,13 @@ function deriveCliFacts(root = ROOT) {
     gardenFlags.add(match[1]);
   }
 
+  // Verify delegates its selector parsing to the content preflight script.
+  const verifyPath = path.join(root, "scripts/check-site.mjs");
+  if (fs.existsSync(verifyPath)) {
+    const verifySource = fs.readFileSync(verifyPath, "utf8");
+    for (const match of verifySource.matchAll(/===\s*["'](--[a-zA-Z0-9-]+)["']/gu)) gardenFlags.add(match[1]);
+  }
+
   // Extract `garden ui` subcommands and flags from scripts/ui-cli.mjs
   const uiCliSource = fs.readFileSync(path.join(root, "scripts/ui-cli.mjs"), "utf8");
   const uiSubcommands = new Set();

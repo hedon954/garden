@@ -2,7 +2,7 @@ MESSAGE ?= 更新博客
 
 .DEFAULT_GOAL := help
 
-.PHONY: help new embed skill prepare dev check build update
+.PHONY: help new embed skill prepare dev check diff build update
 
 # Pass literal user input via environment, never interpolate it into shell code.
 unexport TITLE SLUG DIR URL FILE
@@ -13,7 +13,7 @@ export GARDEN_EMBED_URL := $(value URL)
 export GARDEN_CHECK_FILE := $(value FILE)
 
 help:
-	@printf "%s\n" "Garden 常用命令：" "  make new                 创建文章草稿（无需安装 npm 依赖）" '  make new TITLE="文章标题" SLUG=my-post DIR=writing' '  make embed URL="https://example.com"  拉取外部网页摘要，打印可粘贴的 embed 围栏' "  make skill               安装可交互图表 skill" "  make dev                 首次准备并本地预览" "  make check               全量严格预检后 lint/测试；FILE=路径 只限制预检" "  make build               构建公开站点" "  make update              检查、提交并触发自动发布" "  make update MESSAGE=\"新增一篇文章\"  自定义提交说明"
+	@printf "%s\n" "Garden 常用命令：" "  make new                 创建文章草稿（无需安装 npm 依赖）" '  make new TITLE="文章标题" SLUG=my-post DIR=writing' '  make embed URL="https://example.com"  拉取外部网页摘要，打印可粘贴的 embed 围栏' "  make skill               安装可交互图表 skill" "  make dev                 首次准备并本地预览" "  make check               全量严格预检后 lint/测试；FILE=路径 只限制预检" "  make check diff          只检查 Git 改动的 Markdown，不构建/跑全套测试" "  make build               构建公开站点" "  make update              检查、提交并触发自动发布" "  make update MESSAGE=\"新增一篇文章\"  自定义提交说明"
 
 new:
 	@node scripts/new-post.mjs
@@ -30,9 +30,16 @@ prepare:
 dev: prepare
 	node bin/garden.mjs dev
 
+# Parse goals once: even make -j check diff runs only one diff preflight.
+ifneq ($(filter diff,$(MAKECMDGOALS)),)
+check:
+	node bin/garden.mjs verify --diff
+diff: check
+else
 check:
 	node bin/garden.mjs verify
 	npm run lint && npm test
+endif
 
 build:
 	node bin/garden.mjs build

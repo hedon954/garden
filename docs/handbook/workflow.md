@@ -126,3 +126,6 @@ Obsidian 插件这一轮不随包安装。
 运行 `make check`：检查工作区所有文章的结构和全部 Compose/UI 块，包含草稿与未跟踪的新稿，不必先暂存。结构错误不会阻止 Compose 检查；有待编译/错误块时仍生成 `.garden/ui-fix-prompt.md`，把全文给 AI 即可。不会调用 AI 或复制剪贴板。
 
 `make check FILE=content/posts/文章.md` 只限制内容预检范围；通过后仍执行原来的全站 sync/build（引擎仓库保留 lint/test）。预检失败返回非零并跳过后续阶段。这是编译/校验，不是自动格式化或自动改稿。
+
+
+`make check diff` 只检查 `content/` 下相对 HEAD 有改动的 Markdown（含已暂存、未暂存）和未跟踪新稿，读取工作区当前内容，去重、取重命名后的路径、跳过已删除文件。不会继续运行全站 sync/build/lint/tests，`make -j check diff` 也只执行一次改动检查。没有改动则成功退出；不在 Git 仓库或没有 HEAD 时明确报错，不回退全量。底层命令是 `garden verify --diff`。diff 模式优先于 FILE；不带 diff 的 `make check` 不变。
