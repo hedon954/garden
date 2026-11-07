@@ -1,5 +1,5 @@
 import { parseCompose } from "../compose/parse.mjs";
-import { looksLikePlayCompose, parsePlayCompose } from "../compose/dil.mjs";
+import { AUTHOR_PLAY_TAGS, looksLikePlayCompose, parsePlayCompose } from "../compose/dil.mjs";
 import { fenceHash, findBlocks, idOf, intentHash, intentOf } from "./fence.mjs";
 import { checkUiBlock } from "./validate.mjs";
 import { gardenInfoId } from "./garden-fence.mjs";
@@ -10,9 +10,23 @@ export function checkComposeFence(block, options = {}) {
     const parsed = parsePlayCompose({ id: gardenInfoId(block.info) }, block.body);
     if (parsed.error) return { ok: false, uncompiled: false, doc: null, diagnostics: [{ ...parsed.error, line: block.startLine, severity: "error" }] };
     const check = checkUiBlock(parsed.uiSource, { ...options, lineOffset: 0 });
-    // Lowering inserts declarations and rewrites tags; locate errors at the original
-    // fence rather than presenting synthesized UI source lines as Markdown lines.
-    return { ...check, uncompiled: false, doc: parsed.props, diagnostics: check.diagnostics.map(item => ({ ...item, line: block.startLine })) };
+    const authorNames = Object.fromEntries(Object.entries(AUTHOR_PLAY_TAGS).map(([author, internal]) => [internal, author]));
+    const authorTags = value => value.replace(/<(\/?)([A-Z][A-Za-z0-9]*)/gu, (whole, slash, name) => authorNames[name] ? `<${slash}${authorNames[name]}` : whole);
+    const bodyLines = block.body.split(/\r?\n/u);
+    const loweredLines = parsed.uiSource.split("\n");
+    const diagnostics = check.diagnostics.map(item => {
+      // Report an exact author line only when the emitted line survives uniquely.
+      // Declarations/control lowering can synthesize lines: those stay at the fence,
+      // rather than falsely presenting internal IR coordinates as article positions.
+      const emitted = authorTags(loweredLines[item.line - 1] ?? "").trim();
+      const matches = emitted ? bodyLines.flatMap((line, index) => line.trim() === emitted ? [index] : []) : [];
+      return {
+        ...item,
+        line: matches.length === 1 ? block.startLine + 1 + matches[0] : block.startLine,
+        message: authorTags(item.message),
+      };
+    });
+    return { ...check, uncompiled: false, doc: parsed.props, diagnostics };
   }
   const result = parseCompose(block.body);
   if (result.uncompiled) return { ok: false, uncompiled: true, diagnostics: [], doc: null };
@@ -27,7 +41,7 @@ export function checkComposeFence(block, options = {}) {
   return { ok: true, uncompiled: false, diagnostics: [], doc: result.doc };
 }
 
-/** Status of one block: uncompiled / stale / error / ok. */
+/** Status of one block: uncompiled / error / ok. */
 export function blockStatus(block,check) {
   return check?.uncompiled?"uncompiled":check&&!check.ok?"error":"ok";
 }
