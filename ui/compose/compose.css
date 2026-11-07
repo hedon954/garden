@@ -13,6 +13,9 @@
   background: var(--paper);
   box-shadow: none;
   color: var(--ink);
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
   overflow: hidden;
   overflow-wrap: break-word;
 }
@@ -37,7 +40,9 @@
 
 .g-compose-h {
   color: var(--ink);
-  font: 500 14px/1.3 var(--sans);
+  font: inherit;
+  font-weight: 600;
+  line-height: 1.4;
 }
 
 .g-compose-caption {
@@ -160,8 +165,7 @@
 
 .g-compose-text[data-tone="muted"] {
   color: var(--muted);
-  font-size: 13px;
-  line-height: 1.45;
+  line-height: inherit;
 }
 
 .g-compose-card > .g-compose-row,
@@ -332,7 +336,6 @@
 
 .g-compose-row > .g-compose-stack > .g-compose-h {
   margin: 0;
-  font: 500 14px/1.3 var(--sans);
 }
 
 .g-compose-card[data-frame="band"][data-tone="accent"] {
@@ -350,7 +353,6 @@
 .g-compose-card[data-frame="band"] > .g-compose-card-text,
 .g-compose-card[data-frame="text"] > .g-compose-card-text {
   color: var(--muted);
-  font-size: 14px;
 }
 
 .g-compose-card[data-frame="pill"] {
@@ -586,7 +588,9 @@
 .g-compose-step-title,
 .g-compose-note-k {
   color: var(--ink);
-  font: 500 14px/1.3 var(--sans);
+  font: inherit;
+  font-weight: 600;
+  line-height: 1.4;
 }
 
 .g-compose-card-text,
@@ -594,7 +598,8 @@
 .g-compose-text,
 .g-compose-note-text {
   color: var(--text, var(--ink));
-  font: 400 15px/1.6 var(--sans);
+  font: inherit;
+  font-weight: 400;
 }
 
 .g-compose-card[data-tone="muted"] .g-compose-card-text,
@@ -814,11 +819,11 @@
 }
 
 .g-compose-h[data-size="sm"] {
-  font-size: 12.5px;
+  font-size: .875em;
   font-weight: 600;
   line-height: 1.3;
 }
-.g-compose-text[data-size="sm"],
+.g-compose-text[data-size="sm"] { font-size: .875em; font-weight: 400; line-height: 1.5; }
 .g-compose-caption-inline[data-size="sm"] { font-size: 11px; font-weight: 400; line-height: 1.35; }
 .g-compose-text[data-tone="tip"] {
   color: color-mix(in srgb, var(--flow-back) 78%, var(--ink));
@@ -826,9 +831,10 @@
 .g-compose-text[data-tone="accent"] {
   color: color-mix(in srgb, var(--flow) 72%, var(--ink));
 }
-.g-compose-h[data-size="lg"] { font-size: 16px; }
-.g-compose-h[data-size="xl"] { font-size: 18px; }
-.g-compose-text[data-size="lg"],
+.g-compose-h[data-size="lg"] { font-size: 1.125em; }
+.g-compose-h[data-size="xl"] { font-size: 1.25em; }
+.g-compose-text[data-size="lg"] { font-size: 1.125em; }
+.g-compose-text[data-size="xl"] { font-size: 1.25em; }
 .g-compose-caption-inline[data-size="lg"] { font-size: 16px; }
 
 .g-compose-caption-inline {
@@ -1091,12 +1097,12 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
-  font: 400 13px/1.45 var(--sans);
+  font: inherit;
 }
 .g-compose-table {
   width: 100%;
   border-collapse: collapse;
-  font: 400 13px/1.4 var(--sans);
+  font: inherit;
 }
 .g-compose-table th,
 .g-compose-table td {

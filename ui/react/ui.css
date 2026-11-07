@@ -149,9 +149,9 @@
   border-radius: 8px;
   background: transparent;
   color: var(--gui-text);
-  font-family: var(--gui-font);
-  font-size: 16px;
-  line-height: 26px;
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
   letter-spacing: normal;
   -webkit-font-smoothing: antialiased;
 }
@@ -196,8 +196,8 @@
 
 :where(.garden-ui) p,
 :where(.garden-ui) li {
-  font-size: 16px;
-  line-height: 26px;
+  font-size: inherit;
+  line-height: inherit;
 }
 
 :where(.garden-ui) strong { font-weight: 600; }
@@ -774,7 +774,7 @@
   max-width: 100%;
 }
 
-.garden-ui-table { width: 100%; border-collapse: collapse; font-size: 14px; font-weight: 400; line-height: 20px; color: #0d0d0d; }
+.garden-ui-table { width: 100%; border-collapse: collapse; font-size: inherit; font-weight: 400; line-height: 20px; color: #0d0d0d; }
 .garden-ui-flow { align-items: center; text-align: center; gap: 8px; }
 .garden-ui-card.garden-ui-flow { gap: 8px; }
 .garden-ui-flow p { margin: 0; color: #0d0d0d; font-size: 16px; font-weight: 400; line-height: 26px; text-align: center; }
@@ -1146,7 +1146,7 @@
 .garden-ui .garden-ui-body li { margin: 0; font-family: inherit; }
 .garden-ui .garden-ui-body p:not([class]),
 .garden-ui .garden-ui-body ul:not([class]) > li,
-.garden-ui .garden-ui-body ol:not([class]) > li { color: inherit; font-size: 16px; line-height: 26px; }
+.garden-ui .garden-ui-body ol:not([class]) > li { color: inherit; font-size: inherit; line-height: inherit; }
 .garden-ui .garden-ui-body p,
 .garden-ui .garden-ui-card-title,
 .garden-ui > figcaption { text-align: start; }
@@ -1226,15 +1226,15 @@
 .garden-ui .garden-ui-pie .garden-ui-legend { justify-content: center; }
 .garden-ui .garden-ui-checklist li { margin: 0; padding: 5px 0; }
 .garden-ui .garden-ui-checklist-detailed li { padding: 12px 0; }
-.garden-ui table.garden-ui-table { display: table; width: 100%; margin: 0; border: 0; font-size: 14px; }
+.garden-ui table.garden-ui-table { display: table; width: 100%; margin: 0; border: 0; font-size: inherit; }
 .garden-ui table.garden-ui-grid { display: table; width: auto; margin: 0; border: 0; border-collapse: separate; border-spacing: 4px; font-size: 12px; }
 .garden-ui .garden-ui-grid tr { border: 0; background: none; }
 .garden-ui .garden-ui-table tr { border: 0; border-bottom: 1px solid rgba(0, 0, 0, 0.05); background: none; }
 .garden-ui .garden-ui-table tr:last-child { border-bottom: 0; }
 .garden-ui .garden-ui-table th,
-.garden-ui .garden-ui-table td { padding: 8px 8px 8px 0; border: 0; background: none; color: #0d0d0d; font-size: 14px; font-weight: 400; line-height: 20px; }
-.garden-ui .garden-ui-table thead th { color: #0d0d0d; font-size: 14px; font-weight: 600; }
-.garden-ui .garden-ui-table tbody th { color: #0d0d0d; font-size: 14px; font-weight: 400; }
+.garden-ui .garden-ui-table td { padding: 8px 8px 8px 0; border: 0; background: none; color: #0d0d0d; font-size: inherit; font-weight: 400; line-height: 20px; }
+.garden-ui .garden-ui-table thead th { color: #0d0d0d; font-size: inherit; font-weight: 600; }
+.garden-ui .garden-ui-table tbody th { color: #0d0d0d; font-size: inherit; font-weight: 400; }
 .garden-ui .garden-ui-table td:not(.garden-ui-tone-plain) { background: none; color: var(--gui-tone-text); }
 .garden-ui .garden-ui-table:has(tr[data-tone="row"]) th:first-child,
 .garden-ui .garden-ui-table:has(tr[data-tone="row"]) td:first-child { padding-left: 14px; }
