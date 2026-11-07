@@ -96,8 +96,8 @@ const VOID = new Set([
   "stat",
   "empty",
 ]);
-for (const tag of FEATURE_TAGS) (["file", "metric"].includes(tag) ? VOID : LAYOUT).add(tag);
-for (const tag of FEATURE_PARTS) (["edge", "datum"].includes(tag) ? VOID : LAYOUT).add(tag);
+for (const tag of FEATURE_TAGS) (["file"].includes(tag) ? VOID : LAYOUT).add(tag);
+for (const tag of FEATURE_PARTS) (["edge", "datum", "reference"].includes(tag) ? VOID : LAYOUT).add(tag);
 const KNOWN = new Set([...LAYOUT, ...TEXTISH, ...VOID, "message", "option"]);
 
 const LANE_TONES = new Set(["forward", "back"]);

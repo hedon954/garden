@@ -11,6 +11,8 @@
  */
 
 import { parse as parseYaml, stringify } from "yaml";
+import { CATALOG_TAGS } from "./markup.mjs";
+import { COMPONENTS } from "../core/catalog.mjs";
 import { mapNativeScenes } from "./scenes.mjs";
 
 /** PascalCase interactive tags — author language we are retiring. */
@@ -22,7 +24,7 @@ const DIL_IF_RE = /\{#if\b/u;
 const DIL_EACH_RE = /\{#each\b/u;
 
 /** Lowercase play-only tags. Do NOT list diagram tags (stack/card/badge/…) — those would steal static compose fences. */
-const PLAY_TAG_RE =
+const CORE_PLAY_TAG_RE =
   /<\/?(?:slider|button|choice|segmented-control|toggle|stat|chart|pie|pie-chart|meter|checklist|stepper|sandbox)\b/iu;
 
 const TAG_MAP = {
@@ -54,6 +56,15 @@ const TAG_MAP = {
   sandbox: "Sandbox",
 };
 
+const DECLARATIONS = new Set(["State", "Let", "If", "Each", "Content", "Scene"]);
+for (const name of Object.keys(COMPONENTS)) {
+  if (!DECLARATIONS.has(name)) {
+    const tag=name.replace(/([a-z0-9])([A-Z])/gu,"$1-$2").toLowerCase();
+    TAG_MAP[tag] ??= name;
+  }
+}
+
+const PLAY_TAG_RE = new RegExp(`</?(?:${Object.keys(TAG_MAP).filter(tag=>!CATALOG_TAGS.includes(tag)).join("|")})\\b`, "iu");
 const MATH_FNS = [
   "abs", "min", "max", "floor", "ceil", "round", "trunc", "sqrt", "cbrt",
   "pow", "exp", "log", "log2", "log10", "sin", "cos", "tan", "atan2",
@@ -65,7 +76,7 @@ export function looksLikeLegacyPlay(body) {
 
 export function looksLikeDilPlay(body) {
   const text = mapNativeScenes(String(body ?? "").replace(/<(markdown|html)>[\s\S]*?<\/\1>/giu, ""), () => "");
-  return DIL_BODY_RE.test(text) || DIL_IF_RE.test(text) || DIL_EACH_RE.test(text) || PLAY_TAG_RE.test(text);
+  return DIL_BODY_RE.test(text) || DIL_IF_RE.test(text) || DIL_EACH_RE.test(text) || CORE_PLAY_TAG_RE.test(text) || PLAY_TAG_RE.test(text);
 }
 
 export function looksLikePlayCompose(body) {

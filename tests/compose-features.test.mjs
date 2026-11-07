@@ -59,3 +59,10 @@ test('plain comparison lines preserve punctuation, code, emphasis and all paragr
  assert.equal(parsed.ok,true,JSON.stringify(parsed.error));assert.deepEqual(parsed.doc.nodes[0].children[0].props.items,lines);
  for(const line of ['FIFO 的优势','intra-system communication']){assert.ok(composeText(parsed.doc).includes(line));assert.ok(renderCompose(parsed.doc).includes(line));}
 });
+
+test('grouped resources and multiple source chips keep their native renderer data',()=>{
+ const p=parseCompose('<resources><resource title="One" href="https://example.com"><reference href="https://example.org" label="First"/><reference href="https://example.net" label="Second"/><point title="Point"><text>Body</text></point></resource><resource title="Two"/></resources>');
+ assert.equal(p.ok,true,JSON.stringify(p.error));assert.equal(p.doc.nodes[0].props.cards.length,2);assert.equal(p.doc.nodes[0].props.cards[0].source.length,2);assert.equal(p.doc.nodes[0].props.cards[0].points[0].text,'Body');
+ const metric=parseCompose('<metric label="Count" value={2}><text>Explanation</text><reference href="https://example.org"/><reference href="https://example.net"/></metric>');assert.equal(metric.ok,true,JSON.stringify(metric.error));assert.equal(metric.doc.nodes[0].props.source.length,2);
+ const event=parseCompose('<timeline><event title="Event"><text>Body</text><reference href="https://example.org"/></event></timeline>');assert.equal(event.ok,true,JSON.stringify(event.error));assert.equal(event.doc.nodes[0].props.items[0].source.length,1);
+});

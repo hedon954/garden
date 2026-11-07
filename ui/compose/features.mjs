@@ -3,9 +3,10 @@ import { hasIcon } from "./icons.mjs";
 import { articleUrl, renderArticleContent } from '../garden/article-content.mjs';
 import { readFileProps } from '../garden/file-block.mjs';
 import { relationIndex } from '../garden/relations.mjs';
-export const FEATURE_TAGS = new Set(['resource','metric','timeline','relations','choices','files','file','plot','icon-list']);
-export const FEATURE_PARTS = new Set(['point','event','entity','edge','choice-option','entry','datum']);
+export const FEATURE_TAGS = new Set(['resources','resource','metric','timeline','relations','choices','files','file','plot','icon-list']);
+export const FEATURE_PARTS = new Set(['reference','point','event','entity','edge','choice-option','entry','datum']);
 const fields = {
+ resources:[],reference:['href','label'],
  resource:['href','title','description','image','alt','meta','source','takeaway'],
  metric:['label','value','unit','caption','source','text'],
  timeline:['title'],event:['date','title','source','text'],
@@ -26,22 +27,36 @@ export function compileFeature(name,attrs,children,fail) {
  for(const key of ['href','image','source','src'])if(attrs[key])articleUrl(attrs[key],key==='image');
  for(const key of ['title','description','caption','text','meta','takeaway','label','reply'])if(attrs[key])renderArticleContent(attrs[key],{inline:true});
  if(attrs.icon && !hasIcon(String(attrs.icon)))fail(`<${name}> 不认识 Compose 图标 ${attrs.icon}；请查当前图标目录。`);
+ const references = nodes => nodes.filter(n=>n.type==='feature-part'&&n.tag==='reference').map(n=>{
+  compileFeature(n.tag,n.attrs,n.children,fail);
+  return {url:n.attrs.href,...(n.attrs.label?{label:n.attrs.label}:{})};
+ });
+ const source = nodes => {const refs=references(nodes);return refs.length?{source:[...(attrs.source?[attrs.source]:[]),...refs]}:{}};
  const parts=children.filter(n=>n.type==='feature-part');
  const expect=(...tags)=>{const bad=children.find(n=>n.type!=='feature-part'||!tags.includes(n.tag));if(bad)fail(`<${name}> 的直接子项只能是 ${tags.map(t=>'<'+t+'>').join(', ')}。`);};
  const records=tag=>parts.filter(n=>n.tag===tag).map(n=>{
   compileFeature(n.tag,n.attrs,n.children,fail);
-  return {...n.attrs,...(n.children.length?{text:texts(n.children)}:{})};
+  return {...n.attrs,...(n.children.some(c=>c.type==='text')?{text:texts(n.children)}:{}),...(references(n.children).length?{source:[...(n.attrs.source?[n.attrs.source]:[]),...references(n.children)]}:{})};
  });
  let legacy,props;
  switch(name){
+  case 'reference':
+   if(!attrs.href)fail('<reference> 必须有 href。');
+   if(children.length)fail('<reference> 不能包含子项。');
+   return null;
   case 'point':case 'event':case 'entity':case 'choice-option':case 'entry':
-   if(children.some(n=>n.type!=='text'))fail(`<${name}> 的正文请使用一个或多个 <text>；复杂块放到相邻的 <markdown> 中。`);
+   if(children.some(n=>n.type!=='text'&&!(name==='event'&&n.type==='feature-part'&&n.tag==='reference')))fail(`<${name}> 的正文请使用一个或多个 <text>；复杂块放到相邻的 <markdown> 中。`);
    return null;
   case 'edge':case 'datum':return null;
+  case 'resources':
+   if(children.some(n=>n.type!=='feature'||n.tag!=='resource'))fail('<resources> 只能包含 <resource>。');
+   legacy='card';props={cards:children.map(n=>n.props)};break;
   case 'resource':
-   if(children.some(n=>n.type!=='text'&&!(n.type==='feature-part'&&n.tag==='point')))fail('<resource> 只接受 <text> 说明和 <point> 要点。');
-   legacy='card';props={...attrs,url:attrs.href??'',description:attrs.description??texts(children),points:records('point')};delete props.href;break;
-  case 'metric':legacy='stat';props={...attrs};break;
+   if(children.some(n=>n.type!=='text'&&!(n.type==='feature-part'&&['point','reference'].includes(n.tag))))fail('<resource> 只接受 <text> 说明和 <point> 要点。');
+   legacy='card';props={...attrs,url:attrs.href??'',description:attrs.description??texts(children),points:records('point'),...source(children)};delete props.href;break;
+  case 'metric':
+   if(children.some(n=>n.type!=='text'&&!(n.type==='feature-part'&&n.tag==='reference')))fail('<metric> 只接受 <text> 和 <reference/>。');
+   legacy='stat';props={...attrs,...(texts(children)?{text:texts(children)}:{}),...source(children)};break;
   case 'timeline':expect('event');legacy='timeline';props={...attrs,items:records('event')};break;
   case 'icon-list':expect('entry');legacy='list';props={...attrs,items:parts.map(n=>{compileFeature(n.tag,n.attrs,n.children,fail);return {...n.attrs,...(n.children.length?{text:paragraph(n.children)}:{})};})};break;
   case 'relations':{
