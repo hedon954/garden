@@ -153,7 +153,12 @@ test("the handbook compose page stays short and points at reference catalogs", (
   assert.match(markdown, /## 怎么写/);
   assert.match(markdown, /## 写法对照/);
   assert.match(markdown, /## 一张示例/);
-  assert.match(markdown, /不要写样式/);
+  assert.match(markdown, /唯一的 Garden 作者入口/);
+  assert.match(markdown, /关系和层级，再选择布局与必要样式/);
+  assert.match(markdown, /不要把通用 HTML\/CSS 当成所有组件的属性契约/);
+  assert.match(english, /single Garden author entry/);
+  assert.match(english, /relationships and hierarchy/);
+  assert.match(english, /do not assume every component accepts arbitrary HTML\/CSS properties/);
   assert.match(markdown, /角色连接用户和权限/);
   assert.match(markdown, /\/garden\/reference\/compose/);
   assert.match(markdown, /\/garden\/reference\/compose-icons/);
