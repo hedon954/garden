@@ -9,6 +9,7 @@
  */
 
 import { parse as parseYaml, stringify } from "yaml";
+import { parseExpressionAt, tokenizer } from "acorn";
 import { CATALOG_TAGS } from "./markup.mjs";
 import { COMPONENTS } from "../core/catalog.mjs";
 import { mapNativeScenes } from "./scenes.mjs";
@@ -70,19 +71,77 @@ export function looksLikeDilPlay(body) {
 }
 
 export function looksLikePlayCompose(body) {
-  return looksLikeDilPlay(body);
+  const {yamlText}=splitHeader(body);
+  return /^\s*(?:---\s*)?(?:id|caption|intent|frame)\s*:/u.test(yamlText)||looksLikeDilPlay(body);
 }
 
-function rewriteMath(expr) {
-  let out = String(expr);
-  for (const name of MATH_FNS) {
-    out = out.replace(new RegExp(`\\bMath\\.${name}\\b`, "gu"), name);
+function rewriteExpr(expr) {
+  const source = String(expr).trim();
+  try {
+    const tokens = [...tokenizer(source, { ecmaVersion: "latest" })];
+    const edits = [];
+    for (let i = 0; i < tokens.length - 2; i++) {
+      const [owner, dot, name] = tokens.slice(i, i + 3);
+      if (owner.type.label === "name" && owner.value === "Math" && dot.type.label === "." && MATH_FNS.includes(name.value)) {
+        edits.push([owner.start, name.start]);
+      }
+    }
+    return edits.reverse().reduce((value, [start, end]) => value.slice(0, start) + value.slice(end), source);
+  } catch {
+    return source; // The compiler supplies the author-facing expression diagnostic.
+  }
+}
+
+// Find complete expressions, rather than matching innermost braces inside a
+// quoted Code/Sandbox payload. Acorn's lexer preserves nested template literals.
+function mapExpressions(source, transform) {
+  let out = "";
+  let position = 0;
+  while (position < source.length) {
+    const start = source.indexOf("{", position);
+    if (start < 0) return out + source.slice(position);
+    out += source.slice(position, start);
+    let depth = 0;
+    let closing;
+    try {
+      for (const token of tokenizer(source.slice(start), { ecmaVersion: "latest" })) {
+        if (token.type.label === "{" || token.type.label === "${") depth++;
+        if (token.type.label === "}" && --depth === 0) {
+          closing = start + token.start;
+          break;
+        }
+      }
+    } catch { /* Leave malformed input intact for the compiler diagnostic. */ }
+    if (closing === undefined) return out + source.slice(start);
+    out += `{${transform(source.slice(start + 1, closing))}}`;
+    position = closing + 1;
   }
   return out;
 }
 
-function rewriteExpr(expr) {
-  return rewriteMath(String(expr).trim());
+function protectExpressionLiterals(expr, literals) {
+  const source = rewriteExpr(expr);
+  try {
+    const root = parseExpressionAt(source, 0, { ecmaVersion: "latest" });
+    const edits = [];
+    function visit(node) {
+      if (!node || typeof node !== "object") return;
+      if (node.type === "TemplateLiteral" || (node.type === "Literal" && typeof node.value === "string")) {
+        const token = `GARDENDILLITERAL${literals.length}END`;
+        literals.push({ token: JSON.stringify(token), source: source.slice(node.start, node.end) });
+        edits.push([node.start, node.end, JSON.stringify(token)]);
+        return;
+      }
+      for (const value of Object.values(node)) {
+        if (Array.isArray(value)) value.forEach(visit);
+        else if (value && typeof value === "object") visit(value);
+      }
+    }
+    visit(root);
+    return edits.sort((a, b) => b[0] - a[0]).reduce((value, [start, end, text]) => value.slice(0, start) + text + value.slice(end), source);
+  } catch {
+    return source;
+  }
 }
 
 function splitHeader(raw) {
@@ -251,6 +310,13 @@ function expandControl(source) {
 }
 
 function rewriteTags(source) {
+  const literals = [];
+  const masked = mapExpressions(source, expr => protectExpressionLiterals(expr, literals));
+  const lowered = rewriteTagsUnmasked(masked);
+  return literals.reduce((value, literal) => value.replaceAll(literal.token, literal.source), lowered);
+}
+
+function rewriteTagsUnmasked(source) {
   let text = source;
 
   text = text.replace(/<slider\b([^>]*)\/?\s*>/giu, (_full, attrs) => {
@@ -325,11 +391,6 @@ function rewriteTags(source) {
     }
   });
 
-  text = text.replace(/\{([^{}]+)\}/gu, (full, expr) => {
-    const trimmed = expr.trimStart();
-    if (trimmed.startsWith("@") || trimmed.startsWith("#") || trimmed.startsWith(":")) return full;
-    return `{${rewriteExpr(expr)}}`;
-  });
 
   return text;
 }

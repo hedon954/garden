@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { dilToUiSource, looksLikeDilPlay, parsePlayCompose } from "../ui/compose/dil.mjs";
+import { dilToUiSource, looksLikeDilPlay, looksLikePlayCompose, parsePlayCompose } from "../ui/compose/dil.mjs";
 import { compileUiBlock } from "../ui/core/compile.mjs";
 
 test("detects DIL without stealing static scenes", () => {
@@ -92,4 +92,28 @@ test("if/each plain text lowers to a painted Caption leaf", () => {
   assert.match(block.uiSource, /<If test=\{seats >= 5\}>[\s\S]*<Caption>批量折扣档：\{seats\} 席<\/Caption>/);
   const { check } = compileUiBlock(block.uiSource);
   assert.equal(check.ok, true, JSON.stringify(check.diagnostics));
+});
+
+
+test("explicit Play headers select display-only scenes without dummy state", () => {
+  const body = 'caption: Plain card\n---\n<card title="A title"><caption>Real body</caption></card>';
+  assert.equal(looksLikePlayCompose(body), true);
+  const block = parsePlayCompose({ id: "plain-card" }, body);
+  const { check } = compileUiBlock(block.uiSource);
+  assert.equal(check.ok, true, JSON.stringify(check.diagnostics));
+  assert.match(block.uiSource, /<Card title="A title">/);
+  assert.equal(looksLikePlayCompose('<box><text>No header</text></box>'), false);
+});
+
+test("DIL lowering preserves literal code braces, markup and Math text", () => {
+  const code = 'for lo <= hi {\n\tif a[mid] < x {\n\t\tlo = mid + 1\n\t}\n}\n<button>Math.round(2)</button>';
+  const lowered = dilToUiSource({ id: "literal-code", props: {caption:"Code retains exact content"}, body: `<code lang="go" code={${JSON.stringify(code)}} />` });
+  assert.equal(lowered.ok, true);
+  assert.ok(lowered.source.includes(`code={${JSON.stringify(code)}}`), lowered.source);
+  const { check } = compileUiBlock(lowered.source);
+  assert.equal(check.ok, true, JSON.stringify(check.diagnostics));
+  const template = '`if (ok) {\n  <slider>Math.min</slider>\n} ${Math.round(2.2)}`';
+  const dynamic = dilToUiSource({ id: "template-code", props: {caption:"Templates retain content"}, body: `<code lang="html" code={${template}} />` });
+  assert.ok(dynamic.source.includes(template.replace('Math.round(2.2)', 'round(2.2)')), dynamic.source);
+  assert.equal(compileUiBlock(dynamic.source).check.ok, true);
 });
