@@ -10,7 +10,7 @@ const kit=path.join(engineRoot,'.agents/skills/garden-compose');
 function run(script,args,cwd){return spawnSync(process.execPath,[path.join(kit,'scripts',script+'.mjs'),...args],{cwd,env:{...process.env,GARDEN_SITE:cwd,GARDEN_UI_NO_COPY:'1'},encoding:'utf8'});}
 test('English entry point overlays shared kit recursively without writing any skills',()=>{
  const en=managedSkillBundle({engineRoot,name:'garden-compose',lang:'en'}),zh=managedSkillBundle({engineRoot,name:'garden-compose'});
- assert.match(en['SKILL.md'].toString(),/Select, compose and validate/);
+ assert.match(en['SKILL.md'].toString(),/single garden compose author entry/);
  for(const name of ['scripts/check.mjs','scripts/apply.mjs','references/static-play.md','references/colors.md','references/examples.md','references/layout-recipes.md','references/visual-selection.md','references/composition-patterns.md','references/rendering-model.md'])assert.deepEqual(en[name],zh[name]);
 });
 test('shipped examples and wrappers pass authoritative CLI checks in an isolated site',()=>{
@@ -21,7 +21,7 @@ test('shipped examples and wrappers pass authoritative CLI checks in an isolated
   fs.writeFileSync(path.join(root,'package.json'),'{"private":true}');
   const examples=fs.readFileSync(path.join(kit,'references/examples.md'),'utf8');
   const fences=[...examples.matchAll(/^```garden compose[^\n]*\n[\s\S]*?^```/gm)].map(m=>m[0]);
-  assert.equal(fences.length,2);
+  assert.equal(fences.length,3);
   const recipe=fs.readFileSync(path.join(kit,'references/layout-recipes.md'),'utf8');
   const cards=[...recipe.matchAll(/^```garden compose[^\n]*\n[\s\S]*?^```/gm)].map(m=>m[0]);
   assert.ok(cards.length>=2,'card and editorial recipes must be present');fences.push(...cards);

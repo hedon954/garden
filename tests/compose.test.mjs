@@ -289,7 +289,8 @@ test("garden ui prompt includes generated compose DIL catalog", async () => {
     recipes: [fs.readFileSync(path.join(root, "ui/prompt/recipes/compose.md"), "utf8")],
   });
   assert.match(prompt, /compose 目录（小写标签 \+ token）/);
-  assert.match(prompt, /interactive 组件参考（PascalCase，兼容）/);
+  assert.doesNotMatch(prompt, /PascalCase，兼容|garden interactive/u);
+  for (const component of ["resource", "files", "relations", "sandbox"]) assert.ok(prompt.includes(component), component);
   assert.match(prompt, /`icon`/);
   assert.doesNotMatch(prompt, /也不要写 \{@body\b/u);
   assert.doesNotMatch(prompt, /不要写 \{@body\b/u);
