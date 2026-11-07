@@ -1,15 +1,17 @@
 ---
 name: garden-compose
-description: Create, compile, repair and validate Garden Compose from original prose plus a visual-effect request; trigger automatically for horizontal equal-width cards, side-by-side cards, diagrams or interactive DIL without requiring the author to name a skill; also handle check diagnostics.
+description: Create, compile, repair and validate Garden Compose from original prose plus a visual-effect request; trigger automatically for horizontal equal-width cards, side-by-side cards, diagrams or interactive DIL with intent-based layout selection; also handle check diagnostics.
 ---
 # Garden Compose
 
 Project-local only. Change only authorized posts/blocks; never publish or silently rewrite unrelated content.
 
-## Authors supply prose and an effect
-Original prose or a list plus “use garden compose to present horizontal equal-width cards” is enough, even outside a fence. Enter this skill automatically from that intent; never require the author to name a skill, tags, responsive rules, borders, titles or validation commands. Preserve source wording, facts and order. The AI owns layout, source mapping and checks. Existing bold labels may become card titles; do not invent headings or summaries.
-For equal-width cards, read references/layout-recipes.md on demand. Consult the catalog only for uncertain relevant properties; do not preload all recipes or send implementation instructions back to the author.
+## Parse input and select a layout
+1. Separate source content, requested visual effect and authorized edit location. The effect request is not display copy. Accept paragraphs or list items directly.
+2. Map each source item to a content unit: use existing bold labels as titles and the remaining text as body content. Preserve wording, facts and order; do not invent summaries or conclusions.
+3. Match the effect to a layout reference. For horizontal equal-width cards, read `references/layout-recipes.md`, set the column count from the source items and create one card per item. For other effects, load the relevant reference on demand. Consult the catalog only for uncertain components or properties; do not preload every recipe.
 
+## Workflow
 1. Work from the site root. Read references/workflow.md and references/static-play.md. When an attribute is unclear, consult the relevant reference or `npx --no-install garden ui prompt` for the live catalog. Compose authoring uses lowercase tags, not legacy PascalCase or YAML slots.
 2. If no fence exists, insert one idea fence with the verbatim source and effect in `<intent>` at the authorized location, then scan; leave other prose untouched. For an existing block, scan directly. Run `node .agents/skills/garden-compose/scripts/scan.mjs content/posts/post.md`. Keep the original block, diagnostics, id/line and hash. Leave healthy compiled blocks alone. Requests for suggestions are read-only.
 3. Run `node .agents/skills/garden-compose/scripts/check.mjs content/posts/post.md`. On failure, use the printed file/line/error diagnostics; scan the target for source and hash before repair. No prompt file, clipboard operation, or model call occurs by default. Draft and published posts follow identical strict rules. Compilation/repair is not indentation formatting.
