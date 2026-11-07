@@ -1,5 +1,8 @@
 "use client";
 
+import ReactMarkdown from "react-markdown";
+import rehypeRaw from "rehype-raw";
+import { ComposeContentProvider } from "./AuthorRich";
 import { useUiLang } from "../UiLang";
 import { renderCompose } from "../../../ui/compose/render.mjs";
 import { readGardenPayload } from "../../lib/remark-garden.mjs";
@@ -26,6 +29,10 @@ export function GardenBlock({ dataPayload }: { dataPayload?: string }) {
   if (!block.name) return <GardenIdea text={String(block.idea || block.children || "")} />;
   if (block.error) return <GardenUnknown name={String(block.name)} />;
   const props = (block.props ?? {}) as Record<string, unknown>;
+  if (block.composeFeature) {
+    const legacyPayload = encodeURIComponent(JSON.stringify({ ...block, composeFeature: false }));
+    return <ComposeContentProvider><GardenBlock dataPayload={legacyPayload}/></ComposeContentProvider>;
+  }
   switch (block.name) {
     case "card":
       return <GardenCard props={props} />;
@@ -53,7 +60,10 @@ export function GardenBlock({ dataPayload }: { dataPayload?: string }) {
           />
         );
       }
-      return <div className="g-compose-host" dangerouslySetInnerHTML={{ __html: renderCompose(props) }} />;
+      return <div className="g-compose-host"><ReactMarkdown rehypePlugins={[rehypeRaw]} components={{
+        p: ({children}) => <p>{children}</p>,
+        ...{"garden-block": (nested: {dataPayload?:string;"data-payload"?:string}) => <GardenBlock dataPayload={nested.dataPayload??nested["data-payload"]}/>},
+      }}>{renderCompose(props)}</ReactMarkdown></div>;
     case "html":
       return <GardenHtml props={props}>{String(block.children ?? "")}</GardenHtml>;
     case "interactive":

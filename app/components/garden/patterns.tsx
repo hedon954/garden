@@ -1,9 +1,10 @@
 "use client";
+import { hasIcon, iconSvg } from "../../../ui/compose/icons.mjs";
+import { useComposeContent, AuthorRich as Rich } from "./AuthorRich";
 
 import { createContext, useContext, useEffect, useId, useRef, useState, type ComponentType, type CSSProperties, type ReactNode } from "react";
 import { sourceIcon } from "../../../ui/garden/source-icon.mjs";
 import { circled, labelFits, legendLine, placeMarks, relationKeyAction, RELATION_COMPACT_WIDTH, RELATION_LABEL_FONT_MIN, relationEdges, relationHeights, relationIndex, relationLayout, relationLines, type RelationEdge as Edge } from "../../../ui/garden/relations.mjs";
-import ReactMarkdown from "react-markdown";
 import {
   Bell,
   BookOpen,
@@ -31,15 +32,8 @@ import {
   type IconProps,
 } from "@phosphor-icons/react/ssr";
 import { useUi, useUiLang } from "../UiLang";
-import { markdownPlugins } from "../../lib/markdown-plugins";
 
-function Rich({ text }: { text: string }) {
-  return (
-    <ReactMarkdown remarkPlugins={markdownPlugins} components={{ p: ({ children }) => <>{children}</> }}>
-      {String(text ?? "")}
-    </ReactMarkdown>
-  );
-}
+
 
 /** Line icons an author can name in `icon:`. Unknown names draw nothing. */
 export const GARDEN_ICONS: Record<string, ComponentType<IconProps>> = {
@@ -69,6 +63,8 @@ export const GARDEN_ICONS: Record<string, ComponentType<IconProps>> = {
 };
 
 export function GardenIcon({ name, size = 18 }: { name: unknown; size?: number }) {
+  const compose = useComposeContent();
+  if (compose && hasIcon(String(name))) return <span aria-hidden="true" dangerouslySetInnerHTML={{__html:iconSvg(String(name)).replace('class="g-compose-icon"', `class="g-compose-icon" style="width:${size}px;height:${size}px"`)}}/>;
   const Icon = typeof name === "string" ? GARDEN_ICONS[name.trim().toLowerCase()] : undefined;
   return Icon ? <Icon className="g-ic" size={size} weight="regular" aria-hidden="true" /> : null;
 }

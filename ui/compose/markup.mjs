@@ -1,3 +1,4 @@
+import { FEATURE_TAGS, FEATURE_PARTS, compileFeature, featurePart } from "./features.mjs";
 import { ArticleContentError, renderArticleContent } from "../garden/article-content.mjs";
 import { isColor } from "../core/color.mjs";
 /**
@@ -95,6 +96,8 @@ const VOID = new Set([
   "stat",
   "empty",
 ]);
+for (const tag of FEATURE_TAGS) (["file", "metric"].includes(tag) ? VOID : LAYOUT).add(tag);
+for (const tag of FEATURE_PARTS) (["edge", "datum"].includes(tag) ? VOID : LAYOUT).add(tag);
 const KNOWN = new Set([...LAYOUT, ...TEXTISH, ...VOID, "message", "option"]);
 
 const LANE_TONES = new Set(["forward", "back"]);
@@ -342,6 +345,8 @@ function layoutNode(name, attrs, children, defaults = {}) {
 
 function elementNode(tag, children) {
   const { name, attrs } = tag;
+  if (FEATURE_TAGS.has(name)) return compileFeature(name, attrs, children, fail);
+  if (FEATURE_PARTS.has(name)) return featurePart(name, attrs, children);
   if (VOID.has(name)) fail(`${name} 要写成自闭合标签。`);
   switch (name) {
     case "markdown":
@@ -438,13 +443,15 @@ function elementNode(tag, children) {
     }
     case "compare": {
       const items = children.filter((child) => child.type === "item");
+      if (items.some(item => item.verdict)) return {type:"feature",name:"compare",tag:"compare",props:{items:items.map(item=>({title:item.title,text:item.children.filter(child=>child.type==="text").map(child=>child.text),...(item.verdict?{verdict:item.verdict}:{})}))}};
       if (items.length < 2 || items.length > 4) fail("compare 要有 2 到 4 项。");
       return { type: "compare", items };
     }
     case "item": {
       const title = children.find((child) => child.type === "title");
       const text = children.find((child) => child.type === "text");
-      return { type: "item", title: title?.text || "", text: text?.text || "", tone: enumAttr(attrs, "tone", TONES, "plain") };
+      if (attrs.verdict && !["good", "bad"].includes(attrs.verdict)) fail("item verdict 只能是 good/bad。");
+      return { type: "item", title: title?.text || "", text: text?.text || "", children, verdict: attrs.verdict || "", tone: enumAttr(attrs, "tone", TONES, "plain") };
     }
     case "callout":
       return { type: "callout", tone: enumAttr(attrs, "tone", CALLOUT_TONES, "note"), text: inlineText(children) };
@@ -520,6 +527,8 @@ function elementNode(tag, children) {
 
 function voidNode(tag) {
   const { name, attrs } = tag;
+  if (FEATURE_TAGS.has(name)) return compileFeature(name, attrs, [], fail);
+  if (FEATURE_PARTS.has(name)) return featurePart(name, attrs);
   if (name === "arrow") {
     const direction = attrs.dir || attrs.direction || "down";
     if (direction !== "down" && direction !== "right" && direction !== "left" && direction !== "up") {
@@ -696,8 +705,10 @@ function parseRegion(src, from, stop, depth, state) {
     if (state.nodes > MAX_NODES) fail("节点太多（最多 220 个）。");
     if (tag.self || VOID.has(tag.name)) {
       if (!tag.self && !VOID.has(tag.name)) fail(`${tag.name} 没有闭合。`);
-      if (!VOID.has(tag.name)) fail(`${tag.name} 不能自闭合。`);
-      nodes.push(withColors(voidNode(tag), tag));
+      if (!VOID.has(tag.name) && !FEATURE_TAGS.has(tag.name) && !FEATURE_PARTS.has(tag.name)) fail(`${tag.name} 不能自闭合。`);
+      const node = withColors(voidNode(tag), tag);
+      if (node.type === "feature" && node.name === "file") node.written = src.slice(tag.index, tag.end);
+      nodes.push(node);
       i = tag.end;
       continue;
     }
@@ -713,7 +724,9 @@ function parseRegion(src, from, stop, depth, state) {
       continue;
     }
     const inner = parseRegion(src, tag.end, tag.name, depth + 1, state);
-    nodes.push(withColors(elementNode(tag, inner.nodes), tag));
+    const node = withColors(elementNode(tag, inner.nodes), tag);
+    if (node.type === "feature" && node.name === "file") node.written = src.slice(tag.index, inner.index);
+    nodes.push(node);
     i = inner.index;
   }
   if (stop) fail(`缺少 </${stop}>。`);
@@ -745,6 +758,8 @@ export function parseCompose(body) {
     if (!nodes.length) return uncompiled();
     const scene = nodes.length === 1 && nodes[0].type === "figure" ? nodes[0] : null;
     if (!scene && nodes.some(node => node.type === "figure" && node.frame)) fail("figure 的 frame 只能用于唯一的最外层 figure。");
+    const rejectLooseParts = children => { for (const node of children) { if (node.type === "feature-part") fail(`<${node.tag}> 必须位于对应的 Compose 语义组件中。`); if (node.children) rejectLooseParts(node.children); } };
+    rejectLooseParts(nodes);
     if (countNodes(nodes) > MAX_NODES) fail("节点太多（最多 220 个）。");
     return {
       ok: true,

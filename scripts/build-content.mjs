@@ -1,3 +1,5 @@
+import { parseCompose } from "../ui/compose/index.mjs";
+import { looksLikePlayCompose } from "../ui/compose/dil.mjs";
 import crypto from "node:crypto";
 import fs from "node:fs";
 
@@ -382,7 +384,33 @@ function resolveFileEntry(file, markdownPath, sourcePath, options = {}) {
  * files to the public folder, and replace the YAML with `resolved:` data the
  * page renders without reading the file system.
  */
+function rewriteComposeFiles(content, markdownPath, sourcePath, options) {
+  const fences = scanFences(maskHtmlComments(content)).filter(fence => parseGardenInfo(fence.info)?.name === "compose" && !fence.unclosed && !looksLikePlayCompose(fence.body));
+  const lines = content.split("\n");
+  for (const fence of [...fences].reverse()) {
+    const parsed = parseCompose(fence.body);
+    if (!parsed.ok) continue; // Existing authoritative check reports syntax diagnostics.
+    const files = [];
+    const walk = nodes => { for (const node of nodes) { if (node.type === "feature" && node.name === "file") files.push(node); if (node.children) walk(node.children); } };
+    walk(parsed.doc.nodes);
+    if (!files.length) continue;
+    let body = fence.body;
+    for (const node of files) {
+      if (node.props.resolved) fail(sourcePath, `第 ${fence.line} 行 Compose file：resolved 由构建生成，不要手写`);
+      const read = readFileProps(node.props);
+      if (read.errors.length) fail(sourcePath, read.errors.join("；"));
+      const resolved = {layout:read.layout,...(read.title?{title:read.title}:{}),files:read.files.map(file=>resolveFileEntry(file,markdownPath,sourcePath,options)),source:node.written};
+      const replacement = `<file resolved="${encodeURIComponent(JSON.stringify(resolved))}"/>`;
+      body = body.replace(node.written, replacement);
+    }
+    const indent = " ".repeat(fence.indent);
+    lines.splice(fence.line-1,fence.endLine-fence.line+1,`${indent}${fence.marker}${fence.info}`,body.trimEnd(),`${indent}${fence.marker}`);
+  }
+  return lines.join("\n");
+}
+
 function rewriteFileFences(content, markdownPath, sourcePath, options = {}) {
+  content = rewriteComposeFiles(content, markdownPath, sourcePath, options);
   const fences = scanFences(maskHtmlComments(content)).filter((fence) => parseGardenInfo(fence.info)?.name === "file" && !fence.unclosed);
   if (!fences.length) return content;
   const lines = content.split("\n");

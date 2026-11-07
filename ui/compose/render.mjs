@@ -146,6 +146,13 @@ function paintHtml(html, node = {}) {
 
 function renderNodeContent(node, ctx) {
   switch (node.type) {
+    case "feature": {
+      const payload = encodeURIComponent(JSON.stringify({ name: node.name, props: node.props, composeFeature: true }));
+      const p = node.props;
+      const items = p.items ?? p.data ?? p.files ?? [];
+      const text = [p.title, p.description, p.text, p.value, p.caption, ...items.flatMap(item => [item.title, item.label, item.x, item.y, item.value, ...(Array.isArray(item.text) ? item.text : [item.text])])].filter(value => value != null).map(value => textHtml(String(value))).join("<br>");
+      return `<garden-block data-payload="${payload}"><section class="g-compose-feature-fallback">${text}</section></garden-block>`;
+    }
     case "content":
       return `<div class="g-compose-content">${renderArticleContent(node.source)}</div>`;
     case "stack":
@@ -181,7 +188,7 @@ function renderNodeContent(node, ctx) {
       return renderSteps(node, ctx);
     case "compare":
       return `<div class="g-compose-compare">${node.items
-        .map((item) => `<div class="g-compose-card" data-tone="${esc(item.tone)}">${item.title ? `<span class="g-compose-card-title">${textHtml(item.title)}</span>` : ""}${item.text ? `<span class="g-compose-card-text">${textHtml(item.text)}</span>` : ""}</div>`)
+        .map((item) => `<div class="g-compose-card" data-tone="${esc(item.tone)}">${item.children ? renderChildren(item.children, ctx) : `${item.title ? `<span class="g-compose-card-title">${textHtml(item.title)}</span>` : ""}${item.text ? `<span class="g-compose-card-text">${textHtml(item.text)}</span>` : ""}`}</div>`)
         .join("")}</div>`;
     case "callout":
       return `<aside class="g-compose-callout" data-tone="${esc(node.tone)}"><p>${textHtml(node.text)}</p></aside>`;
@@ -382,12 +389,17 @@ export function composeText(doc) {
   if (doc?.caption) parts.push(doc.caption);
   const pushItem = (item) => {
     if (!item || typeof item !== "object") return;
-    if (item.title) parts.push(item.title);
-    if (item.text) parts.push(item.text);
+    if (!item.children && item.title) parts.push(item.title);
+    if (!item.children && item.text) parts.push(item.text);
     if (item.badge?.text) parts.push(item.badge.text);
     if (item.kpi?.value) parts.push(item.kpi.value);
     if (item.kpi?.unit) parts.push(item.kpi.unit);
     if (item.kpi?.label) parts.push(item.kpi.label);
+    if (item.type === "feature") {
+      const visible = new Set(["title","label","description","caption","text","value","unit","meta","site","takeaway","reply","note","date"]);
+      const walk = (value,key="") => { if (Array.isArray(value)) value.forEach(v=>walk(v,key)); else if(value && typeof value==="object") Object.entries(value).forEach(([k,v])=>walk(v,k)); else if(visible.has(key)&&value!=null) parts.push(articleContentText(String(value))); };
+      walk(item.props);
+    }
     if (item.type === "content") parts.push(articleContentText(item.source));
     if (item.type === "icon" && item.name) parts.push(item.name);
   };

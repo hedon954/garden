@@ -1,11 +1,10 @@
 "use client";
+import { AuthorRich as Rich } from "./AuthorRich";
 
 import { useEffect, useRef, type ReactNode } from "react";
-import ReactMarkdown from "react-markdown";
 import { useUi, useUiLang } from "../UiLang";
 import { langOf, ui } from "../../lib/i18n";
 import { interactiveUiSource } from "../../../ui/core/garden-fence.mjs";
-import { markdownPlugins } from "../../lib/markdown-plugins";
 import { compileUiBlock } from "../../../ui/core/compile.mjs";
 import { splitCompareLine } from "../../../ui/garden/compare-line.mjs";
 import { RuntimeLangProvider, UiErrorCard, UiFigure, type Diagnostic, type UiPayload } from "../../../ui/react";
@@ -20,13 +19,7 @@ function publicSrc(src: string) {
   return `${BASE_PATH}${src}`;
 }
 
-function Rich({ text }: { text: string }) {
-  return (
-    <ReactMarkdown remarkPlugins={markdownPlugins} components={{ p: ({ children }) => <>{children}</> }}>
-      {String(text ?? "")}
-    </ReactMarkdown>
-  );
-}
+
 
 function hostOf(url: string) {
   try {

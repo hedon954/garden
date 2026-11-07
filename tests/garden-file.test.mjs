@@ -489,3 +489,24 @@ test("an html or pdf preview keeps focus in the drawer: sentinels around the ifr
   assert.match(css, /\.gf-hint \{[^}]*font-size: 12px;[^}]*color: var\(--muted\);/u);
   assert.match(css, /@media \(hover: none\) and \(pointer: coarse\) \{ \.gf-hint \{ display: none; \} \}/u);
 });
+
+
+test("Compose native files retain real build asset copies and previews", async () => {
+  const site = await fileSite();
+  try {
+    await writeFile(path.join(site,"content/posts/notes/kit.md"), post('```garden compose\n<stack><file src="./kit/data.csv" title="Data"/><files title="Sources"><file src="./kit/guide.md" note="Read"/><file src="./kit/demo.html"/></files></stack>\n```'));
+    await buildContent(site);
+    const generated = await readFile(path.join(site,".garden/generated-content.ts"),"utf8");
+    const content = JSON.parse(/"content": ("(?:[^"\\]|\\.)*")/u.exec(generated)[1]);
+    const {parseCompose,renderCompose}=await import("../ui/compose/index.mjs");
+    const body=content.split("```garden compose\n")[1].split("```")[0];
+    const parsed=parseCompose(body); assert.equal(parsed.ok,true,JSON.stringify(parsed.error));
+    const nodes=parsed.doc.nodes[0].children;
+    assert.equal(nodes[0].props.resolved.files[0].url,"/media/posts/notes/kit/data.csv");
+    assert.equal(nodes[1].props.resolved.files.length,2);
+    assert.equal(nodes[1].props.resolved.files[0].preview,"md");
+    assert.match(nodes[1].props.resolved.files[0].previewSrc,/^\/media\//);
+    assert.match(renderCompose(parsed.doc),/garden-block/);
+    assert.equal(await readFile(path.join(site,"public/media/posts/notes/kit/data.csv"),"utf8"),"a,b\n1,2\n");
+  } finally { await rm(site,{recursive:true,force:true}); }
+});
