@@ -53,7 +53,27 @@ function run(script, parameters) {
 }
 if (!diffMode) console.log(selected ? `Garden preflight: ${selected}` : 'Garden preflight: all content (drafts + working-tree/untracked files included)');
 // These are independent: structural failures must never suppress the AI repair prompt.
-const structure = posts.length ? run('check-post.mjs', posts) : 0;
+let structure = 0;
+if (posts.length) {
+  // check-post's JSON remains unchanged for machine consumers; this human-facing
+  // workflow renders its structured diagnostics rather than dumping every result.
+  const result = spawnSync(process.execPath, [path.join(gardenPackageRoot, 'scripts/check-post.mjs'), ...posts], { cwd: root, env, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
+  structure = result.status ?? 1;
+  try {
+    const report = JSON.parse(result.stdout);
+    const errors = report.results.reduce((n, item) => n + item.errors.length, 0);
+    console.log(`结构检查：${report.results.length} 篇，${errors} 个错误`);
+    for (const item of report.results) for (const diagnostic of [...item.errors, ...(item.warnings ?? [])]) {
+      console.log(`${item.file}:${diagnostic.line}  ${diagnostic.code}  ${diagnostic.message}`);
+    }
+  } catch {
+    structure = structure || 1;
+    const log = path.join(root, '.garden/check-structure-error.log');
+    fs.mkdirSync(path.dirname(log), { recursive: true });
+    fs.writeFileSync(log, `${result.stdout ?? ''}\n${result.stderr ?? result.error?.message ?? ''}`);
+    console.error('结构检查异常，详情：.garden/check-structure-error.log');
+  }
+}
 const compose = run('ui-cli.mjs', ['check', ...(diffMode ? changed : selected ? [selected] : ['--all']), '--standalone', '--no-copy']);
 if (structure || compose) console.error('Content checks failed; build/lint stages were not started. Compose repair prompt (when needed): .garden/ui-fix-prompt.md');
 process.exit(structure || compose ? 1 : 0);

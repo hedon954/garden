@@ -193,8 +193,6 @@ function commandCheck() {
     }
   }
   const prompt = buildFixPrompt(problems, { standaloneReference: flag("standalone") ? promptText() : null, lang: cliLang });
-  const separator = "─".repeat(24);
-  process.stderr.write(`${t.promptBanner(separator)}${prompt}${separator}${separator}${"─".repeat(12)}\n`);
   const promptFile = path.join(siteRoot, ".garden", "ui-fix-prompt.md");
   fs.mkdirSync(path.dirname(promptFile), { recursive: true });
   fs.writeFileSync(promptFile, prompt);
