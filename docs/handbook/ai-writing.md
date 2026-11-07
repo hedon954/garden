@@ -9,7 +9,7 @@ order: 2
 在 Garden 里写图表、指标或交互组件不用记标签语法。你在正文写一句自然语言想法，Agent 按站点里的 skill 把它编译成组件，提交时再由同一套命令检查。
 
 > [!IMPORTANT] 人和 Agent 用同一套工具
-> Agent 找块用 `npx garden ui scan`，写回用 `npx garden ui apply`，自查用 `npx garden ui check`；作者提交时 pre-commit 钩子运行的也是 `npx garden ui check`。检查失败时打印的提示词，就是发给 Agent 的下一步指令。
+> Agent 找块用 `npx garden ui scan`，写回用 `npx garden ui apply`，自查用 `npx garden ui check`；作者提交时 pre-commit 钩子运行的也是 `npx garden ui check`。检查失败时保存的提示词，就是发给 Agent 的下一步指令。
 
 ## 1. 写一句想法
 
@@ -48,19 +48,17 @@ order: 2
 
 ## 4. 提交前检查与修复提示词
 
-首次运行 `npx garden sync` 或 `npx garden dev` 时，Garden 会在 `.git/hooks/pre-commit` 写入 `exec npx --no-install garden ui check --staged --quiet`（若已有其他钩子则不覆盖，只提示需添加的命令）。`--staged` 直接通过 `git show :<路径>` 读取暂存区内容，失败时输出文件行号、诊断码和一段修复提示词：
+首次运行 `npx garden sync` 或 `npx garden dev` 时，Garden 会在 `.git/hooks/pre-commit` 写入 `exec npx --no-install garden ui check --staged --quiet`（若已有其他钩子则不覆盖，只提示需添加的命令）。`--staged` 直接通过 `git show :<路径>` 读取暂存区内容，失败时输出文件行号、诊断码和完整修复提示词的保存路径：
 
 ```console
 content/posts/writing-pace.md:9  -  garden-idea  还有没编译的想法
 
-──────────────────────── 发给 AI 的修复提示词 ────────────────────────
-请处理下面 Garden 博文里列出的块：没编译的想法要编译，有错误的交互块要修好。
-……
+已写入 .garden/ui-fix-prompt.md。
 ```
 
 - 提示词同时写入 `.garden/ui-fix-prompt.md`，系统有 `pbcopy`、`wl-copy`、`xclip`、`xsel` 或 `clip` 时自动复制到剪贴板；传入 `--no-copy` 或设置 `GARDEN_UI_NO_COPY=1` 可关闭自动复制。
 - 需要把提示词发给无法读取本地仓库的网页端聊天窗口时，运行 `npx garden ui check <稿件.md> --standalone`，提示词末尾会附上完整的 `npx garden ui prompt` 组件规则（单次最多附 10 个问题块的原文）。
-- 交互块里写错标签名（如把 `<Slider>` 写成 `<Slidr>`）也会报 `ui-component` 并指到具体行号；确实要先带病提交时可用 `git commit --no-verify`。
+- 交互块里写错标签名（如把 `<Slider>` 写成 `<Slidr>`）也会报 `ui-component` 并指到具体行号。
 - 需要重装钩子时运行 `npx garden hooks`（加 `--force` 覆盖已有钩子）；不想自动安装钩子时设置 `GARDEN_SKIP_HOOKS=1`。
 
 ## 5. 用一句话生成代码对比

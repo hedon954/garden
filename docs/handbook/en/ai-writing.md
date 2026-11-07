@@ -48,19 +48,17 @@ Authors and Agents run the same `garden ui` subcommands; when an idea fence has 
 
 ## 4. Pre-commit Hook and Fix Prompts
 
-On the first `npx garden sync` or `npx garden dev` run, Garden writes `exec npx --no-install garden ui check --staged --quiet` to `.git/hooks/pre-commit` (if a custom hook already exists, it leaves the file untouched and prints the line to add). `--staged` reads staged content directly via `git show :<path>` and, on failure, prints the line numbers, diagnostic codes, and a fix prompt:
+On the first `npx garden sync` or `npx garden dev` run, Garden writes `exec npx --no-install garden ui check --staged --quiet` to `.git/hooks/pre-commit` (if a custom hook already exists, it leaves the file untouched and prints the line to add). `--staged` reads staged content directly via `git show :<path>` and, on failure, prints line numbers, diagnostic codes, and the saved full prompt path:
 
 ```console
 content/posts/writing-pace.md:9  -  garden-idea  uncompiled idea remaining
 
-──────────────────────── Fix prompt for AI ────────────────────────
-Handle the Garden post blocks listed below: compile uncompiled ideas, and fix interactive blocks that have errors.
-……
+Wrote .garden/ui-fix-prompt.md.
 ```
 
 - The prompt is written to `.garden/ui-fix-prompt.md` and copied to the clipboard when `pbcopy`, `wl-copy`, `xclip`, `xsel`, or `clip` is available; pass `--no-copy` or set `GARDEN_UI_NO_COPY=1` to disable clipboard copying.
 - When pasting into a web chat that cannot read your local repository, run `npx garden ui check <post.md> --standalone` to append the full `npx garden ui prompt` rules to the prompt (including source fences for up to 10 failing blocks).
-- A misspelled tag inside an interactive block (such as `<Slidr>` instead of `<Slider>`) reports `ui-component` with its exact line number; to commit anyway, run `git commit --no-verify`.
+- A misspelled tag inside an interactive block (such as `<Slidr>` instead of `<Slider>`) reports `ui-component` with its exact line number.
 - Run `npx garden hooks` to reinstall the hook (pass `--force` to overwrite an existing hook), or set `GARDEN_SKIP_HOOKS=1` to skip automatic hook installation.
 
 ## 5. Generate a Code Diff from One Sentence

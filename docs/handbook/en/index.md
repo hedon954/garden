@@ -52,36 +52,17 @@ $ npx garden ui apply content/posts/writing-pace.md --intent-hash 8866427a --fil
 {"ok":true,"file":"content/posts/writing-pace.md","kind":"garden","line":9}
 ```
 
-### 3. The Pre-commit Hook Checks and Prints a Fix Prompt
+### 3. The Pre-commit Hook Checks and Saves a Fix Prompt
 
-On the first `garden sync` or `garden dev` run, Garden writes `exec npx --no-install garden ui check --staged --quiet` to `.git/hooks/pre-commit`. If the author commits before step 2, the hook blocks the commit and prints a ready-to-paste prompt for the AI:
+On the first `garden sync` or `garden dev` run, Garden writes `exec npx --no-install garden ui check --staged --quiet` to `.git/hooks/pre-commit`. If the author commits before step 2, the hook blocks the commit and shows diagnostics and the saved AI prompt path:
 
 ```console
 $ git commit -m "Writing pace"
 content/posts/writing-pace.md:9  -  garden-idea  uncompiled idea remaining
-
-──────────────────────── Fix prompt for AI ────────────────────────
-Handle the Garden post blocks listed below: compile uncompiled ideas, and fix interactive blocks that have errors.
-
-Rules:
-- First run npx garden ui prompt and read the component catalog and rules; if the repo has the garden-compose skill, follow its flow.
-- Change only the listed blocks. Write them back with npx garden ui apply <post> --id <id> (use --intent-hash for ideas without an id). Do not edit the post by hand.
-- Keep the author's meaning. When done, run npx garden ui check <post> until it passes.
-- If you cannot access this repository, reply with only the finished fence for each block.
-
-1. content/posts/writing-pace.md, lines 9–11, intent-hash: 8866427a
-   - garden-idea: this idea is not compiled yet; compile it into garden compose or another garden component (or put the sentence back into the prose).
-
-Current fence:
-
-```garden
-Let the reader drag daily word count and writing days per week to see how many weeks an 8,000-word article takes.
-```
-────────────────────────────────────────────────────────────
-Wrote .garden/ui-fix-prompt.md. To commit anyway, run git commit --no-verify.
+Wrote .garden/ui-fix-prompt.md.
 ```
 
-The same prompt is saved to `.garden/ui-fix-prompt.md` and copied to the clipboard when a clipboard command is available. Once the Agent applies the block and the author commits again, the hook exits silently with code `0`.
+The terminal shows diagnostics and the saved prompt path, not the source or catalog. Give the AI the contents of `.garden/ui-fix-prompt.md`. Direct checks may copy it when a clipboard command is available; `make check` disables clipboard copying. After the block is fixed, the hook exits silently with code `0`.
 
 ### 4. The Rendered Result
 

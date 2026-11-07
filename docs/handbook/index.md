@@ -54,29 +54,15 @@ $ npx garden ui apply content/posts/writing-pace.md --intent-hash cb3a3569 --fil
 
 ### 3. 提交前钩子检查并生成修复提示词
 
-首次运行 `garden sync` 或 `garden dev` 时，Garden 会在 `.git/hooks/pre-commit` 写入 `exec npx --no-install garden ui check --staged --quiet`。如果作者在第 2 步之前直接提交，钩子会拦下提交，并打印一段可以直接粘贴给 AI 的修复提示词：
+首次运行 `garden sync` 或 `garden dev` 时，Garden 会在 `.git/hooks/pre-commit` 写入 `exec npx --no-install garden ui check --staged --quiet`。如果作者在第 2 步之前直接提交，钩子会拦下提交，并显示诊断和完整提示词的保存路径：
 
 ```console
 $ git commit -m "写作节奏"
 content/posts/writing-pace.md:9  -  garden-idea  还有没编译的想法
-
-──────────────────────── 发给 AI 的修复提示词 ────────────────────────
-请处理下面 Garden 博文里列出的块：没编译的想法要编译，有错误的交互块要修好。
-
-要求：
-- 先运行 npx garden ui prompt，读组件目录和规则；仓库里有 garden-compose skill 时按它的流程做。
-- 只改列出的块，用 npx garden ui apply <稿件> --id <id> 写回（没有 id 的想法用 --intent-hash），不要直接编辑稿件。
-- 不改作者原话的意思。改完运行 npx garden ui check <稿件>，直到通过。
-- 如果你不能访问这个仓库，就只回复每块修好后的完整围栏。
-
-1. content/posts/writing-pace.md，第 9–11 行，intent-hash: cb3a3569
-   - garden-idea：这段想法还没编译，请按原话编译成 garden compose 或其他 garden 组件（或判断后写回正文）。
-（后面附当前围栏原文）
-────────────────────────────────────────────────────────────
-已写入 .garden/ui-fix-prompt.md。确实要先提交，可以用 git commit --no-verify。
+已写入 .garden/ui-fix-prompt.md。
 ```
 
-这段提示词同时写入 `.garden/ui-fix-prompt.md`，有剪贴板命令时自动复制。把提示词贴给 Agent 完成转换后再提交，钩子静默通过（退出码 `0`）。
+终端只显示诊断与提示词路径，不展开原文和组件目录。把 `.garden/ui-fix-prompt.md` 的内容交给 AI；直接运行检查时可复制到剪贴板，`make check` 则关闭自动复制。修复后钩子静默返回 `0`。
 
 ### 4. 页面渲染结果
 
@@ -98,7 +84,7 @@ intent: |
 ```
 
 > [!IMPORTANT] 人和 Agent 用同一套工具
-> Agent 找块用的 `npx garden ui scan`、写回用的 `npx garden ui apply`、自查用的 `npx garden ui check`，和作者提交时 pre-commit 钩子运行的检查是同一组命令。钩子拦截时打印的提示词，就是发给 Agent 的下一步指令。详见 [用 AI 写作](/garden/ai-writing)。
+> Agent 找块用的 `npx garden ui scan`、写回用的 `npx garden ui apply`、自查用的 `npx garden ui check`，和作者提交时 pre-commit 钩子运行的检查是同一组命令。钩子拦截时保存的提示词，就是发给 Agent 的下一步指令。详见 [用 AI 写作](/garden/ai-writing)。
 
 下面几节介绍不用 Agent 也会自动生效的版面与组件规则。
 

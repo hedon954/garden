@@ -97,7 +97,7 @@ test("ui apply refuses a broken garden interactive and an uncompiled idea", () =
 });
 
 function site(markdown) {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "garden-fence-"));
+  const dir = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), "garden-fence-")));
   fs.mkdirSync(path.join(dir, "content/posts"), { recursive: true });
   fs.writeFileSync(path.join(dir, "content/posts/a.md"), markdown);
   return dir;
@@ -109,13 +109,14 @@ const cli = (dir, ...args) => spawnSync(process.execPath, [path.join(root, "bin/
   env: { ...process.env, GARDEN_SITE: dir, GARDEN_UI_NO_COPY: "1" },
 });
 
-test("garden ui check (the pre-commit hook's command) fails on garden blocks and prints the prompt", () => {
+test("garden ui check (the pre-commit hook's command) fails on garden blocks and saves the prompt without printing it", () => {
   const dir = site(post());
   const result = cli(dir, "check", "content/posts/a.md", "--no-copy");
   assert.equal(result.status, 1);
   assert.match(result.stderr, /content\/posts\/a\.md:9 {2}- {2}garden-idea {2}还有没编译的想法/u);
   assert.match(result.stderr, /kv {2}ui-component/u);
-  assert.match(result.stderr, /发给 AI 的修复提示词/u);
+  assert.match(result.stderr, /已写入 \.garden\/ui-fix-prompt\.md/u);
+  assert.doesNotMatch(result.stderr, /发给 AI 的修复提示词|no-verify/u);
   assert.ok(fs.existsSync(path.join(dir, ".garden/ui-fix-prompt.md")));
 });
 
@@ -125,7 +126,7 @@ test("garden ui check prints English messages when site locale is en", () => {
   const result = cli(dir, "check", "content/posts/a.md", "--no-copy");
   assert.equal(result.status, 1);
   assert.match(result.stderr, /content\/posts\/a\.md:9 {2}- {2}garden-idea {2}uncompiled idea remaining/u);
-  assert.match(result.stderr, /Fix prompt for AI/u);
+  assert.doesNotMatch(result.stderr, /Fix prompt for AI|no-verify/u);
   assert.match(result.stderr, /Wrote \.garden\/ui-fix-prompt\.md/u);
   assert.match(result.stderr, /kv {2}ui-component/u);
   assert.ok(fs.existsSync(path.join(dir, ".garden/ui-fix-prompt.md")));
@@ -142,9 +143,9 @@ test("garden ui check --staged reads the staged version", () => {
   assert.equal(cli(dir, "check", "--staged", "--quiet", "--no-copy").status, 0);
 });
 
-test("drafts may keep garden ideas", () => {
+test("drafts expose garden ideas just like published posts", () => {
   const dir = site(post("draft: true\n").replace('<Slidr bind="batch" />', '<Slider bind="batch" min={1} max={8} label="batch" />'));
-  assert.equal(cli(dir, "check", "content/posts/a.md", "--no-copy").status, 0);
+  assert.equal(cli(dir, "check", "content/posts/a.md", "--no-copy").status, 1);
 });
 
 // The handbook's end-to-end example (overview and 用 AI 写作) quotes real output.
@@ -189,7 +190,7 @@ test("the handbook's AI-writing example matches what the commands print", () => 
   assert.ok(enOverview.includes(`"intentHash": ${JSON.stringify(enBlock.intentHash)}`), enBlock.intentHash);
   const enCheck = cli(enDir, "check", "content/posts/writing-pace.md", "--no-copy");
   assert.match(enCheck.stderr, /uncompiled idea remaining/u);
-  assert.match(enCheck.stderr, /Fix prompt for AI/u);
+  assert.match(enCheck.stderr, /Wrote \.garden\/ui-fix-prompt\.md/u);
   const enDiagnostic = enCheck.stderr.split("\n")[0];
   assert.ok(enOverview.includes(enDiagnostic) && enAi.includes(enDiagnostic), enDiagnostic);
   for (const line of enCheck.stderr.split("\n").slice(2, 9)) {
