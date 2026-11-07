@@ -9,7 +9,7 @@ order: 45
 An image that is its own paragraph is wrapped in a figure, with a caption underneath.
 
 - **When to use**: The figure belongs in the article, and the reader should see a caption under it.
-- **When to skip**: For a decorative image, start the alt text with `image` or `img` so there is no caption. Use an [explanation diagram](/garden/en/components/compose) when each step needs its own note, or [file download](/garden/en/components/file) when the reader should download the file.
+- **When to skip**: For a decorative image, start the alt text with `image` or `img` so there is no caption. Use an [explanation diagram](/garden/en/components/compose) when each step needs its own note, or [file download](/garden/en/components/compose) when the reader should download the file.
 
 For a post at `content/posts/my-post.md`, put images in `content/posts/my-post/`. Reference them with Markdown image syntax, with the address `./my-post/diagram.svg` and the caption in the alt text.
 

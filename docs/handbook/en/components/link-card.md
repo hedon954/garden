@@ -9,7 +9,7 @@ order: 43
 A URL on its own paragraph, or a link followed immediately by `{card}`, renders as a link card (same-site and external share one path). An ordinary titled link in prose stays a link, such as [Typora](https://typora.io/): an external one shows the site favicon before the text and a `↗` at the upper right; a titled same-site link still navigates in place.
 
 - **When to use**: The reader should see the site name, title, and summary before opening the page.
-- **When to skip**: Use a [source chip](/garden/en/components/source) to cite a site inside a sentence, or a [reference card](/garden/en/components/card) when you are writing the takeaways yourself.
+- **When to skip**: Use a [source chip](/garden/en/components/source) to cite a site inside a sentence, or a [reference card](/garden/en/components/compose) when you are writing the takeaways yourself.
 
 ## A URL on its own line
 

@@ -136,20 +136,8 @@ pages:
 
 需要数字、对比、时间线或图表时，用 ```` ```garden <name> ```` 围栏插入内置组件。下面是一组 `garden stat`：
 
-```garden stat
-items:
-  - label: 正文阅读列
-    value: "740"
-    unit: px
-    caption: 段落、代码块与列表的默认列宽
-  - label: 宽幅配图区
-    value: "1040"
-    unit: px
-    caption: 截图按像素宽度的一半显示，像素宽度约 2000px 以上时展开到这个宽度
-  - label: 多列宽表区
-    value: "1340"
-    unit: px
-    caption: 宽表格在桌面端向两侧对称外扩上限
+```garden compose
+<stack><metric label="正文阅读列" value="740" unit="px" caption="段落、代码块与列表的默认列宽"></metric><metric label="宽幅配图区" value="1040" unit="px" caption="截图按像素宽度的一半显示，像素宽度约 2000px 以上时展开到这个宽度"></metric><metric label="多列宽表区" value="1340" unit="px" caption="宽表格在桌面端向两侧对称外扩上限"></metric></stack>
 ```
 
 组件页包括各个 `garden` 围栏，以及链接卡片、来源胶囊和本地图片。说明图是 [compose](/garden/components/compose)。效果见左侧导航的 [组件总览](/garden/components)。

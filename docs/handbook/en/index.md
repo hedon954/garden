@@ -136,20 +136,8 @@ pages:
 
 Use ```` ```garden <name> ```` fences to insert metrics, side-by-side comparisons, timelines, or charts. Here is a `garden stat` block:
 
-```garden stat
-items:
-  - label: Reading Column
-    value: "740"
-    unit: px
-    caption: Default width for paragraphs, code blocks, and lists
-  - label: Wide Figure Zone
-    value: "1040"
-    unit: px
-    caption: Screenshots display at half their pixel width and expand up to this limit above ~2000px
-  - label: Wide Table Zone
-    value: "1340"
-    unit: px
-    caption: Maximum width for wide multi-column tables expanding symmetrically on desktop
+```garden compose
+<stack><metric label="Reading Column" value="740" unit="px" caption="Default width for paragraphs, code blocks, and lists"></metric><metric label="Wide Figure Zone" value="1040" unit="px" caption="Screenshots display at half their pixel width and expand up to this limit above ~2000px"></metric><metric label="Wide Table Zone" value="1340" unit="px" caption="Maximum width for wide multi-column tables expanding symmetrically on desktop"></metric></stack>
 ```
 
 The component pages cover the `garden` fences, plus link cards, source chips, and local images. Explanation diagrams are [compose](/garden/en/components/compose). See [Components Overview](/garden/en/components) for the live examples.

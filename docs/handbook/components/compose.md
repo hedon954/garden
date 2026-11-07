@@ -20,7 +20,7 @@ badge: compose
 - **谁连谁**：谁先到谁、从一处散开，还是几处收到一起。没有先后顺序，就直接写「这几块没有先后」。
 - **哪块是重点**：直接点名，比如「中间那列是重点」「下面一行才是重点」。
 
-不要写颜色、圆角、灰胶囊、字重、间距、阴影、要不要撑满。外观由组件默认样式决定，写了反而乱。
+先说明视觉关系与重点，再使用受支持的属性表达必要样式。默认样式不保证复刻参考图，必须检查真实排版。
 
 **完整标签与属性**见 [组件参考 · compose](/garden/reference/compose)；**全部图标名**见 [compose 图标](/garden/reference/compose-icons)。
 
@@ -120,7 +120,7 @@ Role 在中间，把用户和权限接起来。Role 是重点。
 - `{#if …}{:else}{/if}`、`{#each … as item, i}{/each}` 控制流
 - 小写控件：`<slider>`、`<choice>`、`<button>`、`<pie>` / `<chart>`、`<stat>`
 
-旧的 `garden interactive` 与 PascalCase 仅作兼容。完整映射见仓库 `docs/compose-dil.md`。
+作者标签使用小写目录；`@body` 声明状态，不写内部组件 IR。完整语法见仓库 `docs/compose-dil.md`。
 
 ```garden compose #compose-play-demo
 caption: 拧一下席位，看月费。

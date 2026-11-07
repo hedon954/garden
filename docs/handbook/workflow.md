@@ -41,22 +41,17 @@ order: 40
 | `missing-title` / `missing-description` | 错误 | Front Matter 缺少有效的 `title` 或 `description` |
 | `unexpected-slug` | 错误 | Front Matter 中手写了 `slug` 字段（文件名即标识，删掉 `slug`） |
 | `date-format` | 错误 | `date` 不是合法的 `YYYY-MM-DD`、`YYYY-MM-DD HH:mm:ss` 或带时区的 ISO 时间 |
-| `missing-cover` / `missing-asset` | 错误 | `cover` 封面图、正文图片或 `garden file` 引用的本地文件不存在 |
+| `missing-cover` / `missing-asset` | 错误 | `cover` 封面图、正文图片或 Compose `file` 引用的本地文件不存在 |
 | `heading-h1` / `heading-skip` | 错误 | 正文使用了 `#` 一级标题，或标题层级跳级（例如从 `##` 直接跳到 `####`） |
 | `reference-heading` | 错误 | 正文写了 `## 参考` 或 `## 参考资料` 标题（应改放到 Front Matter 的 `references` 列表） |
 | `callout-type` | 错误 | `> [!TYPE]` 使用了不支持的提示框类型 |
 | `title-split` | 警告 | 标题包含 `丨` 分隔符，但分隔符左边或右边为空（应写成「主题丨副题」） |
 | `diff-orphan` | 错误 | `diff` 代码块前面没有紧挨着的完整代码块 |
-| `legacy-fence` | 错误 | 使用了旧版围栏名（如 `garden:stat`、`widget`、`embed`、`html garden`），需改为 `garden <name>` |
-| `garden-idea` | 错误 | 非草稿文章里还有未编译的空白 `garden` 想法块 |
 | `compose-uncompiled` | 错误 | 非草稿里的 `garden compose` 还是白话，没有编译成标记 |
 | `compose-invalid` | 错误 | `garden compose` 的标记不合法：未知标签、没闭合，或写成了 YAML 槽 |
-| `garden-name` | 错误 | 未知的 `garden` 组件名（支持 `card`、`stat`、`compare`、`timeline`、`chart`、`compose`、`html`、`interactive`、`file`、`relations`、`list`、`choice`） |
-| `garden-yaml` | 错误 | `garden` 围栏内 YAML 语法错误、顶层不是键值/列表，或包含该组件不支持的键名 |
-| `garden-relations` | 错误 | `garden relations` 的要素数量不在 3～6 个之间，或 `links` 配置不合法（要素更多或有分支改用 `mermaid` 流程图，只走一遍的步骤用 `garden list`） |
-| `garden-file` / `file-outside` | 错误 | `garden file` 手写了 `resolved`、缺少有效的 `src` / `files`，或本地路径越出了 `content/` 目录 |
-| `file-large` | 警告 | `garden file` 引用的单个本地文件体积超过 `5 MB` |
-| `compare-long` | 错误 | `garden compare` 并排模式下单个对比格的正文超过约 60 字（带 `verdict` 的上下对照不受此限） |
+| `garden-name` | Error / 错误 | Author component fences must use `garden compose`. |
+| `compose-file` / `file-outside` | 错误 | Compose `file` 手写了 `resolved`、缺少有效的 `src` / `files`，或本地路径越出了 `content/` 目录 |
+| `file-large` | 警告 | Compose `file` 引用的单个本地文件体积超过 `5 MB` |
 | `interactive-trivial` / `steps-prose` | 错误 | `garden compose` 只有一次简单乘法，或步骤只是散文而没有状态变化 |
 
 ## 3. Git 提交前钩子与组件画廊
@@ -77,9 +72,9 @@ Garden 通过以下三种方式提供组件模板与智能辅助：
 1. **新建文章自动附带速查表**：运行 `make new SLUG=xxx TITLE="..."` 创建文章时，生成的 `.md` 文件底部会自动带有一段 `<!-- 组件速查 ... -->` HTML 注释，列出想法块和各个组件的示例写法，复制需要的那块即可。这段注释不会显示在页面上，写完可以删掉。
 2. **代码片段模板文件**：`hd-garden` 包内的 `templates/` 目录自带两份模板文件：
    - `templates/garden-blocks.md`：想法块和内置组件的可复制 Markdown 模板。
-   - `templates/garden-snippets.plist`：macOS 系统文本替换词条（可拖入「系统设置 → 键盘 → 文本替换」），触发词是 `;gidea`（也可以输入 `;garden想法`）、`;gcard`、`;gstat`、`;gcompare`、`;gtimeline`、`;gchart`、`;gcompose`、`;ghtml`、`;ginteractive`、`;gfile`、`;grel`、`;glist`、`;gchoice`。`;gcompose` 展开成带一句白话的 `garden compose`；其余展开成对应围栏。
+   - `templates/garden-snippets.plist`: one Compose author entry; choose components inside the scene.
 3. **安装 AI Agent 技能（`npx garden skill`）**：在站点目录运行 `npx garden skill`（`npx hd-garden init` 时也会自动执行），会把两个技能复制到站点根目录下的 `.agents/skills/`：
-   - `garden-compose`：把文章里的 `garden` 想法描述编译成具体的组件围栏。
+   - `garden-compose`：把文章里的 Compose 意图编译成同一入口内的布局、内容与交互。
    - `garden-post-review`：按排版与组件规范审阅整篇文章。
 
 ## 5. VS Code、Cursor 与 Typora 插件

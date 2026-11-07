@@ -1,189 +1,109 @@
 ---
-title: Component reference · compose
-navTitle: compose
-description: Scannable catalog of every compose tag, shared tokens, and links to the icon grid.
+title: Compose reference
+navTitle: Compose
+description: One author entry, executable rendering contracts and verification.
 section: reference
 order: 6
 badge: compose
 ---
 
-[← Component reference](/garden/en/reference) · [Usage](/garden/en/components/compose) · [Icons](/garden/en/reference/compose-icons)
+## One entry, component selection inside it
 
-Fence: ` ```garden compose `. Author intent stays in `<intent>` (not drawn). Unknown tags fail with `compose-invalid`.
+Use `garden compose`. Select by the reader's task, not by another fence name:
 
-**68 tags** in the catalog below. Icons: **690** names — see [compose icons](/garden/en/reference/compose-icons).
-
-## Shared tokens
-
-Write once; most layout tags accept them. Colors default to Garden theme variables; color / backgroundColor allow explicit overrides (see below).
-
-| Token | Values |
+| Need | Compose structure |
 | :--- | :--- |
-| `padding` / `gap` | `0`–`4` (4px × n) |
-| `background` | `surface` `surface-secondary` `surface-accent` `surface-tip` `surface-muted` `transparent` |
-| `radius` | `none` `sm` `md` `lg` `xl` `full` |
-| `border` | `subtle` `strong`/`true` `none`/`false` |
-| `size` | `sm` `md` `lg` `xl` |
-| `tone` | `plain` `accent` `tip` `muted` (and callout `note`/`warn`) |
-| `align` | `start` `center` `end` `stretch` |
-| `justify` (row) | `start` `center` `end` `between` `around` |
-| `wrap` (row) | `wrap` `nowrap` |
+| Reference material and takeaways | `resources/resource`, nested `point`, `reference` |
+| Key results | `metric` with label, value, unit, caption, paragraphs and references |
+| Time or stages | `timeline/event` |
+| Alternatives and verdicts | `compare/item` |
+| Icon-led editorial paragraphs | `icon-list/entry` or a small `icon` beside one shared text container |
+| Download and preview | `files/file` or one `file src="…"` |
+| Connected concepts | `relations/entity/edge`, stable ids; 3–6 entities |
+| Rich selectable cards and replies | `choices/choice-option`, optional `none` option |
+| Discrete bars and exact values | `plot/datum`; expandable data table |
+| Parameter-dependent results | Play declarations, controls, `chart/bar/line`, `pie`, `table` |
+| Article text and useful HTML | `markdown` and `html` content islands |
+| Independent executable illustration | Play `sandbox` with literal html/css/js; isolated offline iframe |
 
-## High-traffic attributes
+The authoritative, demand-loaded catalog is `npx garden ui schema`: actual semantic fields, Play props/defaults/child contracts, icon names, safe HTML tags/attributes/CSS properties. `npx garden ui prompt` adds working recipes. These are generated from the validators; do not maintain a second exhaustive tag list. Static layout normalization is not a universal HTML/CSS API: inspect the normalized tree and output because some unsupported static layout attributes are ignored. Semantic unknown fields fail validation.
 
-### `box` / `card`
+## Relationships → hierarchy → layout → style → actual output
 
-| Attr | Notes |
-| :--- | :--- |
-| `frame` | `card` (default) `band` `pill` `text` — or sugar tags `<band>` / `<pill>` |
-| `padding` `gap` `radius` `border` `background` `size` `align` `tone` `id` `mark` | shared tokens; `mark="shield"` draws a shield glyph |
+First identify what belongs together. A heading and all its paragraphs must share a container. Next choose columns and proportions, then alignments and typography. Only then add surfaces and decorative details.
 
-### `row` / `stack` / `grid`
+A static `row` wraps by default. Its direct text/title/stack/card children share available width (`flex: 1 1 0`), whereas an icon is content-sized. A heading placed directly in that row is a sibling column, not the heading of a paragraph below the row. `align="center"` on a row changes more than vertical placement: theme rules also center text. A centered stack propagates text alignment. For an editorial list use explicit start alignment on children of a shared right-hand group; do not center each title independently.
 
-| Attr | Notes |
-| :--- | :--- |
-| `gap` `align` | shared |
-| `justify` `wrap` | `row` only |
-| `cols` | `grid` only, 1–6 |
-| `span` | `grid-item` only, 1–6 |
+Direct `row > stack` has 12px top padding in the current theme. A `group` is a width:100%, min-width:0 vertical container that shrinks beside the fixed icon and reads gap without that contextual padding; use it when icon and heading must begin on the same top line. Explicit `align="start"` survives normalization and emits data-align.
 
-### `text` / `title` / `caption`
-
-| Attr | Notes |
-| :--- | :--- |
-| `size` `align` | shared |
-| `tone` | `text`: `plain` `muted` `accent` `tip`. `caption` forces muted. |
-
-### `icon`
-
-| Attr | Notes |
-| :--- | :--- |
-| `name` | required; must be in the [icon catalog](/garden/en/reference/compose-icons) |
-| `size` | `sm` `md` `lg` `xl` |
-| `inline` | sit with surrounding text |
-
-## Tag catalog
-
-One mini sample per group, then a one-line table for every tag. No per-tag essays.
-
-### Layout
+Nested paragraphs need separate `text` leaves or an article content island. Two unrelated top-level leaves do not establish a shared right column. Put a full-width divider **between rows**, not inside the right text container, if the rule must span the icon column too. `divider` and `separator` are real primitives, not text lines.
 
 ```garden compose
-<row gap={2}><box padding={2} radius="md" border="subtle"><title size="sm">A</title></box><box padding={2} radius="md" background="surface-accent"><title size="sm">B</title></box></row>
+<figure frame="none">
+<row wrap="nowrap" align="start" gap="4">
+  <icon name="book-open" size="xl"/>
+  <group gap="2">
+    <title align="start">Test heading — not article content</title>
+    <text align="start">Explicit test paragraph: the heading and this body share the same right column. Keep the author's complete text; do not shrink or summarize it to fit.</text>
+    <text align="start">A second independent test paragraph stays in that column.</text>
+  </group>
+</row>
+<divider/>
+<row wrap="nowrap" align="start" gap="4">
+  <icon name="users" size="xl"/>
+  <group gap="2">
+    <title align="start">Second test heading</title>
+    <text align="start">Another test body, aligned with its heading rather than spanning the icon column.</text>
+  </group>
+</row>
+</figure>
 ```
 
-| Tag | Purpose |
-| :--- | :--- |
-| `box` | Generic container; padding / gap / background / radius |
-| `card` | Alias of box as a card face |
-| `stack` | Vertical stack |
-| `row` | Horizontal row |
-| `columns` | Multi-column row (wrap by default) |
-| `grid` | Equal grid; cols 1–6 |
-| `grid-item` | Grid cell; span columns |
-| `group` | Semantic group |
-| `field` | Form-field group |
-| `header` | Header region |
-| `footer` | Footer region |
-| `figure` | Figure region |
-| `prose` | Prose region |
-| `divider` | Divider (self-closing) |
-| `separator` | Alias of divider |
-| `spacer` | Empty spacer |
-| `band` | Full-width band (box frame=band) |
-| `pill` | Pill (box frame=pill) |
+For a native editorial list the same relationship is expressed with `icon-list` containing `entry icon="…" title="…"`, and multiple `text` children per entry. Native scenes preserve the app's keyboard/selection/detail/file-preview behavior when rendered by the Garden article host. A standalone static export is a readable fallback, not an identical interactive host.
 
-### Text
+## Typography and complete-theme context
+
+Default body text inherits the **actual article's** family, size and line height. There is no universal pixel baseline. This includes ordinary static text, list bodies and native readable prose; changing the article typography configuration must propagate. Semantic headings, graph labels, values, captions and controls intentionally retain their hierarchy.
+
+| Element/context | Actual source rule / intentional variation |
+| :--- | :--- |
+| Static `text` and `title` | Inherit body size; title weight 600, line height 1.4. `size="sm"` .875em; `lg` 1.125em; `xl` 1.25em. `md` keeps the baseline. |
+| Static outer figure title/caption | Source defaults 18px/14px, not ordinary body; actual cascade still matters. |
+| Static inline caption | Own semantic style; `sm` 11px, `lg` 16px. Not a body substitute. |
+| Native icon-list entry title/body | Title weight 600; body inherits article. Group heading uses `--fs-small`. |
+| Native choice value | 22px; narrow rule 20px. Option body inherits article. |
+| Native relation ring | Compact/context-dependent labels and line clamps; detail prose inherits article. Do not treat a ring label as a long paragraph. |
+| Play components | Query schema defaults and complete theme. Their controls/KPI/graph semantics are not globally changed to body size. |
+
+Use explicit variation only for a meaningful hierarchy. Never shrink body text globally to fit a screenshot or discard facts to avoid wrapping. Inspect actual computed styles with globals → tokens → article theme → shell in the real order, on desktop and narrow widths; base component CSS alone does not prove the final result.
+
+## Markdown, safe HTML, and execution
+
+`text`, `title` and captions are inline contexts: `**bold**`, `_emphasis_`, backticks, `[links](https://example.com)`, `~~strike~~` and safe inline HTML such as `<u>underline</u>`. `<u>` is HTML, not standard Markdown.
+
+Use `markdown` or `html` islands for full paragraphs, lists, headings, blockquotes, code blocks, tables, images, details/summary and other allowlisted article content. The islands share the article Markdown/GFM and safe-HTML renderer; they are not arbitrary component trees. Static text outside islands is a lightweight layout shorthand, **not** the whole article block grammar. Play islands are literal content, not interpolated expressions. Keep state and expressions in Play component nodes outside them.
 
 ```garden compose
-<stack gap={1}><title size="sm">Title</title><text size="sm">Body</text><caption size="sm">Caption</caption><badge>badge</badge></stack>
+<figure frame="none">
+<markdown>
+### Explicit test content
+
+**Bold**, _emphasis_, `code`, [link](https://example.com), ~~strike~~ and <u>underline</u>.
+
+- A full Markdown list
+- Another test item
+
+<details><summary>Safe HTML details</summary><p>Useful article HTML can coexist with Markdown.</p></details>
+</markdown>
+</figure>
 ```
 
-| Tag | Purpose |
-| :--- | :--- |
-| `title` | Short title |
-| `text` | Body text |
-| `caption` | Caption (muted by default) |
-| `label` | Control label |
-| `badge` | Pill badge |
-| `kpi` | Metric (self-closing) |
-| `stat` | Alias of kpi |
-| `icon` | Named stroke icon (self-closing) |
-| `callout` | Callout strip |
-| `kbd` | Keyboard keycap |
-| `link` | Inline link |
-| `intent` | Author intent (not drawn) |
+Safe HTML supports allowlisted local `style` properties, including useful layout and typography; inspect the generated schema for the actual set. Unsupported tags/properties, events, unsafe URLs, executable scripts and network CSS functions report diagnostics. Do not expand the article allowlist into arbitrary execution. An intentional executable demo uses `sandbox` inside the **same Compose entry**, with literal html/css/js and no parent origin access. Sandbox layout is its own document, not inherited article prose.
 
-### Controls
+## Verification levels
 
-```garden compose
-<stack gap={2}><row gap={2}><avatar label="A" size="sm"/><badge>ok</badge><kbd>⌘K</kbd></row><list><list-item>One</list-item><list-item>Two</list-item></list><progress value={40} max={100} label="40%"/></stack>
-```
-
-| Tag | Purpose |
-| :--- | :--- |
-| `button` | Button snapshot |
-| `slider` | Slider snapshot / play |
-| `progress` | Progress bar |
-| `meter` | Meter bar |
-| `checkbox` | Checkbox snapshot |
-| `radio` | Radio snapshot |
-| `toggle` | Toggle snapshot |
-| `switch` | Alias of toggle |
-| `input` | Text input snapshot |
-| `textarea` | Textarea snapshot |
-| `select` | Select snapshot |
-| `tabs` | Tabs container |
-| `tab` | One tab |
-| `list` | List |
-| `list-item` | List item |
-| `table` | Table |
-| `thead` | Table head |
-| `tbody` | Table body |
-| `tr` | Table row |
-| `th` | Header cell |
-| `td` | Data cell |
-| `image` | Image |
-| `avatar` | Avatar placeholder |
-| `empty` | Empty state |
-| `option` | Segment option snapshot |
-
-### Connectors
-
-```garden compose
-<stack align="center" gap={1}><pill>Start</pill><arrow dir="down"/><band tone="accent" align="center"><title size="sm">Hub</title></band></stack>
-```
-
-| Tag | Purpose |
-| :--- | :--- |
-| `arrow` | Arrow |
-| `fan` | Downward fan arrows |
-| `join` | V-shaped join |
-| `lanes` | Swimlanes |
-| `actor` | Lane actor |
-| `message` | Lane message |
-| `steps` | Steps container |
-| `step` | One step |
-| `note` | Step note |
-| `compare` | Compare cards |
-| `item` | Compare item |
-| `code` | Code snapshot |
-| `pre` | Preformatted text |
-
-
-## Chart examples
-
-Play-level chart samples (static eight bars, fusion weight slider) live on [Diagrams · compose](/garden/en/components/compose#ui-compose-chart-active-hours).
-
-## Limits
-
-- Nesting ~10 levels / ~220 nodes.
-- Uncompiled prose-only fences report `compose-uncompiled`.
-- Play path (`{@body}`, `{#if}`, …) is documented in the repo `docs/compose-dil.md`; static fences render default-state snapshots for control tags.
-
-## Custom text and background colors
-
-`color` controls text (inherited; children may override). `backgroundColor` paints only the current surface (not inherited). Both accept literal CSS named colors, transparent/currentColor, 3/4/6/8-digit hex, rgb/rgba/hsl/hsla with optional alpha. URLs, var(), calc(), declarations and arbitrary style are rejected by the same SSR/browser validator. Defaults preserve tone and theme; no font-family change. Explicit colors are not automatically dark-mode adapted: check contrast.
-
-Static primitives: box/card, row/stack/columns/grid/grid-item, pill/band, group/field/header/footer/figure, title/text/caption/label/prose/badge, kpi/stat, list, table/tr/th/td/thead/tbody. Play: stack/columns/card/caption/badge/stat/table. Colors must be literals. Existing static `background` semantic tokens and chart palette/series-tone APIs are unchanged; these props do not set chart series colors.
-
+1. Run `npx garden ui check <file>` (and `npx garden check <file>` for real file paths). Preserve original text/resources and inspect diagnostics.
+2. Parse/render the actual scene; confirm accepted properties survive normalization and meaningful content appears.
+3. Inspect the complete-theme render: icon rail fixed, heading and **all** paragraphs share the same right edge/left edge, no centered headings or full-width body beneath a detached icon row, dividers outside rows, no unintended cards/arrows, no horizontal overflow.
+4. Check desktop and narrow screenshots plus geometry/computed styles; exercise choices, relations, file previews, state updates and sandbox behavior when used.
+5. A hand-authored passing scene proves engine capability, not that an independent model reliably produces it from a short prompt. Report those claims separately.

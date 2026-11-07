@@ -20,7 +20,7 @@ Cover four things:
 - **What connects to what**: who reaches whom, fans out, or joins. If there is no order, say so.
 - **Which block is the focus**: name it (“the middle column”, “the lower row”).
 
-Do not specify colors, radii, pill chrome, weight, gaps, shadows, or full-bleed. Defaults own appearance.
+Describe the visual relationships and desired emphasis. Defaults are a starting point, not a substitute for checking alignment and hierarchy. Explicit styling must use supported controls.
 
 **Every tag and shared token**: [compose reference](/garden/en/reference/compose). **Every icon name**: [compose icons](/garden/en/reference/compose-icons).
 

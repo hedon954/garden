@@ -41,22 +41,17 @@ Three commands check your content at different scopes:
 | `missing-title` / `missing-description` | Error | Front Matter is missing a non-empty `title` or `description` |
 | `unexpected-slug` | Error | Front Matter includes a manual `slug` field (remove `slug`; the filename is the slug) |
 | `date-format` | Error | `date` is not a valid `YYYY-MM-DD`, `YYYY-MM-DD HH:mm:ss`, or ISO timestamp with timezone |
-| `missing-cover` / `missing-asset` | Error | A local file referenced by `cover`, a Markdown image, or `garden file` does not exist |
+| `missing-cover` / `missing-asset` | Error | A local file referenced by `cover`, a Markdown image, or Compose `file` does not exist |
 | `heading-h1` / `heading-skip` | Error | The post body uses an `#` H1 heading or skips a heading level (such as jumping from `##` to `####`) |
 | `reference-heading` | Error | The post body contains a references section heading (move references to the `references` Front Matter list) |
 | `callout-type` | Error | `> [!TYPE]` uses an unsupported callout type |
 | `title-split` | Warning | The title contains a split delimiter with an empty left or right side |
 | `diff-orphan` | Error | A `diff` code fence is not immediately preceded by a complete code block |
-| `legacy-fence` | Error | Uses a legacy fence name (such as `garden:stat`, `widget`, `embed`, or `html garden`); replace with `garden <name>` |
-| `garden-idea` | Error | A non-draft post still contains an uncompiled `garden` idea fence |
 | `compose-uncompiled` | Error | A non-draft `garden compose` fence is still prose, not markup |
 | `compose-invalid` | Error | A `garden compose` document is invalid: unknown tag, unclosed tag, or a YAML slot tree |
-| `garden-name` | Error | Unknown `garden` component name (`card`, `stat`, `compare`, `timeline`, `chart`, `compose`, `html`, `interactive`, `file`, `relations`, `list`, `choice`) |
-| `garden-yaml` | Error | Invalid YAML syntax, wrong top-level shape, or unsupported keys inside a `garden` fence |
-| `garden-relations` | Error | `garden relations` has fewer than 3 or more than 6 elements, or invalid `links` entries (use a `mermaid` flowchart for larger or branching diagrams, or `garden list` for one-pass steps) |
-| `garden-file` / `file-outside` | Error | `garden file` manually sets `resolved`, is missing a valid `src` / `files`, or points outside `content/` |
-| `file-large` | Warning | A local file referenced by `garden file` exceeds `5 MB` |
-| `compare-long` | Error | A single side-by-side cell in `garden compare` exceeds roughly 60 characters (does not apply when `verdict` is used) |
+| `garden-name` | Error / 错误 | Author component fences must use `garden compose`. |
+| `compose-file` / `file-outside` | Error | Compose `file` manually sets `resolved`, is missing a valid `src` / `files`, or points outside `content/` |
+| `file-large` | Warning | A local file referenced by Compose `file` exceeds `5 MB` |
 | `interactive-trivial` / `steps-prose` | Error | `garden compose` only computes a single multiplication, or `<Steps>` contains only prose without state changes |
 
 ## 3. Git Pre-commit Hook and Component Catalog
@@ -77,7 +72,7 @@ Garden provides three ways to insert or generate components quickly:
 1. **Draft cheat sheet comment**: Running `make new SLUG=xxx TITLE="..."` appends an HTML comment to the bottom of the new `.md` file with examples for idea fences and the built-in components. HTML comments are hidden from the rendered page and can be deleted when finished.
 2. **Snippet template files**: The `templates/` directory inside `hd-garden` includes two template files:
    - `templates/garden-blocks.md`: Copyable Markdown templates for idea fences and the built-in components.
-   - `templates/garden-snippets.plist`: macOS text replacements (drag into **System Settings → Keyboard → Text Replacements**) with triggers `;gidea`, `;gcard`, `;gstat`, `;gcompare`, `;gtimeline`, `;gchart`, `;gcompose`, `;ghtml`, `;ginteractive`, `;gfile`, `;grel`, `;glist`, and `;gchoice`. `;gcompose` expands to a `garden compose` fence with one sentence. The others expand to their fences.
+   - `templates/garden-snippets.plist`: one Compose author entry; choose components inside the scene.
 3. **Install AI Agent skills (`npx garden skill`)**: Running `npx garden skill` in a site repository (also run automatically during `npx hd-garden init`) copies two skills into `.agents/skills/`:
    - `garden-compose`: Compiles natural-language `garden` idea fences into concrete component blocks.
    - `garden-post-review`: Reviews an entire post against layout and component rules.
