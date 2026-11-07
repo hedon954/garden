@@ -105,3 +105,8 @@ npx garden editors install --yes               # 把 Intelligent UI 插件装进
 ## 许可证
 
 [MIT](LICENSE)。使用 Garden 构建的站点请保留页脚中的 Garden 署名链接。
+
+
+### AI 写作入口
+
+新建站点自带按语言选择的根目录 `AGENTS.md`：简要说明内容模型、源文件与生成物、项目技能和校验入口，不重复组件目录。已有站点可运行 `npx --no-install garden agents`，仅在缺失时补齐；sync/dev 也会补齐缺失指南。已有同名文件、目录或符号链接均不覆盖，不将站点指南安装到引擎维护仓库。

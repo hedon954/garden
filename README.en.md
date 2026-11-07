@@ -103,3 +103,8 @@ Start `make dev` and open `/garden/en` (Chinese at `/garden`), or read the markd
 ## License
 
 [MIT](LICENSE). Sites built with Garden should keep the Garden attribution link in the footer.
+
+
+### AI writing entry point
+
+New sites include a locale-appropriate root `AGENTS.md`: a short map of Garden content, source/generated files, project skills and verification commands, not a duplicated component catalog. Existing sites can run `npx --no-install garden agents` to add it only if missing. Sync/dev also fills in a missing guide. Existing files, directories and symlinks named `AGENTS.md` are never replaced; the site guide is not installed over engine-maintainer instructions.

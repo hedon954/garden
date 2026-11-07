@@ -19,3 +19,8 @@ Comments are disabled by default. Before publishing, open [Giscus](https://giscu
 To upgrade the engine, update `hd-garden` in `package.json` to the new version and run `npm install`.
 
 Running `make dev` again gracefully replaces a verified Vinext process from the same project, never an unrelated port owner. Markdown edits, additions and deletions update the preview. Headings stay literal; ranges like `4~6` are plain text and strikethrough requires `~~text~~`.
+
+
+### AI writing entry point
+
+New sites include a locale-appropriate root `AGENTS.md`: a short map of Garden content, source/generated files, project skills and verification commands, not a duplicated component catalog. Existing sites can run `npx --no-install garden agents` to add it only if missing. Sync/dev also fills in a missing guide. Existing files, directories and symlinks named `AGENTS.md` are never replaced; the site guide is not installed over engine-maintainer instructions.
