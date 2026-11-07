@@ -17,3 +17,5 @@ Running `npx garden dev` for the first time fills in any missing `Makefile` or s
 Comments are disabled by default. Before publishing, open [Giscus](https://giscus.app), write the repository, repository ID, category, and category ID into `.env.local`, and set the matching `GISCUS_REPO`, `GISCUS_REPO_ID`, `GISCUS_CATEGORY`, and `GISCUS_CATEGORY_ID` under GitHub Actions Variables. Leaving them empty fails the publish workflow. To publish without comments, set `GISCUS_DISABLED` to `1`.
 
 To upgrade the engine, update `hd-garden` in `package.json` to the new version and run `npm install`.
+
+Running `make dev` again gracefully replaces a verified Vinext process from the same project, never an unrelated port owner. Markdown edits, additions and deletions update the preview. Headings stay literal; ranges like `4~6` are plain text and strikethrough requires `~~text~~`.

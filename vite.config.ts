@@ -46,7 +46,7 @@ const localBindingConfig = {
 
 function gardenContent() {
   const sync = (mode?: "preview") => {
-    spawnSync(process.execPath, [path.join(gardenPackageRoot, "scripts", "build-content.mjs")], {
+    return spawnSync(process.execPath, [path.join(gardenPackageRoot, "scripts", "build-content.mjs")], {
       cwd: siteRoot,
       env: { ...process.env, GARDEN_SITE: siteRoot, ...(mode ? { GARDEN_CONTENT_MODE: mode } : {}) },
       stdio: "inherit",
@@ -78,12 +78,37 @@ function gardenContent() {
       const contentDir = path.join(siteRoot, "content");
       const configFile = path.join(siteRoot, "site.config.yaml");
       server.watcher.add([contentDir, configFile]);
-      server.watcher.on("change", (file) => {
-        if (file.startsWith(contentDir) || file === configFile) {
-          // While editing, a broken ui block shows as an error card instead of stopping the server.
-          sync("preview");
-          server.ws.send({ type: "full-reload" });
-        }
+      let pending: ReturnType<typeof setTimeout> | undefined;
+      const onContentEvent = (file: string) => {
+        const relative = path.relative(contentDir, file);
+        if (file !== configFile && (relative.startsWith("..") || path.isAbsolute(relative))) return;
+        clearTimeout(pending);
+        // Coalesce editor atomic writes/renames; regenerate before asking browsers
+        // to reload, including newly created and deleted Markdown routes.
+        pending = setTimeout(() => {
+          const result = sync("preview");
+          if (result.status === 0) {
+            // The generator is synchronous; filesystem notifications have not
+            // necessarily reached Vite yet. Invalidate generated imports before
+            // any browser can request the new document.
+            for (const environment of Object.values(server.environments)) {
+              for (const generated of [generatedContent, generatedSiteConfig]) {
+                const modules = environment.moduleGraph.getModulesByFile(generated);
+                for (const generatedModule of modules ?? []) environment.moduleGraph.invalidateModule(generatedModule);
+              }
+            }
+            server.ws.send({ type: "full-reload" });
+          }
+        }, 100);
+      };
+      server.watcher.on("add", onContentEvent);
+      server.watcher.on("change", onContentEvent);
+      server.watcher.on("unlink", onContentEvent);
+      server.httpServer?.once("close", () => {
+        clearTimeout(pending);
+        server.watcher.off("add", onContentEvent);
+        server.watcher.off("change", onContentEvent);
+        server.watcher.off("unlink", onContentEvent);
       });
     },
   };

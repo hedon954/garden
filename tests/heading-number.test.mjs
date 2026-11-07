@@ -1,64 +1,41 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
-import { autoNumbersHeadings, splitHeadingNumber } from "../app/lib/heading-number.ts";
+import { unified } from "unified";
+import remarkParse from "remark-parse";
+import remarkRehype from "remark-rehype";
+import rehypeStringify from "rehype-stringify";
+import { markdownSyntaxPlugins } from "../ui/garden/markdown-syntax.mjs";
+import { autoNumbersHeadings } from "../app/lib/heading-number.ts";
 
-test("an author-written heading number is kept exactly, trailing dot included", () => {
-  assert.deepEqual(splitHeadingNumber("2. KV Cache 和 Prefix Cache"), { no: "2.", text: "KV Cache 和 Prefix Cache" });
-  assert.deepEqual(splitHeadingNumber("4.1 Prompt 出问题的六个层次"), { no: "4.1", text: "Prompt 出问题的六个层次" });
-  assert.deepEqual(splitHeadingNumber("4.1. 写法与约束层"), { no: "4.1.", text: "写法与约束层" });
-  assert.deepEqual(splitHeadingNumber("  10 总结  "), { no: "10", text: "总结" });
-  // a number that is the whole heading, or glued to the text, is not a section number
-  assert.equal(splitHeadingNumber("2026"), null);
-  assert.equal(splitHeadingNumber("3D 渲染"), null);
-  assert.equal(splitHeadingNumber("KV Cache"), null);
+test("automatic heading numbering is disabled even for legacy true", () => {
+ for (const setting of [undefined, true, false]) assert.equal(autoNumbersHeadings("## 标题", setting), false);
 });
 
-test("the article and the TOC both use the number as written; auto numbers stay plain", async () => {
-  const [content, article] = await Promise.all([
-    readFile(new URL("../app/lib/content.ts", import.meta.url), "utf8"),
-    readFile(new URL("../app/components/MarkdownArticle.tsx", import.meta.url), "utf8"),
-  ]);
-  assert.match(content, /import \{ [^}]*\bsplitHeadingNumber\b[^}]* \} from "\.\/heading-number";/);
-  assert.match(content, /no = split\.no;/);
-  assert.match(article, /return \{ no: split\.no, children: stripPrefix\(children, prefix\) \};/);
-  // auto-numbered articles: "1", "1.2", no dot
-  assert.match(content, /no = String\(h2\);/);
-  assert.match(content, /no = h2 \? `\$\{h2\}\.\$\{h3\}` : String\(h3\);/);
-  assert.doesNotMatch(content, /\(\\d\+\(\?:\\\.\\d\+\)\*\)\\\.\?\[ \\t\]/);
+test("Markdown headings preserve manual numbers, inline markup, nested levels and ranges", async () => {
+ const source = "## 重点 **总结**\n\n### 人员\n\n#### 流程 `code`\n\n## 1. 标题\n\n## 1.标题\n\n4~6 个小时，7~8 个小时。\n\n~~删除线~~\n";
+ const html = String(await unified().use(remarkParse).use(markdownSyntaxPlugins).use(remarkRehype).use(rehypeStringify).process(source));
+ assert.match(html, /<h2>重点 <strong>总结<\/strong><\/h2>/);
+ assert.match(html, /<h3>人员<\/h3>/);
+ assert.match(html, /<h4>流程 <code>code<\/code><\/h4>/);
+ assert.match(html, /<h2>1\. 标题<\/h2>/);
+ assert.match(html, /<h2>1\.标题<\/h2>/);
+ assert.match(html, /4~6 个小时，7~8 个小时。/);
+ assert.match(html, /<del>删除线<\/del>/);
+ const article = await readFile(new URL("../app/components/MarkdownArticle.tsx", import.meta.url), "utf8");
+ assert.doesNotMatch(article, /sec-no|stripPrefix|splitHeadingNumber|autoNumbersHeadings/);
+ const toc = await readFile(new URL("../app/components/TableOfContents.tsx", import.meta.url), "utf8");
+ assert.doesNotMatch(toc, /className="t-no"/);
 });
 
-test("front matter numbering: false turns off automatic heading numbers", () => {
-  const plain = "## 写法\n\n### 每格写成一行\n";
-  const numbered = "## 1. 写法\n";
-  assert.equal(autoNumbersHeadings(plain), true);
-  assert.equal(autoNumbersHeadings(plain, true), true);
-  assert.equal(autoNumbersHeadings(plain, false), false);
-  // an article that writes its own numbers is never auto-numbered
-  assert.equal(autoNumbersHeadings(numbered), false);
-  assert.equal(autoNumbersHeadings(numbered, true), false);
-});
-
-test("numbering reaches the TOC and the article on blog and column pages", async () => {
-  const read = (file) => readFile(new URL(`../${file}`, import.meta.url), "utf8");
-  const [content, article, blog, column, view, build] = await Promise.all([
-    read("app/lib/content.ts"),
-    read("app/components/MarkdownArticle.tsx"),
-    read("app/blog/[...path]/page.tsx"),
-    read("app/columns/[column]/[...path]/page.tsx"),
-    read("app/components/PostReadingView.tsx"),
-    read("scripts/build-content.mjs"),
-  ]);
-  assert.match(content, /const autoNumber = autoNumbersHeadings\(markdown, numbering\);/);
-  assert.match(content, /\} else if \(autoNumber\) \{/);
-  assert.match(article, /const autoNumber = autoNumbersHeadings\(content, numbering\);/);
-  assert.match(article, /if \(!autoNumber\) return \{ no: "", children \};/);
-  assert.match(blog, /<PostReadingView[\s\S]*post=\{post\}/);
-  assert.match(column, /<PostReadingView[\s\S]*post=\{entry\}/);
-  assert.match(view, /const numbering = \(post as ContentEntry & \{ numbering\?: boolean \}\)\.numbering;/);
-  assert.match(view, /extractHeadings\(post\.content, \{ numbering \}\)/);
-  assert.match(view, /<MarkdownArticle content=\{post\.content\} numbering=\{numbering\} \/>/);
-  // a typo such as `numbering: no` fails the build instead of being ignored
-  assert.match(build, /typeof data\.numbering !== "boolean"/);
-  assert.match(build, /numbering\?: boolean;/);
+test("single tilde is literal across soft breaks, while double tilde, code, escapes and math remain", async () => {
+ const source = '4~6\n7~8\n\n~~delete~~\n\n`4~6 ~~code~~`\n\n```text\n4~6 ~~fenced~~\n```\n\n\\~escape\\~ [range](https://example.test/4~6) $a \\sim b$';
+ const html = String(await unified().use(remarkParse).use(markdownSyntaxPlugins).use(remarkRehype).use(rehypeStringify).process(source));
+ assert.match(html, /4~6<br>\n7~8/);
+ assert.equal((html.match(/<del>/g) ?? []).length, 1);
+ assert.match(html, /<del>delete<\/del>/);
+ assert.match(html, /<code>4~6 ~~code~~<\/code>/);
+ assert.match(html, /4~6 ~~fenced~~/);
+ assert.match(html, /~escape~ <a href="https:\/\/example.test\/4~6">range<\/a>/);
+ assert.match(html, /a \\sim b/);
 });

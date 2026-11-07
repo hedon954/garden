@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.13.3
+
+- Safely replace a verified same-runtime Vinext dev process on repeated `garden dev`; serialize concurrent starts and refuse unproven process ownership instead of killing arbitrary port owners.
+- Watch Markdown creation/change/deletion, invalidate generated imports before browser reload, and preserve last-good preview assets through invalid saves. Avoid rewriting unchanged generated output.
+- Render body headings and desktop/mobile TOC literally, without automatic numbering or extracting author-written numbers; preserve existing heading anchors and inline markup.
+- Require double tildes for strikethrough: ranges such as `4~6` and `7~8` stay literal while `~~text~~` remains supported.
+
 ## 0.13.2
 
 - `garden dev` previews drafts and future scheduled posts by default; explicit `CONTENT_INCLUDE_DRAFTS=0` opts out. Initial sync and watcher inherit the setting; production commands remain draft-safe by default.
