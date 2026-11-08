@@ -46,7 +46,7 @@ export function inspectLayout(doc, card) {
     if (parent?.type==='row' && n.type==='stack') add('warning','row-stack-padding','Current theme adds 12px top padding');
     if (n.type==='row' && n.align==='center' && n.children?.some(c=>['title','text'].includes(c.type))) add('warning','center-flex','Center couples axes/text; direct title/text keep flex:1');
     if (n.type==='row' && n.wrap==='nowrap') add('warning','nowrap','Browser must verify wrapping and overflow');
-    if (n.size) add('warning','explicit-size','Check explicit size against author intent and body typography');
+    if (n.size && n.size!=='md') add('warning','normalized-size','Non-baseline normalized size: compare with source intent; normalization does not prove an authored attribute');
     if (n.type==='card' && parent?.type==='card') add('warning','nested-surface','Check whether nested surfaces are intentional');
     for (const child of n.children??[]) visit(child,n);
   };

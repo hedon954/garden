@@ -24,3 +24,9 @@ test('ignored static attributes remain an explicit engine gap, not fabricated di
  const parsed=parseCompose('<stack direction="row"><text>甲</text></stack>');assert.equal(parsed.ok,true);assert.equal(parsed.doc.nodes[0].type,'stack');
  const report=inspectLayout(parsed.doc,{...card,layout:'flow-stack'});assert.ok(report.coverage.notChecked.includes('unknown source attributes'));
 });
+
+test('parser-default md icon is not mislabeled as an authored size override',()=>{
+ const parsed=parseCompose('<stack><row><icon name="users" inline/><text>原文</text></row></stack>');assert.equal(parsed.ok,true);
+ const report=inspectLayout(parsed.doc,{...card,layout:'centered-chip'});assert.ok(!report.diagnostics.some(d=>['explicit-size','normalized-size'].includes(d.code)));
+ const changed=parseCompose('<stack><text size="sm">原文</text></stack>');const risk=inspectLayout(changed.doc,{...card,layout:'flow-stack'});assert.ok(risk.diagnostics.some(d=>d.code==='normalized-size'));
+});

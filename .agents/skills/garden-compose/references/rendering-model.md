@@ -14,6 +14,7 @@
 - **必选结构（已选icon-rail）**：icon和一个group同属row，标题与全部正文/列表同属group；分隔线在row之间。不要正文逃出右栏，不用row>stack替代group来碰运气。
 - **无效属性**：stack不因direction="row"变横向；用真实row。未知静态属性可能归一化丢失，当前lint不能从归一化树找回它们；对照源属性与schema，缺少未知属性诊断是引擎需求，不谎称已机器覆盖。
 - **风险而非全局错误**：row>stack的12px顶距、居中row直接title/text的flex:1、center同时改变主轴/交叉轴/文字、nowrap长链、显式size和叠框。这些在其他语境可能有意，必须结合内部约束卡判断，不能一律禁用。
+- **箭头看实际绘制方向**：right是源意图，不必等于当前屏幕方向。真实SVG默认向下；桌面旋转为right，≤800px取消旋转配合默认row转column。先看computed transform/屏幕向量，不把data-dir当几何证据。nowrap让row保持横向却不自动保留箭头旋转，须专项检查。
 - **必须浏览器**：icon glyph光学齐平不是节点矩形相等；内容宽居中、完整主题字号/列表间距、溢出与手机回退不能从AST推断。用computed与rect及截图分别取证。
 
 ## 默认与显式样式

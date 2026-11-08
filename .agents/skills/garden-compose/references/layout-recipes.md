@@ -28,6 +28,7 @@ Use `<grid cols={3} gap={3}>` with three direct `<card>` children. `cols` accept
 - **产品**：一款真正的好产品本身长什么样，有哪些绝不能碰的死穴。
 使用 garden compose 来呈现横向等宽卡片。
 </intent>
+<figure frame="none">
 <grid cols={3} gap={3}>
   <card padding={3} radius="md" border="subtle" background="surface">
     <title>人员</title>
@@ -42,6 +43,7 @@ Use `<grid cols={3} gap={3}>` with three direct `<card>` children. `cols` accept
     <text>一款真正的好产品本身长什么样，有哪些绝不能碰的死穴。</text>
   </card>
 </grid>
+</figure>
 ```
 
 Follow workflow.md for id/line/hash safeguards. No default prompt export, clipboard or model call. Structural validation does not prove browser appearance. / 扫描、带 hash 单块写回和复检由 AI 内部完成；不默认导出提示词或调用模型，未看浏览器不声称视觉验收。
@@ -87,10 +89,12 @@ Use this for independent explanations, not a workflow. Derive the alignment hier
 
 
 ## flow-row / flow-stack · 短阶段与长阶段
-只有原文明确顺序才用箭头。短阶段用row中的text与right箭头；正文基线、不加粗、不为塞入横排设size。作者明确“略小”时仅在文字叶子设sm，勿父子重复缩放。长阶段默认stack与down箭头。手机不能只是让right箭头随row纵向换行：方向必须与实际流向一致。当前没有经此技能验证的自动双向响应配方；发布推荐前须浏览器验证或明确选择全尺寸纵向保真回退，不发明响应式属性。作者硬性要求横排且手机容纳不下才说明取舍。
+只有原文明确顺序才用箭头。短阶段默认用普通row（保持默认wrap）中的text与right箭头；普通正文基线，不加粗、不缩字凑横排。当前完整主题在≤800px把这种row改成column，并取消right箭头的旋转；底层SVG本来向下，因此实际箭头随之朝下。不能只读data-dir="right"就误报移动端方向错误，要核对computed transform或SVG屏幕向量。
+本轮完整主题1200/500浏览器已验证默认row的横→纵回退。长阶段或明确纵向请求仍用stack与down箭头。不要加nowrap：手机保持横排时主题仍可能把right箭头画向下；只有显式要求、实际验证方向与溢出均正确时才偏离默认。没有必要为默认响应式回退询问作者，也不发明响应式属性。
+作者明确“略小”时仅在文字叶子设sm，勿父子重复缩放；编辑性流程默认外figure frame="none"。不把配方验证扩大到所有主题/字体或未知嵌套。
 
 ## centered-chip · 整体居中、图标贴标题（候选，待浏览器验证）
-关系是“图标＋标题”为一个内容宽整体，正文另占一行；不是图标与一个flex:1标题平分整格。
+编辑性说明默认用外figure frame="none"包裹；这与内部frame="text"标题壳不是同一层。关系是“图标＋标题”为一个内容宽整体，正文另占一行；不是图标与一个flex:1标题平分整格。
 候选沿用真实文章的结构：`stack align="center" → card frame="text" padding={0} → row align="center" gap={0} wrap="nowrap" → icon inline + text`；正文作为外stack的下一text。frame=text标题壳不是信息卡片。不得把此候选称作跨主题已验证；检查标题壳实际宽度、图文距离、图标与标题行盒、整体中心、长标题、窄屏溢出。icon inline当前另带6px右距，gap=0不等于零距离；row>text仍有flex规则。若失败，记录引擎缺口，不用换字号掩盖。
 
 ## prose-list · 正文列表手感
