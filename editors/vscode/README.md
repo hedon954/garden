@@ -2,6 +2,8 @@
 
 在 Markdown 稿件里插入、预览和检查 Garden 交互块。
 
+图标直接复用 Garden 自带的 `public/apple-touch-icon.png`（与默认 favicon 同一标志）。构建时复制为 `dist/icon.png`，不另维护一套扩展图标。
+
 - **插入想法**：`Cmd+Alt+I`（Windows / Linux 是 `Ctrl+Alt+I`），或右键菜单、命令面板里的「插入 Garden 块」。插入的是一段给 `garden-compose` skill 编译的 `garden` 想法（写成资源卡时，正文说明要写链接、标题和一句说明），不是 YAML 示例。
 - **预览**：打开 Markdown 预览，`ui` 块画成和博客一样的交互组件，`intent` 块显示成想法卡片。`Data` 引用的同名目录文件由扩展读取。
 - **检查**：`ui` 块里的错误进「问题」面板，在源码里画波浪线。

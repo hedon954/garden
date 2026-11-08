@@ -16,6 +16,8 @@ const preview = path.join(root, "ui", "preview", "dist");
 execFileSync(process.execPath, [path.join(root, "scripts", "build-ui-preview.mjs")], { stdio: "inherit" });
 fs.rmSync(out, { recursive: true, force: true });
 fs.mkdirSync(out, { recursive: true });
+// Reuse Garden's canonical raster brand mark; never maintain a separate extension design.
+fs.copyFileSync(path.join(root, "public/apple-touch-icon.png"), path.join(out, "icon.png"));
 
 const recipes = RECIPE_FILES.map((file) => ({
   file,

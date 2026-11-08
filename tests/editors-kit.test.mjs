@@ -96,10 +96,10 @@ names = archive.namelist()
 manifest = json.loads(archive.read("extension/package.json"))
 version = json.load(open(sys.argv[2]))["version"]
 assert manifest["version"] == version
-assert manifest["icon"] == "icon.png"
+assert manifest["icon"] == "dist/icon.png"
 icon = archive.read("extension/" + manifest["icon"])
 assert icon[:8] == bytes.fromhex("89504e470d0a1a0a")
-assert struct.unpack(">II", icon[16:24]) == (256, 256)
+assert all(size >= 128 for size in struct.unpack(">II", icon[16:24]))
 assert icon == open(sys.argv[3], "rb").read()
 assert 'Microsoft.VisualStudio.Services.Icons.Default' in archive.read("extension.vsixmanifest").decode()
 assert ('Version="' + version + '"') in archive.read("extension.vsixmanifest").decode()
@@ -108,7 +108,7 @@ need = ["extension/package.json", "extension.vsixmanifest", "[Content_Types].xml
 missing = [item for item in need if item not in names]
 if missing or not any(item.startswith("extension/dist/") for item in names):
     raise SystemExit("bad vsix: " + ",".join(missing or ["extension/dist"]))
-`, path.join(vsixDir, name), path.join(root, "package.json"), path.join(root, "editors/vscode/icon.png")], { encoding: "utf8" });
+`, path.join(vsixDir, name), path.join(root, "package.json"), path.join(root, "public/apple-touch-icon.png")], { encoding: "utf8" });
   assert.equal(listed, "");
 });
 

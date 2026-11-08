@@ -193,11 +193,13 @@ function packageVsix() {
   const source = path.join(root, "editors", "vscode");
   const manifest = JSON.parse(fs.readFileSync(path.join(source, "package.json"), "utf8"));
   syncEditorVersion({ check: true });
-  if (manifest.icon !== "icon.png") throw new Error("VS Code extension icon must be icon.png");
+  if (manifest.icon !== "dist/icon.png") throw new Error("VS Code extension icon must be dist/icon.png");
   const icon = fs.readFileSync(path.join(source, manifest.icon));
   if (icon.subarray(0, 8).toString("hex") !== "89504e470d0a1a0a" || icon.readUInt32BE(16) < 128 || icon.readUInt32BE(20) < 128)
     throw new Error("VS Code extension icon must be PNG, at least 128 × 128.");
-  const entries = [{ name: `extension/${manifest.icon}`, data: icon }];
+  if (!icon.equals(fs.readFileSync(path.join(root, "public/apple-touch-icon.png"))))
+    throw new Error("VS Code extension icon must reuse Garden's canonical public/apple-touch-icon.png.");
+  const entries = [];
   const license = path.join(root, "LICENSE");
   if (fs.existsSync(license)) entries.push({ name: "extension/LICENSE", data: fs.readFileSync(license) });
   entries.push({ name: "extension/package.json", data: fs.readFileSync(path.join(source, "package.json")) });
