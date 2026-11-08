@@ -10,11 +10,11 @@ test('default checks are skill-led and never create or modify a prompt; explicit
    ['intent','```garden compose\nPRIVATE_AUTHOR_INTENT\n```','compose-uncompiled'],
    ['play','```garden compose\ncaption: Example\nintent: PRIVATE_AUTHOR_INTENT\n---\n{@body const value = missing + 1}\n<stat label="Value" value={value} />\n```','ui-'],
   ]){
-   fs.writeFileSync(path.join(root,'content/posts/post.md'),'---\ntitle: Example\ndate: 2026-11-07\ndraft: true\n---\n'+block+'\n');
+   fs.writeFileSync(path.join(root,'content/posts/post.md'),'---\ntitle: Example\ndescription: 42\ndate: 2026-11-07\ndraft: true\n---\n'+block+'\n');
    for(const sentinel of [false,true]){
     if(sentinel){fs.mkdirSync(path.dirname(promptFile),{recursive:true});fs.writeFileSync(promptFile,'Existing user file');}
     const r=invoke('check-site.mjs'),terminal=r.stdout+r.stderr;
-    assert.equal(r.status,1,name);assert.match(terminal,/missing-description/);assert.ok(terminal.includes(code),terminal);assert.match(terminal,/content\/posts\/post.md:\d+/);assert.match(terminal,/garden-compose skill/);assert.match(terminal,/\.agents\/skills\/garden-compose\/SKILL.md/);assert.doesNotMatch(terminal,/PRIVATE_AUTHOR_INTENT|## 配方|#### Slider|ui-fix-prompt|no-verify|```/);assert.ok(terminal.split('\n').length<20,terminal);
+    assert.equal(r.status,1,name);assert.match(terminal,/invalid-description/);assert.ok(terminal.includes(code),terminal);assert.match(terminal,/content\/posts\/post.md:\d+/);assert.match(terminal,/garden-compose skill/);assert.match(terminal,/\.agents\/skills\/garden-compose\/SKILL.md/);assert.doesNotMatch(terminal,/PRIVATE_AUTHOR_INTENT|## 配方|#### Slider|ui-fix-prompt|no-verify|```/);assert.ok(terminal.split('\n').length<20,terminal);
     if(sentinel)assert.equal(fs.readFileSync(promptFile,'utf8'),'Existing user file');else assert.equal(fs.existsSync(promptFile),false);
    }
    // Old installed wrappers supply --standalone: it must not force an export.

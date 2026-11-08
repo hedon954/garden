@@ -38,7 +38,7 @@ Three commands check your content at different scopes:
 
 | Code | Severity | Cause and Fix |
 | :--- | :--- | :--- |
-| `missing-title` / `missing-description` | Error | Front Matter is missing a non-empty `title` or `description` |
+| `missing-title` / `invalid-description` | Error | The title is missing or empty, or description is neither a string nor null; a blank description is valid |
 | `unexpected-slug` | Error | Front Matter includes a manual `slug` field (remove `slug`; the filename is the slug) |
 | `date-format` | Error | `date` is not a valid `YYYY-MM-DD`, `YYYY-MM-DD HH:mm:ss`, or ISO timestamp with timezone |
 | `missing-cover` / `missing-asset` | Error | A local file referenced by `cover`, a Markdown image, or Compose `file` does not exist |

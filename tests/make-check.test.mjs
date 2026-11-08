@@ -5,7 +5,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 const engine=new URL('../',import.meta.url).pathname;
-const body=(description,block)=>`---\ntitle: Fixture\n${description?'description: Fixture description\n':''}date: 2026-11-07\ndraft: true\n---\n${block}\n`;
+const body=(description,block)=>`---\ntitle: Fixture\n${description?'description: Fixture description\n':'description: 42\n'}date: 2026-11-07\ndraft: true\n---\n${block}\n`;
 const compiled='```garden compose\n<card><title>Fixture</title><text>Valid content</text></card>\n```';
 test('combined preflight sees untracked drafts, passes valid content and still emits skill instructions after structural failure',()=>{
  const root=fs.mkdtempSync(path.join(os.tmpdir(),'make-check-'));
@@ -15,7 +15,7 @@ test('combined preflight sees untracked drafts, passes valid content and still e
   function run(args=[],extra={}){return spawnSync(process.execPath,[path.join(engine,'scripts/check-site.mjs'),...args],{cwd:root,env:{...process.env,GARDEN_SITE:root,...extra},encoding:'utf8'});}
   fs.writeFileSync(file,body(true,compiled));assert.equal(run().status,0);
   const idea=body(false,'```garden compose\n两卡片并排\n```');fs.writeFileSync(file,idea);
-  const failed=run();assert.equal(failed.status,1);assert.match(failed.stdout,/missing-description/);assert.match(failed.stderr,/compose-uncompiled/);assert.match(failed.stderr,/garden-compose skill/);assert.equal(fs.existsSync(path.join(root,'.garden/ui-fix-prompt.md')),false);assert.equal(fs.readFileSync(file,'utf8'),idea);
+  const failed=run();assert.equal(failed.status,1);assert.match(failed.stdout,/invalid-description/);assert.match(failed.stderr,/compose-uncompiled/);assert.match(failed.stderr,/garden-compose skill/);assert.equal(fs.existsSync(path.join(root,'.garden/ui-fix-prompt.md')),false);assert.equal(fs.readFileSync(file,'utf8'),idea);
   fs.writeFileSync(path.join(root,'content/posts/valid.md'),body(true,compiled));assert.equal(run([],{GARDEN_CHECK_FILE:'content/posts/valid.md'}).status,0);
   assert.equal(run(['content/posts/draft.md']).status,1);
  }finally{fs.rmSync(root,{recursive:true,force:true});}
@@ -40,6 +40,6 @@ const fs=require('node:fs'),cp=require('node:child_process');const args=process.
   const run=()=>spawnSync('make',['check'],{cwd:root,env:{...process.env,PATH:path.join(root,'tools')+path.delimiter+process.env.PATH,GARDEN_SITE:root},encoding:'utf8'});
   fs.writeFileSync(file,body(true,compiled));let result=run();assert.equal(result.status,0,result.stderr);assert.equal(fs.readFileSync(path.join(root,'legacy-stages.txt'),'utf8'),'sync\nbuild\n');
   fs.unlinkSync(path.join(root,'legacy-stages.txt'));fs.writeFileSync(file,body(false,'```garden compose\n两卡片并排\n```'));
-  result=run();assert.notEqual(result.status,0);assert.match(result.stdout,/missing-description/);assert.match(result.stderr,/compose-uncompiled/);assert.equal(fs.existsSync(path.join(root,'legacy-stages.txt')),false);
+  result=run();assert.notEqual(result.status,0);assert.match(result.stdout,/invalid-description/);assert.match(result.stderr,/compose-uncompiled/);assert.equal(fs.existsSync(path.join(root,'legacy-stages.txt')),false);
  }finally{fs.rmSync(root,{recursive:true,force:true});}
 });

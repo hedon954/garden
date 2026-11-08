@@ -38,7 +38,7 @@ order: 40
 
 | 诊断码 | 级别 | 触发原因与修复方法 |
 | :--- | :--- | :--- |
-| `missing-title` / `missing-description` | 错误 | Front Matter 缺少有效的 `title` 或 `description` |
+| `missing-title` / `invalid-description` | 错误 | `title` 缺失或为空，或 `description` 不是字符串／空值；摘要可以留空 |
 | `unexpected-slug` | 错误 | Front Matter 中手写了 `slug` 字段（文件名即标识，删掉 `slug`） |
 | `date-format` | 错误 | `date` 不是合法的 `YYYY-MM-DD`、`YYYY-MM-DD HH:mm:ss` 或带时区的 ISO 时间 |
 | `missing-cover` / `missing-asset` | 错误 | `cover` 封面图、正文图片或 Compose `file` 引用的本地文件不存在 |
