@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.14.2
+
+- Allow omitted, null, empty and whitespace-only post descriptions; omit empty article decks, archive summaries and draft-preview paragraphs without fabricating a body excerpt. Keep invalid description types as preflight errors.
+- Keep the Garden VS Code / Cursor extension version and lockfile synchronized with Garden releases, validate release tags and package versions, and ship the matching VSIX inside the npm package (not a Marketplace publication).
+- Reuse Garden’s existing brand icon from `public/apple-touch-icon.png` in the extension, with byte-for-byte packaging checks and no separate generated logo.
+- Fix the Compose editor preview options TypeScript error and retain strict structural preflight and bilingual handbook diagnostics with optional descriptions.
+
 ## 0.14.1
 
 The first published release of the 0.14 Compose unification batch. The immutable `v0.14.0` tag was not published to npm because its CI tests failed.
