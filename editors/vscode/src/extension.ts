@@ -76,7 +76,8 @@ function composeHost(token: MarkdownToken, env: MarkdownEnv) {
     }
   }
   const fenceLine = token.map ? token.map[0] + 1 : 1;
-  const preview=previewCompose(token.content,{info:token.info,readData:(src:string)=>files[src],skipData:!markdownPath});
+  const previewOptions = { info: token.info, readData: (src: string) => files[src], skipData: !markdownPath };
+  const preview = previewCompose(token.content, previewOptions);
   const snapshot=preview.html||`<blockquote>${escapeHtml(preview.diagnostics.map((d:{message:string})=>d.message).join("；"))}</blockquote>`;
   const line = token.map ? ` data-line="${token.map[0]}"` : "";
   return `<div class="garden-ui-host code-line"${line} data-garden-lang="compose" data-garden-prompt="${env?.currentDocument?escapeHtml(compilePrompt(env.currentDocument)):""}" data-garden-fence-line="${fenceLine}" data-garden-source="${toBase64(token.content)}" data-garden-files="${toBase64(JSON.stringify(files))}">${snapshot}</div>\n`;
