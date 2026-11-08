@@ -90,19 +90,25 @@ test("package files publish editor artifacts without plugin sources", () => {
   const vsixDir = path.join(root, "editors/dist/vscode");
   const name = execFileSync("/usr/bin/python3", ["-c", "import os,sys; print(next(n for n in os.listdir(sys.argv[1]) if n.endswith('.vsix')))", vsixDir], { encoding: "utf8" }).trim();
   const listed = execFileSync("/usr/bin/python3", ["-c", `
-import sys, zipfile, json
+import sys, zipfile, json, struct, hashlib
 archive = zipfile.ZipFile(sys.argv[1])
 names = archive.namelist()
 manifest = json.loads(archive.read("extension/package.json"))
 version = json.load(open(sys.argv[2]))["version"]
 assert manifest["version"] == version
+assert manifest["icon"] == "icon.png"
+icon = archive.read("extension/" + manifest["icon"])
+assert icon[:8] == bytes.fromhex("89504e470d0a1a0a")
+assert struct.unpack(">II", icon[16:24]) == (256, 256)
+assert icon == open(sys.argv[3], "rb").read()
+assert 'Microsoft.VisualStudio.Services.Icons.Default' in archive.read("extension.vsixmanifest").decode()
 assert ('Version="' + version + '"') in archive.read("extension.vsixmanifest").decode()
 assert sys.argv[1].endswith("garden-ui-" + version + ".vsix")
 need = ["extension/package.json", "extension.vsixmanifest", "[Content_Types].xml"]
 missing = [item for item in need if item not in names]
 if missing or not any(item.startswith("extension/dist/") for item in names):
     raise SystemExit("bad vsix: " + ",".join(missing or ["extension/dist"]))
-`, path.join(vsixDir, name), path.join(root, "package.json")], { encoding: "utf8" });
+`, path.join(vsixDir, name), path.join(root, "package.json"), path.join(root, "editors/vscode/icon.png")], { encoding: "utf8" });
   assert.equal(listed, "");
 });
 

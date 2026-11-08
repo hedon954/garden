@@ -168,6 +168,7 @@ function vsixManifest(manifest) {
     <Identity Language="en-US" Id="${xmlEscape(manifest.name)}" Version="${xmlEscape(manifest.version)}" Publisher="${xmlEscape(manifest.publisher)}"/>
     <DisplayName>${xmlEscape(manifest.displayName)}</DisplayName>
     <Description xml:space="preserve">${xmlEscape(manifest.description)}</Description>
+    <Icon>extension/${xmlEscape(manifest.icon)}</Icon>
     <Tags>${xmlEscape(tags)}</Tags>
     <Categories>${xmlEscape(categories)}</Categories>
     <GalleryFlags>Public</GalleryFlags>
@@ -181,6 +182,7 @@ function vsixManifest(manifest) {
   </Installation>
   <Dependencies/>
   <Assets>
+    <Asset Type="Microsoft.VisualStudio.Services.Icons.Default" Path="extension/${xmlEscape(manifest.icon)}" Addressable="true"/>
     <Asset Type="Microsoft.VisualStudio.Code.Manifest" Path="extension/package.json" Addressable="true"/>
   </Assets>
 </PackageManifest>
@@ -191,7 +193,11 @@ function packageVsix() {
   const source = path.join(root, "editors", "vscode");
   const manifest = JSON.parse(fs.readFileSync(path.join(source, "package.json"), "utf8"));
   syncEditorVersion({ check: true });
-  const entries = [];
+  if (manifest.icon !== "icon.png") throw new Error("VS Code extension icon must be icon.png");
+  const icon = fs.readFileSync(path.join(source, manifest.icon));
+  if (icon.subarray(0, 8).toString("hex") !== "89504e470d0a1a0a" || icon.readUInt32BE(16) < 128 || icon.readUInt32BE(20) < 128)
+    throw new Error("VS Code extension icon must be PNG, at least 128 × 128.");
+  const entries = [{ name: `extension/${manifest.icon}`, data: icon }];
   const license = path.join(root, "LICENSE");
   if (fs.existsSync(license)) entries.push({ name: "extension/LICENSE", data: fs.readFileSync(license) });
   entries.push({ name: "extension/package.json", data: fs.readFileSync(path.join(source, "package.json")) });
