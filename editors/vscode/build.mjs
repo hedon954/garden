@@ -3,7 +3,10 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { build } from "esbuild";
+import { syncEditorVersion } from "../../scripts/sync-editor-version.mjs";
 import { RECIPE_FILES } from "../../ui/prompt/build.mjs";
+
+syncEditorVersion({ check: true });
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(here, "../..");

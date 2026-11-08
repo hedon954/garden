@@ -2,7 +2,7 @@
   "name": "garden-ui",
   "displayName": "Garden Intelligent UI",
   "description": "在 Markdown 里插入、预览和检查 Garden 块（compose DIL / card / interactive…）。",
-  "version": "0.1.1",
+  "version": "0.14.1",
   "publisher": "hedon954",
   "license": "MIT",
   "repository": {

@@ -3,6 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import zlib from "node:zlib";
+import { syncEditorVersion } from "./sync-editor-version.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const distDir = path.join(root, "editors", "dist");
@@ -16,7 +17,8 @@ function distReady() {
   const vsixDir = path.join(distDir, "vscode");
   const manifest = path.join(distDir, "typora", "manifest.json");
   if (!fs.existsSync(manifest) || !fs.existsSync(vsixDir)) return false;
-  return fs.readdirSync(vsixDir).some((name) => name.endsWith(".vsix"));
+  const version = syncEditorVersion({ check: true });
+  return fs.existsSync(path.join(vsixDir, `garden-ui-${version}.vsix`));
 }
 
 function withPackLock(fn) {
@@ -188,6 +190,7 @@ function vsixManifest(manifest) {
 function packageVsix() {
   const source = path.join(root, "editors", "vscode");
   const manifest = JSON.parse(fs.readFileSync(path.join(source, "package.json"), "utf8"));
+  syncEditorVersion({ check: true });
   const entries = [];
   const license = path.join(root, "LICENSE");
   if (fs.existsSync(license)) entries.push({ name: "extension/LICENSE", data: fs.readFileSync(license) });

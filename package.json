@@ -71,7 +71,8 @@
     "editors:build": "node editors/vscode/build.mjs && node editors/obsidian/build.mjs && node editors/typora/build.mjs",
     "editors:pack": "node scripts/pack-editors.mjs",
     "prepack": "node scripts/pack-editors.mjs",
-    "lint": "node bin/garden.mjs sync && eslint . --ignore-pattern dist --ignore-pattern .next --ignore-pattern .garden --ignore-pattern templates"
+    "lint": "node bin/garden.mjs sync && eslint . --ignore-pattern dist --ignore-pattern .next --ignore-pattern .garden --ignore-pattern templates",
+    "version": "node scripts/sync-editor-version.mjs && git add editors/vscode/package.json editors/vscode/package-lock.json"
   },
   "dependencies": {
     "@cloudflare/vite-plugin": "1.37.1",

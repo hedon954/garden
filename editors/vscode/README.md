@@ -47,3 +47,9 @@ GARDEN_FOLD_HOST_RESULT="$test_dir/result.json" \
 ```
 
 该测试使用真实 Markdown provider 检查标题、列表、普通代码块、两种 Compose 围栏的折叠范围，再调用原生折叠/展开并检查可见行与正文未变化；结果写入 `result.json`。它不代替对当前用户窗口的截图验收。修改插件后，已打开窗口可能仍运行旧版本，需要用户自行重载窗口后生效。
+
+## 与 Garden 同步发布
+
+扩展版本与根目录 `package.json` 的 Garden 版本保持一致。使用 `npm version patch`（或 `minor` / `major`）时，`version` 生命周期同步扩展 manifest 和 lockfile，并将这两个文件纳入 npm 的版本提交。手工改版本时运行 `node scripts/sync-editor-version.mjs`，再一起提交；构建和发布 CI 会拒绝版本不一致，标签发布还会检查 `v版本号` 与 manifest 一致。目前只发布稳定的三段版本号。
+
+`npm publish` 的 `prepack` 会重新构建并打包相同版本号的 VSIX，随 npm 包提供；这不等于发布 VS Code Marketplace / Open VSX。升级站点 npm 包之后，仍需运行 `npx garden editors install --vscode` 安装到本机编辑器；不会自动改动正在运行的编辑器，已有窗口需要用户自行重载才能切换到新宿主代码。旧版 `0.1.1` 将升级为对应 Garden 版本，而不是继续以相同版本覆盖不同内容。

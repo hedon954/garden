@@ -26,6 +26,8 @@ jobs:
       - name: Lockfile downloads only from registry.npmjs.org
         run: node scripts/check-lockfile-registry.mjs
       - run: npm ci
+      - name: Garden and extension release versions must match
+        run: node scripts/sync-editor-version.mjs --check
       - run: npm test
 
       - name: Publish hd-garden

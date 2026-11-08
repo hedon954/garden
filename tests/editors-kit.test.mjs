@@ -90,13 +90,19 @@ test("package files publish editor artifacts without plugin sources", () => {
   const vsixDir = path.join(root, "editors/dist/vscode");
   const name = execFileSync("/usr/bin/python3", ["-c", "import os,sys; print(next(n for n in os.listdir(sys.argv[1]) if n.endswith('.vsix')))", vsixDir], { encoding: "utf8" }).trim();
   const listed = execFileSync("/usr/bin/python3", ["-c", `
-import sys, zipfile
-names = zipfile.ZipFile(sys.argv[1]).namelist()
+import sys, zipfile, json
+archive = zipfile.ZipFile(sys.argv[1])
+names = archive.namelist()
+manifest = json.loads(archive.read("extension/package.json"))
+version = json.load(open(sys.argv[2]))["version"]
+assert manifest["version"] == version
+assert ('Version="' + version + '"') in archive.read("extension.vsixmanifest").decode()
+assert sys.argv[1].endswith("garden-ui-" + version + ".vsix")
 need = ["extension/package.json", "extension.vsixmanifest", "[Content_Types].xml"]
 missing = [item for item in need if item not in names]
 if missing or not any(item.startswith("extension/dist/") for item in names):
     raise SystemExit("bad vsix: " + ",".join(missing or ["extension/dist"]))
-`, path.join(vsixDir, name)], { encoding: "utf8" });
+`, path.join(vsixDir, name), path.join(root, "package.json")], { encoding: "utf8" });
   assert.equal(listed, "");
 });
 
