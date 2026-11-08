@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.14.3
+
+- Route author effects to recommended Compose layouts, with demand-loaded recipes, internal geometry constraints, frame-layer guidance and safe whole-fence micro-edits.
+- Prefer mobile reading tasks before local decoration: responsive short flows, vertical long sequences, real prose lists, icon rails and equal cards, preserving original source content.
+- Add opt-in structural layout lint using the authoritative parser, including responsive top-level flow guards without banning local icon/title rows; default checks remain compatible.
+- Separate parser, source-fidelity, browser geometry and whole-scene reading evidence. Multi-line centered icon/title chips remain browser-verified candidates, not a guarantee of mobile optical alignment.
+- Ship the matching Garden 0.14.3 VS Code / Cursor VSIX with the existing Garden brand icon; no runtime component API or Marketplace publication changes.
+
 ## 0.14.2
 
 - Allow omitted, null, empty and whitespace-only post descriptions; omit empty article decks, archive summaries and draft-preview paragraphs without fabricating a body excerpt. Keep invalid description types as preflight errors.
