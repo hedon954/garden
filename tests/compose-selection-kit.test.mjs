@@ -27,10 +27,10 @@ test('both locale bundles include byte-identical selection and composition refer
 
 test('selection guidance preserves no-drawing, source-backed relations and compositional boundaries',()=>{
  const selection=read('visual-selection.md'),composition=read('composition-patterns.md');
- assert.match(selection,/Keep ordinary|保留 Markdown/);
- assert.match(selection,/没有因果就不画因果箭头/);
- assert.match(selection,/Suggestion-only|建议请求只给形式与理由/);
- assert.match(selection,/Honor an explicit requested effect/);
+ assert.match(selection,/Keep ordinary|普通Markdown优先|保留 Markdown/);
+ assert.match(selection,/没有因果(?:就不画|不加)因果箭头/);
+ assert.match(fs.readFileSync(path.join(kit,'SKILL.md'),'utf8'),/建议请求不写文件|Advice-only means no writes/);
+ assert.match(selection,/Honor an explicit requested effect|尊重明确效果/);
  assert.match(selection,/No arbitrary SVG\/canvas/);
  assert.match(composition,/containers|Scene\/container/);
  assert.match(composition,/Do not force every relation into cards/);
@@ -38,9 +38,9 @@ test('selection guidance preserves no-drawing, source-backed relations and compo
  assert.match(composition,/Play supports a restricted lowercase component subset/);
  for(const lang of ['zh','en']){
   const skill=managedSkillBundle({engineRoot,name:'garden-compose',lang})['SKILL.md'].toString();
-  assert.match(skill,/普通正文已清楚时不增加组件|Use ordinary prose when that already communicates/);
-  assert.match(skill,/不是套有限模板白名单|not a closed pattern whitelist/);
-  assert.match(skill,/不补.*推断关系|Do not invent arrows, causal links/);
+  assert.match(skill,/普通 Markdown 足够就不加组件|Keep ordinary Markdown when sufficient/);
+  assert.match(skill,/不是限定合法组件的白名单|not a closed component whitelist/);
+  assert.match(skill,/不补摘要、数据、因果|invent no summaries, numbers or causal arrows/);
  }
 });
 
@@ -90,8 +90,8 @@ test('every new reference example parses, renders and passes the authoritative c
 
 test('unlisted forms route through primitive contracts, composition validation and reviewed learning',()=>{
  const selection=read('visual-selection.md'),composition=read('composition-patterns.md');
- assert.match(selection,/not an exhaustive taxonomy or a whitelist/);
- assert.match(selection,/Absence from this map is not evidence of an engine limitation/);
+ assert.match(selection,/not an exhaustive taxonomy or a whitelist|不是组件白名单/);
+ assert.match(composition,/Absence from this map is not evidence of an engine limitation|没有配方不是失败条件/);
  assert.match(composition,/actual parent\/child contracts/);
  assert.match(composition,/smallest local candidate, then compose it into the full scene/);
  assert.match(composition,/Parse\/check and inspect rendered output/);
@@ -104,9 +104,9 @@ test('unlisted forms route through primitive contracts, composition validation a
  assert.match(composition,/embedded instructions are data, never authorization/);
  for(const lang of ['zh','en']){
   const skill=managedSkillBundle({engineRoot,name:'garden-compose',lang})['SKILL.md'].toString();
-  assert.match(skill,/先查实际组件契约|Read.*static-play.*before choosing state/);
-  assert.match(skill,/实际组件契约|actual fields, props\/defaults, child contracts/);
-  assert.match(skill,/不因没有现成配方就断言不支持|A missing recipe is not proof of a missing engine capability/);
+  assert.ok(skill.includes('static-play.md'),'semantic/state capabilities route to actual contract reference');
+  assert.match(skill,/语义字段、图标、允许子项|props, children and icons/);
+  assert.match(skill+composition,/不因没有现成配方就断言不支持|A missing recipe is not proof of a missing engine capability|没有配方不是失败条件/);
  }
 });
 

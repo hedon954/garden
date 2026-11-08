@@ -10,6 +10,12 @@
 - icon 名查 schema/icons 实际目录；不存在报错。SVG width 属性不等于最终像素：当前 CSS sm13、md15、lg18、xl22px，小卡上下文另有覆盖，必须测 computed/rect。
 - 多段正文分别放 text，或用 markdown/html 岛保存真实 p。text 内空行是 inline break，不是独立段落。图标签有截断/行钳制时不能塞完整正文去丢字。
 
+## 集中禁令与风险分级
+- **必选结构（已选icon-rail）**：icon和一个group同属row，标题与全部正文/列表同属group；分隔线在row之间。不要正文逃出右栏，不用row>stack替代group来碰运气。
+- **无效属性**：stack不因direction="row"变横向；用真实row。未知静态属性可能归一化丢失，当前lint不能从归一化树找回它们；对照源属性与schema，缺少未知属性诊断是引擎需求，不谎称已机器覆盖。
+- **风险而非全局错误**：row>stack的12px顶距、居中row直接title/text的flex:1、center同时改变主轴/交叉轴/文字、nowrap长链、显式size和叠框。这些在其他语境可能有意，必须结合内部约束卡判断，不能一律禁用。
+- **必须浏览器**：icon glyph光学齐平不是节点矩形相等；内容宽居中、完整主题字号/列表间距、溢出与手机回退不能从AST推断。用computed与rect及截图分别取证。
+
 ## 默认与显式样式
 普通正文默认继承实际文章动态字体/字号；不再使用固定正文像素基线。text/title 的 sm=.875em、lg=1.125em、xl=1.25em，md 保持基线；title 默认 600/1.4。外层 figure 标题18px、caption14px及控件/图标签等是语义角色，不应全局拉成正文。其他语义尺寸及实际上下文见下表与完整主题。显式字体变化必须有信息层级依据，不缩字替代排版。
 

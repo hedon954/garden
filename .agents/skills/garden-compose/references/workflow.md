@@ -25,3 +25,18 @@ node .agents/skills/garden-compose/scripts/check.mjs content/posts/post.md
 ## Prose outside a fence · 围栏外的原文
 
 Separate the source paragraphs/list items from the requested effect. At the authorized location, create one `garden compose` intent block preserving both verbatim, then scan it. Initial insertion is distinct from replacing a block: `apply` requires a scanned existing target. For existing blocks, use scan → candidate → apply with the original base hash → check. Preserve unrelated prose and render the source once. / 分离原文与效果要求，在授权位置首次创建 `garden compose` 意图块后扫描；已有块始终带原 base hash 写回并复检，不把 apply 当作插入 API，不重复展示原文。
+
+## Local micro-edit · 微调不重画
+scan → 保存稳定id（没有则目标行）与完整围栏base → 仅改候选中的必要属性/叶子 → 审查diff → 带原base apply → rescan/check。去粗先区分源Markdown加粗与title默认600；略小仅在明确要求时改文字叶子size；紧一点改对应容器gap；去外框只改最外figure。不要为了旋钮变化换标签家族或清空intent。稳定id在获授权编辑该块时建立，不全篇加id。并发修改造成base冲突必须重新读取。
+当前没有属性patch或dry-run；apply始终写回完整围栏。最小候选diff不等于局部写入API；保留围栏外字节及完整原文核对。
+
+## Opt-in layout check · 独立的内部约束检查
+原check.mjs的参数/退出状态不变。AI内部约束卡可保存为临时JSON（不是围栏属性/作者新语法）：
+```json
+{"at":90,"base":"扫描所得完整围栏hash","layout":"icon-rail","units":3,"outerFrame":"none"}
+```
+有稳定id用id替代at；base必填。运行：
+```sh
+node .agents/skills/garden-compose/scripts/lint-layout.mjs content/posts/post.md --constraints .garden/layout.json
+```
+仅支持当前静态Compose；复用实际本地hd-garden的scanner和parser，不下载包、不复制解析器。错误退出1，工具/约束输入错误退出2，风险/浏览器待验不使退出失败。只对显式声明的icon-rail/equal-cards和outerFrame做有限结构断言；其他路线仍需人工结构清单。不能从归一化树还原未知属性、推断自然语言效果或验证几何；保真核对另做，不把机器支持范围夸大。

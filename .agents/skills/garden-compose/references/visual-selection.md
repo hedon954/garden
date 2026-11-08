@@ -2,12 +2,26 @@
 
 Load when choosing how to explain source content, not for every repair. Use the current lowercase Compose surface. / 需要选图时读取，不是每次修复都读。
 
-## Decision procedure · 选型
-Identify the reader question first: “which things?”, “what happens next?”, “what contains what?”, “who sends what?”, “how do options differ?”, “what changes if an input changes?”. Select the relation actually present in the source, not whichever layout looks elaborate. Use one primary relation per scene; split a crowded explanation into adjacent scenes. Honor an explicit requested effect unless unsupported or misleading, in which case explain the concrete conflict.
+## Effect compiler · 效果先收敛
+作者给原文＋一句效果/参考图即可；以下是AI内部动作，不要求作者懂标签。
 
-先确定读者问题，再抽取真实关系。普通清单已足够、只有一句结论、缺少关系/数值、图只会重复文字时保留 Markdown；建议请求只给形式与理由。没有顺序就不画流程，没有因果就不画因果箭头，没有数据就不造图表。不能确定的关系不强行补齐。
+1. 确定读者问题和原文真实关系；尊重明确效果。没有顺序不画流程，没有因果不加因果箭头，没有数据不造图表。
+2. 写一张内部几何约束卡（工作笔记/临时JSON即可，非新作者语法）：读者问题；共享容器；悬挂与正文范围；居中的是文字还是图标标题整体；字号相对正文；场景框/内部边框/底色；窄屏回退；不要什么。参考图也先提取这些约束，不能只识别“图标＋文字”。
+3. 按下表取一条推荐路线，填原文叶子。默认正文基线、开始对齐、自然换行，不新增强调色；只在有意强调时加样式。未知但不影响事实的细节用默认，不把问题推给作者；可能改变事实关系、隐藏内容或阅读顺序时才问。
 
-The forms below are examples accumulated from practice, not an exhaustive taxonomy or a whitelist. If no row matches, use the primitive inventory, operations and discovery protocol in composition-patterns.md to build a faithful new arrangement. Absence from this map is not evidence of an engine limitation. / 下表是持续积累的典型经验，不穷举表示方式；没有匹配项时查基础组件和组合操作，构造并验证新组合，不能据此判定不支持。
+| 效果/读者问题 | 唯一推荐路线 | whenNot / 不这样用 |
+|---|---|---|
+| 图标窄栏、标题正文共左缘 | icon-rail：stack重复row(icon＋group)，divider在row间 | 不把正文放row外；不当流程 |
+| 短阶段从左到右 | flow-row：row＋真实顺序箭头；窄屏/长内容回退flow-stack | 不靠缩字/nowrap强撑手机 |
+| 长阶段或纵向顺序 | flow-stack：stack＋下箭头 | 无顺序的条目不加箭头 |
+| 并列等宽卡片 | equal-cards：grid＋直接card | 非真实共同维度不走compare |
+| 图标贴标题，两者一起居中 | centered-chip：内容宽标题壳＋内部图标标题行，下方正文独立 | 不只给全宽row设center；候选须浏览器验收 |
+| 跟正文一样的列表 | prose-list：普通Markdown；场景内用markdown岛 | 不写假圆点；不为列表手感换到compare |
+| 去外框/留内框 | 原路线＋frameless-scene选项：外figure frame=none | 不把透明底色当去边框，不改错层级 |
+
+这些是**唯一推荐默认**，不是组件白名单；先使用最接近的已验局部结构，确有关系需求再按composition-patterns组合新形式，并保留同样约束和验证。frame/tone是正交选项，不衍生新的配方家族。
+
+边界：普通Markdown优先；compare仅真实共同维度对照。当前只有garden compose围栏，旧garden list不再推荐。Compose内部icon-list仅在需要其原生语义/宿主行为且接受其样式契约时用；普通编辑性图标段落默认icon-rail，不能仅为调字号来回迁移。需要语义/交互时再读static-play，不靠标签同名猜兼容。
 
 ## Capability map · 典型形式与边界
 

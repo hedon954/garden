@@ -56,6 +56,7 @@ Follow workflow.md for id/line/hash safeguards. No default prompt export, clipbo
 最小语法示意（实施时使用原文；占位文字不是正文素材）：
 ```garden compose
 <intent>语法示意：固定图标列，共用右侧文字列。</intent>
+<figure frame="none">
 <stack gap={3}>
 <row wrap="nowrap" gap={3}>
 <icon name="book-open" size="xl"/>
@@ -74,11 +75,29 @@ Follow workflow.md for id/line/hash safeguards. No default prompt export, clipbo
 </group>
 </row>
 </stack>
+</figure>
 ```
 
-标题用 text + 加粗保证与正文同字号；需要不同标题层级才改用 title 并核对实际字号。图标选真实目录中的合适名字，不要求作者指定。divider 是外层 stack 的子项，不是 list 的直接子项。外框默认保留；确需去框用场景 figure frame="none"，不要误用内部 box 的 border。
+标题用 text + 加粗保证与正文同字号；需要不同标题层级才改用 title 并核对实际字号。图标选真实目录中的合适名字，不要求作者指定。divider 是外层 stack 的子项，不是 list 的直接子项。编辑性段落默认采用外层 figure frame="none" 融入文章；作者明确要独立场景边界时保留。不要误用内部 box 的 border。
 
 上下文、默认值、prose 与 group 的差别及窄屏规则读取 rendering-model.md。检查后的视觉验收：图标列对齐；标题及所有正文段落共用右侧左边界；标题不居中；段落不回到图标列；每两个单元仅一条细线；没有卡片背景、箭头或窄屏横向溢出。
 
 ### Icon-led editorial list: operational summary
-Use this for independent explanations, not a workflow. Derive the alignment hierarchy before selecting leaves: an outer `stack` repeats `row wrap="nowrap"` with a fixed-size direct `icon` and one flexible `group`. Put the bold heading and **every** original paragraph into separate `text` children of that same group. Place `divider` between rows in the outer stack. Do not place the body outside the row, center the ancestor, use a direct list divider, or substitute a nested stack without checking its contextual padding. The tested syntax above is illustrative; substitute real source text and catalog icons. Keep the default frame unless requested otherwise; an explicit outer scene `figure frame="none"` removes only the scene frame. Verify shared heading/body left edges, fixed icon alignment, retained paragraphs, separators and no narrow-screen overflow under the complete article theme.
+Use this for independent explanations, not a workflow. Derive the alignment hierarchy before selecting leaves: an outer `stack` repeats `row wrap="nowrap"` with a fixed-size direct `icon` and one flexible `group`. Put the bold heading and **every** original paragraph into separate `text` children of that same group. Place `divider` between rows in the outer stack. Do not place the body outside the row, center the ancestor, use a direct list divider, or substitute a nested stack without checking its contextual padding. The tested syntax above is illustrative; substitute real source text and catalog icons. For editorial prose prefer an outer frameless figure unless a scene boundary was requested; an explicit outer scene `figure frame="none"` removes only the scene frame. Verify shared heading/body left edges, fixed icon alignment, retained paragraphs, separators and no narrow-screen overflow under the complete article theme.
+
+
+## flow-row / flow-stack · 短阶段与长阶段
+只有原文明确顺序才用箭头。短阶段用row中的text与right箭头；正文基线、不加粗、不为塞入横排设size。作者明确“略小”时仅在文字叶子设sm，勿父子重复缩放。长阶段默认stack与down箭头。手机不能只是让right箭头随row纵向换行：方向必须与实际流向一致。当前没有经此技能验证的自动双向响应配方；发布推荐前须浏览器验证或明确选择全尺寸纵向保真回退，不发明响应式属性。作者硬性要求横排且手机容纳不下才说明取舍。
+
+## centered-chip · 整体居中、图标贴标题（候选，待浏览器验证）
+关系是“图标＋标题”为一个内容宽整体，正文另占一行；不是图标与一个flex:1标题平分整格。
+候选沿用真实文章的结构：`stack align="center" → card frame="text" padding={0} → row align="center" gap={0} wrap="nowrap" → icon inline + text`；正文作为外stack的下一text。frame=text标题壳不是信息卡片。不得把此候选称作跨主题已验证；检查标题壳实际宽度、图文距离、图标与标题行盒、整体中心、长标题、窄屏溢出。icon inline当前另带6px右距，gap=0不等于零距离；row>text仍有flex规则。若失败，记录引擎缺口，不用换字号掩盖。
+
+## prose-list · 正文列表手感
+不需要场景时保留普通Markdown。需要嵌入icon-rail时，把真实Markdown无序/有序列表放右侧group内的markdown岛，保留全部子项和层级。title/text是行内内容，不能用“•”拼出列表。结构上核对ul/li；完整主题另验悬挂缩进、段距和换行，不由AST宣称观感相同。
+
+## frameless-scene · 正交的框选项
+编辑性说明默认外`figure frame="none"`，内card是否有border、background分别决定；独立实验或明确要求场景边界时保留外框。详见frames.md。默认不加size/tone来补救布局，不删事实、不裁正文。
+
+## 内部验收卡（不是作者表单）
+选定路线后在工作笔记记：读者问题、源条目/段落数、共享容器与悬挂、居中对象、相对正文的字号、三层框选择、桌面/窄屏回退、禁止项。唯一推荐不等于凭经验宣称已验证：centered-chip与响应式flow尚须实际浏览器证据；已有icon-rail/equal-cards也须在本次上下文核对。
