@@ -40,3 +40,7 @@ scan → 保存稳定id（没有则目标行）与完整围栏base → 仅改候
 node .agents/skills/garden-compose/scripts/lint-layout.mjs content/posts/post.md --constraints .garden/layout.json
 ```
 仅支持当前静态Compose；复用实际本地hd-garden的scanner和parser，不下载包、不复制解析器。错误退出1，工具/约束输入错误退出2，风险/浏览器待验不使退出失败。只对显式声明的icon-rail/equal-cards和outerFrame做有限结构断言；其他路线仍需人工结构清单。不能从归一化树还原未知属性、推断自然语言效果或验证几何；保真核对另做，不把机器支持范围夸大。
+
+## Mobile acceptance · AI内部，不要求作者补规格
+几何卡补可选`"mobile":{"readingMode":"sequence","reflow":true}`；readingMode可选sequence/scan-list/comparison/spatial，reflow为布尔。lint只在显式reflow的flow-row中拒绝场景顶层流向row的nowrap（不误禁内部贴标row）；icon-rail局部nowrap不被误禁。scan-list的成组居中只给风险提示，不凭AST断言过高或难读。
+浏览器验证遵守mobile-contract：记录实际CSS viewport、内容宽、正常/放大正文、每层滚动与实际箭头向量，并人工审查整组阅读节奏。保留首稿和源hash，失败后的修订单独编号，不能把修后结果算首轮成功。默认check参数/退出状态不变，mobile字段不是runtime DIL属性。

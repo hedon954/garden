@@ -4,7 +4,7 @@ import {createRequire} from 'node:module';
 import {pathToFileURL} from 'node:url';
 const layouts = new Set(['icon-rail','equal-cards','flow-row','flow-stack','centered-chip','prose-list']);
 export function validateCard(card) {
-  const keys = new Set(['id','at','base','layout','units','outerFrame']);
+  const keys = new Set(['id','at','base','layout','units','outerFrame','mobile']);
   if (!card || typeof card !== 'object' || Array.isArray(card) || Object.keys(card).some(k=>!keys.has(k))) throw new Error('Unknown constraint field/object');
   if ((typeof card.id==='string' && card.id.length>0) === (Number.isInteger(card.at) && card.at>0)) throw new Error('Choose exactly one nonempty id or positive at line');
   if (card.id!==undefined && (typeof card.id!=='string'||!card.id)) throw new Error('Invalid id');
@@ -13,6 +13,12 @@ export function validateCard(card) {
   if (!layouts.has(card.layout)) throw new Error('Unsupported layout recommendation');
   if (card.units!==undefined && (!Number.isInteger(card.units)||card.units<1)) throw new Error('units must be positive');
   if (card.outerFrame!==undefined && !['none','card'].includes(card.outerFrame)) throw new Error('Invalid outerFrame');
+  if (card.mobile!==undefined) {
+    const m=card.mobile;
+    if (!m || typeof m!=='object' || Array.isArray(m) || Object.keys(m).some(k=>!['readingMode','reflow'].includes(k))) throw new Error('Invalid mobile constraint');
+    if (m.readingMode!==undefined && !['sequence','scan-list','comparison','spatial'].includes(m.readingMode)) throw new Error('Invalid mobile readingMode');
+    if (m.reflow!==undefined && typeof m.reflow!=='boolean') throw new Error('Invalid mobile reflow');
+  }
 }
 export function inspectLayout(doc, card) {
   validateCard(card);
@@ -43,6 +49,8 @@ export function inspectLayout(doc, card) {
     else if (card.units!==undefined && (grid.children.length!==card.units || grid.cols!==Math.min(card.units,6))) add('error','unit-count','Grid cards/columns differ from declared source units');
   }
   const visit=(n,parent)=>{
+    if (card.mobile?.reflow===true && card.layout==='flow-row' && nodes.includes(n) && n.type==='row' && n.wrap==='nowrap') add('error','mobile-flow-nowrap','Declared responsive sequence cannot hard-lock its row; inspect painted arrows and narrow label wrapping');
+    if (card.mobile?.readingMode==='scan-list' && ['stack','grid'].includes(n.type) && n.align==='center' && (n.children??[]).filter(c=>['card','group','stack'].includes(c.type)).length>1) add('warning','mobile-scan-centering','Repeated centered scan units require whole-scene density and reading review; AST does not prove a failure');
     if (parent?.type==='row' && n.type==='stack') add('warning','row-stack-padding','Current theme adds 12px top padding');
     if (n.type==='row' && n.align==='center' && n.children?.some(c=>['title','text'].includes(c.type))) add('warning','center-flex','Center couples axes/text; direct title/text keep flex:1');
     if (n.type==='row' && n.wrap==='nowrap') add('warning','nowrap','Browser must verify wrapping and overflow');
@@ -51,7 +59,7 @@ export function inspectLayout(doc, card) {
     for (const child of n.children??[]) visit(child,n);
   };
   doc.nodes.forEach(n=>visit(n,null));
-  return {ok:!diagnostics.some(d=>d.severity==='error'),diagnostics,coverage:{structural:[...(card.outerFrame?['declared outerFrame']:[]),...(['icon-rail','equal-cards'].includes(card.layout)?[card.layout+' shape']:[])],notChecked:['source fidelity','unknown source attributes','other route structures','DOM geometry','responsive layout','optical alignment','AI reliability']},browserRequired:true};
+  return {ok:!diagnostics.some(d=>d.severity==='error'),diagnostics,coverage:{structural:[...(card.outerFrame?['declared outerFrame']:[]),...(['icon-rail','equal-cards'].includes(card.layout)?[card.layout+' shape']:[]) ,...(card.mobile?.reflow===true&&card.layout==='flow-row'?['declared mobile top-level flow nowrap guard']:[])],notChecked:['source fidelity','unknown source attributes','other route structures','DOM geometry','responsive layout','optical alignment','AI reliability']},browserRequired:true};
 }
 async function main() {
   const args=process.argv.slice(2);

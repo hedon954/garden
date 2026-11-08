@@ -5,9 +5,9 @@ Load when choosing how to explain source content, not for every repair. Use the 
 ## Effect compiler · 效果先收敛
 作者给原文＋一句效果/参考图即可；以下是AI内部动作，不要求作者懂标签。
 
-1. 确定读者问题和原文真实关系；尊重明确效果。没有顺序不画流程，没有因果不加因果箭头，没有数据不造图表。
+1. 确定读者问题、移动阅读任务和原文真实关系；尊重明确效果。没有顺序不画流程，没有因果不加因果箭头，没有数据不造图表。
 2. 写一张内部几何约束卡（工作笔记/临时JSON即可，非新作者语法）：读者问题；共享容器；悬挂与正文范围；居中的是文字还是图标标题整体；字号相对正文；场景框/内部边框/底色；窄屏回退；不要什么。参考图也先提取这些约束，不能只识别“图标＋文字”。
-3. 按下表取一条推荐路线，填原文叶子。默认正文基线、开始对齐、自然换行，不新增强调色；只在有意强调时加样式。未知但不影响事实的细节用默认，不把问题推给作者；可能改变事实关系、隐藏内容或阅读顺序时才问。
+3. 全局阅读结构先于局部效果：长清单的任务是连续扫读，不是把每项放大为一个居中展示单元。按mobile-contract检查内容量、长短差异和小屏阅读节奏，再按下表取一条推荐路线，填原文叶子。默认正文基线、开始对齐、自然换行，不新增强调色；只在有意强调时加样式。未知但不影响事实的细节用默认，不把问题推给作者；可能改变事实关系、隐藏内容或阅读顺序时才问。
 
 | 效果/读者问题 | 唯一推荐路线 | whenNot / 不这样用 |
 |---|---|---|
@@ -50,3 +50,7 @@ This is a selection map, not a new syntax catalog. For chart attributes use the 
 No arbitrary SVG/canvas, custom CSS/JS, general node-id edge routing, automatic graph/tree placement, simulated execution, arbitrary nested rich `compare` items, or full parity between static and Play. A small drawn branch does not imply support for a full flowchart language. `steps` detail toggles and `tabs` are not numerical Play state.
 
 If the requested relation needs unsupported routing/interaction, state the gap and suggest a simpler faithful Compose scene or an existing appropriate article format; do not silently switch engines or invent tags. Validation proves syntax/semantics only; inspect the browser before claiming visual/responsive behavior was verified.
+
+## Mobile is part of compilation · 不是交给作者的QA
+断点自动单列只证明重排，不证明好读。centered-chip是局部贴标结构，不是长清单的全局默认；equal-cards也是按信息关系选择，不是见到N项就生成N张大卡。普通短清单优先prose-list；有独立标题/多段解释才用共享右栏。明确要求的卡片/居中仍须保留其意图，但不能以缩字、硬横排、折叠事实来达成。
+长内容自然跨屏不算失败；要识别的是重复装饰、冗余表面、过量容器间距、窄列拆词和反复居中造成的阅读负担。移动约束由AI内部收敛与验证，不询问作者要断点、字号或方向细节。当前能力确实无法同时满足硬约束时如实标未完成/引擎缺口，不静默改事实或发明属性。

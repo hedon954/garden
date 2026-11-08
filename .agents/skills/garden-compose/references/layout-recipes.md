@@ -1,6 +1,6 @@
 # Layout recipes · 布局组合要点
 
-Read only the section matching the requested layout. / 按需读取对应布局小节。
+Read only the section matching the requested layout. / 按需读取对应布局小节；所有配方先读mobile-contract.md决定手机阅读任务，再选择局部结构。
 
 ## Horizontal equal-width cards · 横向等宽卡片
 
@@ -94,7 +94,7 @@ Use this for independent explanations, not a workflow. Derive the alignment hier
 作者明确“略小”时仅在文字叶子设sm，勿父子重复缩放；编辑性流程默认外figure frame="none"。不把配方验证扩大到所有主题/字体或未知嵌套。
 
 ## centered-chip · 整体居中、图标贴标题（候选，待浏览器验证）
-编辑性说明默认用外figure frame="none"包裹；这与内部frame="text"标题壳不是同一层。关系是“图标＋标题”为一个内容宽整体，正文另占一行；不是图标与一个flex:1标题平分整格。
+编辑性说明默认用外figure frame="none"包裹；这与内部frame="text"标题壳不是同一层。关系是“图标＋标题”为一个内容宽整体，正文另占一行；它是局部标题效果，不能默认把整份长清单变成重复居中的大展示单元；不是图标与一个flex:1标题平分整格。
 候选沿用真实文章的结构：`stack align="center" → card frame="text" padding={0} → row align="center" gap={0} wrap="nowrap" → icon inline + text`；正文作为外stack的下一text。frame=text标题壳不是信息卡片。不得把此候选称作跨主题已验证；检查标题壳实际宽度、图文距离、图标与标题行盒、整体中心、长标题、窄屏溢出。icon inline当前另带6px右距，gap=0不等于零距离；row>text仍有flex规则。若失败，记录引擎缺口，不用换字号掩盖。
 
 ## prose-list · 正文列表手感
@@ -105,3 +105,11 @@ Use this for independent explanations, not a workflow. Derive the alignment hier
 
 ## 内部验收卡（不是作者表单）
 选定路线后在工作笔记记：读者问题、源条目/段落数、共享容器与悬挂、居中对象、相对正文的字号、三层框选择、桌面/窄屏回退、禁止项。唯一推荐不等于凭经验宣称已验证：centered-chip与响应式flow尚须实际浏览器证据；已有icon-rail/equal-cards也须在本次上下文核对。
+
+## 各路线共用的移动责任
+- flow-row：响应式阅读任务声明为reflow时，不用nowrap硬撑阶段标签。row方向和实际绘制箭头必须一起改变；换行/纵排/横滚各自不同，不能只看无外层溢出就判通过。
+- equal-cards：单列后再次核对每项扫读节奏；若原本只是短标签/短问句，优先选择紧凑列表/分组而不是机械重复卡片。显式指定卡片时保留要求，自然段长则自然增长，不删字、不设固定高。
+- icon-rail：nowrap只固定图标＋可收缩右栏的局部关系，不是让整组条目横排；长段落/真列表在右group内自然换行。
+- centered-chip：只承诺局部贴标。完整问句、长标题、双语标签和放大字体必须实测；不自动把所有正文居中。长扫描清单优先开始对齐的连续阅读，必要时用局部重点居中，不通过sm来压高度。
+- prose-list / frameless：保持真实标记、顺序、正文基线和自然段落；去掉无意义的多层场景表面不是删掉所有必要分组。
+同一树能响应式重排时使用已有机制；若需要尚未支持的断点条件对齐/拓扑，不复制两套文字隐藏一套、不发明媒体属性。采用兼容两端且保真的最小方案并注明视觉取舍；无法满足作者明确硬约束时标未完成，而非让作者做设备调参。
