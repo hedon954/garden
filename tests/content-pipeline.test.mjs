@@ -98,9 +98,13 @@ date: 2026-07-25
     description: 从一篇文章开始。
     posts:
       - writing/nested
+      - empty
 `,
     );
 
+    for (const [slug, field] of Object.entries({ empty: 'description: ""', whitespace: 'description: "  "', omitted: '', nullable: 'description: null' })) {
+      await writeFile(path.join(fixture, "content/posts", `${slug}.md`), `---\ntitle: ${slug}\ndate: 2026-07-25\n${field}\n---\n\nDo not turn this body into a summary.\n`);
+    }
     const build = await execFileAsync(
       process.execPath,
       [path.join(fixture, "scripts", "build-content.mjs")],
@@ -122,6 +126,13 @@ date: 2026-07-25
     );
     assert.match(generatedConfig, /export const siteConfig/);
     assert.match(generated, /"slug": "published"/);
+    const entries = JSON.parse(generated.match(/export const posts = ([\s\S]*?) as ContentEntry\[\];/u)[1]);
+    for (const slug of ["empty", "whitespace", "omitted", "nullable"]) {
+      assert.equal(entries.find((entry) => entry.slug === slug).description, "");
+    }
+    assert.equal(entries.find((entry) => entry.slug === "published").description, "验证内容发布管线");
+    const columnEntries = JSON.parse(generated.match(/export const columns = ([\s\S]*?) as ContentEntry\[\];/u)[1]);
+    assert.equal(columnEntries.find((entry) => entry.slug === "empty").description, "");
     assert.match(generated, /"sourcePath": "posts\/writing\/nested\.md"/);
     assert.doesNotMatch(generated, /"slug": "draft"/);
     assert.doesNotMatch(generated, /topic|旧字段/);
@@ -131,6 +142,8 @@ date: 2026-07-25
     const postsFeed = await readFile(path.join(fixture, "public", "posts.xml"), "utf8");
     assert.match(postsFeed, /<lastBuildDate>Fri, 24 Jul 2026 16:00:00 GMT<\/lastBuildDate>/);
     assert.doesNotMatch(postsFeed, /草稿文章/);
+    assert.match(postsFeed, /<description><\/description>/u);
+    assert.doesNotMatch(postsFeed, /<description>Do not turn this body/u);
     await access(path.join(fixture, "public", "media", "covers", "cover.jpg"));
     await access(
       path.join(fixture, "public", "media", "posts", "assets", "cover.jpg"),

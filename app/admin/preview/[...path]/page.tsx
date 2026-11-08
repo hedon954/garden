@@ -75,7 +75,7 @@ export default async function DraftPreviewPage({ params }: { params: Promise<{ p
           草稿预览 · {post}{draft ? " · 草稿" : ""} · <Link href="/admin/ui/blocks">回到交互块</Link>
         </p>
         <h1 className="ui-admin-preview-title">{typeof data.title === "string" ? data.title : post}</h1>
-        {typeof data.description === "string" ? <p className="ui-studio-meta">{data.description}</p> : null}
+        {typeof data.description === "string" && data.description.trim() ? <p className="ui-studio-meta">{data.description}</p> : null}
         <article className="article-body">
           <MarkdownArticle content={proxyAssets(content, post)} numbering={data.numbering === false ? false : undefined} />
         </article>

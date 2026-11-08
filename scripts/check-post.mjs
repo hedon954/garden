@@ -215,8 +215,8 @@ const checkFile = (filePath) => {
   if (typeof data.title !== "string" || !data.title.trim()) {
     error(errors, "missing-title", 1, `${sourcePath}: front matter 缺少有效的 title`);
   }
-  if (typeof data.description !== "string" || !data.description.trim()) {
-    error(errors, "missing-description", 1, `${sourcePath}: front matter 缺少有效的 description`);
+  if (data.description != null && typeof data.description !== "string") {
+    error(errors, "invalid-description", 1, `${sourcePath}: description 必须是字符串或留空`);
   }
   if (data.slug !== undefined) {
     error(errors, "unexpected-slug", 1, `${sourcePath}: 不要写 slug，文件名就是标识`);

@@ -409,7 +409,9 @@ function validateAndNormalize(data, content, markdownPath, kind, sourcePath, lin
   }
 
   if (kind === "post") {
-    requireString(data, "description", sourcePath);
+    const description = optionalString(data, "description", sourcePath);
+    // An explicit blank is intentional: never replace it with an excerpt from the body.
+    if (!description) data.description = "";
   }
   if (kind === "thought" && data.mediaType) {
     if (!["image", "audio", "video", "link", "text"].includes(data.mediaType)) {

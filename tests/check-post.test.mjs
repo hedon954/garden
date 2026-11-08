@@ -222,3 +222,16 @@ test("images in angle brackets: remote ones pass, local ones with spaces and par
   assert.deepEqual(codes(missing), ["missing-asset"]);
   assert.match(missing.results[0].errors[0].message, /gone \(2\)\.png/u);
 });
+
+
+test("description can be blank, whitespace, null or omitted, but not another type", async (t) => {
+  const root = await site(t);
+  for (const field of ['description: ""', 'description: "   "', 'description:', 'description: null', '']) {
+    const result = await check(root, `---\ntitle: 测试\ndate: 2026-09-18\n${field}\n---\n\n## 正文\n`);
+    assert.equal(result.ok, true, JSON.stringify(result));
+  }
+  for (const field of ['description: 42', 'description: false', 'description: []', 'description: {}']) {
+    const result = await check(root, `---\ntitle: 测试\ndate: 2026-09-18\n${field}\n---\n\n## 正文\n`);
+    assert.deepEqual(codes(result), ['invalid-description']);
+  }
+});

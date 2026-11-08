@@ -36,7 +36,7 @@ references:
 | :--- | :--- | :--- | :--- |
 | `title` | Yes | String | Post title. Write ` \| ` (with spaces on both sides) to split the heading into two lines and scale the font size to fit |
 | `date` | Yes | Date string | Publication date (such as `2026-10-18` or an ISO timestamp with timezone) |
-| `description` | Yes | String | Summary shown in the article deck, archive lists, and search engine descriptions |
+| `description` | No | String | Summary shown in the article deck, archive lists, and search engine descriptions. Empty (`description: ""`), omitted, null, or whitespace-only values hide the summary; Garden does not substitute an excerpt from the body |
 | `updated` | No | Date string | Last updated date, shown in the article meta bar and used for RSS sorting |
 | `publishAt` | No | Date string | Scheduled publish time; included only when earlier than the build time (or when `CONTENT_INCLUDE_DRAFTS=1`) |
 | `tags` | No | String array | Tags for the post; clicking a tag filters `/blog?t=<tag>` |
