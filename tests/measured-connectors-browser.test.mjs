@@ -14,13 +14,14 @@ test('measured connector recipe keeps text in DOM and endpoints on actual resize
     const html = '<section id="graph"><div data-node="a"><p>Neutral source label with natural wrapping.</p></div><div data-node="b"><p>Neutral second node.</p></div><div data-node="c"><p>Neutral final node with a longer explanation.</p></div></section>';
     const css = '*{box-sizing:border-box}#graph{position:relative;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:32px}#graph>[data-node]{border:1px solid var(--rule);padding:12px;min-width:0}[data-node="a"]{grid-row:span 2;align-self:center}p{margin:0;font:inherit;overflow-wrap:anywhere}';
     const script = `${recipe}\n(async()=>{
-      const graph=document.getElementById('graph');const dispose=mountMeasuredConnectors(graph,[{from:'a',to:'b'},{from:'a',to:'c'},{from:'b',to:'c'}]);
+      const graph=document.getElementById('graph');const dispose=mountMeasuredConnectors(graph,[{from:'a',to:'b'},{from:'a',to:'c',route:'elbow'},{from:'b',to:'c',route:'elbow',dashed:true}]);
       const settle=()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
       await document.fonts.ready;await settle();
       const measure=()=>({rootWidth:graph.getBoundingClientRect().width,overflow:document.documentElement.scrollWidth>innerWidth,font:parseFloat(getComputedStyle(graph.querySelector('p')).fontSize),paths:[...graph.querySelectorAll('path')].map(p=>{
         const svg=p.ownerSVGElement,m=svg.getScreenCTM(),start=p.getPointAtLength(0).matrixTransform(m),end=p.getPointAtLength(p.getTotalLength()).matrixTransform(m);
         const bounds=id=>{const r=graph.querySelector('[data-node="'+id+'"]').getBoundingClientRect();return{left:r.left,right:r.right,top:r.top,bottom:r.bottom}};
-        return{start:{x:start.x,y:start.y},end:{x:end.x,y:end.y},from:bounds(p.dataset.from),to:bounds(p.dataset.to)};
+        const coords=p.getAttribute('d').match(/-?\\d+(?:\\.\\d+)?(?:e[-+]?\\d+)?/gi).map(Number);const vertices=[];for(let i=0;i<coords.length;i+=2)vertices.push({x:coords[i],y:coords[i+1]});
+        return{start:{x:start.x,y:start.y},end:{x:end.x,y:end.y},from:bounds(p.dataset.from),to:bounds(p.dataset.to),route:p.dataset.route,dash:getComputedStyle(p).strokeDasharray,vertices};
       })});
       const initial=measure();document.body.style.fontSize='21px';await settle();const enlarged=measure();graph.style.width='75%';await settle();const resized=measure();dispose();
       parent.postMessage({source:'connector-test',initial,enlarged,resized,disposed:!graph.querySelector('svg')},'*');
@@ -37,6 +38,17 @@ test('measured connector recipe keeps text in DOM and endpoints on actual resize
       for (const state of [result.initial, result.enlarged, result.resized]) {
         assert.equal(state.overflow, false, width + ': overflow');
         assert.equal(state.paths.length, 3);
+        assert.equal(state.paths[0].route, 'straight');
+        assert.equal(state.paths[0].vertices.length, 2);
+        assert.equal(state.paths[1].route, 'elbow');
+        assert.equal(state.paths[1].vertices.length, 4);
+        assert.match(state.paths[2].dash, /6.*4/);
+        for (const line of state.paths.filter(line => line.route === 'elbow')) {
+          for (let i=1;i<line.vertices.length;i++) {
+            const a=line.vertices[i-1], b=line.vertices[i];
+            assert.ok(Math.abs(a.x-b.x)<.01 || Math.abs(a.y-b.y)<.01, 'Non-orthogonal elbow segment');
+          }
+        }
         for (const line of state.paths) {
           assert.ok(onBoundary(line.start, line.from), JSON.stringify({ width, line }));
           assert.ok(onBoundary(line.end, line.to), JSON.stringify({ width, line }));
@@ -52,4 +64,13 @@ test('both managed skill languages include the exact executable connector founda
     const bundle = managedSkillBundle({ engineRoot: root, name: 'garden-compose', lang });
     assert.deepEqual(bundle['references/measured-connectors.js'], expected);
   }
+});
+
+test('measured recipes reject unknown route and non-boolean dash options before mounting', () => {
+  const recipe=fs.readFileSync(path.join(root, '.agents/skills/garden-compose/references/measured-connectors.js'), 'utf8');
+  const mount=Function(recipe + ';return mountMeasuredConnectors')();
+  const nodes=[{dataset:{node:'a'}},{dataset:{node:'b'}}];
+  const rootNode={querySelectorAll:()=>nodes};
+  assert.throws(()=>mount(rootNode,[{from:'a',to:'b',route:'automatic'}]), /Unknown connector route/);
+  assert.throws(()=>mount(rootNode,[{from:'a',to:'b',dashed:'true'}]), /dashed must be boolean/);
 });

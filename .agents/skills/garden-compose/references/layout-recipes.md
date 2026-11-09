@@ -14,7 +14,7 @@ Use `<grid cols={3} gap={3}>` with three direct `<card>` children. `cols` accept
 
 三个直接 card 子元素配 `grid cols={3} gap={3}`；cols 为 1–6。等宽来自等分网格；当前主题在视口 ≤800px 时收为单列，不强制窄屏横排。
 
-- `gap` and `padding`: 0–4 → 0/4/8/12/16px. A restrained consistent default is `padding={3} radius="md" border="subtle" background="surface"` on each card. Apply the same tokens to every card unless a distinct style was requested. / 未指定差异样式时，为所有卡片使用同一组 token。
+- `gap` and `padding`: 0–4 → 0/4/8/12/16px. A restrained consistent default is `padding={3} radius="md" border="subtle" background="transparent"` on each card. Preserve grouping borders; do not add fill merely because items are peers. Choose explicit `background="surface"` only for intentional reading groups or requested hierarchy. / 默认透明并保留合理分组边框；内卡surface按阅读分组或明确层级需要选择，不是所有并列项都加底。
 - Supported radii: none/sm/md/lg/xl/full. Borders: true/false/subtle/none/strong. Backgrounds include surface, surface-secondary, surface-accent, surface-tip, surface-muted, paper, well, transparent. Consult tokens only when needed.
 - Equal width does not mean equal word count, forced line breaks or fixed heights. Grid items stretch within their row by normal CSS grid behavior; content remains natural, without height clamps or filler text. / 不为等宽删改原文、补字或强插换行，也不把多行内容裁成固定高度。
 - Icons and semantic colors are optional, not mandatory decoration. Do not invent icons or inject arbitrary CSS. / 图标与颜色可选，不强行装饰。
@@ -30,15 +30,15 @@ Use `<grid cols={3} gap={3}>` with three direct `<card>` children. `cols` accept
 </intent>
 <figure frame="none">
 <grid cols={3} gap={3}>
-  <card padding={3} radius="md" border="subtle" background="surface">
+  <card padding={3} radius="md" border="subtle" background="transparent">
     <title>人员</title>
     <text>解决的是团队到底需要哪几类人，各自管什么、不管什么，他们如何进行合作。</text>
   </card>
-  <card padding={3} radius="md" border="subtle" background="surface">
+  <card padding={3} radius="md" border="subtle" background="transparent">
     <title>流程</title>
     <text>从冒出一个点子到软件上线，先迈左脚还是先迈右脚，怎么用最低成本试错。</text>
   </card>
-  <card padding={3} radius="md" border="subtle" background="surface">
+  <card padding={3} radius="md" border="subtle" background="transparent">
     <title>产品</title>
     <text>一款真正的好产品本身长什么样，有哪些绝不能碰的死穴。</text>
   </card>
@@ -114,10 +114,16 @@ Use this for independent explanations, not a workflow. Derive the alignment hier
 - prose-list / frameless：保持真实标记、顺序、正文基线和自然段落；去掉无意义的多层场景表面不是删掉所有必要分组。
 同一树能响应式重排时使用已有机制；若需要尚未支持的断点条件对齐/拓扑，不复制两套文字隐藏一套、不发明媒体属性。采用兼容两端且保真的最小方案并注明视觉取舍；无法满足作者明确硬约束时标未完成，而非让作者做设备调参。
 
+## Source-backed metrics · 原文指标
+Use `metric` for a source-backed number plus label/unit/caption; use equal-cards for independent explanatory categories. Do not invent values or convert prose-only peers into metrics. / 原文数值＋标签/单位/说明用metric，独立解释类别用equal-cards；不造数据。
+
+## Title and badge · 标题与徽标
+Use `row align="center" justify="between" wrap="nowrap"` with a title and badge. Explicit justify controls distribution; align controls the cross axis. Between/around title leaves remain content-sized; nowrap keeps this local row, not the whole article, together. Verify long titles at the actual narrow width. / between让标题与徽标两端分布，align管交叉轴；标题保留内容宽，nowrap只约束这一局部，长标题仍须窄屏实测。
+
 ## Measured DOM connectors · 可复用的实测连线
 
 - First choose native `relations/entity/edge` when its compact ring and detail interaction match the reader's task. It is not an arbitrary-position graph router. / 环形关系＋详情合适时优先原生relations，不承诺自由拓扑排版。
 - Custom topology, branch ports or exact placement: keep the same Compose fence and use an offline `sandbox`. Keep labels in ordinary HTML, inheriting its body font; SVG draws **lines only**, never a whole text diagram scaled to fit. The iframe is an isolated document: article web fonts are not automatically available. / 自定义拓扑用同一compose入口内的sandbox；文字留在DOM，SVG只画线，不缩放整张文字图。iframe不自动继承文章web字体，须如实验证。
-- Reuse `measured-connectors.js` inside the sandbox's literal JS, then call `mountMeasuredConnectors(root, [{from:'a',to:'b'}])`. The root needs `position:relative`; node elements need unique `data-node` ids. CSS owns layout, the recipe owns measurement. No new engine component/API or network import is involved. / 根容器定位，节点唯一id；CSS布局与测量连线分工，不发明组件或远程依赖。
-- It uses ResizeObserver, font readiness and SVG screen-coordinate conversion. It returns a disposer; remount on topology changes. Supported: measured straight edges for a stable node set. **Not supported:** automatic obstacle avoidance, edge labels, arrowheads, dragging or automatic graph layout. Choose a readable non-crossing arrangement; if hard requirements need these missing behaviors, implement and test them explicitly rather than claiming this recipe supplies them. / 已支持稳定节点的实测直线；不提供自动避障、边标签、箭头、拖拽或自动排图，不能把端点测试当成完整复杂图验收。
-- Verify actual endpoints after reflow and enlarged text at 300/344/375/430 and desktop widths; inspect crossings, reading order, scrollbar ownership and fullscreen separately. `tests/measured-connectors-browser.test.mjs` verifies the foundation, not every topology. / 按真实节点框验端点，另审交叉、阅读顺序、滚动归属与全屏；测试基础能力不等于所有拓扑都已验收。
+- Reuse `measured-connectors.js` inside the sandbox's literal JS, then call `mountMeasuredConnectors(root, [{from:'a',to:'b'}, {from:'a',to:'c',route:'elbow'}, {from:'b',to:'c',route:'elbow',dashed:true}])`. The root needs `position:relative`; node elements need unique `data-node` ids. CSS owns layout, the recipe owns measurement. No new engine component/API or network import is involved. / 根容器定位，节点唯一id；CSS布局与测量连线分工，不发明组件或远程依赖。
+- It uses ResizeObserver, font readiness and SVG screen-coordinate conversion. It returns a disposer; remount on topology changes. Supported for a stable node set: straight edges by default; `route:"elbow"` draws an axis-aligned, midpoint-bend path between measured boundary anchors; `dashed:true` adds a 6/4 dash pattern independently. All update on node/root resize and font readiness. **Not supported:** automatic obstacle avoidance, edge labels, arrowheads, dragging or automatic graph layout. Choose a readable non-crossing arrangement; if hard requirements need these missing behaviors, implement and test them explicitly rather than claiming this recipe supplies them. / 支持实测直线、route="elbow"轴对齐中点转折与独立dashed=true虚线；基于真实节点框重测两端，随字体/容器重排更新；不提供自动避障、边标签、箭头、拖拽或自动排图，不能把端点测试当成完整复杂图验收。
+- Verify actual endpoints, elbow segment axes and dash style after reflow and enlarged text at 300/344/375/430 and desktop widths; inspect crossings, reading order, scrollbar ownership and fullscreen separately. `tests/measured-connectors-browser.test.mjs` verifies the foundation, not every topology. / 按真实节点框验端点，另审交叉、阅读顺序、滚动归属与全屏；测试基础能力不等于所有拓扑都已验收。

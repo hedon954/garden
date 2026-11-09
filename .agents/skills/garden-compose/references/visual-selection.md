@@ -14,6 +14,7 @@ Load when choosing how to explain source content, not for every repair. Use the 
 | 图标窄栏、标题正文共左缘 | icon-rail：stack重复row(icon＋group)，divider在row间 | 不把正文放row外；不当流程 |
 | 短阶段从左到右 | flow-row：row＋真实顺序箭头；窄屏/长内容回退flow-stack | 不靠缩字/nowrap强撑手机 |
 | 长阶段或纵向顺序 | flow-stack：stack＋下箭头 | 无顺序的条目不加箭头 |
+| 原文关键数值＋标签/单位 | metric：保留原始值、单位与说明 | 不造数据；无数值的解释类别仍用equal-cards |
 | 并列等宽卡片 | equal-cards：grid＋直接card | 非真实共同维度不走compare |
 | 图标贴标题，两者一起居中 | centered-chip：内容宽标题壳＋内部图标标题行，下方正文独立 | 不只给全宽row设center；候选须浏览器验收 |
 | 跟正文一样的列表 | prose-list：普通Markdown；场景内用markdown岛 | 不写假圆点；不为列表手感换到compare |

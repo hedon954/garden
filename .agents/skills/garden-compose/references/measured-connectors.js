@@ -1,10 +1,15 @@
 // Offline sandbox recipe, not a Compose component or an automatic graph router.
-// root: positioned DOM container; nodes: unique data-node ids; edges: {from,to}.
+// root: positioned DOM container; nodes: unique data-node ids.
+// edges: {from,to,route?:"straight"|"elbow",dashed?:boolean}; no obstacle router.
 function mountMeasuredConnectors(root, edges) {
   const namespace = 'http://www.w3.org/2000/svg';
   const nodes = new Map([...root.querySelectorAll('[data-node]')].map(node => [node.dataset.node, node]));
   if (nodes.size !== root.querySelectorAll('[data-node]').length) throw new Error('Duplicate connector node id');
-  for (const edge of edges) if (!nodes.has(edge.from) || !nodes.has(edge.to)) throw new Error('Unknown connector node id');
+  for (const edge of edges) {
+    if (!nodes.has(edge.from) || !nodes.has(edge.to)) throw new Error('Unknown connector node id');
+    if (edge.route !== undefined && !['straight', 'elbow'].includes(edge.route)) throw new Error('Unknown connector route');
+    if (edge.dashed !== undefined && typeof edge.dashed !== 'boolean') throw new Error('Connector dashed must be boolean');
+  }
   const svg = document.createElementNS(namespace, 'svg');
   svg.setAttribute('aria-hidden', 'true');
   svg.classList.add('connector-lines');
@@ -13,6 +18,8 @@ function mountMeasuredConnectors(root, edges) {
     const line = document.createElementNS(namespace, 'path');
     line.dataset.from = edge.from;
     line.dataset.to = edge.to;
+    line.dataset.route = edge.route ?? 'straight';
+    if (edge.dashed) line.setAttribute('stroke-dasharray', '6 4');
     line.setAttribute('fill', 'none');
     line.setAttribute('stroke', 'currentColor');
     line.setAttribute('stroke-width', '1.5');
@@ -33,7 +40,8 @@ function mountMeasuredConnectors(root, edges) {
       const to = nodes.get(edge.to).getBoundingClientRect();
       const a = { x: from.x + from.width / 2, y: from.y + from.height / 2 };
       const b = { x: to.x + to.width / 2, y: to.y + to.height / 2 };
-      if (Math.abs(b.x - a.x) > Math.abs(b.y - a.y)) {
+      const horizontal = Math.abs(b.x - a.x) > Math.abs(b.y - a.y);
+      if (horizontal) {
         const forward = b.x > a.x;
         a.x = forward ? from.right : from.left;
         b.x = forward ? to.left : to.right;
@@ -44,7 +52,20 @@ function mountMeasuredConnectors(root, edges) {
       }
       const start = new DOMPoint(a.x, a.y).matrixTransform(inverse);
       const end = new DOMPoint(b.x, b.y).matrixTransform(inverse);
-      paths[index].setAttribute('d', `M${start.x},${start.y} L${end.x},${end.y}`);
+      const points = [start];
+      if (edge.route === 'elbow') {
+        // Mid-gap orthogonal route, recalculated from actual node bounds.
+        // Intentionally no obstacle search or automatic node placement.
+        if (horizontal) {
+          const x = (start.x + end.x) / 2;
+          points.push({ x, y: start.y }, { x, y: end.y });
+        } else {
+          const y = (start.y + end.y) / 2;
+          points.push({ x: start.x, y }, { x: end.x, y });
+        }
+      }
+      points.push(end);
+      paths[index].setAttribute('d', points.map((point, i) => `${i ? 'L' : 'M'}${point.x},${point.y}`).join(' '));
     }
   }
   function schedule() { if (active && !scheduled) scheduled = requestAnimationFrame(draw); }

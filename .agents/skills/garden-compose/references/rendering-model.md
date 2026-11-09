@@ -123,6 +123,8 @@ Use `markdown` or `html` islands for full paragraphs, lists, headings, blockquot
 
 Safe HTML supports allowlisted local `style` properties, including useful layout and typography; inspect the generated schema for the actual set. Unsupported tags/properties, events, unsafe URLs, executable scripts and network CSS functions report diagnostics. Do not expand the article allowlist into arbitrary execution. An intentional executable demo uses `sandbox` inside the **same Compose entry**, with literal html/css/js and no parent origin access. Sandbox layout is its own document, not inherited article prose.
 
+For measured node connections, load layout-recipes.md and measured-connectors.js: straight, midpoint orthogonal elbow and optional dashed edges follow real DOM bounds. This is a sandbox recipe, not automatic graph layout or obstacle avoidance.
+
 ## Verification levels
 
 1. Run `npx garden ui check <file>` (and `npx garden check <file>` for real file paths). Preserve original text/resources and inspect diagnostics.
