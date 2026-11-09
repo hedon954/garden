@@ -109,3 +109,10 @@ Safe HTML supports allowlisted local `style` properties, including useful layout
 3. Inspect the complete-theme render: icon rail fixed, heading and **all** paragraphs share the same right edge/left edge, no centered headings or full-width body beneath a detached icon row, dividers outside rows, no unintended cards/arrows, no horizontal overflow.
 4. Check desktop and narrow screenshots plus geometry/computed styles; exercise choices, relations, file previews, state updates and sandbox behavior when used.
 5. A hand-authored passing scene proves engine capability, not that an independent model reliably produces it from a short prompt. Report those claims separately.
+
+## Host and exported-artifact acceptance
+Explicit `justify` owns the main axis; `align` owns the cross axis. A title and trailing badge can use `row align="center" justify="between"`. Reading width takes priority over side rails; frameless runtimes do not add body padding; fullscreen controls use a separate top band. The post's mobile contents entry stays in normal flow. Measure the real column and iframe before changing content or type size.
+
+Use native relations for ring-and-detail interactions. Custom topology stays in the same Compose entry, using an offline sandbox, HTML labels and connector-only SVG. The author skill includes a measured-endpoint recipe, not an automatic layout/obstacle router. An isolated iframe does not automatically inherit article web fonts.
+
+Static builds check final HTML links, CSS/JS and lazy dependencies, Compose styles and navigation payloads. Rerun with `garden verify --rendered`. Asset integrity is not visual or client-lifecycle proof: test normal homepage Link entry, return/re-entry, history and direct links separately.

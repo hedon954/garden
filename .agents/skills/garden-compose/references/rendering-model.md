@@ -6,14 +6,19 @@
 - 关系决定共同容器：一个图标对应的标题与所有正文要属于一个重复单元；标题和正文必须同在右侧容器。分隔整条目时 divider 放两条 row 之间，而非右栏内。
 - row 默认 wrap/stretch、8px gap；直接 card/stack/title/text 共分可用宽度，icon 固定不缩。窄屏默认会改行流；需要持续图标栏用 wrap="nowrap" 并测试不溢出。
 - row > stack 有 **12px 顶部 padding**；不能假定任意嵌套同样表现。group 为 width:100%、min-width:0 的纵向容器，能在固定 icon 旁收缩，支持 gap，避开该上下文顶距。prose 不能凭空赋予未实现的 gap 行为。
-- align="center" 可能同时触发容器对齐与 text-align，并向子孙继承。当前 title/text 的显式 align="start" 会保留并输出 data-align。用一个共享 group 和显式开始对齐，不要把 title 独立成横向等分栏、正文又放回全宽。
+- row 的 align 管交叉轴，justify 管主轴；显式 justify 始终优先，不被 align="center" 或徽标的默认居中覆盖。文字仍可能继承 text-align。当前 title/text 的显式 align="start" 会保留并输出 data-align。用一个共享 group 和显式开始对齐，不要把 title 独立成横向等分栏、正文又放回全宽。
 - icon 名查 schema/icons 实际目录；不存在报错。SVG width 属性不等于最终像素：当前 CSS sm13、md15、lg18、xl22px，小卡上下文另有覆盖，必须测 computed/rect。
 - 多段正文分别放 text，或用 markdown/html 岛保存真实 p。text 内空行是 inline break，不是独立段落。图标签有截断/行钳制时不能塞完整正文去丢字。
+
+## Diagnose the host before rewriting content · 先诊断宿主
+Measure viewport → `.article-reading-column` → `.garden-ui-body` → iframe; record each width and computed padding. Do not infer content width from a desktop breakpoint. The reading track takes priority over side rails; a frameless runtime has no body inset; fullscreen controls occupy a top band outside the frame. Post mobile TOC entries are in normal flow before the article. / 依次量视口、正文栏、运行时正文与iframe，不先删字或缩字。侧栏让位正文，frame="none"不再叠运行时内距，全屏按钮占外部顶栏，手机目录入口在正文前正常排版。
+
+For a title and trailing badge, use `<row align="center" justify="between" wrap="nowrap"><title align="start">…</title><badge>…</badge></row>`. Its text/title children are content-sized and may shrink/wrap naturally, not width:100% columns. Explicit fills, scene framing and fullscreen are independent choices. / 标题＋尾部徽标直接组合已有属性；不靠换组件、固定标题宽度或缩字绕开。
 
 ## 集中禁令与风险分级
 - **必选结构（已选icon-rail）**：icon和一个group同属row，标题与全部正文/列表同属group；分隔线在row之间。不要正文逃出右栏，不用row>stack替代group来碰运气。
 - **无效属性**：stack不因direction="row"变横向；用真实row。未知静态属性可能归一化丢失，当前lint不能从归一化树找回它们；对照源属性与schema，缺少未知属性诊断是引擎需求，不谎称已机器覆盖。
-- **风险而非全局错误**：row>stack的12px顶距、居中row直接title/text的flex:1、center同时改变主轴/交叉轴/文字、nowrap长链、显式size和叠框。这些在其他语境可能有意，必须结合内部约束卡判断，不能一律禁用。
+- **风险而非全局错误**：row>stack的12px顶距、居中row直接title/text的flex:1、center仍可能向后代继承文字居中（但不覆盖显式justify）、nowrap长链、显式size和叠框。这些在其他语境可能有意，必须结合内部约束卡判断，不能一律禁用。
 - **箭头看实际绘制方向**：right是源意图，不必等于当前屏幕方向。真实SVG默认向下；桌面旋转为right，≤800px取消旋转配合默认row转column。先看computed transform/屏幕向量，不把data-dir当几何证据。nowrap让row保持横向却不自动保留箭头旋转，须专项检查。
 - **必须浏览器**：icon glyph光学齐平不是节点矩形相等；内容宽居中、完整主题字号/列表间距、溢出与手机回退不能从AST推断。用computed与rect及截图分别取证。
 
@@ -50,7 +55,7 @@ The authoritative, demand-loaded catalog is `npx garden ui schema`: actual seman
 
 First identify what belongs together. A heading and all its paragraphs must share a container. Next choose columns and proportions, then alignments and typography. Only then add surfaces and decorative details.
 
-A static `row` wraps by default. Its direct text/title/stack/card children share available width (`flex: 1 1 0`), whereas an icon is content-sized. A heading placed directly in that row is a sibling column, not the heading of a paragraph below the row. `align="center"` on a row changes more than vertical placement: theme rules also center text. A centered stack propagates text alignment. For an editorial list use explicit start alignment on children of a shared right-hand group; do not center each title independently.
+A static `row` wraps by default. Its direct text/title/stack/card children share available width (`flex: 1 1 0`), whereas an icon is content-sized. A heading placed directly in that row is a sibling column, not the heading of a paragraph below the row. `align="center"` controls the cross axis and can inherit centered text; an explicit `justify` independently controls the main axis and takes precedence over default badge centering. A centered stack propagates text alignment. For an editorial list use explicit start alignment on children of a shared right-hand group; do not center each title independently.
 
 Direct `row > stack` has 12px top padding in the current theme. A `group` is a width:100%, min-width:0 vertical container that shrinks beside the fixed icon and reads gap without that contextual padding; use it when icon and heading must begin on the same top line. Explicit `align="start"` survives normalization and emits data-align.
 

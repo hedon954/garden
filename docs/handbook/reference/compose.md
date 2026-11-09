@@ -111,3 +111,10 @@ Safe HTML supports allowlisted local `style` properties, including useful layout
 3. Inspect the complete-theme render: icon rail fixed, heading and **all** paragraphs share the same right edge/left edge, no centered headings or full-width body beneath a detached icon row, dividers outside rows, no unintended cards/arrows, no horizontal overflow.
 4. Check desktop and narrow screenshots plus geometry/computed styles; exercise choices, relations, file previews, state updates and sandbox behavior when used.
 5. A hand-authored passing scene proves engine capability, not that an independent model reliably produces it from a short prompt. Report those claims separately.
+
+## 宿主与最终产物验收
+显式 `justify` 管主轴，`align` 管交叉轴；标题＋徽标可直接使用 `row align="center" justify="between"`。正文栏优先于侧栏，frame="none"不叠运行时内距，全屏按钮使用独立顶栏；手机目录入口随正文正常排版。先量真实正文/iframe宽度，不用缩字补救宿主挤压。
+
+复杂连线：原生relations适用于环形关系与详情；自定义拓扑使用同一compose内的离线sandbox，普通HTML承载文字，SVG只画线。作者skill提供实测端点配方，不提供自动排图/避障。iframe字体须单独验证，不能声称隔离文档自动继承文章web字体。
+
+静态构建自动检查最终HTML引用的CSS/JS及懒加载依赖、Compose样式与导航payload；`garden verify --rendered`可单独重跑。它不证明视觉或客户端导航；仍需测试首页正常Link、返回再入、历史及直接链接。

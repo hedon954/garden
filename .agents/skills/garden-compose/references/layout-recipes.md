@@ -113,3 +113,11 @@ Use this for independent explanations, not a workflow. Derive the alignment hier
 - centered-chip：只承诺局部贴标。完整问句、长标题、双语标签和放大字体必须实测；不自动把所有正文居中。长扫描清单优先开始对齐的连续阅读，必要时用局部重点居中，不通过sm来压高度。
 - prose-list / frameless：保持真实标记、顺序、正文基线和自然段落；去掉无意义的多层场景表面不是删掉所有必要分组。
 同一树能响应式重排时使用已有机制；若需要尚未支持的断点条件对齐/拓扑，不复制两套文字隐藏一套、不发明媒体属性。采用兼容两端且保真的最小方案并注明视觉取舍；无法满足作者明确硬约束时标未完成，而非让作者做设备调参。
+
+## Measured DOM connectors · 可复用的实测连线
+
+- First choose native `relations/entity/edge` when its compact ring and detail interaction match the reader's task. It is not an arbitrary-position graph router. / 环形关系＋详情合适时优先原生relations，不承诺自由拓扑排版。
+- Custom topology, branch ports or exact placement: keep the same Compose fence and use an offline `sandbox`. Keep labels in ordinary HTML, inheriting its body font; SVG draws **lines only**, never a whole text diagram scaled to fit. The iframe is an isolated document: article web fonts are not automatically available. / 自定义拓扑用同一compose入口内的sandbox；文字留在DOM，SVG只画线，不缩放整张文字图。iframe不自动继承文章web字体，须如实验证。
+- Reuse `measured-connectors.js` inside the sandbox's literal JS, then call `mountMeasuredConnectors(root, [{from:'a',to:'b'}])`. The root needs `position:relative`; node elements need unique `data-node` ids. CSS owns layout, the recipe owns measurement. No new engine component/API or network import is involved. / 根容器定位，节点唯一id；CSS布局与测量连线分工，不发明组件或远程依赖。
+- It uses ResizeObserver, font readiness and SVG screen-coordinate conversion. It returns a disposer; remount on topology changes. Supported: measured straight edges for a stable node set. **Not supported:** automatic obstacle avoidance, edge labels, arrowheads, dragging or automatic graph layout. Choose a readable non-crossing arrangement; if hard requirements need these missing behaviors, implement and test them explicitly rather than claiming this recipe supplies them. / 已支持稳定节点的实测直线；不提供自动避障、边标签、箭头、拖拽或自动排图，不能把端点测试当成完整复杂图验收。
+- Verify actual endpoints after reflow and enlarged text at 300/344/375/430 and desktop widths; inspect crossings, reading order, scrollbar ownership and fullscreen separately. `tests/measured-connectors-browser.test.mjs` verifies the foundation, not every topology. / 按真实节点框验端点，另审交叉、阅读顺序、滚动归属与全屏；测试基础能力不等于所有拓扑都已验收。

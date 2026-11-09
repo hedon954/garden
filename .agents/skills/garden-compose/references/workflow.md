@@ -44,3 +44,8 @@ node .agents/skills/garden-compose/scripts/lint-layout.mjs content/posts/post.md
 ## Mobile acceptance · AI内部，不要求作者补规格
 几何卡补可选`"mobile":{"readingMode":"sequence","reflow":true}`；readingMode可选sequence/scan-list/comparison/spatial，reflow为布尔。lint只在显式reflow的flow-row中拒绝场景顶层流向row的nowrap（不误禁内部贴标row）；icon-rail局部nowrap不被误禁。scan-list的成组居中只给风险提示，不凭AST断言过高或难读。
 浏览器验证遵守mobile-contract：记录实际CSS viewport、内容宽、正常/放大正文、每层滚动与实际箭头向量，并人工审查整组阅读节奏。保留首稿和源hash，失败后的修订单独编号，不能把修后结果算首轮成功。默认check参数/退出状态不变，mobile字段不是runtime DIL属性。
+
+## Built artifact gate · 最终产物门
+`STATIC_EXPORT=1 garden build` now checks the final export automatically. `garden verify --rendered` reruns it without rebuilding: actual HTML stylesheet/script links, literal JS imports (including lazy chunks), Compose/runtime CSS and per-page client navigation payloads. Missing assets or corrupt payloads fail. / 静态构建后自动检查真实HTML/CSS/JS依赖及导航payload，缺失即失败；不是只看源代码导入。
+
+This is asset integrity, **not** visual or lifecycle acceptance. Complete-theme browser tests and the real site's normal Link → article → home → re-entry → history/direct sequence remain separate gates. Record iframe height messages from its own contentWindow, srcdoc length and computed geometry; a populated srcdoc alone does not prove execution. Do not claim navigation fixed from a direct-link pass. / 资源完整≠样式生效≠生命周期通过；iframe需记录实际消息、srcdoc与几何，不能凭直接链接成功宣称客户端导航已修好。
