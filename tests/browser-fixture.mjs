@@ -5,7 +5,7 @@ import { once } from "node:events";
 
 // Real elapsed time, not Chrome virtual time: an isolated iframe runs in a
 // separate lifecycle/process and need not finish before --dump-dom exits.
-export async function probeBrowser({ chrome, url, profileDir, width, height, screenshot, timeoutMs = 30_000 }) {
+export async function probeBrowser({ chrome, url, profileDir, width, height, screenshot, initScript, includeDiagnostics = false, timeoutMs = 30_000 }) {
   const browser = spawn(chrome, ["--headless=new", "--no-sandbox", "--disable-gpu",
     "--disable-dev-shm-usage", "--no-first-run", "--disable-background-networking",
     "--remote-debugging-port=0", `--user-data-dir=${profileDir}`, "about:blank"], { stdio: ["ignore", "ignore", "pipe"] });
@@ -30,8 +30,10 @@ export async function probeBrowser({ chrome, url, profileDir, width, height, scr
     const pending = new Map();
     const exceptions = [];
     const logs = [];
+    const frameEvents = [];
     ws.addEventListener("message", event => {
       const message = JSON.parse(String(event.data));
+      if (includeDiagnostics && /^Page\.frame|^Network\.loadingFailed/u.test(message.method ?? "")) frameEvents.push({method:message.method,...message.params});
       if (message.method === "Log.entryAdded") logs.push(message.params.entry);
       if (message.method === "Runtime.exceptionThrown") exceptions.push(message.params.exceptionDetails);
       const call = pending.get(message.id);
@@ -53,7 +55,9 @@ export async function probeBrowser({ chrome, url, profileDir, width, height, scr
     await page("Page.enable");
     await page("Runtime.enable");
     await page("Log.enable");
+    if (includeDiagnostics) await page("Network.enable");
     await page("Emulation.setDeviceMetricsOverride", { width, height, deviceScaleFactor: 1, mobile: false });
+    if (initScript) await page("Page.addScriptToEvaluateOnNewDocument", { source: initScript });
     await page("Page.navigate", { url });
     const deadline = Date.now() + timeoutMs;
     let value;
@@ -70,6 +74,7 @@ export async function probeBrowser({ chrome, url, profileDir, width, height, scr
       const { data } = await page("Page.captureScreenshot", { format: "png" });
       fs.writeFileSync(screenshot, Buffer.from(data, "base64"));
     }
+    if (includeDiagnostics) value.browserDiagnostics = {logs,frameEvents,frameTree:await page("Page.getFrameTree")};
     return value;
   } finally {
     ws?.close();

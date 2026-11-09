@@ -53,6 +53,9 @@ function Sandbox({ node, env }: { node: UiNode; env: Env }) {
   }, [host]);
 
   if (blocked) return <p className="garden-ui-error-inline">{blocked}</p>;
+  // Mount one prepared document. An empty srcdoc starts a competing navigation
+  // during client insertion, before the isolated frame finishes process setup.
+  if (!srcDoc) return <div className="garden-ui-sandbox" aria-hidden="true" style={{ height }} />;
 
   return (
     <iframe
