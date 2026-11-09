@@ -274,7 +274,7 @@ body {
   --rail: 200px;
   --gap: 72px;
   display: grid;
-  grid-template-columns: minmax(0, var(--rail)) minmax(0, var(--col)) var(--rail);
+  grid-template-columns: minmax(0, 1fr) minmax(0, var(--col)) minmax(0, 1fr);
   column-gap: var(--gap);
   justify-content: center;
   align-items: start;
@@ -300,6 +300,8 @@ body {
 }
 
 .post-reading-page .article-reading-layout > .toc {
+  min-width: 0;
+  overflow-wrap: anywhere;
   grid-column: 3;
   grid-row: 1;
   margin-top: 0;
@@ -1582,6 +1584,16 @@ html[data-theme="dark"] .g-quiz-out.ok { color: #8fd1a0; }
 html[data-theme="dark"] .g-quiz-out.no { color: #f29aab; }
 .g-quiz-ex { margin-top: 8px; font-size: 15px; color: var(--soft); }
 .g-play { border: 1px solid var(--rule); border-radius: var(--r); padding: 14px 16px; margin: 24px 0; background: transparent; }
+/* Fullscreen controls own a top band, not a second frame or a narrow text rail. */
+.ux-fs > .ux-fsbar + .g-play { padding: 44px 0 0; border: 0; }
+.g-play > .garden-ui { margin: 0; }
+@media (max-width: 900px) {
+  .post-reading-page .toc-mobile-trigger,
+  .post-reading-page .toc-nojs-trigger {
+    position: static;
+    margin: 0 0 16px;
+  }
+}
 .g-play-f { margin: 0 0 10px; font-size: 14px; color: var(--soft); }
 .g-range { display: grid; grid-template-columns: 110px minmax(0, 1fr) 64px; gap: 12px; align-items: center; font-size: 14px; color: var(--muted); margin: 6px 0; }
 .g-range input { width: 100%; accent-color: var(--blue); min-height: 32px; }

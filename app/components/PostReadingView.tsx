@@ -110,6 +110,7 @@ export function PostReadingView({
           ) : null}
         </header>
         <div className="article-reading-layout">
+          <TableOfContents headings={headings} />
           <div className="article-reading-column">
             <ArticleMeasure />
             <div className="e-content">
@@ -125,7 +126,6 @@ export function PostReadingView({
             />
             <Comments slug={commentsSlug} />
           </div>
-          <TableOfContents headings={headings} />
         </div>
       </article>
     </main>

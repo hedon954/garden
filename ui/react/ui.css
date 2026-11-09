@@ -164,6 +164,9 @@
   background: transparent;
 }
 
+.garden-ui[data-frame="none"] > .garden-ui-body { padding: 0; }
+.garden-ui[data-frame="none"] > figcaption { padding-inline: 0; }
+
 .garden-ui-body {
   display: flex;
   flex-direction: column;

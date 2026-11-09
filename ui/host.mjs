@@ -108,7 +108,6 @@ function tokenCss(theme) {
 }
 html, body { background: transparent !important; overflow: hidden !important; height: auto !important; }
 body { margin: 0; }
-body > :first-child { padding-right: 44px; box-sizing: border-box; }
 svg { max-width: 100%; height: auto; }
 `;
 }
