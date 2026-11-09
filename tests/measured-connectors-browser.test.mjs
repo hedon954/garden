@@ -18,13 +18,13 @@ test('measured connector recipe keeps text in DOM and endpoints on actual resize
       const settle=()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
       await document.fonts.ready;await settle();
       const measure=()=>({rootWidth:graph.getBoundingClientRect().width,overflow:document.documentElement.scrollWidth>innerWidth,font:parseFloat(getComputedStyle(graph.querySelector('p')).fontSize),paths:[...graph.querySelectorAll('path')].map(p=>{
-        const svg=p.ownerSVGElement,m=svg.getScreenCTM(),start=p.getPointAtLength(0).matrixTransform(m),end=p.getPointAtLength(p.getTotalLength()).matrixTransform(m);
+        const svg=p.ownerSVGElement,m=svg.getScreenCTM(),length=p.getTotalLength(),start=p.getPointAtLength(0).matrixTransform(m),end=p.getPointAtLength(length).matrixTransform(m),afterStart=p.getPointAtLength(Math.min(1,length)).matrixTransform(m),beforeEnd=p.getPointAtLength(Math.max(0,length-1)).matrixTransform(m);
         const bounds=id=>{const r=graph.querySelector('[data-node="'+id+'"]').getBoundingClientRect();return{left:r.left,right:r.right,top:r.top,bottom:r.bottom}};
         const coords=p.getAttribute('d').match(/-?\\d+(?:\\.\\d+)?(?:e[-+]?\\d+)?/gi).map(Number);const vertices=[];for(let i=0;i<coords.length;i+=2)vertices.push({x:coords[i],y:coords[i+1]});
-        return{start:{x:start.x,y:start.y},end:{x:end.x,y:end.y},from:bounds(p.dataset.from),to:bounds(p.dataset.to),route:p.dataset.route,dash:getComputedStyle(p).strokeDasharray,vertices};
+        return{start:{x:start.x,y:start.y},end:{x:end.x,y:end.y},from:bounds(p.dataset.from),to:bounds(p.dataset.to),afterStart:{x:afterStart.x,y:afterStart.y},beforeEnd:{x:beforeEnd.x,y:beforeEnd.y},route:p.dataset.route,dash:getComputedStyle(p).strokeDasharray,vertices};
       })});
-      const initial=measure();document.body.style.fontSize='21px';await settle();const enlarged=measure();graph.style.width='75%';await settle();const resized=measure();dispose();
-      parent.postMessage({source:'connector-test',initial,enlarged,resized,disposed:!graph.querySelector('svg')},'*');
+      const initial=measure();document.body.style.fontSize='21px';await settle();const enlarged=measure();graph.querySelector('[data-node="b"]').style.transform='translateY(8px)';await settle();const moved=measure();graph.style.width='75%';await settle();const resized=measure();dispose();
+      parent.postMessage({source:'connector-test',initial,enlarged,moved,resized,disposed:!graph.querySelector('svg')},'*');
     })();`;
     const srcdoc = buildSrcdoc({ html, css, js: script });
     const file = path.join(dir, 'fixture.html');
@@ -34,14 +34,16 @@ test('measured connector recipe keeps text in DOM and endpoints on actual resize
       const result = await probeBrowser({ chrome, url: 'file://' + file, profileDir: path.join(dir, 'profile-' + width), width, height: 2200 });
       assert.equal(result.disposed, true);
       assert.equal(result.enlarged.font, 21);
+      assert.ok(Math.abs(result.moved.paths[0].to.top-result.enlarged.paths[0].to.top-8)<.1, 'Position-only node move was not exercised');
       assert.ok(result.resized.rootWidth < result.enlarged.rootWidth * .8);
-      for (const state of [result.initial, result.enlarged, result.resized]) {
+      for (const state of [result.initial, result.enlarged, result.moved, result.resized]) {
         assert.equal(state.overflow, false, width + ': overflow');
         assert.equal(state.paths.length, 3);
         assert.equal(state.paths[0].route, 'straight');
         assert.equal(state.paths[0].vertices.length, 2);
         assert.equal(state.paths[1].route, 'elbow');
         assert.equal(state.paths[1].vertices.length, 4);
+        assert.ok(new Set(state.paths[1].vertices.map(p=>p.x)).size > 1 && new Set(state.paths[1].vertices.map(p=>p.y)).size > 1, 'Elbow fixture must exercise real turns');
         assert.match(state.paths[2].dash, /6.*4/);
         for (const line of state.paths.filter(line => line.route === 'elbow')) {
           for (let i=1;i<line.vertices.length;i++) {
@@ -52,6 +54,9 @@ test('measured connector recipe keeps text in DOM and endpoints on actual resize
         for (const line of state.paths) {
           assert.ok(onBoundary(line.start, line.from), JSON.stringify({ width, line }));
           assert.ok(onBoundary(line.end, line.to), JSON.stringify({ width, line }));
+          const inside=(point,rect)=>point.x>rect.left+.01 && point.x<rect.right-.01 && point.y>rect.top+.01 && point.y<rect.bottom-.01;
+          assert.equal(inside(line.afterStart,line.from),false,'First segment enters its source node');
+          assert.equal(inside(line.beforeEnd,line.to),false,'Last segment enters its target node');
         }
       }
     }

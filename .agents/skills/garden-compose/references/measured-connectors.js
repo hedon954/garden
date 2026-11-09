@@ -40,7 +40,11 @@ function mountMeasuredConnectors(root, edges) {
       const to = nodes.get(edge.to).getBoundingClientRect();
       const a = { x: from.x + from.width / 2, y: from.y + from.height / 2 };
       const b = { x: to.x + to.width / 2, y: to.y + to.height / 2 };
-      const horizontal = Math.abs(b.x - a.x) > Math.abs(b.y - a.y);
+      // Prefer a genuinely separated axis: tall peer cards can overlap vertically.
+      // A center-only choice could send the first elbow segment back into its node.
+      const separatedX = from.right <= to.left || to.right <= from.left;
+      const separatedY = from.bottom <= to.top || to.bottom <= from.top;
+      const horizontal = separatedX !== separatedY ? separatedX : Math.abs(b.x - a.x) > Math.abs(b.y - a.y);
       if (horizontal) {
         const forward = b.x > a.x;
         a.x = forward ? from.right : from.left;
@@ -72,6 +76,10 @@ function mountMeasuredConnectors(root, edges) {
   const observer = new ResizeObserver(schedule);
   observer.observe(root);
   for (const node of nodes.values()) observer.observe(node);
+  const changes = new MutationObserver(schedule);
+  // Position-only style/class changes do not trigger ResizeObserver.
+  // Do not observe path `d` writes: measurement must not reschedule itself.
+  changes.observe(root, { attributes: true, attributeFilter: ['style', 'class'], subtree: true });
   window.addEventListener('resize', schedule);
   document.fonts?.ready.then(schedule);
   schedule();
@@ -79,6 +87,7 @@ function mountMeasuredConnectors(root, edges) {
     active = false;
     cancelAnimationFrame(scheduled);
     observer.disconnect();
+    changes.disconnect();
     window.removeEventListener('resize', schedule);
     svg.remove();
   };
