@@ -60,3 +60,29 @@ test('export gate reports malformed asset URLs instead of crashing', t => {
   fs.writeFileSync(path.join(root, 'index.html'), '<script src="/%invalid.js"></script>');
   assert.equal(verifyRenderedSite(root).errors[0].code, 'asset-url-invalid');
 });
+
+test('export gate follows imported styles and their local font/image assets', t => {
+  const root = fixture(t);
+  fs.writeFileSync(path.join(root, 'assets/ui.css'), '@import "./compose.css";');
+  fs.writeFileSync(path.join(root, 'assets/compose.css'), '.g-compose-row{display:flex;background:url("./marker.svg")}@font-face{font-family:Fixture;src:url(./fixture.woff2)}');
+  fs.writeFileSync(path.join(root, 'assets/marker.svg'), '<svg/>');
+  fs.writeFileSync(path.join(root, 'assets/fixture.woff2'), 'Neutral asset existence fixture');
+  assert.deepEqual(verifyRenderedSite(root).errors, []);
+  fs.unlinkSync(path.join(root, 'assets/marker.svg'));
+  assert.ok(verifyRenderedSite(root).errors.some(error => error.code === 'asset-missing' && error.detail === './marker.svg'));
+});
+test('export gate does not mistake comments or a disabled stylesheet for loaded Compose rules', t => {
+  const root = fixture(t);
+  fs.writeFileSync(path.join(root, 'assets/ui.css'), '/* .g-compose-row .garden-ui */body{color:black}');
+  assert.ok(verifyRenderedSite(root).errors.some(error => error.code === 'compose-styles-missing'));
+  fs.writeFileSync(path.join(root, 'assets/ui.css'), '.g-compose-row{display:flex}');
+  fs.writeFileSync(path.join(root, 'index.html'), '<link rel="stylesheet" disabled href="/assets/ui.css"><figure class="g-compose"></figure>');
+  assert.ok(verifyRenderedSite(root).errors.some(error => error.code === 'compose-styles-missing'));
+});
+test('export gate distinguishes static no-JS prose from an accidentally missing runtime entry', t => {
+  const root = fixture(t);
+  fs.writeFileSync(path.join(root, 'index.html'), '<link rel="stylesheet" href="/assets/ui.css"><figure class="g-compose">Readable static prose</figure>');
+  assert.deepEqual(verifyRenderedSite(root).errors, []);
+  fs.writeFileSync(path.join(root, 'index.html'), '<link rel="stylesheet" href="/assets/ui.css"><figure class="garden-ui"></figure>');
+  assert.ok(verifyRenderedSite(root).errors.some(error => error.code === 'runtime-entry-missing'));
+});

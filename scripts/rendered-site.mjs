@@ -3,6 +3,7 @@ import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { parse as parseHtml } from 'parse5';
 import { parse as parseJs } from 'acorn';
+import postcss from 'postcss';
 import { gardenSiteRoot } from './garden-paths.mjs';
 
 // Export integrity is a separate boundary from browser layout and interaction.
@@ -11,6 +12,7 @@ export function verifyRenderedSite(directory, { basePath = '' } = {}) {
   const errors = [];
   const checked = new Set();
   const css = new Map();
+  const cssImports = new Map();
   const prefix = basePath.replace(/\/$/u, '');
   const fail = (file, code, detail) => errors.push({ file, code, detail });
   const files = (dir) => fs.readdirSync(dir, { withFileTypes: true }).flatMap(entry =>
@@ -40,13 +42,29 @@ export function verifyRenderedSite(directory, { basePath = '' } = {}) {
     if (prefix && (pathname === prefix || pathname.startsWith(prefix + '/'))) pathname = pathname.slice(prefix.length);
     const target = path.resolve(root, '.' + pathname);
     const relative = path.relative(root, target);
-    if (relative.startsWith('..') || path.isAbsolute(relative)) { fail(owner, 'asset-outside-export', href); return null; }
+    if (relative === '..' || relative.startsWith('..' + path.sep) || path.isAbsolute(relative)) { fail(owner, 'asset-outside-export', href); return null; }
     if (!fs.existsSync(target) || !fs.statSync(target).isFile()) { fail(owner, 'asset-missing', href); return null; }
     const actual = path.relative(fs.realpathSync(root), fs.realpathSync(target));
-    if (actual.startsWith('..') || path.isAbsolute(actual)) { fail(owner, 'asset-outside-export', href); return null; }
+    if (actual === '..' || actual.startsWith('..' + path.sep) || path.isAbsolute(actual)) { fail(owner, 'asset-outside-export', href); return null; }
     if (checked.has(relative)) return relative;
     checked.add(relative);
-    if (target.endsWith('.css')) css.set(relative, fs.readFileSync(target, 'utf8'));
+    if (target.endsWith('.css')) {
+      let sheet;
+      try { sheet = postcss.parse(fs.readFileSync(target, 'utf8'), { from: relative }); }
+      catch (error) { fail(relative, 'style-syntax', error.reason); return relative; }
+      const selectors = [];
+      sheet.walkRules(rule => selectors.push(rule.selector));
+      css.set(relative, selectors.join('\n'));
+      const imports = [];
+      sheet.walkAtRules('import', rule => {
+        const match = /^(?:["']([^"']+)["']|url\(\s*["']?([^"')]+)["']?\s*\))/u.exec(rule.params);
+        if (match) { const imported = asset(match[1] ?? match[2], relative); if (imported) imports.push(imported); }
+      });
+      cssImports.set(relative, imports);
+      sheet.walkDecls(decl => {
+        for (const match of decl.value.matchAll(/url\(\s*(?:"([^"]*)"|'([^']*)'|([^\s)]+))\s*\)/gu)) asset(match[1] ?? match[2] ?? match[3], relative);
+      });
+    }
     if (target.endsWith('.js') || target.endsWith('.mjs')) {
       let tree;
       try { tree = parseJs(fs.readFileSync(target, 'utf8'), { ecmaVersion: 'latest', sourceType: 'module' }); }
@@ -78,18 +96,27 @@ export function verifyRenderedSite(directory, { basePath = '' } = {}) {
       for (const name of (attrs.class ?? '').split(/\s+/u)) classes.add(name);
       if (node.tagName === 'meta' && attrs['http-equiv']?.toLowerCase() === 'refresh') redirect = true;
       if (node.tagName === 'script' && attrs.src) { asset(attrs.src, owner); if (attrs.type === 'module') entry = true; }
-      if (node.tagName === 'link' && /^(?:stylesheet|modulepreload)$/u.test(attrs.rel)) {
+      if (node.tagName === 'link' && (attrs.rel ?? '').split(/\s+/u).some(rel => rel === 'stylesheet' || rel === 'modulepreload')) {
         const name = asset(attrs.href, owner);
-        if (attrs.rel === 'stylesheet' && name) styles.push(name);
+        if ((attrs.rel ?? '').split(/\s+/u).includes('stylesheet') && !Object.hasOwn(attrs, 'disabled') && name) styles.push(name);
       }
     }
+    if (classes.has('garden-ui') && !entry) fail(owner, 'runtime-entry-missing', 'An interactive runtime requires its module entry; static Compose remains readable without JavaScript.');
     if (!redirect && owner.endsWith('index.html') && entry) {
       const payload = file.replace(/index\.html$/u, 'index.txt');
       if (!fs.existsSync(payload)) fail(owner, 'navigation-payload-missing', 'index.txt');
       else if (!/^[\da-f]+:/mu.test(fs.readFileSync(payload, 'utf8'))) fail(owner, 'navigation-payload-invalid', 'index.txt is not a Flight payload.');
     }
     if (classes.has('g-compose') || classes.has('garden-ui')) {
-      const loaded = styles.map(name => css.get(name) ?? '').join('\n');
+      const reachable = new Set();
+      const pending = [...styles];
+      while (pending.length) {
+        const name = pending.pop();
+        if (reachable.has(name)) continue;
+        reachable.add(name);
+        pending.push(...(cssImports.get(name) ?? []));
+      }
+      const loaded = [...reachable].map(name => css.get(name) ?? '').join('\n');
       if ((classes.has('g-compose') && !loaded.includes('.g-compose-row')) || (classes.has('garden-ui') && !loaded.includes('.garden-ui'))) fail(owner, 'compose-styles-missing', 'The page must link the actual styles for its Compose/runtime markup.');
     }
   }
