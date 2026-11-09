@@ -486,7 +486,8 @@ function Pie({ node, env }: { node: UiNode; env: Env }) {
           {arcs.map((arc) => (
             <li key={arc.label}>
               <span className="garden-ui-swatch" style={{ background: arc.color }} />
-              {arc.label}
+              <span className="garden-ui-pie-label">{arc.label}</span>{" "}
+              <span className="garden-ui-pie-value">{arc.value}</span>
             </li>
           ))}
         </ul>

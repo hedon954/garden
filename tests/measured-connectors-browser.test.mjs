@@ -11,19 +11,19 @@ test('measured connector recipe keeps text in DOM and endpoints on actual resize
   const dir = fs.mkdtempSync(path.join(root, '.garden/connectors-'));
   try {
     const recipe = fs.readFileSync(path.join(root, '.agents/skills/garden-compose/references/measured-connectors.js'), 'utf8');
-    const html = '<section id="graph"><div data-node="a"><p>Neutral source label with natural wrapping.</p></div><div data-node="b"><p>Neutral second node.</p></div><div data-node="c"><p>Neutral final node with a longer explanation.</p></div></section>';
-    const css = '*{box-sizing:border-box}#graph{position:relative;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:32px}#graph>[data-node]{border:1px solid var(--rule);padding:12px;min-width:0}[data-node="a"]{grid-row:span 2;align-self:center}p{margin:0;font:inherit;overflow-wrap:anywhere}';
+    const html = '<div class="graph-viewport" tabindex="0" role="region" aria-label="Spatial diagram, horizontal scroll on narrow screens"><section id="graph"><div data-node="a"><p>Neutral source label with natural wrapping.</p></div><div data-node="b"><p>Neutral second node.</p></div><div data-node="c"><p>Neutral final node with a longer explanation.</p></div></section></div>';
+    const css = '*{box-sizing:border-box}.graph-viewport{max-width:100%;overflow-x:auto;overscroll-behavior-x:contain;padding:2px}#graph{position:relative;width:100%;min-width:34em;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:32px}#graph>[data-node]{border:1px solid var(--rule);padding:12px;min-width:0}[data-node="a"]{grid-row:span 2;align-self:center}p{margin:0;font:inherit;overflow-wrap:break-word;word-break:normal}';
     const script = `${recipe}\n(async()=>{
       const graph=document.getElementById('graph');const dispose=mountMeasuredConnectors(graph,[{from:'a',to:'b'},{from:'a',to:'c',route:'elbow'},{from:'b',to:'c',route:'elbow',dashed:true}]);
       const settle=()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
       await document.fonts.ready;await settle();
-      const measure=()=>({rootWidth:graph.getBoundingClientRect().width,overflow:document.documentElement.scrollWidth>innerWidth,font:parseFloat(getComputedStyle(graph.querySelector('p')).fontSize),paths:[...graph.querySelectorAll('path')].map(p=>{
+      const measure=()=>({rootWidth:graph.getBoundingClientRect().width,viewportWidth:graph.parentElement.getBoundingClientRect().width,nodeWidths:[...graph.querySelectorAll('[data-node]')].map(n=>n.getBoundingClientRect().width),overflow:document.documentElement.scrollWidth>innerWidth,font:parseFloat(getComputedStyle(graph.querySelector('p')).fontSize),paths:[...graph.querySelectorAll('path')].map(p=>{
         const svg=p.ownerSVGElement,m=svg.getScreenCTM(),length=p.getTotalLength(),start=p.getPointAtLength(0).matrixTransform(m),end=p.getPointAtLength(length).matrixTransform(m),afterStart=p.getPointAtLength(Math.min(1,length)).matrixTransform(m),beforeEnd=p.getPointAtLength(Math.max(0,length-1)).matrixTransform(m);
         const bounds=id=>{const r=graph.querySelector('[data-node="'+id+'"]').getBoundingClientRect();return{left:r.left,right:r.right,top:r.top,bottom:r.bottom}};
         const coords=p.getAttribute('d').match(/-?\\d+(?:\\.\\d+)?(?:e[-+]?\\d+)?/gi).map(Number);const vertices=[];for(let i=0;i<coords.length;i+=2)vertices.push({x:coords[i],y:coords[i+1]});
         return{start:{x:start.x,y:start.y},end:{x:end.x,y:end.y},from:bounds(p.dataset.from),to:bounds(p.dataset.to),afterStart:{x:afterStart.x,y:afterStart.y},beforeEnd:{x:beforeEnd.x,y:beforeEnd.y},route:p.dataset.route,dash:getComputedStyle(p).strokeDasharray,vertices};
       })});
-      const initial=measure();document.body.style.fontSize='21px';await settle();const enlarged=measure();graph.querySelector('[data-node="b"]').style.transform='translateY(8px)';await settle();const moved=measure();graph.style.width='75%';await settle();const resized=measure();dispose();
+      const initial=measure();document.body.style.fontSize='21px';await settle();const enlarged=measure();graph.querySelector('[data-node="b"]').style.transform='translateY(8px)';await settle();const moved=measure();graph.parentElement.style.width='75%';await settle();const resized=measure();dispose();
       parent.postMessage({source:'connector-test',initial,enlarged,moved,resized,disposed:!graph.querySelector('svg')},'*');
     })();`;
     const srcdoc = buildSrcdoc({ html, css, js: script });
@@ -35,7 +35,8 @@ test('measured connector recipe keeps text in DOM and endpoints on actual resize
       assert.equal(result.disposed, true);
       assert.equal(result.enlarged.font, 21);
       assert.ok(Math.abs(result.moved.paths[0].to.top-result.enlarged.paths[0].to.top-8)<.1, 'Position-only node move was not exercised');
-      assert.ok(result.resized.rootWidth < result.enlarged.rootWidth * .8);
+      assert.ok(result.resized.viewportWidth < result.enlarged.viewportWidth * .8);
+      assert.ok(Math.min(...result.resized.nodeWidths) >= result.resized.font * 15, 'Spatial node text must retain a readable minimum width');
       for (const state of [result.initial, result.enlarged, result.moved, result.resized]) {
         assert.equal(state.overflow, false, width + ': overflow');
         assert.equal(state.paths.length, 3);
