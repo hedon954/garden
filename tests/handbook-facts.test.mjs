@@ -19,6 +19,8 @@ test("handbook-facts derives commands, flags, Makefile targets, env vars, config
   assert.ok(facts.cli.binNames.has("garden"));
   assert.ok(facts.cli.binNames.has("hd-garden"));
   assert.ok(facts.cli.gardenCommands.has("check"));
+  assert.ok(facts.cli.gardenFlags.has("--rendered"));
+  assert.ok(facts.cli.gardenFlags.has("--diff"));
   assert.ok(facts.cli.gardenCommands.has("ui"));
   assert.ok(facts.cli.gardenCommands.has("pages:validate"));
   assert.ok(facts.cli.uiSubcommands.has("check"));
