@@ -113,8 +113,10 @@
 .g-compose-row[data-justify="around"] > .g-compose-text,
 .g-compose-row[data-justify="around"] > .g-compose-caption-inline,
 .g-compose-row[data-justify="around"] > .g-compose-h {
-  flex: 0 0 auto;
+  flex: 0 1 auto;
+  width: auto;
   min-width: 0;
+  max-width: 100%;
 }
 
 .g-compose-row > .g-compose-badge {
@@ -139,11 +141,6 @@
 .g-compose-stack[data-align="center"] > .g-compose-card[data-frame="text"] {
   align-self: center;
   width: auto;
-}
-
-.g-compose-row[data-align="center"] {
-  justify-content: center;
-  text-align: center;
 }
 
 .g-compose-h[data-align="center"],
@@ -176,7 +173,7 @@
   width: 100%;
 }
 
-.g-compose-card > .g-compose-row:has(.g-compose-badge) {
+.g-compose-card > .g-compose-row:has(.g-compose-badge):not([data-justify]) {
   align-self: center;
   width: auto;
   gap: 6px;
