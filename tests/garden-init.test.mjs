@@ -63,7 +63,8 @@ test("garden init writes a site whose package.json parses and pins the current e
     assert.ok(!existsSync(path.join(site, excluded)), `zh init should not write ${excluded}`);
   }
   const nonSkillFiles = listFiles(site).filter((f) => !f.startsWith(".agents/skills/"));
-  const editorFiles = listFiles(path.join(root, "editors/dist")).map((file) => `.garden/editors/${file}`);
+  // Site installation uses the extracted runtime groups, not duplicate manual-release ZIPs.
+  const editorFiles = ["vscode", "typora"].flatMap((group) => listFiles(path.join(root, "editors/dist", group)).map((file) => `.garden/editors/${group}/${file}`));
   assert.deepEqual(nonSkillFiles, [
     ".garden/editors/.install-offered",
     ".garden/managed-skills.json",
