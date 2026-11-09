@@ -5,6 +5,7 @@ import http from 'node:http';
 import { spawn } from 'node:child_process';
 import test from 'node:test';
 import { probeBrowser, waitForBrowserCondition } from './browser-fixture.mjs';
+import { writeRenderingFixture } from './rendering-fixture.mjs';
 const root = path.resolve(import.meta.dirname, '..');
 const chrome = [process.env.CHROME_BIN, '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome', '/usr/bin/chromium'].find(p => p && fs.existsSync(p));
 
@@ -14,11 +15,7 @@ test('real exported theme executes sandbox through normal Links, re-entry, histo
   fs.mkdirSync(evidence, { recursive: true });
   let server;
   try {
-    fs.mkdirSync(path.join(dir, 'content/posts'), { recursive: true });
-    fs.writeFileSync(path.join(dir, 'site.config.yaml'), fs.readFileSync(path.join(root, 'templates/site/site.config.en.yaml'), 'utf8').replace(/^name:.*$/m, 'name: Neutral rendering regression with a deliberately long site name'));
-    const html = '<p>Sandbox navigation fixture</p><button id="run">Run fixture</button>';
-    const js = `const button=document.getElementById('run');button.addEventListener('click',()=>{button.textContent='Clicked';parent.postMessage({source:'navigation-fixture',type:'clicked',text:button.textContent},'*')});addEventListener('message',e=>{if(e.data?.source==='navigation-driver'&&e.data.type==='click')button.click()});parent.postMessage({source:'navigation-fixture',type:'ready',text:document.body.textContent},'*');`;
-    fs.writeFileSync(path.join(dir, 'content/posts/rendering-fixture.md'), `---\ntitle: Neutral rendering fixture\ndate: 2026-01-01\nsummary: Explicitly neutral automated rendering test.\ntags: [test]\n---\n\n## Native header\n\n\`\`\`garden compose\n<figure frame="none"><card><row align="center" justify="between" wrap="nowrap"><title align="start">Neutral card title</title><badge>Weekly</badge></row><text>Neutral test content, not a user article.</text></card></figure>\n\`\`\`\n\n## Sandbox lifecycle\n\n\`\`\`garden compose\ncaption: Neutral sandbox lifecycle assertion\n---\n<sandbox title="Navigation fixture" html={${JSON.stringify(html)}} js={${JSON.stringify(js)}}/>\n\`\`\`\n`);
+    writeRenderingFixture(dir);
     const log = fs.openSync(path.join(evidence, 'build.log'), 'w');
     const build = spawn(process.execPath, [path.join(root, 'bin/garden.mjs'), 'build'], { cwd: root, env: { ...process.env, GARDEN_SITE: dir, STATIC_EXPORT: '1', GARDEN_OFFLINE: '1', GARDEN_SKIP_EDITORS: '1', CI: '1', GITHUB_ACTIONS: 'true', GISCUS_DISABLED: '1' }, stdio: ['ignore', log, log] });
     const status = await new Promise((resolve, reject) => { build.once('exit', resolve); build.once('error', reject); });
@@ -69,6 +66,16 @@ test('real exported theme executes sandbox through normal Links, re-entry, histo
         assert.ok(snapshot.height > 20 && snapshot.srcdocLength > 100);
       }
       if (mode === 'link') assert.equal(result.initialDocument, base);
+    }
+    for (const width of [375, 1200]) {
+      const noJs = await probeBrowser({ chrome, url: base, profileDir: path.join(dir, `profile-nojs-${width}`), width, height: 1800, scriptingEnabled: false,
+        probeExpression: `(()=>{if(document.readyState!=='complete')return;if(location.pathname==='/'){const a=document.querySelector('a[href*=\"/blog/rendering-fixture\"]');if(a&&!window.__gardenNoJsLinkClicked){window.__gardenNoJsLinkClicked=true;a.click()}return}return{text:document.querySelector('.g-compose-card')?.textContent,noScripting:matchMedia('(scripting:none)').matches,tocButton:getComputedStyle(document.querySelector('.toc-mobile-trigger')).display,tocLink:getComputedStyle(document.querySelector('.toc-nojs-trigger')).display,overflow:document.documentElement.scrollWidth>innerWidth,documentUrl:performance.getEntriesByType('navigation')[0].name}})()` });
+      fs.writeFileSync(path.join(evidence, `${width}-nojs.json`), JSON.stringify(noJs, null, 2));
+      assert.match(noJs.text, /Neutral card title/);
+      assert.equal(noJs.noScripting, true);
+      assert.equal(noJs.documentUrl, base + 'blog/rendering-fixture/');
+      assert.equal(noJs.overflow, false);
+      if (width < 900) { assert.equal(noJs.tocButton, 'none'); assert.notEqual(noJs.tocLink, 'none'); }
     }
     fs.writeFileSync(path.join(evidence, 'fixture-path.txt'), dir + '\n');
   } finally {
