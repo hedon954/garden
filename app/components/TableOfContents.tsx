@@ -6,6 +6,7 @@ import {
   useId,
   useRef,
   useState,
+  useSyncExternalStore,
   type MouseEvent,
   type ReactNode,
 } from "react";
@@ -116,6 +117,20 @@ const scrollToHeading = (id: string) => {
   html.style.scrollBehavior = previousBehavior;
 };
 
+// The server-rendered header owns the slot; this component owns one drawer/control.
+// Observe slot replacement during client navigation, never poll or duplicate the TOC.
+const readControlHost = () => document.getElementById(TOC_CONTROL_ID);
+const serverControlHost = () => null;
+function subscribeControlHost(changed: () => void) {
+  let host = readControlHost();
+  const observer = new MutationObserver(() => {
+    const next = readControlHost();
+    if (next !== host) { host = next; changed(); }
+  });
+  observer.observe(document.body, { childList: true, subtree: true });
+  return () => observer.disconnect();
+}
+
 export function TableOfContents({
   headings,
   label,
@@ -134,7 +149,7 @@ export function TableOfContents({
   );
   const [mobileOpen, setMobileOpen] = useState(false);
   const panelId = TOC_PANEL_ID;
-  const [controlHost, setControlHost] = useState<HTMLElement | null>(null);
+  const controlHost = useSyncExternalStore(subscribeControlHost, readControlHost, serverControlHost);
   const listId = useId();
   const listRef = useRef<HTMLOListElement>(null);
   const panelRef = useRef<HTMLElement>(null);
@@ -143,10 +158,6 @@ export function TableOfContents({
   const restoreMobileTriggerFocusRef = useRef(false);
   const anchorCleanupRef = useRef<(() => void) | undefined>(undefined);
   const tree = nestHeadings(headings);
-
-  useEffect(() => {
-    setControlHost(document.getElementById(TOC_CONTROL_ID));
-  }, []);
 
   const closeMobileToc = useCallback((restoreFocus = false) => {
     restoreMobileTriggerFocusRef.current = restoreFocus;
