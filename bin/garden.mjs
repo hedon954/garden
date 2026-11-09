@@ -495,7 +495,7 @@ function help() {
   garden files            读取 Compose <file> 里远程文件的大小，写入 file-sizes.json（build 时会自动做）
   garden init [目录]      创建只含稿和配置的新站点
   garden check <文章.md>  检查一篇博文的硬性结构
-  garden verify [文章.md|--diff] 全量/单篇/改动文档严格预检（包含草稿；make check 使用）
+  garden verify [文章.md|--diff|--rendered] 全量/单篇/改动文档严格预检（包含草稿；make check 使用）
   garden ui <子命令>      Intelligent UI：scan、check、apply、prompt、schema、catalog
   garden hooks            安装提交前检查（检查暂存稿件里的 ui 块）
   garden editors install  安装 Intelligent UI 插件到 VS Code / Cursor 与 Typora（--vscode、--typora、--yes）
@@ -544,6 +544,7 @@ async function main() {
         runNode("scripts/html-lang.mjs");
         // 404.html also under basePath when the host serves that folder alone.
         runNode("scripts/static-404.mjs");
+        runNode("scripts/rendered-site.mjs");
       }
       break;
     case "links":
@@ -565,7 +566,12 @@ async function main() {
       runNode("scripts/fetch-embed.mjs", rest);
       break;
     case "verify":
-      runNode("scripts/check-site.mjs", rest);
+      if (rest[0] === "--rendered") {
+        if (rest.length !== 1) fail("Usage: garden verify --rendered");
+        runNode("scripts/rendered-site.mjs");
+      } else {
+        runNode("scripts/check-site.mjs", rest);
+      }
       break;
     case "check":
       runNode("scripts/check-post.mjs", rest);
