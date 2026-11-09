@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.14.5
+
+The first npm release of this rendering and authoring-quality batch. The immutable `v0.14.4` tag remains at its original commit and was not published to npm: its Linux browser gate incorrectly compared content width with the outer window instead of the actual scrollbar-adjusted viewport. This release corrects that assertion, adds reserved-scrollbar coverage on overlay-scrollbar hosts, and retains strict page-overflow and interaction checks.
+
+- Keep explicit row justification independent of cross-axis alignment, and size title/badge leaves to their content instead of forcing full-width rows.
+- Prioritize usable article width, remove duplicate host padding, wrap long site names naturally, and keep mobile contents navigation out of the reading area. Do not shrink prose to fit.
+- Mount isolated sandboxes only with their complete prepared document, preserving normal client Links, re-entry, history and direct-link interaction without reloads, polling, or relaxed sandbox permissions.
+- Keep default backgrounds transparent while retaining intentional borders and explicit fills; fullscreen uses an independent readable paper surface.
+- Keep pie legends and original values in normal flow so wrapped labels cannot overlap captions. Reuse measured straight, elbow and dashed connector recipes with readable, keyboard-scrollable local spatial canvases; no automatic graph layout or obstacle avoidance is claimed.
+- Ship equivalent concise Chinese/English author routes, source-derived component guidance, and final exported HTML/CSS/JS/asset validation with real full-theme navigation, no-JavaScript, narrow-viewport and resize regressions.
+- Ship matching Garden 0.14.5 VS Code / Cursor VSIX and Typora ZIP in both npm and GitHub Release assets, with shared runtime/CSS and complete author-reference integrity checks.
+
 ## 0.14.3
 
 - Route author effects to recommended Compose layouts, with demand-loaded recipes, internal geometry constraints, frame-layer guidance and safe whole-fence micro-edits.
