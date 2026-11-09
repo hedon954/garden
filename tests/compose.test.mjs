@@ -242,8 +242,8 @@ test("the compare post keeps the acceptance diagrams beside the originals", () =
   assert.match(html, /class="g-compose-fan"/);
   assert.match(html, /data-align="start"/);
   assert.doesNotMatch(html, /<script/u);
-  assert.match(fs.readFileSync(path.join(root, "ui/compose/compose.css"), "utf8"), /\.g-compose \{[^}]*background:\s*var\(--paper\)/u);
-  assert.doesNotMatch(fs.readFileSync(path.join(root, "ui/compose/compose.css"), "utf8"), /\.g-compose \{[^}]*background:\s*transparent/u);
+  assert.match(fs.readFileSync(path.join(root, "ui/compose/compose.css"), "utf8"), /\.g-compose \{[^}]*background:\s*transparent/u);
+  assert.doesNotMatch(fs.readFileSync(path.join(root, "ui/compose/compose.css"), "utf8"), /\.g-compose \{[^}]*background:\s*var\(--paper\)/u);
 });
 
 test("a ChatGPT original image beside a compose fence becomes a pair", () => {
