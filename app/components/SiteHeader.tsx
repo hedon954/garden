@@ -318,9 +318,9 @@ export function SiteHeader() {
     <>
       {/* Targets for the no-JavaScript menu links below. Fixed and outside the sticky header, so
           following #sh-menu-on or #sh-menu-off never scrolls the page (the TOC drawer works the same way). */}
+      <span className="sh-menu-target" id={TOC_CLOSED_ID} aria-hidden="true" />
       <span className="sh-menu-target" id="sh-menu-on" aria-hidden="true" />
       <span className="sh-menu-target" id="sh-menu-off" aria-hidden="true" />
-      <span className="sh-menu-target" id={TOC_CLOSED_ID} aria-hidden="true" />
       <header className="sh-header" id="site-header">
         <div className="sh-bar">
           <Link href="/" className="sh-word">
