@@ -18,7 +18,10 @@ function distReady() {
   const manifest = path.join(distDir, "typora", "manifest.json");
   if (!fs.existsSync(manifest) || !fs.existsSync(vsixDir)) return false;
   const version = syncEditorVersion({ check: true });
-  return fs.existsSync(path.join(vsixDir, `garden-ui-${version}.vsix`));
+  try {
+    if (JSON.parse(fs.readFileSync(manifest, "utf8")).version !== version) return false;
+  } catch { return false; }
+  return fs.existsSync(path.join(vsixDir, `garden-ui-${version}.vsix`)) && fs.existsSync(path.join(distDir, `garden-typora-${version}.zip`));
 }
 
 function withPackLock(fn) {
@@ -223,6 +226,10 @@ function packageTypora() {
   const to = path.join(distDir, "typora");
   fs.rmSync(to, { recursive: true, force: true });
   fs.cpSync(from, to, { recursive: true });
+  const manifest = JSON.parse(fs.readFileSync(path.join(to, "manifest.json"), "utf8"));
+  const entries = [];
+  addTree(entries, to, manifest.id);
+  fs.writeFileSync(path.join(distDir, `garden-typora-${manifest.version}.zip`), zipStore(entries));
 }
 
 function buildArtifacts() {

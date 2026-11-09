@@ -104,6 +104,16 @@ assert icon == open(sys.argv[3], "rb").read()
 assert 'Microsoft.VisualStudio.Services.Icons.Default' in archive.read("extension.vsixmanifest").decode()
 assert ('Version="' + version + '"') in archive.read("extension.vsixmanifest").decode()
 assert sys.argv[1].endswith("garden-ui-" + version + ".vsix")
+from pathlib import Path
+root = Path(sys.argv[2]).parent
+typora = root / "editors/dist/typora"
+typora_manifest = json.loads((typora / "manifest.json").read_text())
+assert typora_manifest["version"] == version
+typora_zip = zipfile.ZipFile(root / ("editors/dist/garden-typora-" + version + ".zip"))
+for file in typora.iterdir():
+    if file.is_file(): assert typora_zip.read(typora_manifest["id"] + "/" + file.name) == file.read_bytes()
+assert (typora / "style.css").read_bytes().startswith(archive.read("extension/dist/garden-ui.css"))
+
 need = ["extension/package.json", "extension.vsixmanifest", "[Content_Types].xml"]
 missing = [item for item in need if item not in names]
 if missing or not any(item.startswith("extension/dist/") for item in names):

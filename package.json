@@ -72,7 +72,7 @@
     "editors:pack": "node scripts/pack-editors.mjs",
     "prepack": "node scripts/pack-editors.mjs",
     "lint": "node bin/garden.mjs sync && eslint . --ignore-pattern dist --ignore-pattern .next --ignore-pattern .garden --ignore-pattern templates",
-    "version": "node scripts/sync-editor-version.mjs && git add editors/vscode/package.json editors/vscode/package-lock.json"
+    "version": "node scripts/sync-editor-version.mjs && git add editors/vscode/package.json editors/vscode/package-lock.json editors/typora/package.json editors/typora/manifest.json"
   },
   "dependencies": {
     "@cloudflare/vite-plugin": "1.37.1",
