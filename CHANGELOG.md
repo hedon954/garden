@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.14.6
+
+- Restore mobile contents access throughout long articles using one 44px control in the existing sticky site header, without floating over prose or duplicating the article-start entry.
+- Preserve chapter selection, current-section visibility, destination focus, Escape/Tab navigation, no-JavaScript links and safe-area spacing; retain desktop sticky contents and independent fullscreen Escape behavior.
+- Add full-theme long-reading regressions at 300/344/375/430 CSS pixels, header-breakpoint and desktop widths, including normal client navigation, middle/end access, chapter jumps, keyboard interaction and no-JavaScript operation.
+- Ship matching Garden 0.14.6 Cursor / VS Code VSIX and Typora ZIP. Compose behavior, author skills, article content and site configuration are unchanged.
+
 ## 0.14.5
 
 The first npm release of this rendering and authoring-quality batch. The immutable `v0.14.4` tag remains at its original commit and was not published to npm: its Linux browser gate incorrectly compared content width with the outer window instead of the actual scrollbar-adjusted viewport. This release corrects that assertion, adds reserved-scrollbar coverage on overlay-scrollbar hosts, and retains strict page-overflow and interaction checks.
