@@ -24,6 +24,8 @@ Cover four things:
 
 Describe the visual relationships and desired emphasis. Defaults are a starting point, not a substitute for checking alignment and hierarchy. Explicit styling must use supported controls.
 
+The outer static Compose scene is transparent by default; its border, corner radius, and padding remain. A transparent background does not remove the frame. To remove the entire scene frame, use one outer `<figure frame="none">…</figure>`. Explicit container backgrounds, tones, and node fills are unchanged. The host handles fullscreen or overlay backgrounds separately.
+
 **Every tag and shared token**: [compose reference](/garden/en/reference/compose). **Every icon name**: [compose icons](/garden/en/reference/compose-icons).
 
 ## Rewrite patterns

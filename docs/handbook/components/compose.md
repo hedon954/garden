@@ -24,6 +24,8 @@ badge: compose
 
 先说明视觉关系与重点，再使用受支持的属性表达必要样式。默认样式不保证复刻参考图，必须检查真实排版。
 
+静态 Compose 最外层场景默认背景透明，边框、圆角与内边距仍保留。无底色不等于无外框；需要去掉整个场景外框时，使用唯一最外层 `<figure frame="none">…</figure>`。内部容器显式指定的背景、tone 与节点填色不受影响；全屏或弹层的背景由宿主单独处理。
+
 **完整标签与属性**见 [组件参考 · compose](/garden/reference/compose)；**全部图标名**见 [compose 图标](/garden/reference/compose-icons)。
 
 ## 写法对照

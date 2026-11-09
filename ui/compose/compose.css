@@ -10,7 +10,8 @@
   padding: 18px 18px 14px;
   border: 1px solid color-mix(in srgb, var(--rule-strong) 72%, var(--paper));
   border-radius: 8px;
-  background: var(--paper);
+  /* Scene framing does not require a fill; inherit the article surface beneath. */
+  background: transparent;
   box-shadow: none;
   color: var(--ink);
   font-family: inherit;
