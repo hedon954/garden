@@ -35,14 +35,16 @@ test("article host preserves the reading column, long brand, frame width and uno
     headerHeight: header.getBoundingClientRect().height,
     barHeight: document.querySelector('.sh-bar').getBoundingClientRect().height,
     contentsPosition: getComputedStyle(trigger).position,
-    contentsBeforeArticle: trigger.getBoundingClientRect().bottom <= column.getBoundingClientRect().top + 1,
+    contentsInHeader: header.contains(trigger),
+    contentsWidth: trigger.getBoundingClientRect().width,
+    contentsHeight: trigger.getBoundingClientRect().height,
     childPadding: window.childPadding
   };
 })().catch(error => { window.__gardenProbeResult = {probeError:error.message}; });`;
     const attr = srcdoc.replaceAll("&", "&amp;").replaceAll('"', "&quot;");
     const html = `<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width"><style>${css.css}</style><script>addEventListener('message',e=>{if(e.data?.source==='host-fixture')window.childPadding=e.data.padding;});</script>
-<header class="sh-header"><div class="sh-bar"><a class="sh-word" href="/">Garden Complete Theme Navigation And Responsive Rendering Fixture</a><nav class="sh-nav"><a href="/blog/">文章</a><a href="/about/">关于</a></nav><div class="sh-tools"><button class="sh-icon sh-search-m">S</button><button class="sh-icon sh-menu-btn">M</button></div></div></header>
-<main class="reading-page post-reading-page"><article class="post-article"><div class="article-reading-layout"><button class="toc-mobile-trigger">目录</button><aside class="toc toc-rail"><a href="#fixture">Fixture contents</a></aside><div class="article-reading-column"><div class="markdown-body"><h2 id="fixture">Test article body</h2><p>Normal article text must keep its readable width as side rails yield.</p><div class="ux-fs"><div class="ux-fsbar"><button class="ux-btn">Full screen</button></div><div class="g-play"><figure class="garden-ui" data-frame="none"><div class="garden-ui-body"><iframe class="garden-ui-sandbox" sandbox="allow-scripts" style="height:120px" srcdoc="${attr}"></iframe></div><figcaption>Test caption</figcaption></figure></div></div><p>Article content remains in normal flow.</p></div></div></div></article></main><script>${driver}</script>`;
+<header class="sh-header"><div class="sh-bar"><a class="sh-word" href="/">Garden Complete Theme Navigation And Responsive Rendering Fixture</a><nav class="sh-nav"><a href="/blog/">文章</a><a href="/about/">关于</a></nav><div class="sh-tools"><span id="reading-contents-control" class="sh-reading-control"><button class="toc-mobile-trigger">目录</button></span><button class="sh-icon sh-search-m">S</button><button class="sh-icon sh-menu-btn">M</button></div></div></header>
+<main class="reading-page post-reading-page"><article class="post-article"><div class="article-reading-layout"><aside class="toc toc-rail"><a href="#fixture">Fixture contents</a></aside><div class="article-reading-column"><div class="markdown-body"><h2 id="fixture">Test article body</h2><p>Normal article text must keep its readable width as side rails yield.</p><div class="ux-fs"><div class="ux-fsbar"><button class="ux-btn">Full screen</button></div><div class="g-play"><figure class="garden-ui" data-frame="none"><div class="garden-ui-body"><iframe class="garden-ui-sandbox" sandbox="allow-scripts" style="height:120px" srcdoc="${attr}"></iframe></div><figcaption>Test caption</figcaption></figure></div></div><p>Article content remains in normal flow.</p></div></div></div></article></main><script>${driver}</script>`;
     const file = path.join(dir, "fixture.html");
     fs.writeFileSync(file, html);
     const measurements = [];
@@ -59,7 +61,7 @@ test("article host preserves the reading column, long brand, frame width and uno
       assert.ok(m.barHeight >= m.headerHeight - 1, JSON.stringify(m));
       if (m.viewport <= 900) {
         assert.equal(m.contentsPosition, "static", JSON.stringify(m));
-        assert.equal(m.contentsBeforeArticle, true, JSON.stringify(m));
+        assert.equal(m.contentsInHeader, true, JSON.stringify(m));
       }
     }
   } finally { fs.rmSync(dir, { recursive: true, force: true }); }

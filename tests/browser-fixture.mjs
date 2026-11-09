@@ -5,7 +5,7 @@ import { once } from "node:events";
 
 // Real elapsed time, not Chrome virtual time: an isolated iframe runs in a
 // separate lifecycle/process and need not finish before --dump-dom exits.
-export async function probeBrowser({ chrome, url, profileDir, width, height, screenshot, initScript, includeDiagnostics = false, scriptingEnabled = true, probeExpression = "window.__gardenProbeResult", timeoutMs = 30_000 }) {
+export async function probeBrowser({ chrome, url, profileDir, width, height, screenshot, initScript, includeDiagnostics = false, scriptingEnabled = true, safeAreaInsets, probeExpression = "window.__gardenProbeResult", timeoutMs = 30_000 }) {
   const browser = spawn(chrome, ["--headless=new", "--no-sandbox", "--disable-gpu",
     "--disable-dev-shm-usage", "--no-first-run", "--disable-background-networking",
     "--remote-debugging-port=0", `--user-data-dir=${profileDir}`, "about:blank"], { stdio: ["ignore", "ignore", "pipe"] });
@@ -58,6 +58,7 @@ export async function probeBrowser({ chrome, url, profileDir, width, height, scr
     await page("Log.enable");
     if (includeDiagnostics) await page("Network.enable");
     await page("Emulation.setDeviceMetricsOverride", { width, height, deviceScaleFactor: 1, mobile: false });
+    if (safeAreaInsets) await page("Emulation.setSafeAreaInsetsOverride", { insets: safeAreaInsets });
     if (initScript) await page("Page.addScriptToEvaluateOnNewDocument", { source: initScript });
     await page("Page.navigate", { url });
     const deadline = Date.now() + timeoutMs;

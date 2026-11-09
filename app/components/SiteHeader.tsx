@@ -1,5 +1,7 @@
 "use client";
 
+import { TOC_PANEL_ID, TOC_CONTROL_ID, TOC_CLOSED_ID } from "../lib/reading-navigation";
+
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -318,6 +320,7 @@ export function SiteHeader() {
           following #sh-menu-on or #sh-menu-off never scrolls the page (the TOC drawer works the same way). */}
       <span className="sh-menu-target" id="sh-menu-on" aria-hidden="true" />
       <span className="sh-menu-target" id="sh-menu-off" aria-hidden="true" />
+      <span className="sh-menu-target" id={TOC_CLOSED_ID} aria-hidden="true" />
       <header className="sh-header" id="site-header">
         <div className="sh-bar">
           <Link href="/" className="sh-word">
@@ -333,6 +336,11 @@ export function SiteHeader() {
             ))}
           </nav>
           <div className="sh-tools">
+            <span id={TOC_CONTROL_ID} className="sh-reading-control">
+              <a className="toc-header-nojs" href={`#${TOC_PANEL_ID}`} aria-label={t.toc}>
+                {t.tocShort}
+              </a>
+            </span>
             <button ref={searchTriggerRef} className="sh-search" type="button" onClick={openSearch} onPointerEnter={prefetchSearch} onFocus={prefetchSearch} aria-label={t.searchArticles} aria-expanded={searchOpen} aria-controls="site-search-dialog">
               <svg viewBox="0 0 20 20" aria-hidden="true">
                 <circle cx="9" cy="9" r="5.8" />

@@ -9,7 +9,9 @@ import {
   type MouseEvent,
   type ReactNode,
 } from "react";
-import { List, X } from "@phosphor-icons/react";
+import { createPortal } from "react-dom";
+import { TOC_PANEL_ID, TOC_CONTROL_ID, TOC_CLOSED_ID } from "../lib/reading-navigation";
+import { X } from "@phosphor-icons/react";
 import { ui, type UiLang } from "../lib/i18n";
 
 type Heading = { depth: number; text: string; id: string; no?: string };
@@ -131,14 +133,20 @@ export function TableOfContents({
     () => new Set(),
   );
   const [mobileOpen, setMobileOpen] = useState(false);
-  const panelId = useId();
+  const panelId = TOC_PANEL_ID;
+  const [controlHost, setControlHost] = useState<HTMLElement | null>(null);
   const listId = useId();
   const listRef = useRef<HTMLOListElement>(null);
+  const panelRef = useRef<HTMLElement>(null);
   const mobileTriggerRef = useRef<HTMLButtonElement>(null);
   const mobileCloseRef = useRef<HTMLButtonElement>(null);
   const restoreMobileTriggerFocusRef = useRef(false);
   const anchorCleanupRef = useRef<(() => void) | undefined>(undefined);
   const tree = nestHeadings(headings);
+
+  useEffect(() => {
+    setControlHost(document.getElementById(TOC_CONTROL_ID));
+  }, []);
 
   const closeMobileToc = useCallback((restoreFocus = false) => {
     restoreMobileTriggerFocusRef.current = restoreFocus;
@@ -283,7 +291,22 @@ export function TableOfContents({
       mobileCloseRef.current?.focus({ preventScroll: true });
     });
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") closeMobileToc(true);
+      if (event.key === "Escape") {
+        event.preventDefault();
+        closeMobileToc(true);
+      }
+      if (event.key !== "Tab") return;
+      const controls = Array.from(panelRef.current?.querySelectorAll<HTMLElement>("a[href], button:not([disabled])") ?? [])
+        .filter((control) => control.getClientRects().length > 0 && getComputedStyle(control).visibility !== "hidden");
+      const first = controls[0];
+      const last = controls.at(-1);
+      if (event.shiftKey && document.activeElement === first && last) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last && first) {
+        event.preventDefault();
+        first.focus();
+      }
     };
     const handleViewportChange = () => {
       if (!mobileQuery.matches) setMobileOpen(false);
@@ -346,6 +369,13 @@ export function TableOfContents({
     setActiveId(id);
     closeMobileToc();
     trackAnchorLayout(id);
+    const heading = document.getElementById(id);
+    if (heading) {
+      const temporaryTabIndex = !heading.hasAttribute("tabindex");
+      if (temporaryTabIndex) heading.tabIndex = -1;
+      heading.focus({ preventScroll: true });
+      if (temporaryTabIndex) heading.addEventListener("blur", () => heading.removeAttribute("tabindex"), { once: true });
+    }
   };
 
   const renderNode = (node: TocNode, path: number[]): ReactNode => {
@@ -395,7 +425,7 @@ export function TableOfContents({
 
   return (
     <>
-      <button
+      {controlHost ? createPortal(<button
         ref={mobileTriggerRef}
         className="toc-mobile-trigger"
         type="button"
@@ -406,16 +436,8 @@ export function TableOfContents({
         data-mobile-open={mobileOpen}
         onClick={() => setMobileOpen(true)}
       >
-        <List size={17} weight="bold" aria-hidden="true" />
         <span>{t.tocShort}</span>
-      </button>
-      {/* Without JavaScript the button above does nothing. This link opens the
-          drawer through :target instead; CSS shows it only when scripting is
-          off, so with JavaScript nothing here is visible. */}
-      <a className="toc-nojs-trigger" id={`${panelId}-open`} href={`#${panelId}`} aria-label={`${t.open}${label}`}>
-        <List size={17} weight="bold" aria-hidden="true" />
-        <span>{t.tocShort}</span>
-      </a>
+      </button>, controlHost) : null}
       <button
         className="toc-mobile-backdrop"
         type="button"
@@ -425,6 +447,9 @@ export function TableOfContents({
         onClick={() => closeMobileToc(true)}
       />
       <aside
+        ref={panelRef}
+        role={mobileOpen ? "dialog" : undefined}
+        aria-modal={mobileOpen ? true : undefined}
         className="toc toc-rail"
         id={panelId}
         aria-label={label}
@@ -441,7 +466,7 @@ export function TableOfContents({
           >
             <X size={18} aria-hidden="true" />
           </button>
-          <a className="toc-nojs-close" href={`#${panelId}-open`} aria-label={`${t.close}${label}`}>
+          <a className="toc-nojs-close" href={`#${TOC_CLOSED_ID}`} aria-label={`${t.close}${label}`}>
             <X size={18} aria-hidden="true" />
           </a>
         </div>

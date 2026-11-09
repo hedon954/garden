@@ -224,10 +224,12 @@ test("renders complex Markdown, article covers, and mixed thought media", async 
 });
 
 test("collapses the reading table of contents per heading and keeps its active item visible", async () => {
-  const [toc, styles, content] = await Promise.all([
+  const [toc, styles, content, header, shell] = await Promise.all([
     readFile(new URL("../app/components/TableOfContents.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/globals.css", import.meta.url), "utf8"),
     readFile(new URL("../app/lib/content.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/components/SiteHeader.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/styles/shell.css", import.meta.url), "utf8"),
   ]);
 
   assert.match(toc, /collapsedSections/);
@@ -253,18 +255,20 @@ test("collapses the reading table of contents per heading and keeps its active i
   assert.match(toc, /closeMobileToc\(\)/);
   assert.match(styles, /\.toc-list[\s\S]*overflow-y: auto/);
   assert.match(styles, /\.toc li\.active > \.toc-item-row > a/);
-  assert.match(styles, /\.toc-mobile-trigger[\s\S]*position: fixed/);
+  assert.match(toc, /createPortal/);
+  assert.match(header, /id=\{TOC_CONTROL_ID\} className="sh-reading-control"/);
+  assert.match(shell, /\.sh-reading-control \.toc-mobile-trigger,[\s\S]*position: static/);
   assert.match(styles, /\.toc-mobile-backdrop\[data-mobile-open="true"\]/);
   assert.match(styles, /\.toc\[data-mobile-open="true"\][\s\S]*transform: translateY\(0\)/);
-  assert.match(styles, /\.toc \.toc-header,\n  \.toc \.toc-list \{\n    padding-inline: 20px;/);
-  // Without JavaScript the drawer opens through :target, and only then.
-  assert.match(toc, /className="toc-nojs-trigger" id=\{`\$\{panelId\}-open`\} href=\{`#\$\{panelId\}`\}/);
-  assert.match(toc, /className="toc-nojs-close" href=\{`#\$\{panelId\}-open`\}/);
-  assert.match(styles, /\.toc-nojs-trigger,\n\.toc-nojs-close \{\n  display: none;/);
+  assert.match(styles, /padding-left: max\(20px, env\(safe-area-inset-left\)\)/);
+  // No-script navigation shares the persistent header entry, not a second article-start button.
+  assert.match(header, /className="toc-header-nojs" href=\{`#\$\{TOC_PANEL_ID\}`\}/);
+  assert.match(toc, /className="toc-nojs-close" href=\{`#\$\{TOC_CLOSED_ID\}`\}/);
+  assert.match(header, /className="sh-menu-target" id=\{TOC_CLOSED_ID\}/);
+  assert.match(shell, /@media \(max-width: 900px\) and \(scripting: none\)/);
   const noScript = styles.slice(styles.indexOf("@media (max-width: 900px) and (scripting: none)"));
   assert.ok(noScript.length > 50, "missing the scripting: none block");
   assert.match(noScript, /\.toc-mobile-trigger,\n  \.toc-mobile-close \{\n    display: none;/);
-  assert.match(noScript, /\.toc-nojs-trigger \{\n    display: inline-flex;/);
   assert.match(styles, /@media \(scripting: none\) \{\n  \.toc-section-toggle \{\n    display: none;/);
   assert.match(noScript, /\.post-reading-page \.article-reading-layout \.toc:target[\s\S]*transform: translateY\(0\)/);
   assert.match(styles, /\.markdown-body h2,[\s\S]*scroll-margin-top: 0/);

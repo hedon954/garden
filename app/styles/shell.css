@@ -456,3 +456,26 @@ a.sh-lang:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
   --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"PingFang SC","Hiragino Sans GB","Noto Sans SC","Noto Sans CJK SC","Microsoft YaHei",system-ui,sans-serif;
   --serif:"Source Serif 4",Georgia,"Times New Roman","Source Han Serif SC","Noto Serif SC","Noto Serif CJK SC","Songti SC","STSong",serif;
 }
+
+/* Reading navigation lives in the existing sticky header, never over prose.
+   The server fallback works without JS; hydration portals the stateful control
+   into the same reserved slot. No duplicate article-start button or extra band. */
+.sh-reading-control { display: none; }
+.toc-header-nojs { display: none; }
+@media (max-width: 900px) {
+  body:has(.toc-rail) .sh-reading-control { display: inline-flex; flex: 0 0 44px; min-width: 44px; min-height: 44px; align-items: center; justify-content: center; }
+  .sh-reading-control .toc-mobile-trigger,
+  .sh-reading-control .toc-header-nojs {
+    position: static; display: inline-flex; width: 44px; min-width: 44px; height: 44px; margin: 0; padding: 0;
+    align-items: center; justify-content: center; border: 0; border-radius: var(--r);
+    background: transparent; box-shadow: none; color: var(--ink); font: 600 13px/1 var(--sans); text-decoration: none;
+  }
+  .sh-reading-control .toc-header-nojs { display: none; }
+  .sh-reading-control .toc-mobile-trigger:hover,
+  .sh-reading-control .toc-mobile-trigger:focus-visible { transform: none; background: var(--tint); }
+  .sh-reading-control .toc-mobile-trigger[data-mobile-open="true"] { visibility: visible; opacity: 1; pointer-events: none; transform: none; }
+  .sh-bar { padding-left: max(20px, env(safe-area-inset-left)); padding-right: max(12px, env(safe-area-inset-right)); }
+}
+@media (max-width: 900px) and (scripting: none) {
+  .sh-reading-control .toc-header-nojs { display: inline-flex; }
+}

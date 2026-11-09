@@ -1587,13 +1587,6 @@ html[data-theme="dark"] .g-quiz-out.no { color: #f29aab; }
 /* Fullscreen controls own a top band, not a second frame or a narrow text rail. */
 .ux-fs > .ux-fsbar + .g-play { padding: 44px 0 0; border: 0; }
 .g-play > .garden-ui { margin: 0; }
-@media (max-width: 900px) {
-  .post-reading-page .toc-mobile-trigger,
-  .post-reading-page .toc-nojs-trigger {
-    position: static;
-    margin: 0 0 16px;
-  }
-}
 .g-play-f { margin: 0 0 10px; font-size: 14px; color: var(--soft); }
 .g-range { display: grid; grid-template-columns: 110px minmax(0, 1fr) 64px; gap: 12px; align-items: center; font-size: 14px; color: var(--muted); margin: 6px 0; }
 .g-range input { width: 100%; accent-color: var(--blue); min-height: 32px; }
@@ -2792,5 +2785,13 @@ html[data-theme="dark"] .ref-demo { --rd-s: #262624; --rd-p: #1f1e1d; --rd-i: #e
      Match that specificity so the rail stays off small screens. */
   .post-reading-page > .series-edge {
     display: none;
+  }
+}
+
+/* Desktop rail spacing must not replace the mobile drawer's home-indicator inset. */
+@media (max-width: 900px) {
+  .post-reading-page .article-reading-layout > .toc,
+  .garden-doc-page > .toc {
+    padding: 0 0 calc(18px + env(safe-area-inset-bottom));
   }
 }

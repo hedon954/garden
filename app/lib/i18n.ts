@@ -319,7 +319,7 @@ const en: typeof zh = {
   columnFallbackDesc: "A series of posts in reading order.",
   columnNewestFirst: (title: string | undefined) => `${title}, newest first`,
   toc: "Contents",
-  tocShort: "Contents",
+  tocShort: "TOC",
   tocPage: "On this page",
   open: "Open ",
   close: "Close ",
