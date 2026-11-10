@@ -2,7 +2,7 @@
 
 [English](README.en.md)
 
-Garden 是一个 Claude 风格的个人博客框架：文章、随想和专栏用 Markdown 写，保存在自己的 Git 仓库里；图表、指标和交互组件用一句自然语言描述就行。
+Garden 是一个 Claude 风格的个人博客框架：文章和专栏用 Markdown 写，保存在自己的 Git 仓库里；图表、指标和交互组件用一句自然语言描述就行。
 
 站点仓库只保存你的配置文件（`site.config.yaml`）与稿件（`content/`），页面渲染、静态构建和检查工具由 `hd-garden` 包提供。
 
@@ -98,9 +98,9 @@ npx garden editors install --yes               # 把 Intelligent UI 插件装进
 
 本地运行 `make dev` 后访问 `/garden`（英文版在 `/garden/en`），或直接阅读仓库内的文档：
 
-- **[Garden 使用说明（中文）](docs/handbook/index.md)** · **[Garden Handbook (English)](docs/handbook/en/index.md)**：快速开始、[用 AI 写作](docs/handbook/ai-writing.md)、[站点与专栏配置](docs/handbook/config.md)、[发布到 GitHub Pages](docs/handbook/deploy.md)、[写文章与随想](docs/handbook/writing.md)、[阅读排版](docs/handbook/design.md)、[组件](docs/handbook/components.md)（`garden` 围栏，以及链接卡片、来源胶囊和本地图片；说明图是 compose）与 [语法检查](docs/handbook/workflow.md)。
+- **[Garden 使用说明（中文）](docs/handbook/index.md)** · **[Garden Handbook (English)](docs/handbook/en/index.md)**：快速开始、[用 AI 写作](docs/handbook/ai-writing.md)、[站点与专栏配置](docs/handbook/config.md)、[发布到 GitHub Pages](docs/handbook/deploy.md)、[写文章](docs/handbook/writing.md)、[阅读排版](docs/handbook/design.md)、[组件](docs/handbook/components.md)（`garden` 围栏，以及链接卡片、来源胶囊和本地图片；说明图是 compose）与 [语法检查](docs/handbook/workflow.md)。
 - **[从零开始](docs/quick-start.md)** 与 **[GitHub Pages 部署](docs/github-pages.md)**：单公开仓库或「私有源码仓库 + 公开页面仓库」的 Actions 配置与 Giscus 评论接入。
-- **[独立管理后台](docs/admin-service.md)**：可选的 `/admin` 服务（本地、Docker 或 Cloudflare Workers），支持网页发随想、阿里云 OSS 媒体直传与 `/admin/ui` 组件工作台。
+- **[独立管理后台](docs/admin-service.md)**：可选的 `/admin` 服务（本地、Docker 或 Cloudflare Workers），支持文章置顶、阿里云 OSS 媒体上传与 `/admin/ui` 组件工作台。
 
 ## 许可证
 

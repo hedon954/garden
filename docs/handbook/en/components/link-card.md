@@ -45,6 +45,5 @@ When the paragraph is only the marked link, that line becomes the card:
 
 At build time, Garden reads `{card}` links and URLs that stand alone as a paragraph, and stores the page title, summary, and image in `.garden/link-assets.json` (same-site and external share one fetch path; HTML meta refresh is followed to the target before reading OG). A failed fetch keeps the previous record, and the build continues. Run `npx garden links` to refresh just these records. Set `GARDEN_OFFLINE` to `1` to skip the fetch during an offline build.
 
-A thought can also carry an external link in Front Matter with `type: link`, using the `title`, `description`, and `image` you write. Those fields are in [Writing Posts & Thoughts](/garden/en/writing).
 
 This is not a `garden` fence, so it has no field table. Fields for the 12 fence components are in the [component reference](/garden/en/reference).

@@ -77,7 +77,7 @@ Compared with the previous version: split the title into two lines with " | " in
 ```
 ````
 
-Following the `garden-compose` skill, the Agent replaces that idea fence with a `diff` fence right below the code block. The page merges the adjacent code and `diff` fences into a single code frame with a toggle between the full code and the diff; see [Writing Posts & Thoughts](/garden/en/writing) for the hand-written `diff` format.
+Following the `garden-compose` skill, the Agent replaces that idea fence with a `diff` fence right below the code block. The page merges the adjacent code and `diff` fences into a single code frame with a toggle between the full code and the diff; see [Writing Posts](/garden/en/writing) for the hand-written `diff` format.
 
 ## 6. Insert, Preview, and Compile from the Editor
 
@@ -111,6 +111,6 @@ When writing components by hand without AI, you can use the templates and snippe
 
 The Garden engine includes an optional `/admin` console (under `app/admin` and `worker/`) that can be deployed separately with `npm run admin:local`, `npm run admin:cloudflare`, or Docker. Once configured via environment variables, it provides:
 
-- GitHub OAuth sign-in restricted to the `ADMIN_GITHUB_LOGINS` allowlist, a web editor that commits thoughts directly to `content/thoughts/*.md` using `CONTENT_GITHUB_TOKEN`, and direct browser uploads to Alibaba Cloud OSS via 10-minute Post Policies.
+- GitHub OAuth sign-in restricted to the `ADMIN_GITHUB_LOGINS` allowlist, article management using `CONTENT_GITHUB_TOKEN`, and direct browser uploads to Alibaba Cloud OSS via 10-minute Post Policies.
 - An interactive block overview at `/admin/ui/blocks` across all posts (including drafts) with one-click copying of the same fix prompt produced by the CLI hook.
 - The `/admin/ui` studio for drafting or editing components with a model (`UI_MODEL_BASE_URL`, `UI_MODEL_API_KEY`, `UI_MODEL_NAME`), the catalog at `/admin/ui/catalog`, draft previews at `/admin/preview/<path>`, and model evaluations at `/admin/ui/evals`.

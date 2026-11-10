@@ -6,10 +6,8 @@ import {
   gardenDocsEn,
   gardenIndexDocEn,
   posts,
-  thoughts,
   type ContentEntry,
   type GardenDocEntry,
-  type MediaItem,
 } from "@garden/generated-content";
 import GithubSlugger from "github-slugger";
 import { canonicalSiteDate } from "../../scripts/site-date.mjs";
@@ -23,8 +21,8 @@ import { articleUsesHeadingNumbers, autoNumbersHeadings, splitHeadingNumber } fr
 import { siteHref } from "./site-href";
 import { siteLang, ui } from "./i18n";
 
-export { columns, gardenDocs, gardenDocsEn, gardenIndexDoc, gardenIndexDocEn, posts, thoughts };
-export type { ContentEntry, GardenDocEntry, MediaItem };
+export { columns, gardenDocs, gardenDocsEn, gardenIndexDoc, gardenIndexDocEn, posts };
+export type { ContentEntry, GardenDocEntry };
 
 export const postHref = (post: Pick<ContentEntry, "path">) => siteHref(`/blog/${post.path}`);
 export const gardenDocHref = (doc: Pick<GardenDocEntry, "path">) => siteHref(`/garden/${doc.path}`);
@@ -41,7 +39,6 @@ export const columnOfPost = (post: Pick<ContentEntry, "path">) => {
   return entry?.column ? { slug: entry.column, title: entry.columnTitle ?? entry.column } : undefined;
 };
 export const columnIndexHref = (slug: string) => siteHref(`/columns/#${slug}`);
-export const thoughtHref = (slug: string) => siteHref(`/thoughts/${slug}`);
 
 export const formatDate = (value: string, withTime = false) => {
   if (!withTime) return demoDateLabel(value, siteLang);
@@ -114,9 +111,6 @@ export const estimateWordCount = (markdown: string) => {
 
 export const findPost = (path: string): ContentEntry | undefined =>
   posts.find((post) => post.path === path);
-
-export const findThought = (slug: string): ContentEntry | undefined =>
-  thoughts.find((thought) => thought.slug === slug);
 
 export const findGardenDoc = (path: string): GardenDocEntry | undefined =>
   gardenDocs.find((doc) => doc.path === path);

@@ -6,15 +6,14 @@ project skills before editing. This guide is a map, not a duplicated catalog.
 ## Content and site model
 
 - `content/posts/`: long-form UTF-8 Markdown; retain existing folders and naming.
-- `content/thoughts/`: short notes, images and links; its fields differ from posts.
 - `content/columns.yaml`: column organization and references to existing articles,
   not another place to duplicate their prose.
 - `site.config.yaml`: site identity, author, page copy, navigation and settings.
-- The engine supplies home, blog, thoughts, columns, about and handbook layouts
+- The engine supplies home, blog, columns, about and handbook layouts
   and routes. Do not copy application code, hardcode routes or invent settings.
 - Posts normally require `title`, `date` and `description`. Filenames participate
   in identity; do not add a `slug` field. Check examples and the writing handbook
-  for optional fields and thought syntax instead of guessing.
+  for optional fields and writing syntax instead of guessing.
 - `draft: true` and future `publishAt` control public inclusion; development
   previews include drafts by default. Drafts still obey strict component checks.
 

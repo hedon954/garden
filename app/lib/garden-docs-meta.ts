@@ -110,7 +110,7 @@ export const NAV_SHORT_TITLE: Record<string, string> = {
   "ai-writing": "用 AI 写作",
   config: "站点与专栏配置",
   deploy: "发布到 GitHub Pages",
-  writing: "写文章与随想",
+  writing: "写文章",
   design: "阅读排版是怎么工作的",
   components: "组件总览",
   "components/card": "知识卡片",

@@ -21,7 +21,6 @@ The caption under this figure is its alt text:
 
 ![Reading column, wide figure zone, and wide table zone](../../assets/reading-layout-en.svg)
 
-Images on a thought go in the `media` list in Front Matter and form a grid, without this caption. See [Writing Posts & Thoughts](/garden/en/writing).
 
 ## Excalidraw
 

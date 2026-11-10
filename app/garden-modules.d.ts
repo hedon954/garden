@@ -1,15 +1,5 @@
 declare module "@garden/generated-content" {
-  export type MediaItem = {
-    type: "image" | "audio" | "video" | "link";
-    src: string;
-    alt?: string;
-    poster?: string;
-    mime?: string;
-    title?: string;
-    description?: string;
-  };
-
-  export type ContentEntry = {
+    export type ContentEntry = {
     title: string;
     slug: string;
     path: string;
@@ -22,7 +12,7 @@ declare module "@garden/generated-content" {
     references?: { title: string; url?: string; domain?: string }[];
     pinned?: boolean;
     readingTime?: string;
-    kind: "post" | "column" | "thought";
+    kind: "post" | "column";
     sourcePath: string;
     content: string;
     column?: string;
@@ -36,18 +26,11 @@ declare module "@garden/generated-content" {
     /** Resized WebP copies of a local cover, when the build had sharp. */
     coverImage?: { src: string; srcset: string; width: number; height: number };
     original?: string;
-    mediaType?: "image" | "audio" | "video" | "link" | "text";
-    media?: string | MediaItem[];
-    mediaAlt?: string;
-    poster?: string;
-    linkTitle?: string;
-    linkDescription?: string;
   };
 
   export const contentHash: string;
   export const posts: ContentEntry[];
   export const columns: ContentEntry[];
-  export const thoughts: ContentEntry[];
   export type GardenDocEntry = {
     title: string;
     slug: string;

@@ -9,13 +9,14 @@ const templateRoot = new URL("../", import.meta.url);
 // Next.js, streams page metadata into <body> whatever htmlLimitedBots says.)
 const BROWSER_UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36";
 
-async function render(pathname = "/") {
+async function render(pathname = "/", method = "GET") {
   const workerUrl = new URL("../dist/server/index.js", import.meta.url);
   workerUrl.searchParams.set("test", `${process.pid}-${Date.now()}`);
   const { default: worker } = await import(workerUrl.href);
 
   return worker.fetch(
     new Request(`http://localhost${pathname}`, {
+      method,
       headers: { accept: pathname === "/rss.xml" ? "application/rss+xml" : "text/html", "user-agent": BROWSER_UA },
     }),
     {
@@ -115,19 +116,16 @@ test("publishes a valid RSS feed", async () => {
   assert.match(xml, /^<\?xml version="1\.0"/);
   assert.match(xml, /<title>[^<]+<\/title>/);
   assert.match(xml, /<title>注意力也是一种界面<\/title>/);
-  assert.match(xml, /<title>雨后的城市<\/title>/);
   assert.match(xml, /<content:encoded><!\[CDATA\[/);
   assert.match(xml, /xmlns:content="http:\/\/purl\.org\/rss\/1\.0\/modules\/content\/"/);
 
   const postsXml = await readFile(new URL("../public/posts.xml", import.meta.url), "utf8");
   assert.match(postsXml, /<title>注意力也是一种界面<\/title>/);
-  assert.doesNotMatch(postsXml, /<title>雨后的城市<\/title>/);
 });
 
-test("renders complex Markdown, article covers, and mixed thought media", async () => {
-  const [articleResponse, thoughtsResponse, archiveResponse] = await Promise.all([
+test("renders complex Markdown, article covers", async () => {
+  const [articleResponse, archiveResponse] = await Promise.all([
     render("/blog/markdown-lab"),
-    render("/thoughts"),
     render("/blog"),
   ]);
 
@@ -192,15 +190,6 @@ test("renders complex Markdown, article covers, and mixed thought media", async 
       article.indexOf('class="article-reading-layout"'),
     "article summary should be a distinct row above the body and table of contents",
   );
-
-  assert.equal(thoughtsResponse.status, 200);
-  const thoughts = await thoughtsResponse.text();
-  assert.match(thoughts, /混合记录 · 6 个附件/);
-  assert.match(thoughts, /thought-gallery-3/);
-  assert.match(thoughts, /<audio/);
-  assert.match(thoughts, /<video/);
-  assert.match(thoughts, /class="link-embed u-bookmark-of"/);
-  assert.match(thoughts, /href="\/thoughts\/rainy-night"/, "a server build without trailingSlash links without the slash");
 
   const kv = await render("/a2/kv-cache");
   assert.equal(kv.status, 200);
@@ -301,10 +290,9 @@ test("renders a column entry cover when its source article defines one", async (
 });
 
 test("hides empty home sections and gives every content index an intentional empty state", async () => {
-  const [home, archive, thoughts, columns, emptyState] = await Promise.all([
+  const [home, archive, columns, emptyState] = await Promise.all([
     readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/components/BlogArchive.tsx", import.meta.url), "utf8"),
-    readFile(new URL("../app/thoughts/page.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/columns/page.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/components/ContentEmptyState.tsx", import.meta.url), "utf8"),
   ]);
@@ -314,7 +302,6 @@ test("hides empty home sections and gives every content index an intentional emp
   assert.doesNotMatch(home, /最近随想|ThoughtCard|getPublishedThoughts/);
   assert.match(home, /columns\[0\]/);
   assert.match(archive, /ContentEmptyState kind="posts"/);
-  assert.match(thoughts, /ContentEmptyState kind="thoughts"/);
   assert.match(columns, /ContentEmptyState kind="columns"/);
   assert.match(columns, /column-feature-cover/);
   assert.match(columns, /siteConfig\.pages\.columns\.subtitle/);
@@ -439,18 +426,16 @@ test("heading anchors carry no underline while a link inside a heading keeps its
   assert.doesNotMatch(styles, /\.h-anchor a|\.h-anchor \.ext/);
 });
 
-test("publishes discovery routes, permanent thought pages, and real integration adapters", async () => {
-  const [sitemapResponse, robotsResponse, thoughtResponse, gardenResponse] = await Promise.all([
+test("publishes discovery routes, and real integration adapters", async () => {
+  const [sitemapResponse, robotsResponse, gardenResponse] = await Promise.all([
     render("/sitemap.xml"),
     render("/robots.txt"),
-    render("/thoughts/rainy-night"),
     render("/garden"),
   ]);
 
   assert.equal(sitemapResponse.status, 200);
   const sitemap = await sitemapResponse.text();
   assert.match(sitemap, /\/blog\/markdown-lab/);
-  assert.match(sitemap, /\/thoughts\/rainy-night/);
   assert.match(sitemap, /\/columns\/building-in-public\/smallest-closed-loop/);
   assert.match(sitemap, /\/garden/);
 
@@ -463,10 +448,6 @@ test("publishes discovery routes, permanent thought pages, and real integration 
   const robots = await robotsResponse.text();
   assert.match(robots, /Sitemap: .*\/sitemap\.xml/);
 
-  assert.equal(thoughtResponse.status, 200);
-  const thought = await thoughtResponse.text();
-  assert.match(thought, /class="thought-card h-entry"/);
-  assert.match(thought, /rel="canonical"/);
 
   const [comments, giscus, webmentions, search, columns] = await Promise.all([
     readFile(new URL("../app/components/Comments.tsx", import.meta.url), "utf8"),
@@ -485,19 +466,19 @@ test("publishes discovery routes, permanent thought pages, and real integration 
 });
 
 test("keeps the admin studio protected and writes content through GitHub", async () => {
-  const response = await render("/api/admin/thoughts");
+  const response = await render("/api/admin/posts/pin", "PATCH");
   assert.equal(response.status, 401);
 
   const [
     adminPage,
-    thoughtApi,
+    postApi,
     distributionApi,
     githubContent,
     workflow,
     verifyWorkflow,
   ] = await Promise.all([
     readFile(new URL("../app/admin/page.tsx", import.meta.url), "utf8"),
-    readFile(new URL("../app/api/admin/thoughts/route.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/api/admin/posts/pin/route.ts", import.meta.url), "utf8"),
     readFile(new URL("../app/api/admin/distribution/route.ts", import.meta.url), "utf8"),
     readFile(new URL("../app/lib/github-content.ts", import.meta.url), "utf8"),
     readFile(new URL("../.github/workflows/pages.yml", import.meta.url), "utf8"),
@@ -506,9 +487,8 @@ test("keeps the admin studio protected and writes content through GitHub", async
 
   assert.match(adminPage, /api\/auth\/github/);
   assert.match(adminPage, /AdminDashboard/);
-  assert.match(thoughtApi, /createRepositoryThought/);
+  assert.match(postApi, /updateRepositoryPostPinned/);
   assert.match(githubContent, /CONTENT_GITHUB_TOKEN/);
-  assert.match(githubContent, /content\/thoughts/);
   assert.match(githubContent, /async function mutateRepository/);
   assert.match(githubContent, /repositoryPostPath\(input\.sourcePath\)/);
   assert.match(githubContent, /JSON\.stringify\(\{ \.\.\.payload, branch: config\.branch \}\)/);
@@ -909,10 +889,10 @@ test("header nav links follow trailingSlash (none in this server build) and stil
     const bar = html.match(/<nav class="sh-nav"[\s\S]*?<\/nav>/)?.[0] ?? "";
     assert.ok(bar, `desktop nav on ${pathname}`);
     const links = [...bar.matchAll(/<a ([^>]*)>([^<]+)<\/a>/g)].map((m) => ({ attrs: m[1], text: m[2] }));
-    assert.deepEqual(links.map((link) => link.attrs.match(/href="([^"]+)"/)[1]), ["/blog", "/thoughts", "/columns", "/about"], pathname);
+    assert.deepEqual(links.map((link) => link.attrs.match(/href="([^"]+)"/)[1]), ["/blog", "/columns", "/about"], pathname);
     assert.deepEqual(links.filter((link) => /aria-current="page"/.test(link.attrs)).map((link) => link.text), label ? [label] : [], pathname);
     const menu = html.match(/<nav class="sh-menu" id="sh-menu"[\s\S]*?<\/nav>/)?.[0] ?? "";
-    assert.equal((menu.match(/href="\/(blog|thoughts|columns|about)"/g) ?? []).length, 4, `mobile menu on ${pathname}`);
+    assert.equal((menu.match(/href="\/(blog|columns|about)"/g) ?? []).length, 3, `mobile menu on ${pathname}`);
     assert.doesNotMatch(bar, /href="\/tags"/);
   }
 });
@@ -961,7 +941,7 @@ test("Compose file renders cards on the server; the Markdown preview stays out o
 
 test("a server build without trailingSlash links every page without the slash (no 308 per click)", async () => {
   const { findMisshapenLinks } = await import("../ui/garden/site-href.mjs");
-  const pages = ["/", "/blog", "/columns", "/thoughts", "/tags", "/about", "/blog/windowsill-herbs-kit", "/thoughts/rainy-night"];
+  const pages = ["/", "/blog", "/columns", "/tags", "/about", "/blog/windowsill-herbs-kit"];
   const found = [];
   for (const pathname of pages) {
     const response = await render(pathname);
@@ -990,8 +970,8 @@ test("the article code block labels its language through the shared mapping, nex
   assert.doesNotMatch(html, /data-language="BASH"/u);
 });
 
-test("article, column article and thought pages link the RSS feed in <head> next to their canonical", async () => {
-  for (const pathname of ["/blog/markdown-lab", "/columns/building-in-public/ship-with-evidence", "/thoughts/rainy-night"]) {
+test("article and column article pages link the RSS feed in <head> next to their canonical", async () => {
+  for (const pathname of ["/blog/markdown-lab", "/columns/building-in-public/ship-with-evidence"]) {
     const html = await (await render(pathname)).text();
     const head = html.slice(0, html.indexOf("</head>"));
     assert.equal(head.match(/<link rel="alternate" type="application\/rss\+xml" href="[^"]*\/rss\.xml"\/>/gu)?.length, 1, `${pathname} should link the feed once`);
@@ -1044,4 +1024,13 @@ test("column status is an enum with localized labels and Chinese back-compat", a
   const generated = await readFile(new URL("../.garden/generated-content.ts", import.meta.url), "utf8");
   assert.match(generated, /"columnStatus": "ongoing"/);
   assert.doesNotMatch(generated, /"columnStatus": "(连载中|持续更新|已完结)"/);
+});
+
+
+test("removed content pages and management endpoints are absent, not compatibility redirects", async () => {
+  for (const pathname of ["/thoughts", "/thoughts/page/2", "/thoughts/rainy-night", "/api/admin/thoughts", "/api/admin/thoughts/rainy-night"]) {
+    const response = await render(pathname);
+    assert.equal(response.status, 404, pathname);
+    assert.equal(response.headers.get("location"), null, pathname);
+  }
 });

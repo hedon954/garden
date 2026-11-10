@@ -1,11 +1,7 @@
 const adminJobs = [
   {
-    title: "写随想",
-    description: "保存草稿，或直接发布。文件写回 content/thoughts/，没有另一份数据库。",
-  },
-  {
     title: "上传附件",
-    description: "图片、音频和视频可以传到对象存储。文章里只留下地址。",
+    description: "通过后台上传 API 将图片、音频和视频传到对象存储，文章里只留下地址。",
   },
   {
     title: "置顶",
@@ -23,7 +19,7 @@ const adminJobs = [
 
 const adminFlow = [
   ["用 GitHub 登录", "只有名单里的账号能进来。"],
-  ["做一件事", "写随想、上传、置顶，或发到别处。"],
+  ["做一件事", "上传、置顶，或发到别处。"],
   ["写回仓库", "后台把改动提交到你的内容仓库。"],
   ["网站更新", "main 变了之后，页面会重新发布。"],
 ];
@@ -36,25 +32,10 @@ export function GardenAdminGuide() {
           <h2 id="garden-admin-title">后台</h2>
         </div>
         <p>
-          长文继续在编辑器里写。后台只做需要登录的事：随想、附件、置顶、转发，以及文章里的交互。
+          长文继续在编辑器里写。后台只做需要登录的事：附件、置顶、转发，以及文章里的交互。
         </p>
       </header>
 
-      <figure className="garden-admin-preview">
-        {/* vinext 的本地静态导出不提供 Next 图片优化端点，截图直接由 public 目录提供。 */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="/images/garden/admin-studio.png"
-          alt="Garden 后台：上面写一条随想，下面是草稿和已发布"
-          width={920}
-          height={1033}
-          loading="lazy"
-        />
-        <figcaption>
-          <strong>后台首页</strong>
-          <span>上面写一条随想。下面是草稿，以及可以置顶或转发的文章。</span>
-        </figcaption>
-      </figure>
 
       <div className="garden-admin-capabilities">
         {adminJobs.map((job) => (

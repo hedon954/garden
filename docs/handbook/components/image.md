@@ -21,7 +21,6 @@ order: 45
 
 ![正文列、宽图区与宽表区](../assets/reading-layout.svg)
 
-随想里的图片写在 Front Matter 的 `media` 中，多张拼成宫格，不使用这套图注。见[写文章与随想](/garden/writing)。
 
 ## Excalidraw
 

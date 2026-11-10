@@ -10,7 +10,7 @@ test("maps content-relative post paths to repository-root paths", () => {
 
 test("rejects post paths that can leave the content/posts boundary", () => {
   for (const sourcePath of [
-    "thoughts/hello.md",
+    "notes/hello.md",
     "posts/../README.md",
     "posts/%2e%2e/README.md",
     "posts/nested%2Fescape.md",

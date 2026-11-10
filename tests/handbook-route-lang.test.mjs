@@ -428,14 +428,9 @@ test("the language switch keeps the basePath: /repo/garden/x/ ⇄ /repo/garden/e
   assert.equal(swapHandbookLang("/blog/x/", "en"), null);
 });
 
-test("the infinite-scroll link carries the basePath", async () => {
-  const src = (await import("node:fs")).readFileSync(new URL("../app/components/FeedMore.tsx", import.meta.url), "utf8");
-  assert.match(src, /useState\(next \? `\$\{base\}\$\{next\}` : null\)/u);
-});
-
 test("<html lang> is en on English handbook pages and zh-CN on Chinese ones (worker)", async () => {
   for (const path of ["/garden/en", "/garden/en/ai-writing", "/garden/en/reference/compose"]) assert.match(await fetchRoute(path, 200), /<html[^>]*\slang="en"/u, path);
-  for (const path of ["/garden", "/garden/ai-writing", "/blog", "/thoughts"]) assert.match(await fetchRoute(path, 200), /<html[^>]*\slang="zh-CN"/u, path);
+  for (const path of ["/garden", "/garden/ai-writing", "/blog"]) assert.match(await fetchRoute(path, 200), /<html[^>]*\slang="zh-CN"/u, path);
 });
 
 test("<html lang> in the static export: English handbook files only, basePath or not", async () => {

@@ -8,7 +8,6 @@
  */
 export const SITE_NAV = [
   { href: "/blog/", label: "文章" },
-  { href: "/thoughts/", label: "随想" },
   { href: "/columns/", label: "专栏" },
   { href: "/about/", label: "关于" },
 ];

@@ -42,18 +42,17 @@ test("full text: markdown, HTML, math and long code blocks are stripped; short c
 
 test("full index: aligned with the small index, named by a hash of its text", () => {
   const posts = [{ title: "A", path: "a", date: "2026-01-01", content: "第一篇正文" }];
-  const thoughts = [{ title: "T", slug: "t", date: "2026-01-02", content: "一条随想" }];
   // A post that sits in a column is one entry, at its /blog/ URL.
   const columns = [{ ...posts[0], column: "c", columnTitle: "专栏", path: "c/a" }];
-  const full = buildFullIndex({ posts, columns, thoughts });
-  assert.deepEqual(full.texts, ["第一篇正文", "一条随想"]);
-  assert.deepEqual(expandFullIndex(full), [["/blog/a", "第一篇正文"], ["/thoughts/t", "一条随想"]]);
-  assert.deepEqual(full.docs.map(([url]) => url), buildSearchIndex({ posts, columns, thoughts }).map((record) => record.path));
+  const full = buildFullIndex({ posts, columns });
+  assert.deepEqual(full.texts, ["第一篇正文"]);
+  assert.deepEqual(expandFullIndex(full), [["/blog/a", "第一篇正文"]]);
+  assert.deepEqual(full.docs.map(([url]) => url), buildSearchIndex({ posts, columns }).map((record) => record.path));
   assert.match(full.fileName, /^search-full\.[0-9a-f]{10}\.json$/u);
   assert.deepEqual(JSON.parse(full.json), { hash: full.hash, texts: full.texts, docs: full.docs });
   assert.throws(() => expandFullIndex({ docs: [] }));
-  assert.equal(buildFullIndex({ posts, columns, thoughts }).hash, full.hash);
-  assert.notEqual(buildFullIndex({ posts: [{ ...posts[0], content: "改过的正文" }], columns, thoughts }).hash, full.hash);
+  assert.equal(buildFullIndex({ posts, columns }).hash, full.hash);
+  assert.notEqual(buildFullIndex({ posts: [{ ...posts[0], content: "改过的正文" }], columns }).hash, full.hash);
 });
 
 test("search finds a phrase that only appears deep in a body, with a snippet around it", () => {
@@ -199,22 +198,20 @@ test("search lists a post once, at its /blog/ URL, with its column as the chip",
   const lone = { title: "独立文章", path: "lone", sourcePath: "posts/lone.md", date: "2026-01-02", content: "没有专栏" };
   const posts = [go, lone];
   const columns = [{ ...go, kind: "column", column: "go-advance", columnTitle: "Go 底层原理", order: 1 }];
-  const thoughts = [{ title: "T", slug: "t", date: "2026-01-01", content: "一条随想" }];
-  const records = buildSearchIndex({ posts, columns, thoughts });
+  const records = buildSearchIndex({ posts, columns });
   assert.deepEqual(records.map((record) => [record.path, record.section]), [
     ["/blog/go/go-memory-model", "Go 底层原理"],
     ["/blog/lone", ""],
-    ["/thoughts/t", "随想"],
   ]);
   assert.equal(new Set(records.map((record) => record.title)).size, records.length, "no post twice");
   assert.ok(!records.some((record) => record.path.startsWith("/columns/")));
   // The recent list is the first records: no duplicates there either.
   assert.deepEqual(records.slice(0, 2).map((record) => record.title), ["内存模型", "独立文章"]);
   // Searching returns the post once, so the count is the number of posts.
-  const hits = createSearch(records, new Map(expandFullIndex(buildFullIndex({ posts, columns, thoughts })))).search("内存", 6);
+  const hits = createSearch(records, new Map(expandFullIndex(buildFullIndex({ posts, columns })))).search("内存", 6);
   assert.deepEqual(hits.map((hit) => hit.item.path), ["/blog/go/go-memory-model"]);
   // The full-text file follows the same entries.
-  assert.deepEqual(buildFullIndex({ posts, columns, thoughts }).docs.map(([url]) => url), records.map((record) => record.path));
+  assert.deepEqual(buildFullIndex({ posts, columns }).docs.map(([url]) => url), records.map((record) => record.path));
 });
 
 test("the search label counts every match, not only the rows shown", () => {

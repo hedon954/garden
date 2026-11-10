@@ -33,14 +33,13 @@ my-blog/
 ├── content/
 │   ├── columns.yaml        # 专栏定义与文章阅读顺序
 │   ├── covers/             # 文章与专栏封面图
-│   ├── posts/              # 长文（.md）及同名附件目录
-│   └── thoughts/           # 随想短笔记（.md）及媒体文件
+│   └── posts/              # 长文（.md）及同名附件目录
 ├── public/                 # 直接按原路径发布的静态资源（如图标）
 ├── Makefile                # 日常预览、新建文章、构建检查与提交命令
 └── package.json            # 仅依赖 hd-garden
 ```
 
-## 3. 新建长文与随想
+## 3. 新建长文
 
 ### 新建长文（`make new`）
 
@@ -64,10 +63,6 @@ make new DIR=network SLUG=tcp-bbr TITLE="TCP BBR 拥塞控制笔记"
 ```bash
 make dev
 ```
-
-### 新建随想
-
-随想存放在 `content/thoughts/` 目录下。直接在 `content/thoughts/` 里新建一个 `.md` 文件（例如 `content/thoughts/2026-10-19-note.md`），写上 `title` 和 `date` 即可；也可以在配置好 `/admin` 后台后从网页端发布。具体字段见 [写文章与随想](/garden/writing)。
 
 ## 4. 常用命令与版本升级
 

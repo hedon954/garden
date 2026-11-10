@@ -19,7 +19,7 @@ function feed(xml) {
 function assertGuidsUnchanged(xml, { trailing }) {
   const { origin, items } = feed(xml);
   const guids = items.map((item) => item.guid);
-  for (const path of baseline.guids) assert.ok(guids.includes(`${origin}${path}`), `0.5.14 guid ${path} is still there, byte for byte`);
+  for (const path of baseline.guids.filter((path) => path.startsWith("/blog/"))) assert.ok(guids.includes(`${origin}${path}`), `0.5.14 guid ${path} is still there, byte for byte`);
   const added = guids.filter((guid) => !baseline.guids.includes(guid.slice(origin.length)));
   assert.deepEqual(added.map((guid) => guid.slice(origin.length)), ADDED_SINCE);
   for (const { link, guid } of items) {

@@ -45,6 +45,5 @@ https://spec.commonmark.org/
 
 构建时读取正文里的 `{card}` 链接，以及单独成段的网址，把对方页面的标题、简介和封面记入 `.garden/link-assets.json`（同站与外站同一套抓取；HTML meta refresh 会跟着跳到目标页再读 OG）。抓取失败就沿用上次的结果，构建不会因此中断。只刷新这些信息时运行 `npx garden links`。离线构建时把 `GARDEN_OFFLINE` 设为 `1` 会跳过拉取。
 
-随想 Front Matter 里的 `type: link` 用你写的 `title`、`description` 和 `image`，字段见[写文章与随想](/garden/writing)。
 
 这不是 `garden` 围栏，没有字段表。围栏组件的字段见[组件参考](/garden/reference)。

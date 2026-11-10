@@ -1,9 +1,7 @@
 import { marked } from "marked";
-import { columnHref, columns, postHref, posts, thoughtHref } from "../lib/content";
-import { getPublishedThoughts } from "../lib/public-thoughts";
+import { columnHref, columns, postHref, posts } from "../lib/content";
 import { configuredSiteUrl, siteDescription, siteName } from "../lib/site";
 import { contentForFeed } from "../../ui/core/transform.mjs";
-import { stripCardMarkers } from "../../ui/garden/markdown-links.mjs";
 import { withTrailingSlash } from "../../ui/garden/site-href.mjs";
 import { htmlLang, siteLang } from "../lib/i18n";
 
@@ -21,17 +19,11 @@ const cdata = (value: string) => value.replaceAll("]]>", "]]]]><![CDATA[>");
 // because readers tell items apart by it.
 export async function GET() {
   const origin = configuredSiteUrl();
-  const thoughts = getPublishedThoughts();
   const entries = [
     ...posts.map((post) => ({ ...post, path: postHref(post) })),
     ...columns.map((entry) => ({
       ...entry,
       path: columnHref(entry),
-    })),
-    ...thoughts.map((thought) => ({
-      ...thought,
-      description: stripCardMarkers(thought.content).replace(/\s+/gu, " ").slice(0, 180),
-      path: thoughtHref(thought.slug),
     })),
   ].sort((a, b) => Date.parse(b.date) - Date.parse(a.date));
 

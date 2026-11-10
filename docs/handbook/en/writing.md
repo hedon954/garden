@@ -1,12 +1,12 @@
 ---
-title: Writing Posts & Thoughts
-navTitle: Writing Posts & Thoughts
-description: Front Matter fields for posts and thoughts, code diff toggles, callouts, math formulas, and Mermaid diagrams, with links to local images, source chips, and link cards.
+title: Writing Posts
+navTitle: Writing Posts
+description: Front Matter fields for posts, code diff toggles, callouts, math formulas, and Mermaid diagrams, with links to local images, source chips, and link cards.
 section: writing-and-reading
 order: 10
 ---
 
-Garden organizes content into **posts** (`content/posts/`) and **thoughts** (`content/thoughts/`). Both are UTF-8 Markdown files whose filenames contain only lowercase letters, digits, and hyphens (`a-z`, `0-9`, `-`).
+Garden stores posts in `content/posts/`. These are UTF-8 Markdown files whose filenames contain only lowercase letters, digits, and hyphens (`a-z`, `0-9`, `-`).
 
 ## 1. Post Front Matter (`content/posts/*.md`)
 
@@ -129,27 +129,3 @@ graph LR
   B --> C[Search & Static Assets]
   C --> D[Rendered Page]
 ```
-
-## 6. Writing Thoughts (`content/thoughts/*.md`)
-
-Thoughts are short notes with optional image grids, audio/video files, or external link cards:
-
-```yaml
----
-title: Late-Night Debugging Notes
-date: 2026-10-19 21:30
-tags:
-  - Notes
-media:
-  - type: image
-    src: ./rainy-night/terminal.png
-    alt: Benchmark output in the terminal
-  - type: link
-    src: https://sqlite.org/wal.html
-    title: SQLite Write-Ahead Logging
----
-
-A short note written in standard Markdown.
-```
-
-The `media` array accepts four item types: `image` (multiple images automatically form a grid), `audio` (native `<audio>` player), `video` (native `<video>` player with optional `poster`), and `link` (a card built from the `src`, `title`, `description`, and `image` you write). Link cards in the body are documented on [Link Card](/garden/en/components/link-card).

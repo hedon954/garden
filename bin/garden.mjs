@@ -282,7 +282,6 @@ async function prepare() {
   ensureEnv();
   ensurePublic();
   fs.mkdirSync(path.join(siteRoot, "content", "posts"), { recursive: true });
-  fs.mkdirSync(path.join(siteRoot, "content", "thoughts"), { recursive: true });
   await ensureSiteKit();
 }
 

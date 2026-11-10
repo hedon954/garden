@@ -9,7 +9,6 @@
 ```text
 content/posts/**/*.md              普通博文（支持多级目录）
 content/columns.yaml               专栏元数据与博文相对路径引用顺序
-content/thoughts/*.md              随想
 content/covers/*                   本地封面；front matter 的 cover 相对此目录
 content/**/assets/*                与 Markdown 同目录的正文媒体
 content/posts/**/<slug>/*.html     与 <slug>.md 同名的图表目录
@@ -23,7 +22,7 @@ content/posts/**/<slug>/*.html     与 <slug>.md 同名的图表目录
 
 构建前，npm 的 `prebuild` 会执行 `scripts/build-content.mjs`。这个 Node 脚本完成下列工作：
 
-1. 递归读取博文和随想目录，并用 `gray-matter` 分离 front matter 与正文；博文以相对 `content/posts/` 的路径生成公开 URL，`columns.yaml` 使用同一相对路径引用文章。
+1. 递归读取博文目录，并用 `gray-matter` 分离 front matter 与正文；博文以相对 `content/posts/` 的路径生成公开 URL，`columns.yaml` 使用同一相对路径引用文章。
 2. 校验文件名、日期、专栏引用顺序、媒体类型、重复路径与必填字段。
 3. 排除 `draft: true` 和未到 `publishAt` 的内容；`CONTENT_INCLUDE_DRAFTS=1` 仅用于本地预览。
 4. 扫描 Markdown 图片和原生 `img/audio/video/source` 标签，以及 `cover`、`poster`、`media[].src`。正文里的相对路径相对 Markdown 文件解析；`cover` 相对 `content/covers/` 解析。完整 URL 和以 `/` 开头的地址原样保留。本地文件复制到 `public/media/`，并保持相对 `content/` 的目录结构。`widget` 围栏的 `src` 必须指向与稿件同名目录里的 `.html` 或 `.pdf`；构建同样复制并改写路径，缺 `caption` 或文件越界会直接失败。
@@ -40,7 +39,7 @@ flowchart LR
   D --> G[RSS Sitemap Robots]
 ```
 
-`app/lib/content.ts` 是页面使用的轻量查询层：它从生成数组导出 `findPost`、`findThought`、`findColumnEntry`，并计算标题锚点、字数和搜索记录。静态页面因此不需要数据库查询，也不会在访问时重新解析 Markdown。
+`app/lib/content.ts` 是页面使用的轻量查询层：它从生成数组导出 `findPost`、`findColumnEntry`，并计算标题锚点、字数和搜索记录。静态页面因此不需要数据库查询，也不会在访问时重新解析 Markdown。
 
 ## 3. 阅读页面和 Markdown 渲染
 
@@ -49,7 +48,6 @@ flowchart LR
 ```text
 app/blog/[...path]/page.tsx           博文详情
 app/columns/[column]/[...path]/page.tsx 专栏详情
-app/thoughts/[slug]/page.tsx          随想详情
 ```
 
 详情页的 `generateStaticParams()` 从生成数组返回所有路径，因此静态导出时会为每篇内容生成 HTML。页面通过 `extractHeadings()` 从 H2-H5 标题建立递归右侧目录，通过 `estimateWordCount()` 计算字数；专栏页额外从同一 `column` 的条目建立左侧篇目，并在每篇详情页复用文章自身的封面。目录的每一级父标题都可独立展开收起；正文滚动以视口上方约 45%（最多低于锚点停靠线 240px）作为阅读探针更新当前标题，而点击目录仍按页面 `scroll-padding-top` 停靠。跳转写入 `documentElement.scrollTop`，并暂时关闭页面的 `scroll-behavior`，避免长文目录跟着平滑滚动滑完整篇文章或叠两次滚动把标题送出视口。目标标题之前尚未撑开的懒加载图片会在悬停或跳转时被提前唤醒，因此不必先把正文滑过去才能量出位置；图片或 Mermaid 随后撑开版面时再瞬间校正锚点。用户主动滚动后停止校正，避免抢夺浏览位置。高亮项离开目录可视区时，目录列表也会自动跟随滚动。
@@ -119,8 +117,8 @@ sequenceDiagram
   A->>O: OAuth authorization code
   O-->>A: code 和 GitHub 用户资料
   A->>A: 白名单与签名会话校验
-  U->>A: 发布随想
-  A->>R: Contents API 创建 content/thoughts/*.md
+  U->>A: 置顶博文
+  A->>R: Contents API 更新文章 pinned 字段
   R-->>O2: main push 触发构建并发布静态产物
   O2-->>P: main 分支部署
   P-->>U: 新静态页面
@@ -131,18 +129,6 @@ sequenceDiagram
 `app/api/auth/github/route.ts` 生成随机 `state` 并写入 HttpOnly、Secure、SameSite=Lax Cookie。回调路由交换 `code` 获取 GitHub 用户资料，再按 `ADMIN_GITHUB_LOGINS` 检查 login。
 
 通过后，`app/lib/admin-auth.ts` 将 `{ login, avatarUrl, expiresAt }` Base64URL 编码，以 `GITHUB_SESSION_SECRET` 做 HMAC-SHA256 签名，写入七天有效期的 HttpOnly Session Cookie。每个 `/api/admin/*` 路由先调用 `requireAdminApi()`：重新验签、检查过期，并再次校验白名单。OAuth access token 不会写入浏览器 Session，也不承担仓库写入权限。
-
-### 随想写入
-
-`app/lib/github-content.ts` 使用 GitHub Contents API：
-
-- 列表：读取 `content/thoughts` 目录，逐个获取 Base64 文件并解析 front matter。
-- 新建：用文件名作为标识，将 front matter + Markdown UTF-8 Base64 编码，`PUT /repos/{owner}/{repo}/contents/...`。
-- 撤回：用原文件 SHA 更新 `draft: true`；重新发布则清除草稿并更新时间。
-- 删除：带 SHA 调用 Contents API 的 DELETE。
-- 媒体：`/api/admin/uploads` 以服务端 OSS 凭据生成短期 Post Policy；浏览器直传阿里云 OSS，随想只保存公开 URL，二进制不进入 Git。
-
-写入使用后台的 `CONTENT_GITHUB_TOKEN`（Fine-grained PAT，限定源码仓库且仅 Contents Read/Write）。因此登录用户只证明“谁在操作”，服务端 PAT 才是“能写入哪里”的最小权限凭据。双仓模式的公开产物仓库不接受这个 PAT，只接受发布工作流专用的 Deploy Key。
 
 ## 6. 评论、Webmention 与分发
 
@@ -159,7 +145,6 @@ sequenceDiagram
 | Markdown 语法、Mermaid 或 widget 图表 | `app/components/MarkdownArticle.tsx`、`MermaidDiagram.tsx`、`WidgetChart.tsx` |
 | 文章布局与目录 | 对应的 `app/blog`、`app/columns`、`TableOfContents.tsx` |
 | 搜索权重或高亮 | `ui/garden/search-match.mjs`、`ui/garden/search-index.mjs`、`app/components/SiteHeader.tsx` |
-| 后台随想 Git 写入 | `app/lib/github-content.ts` 与 `app/api/admin/thoughts/*` |
 | 后台媒体上传 | `app/api/admin/uploads` 与 `app/lib/oss.ts` |
 | 登录、会话、后台权限 | `app/lib/admin-auth.ts` 与 `app/api/auth/github/*` |
 | 公开部署 | `.github/workflows/pages.yml` |

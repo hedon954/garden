@@ -278,7 +278,7 @@ All environment variables can be placed in a local `.env.local` file (never comm
 | `WEBMENTION_IO_DOMAIN` / `WEBMENTION_ENDPOINT` | Domain registered with Webmention.io (such as `example.com`) and custom endpoint override |
 | `ADMIN_URL` | Public URL of a separately deployed `/admin` instance |
 | `CONTENT_REPOSITORY` / `CONTENT_BRANCH` | Target GitHub repository (`owner/repo`) and branch (defaults to `main`) where `/admin` commits content |
-| `CONTENT_GITHUB_TOKEN` | Fine-grained GitHub PAT used by `/admin` to commit thoughts and assets |
+| `CONTENT_GITHUB_TOKEN` | Fine-grained GitHub PAT used by `/admin` to update articles and assets |
 | `GITHUB_OAUTH_CLIENT_ID` / `GITHUB_OAUTH_CLIENT_SECRET` | Client ID and Secret of the GitHub OAuth App for `/admin` sign-in |
 | `GITHUB_SESSION_SECRET` | Random secret string used to sign `/admin` session cookies |
 | `ADMIN_GITHUB_LOGINS` | Comma-separated allowlist of GitHub usernames permitted to sign in to `/admin` |

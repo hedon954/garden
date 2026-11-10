@@ -1,16 +1,5 @@
 import matter from "gray-matter";
-import { parse as parseYaml } from "yaml";
-import type { ContentEntry, MediaItem } from "./content";
 import { repositoryPostPath } from "./repository-path.mjs";
-import { canonicalSiteDate, formatAuthorDate } from "../../scripts/site-date.mjs";
-
-const matterOptions = {
-  engines: {
-    yaml: {
-      parse: (input: string) => parseYaml(input) ?? {},
-    },
-  },
-};
 
 // GITHUB_API_URL lets GitHub Enterprise (and local mocks) replace the public API.
 const githubApi = () => (process.env.GITHUB_API_URL ?? "https://api.github.com").replace(/\/+$/u, "");
@@ -19,20 +8,6 @@ type RepositoryFile = {
   content?: string;
   encoding?: string;
   sha?: string;
-};
-
-type RepositoryDirectoryEntry = {
-  name: string;
-  path: string;
-  type: "file" | "dir";
-};
-
-export type RepositoryThought = ContentEntry & {
-  id: string;
-  status: "draft" | "published";
-  sha?: string;
-  tags: string[];
-  media: MediaItem[];
 };
 
 function repositoryConfig() {
@@ -72,68 +47,8 @@ function base64ToUtf8(value: string) {
   );
 }
 
-function isStringArray(value: unknown): value is string[] {
-  return Array.isArray(value) && value.every((item) => typeof item === "string");
-}
-
-function isMedia(value: unknown): value is MediaItem[] {
-  return Array.isArray(value) && value.every((item) => {
-    if (!item || typeof item !== "object") return false;
-    const candidate = item as Record<string, unknown>;
-    return ["image", "audio", "video", "link"].includes(String(candidate.type)) &&
-      typeof candidate.src === "string";
-  });
-}
-
 function fileStem(filePath: string) {
   return (filePath.split("/").pop() ?? "").replace(/\.md$/u, "");
-}
-
-function normalizeThought(source: string, filePath: string, sha?: string): RepositoryThought | null {
-  const parsed = matter(source, matterOptions);
-  const data = parsed.data;
-  const slug = fileStem(filePath);
-  if (typeof data.title !== "string" || typeof data.date !== "string" || !canonicalSiteDate(data.date) || !slug) {
-    return null;
-  }
-  if (data.slug !== undefined && data.slug !== slug) return null;
-  const media = isMedia(data.media) ? data.media : [];
-  const status = data.draft === true ? "draft" : "published";
-  return {
-    id: slug,
-    slug,
-    path: slug,
-    title: data.title,
-    date: data.date,
-    tags: isStringArray(data.tags) ? data.tags : [],
-    mediaType: media[0]?.type ?? "text",
-    media,
-    kind: "thought",
-    draft: status === "draft",
-    sourcePath: filePath,
-    content: parsed.content.trim(),
-    status,
-    sha,
-  };
-}
-
-function serializeThought(thought: {
-  slug: string;
-  title: string;
-  content: string;
-  tags: string[];
-  media: MediaItem[];
-  status: "draft" | "published";
-  date?: string;
-}) {
-  return matter.stringify(thought.content.trim().concat("\n"), {
-    title: thought.title,
-    date: thought.date ?? formatAuthorDate(),
-    tags: thought.tags,
-    mediaType: thought.media[0]?.type ?? "text",
-    media: thought.media,
-    draft: thought.status === "draft",
-  });
 }
 
 async function requestRepository(path: string, init?: RequestInit) {
@@ -177,71 +92,6 @@ export async function readRepositoryFile(path: string) {
   return { source: base64ToUtf8(file.content), sha: file.sha };
 }
 
-export async function listRepositoryThoughts() {
-  const config = repositoryConfig();
-  if (!config) return [] as RepositoryThought[];
-  const { response } = await requestRepository("content/thoughts");
-  if (response.status === 404) return [] as RepositoryThought[];
-  if (!response.ok) throw new Error("无法读取 GitHub 随想目录。");
-  const entries = (await response.json()) as RepositoryDirectoryEntry[];
-  const thoughts = await Promise.all(
-    entries
-      .filter((entry) => entry.type === "file" && entry.name.endsWith(".md"))
-      .map(async (entry) => {
-        const file = await readRepositoryFile(entry.path);
-        return file ? normalizeThought(file.source, entry.path, file.sha) : null;
-      }),
-  );
-  return thoughts
-    .filter((thought): thought is RepositoryThought => Boolean(thought))
-    .sort((left, right) => {
-      const rightTime = Date.parse(canonicalSiteDate(right.date) ?? "");
-      const leftTime = Date.parse(canonicalSiteDate(left.date) ?? "");
-      return rightTime - leftTime;
-    });
-}
-
-export async function createRepositoryThought(input: Omit<RepositoryThought, "id" | "kind" | "path" | "sourcePath" | "draft" | "sha" | "mediaType">) {
-  const path = `content/thoughts/${input.slug}.md`;
-  const existing = await readRepositoryFile(path);
-  if (existing) throw new Error("这个随想 slug 已存在，请稍后重试。");
-  const source = serializeThought(input);
-  const { response } = await mutateRepository(path, "PUT", {
-    message: `content: 发布随想 ${input.title}`,
-    content: utf8ToBase64(source),
-  });
-  if (!response.ok) throw new Error("GitHub 未接受这次随想提交。");
-  const result = (await response.json()) as { content?: { sha?: string } };
-  return normalizeThought(source, path, result.content?.sha) as RepositoryThought;
-}
-
-export async function updateRepositoryThought(slug: string, status: "draft" | "published") {
-  const path = `content/thoughts/${slug}.md`;
-  const existing = await readRepositoryFile(path);
-  if (!existing) throw new Error("未找到对应随想。");
-  const thought = normalizeThought(existing.source, path, existing.sha);
-  if (!thought) throw new Error("随想内容格式不正确。");
-  const source = serializeThought({ ...thought, status, date: status === "published" ? formatAuthorDate() : thought.date });
-  const { response } = await mutateRepository(path, "PUT", {
-    message: `content: ${status === "published" ? "发布" : "撤回"}随想 ${thought.title}`,
-    content: utf8ToBase64(source),
-    sha: existing.sha,
-  });
-  if (!response.ok) throw new Error("GitHub 未接受这次状态更新。");
-  return normalizeThought(source, path) as RepositoryThought;
-}
-
-export async function deleteRepositoryThought(slug: string) {
-  const path = `content/thoughts/${slug}.md`;
-  const existing = await readRepositoryFile(path);
-  if (!existing) throw new Error("未找到对应随想。");
-  const { response } = await mutateRepository(path, "DELETE", {
-    message: `content: 删除随想 ${slug}`,
-    sha: existing.sha,
-  });
-  if (!response.ok) throw new Error("GitHub 未接受这次删除请求。");
-}
-
 export async function updateRepositoryPostPinned(input: {
   sourcePath: string;
   slug: string;
@@ -279,7 +129,7 @@ export async function listContentMarkdown() {
   if (!response.ok) throw new Error("无法读取 GitHub 仓库目录。");
   const tree = (await response.json()) as { tree?: Array<{ path: string; type: string; sha: string }> };
   return (tree.tree ?? [])
-    .filter((entry) => entry.type === "blob" && /^content\/(?:posts|thoughts)\/.+\.md$/u.test(entry.path))
+    .filter((entry) => entry.type === "blob" && /^content\/posts\/.+\.md$/u.test(entry.path))
     .map((entry) => ({ path: entry.path, sha: entry.sha }));
 }
 

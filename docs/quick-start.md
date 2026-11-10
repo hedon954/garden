@@ -126,4 +126,4 @@ make update
 - 想先在本地看效果：运行 `make dev`，浏览器打开终端显示的地址。
 - 想绑定自己的域名：参考 [GitHub Pages 与自定义域名](github-pages.md)。
 
-Webmentions 和随想后台可以等写作流程跑顺后再配置。评论要在第一次发布前接好，或者用 `GISCUS_DISABLED=1` 明确关掉。
+Webmentions 和管理后台可以等写作流程跑顺后再配置。评论要在第一次发布前接好，或者用 `GISCUS_DISABLED=1` 明确关掉。

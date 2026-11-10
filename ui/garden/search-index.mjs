@@ -68,14 +68,13 @@ const columnKey = (item) => item.sourcePath ?? columnEntryPath(item);
 /**
  * One search entry per piece of writing, as `{ item, record }`, in the order
  * the header lists them: posts, then column entries that are not also posts,
- * then thoughts. A post that sits in a column is listed once, at its /blog/
+ * A post that sits in a column is listed once, at its /blog/
  * URL, with the column's title as its section; a post in no column has an
  * empty section. A column entry is only listed on its own when no post has
  * the same source (a column-only page).
  */
-function searchEntries({ posts = [], columns = [], thoughts = [] }, { length = EXCERPT_LENGTH, lang = "zh" } = {}) {
+function searchEntries({ posts = [], columns = [] }, { length = EXCERPT_LENGTH, lang = "zh" } = {}) {
   const defaultColumnSection = lang === "en" ? "Columns" : "专栏";
-  const defaultThoughtSection = lang === "en" ? "Thoughts" : "随想";
   const record = (item, extra) => {
     const text = searchableText(item.content ?? "");
     return {
@@ -98,7 +97,6 @@ function searchEntries({ posts = [], columns = [], thoughts = [] }, { length = E
     ...columns
       .filter((item) => !postKeys.has(columnKey(item)))
       .map((item) => ({ item, record: record(item, () => ({ section: item.columnTitle ?? defaultColumnSection, path: `/columns/${item.column}/${columnEntryPath(item)}` })) })),
-    ...thoughts.map((item) => ({ item, record: record(item, (text) => ({ section: defaultThoughtSection, path: `/thoughts/${item.slug}`, description: excerpt(text, length) })) })),
   ];
 }
 
@@ -113,10 +111,10 @@ export function buildSearchIndex(content, options) {
  * are stored once.
  * The hash is of the contents, so the file name changes exactly when they do.
  */
-export function buildFullIndex({ posts = [], columns = [], thoughts = [] }) {
+export function buildFullIndex({ posts = [], columns = [] }) {
   const texts = [];
   const seen = new Map();
-  const docs = searchEntries({ posts, columns, thoughts }).map(({ item, record }) => {
+  const docs = searchEntries({ posts, columns }).map(({ item, record }) => {
     const text = fullText(item.content ?? "");
     if (!seen.has(text)) {
       seen.set(text, texts.length);

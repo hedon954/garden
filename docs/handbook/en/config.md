@@ -40,11 +40,6 @@ pages:
   blog:
     title: Posts
     subtitle: Finished long-form essays.
-  thoughts:
-    title: Thoughts
-    subtitle: Short notes, images, and links.
-    # How many items to show per screen; the next screen loads automatically as you scroll. Default: 10.
-    # pageSize: 10
   columns:
     title: Columns
     subtitle: Series of posts meant to be read in order.
@@ -54,7 +49,7 @@ pages:
     heading: About
     paragraphs:
       - A software engineer writing code and keeping notes on things figured out along the way.
-      - This site holds long-form posts, short thoughts, and columns.
+      - This site holds long-form posts and columns.
     quote: ""
     focus:
       - Software
@@ -92,7 +87,7 @@ footer: Keep writing.
 
 Each key under `pages` sets the header copy for a top-level route:
 
-- **`pages.home`, `pages.blog`, `pages.thoughts`, `pages.columns`, `pages.garden`**: Each accepts `title` and `subtitle`. On `/garden/`, the Chinese overview page reads `pages.garden.title` (splitting into two lines on ` | `) and `pages.garden.subtitle`.
+- **`pages.home`, `pages.blog`, `pages.columns`, `pages.garden`**: Each accepts `title` and `subtitle`. On `/garden/`, the Chinese overview page reads `pages.garden.title` (splitting into two lines on ` | `) and `pages.garden.subtitle`.
 - **`pages.about`**: Alongside `title` and `subtitle`, supports `heading` (section heading), `paragraphs` (array of paragraphs), `quote` (pull quote), `focus` (array of topic tags), and `cta` (`{ href, label }` button).
 
 ### `brand` Custom Icons and Redirects

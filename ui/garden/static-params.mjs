@@ -1,7 +1,7 @@
 /**
  * vinext, like Next.js, stops a static export (`output: "export"`) when a
  * dynamic route's generateStaticParams() returns an empty array. A garden site
- * can legitimately have no thoughts, no columns or no admin pages to export, so
+ * can legitimately have no columns or no admin pages to export, so
  * an empty list becomes one placeholder entry instead. The prerender counts a
  * notFound() page as a failed route, so the page renders nothing for the
  * placeholder (isStaticPlaceholder) and the build step

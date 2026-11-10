@@ -1,6 +1,6 @@
 # 用 GitHub Pages 部署公开博客
 
-Garden 支持两种发布方式。两种方式都只发布静态阅读端：博文、专栏、随想、搜索、RSS、Sitemap、Giscus、Webmentions 与 Mermaid；管理后台仍需独立部署。
+Garden 支持两种发布方式。两种方式都只发布静态阅读端：博文、专栏、搜索、RSS、Sitemap、Giscus、Webmentions 与 Mermaid；管理后台仍需独立部署。
 
 ## 方式一：公开源码单仓
 

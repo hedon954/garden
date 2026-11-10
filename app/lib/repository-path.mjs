@@ -43,7 +43,7 @@ const unsafeSegment = (segment) => {
 
 /**
  * Repository path of a Markdown file the admin may read: inside content/posts
- * or content/thoughts, never escaping it.
+ * without escaping it.
  *
  * @param {string} value
  */
@@ -53,7 +53,7 @@ export function repositoryContentPath(value) {
   const segments = withRoot.split("/");
   if (
     segments.length < 3 ||
-    !["posts", "thoughts"].includes(segments[1]) ||
+    segments[1] !== "posts" ||
     !withRoot.endsWith(".md") ||
     segments.some(unsafeSegment)
   ) {

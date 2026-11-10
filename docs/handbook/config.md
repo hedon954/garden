@@ -15,7 +15,7 @@ order: 3
 ```yaml
 name: Garden
 tagline: 写作 · 记录 · 保持好奇
-description: 文章、随想和专栏。
+description: 文章和专栏。
 locale: zh_CN
 # 站点的公开地址。文章里指向这个地址的完整网址会按站内链接显示。
 # url: https://blog.example.com
@@ -40,11 +40,6 @@ pages:
   blog:
     title: 博文
     subtitle: 写完的长文。
-  thoughts:
-    title: 随想
-    subtitle: 短笔记、图片和链接。
-    # 每屏显示多少条，往下读时自动加载下一屏。默认 10。
-    # pageSize: 10
   columns:
     title: 专栏
     subtitle: 按顺序读的一组文章。
@@ -54,7 +49,7 @@ pages:
     heading: 关于
     paragraphs:
       - 一名工程师。平时写代码，也把想清楚的问题记下来。
-      - 这里放文章、随想和专栏。
+      - 这里放文章和专栏。
     quote: ""
     focus:
       - 软件
@@ -92,7 +87,7 @@ footer: 持续记录。
 
 `pages` 下的每个键对应一个一级路由的页头文字：
 
-- **`pages.home`、`pages.blog`、`pages.thoughts`、`pages.columns`、`pages.garden`**：均使用 `title` 和 `subtitle` 两个字段。其中 `/garden/` 页面会读取 `pages.garden.title`（写一个「丨」就在那里分成两行）和 `pages.garden.subtitle`。
+- **`pages.home`、`pages.blog`、`pages.columns`、`pages.garden`**：均使用 `title` 和 `subtitle` 两个字段。其中 `/garden/` 页面会读取 `pages.garden.title`（写一个「丨」就在那里分成两行）和 `pages.garden.subtitle`。
 - **`pages.about`**：除 `title` 和 `subtitle` 外，还支持 `heading`（正文小标题）、`paragraphs`（段落数组）、`quote`（引言）、`focus`（关注方向标签数组）以及 `cta`（`{ href, label }` 按钮）。
 
 ### `brand` 自定义图标与路由重定向

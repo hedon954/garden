@@ -33,14 +33,13 @@ my-blog/
 ├── content/
 │   ├── columns.yaml        # Column definitions and reading order
 │   ├── covers/             # Cover images for posts and columns
-│   ├── posts/              # Long-form posts (.md) and matching sidecar folders
-│   └── thoughts/           # Short notes (.md) and media attachments
+│   └── posts/              # Long-form posts (.md) and matching sidecar folders
 ├── public/                 # Static files served at their root paths (such as icons)
 ├── Makefile                # Daily commands for previewing, creating posts, checking, and pushing
 └── package.json            # Depends only on hd-garden
 ```
 
-## 3. Creating Posts and Thoughts
+## 3. Creating Posts
 
 ### Creating a Post (`make new`)
 
@@ -64,10 +63,6 @@ Newly created files default to `draft: true`. `make dev` previews drafts and fut
 ```bash
 make dev
 ```
-
-### Creating a Thought
-
-Thoughts live in `content/thoughts/`. Create a `.md` file directly in `content/thoughts/` (for example `content/thoughts/2026-10-19-note.md`) with `title` and `date` in its Front Matter, or publish from the browser after configuring `/admin`. See [Writing Posts & Thoughts](/garden/en/writing) for the supported fields.
 
 ## 4. Daily Commands and Upgrading
 

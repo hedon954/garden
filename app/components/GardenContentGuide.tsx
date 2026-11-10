@@ -41,21 +41,6 @@ cover: writing/first-post.jpg
 </icon-list>
 \`\`\``;
 
-const thoughtSource = `---
-title: 雨后的散步
-date: 2026-08-03 18:30:00
-tags: [生活]
-media:
-  - type: image
-    src: ./assets/street.jpg
-    alt: 雨后的街道
-  - type: audio
-    src: ./assets/rain.mp3
-    title: 雨声
----
-
-今天下班后多走了两公里。`;
-
 const columnSource = `columns:
   - slug: writing-system
     title: 写作系统
@@ -94,21 +79,6 @@ const guides: Guide[] = [
     result: "推送后，这篇文章会出现在列表、主题、搜索和 RSS 里。",
     path: "content/posts/writing/first-post.md",
     source: postSource,
-    language: "markdown",
-  },
-  {
-    id: "write-thought",
-    label: "随想",
-    title: "写一条随想",
-    introduction: "几句话、一张图或一个链接。字段更少。也可以在后台写，写完同样进仓库。",
-    steps: [
-      <>新建 <code>content/thoughts/文件名.md</code>，或在后台填写。</>,
-      <>文件名就是地址。标题和日期写在开头。先存着就标成草稿。</>,
-      <>图片、音频、视频和链接按顺序放进 <code>media</code>。</>,
-    ],
-    result: "它会出现在随想页，并且有自己的链接。",
-    path: "content/thoughts/walk-after-rain.md",
-    source: thoughtSource,
     language: "markdown",
   },
   {

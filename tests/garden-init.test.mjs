@@ -45,7 +45,7 @@ test("garden init writes a site whose package.json parses and pins the current e
   const pkg = JSON.parse(readFileSync(path.join(site, "package.json"), "utf8"));
   assert.equal(pkg.dependencies[engine.name], `^${engine.version}`);
   assert.deepEqual(Object.keys(pkg.dependencies), [engine.name]);
-  for (const file of ["site.config.yaml", "Makefile", "README.md", ".gitignore", "content/columns.yaml", "content/posts/.gitkeep", "content/thoughts/.gitkeep"]) {
+  for (const file of ["site.config.yaml", "Makefile", "README.md", ".gitignore", "content/columns.yaml", "content/posts/.gitkeep"]) {
     assert.ok(existsSync(path.join(site, file)), `${file} is missing`);
     assert.equal(
       readFileSync(path.join(site, file), "utf8"),
@@ -74,7 +74,6 @@ test("garden init writes a site whose package.json parses and pins the current e
     "README.md",
     "content/columns.yaml",
     "content/posts/.gitkeep",
-    "content/thoughts/.gitkeep",
     "package.json",
     "site.config.yaml",
     ...editorFiles,
@@ -315,7 +314,7 @@ test("an en_US site from garden init --locale en builds a 100% English static si
     GISCUS_DISABLED: "1",
   };
 
-  // Create a post via `garden new`, publish it, and add a column + thought so every route family is exercised.
+  // Create a post via `garden new`, publish it, and add a column so every route family is exercised.
   execFileSync(process.execPath, [path.join(root, "bin/garden.mjs"), "new"], {
     cwd: site,
     stdio: "inherit",
@@ -358,7 +357,7 @@ test("an en_US site from garden init --locale en builds a 100% English static si
     ].join("\n"),
   );
 
-  // Add a second post in a column and a thought entry
+  // Add a second post in a column
   mkdirSync(path.join(site, "content/posts/systems-notes"), { recursive: true });
   writeFileSync(
     path.join(site, "content/posts/systems-notes/first-step.md"),
@@ -389,21 +388,6 @@ test("an en_US site from garden init --locale en builds a 100% English static si
       "",
     ].join("\n"),
   );
-  writeFileSync(
-    path.join(site, "content/thoughts/morning-coffee.md"),
-    [
-      "---",
-      "title: Morning Coffee",
-      "date: 2026-10-18 08:30:00",
-      "description: Clear autumn morning note.",
-      "tags:",
-      "  - Daily",
-      "---",
-      "",
-      "Clear autumn morning before starting the build.",
-      "",
-    ].join("\n"),
-  );
 
   execFileSync(process.execPath, [path.join(root, "bin/garden.mjs"), "build"], { cwd: site, stdio: "inherit", env });
   execFileSync(process.execPath, [path.join(root, "bin/garden.mjs"), "pages:validate"], { cwd: site, stdio: "inherit", env });
@@ -425,8 +409,8 @@ test("an en_US site from garden init --locale en builds a 100% English static si
     assert.doesNotMatch(text, CJK_OR_FULLWIDTH_RE, `Generated file ${genFile} contains CJK:\n${text.match(CJK_OR_FULLWIDTH_RE)?.[0]}`);
   }
   const generatedContentTs = readFileSync(path.join(site, ".garden/generated-content.ts"), "utf8");
-  const generatedPostsAndThoughts = generatedContentTs.slice(0, generatedContentTs.indexOf("export const gardenDocs ="));
-  assert.doesNotMatch(generatedPostsAndThoughts, CJK_OR_FULLWIDTH_RE, ".garden/generated-content.ts posts/thoughts/columns contain CJK");
+  const generatedEntries = generatedContentTs.slice(0, generatedContentTs.indexOf("export const gardenDocs ="));
+  assert.doesNotMatch(generatedEntries, CJK_OR_FULLWIDTH_RE, ".garden/generated-content.ts posts/columns contain CJK");
   const rssXml = readFileSync(path.join(site, "public/rss.xml"), "utf8");
   assert.match(rssXml, /<language>en-US<\/language>/u);
   assert.match(rssXml, /<title>Garden<\/title>/u);
@@ -445,7 +429,6 @@ test("an en_US site from garden init --locale en builds a 100% English static si
   assert.ok(builtFiles.includes("columns/index.html"));
   assert.ok(builtFiles.includes("columns/systems-notes/first-step/index.html"));
   assert.ok(builtFiles.includes("tags/index.html"));
-  assert.ok(builtFiles.includes("thoughts/index.html"));
   assert.ok(builtFiles.includes("about/index.html"));
 
   const cjkFailures = [];

@@ -44,8 +44,7 @@ const STATUS_LABELS: Record<Block["status"], string> = { uncompiled: "未编译"
 const publicPath = (path: string) => {
   const posts = /^content\/posts\/(.+)\.md$/u.exec(path);
   if (posts) return `/blog/${posts[1]}`;
-  const thoughts = /^content\/thoughts\/(.+)\.md$/u.exec(path);
-  return thoughts ? `/thoughts/${thoughts[1]}` : null;
+  return null;
 };
 
 export function AdminBlocks({ siteUrl }: { siteUrl: string }) {

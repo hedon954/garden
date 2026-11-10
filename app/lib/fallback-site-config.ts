@@ -1,7 +1,7 @@
 export const siteConfig = {
   name: "Garden",
   tagline: "写作 · 记录 · 保持好奇",
-  description: "文章、随想和专栏。",
+  description: "文章和专栏。",
   locale: "zh_CN",
   author: {
     name: "Your Name",
@@ -18,10 +18,6 @@ export const siteConfig = {
       title: "博文",
       subtitle: "写完的长文。",
     },
-    thoughts: {
-      title: "随想",
-      subtitle: "短笔记、图片和链接。",
-    },
     columns: {
       title: "专栏",
       subtitle: "按顺序读的一组文章。",
@@ -32,7 +28,7 @@ export const siteConfig = {
       heading: "关于",
       paragraphs: [
         "一名工程师。平时写代码，也把想清楚的问题记下来。",
-        "这里放文章、随想和专栏。",
+        "这里放文章和专栏。",
       ],
       quote: "",
       focus: [

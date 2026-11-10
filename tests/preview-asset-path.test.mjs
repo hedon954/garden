@@ -3,9 +3,8 @@ import test from "node:test";
 import { repositoryContentPath } from "../app/lib/repository-path.mjs";
 import { resolveSidecarPath } from "../ui/core/fence.mjs";
 
-test("admin reads only Markdown under content/posts or content/thoughts", () => {
+test("admin reads only Markdown under content/posts", () => {
   assert.equal(repositoryContentPath("posts/llm/kv.md"), "content/posts/llm/kv.md");
-  assert.equal(repositoryContentPath("/content/thoughts/2026/a.md"), "content/thoughts/2026/a.md");
   for (const value of [
     "content/posts/../../.env.md",
     "posts/%2e%2e/secret.md",

@@ -278,7 +278,7 @@ jobs:
 | `WEBMENTION_IO_DOMAIN` / `WEBMENTION_ENDPOINT` | 接收 Webmention 的域名（如 `example.com`）与自定义接收端点 |
 | `ADMIN_URL` | 独立部署 `/admin` 后台时的地址 |
 | `CONTENT_REPOSITORY` / `CONTENT_BRANCH` | `/admin` 后台写入的 GitHub 仓库（`owner/repo`）与分支名（默认 `main`） |
-| `CONTENT_GITHUB_TOKEN` | `/admin` 后台向仓库提交随想和附件所用的 GitHub Fine-grained PAT |
+| `CONTENT_GITHUB_TOKEN` | `/admin` 后台向仓库提交文章和附件所用的 GitHub Fine-grained PAT |
 | `GITHUB_OAUTH_CLIENT_ID` / `GITHUB_OAUTH_CLIENT_SECRET` | `/admin` 后台 GitHub OAuth 登录应用的 Client ID 与 Secret |
 | `GITHUB_SESSION_SECRET` | `/admin` 会话签名的随机密钥字符串 |
 | `ADMIN_GITHUB_LOGINS` | 允许登录 `/admin` 后台的 GitHub 用户名白名单（多个用逗号分隔） |

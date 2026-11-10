@@ -1,12 +1,12 @@
 ---
-title: 写文章与随想
-navTitle: 写文章与随想
-description: 长文与随想的 Front Matter 字段、代码块对比、提示框、公式与流程图，以及配图、来源胶囊和链接卡片的入口。
+title: 写文章
+navTitle: 写文章
+description: 长文的 Front Matter 字段、代码块对比、提示框、公式与流程图，以及配图、来源胶囊和链接卡片的入口。
 section: writing-and-reading
 order: 10
 ---
 
-Garden 的内容分为两类：**长文**（放在 `content/posts/`）和**随想**（放在 `content/thoughts/`）。两者都使用 UTF-8 编码的 Markdown 文件，文件名只能包含小写字母、数字和连字符（`a-z`、`0-9`、`-`）。
+Garden 的文章放在 `content/posts/`，使用 UTF-8 编码的 Markdown 文件，文件名只能包含小写字母、数字和连字符（`a-z`、`0-9`、`-`）。
 
 ## 1. 长文 Front Matter（`content/posts/*.md`）
 
@@ -129,27 +129,3 @@ graph LR
   B --> C[生成搜索与静态资源]
   C --> D[页面渲染]
 ```
-
-## 6. 写随想（`content/thoughts/*.md`）
-
-随想适合记录短文字、多张配图、本地音视频或外部网页链接卡片：
-
-```yaml
----
-title: 雨夜调试记录
-date: 2026-10-19 21:30
-tags:
-  - 日常
-media:
-  - type: image
-    src: ./rainy-night/terminal.png
-    alt: 终端里的压测输出
-  - type: link
-    src: https://sqlite.org/wal.html
-    title: SQLite Write-Ahead Logging
----
-
-记一段简短的想法，支持完整的 Markdown 语法。
-```
-
-`media` 数组支持四类条目：`image`（多张图片自动拼成宫格图集）、`audio`（原生 `<audio>` 音频播放器）、`video`（原生 `<video>` 视频播放器，指向视频文件地址，可配 `poster` 封面）和 `link`（用你写的 `src`、`title`、`description`、`image` 做一张链接卡）。正文里的链接卡片见[链接卡片](/garden/components/link-card)。

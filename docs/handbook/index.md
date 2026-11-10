@@ -1,6 +1,6 @@
 ---
 title: 用 Markdown 写丨推送之后网站自己更新
-description: 用 Markdown 写文章、随想和专栏，保存在自己的 Git 仓库里。
+description: 用 Markdown 写文章和专栏，保存在自己的 Git 仓库里。
 section: overview
 order: 0
 ---
@@ -108,7 +108,6 @@ intent: |
 | 内容形态 | 源文件位置 | 页面如何处理长文与媒体细节 | 适用场景 |
 | :--- | :--- | :--- | :--- |
 | 长篇技术文章 | `content/posts/<slug>.md` 及同名资源目录 | 自动测量本地配图宽高写入 HTML 防抖动，支持 `丨` 标题分行、宽图宽表外扩、LaTeX 公式与 Mermaid 图表 | 系统设计拆解、源码走读、排障复盘与长篇读书笔记 |
-| 随想与日常记录 | `content/thoughts/<slug>.md` | 支持多图宫格、原生音视频播放（`image` / `audio` / `video`）以及外部网页链接卡片（`link`） | 几句话的灵感、终端截图、短音视频与日常链接摘录 |
 | 主题系列专栏 | `content/columns.yaml` | 按顺序串联 `content/posts/` 下的多篇长文，在阅读页自动生成专栏进度与上下篇导航 | 连载教程、专题研究或按章节组织的系统笔记 |
 
 ## 代码块与「对比上一版」切换
@@ -119,7 +118,7 @@ intent: |
 pages:
   garden:
     title: "用 Markdown 写丨推送之后网站自己更新"
-    subtitle: "用 Markdown 写文章、随想和专栏，保存在自己的 Git 仓库里。"
+    subtitle: "用 Markdown 写文章和专栏，保存在自己的 Git 仓库里。"
 ```
 
 ```diff
@@ -128,7 +127,7 @@ pages:
 -    title: "用 Markdown 写。\n推送之后，网站自己更新。"
 -    subtitle: ""
 +    title: "用 Markdown 写丨推送之后网站自己更新"
-+    subtitle: "用 Markdown 写文章、随想和专栏，保存在自己的 Git 仓库里。"
++    subtitle: "用 Markdown 写文章和专栏，保存在自己的 Git 仓库里。"
 ```
 
 > [!NOTE]
@@ -164,4 +163,4 @@ make dev
 - **[用 AI 写作](/garden/ai-writing)** 与 **[语法检查与快捷输入](/garden/workflow)**：在 VS Code、Cursor、Typora 里插入想法、预览组件、打开清单，并用 `npx garden editors install` 安装插件。
 - **[站点与专栏配置](/garden/config)**：`site.config.yaml` 各字段含义、自定义 SVG 图标与 `content/columns.yaml` 专栏编排。
 - **[发布到 GitHub Pages](/garden/deploy)**：单个公开仓库或「私有源码仓库 + 公开页面仓库」的完整 Actions 工作流。
-- **[写文章与随想](/garden/writing)** 与 **[阅读排版是怎么工作的](/garden/design)**：Front Matter 字段、三级自适应宽度与色彩变量。链接卡片、来源胶囊和本地图片见 [组件总览](/garden/components)。
+- **[写文章](/garden/writing)** 与 **[阅读排版是怎么工作的](/garden/design)**：Front Matter 字段、三级自适应宽度与色彩变量。链接卡片、来源胶囊和本地图片见 [组件总览](/garden/components)。

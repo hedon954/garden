@@ -293,15 +293,9 @@ columns:
 
 `posts` 的顺序就是专栏阅读顺序。路径相对 `content/posts/`，可省略 `.md`。同一篇博文可以被多个专栏引用，正文仍然只维护一份。为避免同名文件歧义，请填写相对路径。专栏页会显示文章列表和当前文章目录。
 
-## 发布随想
-
-随想通过管理后台发布最方便：文字、多个图片、音频、视频和链接可以出现在同一条随想里。后台上传的媒体会进入阿里云 OSS，不会提交进 Git。
-
-需要从文件维护时，在 `content/thoughts/` 新建 Markdown。文件名就是地址，front matter 填写 `title` 和 `date`。多媒体格式见 [随想管理后台](admin-service.md)。
-
 ## 下一步
 
-- 想改首页、博客、随想和关于页的标题：看[站点界面配置](site-configuration.md)。
+- 想改首页、博客和关于页的标题：看[站点界面配置](site-configuration.md)。
 - 想接评论或 Webmentions：看[外部集成](integrations.md)。
 - 想在发布前检查：运行 `make check`。
 

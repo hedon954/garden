@@ -74,7 +74,7 @@ export async function createOssUploadPolicy(input: { name: string; type: string;
   }
 
   const fileExtension = extension(input.name, input.type);
-  const key = `${config.prefix}/thoughts/${kind}/${new Date().toISOString().slice(0, 10)}/${crypto.randomUUID()}.${fileExtension}`;
+  const key = `${config.prefix}/media/${kind}/${new Date().toISOString().slice(0, 10)}/${crypto.randomUUID()}.${fileExtension}`;
   const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
   const policy = base64(encoder.encode(JSON.stringify({
     expiration: expiresAt,

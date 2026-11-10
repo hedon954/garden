@@ -64,7 +64,6 @@ body {
 .icon-button,
 .column-feature,
 .archive-card,
-.thought-card,
 .markdown-body pre,
 .markdown-body blockquote,
 .toc,
@@ -2218,43 +2217,6 @@ html[data-theme="dark"] .gf-scrim { background: rgb(0 0 0 / 45%); }
   padding-top: 0;
 }
 
-/* 随想 feed: the 下一页 link doubles as the loading trigger. */
-.feed-more {
-  display: flex;
-  justify-content: center;
-  margin: 32px 0 8px;
-}
-
-.feed-more a {
-  display: inline-flex;
-  align-items: center;
-  min-height: 40px;
-  padding: 0 18px;
-  border: 1px solid var(--rule);
-  border-radius: 999px;
-  color: var(--soft);
-  font: 400 14px/1 var(--sans);
-  text-decoration: none;
-}
-
-.feed-more a:hover {
-  border-color: var(--rule-strong);
-  color: var(--ink);
-}
-
-.feed-end {
-  color: var(--muted);
-  font: 400 13px/1 var(--sans);
-}
-
-.feed-prev {
-  display: flex;
-  justify-content: space-between;
-  margin: 24px 0 0;
-  color: var(--muted);
-  font: 400 13px/1.4 var(--sans);
-}
-
 /* ----- Intelligent UI patterns: cycle, list, choice, verdicts, card rows, source chips ----- */
 
 .g-ic { flex: none; color: var(--soft); }
@@ -2617,7 +2579,6 @@ html[data-theme="dark"] .ref-demo { --rd-s: #262624; --rd-p: #1f1e1d; --rd-i: #e
   margin-top: 22px;
 }
 
-.thoughts-page,
 .about-page {
   width: auto;
   max-width: none;

@@ -25,8 +25,8 @@ test("the mobile menu ends with a dark mode switch that shares the desktop toggl
 });
 
 test("a search with no results shows one line naming the query, escaped", () => {
-  assert.equal(noResultsText("随想"), "没有找到和「随想」相关的文章");
-  assert.equal(noResultsText("  随想  "), "没有找到和「随想」相关的文章");
+  assert.equal(noResultsText("阅读"), "没有找到和「阅读」相关的文章");
+  assert.equal(noResultsText("  阅读  "), "没有找到和「阅读」相关的文章");
   const html = renderToStaticMarkup(createElement("p", { className: "empty-state" }, noResultsText('<img src=x onerror="alert(1)">')));
   assert.equal(html, '<p class="empty-state">没有找到和「&lt;img src=x onerror=&quot;alert(1)&quot;&gt;」相关的文章</p>');
   // The count label is not shown for zero results, and the line is a text child.

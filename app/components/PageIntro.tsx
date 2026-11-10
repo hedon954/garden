@@ -8,7 +8,7 @@ type PageIntroProps = {
 };
 
 /**
- * Shared heading for top-level list pages (blog / thoughts / columns).
+ * Shared heading for top-level list pages (blog / columns).
  * Same eyebrow + h1 + deck typography and padding so tab switches do not jump.
  * Empty subtitle reserves no space.
  */

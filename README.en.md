@@ -2,7 +2,7 @@
 
 [中文](README.md)
 
-Garden is a Claude-inspired personal blog framework. You write posts, short thoughts, and multi-part columns in Markdown inside your own Git repository, and describe structured or interactive components in a single plain-language sentence.
+Garden is a Claude-inspired personal blog framework. You write posts and multi-part columns in Markdown inside your own Git repository, and describe structured or interactive components in a single plain-language sentence.
 
 Your site repository keeps only `site.config.yaml` and `content/`. Rendering, static export, and verification come from the `hd-garden` package.
 
@@ -96,9 +96,9 @@ The first page that references `.excalidraw` downloads the exporter (Chromium is
 
 Start `make dev` and open `/garden/en` (Chinese at `/garden`), or read the markdown sources directly:
 
-- **[Garden Handbook (English)](docs/handbook/en/index.md)** · **[Garden 使用说明（中文）](docs/handbook/index.md)**: [Quick Start](docs/handbook/en/start.md), [Writing with AI](docs/handbook/en/ai-writing.md), [Site & Column Configuration](docs/handbook/en/config.md), [Deploy to GitHub Pages](docs/handbook/en/deploy.md), [Writing Posts & Thoughts](docs/handbook/en/writing.md), [How Reading Layout Works](docs/handbook/en/design.md), [12 Built-in Components](docs/handbook/en/components.md), and [Checking & Shortcuts](docs/handbook/en/workflow.md).
+- **[Garden Handbook (English)](docs/handbook/en/index.md)** · **[Garden 使用说明（中文）](docs/handbook/index.md)**: [Quick Start](docs/handbook/en/start.md), [Writing with AI](docs/handbook/en/ai-writing.md), [Site & Column Configuration](docs/handbook/en/config.md), [Deploy to GitHub Pages](docs/handbook/en/deploy.md), [Writing Posts](docs/handbook/en/writing.md), [How Reading Layout Works](docs/handbook/en/design.md), [12 Built-in Components](docs/handbook/en/components.md), and [Checking & Shortcuts](docs/handbook/en/workflow.md).
 - **[Quick Start Guide](docs/quick-start.md)** and **[GitHub Pages Deployment](docs/github-pages.md)**: single public repository or private source + public output repository setup, plus Giscus comments.
-- **[Admin Service](docs/admin-service.md)**: optional `/admin` server (local, Docker, or Cloudflare Workers) for posting thoughts from the web, uploading media to Alibaba Cloud OSS, and using the `/admin/ui` workbench.
+- **[Admin Service](docs/admin-service.md)**: optional `/admin` server (local, Docker, or Cloudflare Workers) for managing articles, uploading media to Alibaba Cloud OSS, and using the `/admin/ui` workbench.
 
 ## License
 

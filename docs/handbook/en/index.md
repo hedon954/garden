@@ -110,7 +110,6 @@ When a table is wider than the reading column without wrapping, it expands into 
 | Content Type | Source Location | How the Page Handles Long-form and Media Details | Typical Use |
 | :--- | :--- | :--- | :--- |
 | Long-form posts | `content/posts/<slug>.md` and a matching asset folder | Reads local image dimensions at build time to prevent layout shift, splits titles on ` \| `, widens figures and tables, and renders KaTeX math and Mermaid diagrams | System design notes, code walkthroughs, debugging postmortems, and book notes |
-| Short thoughts | `content/thoughts/<slug>.md` | Renders multi-image grids, native `image` / `audio` / `video` players, and external `link` preview cards | Short observations, terminal screenshots, audio clips, and saved links |
 | Ordered columns | `content/columns.yaml` | Chains multiple posts from `content/posts/` in reading order with series progress and previous/next navigation | Multi-part tutorials, topic series, and chaptered notes |
 
 ## Code Blocks and the Diff Toggle
@@ -166,4 +165,4 @@ Run `make update` when a post is ready; it runs the full check and build before 
 - **[Writing with AI](/garden/en/ai-writing)** and **[Checks & Shortcuts](/garden/en/workflow)**: Insert an idea, preview the component, and open the catalog in VS Code, Cursor, or Typora, and install the plugins with `npx garden editors install`.
 - **[Site & Column Config](/garden/en/config)**: Every field in `site.config.yaml`, custom SVG icons, and ordering series in `content/columns.yaml`.
 - **[Deploy to GitHub Pages](/garden/en/deploy)**: A single GitHub Actions workflow that supports both one public repository and a private source repo paired with a public Pages repo.
-- **[Writing Posts & Thoughts](/garden/en/writing)** and **[How the Reading Layout Works](/garden/en/design)**: Front Matter fields, three-tier adaptive widths, and color tokens. Link cards, source chips, and local images are on [Components Overview](/garden/en/components).
+- **[Writing Posts](/garden/en/writing)** and **[How the Reading Layout Works](/garden/en/design)**: Front Matter fields, three-tier adaptive widths, and color tokens. Link cards, source chips, and local images are on [Components Overview](/garden/en/components).

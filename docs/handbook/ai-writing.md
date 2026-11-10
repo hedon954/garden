@@ -77,7 +77,7 @@ pages:
 ```
 ````
 
-Agent 按 `garden-compose` skill 会把这个想法块替换成一段紧挨着完整代码的 `diff` 围栏。页面渲染时会把完整代码和 `diff` 合成一个带「代码 / 对比上一版」切换按钮的代码框，手写 `diff` 的规则见 [写文章与随想](/garden/writing)。
+Agent 按 `garden-compose` skill 会把这个想法块替换成一段紧挨着完整代码的 `diff` 围栏。页面渲染时会把完整代码和 `diff` 合成一个带「代码 / 对比上一版」切换按钮的代码框，手写 `diff` 的规则见 [写文章](/garden/writing)。
 
 ## 6. 在编辑器里插入、预览，再交给 skill 编译
 
@@ -117,6 +117,6 @@ npx garden editors install --typora
 
 Garden 引擎仓库内置了可选的 `/admin` 管理后台（位于 `app/admin` 与 `worker/`），可通过 `npm run admin:local`、`npm run admin:cloudflare` 或 Docker 单独部署。配置环境变量后，后台提供以下网页端功能：
 
-- 通过 GitHub OAuth 登录（仅允许 `ADMIN_GITHUB_LOGINS` 白名单中的用户），在网页端编写随想并用 `CONTENT_GITHUB_TOKEN` 直接提交为 `content/thoughts/*.md`，图片与音视频通过十分钟有效的 Post Policy 直传阿里云 OSS。
+- 通过 GitHub OAuth 登录（仅允许 `ADMIN_GITHUB_LOGINS` 白名单中的用户），用 `CONTENT_GITHUB_TOKEN` 更新文章与交互块，图片与音视频通过十分钟有效的 Post Policy 直传阿里云 OSS。
 - 在 `/admin/ui/blocks` 查看仓库内全部稿件（含草稿）的交互块状态，一键复制与命令行钩子相同的修复提示词。
 - 在 `/admin/ui` 组件工作台用自然语言试写或手改组件（配置 `UI_MODEL_BASE_URL`、`UI_MODEL_API_KEY`、`UI_MODEL_NAME`），在 `/admin/ui/catalog` 浏览组件清单，在 `/admin/preview/<路径>` 预览未发布草稿，以及在 `/admin/ui/evals` 运行模型自检。

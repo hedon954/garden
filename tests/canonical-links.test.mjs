@@ -7,7 +7,6 @@ const SECTION_PAGES = {
   "app/page.tsx": "/",
   "app/blog/page.tsx": "/blog",
   "app/columns/page.tsx": "/columns",
-  "app/thoughts/page.tsx": "/thoughts",
   "app/about/page.tsx": "/about",
   "app/tags/page.tsx": "/tags",
   "app/garden/page.tsx": "/garden",
@@ -38,8 +37,8 @@ test("every page that sets its own alternates keeps the feed link (a page's alte
       assert.ok(/pageAlternates\(|handbookAlternates\(|types: FEED_ALTERNATES/u.test(line), `${file}: ${line.trim()} drops the RSS link`);
     }
   }
-  // Articles, column articles and thoughts included.
-  for (const page of ["blog/[...path]/page.tsx", "columns/[column]/[...path]/page.tsx", "thoughts/[slug]/page.tsx"]) {
+  // Articles and column articles included.
+  for (const page of ["blog/[...path]/page.tsx", "columns/[column]/[...path]/page.tsx"]) {
     assert.ok(setting.includes(page.split("/").join(path.sep)), `${page} should set alternates`);
   }
 });

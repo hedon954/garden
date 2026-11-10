@@ -58,21 +58,21 @@ test("the build step deletes what the export wrote for the placeholder and nothi
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "garden-placeholder-"));
   const write = (file) => { fs.mkdirSync(path.dirname(path.join(root, file)), { recursive: true }); fs.writeFileSync(path.join(root, file), "x"); };
   for (const file of [
-    `thoughts/${STATIC_PLACEHOLDER}/index.html`,
-    `thoughts/${STATIC_PLACEHOLDER}/index.txt`,
+    `tags/${STATIC_PLACEHOLDER}/index.html`,
+    `tags/${STATIC_PLACEHOLDER}/index.txt`,
     `columns/${STATIC_PLACEHOLDER}/${STATIC_PLACEHOLDER}/index.html`,
     `blog/${STATIC_PLACEHOLDER}.txt`,
-    "thoughts/index.html",
-    "thoughts/index.txt",
+    "columns/index.html",
+    "columns/index.txt",
     "blog/a/index.html",
   ]) write(file);
   assert.deepEqual(removeStaticPlaceholders(root), [
     `blog/${STATIC_PLACEHOLDER}.txt`,
     `columns/${STATIC_PLACEHOLDER}`,
-    `thoughts/${STATIC_PLACEHOLDER}`,
+    `tags/${STATIC_PLACEHOLDER}`,
   ]);
-  assert.ok(fs.existsSync(path.join(root, "thoughts/index.html")));
-  assert.ok(fs.existsSync(path.join(root, "thoughts/index.txt")));
+  assert.ok(fs.existsSync(path.join(root, "columns/index.html")));
+  assert.ok(fs.existsSync(path.join(root, "columns/index.txt")));
   assert.ok(fs.existsSync(path.join(root, "blog/a/index.html")));
   assert.deepEqual(removeStaticPlaceholders(path.join(root, "missing")), []);
 });
@@ -96,8 +96,8 @@ test("the build step drops vinext's 404/index.html copy, so /404/ is not a page"
 test("Pages validation refuses output that still has a placeholder page", async () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "garden-placeholder-"));
   fs.writeFileSync(path.join(root, "index.html"), "<!doctype html>");
-  fs.mkdirSync(path.join(root, "thoughts", STATIC_PLACEHOLDER), { recursive: true });
-  fs.writeFileSync(path.join(root, "thoughts", STATIC_PLACEHOLDER, "index.html"), "x");
+  fs.mkdirSync(path.join(root, "columns", STATIC_PLACEHOLDER), { recursive: true });
+  fs.writeFileSync(path.join(root, "columns", STATIC_PLACEHOLDER, "index.html"), "x");
   await assert.rejects(validateStaticOutput(root), /占位页/u);
 });
 
