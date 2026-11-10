@@ -1,3 +1,4 @@
+import { rewriteArticleMedia } from "../ui/garden/article-assets.mjs";
 import { mapNativeScenes } from "../ui/compose/scenes.mjs";
 import { parseCompose } from "../ui/compose/index.mjs";
 import { looksLikePlayCompose } from "../ui/compose/dil.mjs";
@@ -22,7 +23,6 @@ import { countDemoWords } from "../ui/garden/word-count.mjs";
 import { referenceDomain } from "../ui/garden/references.mjs";
 import { linkAssetsForRender } from "./link-assets.mjs";
 import { cardUrls } from "../ui/garden/markdown-links.mjs";
-import { formatInlineLink, replaceInlineLinks } from "../ui/garden/markdown-destination.mjs";
 import { configuredSiteAddress } from "../ui/garden/same-site.mjs";
 import { resolveBrand } from "./brand.mjs";
 import { imageSources, readImageCache, sizeFromBytes } from "./image-sizes.mjs";
@@ -226,15 +226,8 @@ function rewriteMarkdownAssets(content, markdownPath, sourcePath, options = {}) 
   // and the parentheses would no longer be one destination.
   // `.excalidraw` images stay in the source until the AST embed below, which
   // swaps them for the inline SVG instead of an image URL.
-  const markdownImages = replaceInlineLinks(content, (link) => {
-    if (!link.image || isExcalidrawPath(link.url)) return undefined;
-    return formatInlineLink(link, copyLocalAsset(link.url, markdownPath, sourcePath, options));
-  });
-
-  const withAssets = markdownImages.replace(
-    /(<(?:img|audio|video|source)\b[^>]*\bsrc=["'])([^"']+)(["'])/giu,
-    (tag, prefix, src, suffix) =>
-      isExcalidrawPath(src) ? tag : `${prefix}${copyLocalAsset(src, markdownPath, sourcePath, options)}${suffix}`,
+  const withAssets = rewriteArticleMedia(content, src =>
+    isExcalidrawPath(src) ? src : copyLocalAsset(src, markdownPath, sourcePath, options),
   );
 
   const read = (url) => readExportedSvg(url, markdownPath, sourcePath, options);

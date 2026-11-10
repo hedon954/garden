@@ -39,10 +39,15 @@ test("a rewritten destination keeps its brackets and title", () => {
 test("the build, the checker and the draft preview read image addresses with this parser, not their own regex", async () => {
   const fs = await import("node:fs");
   const read = (file) => fs.readFileSync(new URL(`../${file}`, import.meta.url), "utf8");
-  for (const file of ["scripts/build-content.mjs", "scripts/check-post.mjs", "app/admin/preview/[...path]/page.tsx", "ui/garden/markdown-links.mjs"]) {
+  for (const file of ["ui/garden/article-assets.mjs", "scripts/check-post.mjs", "ui/garden/markdown-links.mjs"]) {
     const source = read(file);
     assert.match(source, /markdown-destination\.mjs/u, file);
     // The old patterns dropped "<" and stopped at the first ")".
     assert.doesNotMatch(source, /<\?\(\[\^\)\\s>\]\+\)>\?|<\?\(https\?|\\\(\(\[\^\)\\s\]\+\)/u, file);
   }
+  for (const file of ["scripts/build-content.mjs", "app/admin/preview/[...path]/page.tsx"]) {
+    assert.match(read(file), /import.*rewriteArticleMedia.*article-assets\.mjs/u, file);
+    assert.match(read(file), /rewriteArticleMedia\(content,/u, file);
+  }
+
 });

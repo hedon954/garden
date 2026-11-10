@@ -43,7 +43,7 @@ https://admin.example.com/api/auth/github/callback
 
 ## 三种部署方式
 
-公开博客始终部署在 GitHub Pages；以下方式只部署带 `/admin` 与 `/api/*` 的独立后台。三者使用同一组环境变量与同一份源码，域名不同只需同步更新 `ADMIN_URL`、OAuth Callback URL 和 Pages 的 `ADMIN_URL` Variable。
+公开博客始终部署在 GitHub Pages；以下方式只部署带 `/admin` 与 `/api/*` 的独立后台。后台来自 `hd-garden` 包内的 `app/admin` 与 `app/api/admin`，不是另一个源码仓库或另一套编辑器。三种方式使用同一组环境变量与同一份源码，域名不同只需同步更新 `ADMIN_URL`、OAuth Callback URL 和 Pages 的 `ADMIN_URL` Variable。
 
 ### 1. 本地部署
 
@@ -54,7 +54,7 @@ npm ci
 npm run admin:local
 ```
 
-后台监听 `http://localhost:3000/admin`。本地 OAuth App 回调地址为：
+`admin:local` 会读取 `.env.admin.local`；这些值只留在服务端，不写进公开构建。后台监听 `http://localhost:3000/admin`。本地 OAuth App 回调地址为：
 
 ```text
 http://localhost:3000/api/auth/github/callback
@@ -95,25 +95,24 @@ Cloudflare 的构建产物由 `vinext build` 生成在 `dist/server/`；工作�
 ## 发布模型
 
 - 本地媒体：后台直接上传图片、音频、视频到阿里云 OSS；文章只保存 OSS/CDN URL，不保存二进制文件到 Git。
-- 撤回或删除：更新或删除同一个 Markdown 文件。
-- 置顶博文：根据内容索引中的 `posts/...md` 源路径定位仓库里的 `content/posts/...md`，再编辑对应博文 front matter 的 `pinned: true`；路径转换只允许留在博文目录内。
+- 置顶博文：根据内容索引中的 `posts/...md` 源路径定位仓库里的 `content/posts/...md`，只修改对应博文 front matter 的 `pinned` 布尔值，保留书籍字段、封面、注释、日期写法及正文原始字节；路径转换只允许留在博文目录内。
 - 分发：后台向 X 或你配置的 CSDN、知乎、掘金 webhook 发出请求；不保存正文副本。
 
 因此源码仓库始终是唯一内容真源；公开产物仓库只是可重建缓存。即使后台服务或公开仓库更换，博客仍可从源码完整构建。
 
-## Intelligent UI
+## Compose 写作台
 
-后台有几页服务 [Intelligent UI 写作层](intelligent-ui.md#11-管理后台)。它们只读源码仓库（`CONTENT_REPOSITORY`），不写稿件；没配置仓库时，交互块总览、从稿件打开和草稿预览会说明缺什么，组件工作台和组件清单照常可用：
+后台有几页服务 Compose 写作层。它们只读源码仓库（`CONTENT_REPOSITORY`），不写稿件；没配置仓库时，交互块总览、从稿件打开和草稿预览会说明缺什么，组件工作台和组件清单照常可用：
 
 | 页面 | 作用 |
 | --- | --- |
-| `/admin/ui` | 组件工作台：用自然语言生成或修改一块 `ui`，手改时即时重绘，不再调用模型；改好后复制围栏或写回命令带回本地 |
+| `/admin/ui` | 组件工作台：用自然语言生成或修改一块 `garden compose`，手改时即时重绘，不再调用模型；改好后复制围栏或写回命令带回本地 |
 | `/admin/ui/catalog` | 组件清单：有哪些组件和配方，各能做成什么样 |
 | `/admin/ui/blocks` | 交互块总览：所有稿件（含草稿）里的块和状态 |
 | `/admin/preview/<稿件路径>` | 草稿预览：渲染仓库里的任意一篇稿 |
 | `/admin/ui/evals` | 模型自检：用回归集给当前模型和提示词打分 |
 
-分发到 CSDN、知乎、掘金时，`ui` 块会换成静态快照的 Markdown 版，并附原文链接。
+分发到 CSDN、知乎、掘金时，`garden compose` 块会换成可读的 Markdown 版，并附原文链接。
 
 模型密钥只放在这个后台服务上：
 
@@ -125,4 +124,10 @@ Cloudflare 的构建产物由 `vinext build` 生成在 `dist/server/`；工作�
 | `UI_DRAFT_RATE_LIMIT` | 可选；每个登录用户每小时的生成次数，默认 60 |
 | `GITHUB_API_URL` | 可选；GitHub API 根地址，用于 GitHub Enterprise 或本地测试替身，默认 `https://api.github.com` |
 
-交互、接口和带回稿件的方式见 [Intelligent UI 写作层](intelligent-ui.md#11-管理后台)。
+交互、接口和带回稿件的方式见 Compose 写作层。
+
+### 后台与发布契约
+
+后台随同一个 Garden 引擎构建，不是另一套需要手动追版本的内容格式。工作台、模型自检、CLI 与发布使用同一份 Compose 解析器和配方；原生布局与交互组件都从解析树识别，不把代码示例里的标签当成组件。交互块总览仅扫描真正的博文，排除同名附件目录；同一书籍的多篇笔记分别保留，书封面与文章封面不会因置顶操作被重写。
+
+草稿页是**正文预览**，不是完整发布站点预览：复用 Markdown、安全 HTML、Compose 与隔离 sandbox 渲染，Markdown 图片及 HTML 图片/音视频经登录后资源代理，同名目录数据遵循发布时的路径边界。站点主题、封面、目录、发现索引和完整附件构建结果仍以 `garden build` + `garden pages:validate` 为准；正文预览不会写回稿件，也不替代发布门禁。

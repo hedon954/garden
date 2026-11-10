@@ -1,5 +1,5 @@
-import matter from "gray-matter";
-import { repositoryPostPath } from "./repository-path.mjs";
+import { withPostPinned } from "../../ui/garden/post-frontmatter.mjs";
+import { isRepositoryManuscript, repositoryPostPath } from "./repository-path.mjs";
 
 // GITHUB_API_URL lets GitHub Enterprise (and local mocks) replace the public API.
 const githubApi = () => (process.env.GITHUB_API_URL ?? "https://api.github.com").replace(/\/+$/u, "");
@@ -101,14 +101,11 @@ export async function updateRepositoryPostPinned(input: {
   const repositoryPath = repositoryPostPath(input.sourcePath);
   const existing = await readRepositoryFile(repositoryPath);
   if (!existing) throw new Error("未找到对应博文。");
-  const parsed = matter(existing.source);
   if (fileStem(repositoryPath) !== input.slug) {
     throw new Error("博文标识不匹配，已拒绝修改。");
   }
-  const data = { ...parsed.data } as Record<string, unknown>;
-  if (input.pinned) data.pinned = true;
-  else delete data.pinned;
-  const source = matter.stringify(`${parsed.content.trim()}\n`, data);
+  const source = withPostPinned(existing.source, input.pinned);
+  if (source === existing.source) return { slug: input.slug, pinned: input.pinned };
   const { response } = await mutateRepository(repositoryPath, "PUT", {
     message: `content: ${input.pinned ? "置顶" : "取消置顶"}博文 ${input.title}`,
     content: utf8ToBase64(source),
@@ -128,8 +125,10 @@ export async function listContentMarkdown() {
   const response = await fetch(url, { headers: headers(config.token), cache: "no-store" });
   if (!response.ok) throw new Error("无法读取 GitHub 仓库目录。");
   const tree = (await response.json()) as { tree?: Array<{ path: string; type: string; sha: string }> };
-  return (tree.tree ?? [])
-    .filter((entry) => entry.type === "blob" && /^content\/posts\/.+\.md$/u.test(entry.path))
+  const entries = (tree.tree ?? []).filter((entry) => entry.type === "blob");
+  const paths = new Set(entries.map((entry) => entry.path));
+  return entries
+    .filter((entry) => isRepositoryManuscript(entry.path, paths))
     .map((entry) => ({ path: entry.path, sha: entry.sha }));
 }
 

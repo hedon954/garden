@@ -4,6 +4,7 @@ import {renderComposePreview} from "./garden/ComposePreview";
 
 import Link from "next/link";
 import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
+import { evaluateWorkbenchDraft } from "../../ui/core/workbench-eval.mjs";
 import { buildFixPrompt } from "../../ui/core/fix-prompt.mjs";
 import { CatalogPage, type RecipeSource } from "../../ui/react/CatalogPage";
 import { EVALS_STORAGE_KEY as EVALS_KEY, STUDIO_START_KEY } from "./ui-studio-keys";
@@ -190,11 +191,9 @@ export function AdminEvals({ cases, configured }: { cases: EvalCase[]; configure
         });
         const body = (await response.json()) as { fence?: string | null; note?: string | null; rounds?: number; diagnostics?: Array<{ severity: string }>; usage?: { total_tokens?: number }; error?: string };
         const fence = body.fence ?? "";
-        const used = new Set([...fence.matchAll(/<([A-Z][A-Za-z]*)\b/gu)].map((match) => match[1]));
-        const valid = response.ok && Boolean(body.fence) && !(body.diagnostics ?? []).some((entry) => entry.severity === "error");
-        const components = (item.expect.components ?? []).every((name) => used.has(name));
-        const assert = !item.expect.assert || /\nexpect:/u.test(fence);
-        const note = !item.expect.note || Boolean(body.note);
+        const evaluation = evaluateWorkbenchDraft({ fence, note: body.note }, item.expect);
+        const valid = response.ok && evaluation.valid && !(body.diagnostics ?? []).some((entry) => entry.severity === "error");
+        const { components, assert, note } = evaluation;
         collected.push({
           id: item.id,
           ok: valid && components && assert && note,

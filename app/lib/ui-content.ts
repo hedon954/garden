@@ -52,7 +52,7 @@ export type FileBlocks = { path: string; sha: string; title: string | null; draf
 
 const scanCache = new Map<string, FileBlocks>();
 
-/** All blocks in the repository, scanned once per blob sha. */
+/** All manuscript blocks, cached by source path and immutable blob sha. */
 export async function scanRepositoryBlocks() {
   requireRepository();
   const files = await listContentMarkdown();
@@ -62,7 +62,8 @@ export async function scanRepositoryBlocks() {
     while (queue.length) {
       const file = queue.shift();
       if (!file) break;
-      const cached = scanCache.get(file.sha);
+      const cacheKey = `${file.path}:${file.sha}`;
+      const cached = scanCache.get(cacheKey);
       if (cached) {
         results.push(cached);
         continue;
@@ -70,7 +71,7 @@ export async function scanRepositoryBlocks() {
       const source = await readRepositoryBlob(file.sha);
       const blocks = scanMarkdown(source, { markdownPath: file.path, skipData: true });
       const entry: FileBlocks = { path: file.path, sha: file.sha, ...frontMatterOf(source), blocks };
-      scanCache.set(file.sha, entry);
+      scanCache.set(cacheKey, entry);
       results.push(entry);
     }
   });

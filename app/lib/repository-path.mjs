@@ -68,6 +68,13 @@ const ASSET_TYPES = {
   jpeg: "image/jpeg",
   gif: "image/gif",
   webp: "image/webp",
+  avif: "image/avif",
+  mp3: "audio/mpeg",
+  m4a: "audio/mp4",
+  ogg: "audio/ogg",
+  wav: "audio/wav",
+  mp4: "video/mp4",
+  webm: "video/webm",
   svg: "image/svg+xml",
   html: "text/html; charset=utf-8",
   pdf: "application/pdf",
@@ -84,4 +91,14 @@ const ASSET_TYPES = {
 export function previewAssetType(path) {
   const extension = String(path).split(".").pop()?.toLowerCase() ?? "";
   return Object.hasOwn(ASSET_TYPES, extension) ? ASSET_TYPES[extension] : null;
+}
+
+/** Match the build's manuscript/attachment-directory boundary, using the Git tree. */
+export function isRepositoryManuscript(path, paths) {
+  try { if (repositoryContentPath(path) !== path) return false; } catch { return false; }
+  const segments = path.split("/");
+  for (let end = 3; end < segments.length; end += 1) {
+    if (paths.has(`${segments.slice(0, end).join("/")}.md`)) return false;
+  }
+  return true;
 }

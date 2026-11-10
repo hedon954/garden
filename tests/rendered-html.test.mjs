@@ -1034,3 +1034,10 @@ test("removed content pages and management endpoints are absent, not compatibili
     assert.equal(response.headers.get("location"), null, pathname);
   }
 });
+
+
+test("arbitrary Admin draft paths reach authentication instead of a static-param 404", async () => {
+  const response = await render("/admin/preview/posts/neutral/unpublished-draft");
+  assert.equal(response.status, 307);
+  assert.equal(new URL(response.headers.get("location"), "http://localhost").pathname, "/admin");
+});

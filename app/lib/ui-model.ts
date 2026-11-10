@@ -9,6 +9,7 @@ import converter from "../../ui/prompt/recipes/converter.md?raw";
 import plan from "../../ui/prompt/recipes/plan.md?raw";
 import dataChart from "../../ui/prompt/recipes/data-chart.md?raw";
 import codeWalkthrough from "../../ui/prompt/recipes/code-walkthrough.md?raw";
+import compose from "../../ui/prompt/recipes/compose.md?raw";
 import { findBlocks } from "../../ui/core/fence.mjs";
 import { checkComposeFence } from "../../ui/core/scan.mjs";
 import { buildPrompt, RECIPE_FILES } from "../../ui/prompt/build.mjs";
@@ -23,6 +24,7 @@ const recipeText: Record<string, string> = {
   "plan.md": plan,
   "data-chart.md": dataChart,
   "code-walkthrough.md": codeWalkthrough,
+  "compose.md": compose,
 };
 
 export const recipeSources = RECIPE_FILES.map((file) => ({ file, markdown: recipeText[file] ?? "" }));

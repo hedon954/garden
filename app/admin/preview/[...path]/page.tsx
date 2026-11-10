@@ -7,11 +7,12 @@ import { MarkdownArticle } from "../../../components/MarkdownArticle";
 import { repositoryContentPath } from "../../../lib/repository-path.mjs";
 import { readMarkdown, readText } from "../../../lib/ui-content";
 import { ui } from "../../../lib/i18n";
-import { formatInlineLink, replaceInlineLinks } from "../../../../ui/garden/markdown-destination.mjs";
+import { rewriteArticleMedia } from "../../../../ui/garden/article-assets.mjs";
+import { resolveSidecarPath } from "../../../../ui/core/fence.mjs";
 import { STATIC_PLACEHOLDER, staticParams } from "../../../../ui/garden/static-params.mjs";
 
 export const dynamic = process.env.STATIC_EXPORT === "1" ? "force-static" : "force-dynamic";
-export const dynamicParams = false;
+export const dynamicParams = process.env.STATIC_EXPORT !== "1";
 export const metadata = { title: ui().adminTitlePreview, robots: { index: false, follow: false } };
 
 /** Draft preview is served by the admin worker. The public static export has no paths here. */
@@ -24,9 +25,7 @@ const isRelative = (value: string) => !/^(?:[a-z][a-z0-9+.-]*:|\/|#)/iu.test(val
 /** Same-name-directory files go through the authenticated, sandboxed proxy. */
 function proxyAssets(content: string, post: string) {
   const proxy = (relative: string) => `/api/admin/preview/asset?post=${encodeURIComponent(post)}&path=${encodeURIComponent(relative)}`;
-  return replaceInlineLinks(content, (link) =>
-    link.image && isRelative(link.url) ? formatInlineLink(link, proxy(link.url)) : undefined,
-  );
+  return rewriteArticleMedia(content, (url: string) => isRelative(url) ? proxy(url) : url);
 
 }
 
@@ -54,11 +53,10 @@ export default async function DraftPreviewPage({ params }: { params: Promise<{ p
   }
   const parsed = matter(file.source, { engines: { yaml: { parse: (input: string) => parseYaml(input) ?? {} } } });
   const data = parsed.data as Record<string, unknown>;
-  const directory = post.slice(0, post.lastIndexOf("/"));
   const dataFiles: Record<string, string | undefined> = {};
   for (const src of collectDataSources(parsed.content)) {
-    const target = `${directory}/${src.replace(/^\.\//u, "")}`;
-    dataFiles[src] = await readText(target).catch(() => undefined);
+    const target = resolveSidecarPath(post, src);
+    dataFiles[src] = target.path ? await readText(target.path).catch(() => undefined) : undefined;
   }
   const { content } = transformUiContent(parsed.content.trim(), {
     mode: "preview",
