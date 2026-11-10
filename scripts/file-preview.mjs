@@ -15,6 +15,7 @@
 import fs from "node:fs";
 import rehypeHighlight from "rehype-highlight";
 import rehypeKatex from "rehype-katex";
+import { rehypeKeepPunctuation } from "../ui/garden/rehype-keep-punctuation.mjs";
 import rehypeRaw from "rehype-raw";
 import rehypeSlug from "rehype-slug";
 import rehypeStringify from "rehype-stringify";
@@ -104,6 +105,7 @@ export function renderFilePreview(markdown, { idPrefix = "gf-", lang = "zh" } = 
       .use(remarkRehype, { allowDangerousHtml: true })
       .use(rehypeRaw)
       .use(rehypeKatex)
+      .use(rehypeKeepPunctuation)
       .use(rehypeSlug, { prefix: idPrefix })
       .use(rehypeHighlight)
       .use(rehypePreviewSafety)

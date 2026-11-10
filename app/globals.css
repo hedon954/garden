@@ -2557,6 +2557,14 @@ button {
   overflow-wrap: normal;
 }
 
+/* Closing punctuation after an inline formula cannot use CSS line-break
+   classes: the formula is an atomic inline-block. Keep the two together
+   without making the whole paragraph nowrap. */
+.markdown-body .g-keep-punct {
+  white-space: nowrap;
+  overflow-wrap: normal;
+}
+
 .markdown-body .footnotes {
   margin-top: 64px;
   padding-top: 22px;
