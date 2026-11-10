@@ -1755,9 +1755,12 @@ button {
 
 .toc .toc-sublist {
   margin: 0;
-  padding: 0 0 0 12px;
+  padding: 0;
+  padding-inline-start: 1.25em;
   list-style: none;
 }
+
+.toc .toc-sublist[data-collapsed="true"] { display: none; }
 
 .toc-item-row {
   display: flex;
@@ -1805,10 +1808,14 @@ button {
   line-height: 1.6;
 }
 
-.toc li.toc-depth-4,
-.toc li.toc-depth-5 {
-  font-size: 11px;
-}
+.toc-list > .toc-section > .toc-item-row > a { font-weight: 600; }
+.toc-sublist > .toc-section > .toc-item-row > a { font-weight: 400; }
+.toc-mode-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; flex: 0 0 auto; margin-bottom: 10px; }
+.toc-mode-controls button { min-height: 32px; padding: 4px 0; border: 0; background: transparent; color: var(--muted); font: inherit; cursor: pointer; }
+.toc-mode-controls button[aria-pressed="true"] { color: var(--ink); font-weight: 600; text-decoration: underline; text-underline-offset: 4px; }
+.toc-mode-controls button:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+.toc-mode-status { color: var(--muted); }
+.toc-mode-status:empty { display: none; }
 
 .toc a:hover {
   color: var(--ink);
@@ -3865,18 +3872,22 @@ html[data-theme="dark"] .search-footer {
      panel, because the post layout's desktop rule overrides the panel's
      padding on post pages but not on column pages. */
   .toc .toc-header,
+  .toc .toc-mode-controls,
   .toc .toc-list {
     padding-left: max(20px, env(safe-area-inset-left));
     padding-right: max(20px, env(safe-area-inset-right));
   }
 
-  .toc .toc-item-row > a { display: flex; align-items: center; min-height: 44px; padding-block: 8px; }
-  .toc .toc-section-toggle { min-width: 44px; min-height: 44px; }
+  .toc .toc-item-row > a { display: flex; align-items: center; min-height: 40px; padding-block: 4px; }
+  .toc .toc-section-toggle { min-width: 40px; min-height: 40px; }
+  .toc .toc-mode-controls button { min-height: 44px; }
 
-  .toc li {
-    margin: 10px 0;
+  .toc .toc-list .toc-section {
+    margin: 2px 0;
     font-size: 13px;
+    line-height: 1.5;
   }
+  .toc-list > .toc-section + .toc-section { margin-top: 6px; }
 
   .post-reading-page {
     width: min(var(--content), calc(100% - 48px));
@@ -5395,9 +5406,10 @@ html[data-theme="dark"] .search-footer {
 /* Without JavaScript every sub-list stays open and the collapse toggles do
    nothing, so hide them at every width. */
 @media (scripting: none) {
-  .toc-section-toggle {
+  .toc-section-toggle, .toc-mode-controls {
     display: none;
   }
+  .toc .toc-sublist[data-collapsed="true"] { display: block; }
 }
 
 /* No JavaScript: the drawer button cannot open anything, so swap in plain

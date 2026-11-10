@@ -4,39 +4,28 @@ import {
   useCallback,
   useEffect,
   useId,
+  useMemo,
   useRef,
   useState,
   useSyncExternalStore,
   type MouseEvent,
   type ReactNode,
 } from "react";
+import { usePathname } from "next/navigation";
+import { nestHeadings, expandedTocSections, toggleTocSection, type TocHeading, type TocNode, type TocExpansion } from "../lib/toc-expansion";
 import { createPortal } from "react-dom";
 import { TOC_PANEL_ID, TOC_CONTROL_ID, TOC_CLOSED_ID } from "../lib/reading-navigation";
 import { X } from "@phosphor-icons/react";
 import { ui, type UiLang } from "../lib/i18n";
 
-type Heading = { depth: number; text: string; id: string; no?: string };
+type TocProps = { headings: TocHeading[]; label?: string; lang?: UiLang };
 
-type TocNode = Heading & { children: TocNode[] };
-
-const nestHeadings = (headings: Heading[]) => {
-  const roots: TocNode[] = [];
-  const stack: TocNode[] = [];
-
-  for (const heading of headings) {
-    const node: TocNode = { ...heading, children: [] };
-    while (stack.at(-1) && stack.at(-1)!.depth >= heading.depth) {
-      stack.pop();
-    }
-
-    const parent = stack.at(-1);
-    if (parent) parent.children.push(node);
-    else roots.push(node);
-    stack.push(node);
-  }
-
-  return roots;
-};
+// A route/content change starts a fresh reading session, including when React
+// reuses the component during normal client navigation.
+export function TableOfContents(props: TocProps) {
+  const pathname = usePathname();
+  return <ContentsSession key={`${pathname}:${JSON.stringify(props.headings)}`} {...props} />;
+}
 
 const getCssScrollPaddingTop = () => {
   const value = window.getComputedStyle(document.documentElement).scrollPaddingTop;
@@ -131,22 +120,15 @@ function subscribeControlHost(changed: () => void) {
   return () => observer.disconnect();
 }
 
-export function TableOfContents({
+function ContentsSession({
   headings,
   label,
   lang,
-}: {
-  headings: Heading[];
-  label?: string;
-  /** Defaults to the site language; the bilingual handbook passes its own. */
-  lang?: UiLang;
-}) {
+}: TocProps) {
   const t = ui(lang);
   label ??= t.toc;
-  const [activeId, setActiveId] = useState(headings[0]?.id);
-  const [collapsedSections, setCollapsedSections] = useState<Set<string>>(
-    () => new Set(),
-  );
+  const [activeId, setActiveId] = useState<string>();
+  const [expansion, setExpansion] = useState<TocExpansion>({ mode: "follow" });
   const [mobileOpen, setMobileOpen] = useState(false);
   const panelId = TOC_PANEL_ID;
   const controlHost = useSyncExternalStore(subscribeControlHost, readControlHost, serverControlHost);
@@ -157,7 +139,8 @@ export function TableOfContents({
   const mobileCloseRef = useRef<HTMLButtonElement>(null);
   const restoreMobileTriggerFocusRef = useRef(false);
   const anchorCleanupRef = useRef<(() => void) | undefined>(undefined);
-  const tree = nestHeadings(headings);
+  const tree = useMemo(() => nestHeadings(headings), [headings]);
+  const expanded = useMemo(() => expandedTocSections(tree, expansion, activeId), [tree, expansion, activeId]);
 
   const closeMobileToc = useCallback((restoreFocus = false) => {
     restoreMobileTriggerFocusRef.current = restoreFocus;
@@ -250,9 +233,9 @@ export function TableOfContents({
       const current = reachedPageEnd
         ? visibleHeadings.at(-1)?.id
         : visibleHeadings.filter((heading) => heading.top <= readingProbe).at(-1)
-            ?.id ?? visibleHeadings[0]?.id;
+            ?.id;
 
-      if (current) setActiveId((previous) => (previous === current ? previous : current));
+      setActiveId((previous) => (previous === current ? previous : current));
     };
     const scheduleUpdate = () => {
       if (!frame) frame = window.requestAnimationFrame(updateActiveHeading);
@@ -341,7 +324,7 @@ export function TableOfContents({
     const activeItem = list?.querySelector<HTMLElement>(
       '[aria-current="location"]',
     );
-    if (!list || !activeItem) return;
+    if (!list || !activeItem || !activeItem.getClientRects().length) return;
 
     const edge = 10;
     const listBounds = list.getBoundingClientRect();
@@ -358,16 +341,20 @@ export function TableOfContents({
       const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
       list.scrollTo({ top: nextTop, behavior: reduceMotion ? "auto" : "smooth" });
     }
-  }, [activeId, collapsedSections, mobileOpen]);
+  }, [activeId, expanded, mobileOpen]);
 
-  const toggleSection = (id: string) => {
-    setCollapsedSections((current) => {
-      const next = new Set(current);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  };
+  useEffect(() => {
+    const focused = document.activeElement;
+    if (!(focused instanceof HTMLElement) || !listRef.current?.contains(focused) || focused.getClientRects().length) return;
+    let section = focused.closest(".toc-section");
+    while (section) {
+      const link = section.querySelector<HTMLAnchorElement>(":scope > .toc-item-row > a");
+      if (link?.getClientRects().length) { link.focus({ preventScroll: true }); break; }
+      section = section.parentElement?.closest(".toc-section") ?? null;
+    }
+  }, [expanded]);
+
+  const toggleSection = (id: string) => setExpansion((current) => toggleTocSection(expandedTocSections(tree, current, activeId), id));
 
   const navigateToHeading = (event: MouseEvent<HTMLAnchorElement>, id: string) => {
     event.preventDefault();
@@ -390,7 +377,7 @@ export function TableOfContents({
   };
 
   const renderNode = (node: TocNode, path: number[]): ReactNode => {
-    const collapsed = collapsedSections.has(node.id);
+    const collapsed = !expanded.has(node.id);
     const childListId = `${listId}-${path.join("-")}`;
 
     return (
@@ -422,7 +409,7 @@ export function TableOfContents({
           ) : null}
         </div>
         {node.children.length > 0 ? (
-          <ol id={childListId} className="toc-sublist" hidden={collapsed}>
+          <ol id={childListId} className="toc-sublist" role="list" data-collapsed={collapsed}>
             {node.children.map((child, index) => renderNode(child, [...path, index]))}
           </ol>
         ) : null}
@@ -465,6 +452,8 @@ export function TableOfContents({
         id={panelId}
         aria-label={label}
         data-mobile-open={mobileOpen}
+        data-toc-mode={expansion.mode}
+        data-toc-active={activeId || ""}
       >
         <div className="toc-header">
           <p>{label}</p>
@@ -481,7 +470,12 @@ export function TableOfContents({
             <X size={18} aria-hidden="true" />
           </a>
         </div>
-        <ol id={listId} ref={listRef} className="toc-list">
+        {tree.some((node) => node.children.length > 0) ? <div className="toc-mode-controls" role="group" aria-label={t.tocDisplay}>
+          <button type="button" data-toc-follow="" aria-controls={listId} aria-pressed={expansion.mode === "follow"} onClick={() => setExpansion({ mode: "follow" })}>{t.tocFollow}</button>
+          <button type="button" data-toc-expand-all="" aria-controls={listId} aria-pressed={expansion.mode === "all"} onClick={() => setExpansion({ mode: "all" })}>{t.tocExpandAll}</button>
+          <span className="toc-mode-status" role="status">{expansion.mode === "manual" ? t.tocManual : ""}</span>
+        </div> : null}
+        <ol id={listId} ref={listRef} className="toc-list" role="list">
           {tree.map((node, index) => renderNode(node, [index]))}
         </ol>
       </aside>

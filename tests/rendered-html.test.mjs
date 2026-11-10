@@ -221,10 +221,10 @@ test("collapses the reading table of contents per heading and keeps its active i
     readFile(new URL("../app/styles/shell.css", import.meta.url), "utf8"),
   ]);
 
-  assert.match(toc, /collapsedSections/);
+  assert.match(toc, /expandedTocSections/);
   assert.match(toc, /nestHeadings/);
   assert.match(toc, /renderNode/);
-  assert.match(toc, /className="toc-sublist" hidden=\{collapsed\}/);
+  assert.match(toc, /className="toc-sublist"[^>]*data-collapsed=\{collapsed\}/);
   assert.match(toc, /aria-label=\{t\.tocToggle\(collapsed, node\.text\)\}/);
   assert.match(toc, /listRef/);
   assert.match(toc, /\[aria-current="location"\]/);
@@ -258,7 +258,7 @@ test("collapses the reading table of contents per heading and keeps its active i
   const noScript = styles.slice(styles.indexOf("@media (max-width: 900px) and (scripting: none)"));
   assert.ok(noScript.length > 50, "missing the scripting: none block");
   assert.match(noScript, /\.toc-mobile-trigger,\n  \.toc-mobile-close \{\n    display: none;/);
-  assert.match(styles, /@media \(scripting: none\) \{\n  \.toc-section-toggle \{\n    display: none;/);
+  assert.match(styles, /@media \(scripting: none\) \{\n  \.toc-section-toggle, \.toc-mode-controls \{\n    display: none;/);
   assert.match(noScript, /\.post-reading-page \.article-reading-layout \.toc:target[\s\S]*transform: translateY\(0\)/);
   assert.match(styles, /\.markdown-body h2,[\s\S]*scroll-margin-top: 0/);
   assert.match(styles, /\.markdown-body h3[\s\S]*font-size: clamp\(20px/);
