@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { FeaturedTitle } from "./components/FeaturedTitle";
 import { CoverImage } from "./components/CoverImage";
 import { fullListDate, homeListDate } from "./lib/a2-meta";
 import { columnStatusLabel, siteLang, ui } from "./lib/i18n";
@@ -65,8 +66,7 @@ export default function Home() {
               <span>{t.homeLatestBadge}</span>
               <time className="num" dateTime={day(feature.date)}>{fullListDate(feature.date, siteLang)}</time>
             </p>
-            <h2 id="ft"><Link href={postHref(feature)}>{feature.title}</Link></h2>
-            {feature.description ? <p>{feature.description}</p> : null}
+            <FeaturedTitle title={feature.title} href={postHref(feature)} description={feature.description} />
             {feature.tags?.length ? (
               <p className="tags">{feature.tags.map((tag) => <span key={tag}>#{tag}</span>)}</p>
             ) : null}

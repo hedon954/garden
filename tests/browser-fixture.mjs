@@ -35,6 +35,7 @@ export async function probeBrowser({ chrome, url, profileDir, width, height, scr
       const message = JSON.parse(String(event.data));
       if (includeDiagnostics && /^Page\.frame|^Network\.loadingFailed/u.test(message.method ?? "")) frameEvents.push({method:message.method,...message.params});
       if (message.method === "Log.entryAdded") logs.push(message.params.entry);
+      if (includeDiagnostics && message.method === "Runtime.consoleAPICalled") logs.push({ source: "console-api", level: message.params.type, text: message.params.args.map(arg => arg.value ?? arg.description ?? "").join(" ") });
       if (message.method === "Runtime.exceptionThrown") exceptions.push(message.params.exceptionDetails);
       const call = pending.get(message.id);
       if (!call) return;
