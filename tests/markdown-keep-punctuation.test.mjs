@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import fs from "node:fs";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import ReactMarkdown from "react-markdown";
@@ -7,7 +8,7 @@ import rehypeKatex from "rehype-katex";
 import rehypeRaw from "rehype-raw";
 import { markdownPlugins } from "../app/lib/markdown-plugins.ts";
 import { keepClosingPunctuation, rehypeKeepPunctuation } from "../ui/garden/rehype-keep-punctuation.mjs";
-import { renderFilePreview } from "../scripts/file-preview.mjs";
+import { previewStyleSheet, renderFilePreview } from "../scripts/file-preview.mjs";
 
 const render = (children) => renderToStaticMarkup(createElement(ReactMarkdown, {
   remarkPlugins: markdownPlugins,
@@ -55,4 +56,33 @@ test("the tree helper only consumes an immediate punctuation run", () => {
   assert.equal(tree.children[0].properties.className[0], "g-keep-punct");
   assert.equal(tree.children[0].children[1].value, "。");
   assert.equal(tree.children[1].value, "因此");
+});
+
+test("a formula without a suffix has the same bounded viewport without changing MathML", () => {
+  const html = render("前 $S$ 后");
+  assert.ok(html.includes('<span class="g-inline-math"><span class="katex">'));
+  assert.ok(html.includes('<annotation encoding="application/x-tex">S</annotation>'));
+  assert.ok(!html.includes('class="g-keep-punct"'));
+});
+
+test("viewport construction is idempotent and leaves the KaTeX subtree intact", () => {
+  const math={type:"element",tagName:"span",properties:{className:["katex"]},children:[{type:"text",value:"S"}]};
+  const original=JSON.stringify(math),tree={type:"root",children:[math,{type:"text",value:"。"}]};
+  keepClosingPunctuation(tree);const once=JSON.stringify(tree);keepClosingPunctuation(tree);
+  assert.equal(JSON.stringify(tree),once);assert.equal(JSON.stringify(math),original);
+});
+
+test("standard closing quote and bracket runs remain prose, not part of MathML", () => {
+  for(const suffix of ['"','\'','）','】','〕',']','}']){
+    const html=render('$S$'+suffix+'后');
+    const escaped=renderToStaticMarkup(createElement('span',null,suffix)).replace(/^<span>|<\/span>$/g,'');
+    assert.ok(glue(html,escaped),suffix);
+    assert.ok(html.includes('<annotation encoding="application/x-tex">S</annotation>'));
+  }
+});
+
+test("standalone file previews use the same bounded inline-math stylesheet as the article", () => {
+  const css=fs.readFileSync(new URL('../ui/garden/inline-math.css',import.meta.url),'utf8');
+  assert.ok(previewStyleSheet().includes(css));
+  assert.match(css,/max-width: 100%/);assert.match(css,/overflow-x: auto/);
 });

@@ -192,6 +192,7 @@ export function previewStyleSheet() {
     `:not(pre)>code{font:400 14px/1 ${mono};padding:3px 6px;border-radius:5px}`,
     ".table-wrap{overflow-x:auto}table{border-collapse:collapse}th,td{border:1px solid;padding:6px 10px}",
     "a{color:inherit}.katex-html{display:none}",
+    fs.readFileSync(new URL("../ui/garden/inline-math.css", import.meta.url), "utf8"),
     theme(light),
     ...rules.flatMap((sheet) => sheet.light),
     `@media (prefers-color-scheme:dark){${theme(dark)}${rules.flatMap((sheet) => sheet.dark).join("")}}`,

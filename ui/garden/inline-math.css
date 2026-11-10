@@ -1,0 +1,19 @@
+/* Closing punctuation after an inline formula cannot use CSS line-break
+   classes: the formula is an atomic inline-block. Keep the two together
+   without making the whole paragraph nowrap. */
+:is(.g-inline-math, .g-keep-punct) {
+  display: inline-flex;
+  align-items: baseline;
+  max-width: 100%;
+  vertical-align: baseline;
+  /* Contain an unbreakable formula locally, not by clipping the page. Padding
+     keeps accents and descenders clear of the horizontal scroll viewport. */
+  padding-block: .15em;
+  overflow-x: auto;
+  overflow-y: hidden;
+  overflow-wrap: normal;
+}
+.g-inline-math > .katex { min-width: 0; }
+.g-keep-punct { white-space: nowrap; }
+.g-keep-punct > .katex { flex: none; }
+

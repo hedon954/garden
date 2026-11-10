@@ -6,11 +6,12 @@ import { renderToStaticMarkup } from "react-dom/server";
 import ReactMarkdown from "react-markdown";
 import rehypeKatex from "rehype-katex";
 import rehypeRaw from "rehype-raw";
+import { rehypeKeepPunctuation } from "../ui/garden/rehype-keep-punctuation.mjs";
 import { markdownPlugins } from "../app/lib/markdown-plugins.ts";
 
 const render = (children) => renderToStaticMarkup(createElement(ReactMarkdown, {
   remarkPlugins: markdownPlugins,
-  rehypePlugins: [rehypeRaw, rehypeKatex],
+  rehypePlugins: [rehypeRaw, rehypeKatex, rehypeKeepPunctuation],
 }, children));
 
 test("renders Chinese emphasis next to parentheses without inserting spaces", () => {
@@ -34,7 +35,7 @@ test("keeps nested code, links, and math inside emphasis and underline", () => {
   assert.ok(html.includes("<strong>掩码（<code>mask</code>）</strong>"));
   assert.ok(html.includes('<strong><a href="https://example.com">链接</a>（说明）</strong>'));
   assert.ok(html.includes("<u>前面有 <code>Your journey</code>，后面有 <code>with one step</code>。</u>"));
-  assert.match(html, /<strong>第二部分：<span class="katex">/u);
+  assert.match(html, /<strong>第二部分：<span class="g-inline-math"><span class="katex">/u);
   assert.ok(html.includes('class="katex-display"'));
   assert.ok(html.includes("<munderover>"));
   assert.ok(!html.includes('class="katex-error"'));

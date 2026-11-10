@@ -24,6 +24,20 @@ English also keeps $S$, $a$; $b$: and $T$.
 ## Long formula
 
 前 $abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789$。
+
+## Formula without punctuation
+
+前 $abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789$
+
+## Formula with break opportunities
+
+前 $a_1 + a_2 + a_3 + a_4 + a_5 + a_6 + a_7 + a_8 + a_9 + a_{10} + a_{11} + a_{12}$
+
+## Compose Markdown
+
+\`\`\`garden compose
+<figure frame="none"><markdown>验证公式 $S$，然后继续说明。</markdown></figure>
+\`\`\`
 `;
 
 export function writePunctuationFixture(site) {

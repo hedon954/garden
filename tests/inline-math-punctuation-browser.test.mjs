@@ -4,13 +4,13 @@ import http from "node:http";
 import path from "node:path";
 import { spawn } from "node:child_process";
 import test from "node:test";
-import { probeBrowser, waitForBrowserCondition } from "./browser-fixture.mjs";
+import { probeBrowser } from "./browser-fixture.mjs";
 import { writePunctuationFixture } from "./punctuation-fixture.mjs";
 
 const root = path.resolve(import.meta.dirname, "..");
 const chrome = [process.env.CHROME_BIN, "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome", "/usr/bin/chromium"].find(file => file && fs.existsSync(file));
 
-test("closing punctuation after inline math does not occupy its own line, and short lines do not overflow the page", { skip: !chrome, timeout: 240_000 }, async () => {
+test("inline math keeps punctuation, bounds long formulas locally and never expands the mobile page", { skip: !chrome, timeout: 240_000 }, async () => {
   const evidence = path.join(root, ".garden/inline-math-punctuation-evidence");
   fs.mkdirSync(evidence, { recursive: true });
   const dir = fs.mkdtempSync(path.join(root, ".garden/inline-math-punctuation-"));
@@ -36,82 +36,62 @@ test("closing punctuation after inline math does not occupy its own line, and sh
     });
     await new Promise(resolve => server.listen(0, "127.0.0.1", resolve));
     const base = `http://127.0.0.1:${server.address().port}/blog/punctuation-fixture/`;
-    const widths = [300, 344, 375, 430, 1200];
-    const driver = `${waitForBrowserCondition}
-    addEventListener('DOMContentLoaded',()=>{(async()=>{
-      await waitFor(()=>document.querySelector('.markdown-body'),'article');
-      await document.fonts.ready;
-      const closing=/^[,.;:!?，。、；：！？）)\\]】》〉」』’”'…]/u;
-      const article=document.querySelector('article')||document.querySelector('.markdown-body');
-      const isolated=[];
-      const walker=document.createTreeWalker(article,NodeFilter.SHOW_TEXT);
-      for(let node;node=walker.nextNode();){
-        if(!closing.test(node.nodeValue))continue;
-        const range=document.createRange();range.setStart(node,0);range.setEnd(node,1);
-        const box=range.getBoundingClientRect();
-        const cluster=node.parentElement?.closest('.g-keep-punct');
-        const previous=cluster||node.previousElementSibling;
-        if(!previous)continue;
-        const prev=previous.getBoundingClientRect();
-        if(box.top>prev.bottom+2)isolated.push({text:node.nodeValue.slice(0,2),top:box.top,prevBottom:prev.bottom,width:innerWidth});
+    const measure = `function measure() {
+      const host=document.querySelector('.markdown-body');
+      if(!host||document.readyState!=='complete'||document.fonts.status!=='loaded')return;
+      const isolated=[],clusters=[...host.querySelectorAll('.g-keep-punct')];
+      for(const cluster of clusters){
+        const text=cluster.lastChild;
+        const range=document.createRange();range.selectNodeContents(text);
+        const a=range.getBoundingClientRect();
+        const b=cluster.querySelector('.katex-html > .base:last-child').getBoundingClientRect();
+        if(a.top>b.bottom+2||a.bottom<b.top-2)isolated.push({text:text.textContent,top:a.top,mathBottom:b.bottom});
       }
-      const longHeading=[...document.querySelectorAll('h2')].find(h=>/Long formula|长公式/.test(h.textContent));
-      const long=longHeading?.nextElementSibling;
-      if(long) long.hidden=true;
-      const overflow=document.documentElement.scrollWidth-document.documentElement.clientWidth;
-      if(long) long.hidden=false;
-      const longCluster=long?.querySelector('.g-keep-punct');
-      const longRange=longCluster&&document.createRange();
-      if(longRange){const t=[...longCluster.childNodes].find(n=>n.nodeType===3);if(t){longRange.setStart(t,0);longRange.setEnd(t,t.nodeValue.length)}}
-      const punctBox=longRange?.getBoundingClientRect();
-      const mathBox=longCluster?.querySelector('.katex')?.getBoundingClientRect();
-      window.__gardenProbeResult={
-        width:innerWidth,
-        isolated,
-        overflow,
-        glueCount:document.querySelectorAll('.g-keep-punct').length,
-        longPunctFollowsFormula:Boolean(punctBox&&mathBox&&punctBox.top<=mathBox.bottom+2)
-      };
-    })().catch(error=>{window.__gardenProbeResult={probeError:error.stack}})},{once:true});`;
-    const results = {};
-    for (const width of widths) {
-      const result = await probeBrowser({ chrome, url: base, profileDir: path.join(dir, `profile-${width}`), width, height: 900, initScript: driver, timeoutMs: 45_000 });
+      const scrolling=[];
+      for(const box of host.querySelectorAll('.g-keep-punct,.g-inline-math')){
+        if(box.scrollWidth<=box.clientWidth+1)continue;
+        const left=box.scrollLeft;
+        box.focus({preventScroll:true});
+        const focusable=document.activeElement===box;
+        box.scrollLeft=box.scrollWidth;
+        const viewport=box.getBoundingClientRect();
+        const range=document.createRange();range.selectNodeContents(box.lastChild);
+        const end=range.getClientRects();const last=end[end.length-1];
+        scrolling.push({width:viewport.width,scrollWidth:box.scrollWidth,clientWidth:box.clientWidth,focusable,
+          moved:box.scrollLeft>0,endVisible:last&&last.right<=viewport.right+1&&last.right>=viewport.left-1});
+        box.scrollLeft=left;
+      }
+      return {width:innerWidth,clientWidth:document.documentElement.clientWidth,scrollWidth:document.documentElement.scrollWidth,
+        isolated,scrolling,glueCount:clusters.length,mathmlCount:host.querySelectorAll('.katex-mathml math').length};
+    }`;
+    const driver = `${measure};addEventListener('load',async()=>{await document.fonts.ready;window.__gardenProbeResult=measure()},{once:true});`;
+    for (const width of [300,344,375,430,1200]) {
+      const result = await probeBrowser({ chrome, url: base, profileDir: path.join(dir, `profile-${width}`), width, height: 900,
+        mobile: width < 1200, initScript: driver, timeoutMs: 45_000 });
       fs.writeFileSync(path.join(evidence, `${width}.json`), JSON.stringify(result, null, 2));
-      results[width] = result;
-      assert.deepEqual(result.isolated, [], JSON.stringify({ width, isolated: result.isolated }));
-      assert.equal(result.glueCount > 0, true);
-      assert.ok(result.longPunctFollowsFormula, "long formula lost its trailing punctuation at "+width);
-      if (width !== 1200) assert.ok(result.overflow <= 1, "whole-page overflow at " + width + ": " + result.overflow);
+      assert.equal(result.width,width,'mobile layout viewport expanded by overflow');
+      assert.equal(result.clientWidth,width);
+      assert.ok(result.scrollWidth<=result.clientWidth,'whole page overflow: '+JSON.stringify(result));
+      assert.deepEqual(result.isolated,[]);
+      assert.ok(result.glueCount>=13);
+      assert.ok(result.mathmlCount>result.glueCount,'bare formulas must retain MathML too');
+      assert.ok(result.scrolling.length>=2,'long formulas, both with and without punctuation, must scroll locally');
+      for(const box of result.scrolling){assert.ok(box.focusable&&box.moved&&box.endVisible,JSON.stringify(box));}
     }
-    // Also sweep finer widths around a narrow note box by shrinking the article in-page.
-    const sweep = await probeBrowser({
-      chrome, url: base, profileDir: path.join(dir, "profile-sweep"), width: 430, height: 900, timeoutMs: 45_000,
-      initScript: `${waitForBrowserCondition}
-      addEventListener('DOMContentLoaded',()=>{(async()=>{
-        await waitFor(()=>document.querySelector('.markdown-body'),'article');
-        await document.fonts.ready;
-        const host=document.querySelector('.markdown-body');
-        const closing=/^[,.;:!?，。、；：！？）)\\]】》〉」』’”'…]/u;
-        const isolated=[];
-        for(let width=180;width<=430;width++){
-          host.style.width=width+'px';
-          const walker=document.createTreeWalker(host,NodeFilter.SHOW_TEXT);
-          for(let node;node=walker.nextNode();){
-            if(!closing.test(node.nodeValue))continue;
-            const range=document.createRange();range.setStart(node,0);range.setEnd(node,1);
-            const box=range.getBoundingClientRect();
-            const cluster=node.parentElement?.closest('.g-keep-punct');
-            const previous=cluster||node.previousElementSibling;
-            if(!previous)continue;
-            const prev=previous.getBoundingClientRect();
-            if(box.top>prev.bottom+2)isolated.push({width,text:node.nodeValue.slice(0,2)});
-          }
-        }
-        window.__gardenProbeResult={isolated,overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth};
-      })().catch(error=>{window.__gardenProbeResult={probeError:error.stack}})},{once:true});`,
-    });
-    fs.writeFileSync(path.join(evidence, "sweep.json"), JSON.stringify(sweep, null, 2));
-    assert.deepEqual(sweep.isolated, [], JSON.stringify(sweep.isolated));
+    const sweep = await probeBrowser({ chrome, url: base, profileDir: path.join(dir,'profile-sweep'),width:1200,height:900,
+      initScript:`${measure};addEventListener('load',async()=>{await document.fonts.ready;const host=document.querySelector('.markdown-body'),failures=[];for(let width=180;width<=430;width++){host.style.width=width+'px';const result=measure();if(result.isolated.length||result.scrollWidth>result.clientWidth)failures.push({width,...result})}window.__gardenProbeResult={failures}},{once:true});` });
+    fs.writeFileSync(path.join(evidence,'sweep.json'),JSON.stringify(sweep,null,2));
+    assert.deepEqual(sweep.failures,[],'fine-width punctuation/overflow regression');
+    // Negative control: removing only the viewport reproduces the old failure
+    // on this exact fixture and mobile layout; do not hide the long paragraph.
+    const unbounded = await probeBrowser({ chrome,url:base,profileDir:path.join(dir,'profile-unbounded'),width:300,height:900,mobile:true,
+      initScript:`${measure};addEventListener('load',async()=>{await document.fonts.ready;const style=document.createElement('style');style.textContent='.markdown-body :is(.g-keep-punct,.g-inline-math){display:inline;max-width:none;overflow:visible;padding:0}';document.head.append(style);window.__gardenProbeResult=measure()},{once:true});` });
+    fs.writeFileSync(path.join(evidence,'unbounded-control.json'),JSON.stringify(unbounded,null,2));
+    assert.ok(unbounded.scrollWidth>unbounded.clientWidth,'control must expose the long formula, not silently hide it');
+    const nojs=await probeBrowser({chrome,url:base,profileDir:path.join(dir,'profile-nojs'),width:300,height:900,mobile:true,scriptingEnabled:false,
+      probeExpression:`(()=>{${measure};return measure()})()`});
+    fs.writeFileSync(path.join(evidence,'300-nojs.json'),JSON.stringify(nojs,null,2));
+    assert.ok(nojs.scrollWidth<=nojs.clientWidth);assert.deepEqual(nojs.isolated,[]);
   } finally {
     if (server) await new Promise(resolve => server.close(resolve));
     if (process.env.GARDEN_KEEP_BROWSER_FIXTURE !== "1") fs.rmSync(dir, { recursive: true, force: true });
