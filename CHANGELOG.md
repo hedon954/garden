@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.14.7
+
+- Remove the Thoughts content feature end to end: public routes, navigation, discovery/feed/search integration, schemas, configuration, templates, author guidance and Admin management. Removed routes return 404, without compatibility redirects. Ordinary articles, book notes and Compose notes remain supported; historical Git records are not rewritten.
+- Align the bundled Admin with current unified Compose contracts: include all ten model recipes, evaluate parsed native/interactive components, preserve manuscript bytes when changing pinned state, distinguish same-name attachments from articles and retain separate paths for identical-source book notes.
+- Restore dynamic authenticated draft routes, share Markdown/HTML media rewriting with publication, constrain preview data paths, support authenticated audio/video assets and load the documented local Admin environment file.
+- Ship matching Garden 0.14.7 Cursor / VS Code VSIX and Typora ZIP. Author skill sources and the 0.14.6 persistent mobile contents behavior are unchanged.
+
+Validation: 750 automated tests, 736 passed and 14 skipped; complete authenticated Admin UI interaction has not been verified. The author will validate that workflow after publication. Existing TypeScript diagnostics remain a baseline, not a clean typecheck claim. Admin body preview is not a replacement for the full site/attachment build, and publishing npm alone does not deploy a separately hosted Admin service.
+
 ## 0.14.6
 
 - Restore mobile contents access throughout long articles using one 44px control in the existing sticky site header, without floating over prose or duplicating the article-start entry.
