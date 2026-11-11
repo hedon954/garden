@@ -4,6 +4,7 @@ import http from "node:http";
 import path from "node:path";
 import { spawn } from "node:child_process";
 import test from "node:test";
+import { assertLayoutViewport } from "./browser-viewport.mjs";
 import { probeBrowser } from "./browser-fixture.mjs";
 import { writePunctuationFixture } from "./punctuation-fixture.mjs";
 
@@ -69,9 +70,7 @@ test("inline math keeps punctuation, bounds long formulas locally and never expa
       const result = await probeBrowser({ chrome, url: base, profileDir: path.join(dir, `profile-${width}`), width, height: 900,
         mobile: width < 1200, initScript: driver, timeoutMs: 45_000 });
       fs.writeFileSync(path.join(evidence, `${width}.json`), JSON.stringify(result, null, 2));
-      assert.equal(result.width,width,'mobile layout viewport expanded by overflow');
-      assert.equal(result.clientWidth,width);
-      assert.ok(result.scrollWidth<=result.clientWidth,'whole page overflow: '+JSON.stringify(result));
+      assertLayoutViewport([result.width,result.clientWidth,result.scrollWidth],width);
       assert.deepEqual(result.isolated,[]);
       assert.ok(result.glueCount>=13);
       assert.ok(result.mathmlCount>result.glueCount,'bare formulas must retain MathML too');

@@ -4,7 +4,8 @@ import http from "node:http";
 import path from "node:path";
 import { spawn } from "node:child_process";
 import test from "node:test";
-import { probeBrowser } from "./browser-fixture.mjs";
+import { probeBrowser, waitForBrowserCondition } from "./browser-fixture.mjs";
+import { assertLayoutViewport } from "./browser-viewport.mjs";
 import { titleCases, writeFeatureTitleFixture } from "./feature-title-fixture.mjs";
 
 const root = path.resolve(import.meta.dirname, "..");
@@ -22,9 +23,20 @@ const measure = `function measure() {
     mounted:!!h.parentElement[Symbol.for('garden.feature-title-fit')]};
 }
 const settle=()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));`;
-const driver = `${measure};const cases=${JSON.stringify(titleCases)};
+const hydratedHome = `${waitForBrowserCondition}
+async function visitHydratedHome() {
+  await waitFor(()=>document.querySelector('.sh-menu-btn')?.onclick,'React header event attachment');
+  const origin=performance.timeOrigin;
+  document.querySelector('#ft a').click();
+  await waitFor(()=>location.pathname.includes('/blog/')&&!document.querySelector('[data-feature-title]'),'article client commit');
+  document.querySelector('a[href="/"]').click();
+  await waitFor(()=>location.pathname==='/'&&document.querySelector('[data-feature-title]')?.parentElement[Symbol.for('garden.feature-title-fit')],'home client commit');
+  if(origin!==performance.timeOrigin)throw Error('hydration readiness reloaded the document');
+  await settle();
+}`;
+const driver = `${measure};${hydratedHome};const cases=${JSON.stringify(titleCases)};
 let first;function early(){const result=measure();if(result)first=result;else requestAnimationFrame(early)}requestAnimationFrame(early);
-addEventListener('load',async()=>{try{await document.fonts.ready;await settle();const initial=measure(),samples={};
+addEventListener('load',async()=>{try{await document.fonts.ready;await settle();const initial=measure(),samples={};await visitHydratedHome();
   for(const [name,text]of Object.entries(cases)){document.querySelector('#ft a').textContent=text;await settle();samples[name]=measure()}
   document.querySelector('#ft a').textContent=cases.medium;await settle();const stableBefore=measure();await settle();const stableAfter=measure();
   const origin=performance.timeOrigin;document.querySelector('#ft a').click();
@@ -47,8 +59,7 @@ addEventListener('load',async()=>{try{await document.fonts.ready;await settle();
 }catch(error){window.__gardenProbeResult={probeError:String(error),stack:error.stack}}},{once:true});`;
 
 function assertReadable(sample,width){
-  assert.equal(sample.inner,width,JSON.stringify(sample));assert.equal(sample.client,width);
-  assert.ok(sample.scroll<=sample.client,JSON.stringify(sample));
+  assertLayoutViewport([sample.inner,sample.client,sample.scroll],width);
   assert.ok(sample.size>sample.summary,JSON.stringify(sample));
 }
 
@@ -72,7 +83,7 @@ test('featured title measures real text, keeps a readable summary-relative floor
       res.setHeader('Content-Type',({'.js':'text/javascript','.css':'text/css','.html':'text/html','.txt':'text/plain','.woff2':'font/woff2'})[path.extname(file)]??'application/octet-stream');res.end(fs.readFileSync(file));
     });await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));const url=`http://127.0.0.1:${server.address().port}/`;
     for(const width of [300,344,375,430,1200,1920]){
-      const result=await probeBrowser({chrome,url,profileDir:path.join(dir,`profile-${width}`),width,height:900,mobile:width<1200,initScript:driver,includeDiagnostics:true,timeoutMs:45_000});
+      const result=await probeBrowser({chrome,url,profileDir:path.join(dir,`profile-${width}`),width,height:900,mobile:width<1200,cpuThrottlingRate:width===300?4:undefined,initScript:driver,includeDiagnostics:true,timeoutMs:45_000});
       fs.writeFileSync(path.join(evidence,`${width}.json`),JSON.stringify(result,null,2));
       assert.ok(result.first.mounted,'first visible heading must already be fitted');
       assert.ok(Math.abs(result.first.size-result.initial.size)<.05,'no visible initial fit flash with the same loaded font');
@@ -89,7 +100,7 @@ test('featured title measures real text, keeps a readable summary-relative floor
       assert.ok(result.largerRoot.size>=result.largerSummary.size*1.5-.05,'root text preference must not be counter-shrunk');
       assert.deepEqual(result.browserDiagnostics.logs.filter(entry=>entry.level==='error'),[]);
     }
-    const fontDriver=`${measure};addEventListener('load',async()=>{try{await document.fonts.ready;await settle();
+    const fontDriver=`${measure};${hydratedHome};addEventListener('load',async()=>{try{await document.fonts.ready;await settle();await visitHydratedHome();
       const article=document.querySelector('.sh-feature'),host=document.querySelector('#ft').parentElement;article.querySelector('.cover')?.remove();host.style.maxWidth='700px';
       const widths=[];for(const width of [700,480,280]){host.style.maxWidth=width+'px';dispatchEvent(new Event('resize'));await settle();widths.push(measure())}
       host.style.maxWidth='400px';document.querySelector('#ft a').textContent='Measure the loaded font width';
