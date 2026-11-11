@@ -470,10 +470,8 @@ function ContentsSession({
             <X size={18} aria-hidden="true" />
           </a>
         </div>
-        {tree.some((node) => node.children.length > 0) ? <div className="toc-mode-controls" role="group" aria-label={t.tocDisplay}>
-          <button type="button" data-toc-follow="" aria-controls={listId} aria-pressed={expansion.mode === "follow"} onClick={() => setExpansion({ mode: "follow" })}>{t.tocFollow}</button>
-          <button type="button" data-toc-expand-all="" aria-controls={listId} aria-pressed={expansion.mode === "all"} onClick={() => setExpansion({ mode: "all" })}>{t.tocExpandAll}</button>
-          <span className="toc-mode-status" role="status">{expansion.mode === "manual" ? t.tocManual : ""}</span>
+        {tree.some((node) => node.children.length > 0) ? <div className="toc-mode-controls">
+          <button type="button" data-toc-mode-toggle="" aria-controls={listId} onClick={() => setExpansion({ mode: expansion.mode === "follow" ? "all" : "follow" })}>{expansion.mode === "follow" ? t.tocExpandAll : t.tocResumeFollow}</button>
         </div> : null}
         <ol id={listId} ref={listRef} className="toc-list" role="list">
           {tree.map((node, index) => renderNode(node, [index]))}

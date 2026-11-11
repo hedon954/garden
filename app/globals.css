@@ -1812,7 +1812,6 @@ button {
 .toc-sublist > .toc-section > .toc-item-row > a { font-weight: 400; }
 .toc-mode-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; flex: 0 0 auto; margin-bottom: 10px; }
 .toc-mode-controls button { min-height: 32px; padding: 4px 0; border: 0; background: transparent; color: var(--muted); font: inherit; cursor: pointer; }
-.toc-mode-controls button[aria-pressed="true"] { color: var(--ink); font-weight: 600; text-decoration: underline; text-underline-offset: 4px; }
 .toc-mode-controls button:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
 .toc-mode-status { color: var(--muted); }
 .toc-mode-status:empty { display: none; }
