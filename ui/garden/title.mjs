@@ -32,3 +32,7 @@ export function titleLineScale(lines) {
   const width = Math.max(...lines.map((line) => titleWidthUnits(line)), 0.01);
   return Number(width.toFixed(2));
 }
+
+export function originalUrl(entry) {
+  return typeof entry?.original === "string" && /^https?:\/\//iu.test(entry.original) ? entry.original : "";
+}
