@@ -15,7 +15,7 @@ import { usePathname } from "next/navigation";
 import { nestHeadings, expandedTocSections, toggleTocSection, type TocHeading, type TocNode, type TocExpansion } from "../lib/toc-expansion";
 import { createPortal } from "react-dom";
 import { TOC_PANEL_ID, TOC_CONTROL_ID, TOC_CLOSED_ID } from "../lib/reading-navigation";
-import { X } from "@phosphor-icons/react";
+import { ArrowsInLineVertical, ArrowsOutLineVertical, X } from "@phosphor-icons/react";
 import { ui, type UiLang } from "../lib/i18n";
 
 type TocProps = { headings: TocHeading[]; label?: string; lang?: UiLang };
@@ -457,6 +457,18 @@ function ContentsSession({
       >
         <div className="toc-header">
           <p>{label}</p>
+          {tree.some((node) => node.children.length > 0) ? <div className="toc-mode-controls">
+            <button
+              type="button"
+              data-toc-mode-toggle=""
+              aria-controls={listId}
+              aria-label={expansion.mode === "follow" ? t.tocExpandAll : t.tocResumeFollow}
+              title={expansion.mode === "follow" ? t.tocExpandAll : t.tocResumeFollow}
+              onClick={() => setExpansion({ mode: expansion.mode === "follow" ? "all" : "follow" })}
+            >
+              {expansion.mode === "follow" ? <ArrowsOutLineVertical size={18} aria-hidden="true" /> : <ArrowsInLineVertical size={18} aria-hidden="true" />}
+            </button>
+          </div> : null}
           <button
             ref={mobileCloseRef}
             className="toc-mobile-close"
@@ -470,9 +482,6 @@ function ContentsSession({
             <X size={18} aria-hidden="true" />
           </a>
         </div>
-        {tree.some((node) => node.children.length > 0) ? <div className="toc-mode-controls">
-          <button type="button" data-toc-mode-toggle="" aria-controls={listId} onClick={() => setExpansion({ mode: expansion.mode === "follow" ? "all" : "follow" })}>{expansion.mode === "follow" ? t.tocExpandAll : t.tocResumeFollow}</button>
-        </div> : null}
         <ol id={listId} ref={listRef} className="toc-list" role="list">
           {tree.map((node, index) => renderNode(node, [index]))}
         </ol>

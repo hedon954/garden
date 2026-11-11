@@ -1735,6 +1735,8 @@ button {
 }
 
 .toc-header > p {
+  flex: 1 1 auto;
+  min-width: 0;
   margin: 0;
   color: var(--accent);
   font-size: 12px;
@@ -1810,11 +1812,9 @@ button {
 
 .toc-list > .toc-section > .toc-item-row > a { font-weight: 600; }
 .toc-sublist > .toc-section > .toc-item-row > a { font-weight: 400; }
-.toc-mode-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; flex: 0 0 auto; margin-bottom: 10px; }
-.toc-mode-controls button { min-height: 32px; padding: 4px 0; border: 0; background: transparent; color: var(--muted); font: inherit; cursor: pointer; }
+.toc-mode-controls { display: flex; align-items: center; flex: 0 0 auto; margin-left: auto; }
+.toc-mode-controls button { display: grid; place-items: center; width: 32px; height: 32px; padding: 0; border: 0; background: transparent; color: var(--muted); cursor: pointer; touch-action: manipulation; }
 .toc-mode-controls button:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
-.toc-mode-status { color: var(--muted); }
-.toc-mode-status:empty { display: none; }
 
 .toc a:hover {
   color: var(--ink);
@@ -3871,7 +3871,6 @@ html[data-theme="dark"] .search-footer {
      panel, because the post layout's desktop rule overrides the panel's
      padding on post pages but not on column pages. */
   .toc .toc-header,
-  .toc .toc-mode-controls,
   .toc .toc-list {
     padding-left: max(20px, env(safe-area-inset-left));
     padding-right: max(20px, env(safe-area-inset-right));
@@ -3879,7 +3878,7 @@ html[data-theme="dark"] .search-footer {
 
   .toc .toc-item-row > a { display: flex; align-items: center; min-height: 40px; padding-block: 4px; }
   .toc .toc-section-toggle { min-width: 40px; min-height: 40px; }
-  .toc .toc-mode-controls button { min-height: 44px; }
+  .toc .toc-mode-controls button { width: 44px; height: 44px; }
 
   .toc .toc-list .toc-section {
     margin: 2px 0;
