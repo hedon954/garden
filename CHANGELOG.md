@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.14.8
+
+- Keep closing punctuation with inline math, and contain long inline formulas in local scroll viewports without widening the article.
+- Fit complete featured article titles to one line above a readable, summary-relative font-size floor; wrap only when the minimum is reached, without splitting or truncating titles.
+- Follow the current reading ancestry in the contents outline, with explicit expand-all/manual overrides, clear heading hierarchy, compact 40px mobile rows and the persistent 44px header entry.
+- Keep neutral contents regressions independent of optional live Webmention services, and ship matching Garden 0.14.8 Cursor / VS Code VSIX and Typora ZIP.
+
 ## 0.14.7
 
 - Remove the Thoughts content feature end to end: public routes, navigation, discovery/feed/search integration, schemas, configuration, templates, author guidance and Admin management. Removed routes return 404, without compatibility redirects. Ordinary articles, book notes and Compose notes remain supported; historical Git records are not rewritten.
