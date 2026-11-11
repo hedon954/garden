@@ -141,6 +141,14 @@ class ReleaseTests(unittest.TestCase):
             with patch.object(r, 'git', return_value='package.json\0'):
                 with self.assertRaisesRegex(RuntimeError, 'source differs'): r.source_audit(root, data)
 
+    def test_secure_public_read_fallback_preserves_404_absence(self):
+        with patch.object(r.urllib.request, 'urlopen', side_effect=r.urllib.error.URLError('TLS EOF')), patch.object(r.subprocess, 'run', return_value=subprocess.CompletedProcess([],0,b'not found\n404',b'')) as curl:
+            self.assertIsNone(r.registry('1.2.3'));self.assertNotIn('--insecure',curl.call_args.args[0])
+
+    def test_fallback_network_failure_is_not_version_absence(self):
+        with patch.object(r.urllib.request, 'urlopen', side_effect=r.urllib.error.URLError('TLS EOF')), patch.object(r.subprocess, 'run', return_value=subprocess.CompletedProcess([],35,b'\n000',b'TLS error')):
+            with self.assertRaisesRegex(RuntimeError,'never infer absence'):r.registry('1.2.3')
+
     def test_wrong_remote_mapping_fails_closed(self):
         with patch.object(r, 'git', return_value='git@github.com:hedon954/garden.git'):
             with self.assertRaisesRegex(RuntimeError, 'origin must be garden-blog'): r.preflight(Path('.'), Path('../blog'))

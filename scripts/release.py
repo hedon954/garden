@@ -85,9 +85,21 @@ def preflight(root, blog):
 
 def http(url):
     request = urllib.request.Request(url, headers={'Cache-Control': 'no-cache', 'User-Agent': 'Garden-release-check'})
-    with urllib.request.urlopen(request, timeout=45) as response:
-        require(response.status == 200, 'HTTP not 200: ' + url)
-        return response.read()
+    try:
+        with urllib.request.urlopen(request, timeout=45) as response:
+            require(response.status == 200, 'HTTP not 200: ' + url)
+            return response.read()
+    except urllib.error.HTTPError:
+        raise
+    except (urllib.error.URLError, TimeoutError):
+        result = subprocess.run(['curl', '--location', '--silent', '--show-error', '--connect-timeout', '10',
+                                 '--max-time', '45', '--write-out', '\n%{http_code}', url], capture_output=True)
+        body, separator, status = result.stdout.rpartition(b'\n')
+        require(result.returncode == 0 and separator and status.isdigit(), 'Public HTTPS read failed; never infer absence')
+        code = int(status)
+        if code != 200:
+            raise urllib.error.HTTPError(url, code, 'HTTPS response', None, io.BytesIO(body))
+        return body
 
 
 def registry(version):
