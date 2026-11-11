@@ -102,18 +102,21 @@ test('featured title measures real text, keeps a readable summary-relative floor
     }
     const fontDriver=`${measure};${hydratedHome};addEventListener('load',async()=>{try{await document.fonts.ready;await settle();await visitHydratedHome();
       const article=document.querySelector('.sh-feature'),host=document.querySelector('#ft').parentElement;article.querySelector('.cover')?.remove();host.style.maxWidth='700px';
-      const widths=[];for(const width of [700,480,280]){host.style.maxWidth=width+'px';dispatchEvent(new Event('resize'));await settle();widths.push(measure())}
+      host.style.maxWidth='280px';await settle();const legacyMediumAt280=measure();
+      const widths=[];for(const width of [700,480,280]){host.querySelector('#ft a').textContent=width===280?${JSON.stringify(titleCases.long)}:${JSON.stringify(titleCases.medium)};host.style.maxWidth=width+'px';dispatchEvent(new Event('resize'));await settle();widths.push(measure())}
       host.style.maxWidth='400px';document.querySelector('#ft a').textContent='Measure the loaded font width';
       document.documentElement.style.setProperty('--sans','FeatureFixture,serif');await settle();const before=measure();
       const font=new FontFace('FeatureFixture','url(/feature-test-font.woff2)');document.fonts.add(font);await font.load();await document.fonts.ready;await settle();const after=measure();
-      window.__gardenProbeResult={widths,before,after,fontLoaded:document.fonts.check('20px FeatureFixture')};
+      window.__gardenProbeResult={legacyMediumAt280,widths,before,after,fontLoaded:document.fonts.check('20px FeatureFixture')};
     }catch(error){window.__gardenProbeResult={probeError:String(error)}}},{once:true});`;
     const font=await probeBrowser({chrome,url,profileDir:path.join(dir,'profile-font'),width:1200,height:900,initScript:fontDriver});
     fs.writeFileSync(path.join(evidence,'font-container.json'),JSON.stringify(font,null,2));
     assert.ok(font.fontLoaded);assert.ok(Math.abs(font.before.size-font.after.size)>.1,'real loaded font metrics must trigger refit');
     for(const sample of [...font.widths,font.after])assertReadable(sample,1200);
     assert.ok(Math.abs(font.widths[0].size-font.widths[0].maximum)<.02,'700px content preserves maximum where the string fits');
-    assert.ok(font.widths[2].lines>1);
+    assert.equal(font.widths[2].text,titleCases.long,'narrow container preserves the complete long title');
+    assert.ok(font.widths[2].lines>1,'the established long sample must wrap in the narrow container');
+    assert.ok(Math.abs(font.widths[2].size-font.widths[2].summary*1.125)<.03,'narrow wrapping stops at the readable floor');
     for(const fallback of ['nojs','no-resize-observer']){
       const result=await probeBrowser({chrome,url,profileDir:path.join(dir,`profile-${fallback}`),width:300,height:900,mobile:true,
         scriptingEnabled:fallback!=='nojs',initScript:fallback==='no-resize-observer'?'window.ResizeObserver=undefined':undefined,

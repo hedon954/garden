@@ -1,22 +1,11 @@
 # Changelog
 
-## 0.14.9
-
-The first npm publication of the math, featured-title and contents-navigation changes below. The immutable `v0.14.8` tag is retained unchanged and was not published to npm: its Linux gate caught cross-platform browser-test assumptions before publication.
-
-- Compare page overflow with the actual scrollbar-adjusted content viewport, with explicit overlay/reserved-scrollbar positive and negative controls.
-- Exercise title variants only after a verified normal client-navigation round trip, including a four-times CPU slowdown, instead of mutating server-rendered text before React hydration.
-- Bound concurrent test files to two so independent builds and Chrome processes do not starve each other's startup on CI runners.
-- Ship matching Garden 0.14.9 Cursor / VS Code VSIX and Typora ZIP. Rendering runtime and author skills are unchanged from the 0.14.8 candidate.
-
 ## 0.14.8
-
-Unpublished release candidate; its original tag remains unchanged.
 
 - Keep closing punctuation with inline math, and contain long inline formulas in local scroll viewports without widening the article.
 - Fit complete featured article titles to one line above a readable, summary-relative font-size floor; wrap only when the minimum is reached, without splitting or truncating titles.
 - Follow the current reading ancestry in the contents outline, with explicit expand-all/manual overrides, clear heading hierarchy, compact 40px mobile rows and the persistent 44px header entry.
-- Keep neutral contents regressions independent of optional live Webmention services, and ship matching Garden 0.14.8 Cursor / VS Code VSIX and Typora ZIP.
+- Use actual scrollbar-adjusted viewports, wait for client hydration before mutating neutral fixtures, bound test concurrency, and keep neutral contents regressions independent of optional live Webmention services, and ship matching Garden 0.14.8 Cursor / VS Code VSIX and Typora ZIP.
 
 ## 0.14.7
 
