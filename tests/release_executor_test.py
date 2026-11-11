@@ -2,6 +2,7 @@
 import contextlib
 import io
 import json
+import os
 from pathlib import Path
 import subprocess
 import sys
@@ -51,6 +52,9 @@ class SimulatedExecutor(x.Executor):
 
 class ExecutorTests(unittest.TestCase):
     def setUp(self):
+        # This temporary repository is a branch fixture, not the outer release tag.
+        refs = patch.dict(os.environ, {"GITHUB_REF_TYPE": "branch", "GITHUB_REF_NAME": "engine"})
+        refs.start(); self.addCleanup(refs.stop)
         self.tmp = tempfile.TemporaryDirectory(); self.addCleanup(self.tmp.cleanup)
         self.root=Path(self.tmp.name)/'garden'; self.blog=Path(self.tmp.name)/'garden-blog';self.root.mkdir()
         git(self.root,'init','-b','engine');git(self.root,'config','user.name','Fixture');git(self.root,'config','user.email','fixture@example.invalid')
@@ -91,6 +95,15 @@ class ExecutorTests(unittest.TestCase):
         stack.enter_context(patch.object(x.r,'deployed',return_value={'allProductionBytesMatchSnapshot':True}))
         stack.enter_context(contextlib.redirect_stdout(io.StringIO()))
         return stack
+
+    def test_fixture_tag_version_guard_still_rejects_a_mismatched_tag(self):
+        for tag, expected in [('v1.2.2', 0), ('v9.9.9', 1)]:
+            result = subprocess.run(['node', 'scripts/sync-editor-version.mjs', '--check'],
+                                    cwd=self.root, capture_output=True, text=True,
+                                    env={**os.environ, 'GITHUB_REF_TYPE': 'tag', 'GITHUB_REF_NAME': tag})
+            self.assertEqual(result.returncode, expected, result.stderr)
+            if expected:
+                self.assertIn('Release tag v9.9.9 does not match Garden v1.2.2', result.stderr)
 
     def test_real_version_commit_and_resume_without_duplicate_commit(self):
         obj=self.runner();base=git(self.root,'rev-parse','HEAD')
