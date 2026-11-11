@@ -15,7 +15,7 @@ import { usePathname } from "next/navigation";
 import { nestHeadings, expandedTocSections, toggleTocSection, type TocHeading, type TocNode, type TocExpansion } from "../lib/toc-expansion";
 import { createPortal } from "react-dom";
 import { TOC_PANEL_ID, TOC_CONTROL_ID, TOC_CLOSED_ID } from "../lib/reading-navigation";
-import { CaretDoubleUp, CaretDoubleDown, X } from "@phosphor-icons/react";
+import { CaretUp, CaretDown, X } from "@phosphor-icons/react";
 import { ui, type UiLang } from "../lib/i18n";
 
 type TocProps = { headings: TocHeading[]; label?: string; lang?: UiLang };
@@ -466,7 +466,7 @@ function ContentsSession({
               title={expansion.mode === "follow" ? t.tocExpandAll : t.tocResumeFollow}
               onClick={() => setExpansion({ mode: expansion.mode === "follow" ? "all" : "follow" })}
             >
-              {expansion.mode === "follow" ? <CaretDoubleDown size={14} aria-hidden="true" /> : <CaretDoubleUp size={14} aria-hidden="true" />}
+              {expansion.mode === "follow" ? <CaretDown size={14} aria-hidden="true" /> : <CaretUp size={14} aria-hidden="true" />}
             </button>
           </div> : null}
           <button
