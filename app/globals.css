@@ -1813,7 +1813,7 @@ button {
 .toc-list > .toc-section > .toc-item-row > a { font-weight: 600; }
 .toc-sublist > .toc-section > .toc-item-row > a { font-weight: 400; }
 .toc-mode-controls { display: flex; align-items: center; flex: 0 0 auto; margin-left: auto; }
-.toc-mode-controls button { display: grid; place-items: center; width: 32px; height: 32px; padding: 0; border: 0; background: transparent; color: var(--muted); cursor: pointer; touch-action: manipulation; }
+.toc-mode-controls button { display: grid; place-items: center; width: 24px; height: 24px; padding: 0; border: 0; background: transparent; color: var(--muted); cursor: pointer; touch-action: manipulation; }
 .toc-mode-controls button:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
 
 .toc a:hover {
