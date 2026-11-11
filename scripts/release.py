@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Resumable local release checks. Never publishes, tags, commits, or pushes."""
+"""Safe checks by default; explicit execute mode requires current release authorization."""
 import argparse
 import base64
 import fcntl
@@ -64,13 +64,17 @@ def canonical_remote(url):
     return url.removesuffix('.git').replace('git@github.com:', 'https://github.com/')
 
 
-def preflight(root, blog):
+def validate_layout(root, blog):
     require(canonical_remote(git(root, 'remote', 'get-url', 'origin')) == 'https://github.com/' + BLOG,
             'origin must be garden-blog; never infer the push remote')
     require(canonical_remote(git(root, 'remote', 'get-url', 'upstream')) == 'https://github.com/' + ENGINE,
             'upstream must be garden engine')
     require(git(root, 'rev-parse', '--path-format=absolute', '--git-common-dir') ==
             git(blog, 'rev-parse', '--path-format=absolute', '--git-common-dir'), 'Expected existing shared worktrees')
+
+
+def preflight(root, blog):
+    validate_layout(root, blog)
     version = json.loads((root / 'package.json').read_text())['version']
     require(len(version.split('.')) == 3 and all(p.isdigit() for p in version.split('.')), 'Stable version required')
     command(['node', 'scripts/sync-editor-version.mjs', '--check'], root)
@@ -269,12 +273,21 @@ def run_steps(root, directory, steps):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('phase', nargs='?', default='plan', choices=['plan', 'status', *PHASES])
+    parser.add_argument('phase', nargs='?', default='plan', choices=['plan', 'status', 'execute', *PHASES])
     parser.add_argument('--blog', type=Path)
-    parser.add_argument('--run', action='store_true', help='execute only the named local/read-only-check phase; never external writes')
+    parser.add_argument('--run', action='store_true', help='run selected checks; execute mode additionally requires current approval and exact --confirm')
+    parser.add_argument('--version', help='target stable release version, execute mode only')
+    parser.add_argument('--confirm', help='exact phrase: release hd-garden VERSION; operator must have current approval')
+    parser.add_argument('--session', default='default', help='reviewed new source after a failed attempt may use a new session')
+    parser.add_argument('--retry-stage', choices=['version', 'source-push', 'tag-create', 'tag-push', 'vsix', 'blog-pin', 'blog-commit', 'blog-push'])
+    parser.add_argument('--wait-seconds', type=int, default=1200)
     args = parser.parse_args()
     root = Path(__file__).resolve().parent.parent
     blog = (args.blog or root.parent / 'garden-blog').resolve()
+    if args.phase == 'execute':
+        sys.dont_write_bytecode = True
+        from release_executor import entry
+        print(json.dumps(entry(root, blog, args), ensure_ascii=False, indent=2)); return
     version, commit = preflight(root, blog)
     directory = root / '.garden/release' / commit
     if args.phase in ('plan', 'status') or not args.run:
@@ -282,7 +295,7 @@ def main():
         print(json.dumps({'version': version, 'commit': commit, 'phases': PHASES, 'requested': args.phase,
                           'dryRun': True, 'recordedPhases': list(json.loads(state.read_text())['phases']) if state.exists() else [],
                           'statePath': str(state),
-                          'externalWrites': 'NEVER: main/tag/blog commits and pushes require manual current authorization'}, indent=2))
+                          'externalWrites': 'Check modes never write remotely. execute --run requires current approval and exact confirmation.'}, indent=2))
         return
     require(not git(root, 'status', '--porcelain=v1'), 'Commit/review source first; checks must bind to clean engine HEAD')
     directory.mkdir(parents=True, exist_ok=True)
@@ -304,6 +317,10 @@ def main():
             test = json.loads((directory / 'test/0.json').read_text())
             require(test['exit'] == 0 and test['identity']['inputs'] == snapshot(root)
                     and test['logSHA256'] == digest((directory / 'test/0.log').read_bytes()), 'Tests missing or stale')
+            archive_path = phase_dir / f'hd-garden-{version}.tgz'
+            old_pack = state['phases'].get('pack')
+            if not archive_path.exists() or (old_pack and (old_pack['npmSHA256'] != digest(archive_path.read_bytes()) or any(not (root / p).exists() or digest((root / p).read_bytes()) != h for p, h in old_pack['editorSHA256'].items()))):
+                (phase_dir / '0.json').unlink(missing_ok=True)
             run_steps(root, phase_dir, [(root, ['npm', 'pack', '--json', '--pack-destination', str(phase_dir)], {})])
             data = (phase_dir / f'hd-garden-{version}.tgz').read_bytes()
             assets = {f'garden-ui-{version}.vsix': (root / f'editors/dist/vscode/garden-ui-{version}.vsix').read_bytes(),
@@ -333,6 +350,6 @@ def main():
 if __name__ == '__main__':
     try:
         main()
-    except (RuntimeError, OSError, subprocess.CalledProcessError, KeyError, ValueError, tarfile.TarError, zipfile.BadZipFile) as error:
+    except (RuntimeError, OSError, subprocess.CalledProcessError, subprocess.TimeoutExpired, KeyError, ValueError, tarfile.TarError, zipfile.BadZipFile) as error:
         print('STOP:', str(error), file=sys.stderr)
         sys.exit(1)
