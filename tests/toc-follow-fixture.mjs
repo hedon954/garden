@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 export function writeTocFollowFixture(site) {
  fs.mkdirSync(path.join(site,"content/posts"),{recursive:true});
+ fs.writeFileSync(path.join(site,".env.local"),"WEBMENTION_IO_DOMAIN=\n");
  const config=fs.readFileSync(new URL("../templates/site/site.config.en.yaml",import.meta.url),"utf8");
  fs.writeFileSync(path.join(site,"site.config.yaml"),config.replace(/^name:.*$/m,"name: Garden contents fixture"));
  const paragraph="Neutral reading material for the contents navigation fixture. A reader can move between chapters while the contents follows the current location. Complete headings and comfortable touch targets remain available. This is not an author manuscript.";
