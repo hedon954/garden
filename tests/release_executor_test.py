@@ -175,6 +175,13 @@ class ExecutorTests(unittest.TestCase):
             with self.assertRaisesRegex(RuntimeError,'CI failed'):x.wait_workflow(self.root,x.r.ENGINE,'sha',run['path'],1,'main')
             sleep.assert_not_called()
 
+    def test_running_ci_uses_one_watch_then_verifies_real_conclusion(self):
+        run={'id':1,'path':'.github/workflows/verify.yml','head_sha':'sha','head_branch':'main','html_url':'mock','status':'in_progress','conclusion':None}
+        done={**run,'status':'completed','conclusion':'success'}
+        with patch.object(x.r,'api',side_effect=[{'workflow_runs':[run]},done]),patch.object(x.subprocess,'run',return_value=subprocess.CompletedProcess([],0)) as watch:
+            result=x.wait_workflow(self.root,x.r.ENGINE,'sha',run['path'],60,'main')
+            self.assertEqual(result['commit'],'sha');self.assertEqual(watch.call_count,1);self.assertEqual(watch.call_args.args[0][1:3],['run','watch'])
+
     def test_default_execution_plan_never_mutates_or_queries_registry(self):
         class Args:version='1.2.3';run=False;confirm=None;session='default';retry_stage=None;wait_seconds=1
         with patch.object(x.Executor,'execute') as execute,patch.object(x.r,'registry') as registry:

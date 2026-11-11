@@ -47,7 +47,7 @@ python3 scripts/release.py execute --version "$VERSION" --run \
 7. 等源博客CI、新生成快照和Pages成功，核对Deploy消息的源SHA；生产首页和Inspired
    页及HTML直接引用的CSS/JS逐字节对齐新快照。浏览器视觉/交互验收仍需另做。
 
-CI每60秒一次读取，默认单阶段最多1200秒；`--wait-seconds`可设置等待上限。
+CI创建最多等待一次；已知run使用单次gh run watch（60秒间隔），结束后核实真实结论。默认单阶段最多1200秒；`--wait-seconds`可设置等待上限。
 每阶段立即输出名称，出现CI时输出真实run URL；失败或超时立即停止，不发下一个tag。
 工具不删除tag、不force/reset/amend、不绕hook、不stash/恢复用户文章、不部署额外服务。
 公开生成快照的既有workflow不改；源码仓库没有force push。

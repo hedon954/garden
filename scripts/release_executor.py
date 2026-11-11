@@ -50,18 +50,30 @@ def metadata_without_engine(path):
 
 def wait_workflow(root, repo, commit, workflow, timeout, ref=None):
     deadline = time.monotonic() + timeout
-    while True:
-        runs = r.api(f'repos/{repo}/actions/runs?head_sha={commit}&per_page=100', root)['workflow_runs']
-        runs = [x for x in runs if x['head_sha'] == commit and x.get('path') == workflow
+    runs = []
+    for attempt in range(2):
+        candidates = r.api(f'repos/{repo}/actions/runs?head_sha={commit}&per_page=100', root)['workflow_runs']
+        runs = [x for x in candidates if x['head_sha'] == commit and x.get('path') == workflow
                 and (ref is None or x.get('head_branch') == ref)]
-        if runs:
-            run = max(runs, key=lambda x: x['id'])
-            print('CI:', run['html_url'], run['status'], run.get('conclusion'), flush=True)
-            if run['status'] == 'completed':
-                r.require(run['conclusion'] == 'success', 'CI failed; no later stage: ' + run['html_url'])
-                return {'url': run['html_url'], 'commit': commit}
-        r.require(time.monotonic() < deadline, 'CI wait timed out; resume to re-read actual state')
-        time.sleep(min(60, max(0, deadline - time.monotonic())))
+        if runs: break
+        if attempt == 0:
+            print('Waiting once for workflow creation:', repo, commit, flush=True)
+            time.sleep(min(60, max(0, deadline - time.monotonic())))
+    r.require(runs, 'No matching workflow created yet; resume to read real state')
+    run = max(runs, key=lambda x: x['id'])
+    print('CI:', run['html_url'], run['status'], run.get('conclusion'), flush=True)
+    if run['status'] != 'completed':
+        log = root / '.garden/release-ci-watch' / (repo.replace('/', '_') + '-' + str(run['id']) + '.log')
+        log.parent.mkdir(parents=True, exist_ok=True)
+        with log.open('ab') as stream:
+            subprocess.run(['gh', 'run', 'watch', str(run['id']), '--repo', repo, '--interval', '60', '--exit-status'],
+                           cwd=root, stdin=subprocess.DEVNULL, stdout=stream, stderr=subprocess.STDOUT,
+                           timeout=max(1, deadline - time.monotonic()))
+        run = r.api(f'repos/{repo}/actions/runs/{run["id"]}', root)
+        r.require(run['head_sha'] == commit and run.get('path') == workflow, 'Watched run identity changed')
+    r.require(run['status'] == 'completed' and run['conclusion'] == 'success',
+              'CI failed or watch interrupted; no later stage: ' + run['html_url'])
+    return {'url': run['html_url'], 'commit': commit}
 
 
 class Executor:
