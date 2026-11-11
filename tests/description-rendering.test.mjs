@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -23,6 +24,9 @@ export const archive = post => renderToStaticMarkup(createElement(BlogArchiveFal
     alias: { "@garden/site-config": path.join(root, ".garden/site-config.ts"), "@garden/generated-content": path.join(root, ".garden/generated-content.ts") },
     plugins: [{ name: "next-node-exports", setup(builder) {
       builder.onResolve({ filter: /^next\// }, ({ path: specifier }) => ({ path: require.resolve(specifier), external: true }));
+    } }, { name: "raw-file", setup(builder) {
+      builder.onResolve({ filter: /\?raw$/ }, args => ({ path: path.resolve(args.resolveDir, args.path.replace(/\?raw$/u, "")), namespace: "raw-file" }));
+      builder.onLoad({ filter: /.*/, namespace: "raw-file" }, args => ({ contents: readFileSync(args.path, "utf8"), loader: "text" }));
     } }],
     logLevel: "silent",
   });
