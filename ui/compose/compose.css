@@ -1262,6 +1262,15 @@
     min-width: 0;
   }
 
+  /* Columnized centered rows stretch labels to 100% width, so align-items
+     can center arrows but not text. Center direct labels only; explicit
+     start/end and nested cards or prose stay as authored. */
+  .g-compose-row:not([data-wrap="nowrap"])[data-align="center"] > .g-compose-h:not([data-align="start"]):not([data-align="end"]),
+  .g-compose-row:not([data-wrap="nowrap"])[data-align="center"] > .g-compose-text:not([data-align="start"]):not([data-align="end"]),
+  .g-compose-row:not([data-wrap="nowrap"])[data-align="center"] > .g-compose-caption-inline:not([data-align="start"]):not([data-align="end"]) {
+    text-align: center;
+  }
+
   .g-compose-arrow[data-dir="right"] {
     transform: none;
   }
