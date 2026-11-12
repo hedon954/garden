@@ -1,4 +1,4 @@
-import { copyPickerPrompt, filterPickerItems, pickerItems, typoraKeepTypedText, slashQuery, suggestHtml } from "../../../ui/garden/snippets.mjs";
+import { filterPickerItems, pickerItems, pickerSelectionResult, slashQuery, suggestHtml } from "../../../ui/garden/snippets.mjs";
 
 type PickerItem = ReturnType<typeof pickerItems>[number];
 type SlashCommand = { kind: "command" };
@@ -24,7 +24,6 @@ export class GardenSlashSuggest extends core.EditorSuggest {
   private readonly edits: EditBus | undefined;
   private replaceLength = 1;
   private lead = "";
-  private typedText = "";
   private phase: "command" | "components" = "command";
 
   constructor(edits: EditBus | undefined) {
@@ -38,7 +37,6 @@ export class GardenSlashSuggest extends core.EditorSuggest {
     this.phase = parsed.phase === "components" ? "components" : "command";
     this.replaceLength = parsed.replaceLength;
     this.lead = parsed.lead;
-    this.typedText = textBefore.slice(-parsed.replaceLength);
     return { isMatched: true as const, query: parsed.query };
   }
 
@@ -76,13 +74,7 @@ export class GardenSlashSuggest extends core.EditorSuggest {
       }, 30);
       return "/garden";
     }
-    const keep = typoraKeepTypedText(this.typedText);
-    void copyPickerPrompt(item, {
-      writeText: (text: string) => navigator.clipboard.writeText(text),
-      notifySuccess: (message: string) => core.Notice.success(message),
-      notifyFailure: (message: string) => core.Notice.info(message),
-    });
-    return keep;
+    return `${this.lead}${pickerSelectionResult(item).insertText}\n`;
   }
 
   lengthOfTextBeforeToBeReplaced(_query?: string) {

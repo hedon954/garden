@@ -1,5 +1,5 @@
 import { resolveSidecarPath } from "../../../ui/core/fence.mjs";
-import { copyPickerPrompt, pickerItems } from "../../../ui/garden/snippets.mjs";
+import { pickerItems } from "../../../ui/garden/snippets.mjs";
 import { render } from "../../../ui/preview/index";
 import { GardenSlashSuggest } from "./slash-suggest";
 
@@ -152,11 +152,6 @@ export default class GardenTyporaPlugin extends core.Plugin {
     const items = pickerItems().map((item) => ({ label: item.label, text: item.body, prompt: item.prompt }));
     const picked = await core.openQuickPick(items, { placeholder: "插入 Garden 块" });
     if (!picked) return;
-    await copyPickerPrompt(picked, {
-      writeText: (text: string) => navigator.clipboard.writeText(text),
-      notifySuccess: (message: string) => core.Notice.success(message),
-      notifyFailure: (message: string) => core.Notice.info(message),
-    });
     const editor = typora.editor;
     editor?.UserOp?.pasteHandler(editor, `\n${picked.text}\n`, true);
   }

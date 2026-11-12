@@ -51,36 +51,6 @@ function authorPrompt({label, routeHint, open=false}) {
   ].join("\n");
 }
 
-export function copySuccessNotice(label) {
-  return `已复制「${label}」推荐提示词。把材料与目标填进去后发给 AI 即可。`;
-}
-
-export function copyFailureNotice(label) {
-  return `没能复制「${label}」推荐提示词，已保留你刚输入的内容，请再试一次或手动复制。`;
-}
-
-/**
- * Copy the recommended prompt first. Callers must not clear or replace the
- * author's /garden input until this resolves successfully.
- */
-export async function copyPickerPrompt(item, {writeText, notifySuccess, notifyFailure, afterSuccess} = {}) {
-  if (typeof writeText !== "function") throw new Error("copyPickerPrompt requires writeText");
-  try {
-    await writeText(item.prompt);
-    notifySuccess?.(copySuccessNotice(item.label));
-    await afterSuccess?.();
-    return {ok: true};
-  } catch {
-    notifyFailure?.(copyFailureNotice(item.label));
-    return {ok: false};
-  }
-}
-
-/** Typora's sync apply must keep the typed trigger until copy succeeds. */
-export function typoraKeepTypedText(typedText) {
-  return typedText;
-}
-
 /** Fence language for editor completions: always compose, never a picker id. */
 export function composeFenceOpen() {
   return "garden compose";
@@ -480,9 +450,6 @@ const OTHER = {
 function decorate(spec) {
   const open = Boolean(spec.open);
   const prompt = authorPrompt({label: spec.label, routeHint: spec.routeHint, open});
-  const intent = open
-    ? "按材料和表达目标，在 Compose 内自由组合 Markdown / HTML 与基础块。材料与目标：（在此填写，或把已复制的推荐提示词发给 AI）"
-    : `用「${spec.label}」呈现以下材料。材料与目标：（在此填写，或把已复制的推荐提示词发给 AI）`;
   return {
     name: spec.name,
     label: spec.label,
@@ -492,7 +459,7 @@ function decorate(spec) {
     searchText: spec.searchText,
     preview: PREVIEW[spec.name],
     prompt,
-    body: intentFence(intent),
+    body: intentFence(prompt),
     open,
     sources: spec.sources ?? [],
   };
@@ -511,12 +478,10 @@ export function filterPickerItems(query, items=DIAGRAM_RECIPES) {
   });
 }
 
-export function pickerSelectionResult(item, typedText="") {
+export function pickerSelectionResult(item, _typedText="") {
   return {
-    insertText: typoraKeepTypedText(typedText),
+    insertText: item.body,
     prompt: item.prompt,
-    notice: copySuccessNotice(item.label),
-    failureNotice: copyFailureNotice(item.label),
   };
 }
 

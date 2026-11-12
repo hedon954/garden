@@ -10,7 +10,7 @@ import {
 } from "../../../ui/core/index.mjs";
 import { checkGardenMarkdown } from "../../../ui/garden/check.mjs";
 import { gardenFoldRanges, runGardenFold } from "./folding.mjs";
-import { composeFenceOpen, copyPickerPrompt, pickerItems } from "../../../ui/garden/snippets.mjs";
+import { composeFenceOpen, pickerItems } from "../../../ui/garden/snippets.mjs";
 
 declare const __GARDEN_RECIPES__: { file: string; markdown: string }[];
 
@@ -233,11 +233,6 @@ async function insertIntent() {
   }));
   const picked = await vscode.window.showQuickPick(items, { placeHolder: "插入 Garden 块" });
   if (!picked) return;
-  await copyPickerPrompt(picked, {
-    writeText: (text) => vscode.env.clipboard.writeText(text),
-    notifySuccess: (message) => void vscode.window.showInformationMessage(message),
-    notifyFailure: (message) => void vscode.window.showWarningMessage(message),
-  });
   const position = editor.selection.active;
   const lineText = editor.document.lineAt(position.line).text;
   const prefix = lineText.trim() ? "\n\n" : "";

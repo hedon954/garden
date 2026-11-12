@@ -1,7 +1,7 @@
 import { COMPOSE_INTENT } from "../compose/examples.mjs";
 import { CATALOG } from "./catalog.mjs";
-import { DIAGRAM_RECIPES, filterPickerItems, pickerSelectionResult, copyPickerPrompt, typoraKeepTypedText, composeFenceOpen, COMPOSE_FENCE_NAME, copySuccessNotice, copyFailureNotice } from "./diagram-recipes.mjs";
-export { filterPickerItems, pickerSelectionResult, DIAGRAM_RECIPES, copyPickerPrompt, typoraKeepTypedText, composeFenceOpen, COMPOSE_FENCE_NAME, copySuccessNotice, copyFailureNotice };
+import { DIAGRAM_RECIPES, filterPickerItems, pickerSelectionResult, composeFenceOpen, COMPOSE_FENCE_NAME } from "./diagram-recipes.mjs";
+export { filterPickerItems, pickerSelectionResult, DIAGRAM_RECIPES, composeFenceOpen, COMPOSE_FENCE_NAME };
 export function guidanceFence(name="compose") {
   if(name&&name!=="compose")throw new Error("文章组件只使用 garden compose。");
   return "```garden compose\n"+COMPOSE_INTENT+"\n```";

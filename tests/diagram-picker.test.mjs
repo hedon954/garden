@@ -11,12 +11,9 @@ import {
   composeFenceOpen,
   filterPickerItems,
   pickerSelectionResult,
-  typoraKeepTypedText,
-  copyPickerPrompt,
-  copySuccessNotice,
-  copyFailureNotice,
 } from "../ui/garden/diagram-recipes.mjs";
 import {pickerItems, slashQuery, suggestHtml} from "../ui/garden/snippets.mjs";
+import {parseCompose} from "../ui/compose/markup.mjs";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
 
@@ -144,37 +141,34 @@ test("named prompts ask for materials and goals, and stay inside garden compose"
   }
 });
 
-test("copying a prompt must succeed before any trigger text is cleared", async () => {
+function fenceInner(body) {
+  const open = "```garden compose\n";
+  const close = "\n```";
+  assert.ok(body.startsWith(open), body.slice(0, 40));
+  assert.ok(body.endsWith(close), body.slice(-20));
+  return body.slice(open.length, body.length - close.length);
+}
+
+test("selecting a recipe inserts a compose fence that already holds the recommended prompt", () => {
+  for (const item of pickerItems()) {
+    const result = pickerSelectionResult(item, "/garden 分层");
+    assert.equal(result.insertText, item.body);
+    assert.equal(result.prompt, item.prompt);
+    assert.doesNotMatch(result.insertText, /^\/garden/u);
+    assert.equal(fenceInner(item.body), item.prompt);
+    assert.doesNotMatch(item.prompt, /```/);
+    const parsed = parseCompose(item.prompt);
+    assert.equal(parsed.uncompiled, true, item.name);
+    assert.notEqual(parsed.error?.code, "compose-invalid", item.name);
+  }
+
+  const layers = pickerItems().find((item) => item.name === "layers");
+  assert.match(layers.prompt, /「分层结构」/);
+  assert.match(layers.prompt, /我的材料：/);
+  assert.match(layers.body, /「分层结构」/);
+
   const other = pickerItems().find((item) => item.name === "other");
-  const typed = "/garden 其他";
-  const kept = pickerSelectionResult(other, typed);
-  assert.equal(kept.insertText, typed);
-  assert.equal(typoraKeepTypedText(typed), typed);
-  assert.doesNotMatch(kept.insertText, /```garden/);
-
-  const copied = [];
-  const notices = [];
-  let cleared = false;
-  const ok = await copyPickerPrompt(other, {
-    writeText: async (text) => { copied.push(text); },
-    notifySuccess: (message) => notices.push(["success", message]),
-    notifyFailure: (message) => notices.push(["failure", message]),
-    afterSuccess: () => { cleared = true; },
-  });
-  assert.equal(ok.ok, true);
-  assert.deepEqual(copied, [other.prompt]);
-  assert.deepEqual(notices, [["success", copySuccessNotice("其他")]]);
-  assert.equal(cleared, true);
-
-  const failedNotices = [];
-  let clearedAfterFailure = false;
-  const failed = await copyPickerPrompt(other, {
-    writeText: async () => { throw new Error("denied"); },
-    notifySuccess: (message) => failedNotices.push(["success", message]),
-    notifyFailure: (message) => failedNotices.push(["failure", message]),
-    afterSuccess: () => { clearedAfterFailure = true; },
-  });
-  assert.equal(failed.ok, false);
-  assert.equal(clearedAfterFailure, false);
-  assert.deepEqual(failedNotices, [["failure", copyFailureNotice("其他")]]);
+  assert.match(other.prompt, /自由组合任意 Markdown \/ HTML/);
+  assert.match(other.prompt, /不要把结果限制为某一个现成模板/);
+  assert.ok(other.body.includes(other.prompt));
 });
