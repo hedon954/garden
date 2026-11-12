@@ -22,30 +22,30 @@ function decodePreview(item) {
   return decodeURIComponent(item.preview.slice("data:image/svg+xml,".length));
 }
 
-test("picker uses author-facing handbook and recipe names, plus 其他", () => {
+test("picker uses author-facing graphic types plus 其他, with stable ids", () => {
   const items = pickerItems();
   const labels = items.map((item) => item.label);
   const expected = [
-    "三列并排",
-    "先到再散开",
-    "分层结构",
-    "多个切面",
-    "上下两行对比",
-    "图标窄栏",
-    "顺序流程",
-    "分步说明",
-    "对照",
-    "时间节点",
-    "交互时序",
-    "分组切换",
+    "关联图",
+    "发散图",
+    "分层图",
+    "并列图",
+    "上下对照图",
+    "图文列表",
+    "流程图",
+    "分步图",
+    "对比图",
+    "时间线图",
+    "时序图",
+    "选项卡",
     "数据图",
-    "可调参数",
-    "换算器",
+    "参数调节图",
+    "换算图",
     "代码走查",
-    "步进器",
-    "轨迹",
-    "计划与清单",
-    "检视格",
+    "逐步演示",
+    "路径标注图",
+    "步骤清单",
+    "格子图",
     "其他",
   ];
   assert.deepEqual(labels, expected);
@@ -98,17 +98,20 @@ test("suggest rows show the name, schematic, and a short description", () => {
   const html = suggestHtml(other);
   assert.match(html, /garden-suggest-thumb/);
   assert.match(html, /其他/);
-  assert.match(html, /自由组合 Markdown \/ HTML 基础块/);
+  assert.match(html, /适合现成图形无法表达、需要自由组合图文的内容/);
   assert.ok(html.includes(other.preview));
 });
 
 test("name and purpose queries keep 其他 searchable and selectable", () => {
   assert.deepEqual(filterPickerItems("").map((item) => item.label), pickerItems().map((item) => item.label));
-  assert.deepEqual(filterPickerItems("对照").map((item) => item.label), ["对照"]);
-  assert.deepEqual(filterPickerItems("上下两行").map((item) => item.label), ["上下两行对比"]);
+  assert.deepEqual(filterPickerItems("对比图").map((item) => item.label), ["对比图"]);
+  assert.ok(filterPickerItems("对照").some((item) => item.name === "compare"));
+  assert.deepEqual(filterPickerItems("上下对照").map((item) => item.label), ["上下对照图"]);
+  assert.deepEqual(filterPickerItems("上下两行").map((item) => item.label), ["上下对照图"]);
   assert.deepEqual(filterPickerItems("图标窄栏").map((item) => item.name), ["icon-rail"]);
   assert.ok(filterPickerItems("代码").some((item) => item.label === "代码走查"));
   assert.ok(filterPickerItems("数据图").some((item) => item.name === "chart"));
+  assert.ok(filterPickerItems("流程图").some((item) => item.name === "sequence"));
   for (const query of ["其他", "other", "任意", "灵活", "开放", "自由组合", "无现成", "html"]) {
     const found = filterPickerItems(query);
     assert.ok(found.some((item) => item.name === "other"), query);
@@ -123,7 +126,7 @@ test("recommended 其他 prompt is open composition, not a built-in template", (
   const prompt = pickerItems().find((item) => item.name === "other").prompt;
   assert.match(prompt, /我的材料：/);
   assert.match(prompt, /我的表达目标：/);
-  assert.match(prompt, /自由组合任意 Markdown \/ HTML/);
+  assert.match(prompt, /自由组合图文/);
   assert.match(prompt, /不是合法白名单/);
   assert.match(prompt, /不要把结果限制为某一个现成模板/);
   assert.match(prompt, /不要让我学习新语法/);
@@ -163,12 +166,83 @@ test("selecting a recipe inserts a compose fence that already holds the recommen
   }
 
   const layers = pickerItems().find((item) => item.name === "layers");
-  assert.match(layers.prompt, /「分层结构」/);
+  assert.match(layers.prompt, /「分层图」/);
   assert.match(layers.prompt, /我的材料：/);
-  assert.match(layers.body, /「分层结构」/);
+  assert.match(layers.body, /「分层图」/);
 
   const other = pickerItems().find((item) => item.name === "other");
-  assert.match(other.prompt, /自由组合任意 Markdown \/ HTML/);
+  assert.match(other.prompt, /自由组合图文/);
   assert.match(other.prompt, /不要把结果限制为某一个现成模板/);
   assert.ok(other.body.includes(other.prompt));
+});
+
+const STABLE_IDS = [
+  "columns-join", "fan-out", "layers", "facets", "two-row", "icon-rail",
+  "sequence", "steps", "compare", "timeline", "lanes", "tabs", "chart",
+  "tunable", "converter", "code-walkthrough", "stepper", "trace", "plan",
+  "inspect-grid", "other",
+];
+
+test("labels stay recognizable graphic types, and hints say when an author would use them", () => {
+  const items = pickerItems();
+  assert.deepEqual(items.map((item) => item.name), STABLE_IDS);
+  const hints = items.map((item) => item.hint);
+  assert.equal(new Set(hints).size, hints.length, "scenarios must be distinguishable");
+  const hidden = [
+    ...INTERNAL_LAYOUT_TERMS_NOT_FOR_AUTHORS,
+    "Play", "DIL", "icon-rail", "flow-row", "flow-stack", "param-bench",
+    "inspect-grid", "stepper", "步进器", "检视格", "图标窄栏", "参数台",
+    "JavaScript", "UML",
+  ];
+  for (const item of items) {
+    assert.match(item.hint, /^适合/, item.name);
+    assert.ok(item.hint !== `适合画${item.label}`, item.name);
+    assert.ok(!item.hint.includes(item.label), `${item.name} hint should not just restate the name`);
+    const shown = `${item.label}\n${item.hint}\n${item.prompt}`;
+    for (const term of hidden) {
+      assert.doesNotMatch(shown, new RegExp(term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")), `${item.name} shows ${term}`);
+    }
+  }
+});
+
+test("names, scenarios, prompts, and previews stay matched to real capabilities", () => {
+  const byName = Object.fromEntries(pickerItems().map((item) => [item.name, item]));
+  const svg = (name) => decodePreview(byName[name]);
+
+  assert.equal(byName["columns-join"].label, "关联图");
+  assert.match(byName["columns-join"].hint, /中间一项关联/);
+  assert.doesNotMatch(byName["columns-join"].label, /饼图|对比图|并列图/);
+  assert.equal((svg("columns-join").match(/<rect /g) || []).length, 3);
+  assert.match(svg("columns-join"), /M20 24h8M44 24h8/);
+
+  assert.equal(byName.facets.label, "并列图");
+  assert.match(byName.facets.hint, /几个方面.*没有先后/);
+  assert.doesNotMatch(byName.facets.label, /饼图|对比图|关联图/);
+  assert.equal((svg("facets").match(/<rect /g) || []).length, 4);
+  assert.doesNotMatch(svg("facets"), /M20 24h8|L48 9/);
+
+  assert.equal(byName.compare.label, "对比图");
+  assert.match(byName.compare.hint, /同一条件/);
+  assert.equal((svg("compare").match(/<rect /g) || []).length, 2);
+
+  assert.equal(byName["two-row"].label, "上下对照图");
+  assert.match(byName["two-row"].hint, /背景过程.*重点过程/);
+  assert.equal((svg("two-row").match(/<rect /g) || []).length, 6);
+
+  assert.equal(byName.chart.label, "数据图");
+  assert.match(byName.chart.hint, /柱状、折线或占比/);
+  assert.doesNotMatch(byName.chart.label, /饼图/);
+  assert.match(svg("chart"), /M12 8v32h48/);
+
+  assert.equal(byName.stepper.label, "逐步演示");
+  assert.match(byName.stepper.hint, /停在某一步/);
+  assert.equal(byName.trace.label, "路径标注图");
+  assert.match(byName.trace.hint, /已有流程或状态图/);
+  assert.equal(byName["inspect-grid"].label, "格子图");
+  assert.match(byName["inspect-grid"].hint, /哪几格特别/);
+
+  assert.equal(byName.other.label, "其他");
+  assert.match(byName.other.hint, /现成图形无法表达/);
+  assert.match(byName.other.prompt, /自由组合图文/);
+  assert.match(byName.other.prompt, /任意 Markdown \/ HTML/);
 });

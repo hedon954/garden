@@ -336,7 +336,7 @@ describe("Typora /garden slash suggest on typora-community-plugin 2.10.73", { co
     assert.equal(result, inserted);
     assert.match(result, /^```garden compose\n/);
     assert.ok(result.includes(other.prompt));
-    assert.match(other.prompt, /自由组合任意 Markdown \/ HTML/);
+    assert.match(other.prompt, /自由组合图文/);
     assert.match(other.prompt, /不要把结果限制为某一个现成模板/);
     assert.doesNotMatch(result, /\/garden/u);
     assert.equal(parseCompose(other.prompt).uncompiled, true);

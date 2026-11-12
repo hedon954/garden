@@ -21,7 +21,7 @@ function escapeHtml(value) {
   return String(value).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;");
 }
 
-/** HTML for one slash-menu row: a recipe-faithful thumbnail, the name, and a short hint. */
+/** HTML for one slash-menu row: schematic, graphic type, and when an author would use it. */
 export function suggestHtml(item) {
   const hint = item.hint ? `<span class="garden-suggest-hint">${escapeHtml(item.hint)}</span>` : "";
   return `<span class="garden-suggest"><img class="garden-suggest-thumb" alt="" width="72" height="48" src="${item.preview}"><span class="garden-suggest-copy"><span class="garden-suggest-label">${escapeHtml(item.label)}</span>${hint}</span></span>`;
