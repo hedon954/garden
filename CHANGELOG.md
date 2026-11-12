@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.14.12
+
+This is an editor release. Garden’s rendering engine and authoring format are unchanged.
+
+- In Typora, `/garden` lists recognizable graphic types with a short use-case and a schematic, plus Other when no built-in type fits and the author needs to combine text and graphics freely.
+- Choosing an item replaces the typed `/garden` query with a unified `garden compose` block that already holds the recommended prompt; authors do not copy a snippet or learn a new fence language.
+- When the caret is near the bottom of the window, the list opens upward, keeps a readable width inside the viewport, and scrolls inside the menu.
+- Enter on the `/garden` command hint completes `/garden` and immediately shows the diagram list, so the next choice can insert the compose block. IME confirmation, Tab, click and cancel stay on their existing paths.
+- Ship matching Garden 0.14.12 Cursor / VS Code VSIX and Typora ZIP.
+
 ## 0.14.8
 
 - Keep closing punctuation with inline math, and contain long inline formulas in local scroll viewports without widening the article.
