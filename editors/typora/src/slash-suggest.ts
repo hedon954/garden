@@ -1,3 +1,4 @@
+import { bindGardenPickerPlacement, caretClientRect, typoraAutoSuggestElement } from "../../../ui/garden/picker-placement.mjs";
 import { filterPickerItems, pickerItems, pickerSelectionResult, slashQuery, suggestHtml } from "../../../ui/garden/snippets.mjs";
 
 type PickerItem = ReturnType<typeof pickerItems>[number];
@@ -25,6 +26,7 @@ export class GardenSlashSuggest extends core.EditorSuggest {
   private replaceLength = 1;
   private lead = "";
   private phase: "command" | "components" = "command";
+  private placement: { apply(): void; destroy(): void } | undefined;
 
   constructor(edits: EditBus | undefined) {
     super();
@@ -79,5 +81,21 @@ export class GardenSlashSuggest extends core.EditorSuggest {
 
   lengthOfTextBeforeToBeReplaced(_query?: string) {
     return this.replaceLength;
+  }
+
+  show(range: unknown, query: string) {
+    super.show(range, query);
+    const container = typoraAutoSuggestElement();
+    if (!container) return;
+    this.placement = bindGardenPickerPlacement({
+      container,
+      getAnchorRect: () => caretClientRect(globalThis),
+    });
+  }
+
+  hide() {
+    this.placement?.destroy();
+    this.placement = undefined;
+    super.hide();
   }
 }

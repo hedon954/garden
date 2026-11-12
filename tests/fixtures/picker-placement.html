@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <title>Garden picker placement fixture</title>
+  <style>
+    body { font: 14px/1.4 -apple-system, sans-serif; margin: 16px; color: #222; }
+    h1 { font-size: 18px; }
+    .board { position: relative; border: 1px solid #ccc; background: #f7f5f0; overflow: hidden; margin: 16px 0 28px; }
+    .caret { position: absolute; background: #1d4ed8; color: #fff; font-size: 11px; padding: 0 4px; }
+    .menu { position: absolute; background: #fff; border: 1px solid #bbb; border-radius: 6px; overflow: auto; box-shadow: 0 6px 16px rgba(0,0,0,.12); }
+    .menu li { list-style: none; margin: 0; padding: 4px 8px; height: 56px; box-sizing: border-box; display: flex; align-items: center; gap: 8px; }
+    .menu ul { margin: 0; padding: 0; }
+    .thumb { width: 72px; height: 48px; background: #e8e0d4; flex: none; }
+    table { border-collapse: collapse; margin-top: 8px; }
+    th, td { border: 1px solid #ddd; padding: 4px 8px; text-align: left; font-variant-numeric: tabular-nums; }
+    .ok { color: #047857; }
+    .fail { color: #b91c1c; }
+    code { font-size: 12px; }
+  </style>
+</head>
+<body>
+  <h1>Garden Typora picker placement fixture</h1>
+  <p>打开本页即可自动测量几何，不必再点选。不要用它驱动真实 Typora。模块路径：<code>ui/garden/picker-placement.mjs</code>。</p>
+  <div id="results"></div>
+  <script type="module">
+    import { placePickerMenu } from "../../ui/garden/picker-placement.mjs";
+
+    const cases = [
+      {
+        name: "user-bottom-1024x611",
+        viewport: { left: 0, top: 0, width: 1024, height: 611 },
+        anchor: { left: 315, top: 519, width: 72, height: 8 },
+        menu: { width: 320, height: 21 * 56 },
+        preferredLeft: 300,
+        expect: "above",
+      },
+      {
+        name: "top-long-list",
+        viewport: { left: 0, top: 0, width: 800, height: 400 },
+        anchor: { left: 24, top: 16, width: 80, height: 20 },
+        menu: { width: 300, height: 1400 },
+        expect: "below",
+      },
+      {
+        name: "middle-short-list",
+        viewport: { left: 0, top: 0, width: 800, height: 600 },
+        anchor: { left: 80, top: 240, width: 60, height: 18 },
+        menu: { width: 240, height: 120 },
+        expect: "below",
+      },
+      {
+        name: "right-edge",
+        viewport: { left: 0, top: 0, width: 1024, height: 600 },
+        anchor: { left: 900, top: 40, width: 40, height: 16 },
+        menu: { width: 360, height: 80 },
+        preferredLeft: 885,
+        expect: "below",
+      },
+      {
+        name: "zoomed-visualViewport",
+        viewport: { left: 80, top: 40, width: 640, height: 380 },
+        anchor: { left: 120, top: 360, width: 40, height: 16 },
+        menu: { width: 300, height: 500 },
+        expect: "above",
+      },
+    ];
+
+    const root = document.getElementById("results");
+    let failed = 0;
+    for (const item of cases) {
+      const viewport = withRightBottom(item.viewport);
+      const anchor = withRightBottom(item.anchor);
+      const placed = placePickerMenu({ anchor, viewport, menu: item.menu, preferredLeft: item.preferredLeft });
+      const ok = placed.placement === item.expect
+        && placed.top >= viewport.top
+        && placed.top + placed.maxHeight <= viewport.bottom + 0.01
+        && placed.left + placed.width <= viewport.right + 0.01;
+      if (!ok) failed += 1;
+      const board = document.createElement("section");
+      const scale = Math.min(1, 640 / viewport.width);
+      board.innerHTML = `
+        <h2>${item.name} <span class="${ok ? "ok" : "fail"}">${ok ? "ok" : "fail"} ${placed.placement}</span></h2>
+        <div class="board" style="width:${viewport.width * scale}px;height:${viewport.height * scale}px">
+          <div class="caret" style="left:${(anchor.left-viewport.left)*scale}px;top:${(anchor.top-viewport.top)*scale}px;width:${anchor.width*scale}px;height:${Math.max(8,anchor.height*scale)}px">/garden</div>
+          <div class="menu" style="left:${(placed.left-viewport.left)*scale}px;top:${(placed.top-viewport.top)*scale}px;width:${placed.width*scale}px;height:${placed.maxHeight*scale}px"></div>
+        </div>
+        <table>
+          <tr><th>placement</th><td>${placed.placement}</td></tr>
+          <tr><th>top,left</th><td>${placed.top.toFixed(1)}, ${placed.left.toFixed(1)}</td></tr>
+          <tr><th>maxHeight x width</th><td>${placed.maxHeight.toFixed(1)} x ${placed.width.toFixed(1)}</td></tr>
+        </table>`;
+      root.append(board);
+    }
+    const summary = document.createElement("p");
+    summary.textContent = failed ? `失败 ${failed} 组` : `全部 ${cases.length} 组几何约束成立`;
+    summary.className = failed ? "fail" : "ok";
+    root.prepend(summary);
+
+    function withRightBottom(r) {
+      return { ...r, right: r.left + r.width, bottom: r.top + r.height };
+    }
+  </script>
+</body>
+</html>
