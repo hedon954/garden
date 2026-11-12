@@ -1,6 +1,7 @@
 import { resolveSidecarPath } from "../../../ui/core/fence.mjs";
-import { pickerItems, slashQuery, suggestHtml } from "../../../ui/garden/snippets.mjs";
+import { pickerItems } from "../../../ui/garden/snippets.mjs";
 import { render } from "../../../ui/preview/index";
+import { GardenSlashSuggest } from "./slash-suggest";
 
 // typora-community-plugin exposes its core on this symbol; its own build plugin rewrites imports to the same lookup.
 type Dispose = () => void;
@@ -13,6 +14,7 @@ type Core = {
       features: {
         markdownEditor: {
           codeblock: { registerMode(options: { lang: string; mode: unknown; render: (code: string) => HTMLElement }): Dispose };
+          emit?(name: "edit"): void;
         };
       };
     };
@@ -81,74 +83,6 @@ function codeMode(config: unknown) {
     return typora.CodeMirror?.getMode(config, "markdown") ?? { token: (stream: { skipToEnd(): void }) => (stream.skipToEnd(), null) };
   } catch {
     return { token: (stream: { skipToEnd(): void }) => (stream.skipToEnd(), null) };
-  }
-}
-
-type SlashCommand = { kind: "command" };
-type SlashChoice = SlashCommand | PickerItem;
-type EditBus = { emit?(name: "edit"): void };
-
-/** `/` offers the `/garden` command. Accepting it opens the thumbnail picker. */
-class GardenSlashSuggest {
-  triggerText = "/";
-  private replaceLength = 1;
-  private lead = "";
-  private phase: "command" | "components" = "command";
-
-  constructor(private readonly edits: EditBus | undefined) {}
-
-  findQuery(textBefore: string) {
-    const parsed = slashQuery(textBefore);
-    if (parsed.phase === "none") return { isMatched: false };
-    this.phase = parsed.phase;
-    this.replaceLength = parsed.replaceLength;
-    this.lead = parsed.lead;
-    return { isMatched: true, query: parsed.query };
-  }
-
-  getSuggestions(query: string): SlashChoice[] {
-    if (this.phase === "command") return [{ kind: "command" }];
-    const needle = query.trim().toLowerCase();
-    return pickerItems().filter((item) => {
-      if (!needle) return true;
-      return item.label.toLowerCase().includes(needle) || item.name.toLowerCase().includes(needle);
-    });
-  }
-
-  getSuggestionId(item: SlashChoice) {
-    return "kind" in item ? "command" : item.name || "idea";
-  }
-
-  getSuggestionById(id: string): SlashChoice | undefined {
-    if (id === "command") return { kind: "command" };
-    return pickerItems().find((item) => (item.name || "idea") === id);
-  }
-
-  renderSuggestion(item: SlashChoice) {
-    if ("kind" in item) {
-      return `<span class="garden-suggest garden-suggest-command"><span class="garden-suggest-label">/garden</span><span class="garden-suggest-hint">插入组件想法</span></span>`;
-    }
-    return suggestHtml(item);
-  }
-
-  beforeApply(item: SlashChoice) {
-    if ("kind" in item) {
-      const edits = this.edits;
-      // Paste `/garden`, then ask the editor to reopen suggestions on that text.
-      setTimeout(() => {
-        try {
-          edits?.emit?.("edit");
-        } catch {
-          // The editor's own edit observer still opens the component list.
-        }
-      }, 30);
-      return "/garden";
-    }
-    return `${this.lead}${item.body}\n`;
-  }
-
-  lengthOfTextBeforeToBeReplaced() {
-    return this.replaceLength;
   }
 }
 
