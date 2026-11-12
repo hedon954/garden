@@ -270,9 +270,13 @@ test("typing / offers the garden command, and /garden is the component picker", 
 });
 
 test("editor insertion chooses content inside one Compose entry",()=>{
- const items=pickerItems();assert.equal(items.length,1);assert.equal(items[0].name,"compose");
- assert.match(items[0].body,/^```garden compose\n/);assert.match(suggestHtml(items[0]),/garden-suggest-thumb/);
- assert.match(guidanceFence(),/^```garden compose\n/);assert.throws(()=>guidanceFence("unknown"),/garden compose/);
+ const items=pickerItems();
+ assert.ok(items.length > 1);
+ assert.ok(items.every((item) => /^```garden compose\n/.test(item.body)));
+ assert.ok(items.some((item) => item.name === "other" && item.label === "其他"));
+ assert.match(suggestHtml(items[0]), /garden-suggest-thumb/);
+ assert.match(guidanceFence(), /^```garden compose\n/);
+ assert.throws(() => guidanceFence("unknown"), /garden compose/);
 });
 
 test("editor snippets, templates and replacements share the one Compose catalog",()=>{

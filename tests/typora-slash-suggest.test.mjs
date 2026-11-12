@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, test } from "node:test";
-import { guidanceFence, pickerItems, slashQuery, suggestHtml } from "../ui/garden/snippets.mjs";
+import { pickerItems, slashQuery, suggestHtml } from "../ui/garden/snippets.mjs";
 
 const CORE = Symbol.for("typora-plugin-core@v2");
 const COMMAND_HINT = `<span class="garden-suggest garden-suggest-command"><span class="garden-suggest-label">/garden</span><span class="garden-suggest-hint">插入组件想法</span></span>`;
@@ -192,8 +192,31 @@ function installEditor(editor) {
   globalThis.editor = editor;
 }
 
+const notices = [];
+const copied = [];
+const testClipboard = {
+  writeText(text) {
+    return testClipboard.impl(text);
+  },
+  impl(text) {
+    copied.push(text);
+    return Promise.resolve();
+  },
+};
 globalThis.window = globalThis;
-globalThis[CORE] = { EditorSuggest: CommunityEditorSuggest };
+const navigatorRef = globalThis.navigator;
+if (navigatorRef && Object.getOwnPropertyDescriptor(globalThis, "navigator")?.configurable === false) {
+  Object.defineProperty(navigatorRef, "clipboard", { configurable: true, writable: true, value: testClipboard });
+} else {
+  Object.defineProperty(globalThis, "navigator", { configurable: true, writable: true, value: { clipboard: testClipboard } });
+}
+globalThis[CORE] = {
+  EditorSuggest: CommunityEditorSuggest,
+  Notice: {
+    success(message) { notices.push(["success", message]); },
+    info(message) { notices.push(["info", message]); },
+  },
+};
 const { GardenSlashSuggest } = await import("../editors/typora/src/slash-suggest.ts");
 
 describe("Typora /garden slash suggest on typora-community-plugin 2.10.73", { concurrency: 1 }, () => {
@@ -266,7 +289,9 @@ describe("Typora /garden slash suggest on typora-community-plugin 2.10.73", { co
     }
   });
 
-  test("/garden shows the compose picker and apply pastes the fence through pasteHandler", () => {
+  test("/garden lists recommended diagrams plus 其他, and apply copies the prompt without pasting a fence", async () => {
+    copied.length = 0;
+    notices.length = 0;
     const { editor, calls } = createTyporaEditor();
     installEditor(editor);
     const suggest = new GardenSlashSuggest();
@@ -282,24 +307,62 @@ describe("Typora /garden slash suggest on typora-community-plugin 2.10.73", { co
     assert.equal(shown.query, "");
     assert.equal(shown.handlers, suggest._handlers);
     const items = shown.handlers.search("");
-    assert.equal(items.length, 1);
-    assert.equal(items[0].name, "compose");
-    assert.deepEqual(editor.autoComplete.state.match.map((item) => item.name), ["compose"]);
-    assert.equal(editor.autoComplete.state.match.length, items.length);
+    const expected = pickerItems();
+    assert.deepEqual(items.map((item) => item.name), expected.map((item) => item.name));
+    assert.equal(items.at(-1).name, "other");
+    assert.equal(items.at(-1).label, "其他");
+    assert.deepEqual(editor.autoComplete.state.match.map((item) => item.name), expected.map((item) => item.name));
     const html = shown.handlers.render(items[0], false);
-    assert.equal(html, `<li class="typ-suggestion " data-content="compose">${suggestHtml(pickerItems()[0])}</li>`);
+    assert.equal(html, `<li class="typ-suggestion " data-content="${expected[0].name}">${suggestHtml(expected[0])}</li>`);
 
-    editor.autoComplete.apply("compose");
+    const otherHits = shown.handlers.search("其他");
+    assert.ok(otherHits.some((item) => item.name === "other"));
+
+    editor.autoComplete.apply("other");
     assert.equal(calls.nativeApply.length, 0);
     assert.deepEqual(calls.paste, [{
-      markdown: `${guidanceFence()}\n`,
+      markdown: "/garden",
       isMarkdown: true,
       replaceStart: 0,
       replaceEnd: "/garden".length,
-      id: "compose",
+      id: "other",
     }]);
     assert.equal(calls.hide, 1);
     assert.equal(suggest.isUsing, false);
+    await Promise.resolve();
+    await Promise.resolve();
+    assert.deepEqual(copied, [expected.at(-1).prompt]);
+    assert.match(expected.at(-1).prompt, /自由组合任意 Markdown \/ HTML/);
+    assert.match(expected.at(-1).prompt, /不要把结果限制为某一个现成模板/);
+    assert.deepEqual(notices, [["success", "已复制「其他」推荐提示词。把材料与目标填进去后发给 AI 即可。"]]);
+  });
+
+  test("a failed clipboard write keeps /garden and shows a failure notice", async () => {
+    copied.length = 0;
+    notices.length = 0;
+    const { editor, calls } = createTyporaEditor();
+    installEditor(editor);
+    const suggest = new GardenSlashSuggest();
+    editor.selection.textAround = around("/garden 其他");
+    onEdit(suggest);
+    const previous = testClipboard.impl;
+    testClipboard.impl = async () => { throw new Error("denied"); };
+    try {
+      editor.autoComplete.apply("other");
+    } finally {
+      testClipboard.impl = previous;
+    }
+    assert.deepEqual(calls.paste, [{
+      markdown: "/garden 其他",
+      isMarkdown: true,
+      replaceStart: 0,
+      replaceEnd: "/garden 其他".length,
+      id: "other",
+    }]);
+    await Promise.resolve();
+    await Promise.resolve();
+    assert.deepEqual(copied, []);
+    assert.deepEqual(notices, [["info", "没能复制「其他」推荐提示词，已保留你刚输入的内容，请再试一次或手动复制。"]]);
   });
 
   test("accepting the / command hint pastes /garden and re-emits edit", async () => {

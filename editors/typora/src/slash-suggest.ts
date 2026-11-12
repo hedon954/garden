@@ -1,4 +1,4 @@
-import { pickerItems, slashQuery, suggestHtml } from "../../../ui/garden/snippets.mjs";
+import { copyPickerPrompt, filterPickerItems, pickerItems, typoraKeepTypedText, slashQuery, suggestHtml } from "../../../ui/garden/snippets.mjs";
 
 type PickerItem = ReturnType<typeof pickerItems>[number];
 type SlashCommand = { kind: "command" };
@@ -13,7 +13,10 @@ type EditorSuggestCtor = new () => {
   lengthOfTextBeforeToBeReplaced(query: string): number;
 };
 
-const core = (window as unknown as Record<symbol, { EditorSuggest: EditorSuggestCtor }>)[Symbol.for("typora-plugin-core@v2")];
+const core = (window as unknown as Record<symbol, {
+  EditorSuggest: EditorSuggestCtor;
+  Notice: { info(message: string): void; success(message: string): void };
+}>)[Symbol.for("typora-plugin-core@v2")];
 
 /** `/` offers the `/garden` command. Accepting it opens the thumbnail picker. */
 export class GardenSlashSuggest extends core.EditorSuggest {
@@ -21,6 +24,7 @@ export class GardenSlashSuggest extends core.EditorSuggest {
   private readonly edits: EditBus | undefined;
   private replaceLength = 1;
   private lead = "";
+  private typedText = "";
   private phase: "command" | "components" = "command";
 
   constructor(edits: EditBus | undefined) {
@@ -34,16 +38,13 @@ export class GardenSlashSuggest extends core.EditorSuggest {
     this.phase = parsed.phase === "components" ? "components" : "command";
     this.replaceLength = parsed.replaceLength;
     this.lead = parsed.lead;
+    this.typedText = textBefore.slice(-parsed.replaceLength);
     return { isMatched: true as const, query: parsed.query };
   }
 
   getSuggestions(query: string): SlashChoice[] {
     if (this.phase === "command") return [{ kind: "command" }];
-    const needle = query.trim().toLowerCase();
-    return pickerItems().filter((item) => {
-      if (!needle) return true;
-      return item.label.toLowerCase().includes(needle) || item.name.toLowerCase().includes(needle);
-    });
+    return filterPickerItems(query);
   }
 
   getSuggestionId(item: SlashChoice) {
@@ -75,7 +76,13 @@ export class GardenSlashSuggest extends core.EditorSuggest {
       }, 30);
       return "/garden";
     }
-    return `${this.lead}${item.body}\n`;
+    const keep = typoraKeepTypedText(this.typedText);
+    void copyPickerPrompt(item, {
+      writeText: (text: string) => navigator.clipboard.writeText(text),
+      notifySuccess: (message: string) => core.Notice.success(message),
+      notifyFailure: (message: string) => core.Notice.info(message),
+    });
+    return keep;
   }
 
   lengthOfTextBeforeToBeReplaced(_query?: string) {

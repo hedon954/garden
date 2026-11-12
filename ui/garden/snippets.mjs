@@ -1,5 +1,7 @@
 import { COMPOSE_INTENT } from "../compose/examples.mjs";
 import { CATALOG } from "./catalog.mjs";
+import { DIAGRAM_RECIPES, filterPickerItems, pickerSelectionResult, copyPickerPrompt, typoraKeepTypedText, composeFenceOpen, COMPOSE_FENCE_NAME, copySuccessNotice, copyFailureNotice } from "./diagram-recipes.mjs";
+export { filterPickerItems, pickerSelectionResult, DIAGRAM_RECIPES, copyPickerPrompt, typoraKeepTypedText, composeFenceOpen, COMPOSE_FENCE_NAME, copySuccessNotice, copyFailureNotice };
 export function guidanceFence(name="compose") {
   if(name&&name!=="compose")throw new Error("文章组件只使用 garden compose。");
   return "```garden compose\n"+COMPOSE_INTENT+"\n```";
@@ -15,14 +17,14 @@ export function gardenBlocksMarkdown() {
 }
 function xmlEscape(value){return String(value).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");}
 export function textReplacementPlist(){return '<?xml version="1.0" encoding="UTF-8"?>\n<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">\n<plist version="1.0"><array><dict><key>phrase</key><string>'+xmlEscape(guidanceFence())+'</string><key>shortcut</key><string>;gcompose</string></dict></array></plist>\n';}
-const preview="data:image/svg+xml,"+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="72" height="48" viewBox="0 0 72 48"><rect x="8" y="8" width="56" height="32" rx="4" fill="none" stroke="currentColor"/><path d="M16 18h40M16 26h26" stroke="currentColor"/></svg>');
 function escapeHtml(value) {
   return String(value).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;");
 }
 
-/** HTML for one slash-menu row: a thumbnail plus the label. */
+/** HTML for one slash-menu row: a recipe-faithful thumbnail, the name, and a short hint. */
 export function suggestHtml(item) {
-  return `<span class="garden-suggest"><img class="garden-suggest-thumb" alt="" width="72" height="48" src="${item.preview}"><span class="garden-suggest-label">${escapeHtml(item.label)}</span></span>`;
+  const hint = item.hint ? `<span class="garden-suggest-hint">${escapeHtml(item.hint)}</span>` : "";
+  return `<span class="garden-suggest"><img class="garden-suggest-thumb" alt="" width="72" height="48" src="${item.preview}"><span class="garden-suggest-copy"><span class="garden-suggest-label">${escapeHtml(item.label)}</span>${hint}</span></span>`;
 }
 
 const SLASH_COMMAND = "garden";
@@ -54,4 +56,4 @@ export function slashQuery(textBefore) {
   return none;
 }
 
-export function pickerItems(){return [{name:"compose",label:"Compose",body:guidanceFence(),preview,when:CATALOG.compose.when,whenNot:CATALOG.compose.whenNot}];}
+export function pickerItems(){return DIAGRAM_RECIPES.map((item)=>({...item}));}

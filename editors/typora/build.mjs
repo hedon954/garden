@@ -32,6 +32,7 @@ const css = [
   ".garden-suggest-thumb { width: 72px; height: 48px; object-fit: cover; border-radius: 4px; background: #f6f3ec; flex: none; }",
   ".garden-suggest-label { font-size: 13px; line-height: 1.3; }",
   ".garden-suggest-hint { opacity: 0.65; font-size: 12px; }",
+  ".garden-suggest-copy { display: flex; flex-direction: column; min-width: 0; gap: 1px; }",
 ];
 fs.writeFileSync(path.join(out, "style.css"), css.join("\n"));
 fs.copyFileSync(path.join(here, "manifest.json"), path.join(out, "manifest.json"));

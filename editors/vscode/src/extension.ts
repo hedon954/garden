@@ -10,7 +10,7 @@ import {
 } from "../../../ui/core/index.mjs";
 import { checkGardenMarkdown } from "../../../ui/garden/check.mjs";
 import { gardenFoldRanges, runGardenFold } from "./folding.mjs";
-import { pickerItems } from "../../../ui/garden/snippets.mjs";
+import { composeFenceOpen, copyPickerPrompt, pickerItems } from "../../../ui/garden/snippets.mjs";
 
 declare const __GARDEN_RECIPES__: { file: string; markdown: string }[];
 
@@ -225,14 +225,25 @@ async function foldGarden(action: "fold" | "unfold", all: boolean, uri?: vscode.
 async function insertIntent() {
   const editor = vscode.window.activeTextEditor;
   if (!editor || editor.document.languageId !== "markdown") return;
-  const items = pickerItems().map((item) => ({ label: item.label, description: item.when, text: item.body }));
+  const items = pickerItems().map((item) => ({
+    label: item.label,
+    description: item.hint ?? item.when,
+    text: item.body,
+    prompt: item.prompt,
+  }));
   const picked = await vscode.window.showQuickPick(items, { placeHolder: "插入 Garden 块" });
   if (!picked) return;
+  await copyPickerPrompt(picked, {
+    writeText: (text) => vscode.env.clipboard.writeText(text),
+    notifySuccess: (message) => void vscode.window.showInformationMessage(message),
+    notifyFailure: (message) => void vscode.window.showWarningMessage(message),
+  });
   const position = editor.selection.active;
   const lineText = editor.document.lineAt(position.line).text;
   const prefix = lineText.trim() ? "\n\n" : "";
   const at = prefix ? new vscode.Position(position.line, lineText.length) : position;
-  await editor.insertSnippet(new vscode.SnippetString(`${prefix}${picked.text}\n`), at);
+  await editor.insertSnippet(new vscode.SnippetString(`${prefix}${picked.text}
+`), at);
 }
 
 function gardenCompletions() {
@@ -242,15 +253,15 @@ function gardenCompletions() {
       provideCompletionItems(document, position) {
         const line = document.lineAt(position).text.slice(0, position.character);
         if (!/(^|\s)`{3,}g(?:arden)?\s*$/u.test(line) && !/`{3,}garden\s+\w*$/u.test(line)) return undefined;
-        return pickerItems().map((item) => {
-          const completion = new vscode.CompletionItem(item.name || "想法", vscode.CompletionItemKind.Snippet);
-          completion.detail = item.label;
-          completion.documentation = `${item.when} ${item.whenNot}`;
-          const info = item.name ? `garden ${item.name}` : "garden";
-          completion.insertText = new vscode.SnippetString(`${info}\n$0\n\`\`\``);
-          completion.filterText = `garden ${item.name}`;
-          return completion;
-        });
+        const completion = new vscode.CompletionItem("compose", vscode.CompletionItemKind.Snippet);
+        completion.detail = "Garden Compose";
+        completion.documentation = "在统一的 garden compose 围栏里组合内容。图示选择请用插入 Garden 块命令。";
+        completion.insertText = new vscode.SnippetString(`${composeFenceOpen()}
+$0
+\`\`\``);
+        completion.filterText = composeFenceOpen();
+        return [completion];
+
       },
     },
     " ",
