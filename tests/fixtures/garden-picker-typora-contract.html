@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <title>Garden Typora picker: width + Enter contract fixture</title>
+  <style>
+    /* Copied from Typora 1.14.15 TypeMark/style/base-control.css (auto-suggest only). */
+    .auto-suggest-container {
+      position: fixed;
+      z-index: 10;
+      font-size: .9rem;
+      display: none;
+      overflow-y: auto;
+      padding: 6px 0;
+      line-height: 2;
+      min-width: 160px;
+      border-radius: 6px;
+      background: #fff;
+      box-sizing: border-box;
+      box-shadow: rgba(15,15,15,.03) 0 0 0 1px, rgba(15,15,15,.04) 0 3px 6px, rgba(15,15,15,.05) 0 9px 24px;
+      transform-origin: top;
+    }
+    .auto-suggest-container.ty-show { display: block; }
+    .auto-suggest-container ul { padding: 0; margin: 0; list-style: none; }
+    .auto-suggest-container li {
+      padding: 1px 10px 1px 0;
+      cursor: pointer;
+      user-select: none;
+      min-width: 124px;
+      position: relative;
+    }
+    .auto-suggest-container li.active, .auto-suggest-container li:hover { background: #f6f8fa; }
+
+    /* Garden plugin rows (including the min-width:0 shrink that caused ~95px used width). */
+    .garden-suggest { display: flex; align-items: center; gap: 8px; padding-left: 8px; }
+    .garden-suggest-thumb { width: 72px; height: 48px; object-fit: cover; border-radius: 4px; background: #e8e0d4; flex: none; }
+    .garden-suggest-label { font-size: 13px; line-height: 1.3; }
+    .garden-suggest-hint { opacity: 0.65; font-size: 12px; }
+    .garden-suggest-copy { display: flex; flex-direction: column; min-width: 0; gap: 1px; }
+
+    /* Fixed rules applied only to the Garden menu. */
+    .auto-suggest-container.garden-picker-open { overflow-x: hidden; overflow-y: auto; box-sizing: border-box; }
+    .garden-picker-open .garden-suggest-thumb { width: 72px; height: 48px; min-width: 72px; flex: none; }
+    .garden-picker-open .garden-suggest-copy { min-width: 12em; flex: 1; }
+
+    body { font: 14px/1.45 -apple-system, sans-serif; margin: 16px; color: #222; }
+    #stage { position: relative; width: 1024px; height: 611px; border: 1px solid #bbb; background: #f4f1ea; overflow: hidden; }
+    #caret { position: absolute; left: 315px; top: 519px; height: 8px; width: 72px; background: #1d4ed8; color: #fff; font-size: 11px; }
+    #editor { width: 100%; min-height: 3.5em; border: 1px solid #ccc; padding: 8px; margin: 12px 0; }
+    .ok { color: #047857; } .fail { color: #b91c1c; }
+    table { border-collapse: collapse; margin: 12px 0; }
+    th, td { border: 1px solid #ddd; padding: 4px 8px; text-align: left; }
+    .thumb { display: inline-block; width: 72px; height: 48px; background: linear-gradient(135deg,#d9cbb8,#eee); border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <h1>Garden Typora picker contract fixture</h1>
+  <p>自包含页面：复制了 Typora 1.14.15 <code>#ty-auto-suggest</code> 的定位/尺寸 CSS，以及原生 Enter 契约（<code>index === -1</code> 时 hide 且不 preventDefault，于是只换行）。打开即可自动测量，也可在下方编辑区按 <kbd>/</kbd> 再按 Enter。不要用 Shell 驱动此页。</p>
+  <div id="stage">
+    <div id="caret">/garden</div>
+    <div id="ty-auto-suggest" class="auto-suggest-container"></div>
+  </div>
+  <div id="summary"></div>
+  <table id="results"></table>
+  <h2>键盘契约</h2>
+  <div id="editor" contenteditable="true">在此输入 / 再按 Enter</div>
+  <pre id="log"></pre>
+  <script>
+    // Inlined from ui/garden/picker-placement.mjs and typora-suggest-contract.mjs so this file
+    // can be copied to the box and opened alone (no other repo files required).
+    const VIEWPORT_MARGIN = 8, ANCHOR_GAP = 4, TYPORA_LEFT_INSET = 15;
+    const READABLE_MIN_WIDTH = 360, READABLE_MAX_WIDTH = 480;
+    function resolvePickerWidth({ measuredWidth = 0, viewportWidth = 0, margin = VIEWPORT_MARGIN, readableMin = READABLE_MIN_WIDTH, readableMax = READABLE_MAX_WIDTH } = {}) {
+      const available = Math.max(0, Number(viewportWidth) - 2 * margin);
+      const floor = Math.min(readableMin, available);
+      const ceil = Math.min(readableMax, available);
+      const measured = Math.max(0, Number(measuredWidth) || 0);
+      return Math.min(ceil, Math.max(floor, measured));
+    }
+    function placePickerMenu({ anchor, viewport, menu, margin = VIEWPORT_MARGIN, gap = ANCHOR_GAP, preferredLeft }) {
+      const maxBelow = Math.max(0, viewport.bottom - margin - (anchor.bottom + gap));
+      const maxAbove = Math.max(0, (anchor.top - gap) - (viewport.top + margin));
+      let placement = "below";
+      if (menu.height <= maxBelow) placement = "below";
+      else if (menu.height <= maxAbove) placement = "above";
+      else placement = maxAbove > maxBelow ? "above" : "below";
+      const maxHeight = Math.min(menu.height, placement === "below" ? maxBelow : maxAbove);
+      const width = resolvePickerWidth({ measuredWidth: menu.width, viewportWidth: viewport.width, margin });
+      let left = preferredLeft ?? anchor.left;
+      left = Math.min(left, viewport.right - margin - width);
+      left = Math.max(left, viewport.left + margin);
+      const top = placement === "below" ? anchor.bottom + gap : anchor.top - gap - maxHeight;
+      return { top, left, width, maxHeight, placement };
+    }
+    function typoraIndexAfterSearch(previousIndex, matchLength) {
+      return matchLength ? Math.min(previousIndex, 0) : -1;
+    }
+    function typoraNativeEnterAction(index) { return index >= 0 ? "apply" : "hide-and-newline"; }
+    function isImeConfirmEnter(event) {
+      return Boolean(event.isComposing) || event.keyCode === 229 || event.which === 229 || event.key === "Process";
+    }
+    function handleGardenSuggestEnter(event, { shown, isGardenMenu, match, index, apply }) {
+      if (!isGardenMenu || !shown) return "ignore";
+      const enterish = event.key === "Enter" || event.key === "Process" || event.keyCode === 229 || event.which === 229;
+      if (enterish && isImeConfirmEnter(event)) return "ime";
+      if (event.key !== "Enter" || event.shiftKey || event.altKey || event.metaKey || event.ctrlKey) return "ignore";
+      if (!match?.length) return "ignore";
+      const selected = index >= 0 ? match[index] : match[0];
+      event.preventDefault();
+      event.stopPropagation();
+      apply(selected);
+      return "apply";
+    }
+
+    const labels = ["三列并排","先到再散开","分层结构","多个切面","上下两行对比","图标窄栏","顺序流程","分步说明","对照","时间节点","交互时序","分组切换","数据图","可调参数","换算器","代码走查","步进器","轨迹","计划与清单","检视格","其他"];
+    const hints = ["几列并排，中间把两边接起来","先到一处，再同时连到几处","自上而下的层次，不一定是流程","一件事的几个并列方面","上面一行作背景，下面一行才是重点","左边图标，标题和正文共用右栏","有明确先后","一步一步说明","对照比较","时间线上的节点","交互发生的先后","分组后切换查看","数据图","可调节的参数","换算关系","顺着代码走读","逐步执行","轨迹变化","计划与清单","格子里检视","自由组合 Markdown / HTML 基础块"];
+
+    const menuEl = document.getElementById("ty-auto-suggest");
+    function renderList(items) {
+      menuEl.innerHTML = "<ul>" + items.map((item, i) =>
+        `<li class="${i === 0 ? "active typ-suggestion" : "typ-suggestion"}" data-content="${item.id}">` +
+        `<span class="garden-suggest"><span class="garden-suggest-thumb thumb"></span>` +
+        `<span class="garden-suggest-copy"><span class="garden-suggest-label">${item.label}</span>` +
+        `<span class="garden-suggest-hint">${item.hint}</span></span></span></li>`
+      ).join("") + "</ul>";
+    }
+
+    const rows = labels.map((label, i) => ({ id: "i"+i, label, hint: hints[i] }));
+    renderList(rows);
+    menuEl.classList.add("ty-show");
+
+    // Reproduce typora shrink-to-fit: fixed box, no width, content min-width:0.
+    menuEl.style.top = "527px";
+    menuEl.style.left = "300px";
+    menuEl.style.right = "auto";
+    menuEl.style.width = "";
+    menuEl.style.maxWidth = "";
+    menuEl.style.minWidth = "";
+    const shrinkUsed = menuEl.getBoundingClientRect().width;
+
+    const stage = document.getElementById("stage").getBoundingClientRect();
+    const viewport = { left: 0, top: 0, width: 1024, height: 611, right: 1024, bottom: 611 };
+    const anchor = { left: 315, top: 519, width: 72, height: 8, right: 387, bottom: 527 };
+    // Measure like the fix: release constraints, apply readable minWidth, don't trust used width.
+    menuEl.style.maxWidth = "none";
+    menuEl.style.width = "max-content";
+    menuEl.style.minWidth = READABLE_MIN_WIDTH + "px";
+    const intrinsic = Math.max(READABLE_MIN_WIDTH, menuEl.scrollWidth, menuEl.offsetWidth);
+    const placed = placePickerMenu({
+      anchor, viewport,
+      menu: { width: intrinsic, height: menuEl.scrollHeight },
+      preferredLeft: 315 - TYPORA_LEFT_INSET,
+    });
+    menuEl.classList.add("garden-picker-open");
+    menuEl.style.top = placed.top + "px";
+    menuEl.style.left = placed.left + "px";
+    menuEl.style.minWidth = placed.width + "px";
+    menuEl.style.width = placed.width + "px";
+    menuEl.style.maxWidth = placed.width + "px";
+    menuEl.style.maxHeight = placed.maxHeight + "px";
+    const used = menuEl.getBoundingClientRect();
+    const firstLabel = menuEl.querySelector(".garden-suggest-label");
+    const firstThumb = menuEl.querySelector(".garden-suggest-thumb");
+
+    const checks = [];
+    function row(name, ok, detail) { checks.push({ name, ok, detail }); }
+    row("shrink-to-fit used width can be ~95px before the fix", shrinkUsed < 200, `used ${shrinkUsed.toFixed(1)}px (typifies the too-narrow menu)`);
+    row("placement flips above in a 1024x611 bottom caret", placed.placement === "above", placed.placement);
+    row("applied width stays at the readable floor, not 95px", used.width >= 360 - 1 && used.width < 500, `${used.width.toFixed(1)}px`);
+    row("thumbnail stays 72px", Math.abs(firstThumb.getBoundingClientRect().width - 72) < 1, `${firstThumb.getBoundingClientRect().width.toFixed(1)}px`);
+    row("first label is not forced into 2-3 characters", firstLabel.getClientRects().length <= 2 && firstLabel.textContent.length > 3, firstLabel.textContent + " / lines " + firstLabel.getClientRects().length);
+    row("native fresh index is -1 (newline path)", typoraNativeEnterAction(typoraIndexAfterSearch(-1, 1)) === "hide-and-newline", typoraIndexAfterSearch(-1, 1));
+    let applied = null, newline = false;
+    const ev = {
+      key: "Enter", isComposing: false, keyCode: 13, shiftKey: false,
+      preventDefault() {}, stopPropagation() {},
+    };
+    const native = typoraNativeEnterAction(typoraIndexAfterSearch(-1, 1));
+    if (native === "hide-and-newline") newline = true;
+    const garden = handleGardenSuggestEnter(ev, {
+      shown: true, isGardenMenu: true, match: [{ kind: "command", label: "/garden" }],
+      index: typoraIndexAfterSearch(-1, 1),
+      apply(item) { applied = item.label; newline = false; },
+    });
+    row("Garden Enter at index -1 applies /garden instead of newline", garden === "apply" && applied === "/garden" && newline === false, garden + " " + applied);
+    const ime = handleGardenSuggestEnter({ key: "Enter", isComposing: true, keyCode: 13, preventDefault() { throw new Error("ime prevented"); } }, {
+      shown: true, isGardenMenu: true, match: [{ kind: "command" }], index: 0, apply() { throw new Error("ime apply"); },
+    });
+    row("IME Enter is ignored", ime === "ime", ime);
+    const tab = handleGardenSuggestEnter({ key: "Tab" }, { shown: true, isGardenMenu: true, match: [{ kind: "command" }], index: -1, apply() { throw new Error("tab"); } });
+    row("Tab is left alone", tab === "ignore", tab);
+
+    const table = document.getElementById("results");
+    table.innerHTML = "<tr><th>检查</th><th>结果</th><th>细节</th></tr>" + checks.map(c =>
+      `<tr class="${c.ok ? "ok" : "fail"}"><td>${c.name}</td><td>${c.ok ? "ok" : "fail"}</td><td>${c.detail}</td></tr>`
+    ).join("");
+    const failed = checks.filter(c => !c.ok).length;
+    document.getElementById("summary").innerHTML = failed
+      ? `<p class="fail">失败 ${failed} / ${checks.length}</p>`
+      : `<p class="ok">全部 ${checks.length} 项通过（这是隔离 fixture，不是真实 Typora 截图验收）</p>`;
+
+    // Live keyboard: "/" opens command, Enter completes /garden and shows 21 items.
+    const editor = document.getElementById("editor");
+    const log = document.getElementById("log");
+    let phase = "command";
+    let typoraIndex = -1;
+    function note(msg) { log.textContent += msg + "\\n"; }
+    editor.addEventListener("keydown", (event) => {
+      const text = editor.innerText.replace(/\u00a0/g, " ");
+      if (phase === "command" && menuEl.classList.contains("ty-show") && menuEl.dataset.mode === "command") {
+        const action = handleGardenSuggestEnter(event, {
+          shown: true, isGardenMenu: true, match: [{ kind: "command" }],
+          index: typoraIndex, apply() {
+            editor.innerText = text.replace(/\/\s*$/, "") + "/garden";
+            typoraIndex = 0;
+            phase = "components";
+            menuEl.dataset.mode = "components";
+            renderList(rows);
+            note("applied /garden and opened " + rows.length + " diagrams");
+          },
+        });
+        if (action === "apply") return;
+        if (event.key === "Enter" && typoraNativeEnterAction(typoraIndex) === "hide-and-newline") {
+          note("NATIVE would insert a newline (index " + typoraIndex + ")");
+        }
+      }
+    }, true);
+    editor.addEventListener("input", () => {
+      const text = editor.innerText.replace(/\u00a0/g, " ");
+      if (/\/$/.test(text) && phase === "command") {
+        typoraIndex = typoraIndexAfterSearch(-1, 1);
+        menuEl.dataset.mode = "command";
+        renderList([{ id: "command", label: "/garden", hint: "插入组件想法" }]);
+        menuEl.classList.add("ty-show", "garden-picker-open");
+        note("command hint shown, typora index=" + typoraIndex);
+      }
+    });
+  </script>
+</body>
+</html>

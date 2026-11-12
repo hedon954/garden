@@ -5,6 +5,9 @@ export const ANCHOR_GAP = 4;
 export const TYPORA_AUTO_SUGGEST_ID = "ty-auto-suggest";
 export const GARDEN_PICKER_CLASS = "garden-picker-open";
 export const TYPORA_LEFT_INSET = 15;
+/** Floor that fits a 72px thumb plus a short Chinese name and hint on readable lines. */
+export const READABLE_MIN_WIDTH = 360;
+export const READABLE_MAX_WIDTH = 480;
 
 /**
  * @typedef {{top:number,right:number,bottom:number,left:number,width:number,height:number}} Rect
@@ -26,7 +29,11 @@ export function placePickerMenu({
   else placement = maxAbove > maxBelow ? "above" : "below";
 
   const maxHeight = Math.min(menu.height, placement === "below" ? maxBelow : maxAbove);
-  const width = Math.min(Math.max(0, menu.width), Math.max(0, viewport.width - 2 * margin));
+  const width = resolvePickerWidth({
+    measuredWidth: menu.width,
+    viewportWidth: viewport.width,
+    margin,
+  });
   let left = preferredLeft ?? anchor.left;
   left = Math.min(left, viewport.right - margin - width);
   left = Math.max(left, viewport.left + margin);
@@ -112,10 +119,7 @@ export function bindGardenPickerPlacement({
   bound.set(container, handle);
 
   function measure() {
-    return {
-      width: Math.max(container.scrollWidth || 0, container.getBoundingClientRect?.().width || 0),
-      height: Math.max(container.scrollHeight || 0, 0),
-    };
+    return measureMenuIntrinsicSize(container);
   }
 
   function apply() {
@@ -143,6 +147,9 @@ export function bindGardenPickerPlacement({
       style.left = `${placed.left}px`;
       style.right = "auto";
       style.maxHeight = `${placed.maxHeight}px`;
+      // Set width, minWidth and maxWidth together so shrink-to-fit cannot collapse below the readable floor.
+      style.minWidth = `${placed.width}px`;
+      style.width = `${placed.width}px`;
       style.maxWidth = `${placed.width}px`;
       container.classList.add(GARDEN_PICKER_CLASS);
       container.dataset.gardenPlacement = placed.placement;
@@ -272,4 +279,51 @@ function scrollActive(container) {
 
 export function typoraAutoSuggestElement(doc = globalThis.document) {
   return doc?.getElementById?.(TYPORA_AUTO_SUGGEST_ID) ?? null;
+}
+
+/**
+ * Clamp a measured menu width to a readable range, never feeding a shrink-to-fit
+ * used width back as the only target. A narrow viewport may shrink below the
+ * readable floor; a wide measurement is capped by READABLE_MAX_WIDTH.
+ */
+export function resolvePickerWidth({
+  measuredWidth = 0,
+  viewportWidth = 0,
+  margin = VIEWPORT_MARGIN,
+  readableMin = READABLE_MIN_WIDTH,
+  readableMax = READABLE_MAX_WIDTH,
+} = {}) {
+  const available = Math.max(0, Number(viewportWidth) - 2 * margin);
+  const floor = Math.min(readableMin, available);
+  const ceil = Math.min(readableMax, available);
+  const measured = Math.max(0, Number(measuredWidth) || 0);
+  return Math.min(ceil, Math.max(floor, measured));
+}
+
+/**
+ * Measure intrinsic size without the previously written maxWidth/width.
+ * Does not use the shrink-to-fit client width as the target.
+ */
+export function measureMenuIntrinsicSize(container, { readableMin = READABLE_MIN_WIDTH } = {}) {
+  if (!container) return { width: readableMin, height: 0 };
+  const style = container.style || {};
+  const prev = {
+    width: style.width,
+    minWidth: style.minWidth,
+    maxWidth: style.maxWidth,
+  };
+  style.maxWidth = "none";
+  style.width = "max-content";
+  if (style.width !== "max-content") style.width = "auto";
+  style.minWidth = `${readableMin}px`;
+  const width = Math.max(
+    readableMin,
+    Number(container.scrollWidth) || 0,
+    Number(container.offsetWidth) || 0,
+  );
+  const height = Math.max(Number(container.scrollHeight) || 0, 0);
+  style.width = prev.width ?? "";
+  style.minWidth = prev.minWidth ?? "";
+  style.maxWidth = prev.maxWidth ?? "";
+  return { width, height };
 }

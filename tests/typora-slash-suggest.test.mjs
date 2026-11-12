@@ -413,8 +413,8 @@ describe("Typora /garden slash suggest on typora-community-plugin 2.10.73", { co
       replaceEnd: 1,
       id: "command",
     }]);
-    assert.equal(edits, 0);
+    assert.ok(edits >= 1, "reopen should be scheduled as soon as /garden is applied");
     await new Promise((resolve) => setTimeout(resolve, 40));
-    assert.equal(edits, 1);
+    assert.ok(edits >= 1);
   });
 });

@@ -3,8 +3,12 @@ import { describe, test } from "node:test";
 import {
   ANCHOR_GAP,
   VIEWPORT_MARGIN,
+  READABLE_MIN_WIDTH,
+  READABLE_MAX_WIDTH,
   bindGardenPickerPlacement,
   placePickerMenu,
+  resolvePickerWidth,
+  measureMenuIntrinsicSize,
   scrollItemIntoContainer,
   viewportRect,
 } from "../ui/garden/picker-placement.mjs";
@@ -23,6 +27,7 @@ describe("placePickerMenu", () => {
     assert.equal(placed.placement, "below");
     assert.equal(placed.top, 80 + 18 + ANCHOR_GAP);
     assert.equal(placed.maxHeight, 200);
+    assert.equal(placed.width, READABLE_MIN_WIDTH);
     assert.ok(placed.top + placed.maxHeight <= 800 - VIEWPORT_MARGIN);
   });
 
@@ -86,6 +91,7 @@ describe("placePickerMenu", () => {
     });
     assert.equal(placed.width, 280 - 2 * VIEWPORT_MARGIN);
     assert.equal(placed.left, VIEWPORT_MARGIN);
+    assert.ok(placed.width < READABLE_MIN_WIDTH);
   });
 
   test("uses visualViewport offsets when the page is pinch-zoomed", () => {
@@ -213,5 +219,40 @@ describe("bindGardenPickerPlacement", () => {
       getViewport: () => box(0, 0, 800, 600),
     });
     assert.equal(listeners.size, 0);
+  });
+});
+
+
+describe("resolvePickerWidth", () => {
+  test("does not lock in a shrink-to-fit used width of ~95px", () => {
+    assert.equal(resolvePickerWidth({ measuredWidth: 95, viewportWidth: 1024 }), READABLE_MIN_WIDTH);
+    assert.ok(resolvePickerWidth({ measuredWidth: 95, viewportWidth: 1024 }) >= 360);
+  });
+
+  test("keeps a measured width between the readable floor and ceiling", () => {
+    assert.equal(resolvePickerWidth({ measuredWidth: 400, viewportWidth: 1024 }), 400);
+    assert.equal(resolvePickerWidth({ measuredWidth: 900, viewportWidth: 1024 }), READABLE_MAX_WIDTH);
+  });
+
+  test("shrinks only when the real viewport cannot fit the readable floor", () => {
+    const width = resolvePickerWidth({ measuredWidth: 95, viewportWidth: 280 });
+    assert.equal(width, 280 - 2 * VIEWPORT_MARGIN);
+    assert.ok(width < READABLE_MIN_WIDTH);
+  });
+});
+
+describe("measureMenuIntrinsicSize", () => {
+  test("ignores a previously applied 95px maxWidth when measuring", () => {
+    const style = { width: "95px", minWidth: "95px", maxWidth: "95px" };
+    const container = {
+      style,
+      scrollWidth: 95,
+      offsetWidth: 95,
+      scrollHeight: 400,
+    };
+    const measured = measureMenuIntrinsicSize(container);
+    assert.equal(measured.width, READABLE_MIN_WIDTH);
+    assert.equal(style.maxWidth, "95px");
+    assert.equal(style.width, "95px");
   });
 });

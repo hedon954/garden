@@ -1,4 +1,5 @@
 import { bindGardenPickerPlacement, caretClientRect, typoraAutoSuggestElement } from "../../../ui/garden/picker-placement.mjs";
+import { bindGardenPickerKeys, ensureTyporaActiveIndex, scheduleGardenCommandReopen } from "../../../ui/garden/typora-suggest-contract.mjs";
 import { filterPickerItems, pickerItems, pickerSelectionResult, slashQuery, suggestHtml } from "../../../ui/garden/snippets.mjs";
 
 type PickerItem = ReturnType<typeof pickerItems>[number];
@@ -27,6 +28,7 @@ export class GardenSlashSuggest extends core.EditorSuggest {
   private lead = "";
   private phase: "command" | "components" = "command";
   private placement: { apply(): void; destroy(): void } | undefined;
+  private keys: { destroy(): void } | undefined;
 
   constructor(edits: EditBus | undefined) {
     super();
@@ -65,15 +67,7 @@ export class GardenSlashSuggest extends core.EditorSuggest {
 
   beforeApply(item: SlashChoice) {
     if ("kind" in item) {
-      const edits = this.edits;
-      // Paste `/garden`, then ask the editor to reopen suggestions on that text.
-      setTimeout(() => {
-        try {
-          edits?.emit?.("edit");
-        } catch {
-          // The editor's own edit observer still opens the component list.
-        }
-      }, 30);
+      scheduleGardenCommandReopen((name) => this.edits?.emit?.(name as "edit"));
       return "/garden";
     }
     return `${this.lead}${pickerSelectionResult(item).insertText}\n`;
@@ -85,15 +79,24 @@ export class GardenSlashSuggest extends core.EditorSuggest {
 
   show(range: unknown, query: string) {
     super.show(range, query);
+    const autoComplete = (globalThis as unknown as { editor?: { autoComplete?: { state?: { match?: unknown[]; index?: number } } } }).editor?.autoComplete;
+    if (autoComplete?.state) ensureTyporaActiveIndex(autoComplete.state);
     const container = typoraAutoSuggestElement();
     if (!container) return;
     this.placement = bindGardenPickerPlacement({
       container,
       getAnchorRect: () => caretClientRect(globalThis),
     });
+    this.keys?.destroy();
+    this.keys = bindGardenPickerKeys({
+      container,
+      getAutoComplete: () => (globalThis as unknown as { editor?: { autoComplete?: unknown } }).editor?.autoComplete as { state?: { match?: unknown[]; index?: number }; apply?: (item: unknown) => void; isShown?: () => boolean },
+    });
   }
 
   hide() {
+    this.keys?.destroy();
+    this.keys = undefined;
     this.placement?.destroy();
     this.placement = undefined;
     super.hide();
