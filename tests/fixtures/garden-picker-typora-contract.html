@@ -39,7 +39,7 @@
     .garden-suggest-copy { display: flex; flex-direction: column; min-width: 0; gap: 1px; }
 
     /* Fixed rules applied only to the Garden menu. */
-    .auto-suggest-container.garden-picker-open { overflow-x: hidden; overflow-y: auto; box-sizing: border-box; }
+    #ty-auto-suggest.garden-picker-open, .auto-suggest-container.garden-picker-open { overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain; box-sizing: border-box; }
     .garden-picker-open .garden-suggest-thumb { width: 72px; height: 48px; min-width: 72px; flex: none; }
     .garden-picker-open .garden-suggest-copy { min-width: 12em; flex: 1; }
 

@@ -96,36 +96,19 @@ Excalidraw 也用这张图片语法，地址写源文件而不是 SVG：
 
 `garden build` 或 `make dev` 会在旁边生成一张浅色 `flow.svg`（扁平 SVG，画布背景透明，字体在文件内），并把 SVG 嵌进正文，图里的文字可以选中。改完 `.excalidraw` 再构建一次即可。源文件缺失或导出失败时构建会停止。详见手册「本地图片」。
 
-### 嵌入外部平台和网页摘要
+### 嵌入 YouTube / Bilibili
 
-在正文中使用 `embed` 代码块。`url` 必填；`title`、`description` 和远程 `image` 可选：
+把可播放的视频链接单独占一行，前后留空行。页面渲染成站内播放器，不自动播放，并保留原站链接：
 
-````md
-```embed
-url: https://www.bilibili.com/video/BVxxxxxxxxxx
-title: 这段视频讲了什么
-description: 给读者一个值得点开的理由。
-image: https://example.com/cover.jpg
-```
-````
+```md
+https://www.youtube.com/watch?v=VIDEO_ID
 
-| 来源 | 页面表现 |
-| --- | --- |
-| YouTube、Bilibili | 响应式播放器，同时保留原站链接 |
-| X（Twitter）、微信公众号 | 带平台标识的摘要卡片与原文入口 |
-| 其他 HTTP(S) 网站 | 使用标题、摘要和远程封面生成网页卡片 |
-
-X 与微信公众号没有稳定、无脚本、可长期依赖的通用 iframe，因此不会伪装成站内全文。`embed` 卡片上的文字以你写进围栏的为准，原站暂时不可用时文章仍然可读。想让卡片内容跟着原站走，用下面的[链接卡片](#链接卡片与网站图标)。
-
-写稿时可以先拉一次摘要，再贴进 Markdown：
-
-```bash
-make embed URL="https://example.com"
+https://www.bilibili.com/video/BV1xx411c7mD
 ```
 
-命令只在你的机器上请求该网址，打印一段填好 `title` / `description` / `image` 的 `embed` 围栏。请检查后再粘贴。
+句子里的链接、代码里的地址、播放列表或频道，以及需要跳转的短链（如 `b23.tv`）不会变成播放器。短链请先打开，或运行 `npx garden embed <短链>`，再把完整视频链接单独一行贴进文章。若要卡片而不是播放器，在链接后紧跟 `{card}`。
 
-URL 只接受 `http` 或 `https`。YouTube 使用隐私增强播放器；Bilibili 普通视频分享链接会转换为播放器地址。大型音视频仍建议放在对象存储，不要直接提交进 Git 历史。
+`npx garden embed` / `make embed URL="..."` 打印一行可粘贴的规范化地址，标题等说明走终端，不再生成 `embed` 围栏。其他网站请用下面的[链接卡片](#链接卡片与网站图标)：单独一行的普通网址会显示为卡片。YouTube 使用隐私增强播放器；只接受官方视频地址，不会嵌入任意 iframe。大型音视频仍建议放在对象存储，不要直接提交进 Git 历史。
 
 ### 链接卡片与网站图标
 
@@ -168,7 +151,7 @@ flowchart LR
 
 Mermaid 图表同时提供“图表”和“代码”查看方式。
 
-本地 HTML 页面或 PDF 不要摊进 Markdown。一篇稿对应一个同名目录，目录里每一份 `.html` / `.pdf` 是一份可单独打开的文件；正文只用 `widget` 围栏嵌入。外部网页不要放进 `widget`，继续用上面的 `embed` 卡片。
+本地 HTML 页面或 PDF 不要摊进 Markdown。一篇稿对应一个同名目录，目录里每一份 `.html` / `.pdf` 是一份可单独打开的文件；本地 HTML / PDF 请用 `garden compose` 的 `<file>` 提供下载或预览，不要摊进 Markdown。外部网页用上面的链接卡片，不要放进任意 iframe。
 
 ```text
 content/posts/windowsill-herbs.md
@@ -187,7 +170,7 @@ title: 水从土面渗到排水孔，大约要一分钟。
 
 第一次 `npx garden sync` 或 `npx garden dev` 会把引擎自带的 skill 装进 `.agents/skills/`。审查一篇稿时，对 AI 说审查这篇，并给出文件路径；硬性结构用 `npx garden check content/posts/文章.md`。五种原语、视觉规范和 AI 写法见 [可交互组件](interactive-blog-components.md) 与 [.agents/skills/garden-compose](../.agents/skills/garden-compose/SKILL.md)。拓扑仍用 Mermaid；只有读者需要自己走一步或拧旋钮时才加图表。
 
-想让读者动手、又不想记组件名时，用一段 `intent` 围栏写下想法，让 AI 编译成 `ui` 块。语法、组件目录、后台工作台和 Typora / VS Code / Obsidian 插件见 [Intelligent UI 写作层](intelligent-ui.md)。
+想让读者动手、又不想记组件名时，插入一段 `garden compose` 围栏写下想法，让 AI 编译。语法、组件目录、后台工作台和 Typora / VS Code / Obsidian 插件见 [Intelligent UI 写作层](intelligent-ui.md)。
 
 ### 提供文件下载
 

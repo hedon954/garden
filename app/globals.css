@@ -2141,13 +2141,70 @@ button {
   -webkit-line-clamp: 2;
 }
 
-.external-embed-error {
+.external-embed-error,
+.g-player-error {
   margin: 32px 0;
   padding: 18px;
   border-left: 3px solid var(--accent);
   background: var(--accent-soft);
   color: var(--ink-soft);
   font-size: 12px;
+}
+
+.markdown-body .g-player,
+.markdown-body .g-player-fallback {
+  width: 100%;
+  max-width: 100%;
+  margin: 36px 0;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+}
+
+/* The video uses the article radius token --r (12px). Standalone body
+   images have no border-radius; covers use --r-lg; figure-card photos
+   use 8px inside a padded card shell we are not copying. */
+.g-player-frame {
+  width: 100%;
+  max-width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--r);
+  overflow: hidden;
+  background: #111;
+}
+
+@supports (overflow-clip-margin: 4px) {
+  .g-player-frame {
+    overflow: clip;
+    overflow-clip-margin: 4px;
+  }
+}
+
+.g-player-frame:focus-within {
+  outline: 2px solid var(--blue);
+  outline-offset: 2px;
+}
+
+.g-player-frame iframe {
+  width: 100%;
+  max-width: 100%;
+  height: 100%;
+  display: block;
+  border: 0;
+  border-radius: inherit;
+}
+
+/* Same typography as .markdown-body .fig figcaption: a quiet line, not a bar. */
+.markdown-body .g-player figcaption {
+  margin-top: 12px;
+  font-size: var(--fs-small);
+  line-height: 1.6;
+  color: var(--muted);
+  text-align: center;
+}
+
+.markdown-body .g-player figcaption a {
+  color: var(--muted);
 }
 
 .markdown-body .garden-chart {

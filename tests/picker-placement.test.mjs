@@ -11,7 +11,12 @@ import {
   measureMenuIntrinsicSize,
   scrollItemIntoContainer,
   viewportRect,
+  editorVisibleRect,
+  subtractOverlappingBand,
 } from "../ui/garden/picker-placement.mjs";
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import path from "node:path";
 
 function box(left, top, width, height) {
   return { left, top, width, height, right: left + width, bottom: top + height };
@@ -254,5 +259,127 @@ describe("measureMenuIntrinsicSize", () => {
     assert.equal(measured.width, READABLE_MIN_WIDTH);
     assert.equal(style.maxWidth, "95px");
     assert.equal(style.width, "95px");
+  });
+});
+
+
+describe("editorVisibleRect", () => {
+  test("intersects the typora content box and subtracts a covering titlebar", () => {
+    const titlebar = { getBoundingClientRect: () => box(0, 0, 1024, 40) };
+    const content = { getBoundingClientRect: () => box(0, 40, 1024, 546) };
+    const win = { innerWidth: 1024, innerHeight: 611 };
+    const doc = {
+      querySelector(sel) {
+        if (sel === "content") return content;
+        if (sel === "titlebar" || sel === "header" || sel === "#top-titlebar") return titlebar;
+        return null;
+      },
+    };
+    const visible = editorVisibleRect(win, doc);
+    assert.equal(visible.top, 40);
+    assert.equal(visible.bottom, 40 + 546);
+    assert.equal(visible.height, 546);
+    assert.equal(visible.left, 0);
+    assert.equal(visible.width, 1024);
+  });
+
+  test("ignores a display:none header and does not shrink below a usable box", () => {
+    const hidden = {
+      getBoundingClientRect: () => box(0, 0, 1024, 28),
+    };
+    const win = {
+      innerWidth: 1024,
+      innerHeight: 611,
+      getComputedStyle: () => ({ display: "none", visibility: "visible" }),
+    };
+    const doc = {
+      querySelector(sel) {
+        return sel === "header" ? hidden : null;
+      },
+    };
+    const visible = editorVisibleRect(win, doc);
+    assert.deepEqual(visible, box(0, 0, 1024, 611));
+  });
+});
+
+describe("subtractOverlappingBand", () => {
+  test("raises the top edge when typora header covers the window origin", () => {
+    const next = subtractOverlappingBand(box(0, 0, 1024, 611), box(0, 0, 1024, 40));
+    assert.equal(next.top, 40);
+    assert.equal(next.height, 571);
+  });
+});
+
+describe("placePickerMenu with typora editor bounds", () => {
+  test("flip-up from the bottom stays below the titlebar so the first item is not covered", () => {
+    // Same caret as the short-window report, but the visible editor starts at y=40
+    // under typora's titlebar/tabs (header z-index 900, menu z-index 10).
+    const viewport = box(0, 40, 1024, 546);
+    const placed = placePickerMenu({
+      anchor: box(315, 519, 72, 8),
+      viewport,
+      menu: { width: 320, height: 21 * 56 },
+      preferredLeft: 315 - 15,
+    });
+    assert.equal(placed.placement, "above");
+    assert.ok(placed.top >= viewport.top + VIEWPORT_MARGIN);
+    assert.ok(placed.top + placed.maxHeight <= 519 - ANCHOR_GAP + 0.01);
+    assert.ok(placed.maxHeight < 21 * 56);
+    // A window-origin placement (the previous bug) would have been 8px, under the tabs.
+    assert.ok(placed.top >= 40);
+  });
+});
+
+describe("typora picker overflow CSS", () => {
+  test("beats Typora's #ty-auto-suggest { overflow-y: hidden } rule", () => {
+    const src = readFileSync(
+      path.join(path.dirname(fileURLToPath(import.meta.url)), "../editors/typora/build.mjs"),
+      "utf8",
+    );
+    assert.match(src, /#ty-auto-suggest\.garden-picker-open/);
+    assert.match(src, /overflow-y: auto/);
+    assert.match(src, /overscroll-behavior: contain/);
+  });
+});
+
+describe("bindGardenPickerPlacement overflow", () => {
+  test("forces overflow-y auto while open and restores it on destroy", () => {
+    const listeners = new Map();
+    const win = {
+      innerWidth: 1024,
+      innerHeight: 611,
+      addEventListener(name, fn, opts) { listeners.set(`win:${name}:${Boolean(opts)}`, fn); },
+      removeEventListener(name, fn, opts) { listeners.delete(`win:${name}:${Boolean(opts)}`); },
+      requestAnimationFrame: (fn) => { fn(); return 1; },
+      cancelAnimationFrame() {},
+    };
+    const style = { overflowY: "hidden", overflowX: "", overscrollBehavior: "" };
+    const classNames = new Set(["ty-show"]);
+    const container = {
+      style,
+      dataset: {},
+      scrollWidth: 360,
+      scrollHeight: 21 * 56,
+      classList: {
+        contains: (name) => classNames.has(name),
+        add: (name) => classNames.add(name),
+        remove: (name) => classNames.delete(name),
+      },
+      querySelector: (sel) => sel === ".garden-suggest" ? {} : null,
+      querySelectorAll: () => [],
+    };
+    const handle = bindGardenPickerPlacement({
+      container,
+      win,
+      getAnchorRect: () => box(315, 519, 72, 8),
+      getViewport: () => box(0, 40, 1024, 546),
+    });
+    assert.equal(style.overflowY, "auto");
+    assert.equal(style.overflowX, "hidden");
+    assert.equal(style.overscrollBehavior, "contain");
+    const top = Number.parseFloat(style.top);
+    assert.ok(top >= 40 + VIEWPORT_MARGIN);
+    handle.destroy();
+    assert.equal(style.overflowY, "hidden");
   });
 });

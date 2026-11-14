@@ -3,6 +3,7 @@
  * and inline spans) is skipped, so a URL in a snippet is never a link.
  */
 import { INLINE_LINK_SOURCE } from "./markdown-destination.mjs";
+import { isPlayablePlayerUrl } from "./player.mjs";
 
 const FENCE = /^ {0,3}(`{3,}|~{3,})/u;
 
@@ -65,8 +66,10 @@ export const SOURCE_MARKER = "{source}";
 
 /**
  * A single-line paragraph whose only content is a web URL: bare, <autolink>,
- * or `[url](url)` (optional `{card}`). Those render as link cards and share
- * the OG fetch path with `{card}` markers.
+ * or `[url](url)` (optional `{card}`). Ordinary sites render as link cards and
+ * share the OG fetch path with `{card}` markers. A playable YouTube or
+ * Bilibili URL on its own line becomes a player instead, unless the author
+ * wrote `{card}`.
  */
 function standaloneUrl(line) {
   const trimmed = String(line ?? "").trim();
@@ -97,15 +100,15 @@ export function markdownLinks(markdown) {
     for (const match of text.matchAll(LINK)) {
       if (match[1] !== "!" && isWebUrl(linkUrl(match))) {
         const url = linkUrl(match);
-        links.push({ url, card: match[6] === CARD_MARKER || standalone.has(url) });
+        links.push({ url, card: match[6] === CARD_MARKER || (standalone.has(url) && !isPlayablePlayerUrl(url)) });
       }
     }
     const rest = text.replace(LINK, " ");
     for (const match of rest.matchAll(AUTOLINK)) {
-      links.push({ url: match[1], card: standalone.has(match[1]) });
+      links.push({ url: match[1], card: standalone.has(match[1]) && !isPlayablePlayerUrl(match[1]) });
     }
     for (const match of rest.replace(AUTOLINK, " ").matchAll(BARE)) {
-      links.push({ url: match[2], card: standalone.has(match[2]) });
+      links.push({ url: match[2], card: standalone.has(match[2]) && !isPlayablePlayerUrl(match[2]) });
     }
     return text;
   });

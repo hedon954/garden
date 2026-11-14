@@ -1,7 +1,7 @@
 ---
 title: 写文章
 navTitle: 写文章
-description: 长文的 Front Matter 字段、代码块对比、提示框、公式与流程图，以及配图、来源胶囊和链接卡片的入口。
+description: 长文的 Front Matter 字段、代码块对比、提示框、公式与流程图，以及配图、音视频、外链播放器、脚注、文件下载与链接卡片的入口。
 section: writing-and-reading
 order: 10
 ---
@@ -129,3 +129,84 @@ graph LR
   B --> C[生成搜索与静态资源]
   C --> D[页面渲染]
 ```
+
+## 6. 本地音频和视频
+
+长文 `content/posts/my-post.md` 的音视频放在同名目录 `content/posts/my-post/`。写在 Markdown 正文里，不要包进 Compose，也不要放进 Compose 的 `<html>` 内容岛。使用带 `controls` 的 `audio` 或 `video` 标签，`src` 填写相对路径，例如 `./my-post/clip.mp3` 或 `./my-post/clip.mp4`。对象存储里的文件写完整的 `https://` 地址。不要自动播放。
+
+构建会把本地附件复制到公开目录。大文件不要提交进 Git，更适合放对象存储。
+
+## 7. 嵌入 YouTube / Bilibili
+
+把可播放的视频链接单独占一行，前后留空行。页面会渲染成站内播放器，不自动播放，并保留到原站的链接：
+
+```markdown
+https://www.youtube.com/watch?v=VIDEO_ID
+
+https://www.bilibili.com/video/BV1xx411c7mD
+```
+
+也支持 `https://youtu.be/VIDEO_ID`、`/shorts/`、`/embed/`，以及 Bilibili 的 `av` 号和 `player.bilibili.com` 播放地址。多余的跟踪参数会被忽略；YouTube 链接里的开始时间（如 `?t=90` 或 `?t=1m30s`）会从那一秒起播。
+
+这些情况不会变成播放器：
+
+- 句子里的链接，或同一段里有多条链接
+- 代码块、行内代码里的地址
+- 不是单个视频的地址（播放列表、频道、专栏文章等）。单独一行时仍按[链接卡片](/garden/components/link-card)处理
+- 域名并不精确匹配 YouTube / Bilibili 的仿冒或无关地址
+- `b23.tv` 等需要跳转才能确定视频的短链。渲染时不会为了解析短链去访问网络；请先在浏览器打开，或运行 `npx garden embed <短链>`，把打印出的完整视频链接单独一行贴进文章
+- 希望显示卡片而不是播放器时，在链接后紧跟 `{card}`
+
+播放器只接受上述平台的官方视频地址，YouTube 使用隐私增强域名 `youtube-nocookie.com`，不会嵌入任意网页或任意 iframe。
+
+`npx garden embed URL` 或 `make embed URL="..."` 会打印一行可直接粘贴的规范化地址，标题等说明写在终端里，不再生成旧的 `embed` 围栏。
+
+## 8. 文件下载与预览
+
+想让读者下载一份文件（规格包、PDF、示例代码），在 `garden compose` 里用 `<file>` 或 `<files>`。文件放在这篇稿的同名目录里，`src` 相对这篇 Markdown 写：
+
+```text
+content/posts/go-lock.md
+content/posts/go-lock/mutex-notes.pdf
+content/posts/go-lock/demo.zip
+```
+
+一个文件：
+
+````markdown
+```garden compose
+<file src="./go-lock/demo.zip" title="示例代码" note="三个可以直接运行的加锁例子"/>
+```
+````
+
+一组文件：
+
+````markdown
+```garden compose
+<files title="参考资料">
+  <file src="./go-lock/mutex-notes.pdf" note="互斥锁的状态机，一页纸"/>
+  <file src="./go-lock/readme.md"/>
+  <file src="https://oss.example.com/go-lock/trace.zip" title="完整 trace"/>
+</files>
+```
+````
+
+| 属性 | 说明 |
+| :--- | :--- |
+| `src` | 必填。本地文件写相对路径；对象存储里的文件写完整的 `https://` 地址 |
+| `title` | 可选，卡片上的名字，默认是文件名 |
+| `note` | 可选，一句话说明里面有什么 |
+
+格式和大小不用手写，构建时会算出来，显示成「PDF · 204 KB」这样的一行。找不到本地文件时，构建会失败。本地的 Markdown、HTML 和 PDF 可以在页面里预览：点「预览」，文件在右侧打开，手机上占满全屏。
+
+## 9. 脚注
+
+使用 GFM 脚注。标记写在正文里，定义单独成段，名称要对应：
+
+```markdown
+这条规则来自 CommonMark 的衍生语法。[^1]
+
+[^1]: 详见 [remark-gfm](https://github.com/remarkjs/remark-gfm)。
+```
+
+脚注会集中出现在文章末尾。

@@ -69,6 +69,7 @@ export const HANDBOOK_SECTIONS: HandbookSectionMeta[] = [
   { id: "getting-started", title: "快速上手", titleEn: "Getting Started" },
   { id: "writing-and-reading", title: "写作与排版", titleEn: "Writing & Layout" },
   { id: "components", title: "内置组件", titleEn: "Built-in Components" },
+  { id: "diagrams", title: "推荐图示", titleEn: "Recommended figures" },
   { id: "workflow", title: "检查与补全", titleEn: "Checks & Shortcuts" },
   { id: "reference", title: "组件参考", titleEn: "Component reference" },
 ];
@@ -129,6 +130,7 @@ export const NAV_SHORT_TITLE: Record<string, string> = {
   "components/link-card": "链接卡片",
   "components/source": "来源胶囊",
   "components/image": "本地图片",
+  "components/diagrams": "推荐图示",
   workflow: "语法检查与快捷输入",
   reference: "总览",
 };

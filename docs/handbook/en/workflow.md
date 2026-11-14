@@ -104,8 +104,8 @@ The Obsidian plugin is not installed by this command.
 
 ### Use the plugins while writing
 
-1. **Insert an idea.** In VS Code / Cursor, use `Cmd+Alt+I` on macOS or `Ctrl+Alt+I` on Windows and Linux, or the Garden insert command. In Typora, type `/` and choose `/garden` (the next list has a small preview image on each row), or use the insert command to open the component list directly; Windows and Linux default to `Ctrl+Alt+I`. On macOS, record a shortcut under Settings, Keyboard Shortcuts, because Option rewrites the key. The insertion is a plain `garden` fence: a short brief naming the component and the facts to mention, which the `garden-compose` skill compiles later.
-2. **Preview.** Open the Markdown preview. In Typora, move the cursor out of the fence. A `ui` block renders the same component as the blog. An `intent` block renders as an idea card. Clicks on sliders and buttons stay in the preview.
+1. **Insert Compose.** In VS Code / Cursor, use `Cmd+Alt+I` on macOS or `Ctrl+Alt+I` on Windows and Linux, or the Garden insert command. In Typora, type `/` and choose `/garden`, then pick a figure type from the next list (the last item is Other; each row has a small preview), or use the insert command to open that list directly; Windows and Linux default to `Ctrl+Alt+I`. On macOS, record a shortcut under Settings, Keyboard Shortcuts, because Option rewrites the key. The selection inserts a `garden compose` fence with a draft brief for that figure, which the `garden-compose` skill compiles later. Do not insert a legacy `ui` or `intent` fence. For every built-in figure, see [Recommended figures](/garden/en/components/diagrams).
+2. **Preview.** Open the Markdown preview. In Typora, move the cursor out of the fence. A compiled `garden compose` fence renders the same component as the blog. An uncompiled plain-language fence renders as an idea card. Clicks on sliders and buttons stay in the preview.
 3. **Open the catalog.** In VS Code / Cursor, the catalog command inserts a recipe at the cursor. The terminal builds the same page:
 
    ```bash

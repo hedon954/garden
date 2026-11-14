@@ -1,28 +1,17 @@
-const embedTypes = [
+const mediaTypes = [
   {
     title: "YouTube / Bilibili",
-    description: "贴上分享链接，页面里就能播放，也能回到原站。",
-  },
-  {
-    title: "X / Twitter",
-    description: "显示成一张带出处的卡片。",
-  },
-  {
-    title: "微信公众号",
-    description: "留下标题、摘要和原文链接。微信不允许嵌进页面时，卡片仍然能点开。",
+    description: "把可播放的视频链接单独占一行，页面里就能播放，也能回到原站。",
   },
   {
     title: "其他网站",
-    description: "自己写标题、摘要和封面。",
+    description: "单独一行的网址显示为链接卡片；句子里的链接在后面紧跟 {card} 才会变成卡片。",
   },
 ];
 
-const embedSource = `\`\`\`embed
-url: https://www.youtube.com/watch?v=VIDEO_ID
-title: 这段视频讲了什么
-description: 给读者一个值得点开的理由。
-image: https://example.com/cover.jpg
-\`\`\``;
+const mediaSource = `https://www.youtube.com/watch?v=VIDEO_ID
+
+https://www.bilibili.com/video/BV1xx411c7mD`;
 
 export function GardenMediaGuide() {
   return (
@@ -30,9 +19,8 @@ export function GardenMediaGuide() {
       <header>
         <h2 id="garden-media-title">视频和链接</h2>
         <p>
-          自己的图片、音频和视频用 Markdown。别人的页面用
-          <code> embed </code>
-          围栏。能播的直接播，不能播的显示成一张卡片。
+          自己的图片、音频和视频用 Markdown 或 <code>audio</code> / <code>video</code> 标签。
+          YouTube / Bilibili 只要把链接单独一行。其他网站用链接卡片，不要写任意 iframe。
         </p>
       </header>
 
@@ -40,11 +28,11 @@ export function GardenMediaGuide() {
         <div>
           <span>content/posts/example.md</span>
         </div>
-        <pre><code>{embedSource}</code></pre>
+        <pre><code>{mediaSource}</code></pre>
       </div>
 
       <ul className="garden-media-providers">
-        {embedTypes.map(({ title, description }) => (
+        {mediaTypes.map(({ title, description }) => (
           <li key={title}>
             <strong>{title}</strong>
             <p>{description}</p>
@@ -53,7 +41,7 @@ export function GardenMediaGuide() {
       </ul>
 
       <p className="garden-media-boundary">
-        摘要写在文章里。原站打不开，文章还在。需要时用 <code>make embed URL=...</code> 拉一次，看过再贴进去。
+        需要规范化短链或核对标题时，用 <code>npx garden embed URL</code> 打印一行可粘贴的地址，看过再贴进文章。
       </p>
     </section>
   );

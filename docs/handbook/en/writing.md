@@ -1,7 +1,7 @@
 ---
 title: Writing Posts
 navTitle: Writing Posts
-description: Front Matter fields for posts, code diff toggles, callouts, math formulas, and Mermaid diagrams, with links to local images, source chips, and link cards.
+description: Front matter fields for long posts, code-and-diff switches, callouts, math and diagrams, plus images, audio and video, external players, footnotes, file downloads, and link cards.
 section: writing-and-reading
 order: 10
 ---
@@ -129,3 +129,84 @@ graph LR
   B --> C[Search & Static Assets]
   C --> D[Rendered Page]
 ```
+
+## 6. Local Audio and Video
+
+For a post at `content/posts/my-post.md`, put audio and video in `content/posts/my-post/`. Write them in the Markdown body. Do not wrap them in Compose, and do not put them inside a Compose `<html>` island. Use an `audio` or `video` tag with `controls`, and set `src` to a relative path such as `./my-post/clip.mp3` or `./my-post/clip.mp4`. Files in object storage use a full `https://` address. Do not autoplay.
+
+The build copies local attachments into the public directory. Do not commit large media to Git; prefer object storage.
+
+## 7. YouTube and Bilibili Players
+
+Paste a playable video URL on its own line, with blank lines around it. The page renders an in-article player that does not autoplay, and keeps a link to the original site:
+
+```markdown
+https://www.youtube.com/watch?v=VIDEO_ID
+
+https://www.bilibili.com/video/BV1xx411c7mD
+```
+
+`https://youtu.be/VIDEO_ID`, `/shorts/`, and `/embed/` also work, as do Bilibili `av` ids and `player.bilibili.com` player URLs. Tracking parameters are ignored. A YouTube start time such as `?t=90` or `?t=1m30s` starts at that second.
+
+These do not become a player:
+
+- A link inside a sentence, or more than one link in the same paragraph
+- A URL inside a code fence or inline code
+- An address that is not a single video (playlists, channels, article pages). A URL like that on its own line still renders as a [link card](/garden/en/components/link-card)
+- Lookalike or unrelated hosts that are not exactly YouTube or Bilibili
+- Short links such as `b23.tv` that need a redirect to discover the video. Rendering does not wait on the network to resolve them. Open the short link in a browser, or run `npx garden embed <short-url>`, then paste the printed full video URL on its own line
+- When you want a card instead of a player, write `{card}` immediately after the link
+
+The player accepts only official video URLs from those platforms. YouTube uses the privacy-enhanced `youtube-nocookie.com` host. Arbitrary pages and arbitrary iframes are not embedded.
+
+`npx garden embed URL` or `make embed URL="..."` prints one paste-ready canonical URL, and writes any title or summary to the terminal. It no longer emits a legacy `embed` fence.
+
+## 8. File Downloads and Previews
+
+To let readers download a file (a spec pack, a PDF, or sample code), use `<file>` or `<files>` inside `garden compose`. Put the files in the post's same-named directory, and write `src` relative to the Markdown file:
+
+```text
+content/posts/go-lock.md
+content/posts/go-lock/mutex-notes.pdf
+content/posts/go-lock/demo.zip
+```
+
+One file:
+
+````markdown
+```garden compose
+<file src="./go-lock/demo.zip" title="Sample code" note="Three lock examples you can run"/>
+```
+````
+
+A group of files:
+
+````markdown
+```garden compose
+<files title="References">
+  <file src="./go-lock/mutex-notes.pdf" note="A one-page mutex state machine"/>
+  <file src="./go-lock/readme.md"/>
+  <file src="https://oss.example.com/go-lock/trace.zip" title="Full trace"/>
+</files>
+```
+````
+
+| Attribute | Meaning |
+| :--- | :--- |
+| `src` | Required. Local files use a relative path; files in object storage use a full `https://` URL |
+| `title` | Optional card name; defaults to the file name |
+| `note` | Optional one-line description |
+
+You do not write the format or size. The build fills in a line such as `PDF · 204 KB`. A missing local file fails the build. Local Markdown, HTML, and PDF files can be previewed on the page: choose Preview to open the file on the right, or full screen on a phone.
+
+## 9. Footnotes
+
+Use GFM footnotes. Put the marker in the prose and the definition in its own paragraph, with matching names:
+
+```markdown
+This rule comes from a CommonMark derivative.[^1]
+
+[^1]: See [remark-gfm](https://github.com/remarkjs/remark-gfm).
+```
+
+Footnotes are collected at the end of the article.

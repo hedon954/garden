@@ -38,6 +38,8 @@ import { LinkCardRefresh } from "./LinkCardRefresh";
 import { linkHost } from "../../scripts/link-meta-core.mjs";
 import { FaviconProvider, SourceMark } from "./garden/patterns";
 import { rehypeFieldTables } from "../lib/rehype-field-tables.mjs";
+import { GardenPlayer } from "./GardenPlayer";
+import { resolvePlayer } from "../../ui/garden/player.mjs";
 import { cardDate } from "../../ui/garden/card-refresh.mjs";
 import { siteHref } from "../lib/site-href";
 import { codeLanguageLabel, fenceLanguage } from "../../ui/garden/code-language.mjs";
@@ -271,8 +273,11 @@ export function MarkdownArticle({ content, lang, fieldTables, refDemos, handbook
             const only = nodes.length === 1 && isValidElement<{ href?: string; children?: ReactNode }>(nodes[0]) ? nodes[0] : null;
             const href = only?.props.href;
             const text = only ? headingText(only.props.children).trim() : "";
-            // Bare http(s) URL alone in a paragraph → link card (same path for every jump link).
-            if (href && text === href && /^https?:\/\//iu.test(href)) return <LinkCard href={href} />;
+            // Bare http(s) URL alone in a paragraph → player for YouTube / Bilibili, otherwise a link card.
+            if (href && text === href && /^https?:\/\//iu.test(href)) {
+              if (resolvePlayer(href).ok) return <GardenPlayer href={href} />;
+              return <LinkCard href={href} />;
+            }
             return <p {...domProps}>{children}</p>;
           },
           a: ({ href: written, children, ...props }) => {

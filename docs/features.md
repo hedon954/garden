@@ -10,7 +10,7 @@
 
 内容以本地 Markdown 保存，渲染覆盖 Typora 常用能力：GFM 表格、任务列表、删除线、脚注、自动链接、软换行、数学公式、原生 HTML、图片/音频/视频、代码高亮与 Mermaid。正文里的 `.excalidraw` 图片在构建时导出成一张浅色扁平 SVG，画布背景透明，并嵌进正文，图里的文字可以选中。
 
-外部内容使用统一的 `embed` 代码块：YouTube、Bilibili 显示响应式播放器；X、微信公众号与其他网站显示可靠的摘要卡片和原文入口。构建不会自动抓取网页摘要；写稿可用 `make embed` 把 Open Graph 快照进围栏。本地 HTML / PDF 使用 `widget` 代码块，指向与 Markdown 同名目录里的文件。可交互图表直接铺开；普通页面和 PDF 默认显示示意入口，读者手动展开后再加载，并保留判断性说明。
+单独一行的 YouTube / Bilibili 视频链接渲染成响应式站内播放器，并保留原站入口；其他单独一行的网址以及 `{card}` 链接显示为链接卡片。`make embed` / `npx garden embed` 打印可粘贴的规范化地址，不再生成 `embed` 围栏。本地文件下载与预览使用 `garden compose` 的 `<file>` / `<files>`。
 
 兼容 Typora / Obsidian 的 `[!TYPE]` 警告框语法。`NOTE`、`TIP`、`IMPORTANT`、`WARNING`、`CAUTION` 分别显示提醒、建议、重要、警告、注意；`INFO` 同提醒，`SUCCESS` 同建议，`DANGER` 与 `FAILURE` 同注意。
 

@@ -9,7 +9,9 @@ badge: compose
 
 `garden compose` 是唯一的 Garden 作者入口。在围栏内组合 Markdown、安全 HTML 内容岛、布局、资源、文件、关系图、选择卡与 Play 交互。具体能力、内容边界和默认样式见[组件参考](/garden/reference/compose)，完整可用属性以 `npx garden ui schema` 为准。
 
-需要 AI 生成结构图时，输入 `/garden` 选「compose（想法）」。文章里会插入一个 `garden compose` 围栏。你在里面用白话写清结构，再对 AI 说「编译这篇」，AI 就会把这句话留在 `<intent>` 里，并用 Markdown 叶子和组件标签拼出静态说明图。
+需要 AI 生成结构图时，输入 `/garden`，在图示列表里选一种（最后一项是「其他」）。选中后会直接插入一个 `garden compose` 围栏，里面是针对该图示的说明草稿。你补全材料和目标，再对 AI 说「编译这篇」；你的原话会留在 `<intent>` 里，结构则用 Markdown 叶子和组件标签拼出静态说明图。
+
+全部内置图示的名称、示意图、适用场景和推荐说明草稿，见[推荐图示](/garden/components/diagrams)。
 
 ## 怎么写
 

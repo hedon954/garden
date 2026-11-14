@@ -9,7 +9,9 @@ badge: compose
 
 `garden compose` is the single Garden author entry. Inside it, combine Markdown, safe HTML content islands, layout, resources, files, relations, selectable cards, and Play interactions. See the [component reference](/garden/en/reference/compose) for capabilities, content boundaries, and contextual defaults; `npx garden ui schema` is authoritative for supported fields.
 
-To ask AI for a structure diagram, type `/garden` and pick **compose (idea)**. That inserts a `garden compose` fence. Write the structure in plain language, then ask the AI to compile the post. It keeps your words in `<intent>` and builds the diagram from Markdown leaves plus catalog tags.
+To ask AI for a structure diagram, type `/garden` and pick a figure type (the last item is Other). That inserts a `garden compose` fence with a draft brief for that figure. Fill in your material and goal, then ask the AI to compile the post. It keeps your words in `<intent>` and builds the diagram from Markdown leaves plus catalog tags.
+
+For every built-in figure, including its name, schematic, use case, and recommended brief, see [Recommended figures](/garden/en/components/diagrams).
 
 ## How to write
 

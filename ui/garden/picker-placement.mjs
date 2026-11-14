@@ -56,6 +56,85 @@ export function viewportRect(win = globalThis) {
   return rect(0, 0, width, height);
 }
 
+/**
+ * Typora chrome that can cover a position:fixed #ty-auto-suggest (z-index 10).
+ * `header` is z-index 900; mac-seamless `titlebar` sits at the top of the same
+ * document; the editor `content` box is already below that chrome.
+ */
+export const TYPORA_CHROME_SELECTORS = [
+  "header",
+  "titlebar",
+  "#top-titlebar",
+  "footer.ty-footer",
+  "#md-searchpanel",
+];
+
+export function intersectRects(a, b) {
+  const left = Math.max(a.left, b.left);
+  const top = Math.max(a.top, b.top);
+  const right = Math.min(a.right, b.right);
+  const bottom = Math.min(a.bottom, b.bottom);
+  return rect(left, top, Math.max(0, right - left), Math.max(0, bottom - top));
+}
+
+function bandOverlapsAxis(box, chrome, axis) {
+  if (axis === "horizontal") {
+    return Math.min(box.right, chrome.right) - Math.max(box.left, chrome.left) > box.width * 0.5;
+  }
+  return Math.min(box.bottom, chrome.bottom) - Math.max(box.top, chrome.top) > box.height * 0.5;
+}
+
+/** Shrink a visible box by a chrome rect that covers a top, bottom, or side band. */
+export function subtractOverlappingBand(box, chrome) {
+  if (!box || !chrome || chrome.width <= 0 || chrome.height <= 0) return box;
+  let next = box;
+  if (bandOverlapsAxis(next, chrome, "horizontal") && chrome.top <= next.top + 1 && chrome.bottom > next.top && chrome.bottom < next.bottom) {
+    next = rect(next.left, chrome.bottom, next.width, next.bottom - chrome.bottom);
+  }
+  if (bandOverlapsAxis(next, chrome, "horizontal") && chrome.bottom >= next.bottom - 1 && chrome.top < next.bottom && chrome.top > next.top) {
+    next = rect(next.left, next.top, next.width, chrome.top - next.top);
+  }
+  if (bandOverlapsAxis(next, chrome, "vertical") && chrome.left <= next.left + 1 && chrome.right > next.left && chrome.right < next.right) {
+    next = rect(chrome.right, next.top, next.right - chrome.right, next.height);
+  }
+  if (bandOverlapsAxis(next, chrome, "vertical") && chrome.right >= next.right - 1 && chrome.left < next.right && chrome.left > next.left) {
+    next = rect(next.left, next.top, chrome.left - next.left, next.height);
+  }
+  return next;
+}
+
+function isDisplayed(el, win) {
+  if (!el) return false;
+  const style = win?.getComputedStyle?.(el);
+  if (style && (style.display === "none" || style.visibility === "hidden")) return false;
+  const r = el.getBoundingClientRect?.();
+  return Boolean(r && (r.width > 0 || r.height > 0));
+}
+
+/**
+ * Visible editor box in the same client coordinates as position:fixed.
+ * Typora is one document: #ty-auto-suggest is inside <content> but is
+ * position:fixed to the window, so window (0,0) includes the titlebar/tabs
+ * that paint over the menu (z-index 900 vs 10).
+ */
+export function editorVisibleRect(win = globalThis, doc = win.document) {
+  const viewport = viewportRect(win);
+  if (!doc?.querySelector) return viewport;
+  let box = viewport;
+  const content = doc.querySelector("content");
+  if (content && isDisplayed(content, win)) {
+    const cr = copyRect(content.getBoundingClientRect());
+    if (cr.width > 0 && cr.height > 0) box = intersectRects(box, cr);
+  }
+  for (const selector of TYPORA_CHROME_SELECTORS) {
+    const el = doc.querySelector(selector);
+    if (!isDisplayed(el, win)) continue;
+    box = subtractOverlappingBand(box, copyRect(el.getBoundingClientRect()));
+  }
+  if (box.width < 32 || box.height < 32) return viewport;
+  return box;
+}
+
 export function caretClientRect(win = globalThis) {
   try {
     const selection = win.getSelection?.();
@@ -113,6 +192,7 @@ export function bindGardenPickerPlacement({
   let destroyed = false;
   const teardowns = [];
   let last = null;
+  let restoreStyle = null;
   const watchedImages = new WeakSet();
 
   const handle = { apply, destroy };
@@ -122,13 +202,27 @@ export function bindGardenPickerPlacement({
     return measureMenuIntrinsicSize(container);
   }
 
+  function ensureMenuScroll(style) {
+    if (!style) return;
+    if (!restoreStyle) {
+      restoreStyle = {
+        overflowX: style.overflowX,
+        overflowY: style.overflowY,
+        overscrollBehavior: style.overscrollBehavior,
+      };
+    }
+    style.overflowX = "hidden";
+    style.overflowY = "auto";
+    style.overscrollBehavior = "contain";
+  }
+
   function apply() {
     if (destroyed || applying) return last;
     if (!container.classList?.contains?.("ty-show") || !isGardenMenu(container)) {
       destroy();
       return null;
     }
-    const viewport = (getViewport || viewportRect)(win);
+    const viewport = (getViewport || editorVisibleRect)(win);
     const anchor = getAnchorRect?.() || caretClientRect(win);
     if (!anchor || !viewport?.width || !viewport?.height) return last;
 
@@ -138,11 +232,12 @@ export function bindGardenPickerPlacement({
       const menu = measure();
       const preferredLeft = readPreferredLeft(container, anchor);
       const placed = placePickerMenu({ anchor: copyRect(anchor), viewport, menu, preferredLeft });
+      const style = container.style;
       if (samePlacement(last, placed)) {
+        ensureMenuScroll(style);
         scrollActive(container);
         return last;
       }
-      const style = container.style;
       style.top = `${placed.top}px`;
       style.left = `${placed.left}px`;
       style.right = "auto";
@@ -151,6 +246,7 @@ export function bindGardenPickerPlacement({
       style.minWidth = `${placed.width}px`;
       style.width = `${placed.width}px`;
       style.maxWidth = `${placed.width}px`;
+      ensureMenuScroll(style);
       container.classList.add(GARDEN_PICKER_CLASS);
       container.dataset.gardenPlacement = placed.placement;
       last = placed;
@@ -226,7 +322,15 @@ export function bindGardenPickerPlacement({
     }
     container.classList?.remove?.(GARDEN_PICKER_CLASS);
     if (container.dataset) delete container.dataset.gardenPlacement;
+    const style = container.style;
+    const restore = restoreStyle;
+    if (style && restore) {
+      style.overflowX = restore.overflowX ?? "";
+      style.overflowY = restore.overflowY ?? "";
+      style.overscrollBehavior = restore.overscrollBehavior ?? "";
+    }
     if (bound.get(container) === handle) bound.delete(container);
+    restoreStyle = null;
     last = null;
   }
 

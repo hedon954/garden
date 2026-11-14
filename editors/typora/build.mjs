@@ -33,7 +33,7 @@ const css = [
   ".garden-suggest-label { font-size: 13px; line-height: 1.3; }",
   ".garden-suggest-hint { opacity: 0.65; font-size: 12px; }",
   ".garden-suggest-copy { display: flex; flex-direction: column; min-width: 12em; gap: 1px; }",
-  ".auto-suggest-container.garden-picker-open { overflow-x: hidden; overflow-y: auto; box-sizing: border-box; }",
+  "#ty-auto-suggest.garden-picker-open, .auto-suggest-container.garden-picker-open { overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain; box-sizing: border-box; }",
   ".garden-picker-open .garden-suggest-thumb { width: 72px; height: 48px; min-width: 72px; flex: none; }",
   ".garden-picker-open .garden-suggest-label, .garden-picker-open .garden-suggest-hint { overflow-wrap: anywhere; }",
 ];

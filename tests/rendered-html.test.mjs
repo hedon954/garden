@@ -361,7 +361,7 @@ test("columns index shows the configured subtitle", async () => {
 test("renders safe external embeds and the complete GitHub profile experience", async () => {
   const [markdown, embed, garden, github, liveGithub, workflow, docs] = await Promise.all([
     readFile(new URL("../app/components/MarkdownArticle.tsx", import.meta.url), "utf8"),
-    readFile(new URL("../app/components/ExternalEmbed.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../ui/garden/player.mjs", import.meta.url), "utf8"),
     readFile(new URL("../app/components/GardenMediaGuide.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/components/GithubProfile.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/components/GithubLiveOverview.tsx", import.meta.url), "utf8"),
@@ -373,9 +373,9 @@ test("renders safe external embeds and the complete GitHub profile experience", 
   assert.match(markdown, /className: "ext"/);
   assert.match(embed, /youtube-nocookie\.com\/embed/);
   assert.match(embed, /player\.bilibili\.com\/player\.html/);
-  assert.match(embed, /\['http:', 'https:'\]/);
+  assert.match(embed, /\["http:", "https:"\]\.includes\(url\.protocol\)/);
   assert.match(garden, /GardenMediaGuide/);
-  assert.match(docs, /X（Twitter）、微信公众号/);
+  assert.match(docs, /把可播放的视频链接单独占一行/);
   assert.match(github, /pinnedItems\(first: 6/);
   assert.match(github, /totalCommitContributions/);
   assert.match(github, /contributionCalendar/);

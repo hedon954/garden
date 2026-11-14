@@ -1,5 +1,6 @@
 import { lookup } from "node:dns/promises";
 import { isIP } from "node:net";
+import { authorPasteUrl, resolvePlayer } from "../ui/garden/player.mjs";
 
 const timeoutMs = 8000;
 const maxBytes = 1_000_000;
@@ -98,10 +99,6 @@ function pageTitle(html) {
   return match ? decodeEntities(match.replaceAll(/\s+/gu, " ")) : undefined;
 }
 
-function yamlScalar(value) {
-  return JSON.stringify(value);
-}
-
 async function readLimited(response) {
   const type = response.headers.get("content-type") ?? "";
   if (!/text\/html|application\/xhtml\+xml/iu.test(type) && type !== "") {
@@ -143,7 +140,7 @@ async function fetchPublic(url, redirectsLeft) {
       return fetchPublic(next, redirectsLeft - 1);
     }
     if (!response.ok) fail(`抓取失败：HTTP ${response.status}。`);
-    return readLimited(response);
+    return { url, html: await readLimited(response) };
   } catch (error) {
     if (error?.name === "AbortError") fail("抓取超时。");
     throw error;
@@ -154,33 +151,48 @@ async function fetchPublic(url, redirectsLeft) {
 
 async function main() {
   const raw = option("URL") || process.argv[2] || "";
-  if (!raw) fail('用法：make embed URL="https://example.com/article"');
+  if (!raw) fail('用法：make embed URL="https://www.youtube.com/watch?v=..." 或一篇网页地址。YouTube / Bilibili 会打印可直接粘贴的一行链接。');
 
-  const url = await assertPublicHttpUrl(raw);
-  const html = await fetchPublic(url, maxRedirects);
-  const title = metaContent(html, ["og:title", "twitter:title"]) ?? pageTitle(html);
-  const description = metaContent(html, ["og:description", "twitter:description", "description"]);
-  const image = metaContent(html, ["og:image", "twitter:image", "twitter:image:src"]);
+  const starting = await assertPublicHttpUrl(raw);
+  const alreadyPlayable = resolvePlayer(starting);
+  let finalUrl = starting;
+  let title;
+  let description;
+  let image;
+  try {
+    const snapshot = await fetchPublic(starting, maxRedirects);
+    finalUrl = snapshot.url;
+    title = metaContent(snapshot.html, ["og:title", "twitter:title"]) ?? pageTitle(snapshot.html);
+    description = metaContent(snapshot.html, ["og:description", "twitter:description", "description"]);
+    image = metaContent(snapshot.html, ["og:image", "twitter:image", "twitter:image:src"]);
+  } catch (error) {
+    if (!alreadyPlayable.ok) throw error;
+  }
+  const player = resolvePlayer(finalUrl);
+  const paste = (player.ok ? player.pageUrl : authorPasteUrl(finalUrl)) || finalUrl.toString();
 
+  process.stdout.write(`${paste}\n`);
+  const hints = [];
+  if (player.ok) {
+    hints.push(`已规范化为可粘贴的 ${player.label} 地址：单独一行写入文章即可在站内播放。`);
+  } else if (alreadyPlayable.reason === "short-link") {
+    hints.push("这是需要跳转的短链。文章渲染不会在构建时解析短链；请把跳转后的完整视频链接单独一行贴进文章。");
+  } else if (player.reason === "unsupported-youtube-url" || player.reason === "unsupported-bilibili-url") {
+    hints.push("这不是可嵌入的单个视频地址，单独一行时会显示为链接卡片，而不是站内播放器。");
+  } else {
+    hints.push("这不是 YouTube / Bilibili 视频。单独一行会显示链接卡片；若要在句中链接后显示卡片，在链接后紧跟 {card}。");
+  }
+  if (title) hints.push(`title: ${title}`);
+  if (description) hints.push(`description: ${description}`);
   if (image) {
     try {
-      const imageUrl = new URL(image, url);
-      if (!["http:", "https:"].includes(imageUrl.protocol)) fail("封面地址不是 http(s)。");
+      const imageUrl = new URL(image, finalUrl);
+      if (["http:", "https:"].includes(imageUrl.protocol)) hints.push(`image: ${imageUrl.toString()}`);
     } catch {
-      fail("封面地址无效。");
+      // Hint-only; ignore a malformed image URL.
     }
   }
-
-  const lines = ["```embed", `url: ${url.toString()}`];
-  if (title) lines.push(`title: ${yamlScalar(title)}`);
-  if (description) lines.push(`description: ${yamlScalar(description)}`);
-  if (image) lines.push(`image: ${yamlScalar(new URL(image, url).toString())}`);
-  lines.push("```");
-
-  process.stdout.write(`${lines.join("\n")}\n`);
-  if (!title && !description) {
-    process.stderr.write("已生成围栏，但页面没有标题或摘要，请手工补全。\n");
-  }
+  if (hints.length) process.stderr.write(`${hints.join("\n")}\n`);
 }
 
 main().catch((error) => {

@@ -488,7 +488,7 @@ function help() {
   garden start            启动已构建的服务
   garden sync             只从 Markdown 生成索引
   garden new              创建文章草稿
-  garden embed            拉取外链摘要
+  garden embed            打印可粘贴的规范化视频链接或网页地址
   garden links            重新拉取外链图标与卡片元数据（dev / build 时也会自动做）
   garden images           读取新的远程图片尺寸，写入 .garden/image-sizes.json（build 时会自动做）
   garden files            读取 Compose <file> 里远程文件的大小，写入 file-sizes.json（build 时会自动做）

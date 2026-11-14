@@ -12,7 +12,7 @@ export GARDEN_EMBED_URL := $(value URL)
 export GARDEN_CHECK_FILE := $(value FILE)
 
 help:
-	@printf "%s\n" "Garden 常用命令：" "  make new                 用引擎创建文章草稿" '  make new TITLE="文章标题" SLUG=my-post DIR=writing' '  make embed URL="https://example.com"  拉取外部网页摘要' "  make skill               安装可交互图表 skill" "  make dev                 安装依赖并本地预览" "  make check               全量严格预检后 sync/build；FILE=路径 只限制预检" "  make check diff          只检查 Git 改动的 Markdown，不构建/跑全套测试" "  make build               构建公开站点" "  make update              检查、提交并触发自动发布"
+	@printf "%s\n" "Garden 常用命令：" "  make new                 用引擎创建文章草稿" '  make new TITLE="文章标题" SLUG=my-post DIR=writing' '  make embed URL="https://www.youtube.com/watch?v=..."  打印可粘贴的规范化视频链接或网页地址' "  make skill               安装可交互图表 skill" "  make dev                 安装依赖并本地预览" "  make check               全量严格预检后 sync/build；FILE=路径 只限制预检" "  make check diff          只检查 Git 改动的 Markdown，不构建/跑全套测试" "  make build               构建公开站点" "  make update              检查、提交并触发自动发布"
 
 new: prepare
 	npx garden new
