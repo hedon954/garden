@@ -91,6 +91,23 @@ export async function probeBrowser({ chrome, url, profileDir, width, height, scr
   }
 }
 
+/** Chrome on Linux can still write into user-data-dir after SIGKILL; Node then throws ENOTEMPTY. */
+export async function removeFixtureDir(dir) {
+  if (process.env.GARDEN_KEEP_BROWSER_FIXTURE === "1") return;
+  let last;
+  for (let attempt = 0; attempt < 10; attempt += 1) {
+    try {
+      fs.rmSync(dir, { recursive: true, force: true });
+      return;
+    } catch (error) {
+      last = error;
+      if (!["ENOTEMPTY", "EBUSY", "EPERM"].includes(error.code)) throw error;
+      await new Promise((resolve) => setTimeout(resolve, 40 * (attempt + 1)));
+    }
+  }
+  throw last;
+}
+
 // Shared by the two real browser fixtures. Every failure names the actual
 // condition that failed; the deadline never stands in for successful output.
 export const waitForBrowserCondition = `async function waitFor(predicate, label) {

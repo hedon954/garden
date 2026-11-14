@@ -4,7 +4,7 @@ import path from 'node:path';
 import http from 'node:http';
 import { spawn } from 'node:child_process';
 import test from 'node:test';
-import { probeBrowser, waitForBrowserCondition } from './browser-fixture.mjs';
+import { probeBrowser, removeFixtureDir, waitForBrowserCondition } from './browser-fixture.mjs';
 import { writeRenderingFixture } from './rendering-fixture.mjs';
 const root = path.resolve(import.meta.dirname, '..');
 const chrome = [process.env.CHROME_BIN, '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome', '/usr/bin/chromium'].find(p => p && fs.existsSync(p));
@@ -94,6 +94,6 @@ test('real exported theme executes sandbox through normal Links, re-entry, histo
     fs.writeFileSync(path.join(evidence, 'fixture-path.txt'), dir + '\n');
   } finally {
     if (server) await new Promise(resolve => server.close(resolve));
-    if (process.env.GARDEN_KEEP_BROWSER_FIXTURE !== '1') fs.rmSync(dir, { recursive: true, force: true });
+    await removeFixtureDir(dir);
   }
 });

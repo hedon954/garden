@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import {execFileSync} from 'node:child_process';
-import {probeBrowser, waitForBrowserCondition} from './browser-fixture.mjs';
+import {probeBrowser, removeFixtureDir, waitForBrowserCondition} from './browser-fixture.mjs';
 const root=path.resolve(import.meta.dirname,'..');
 const chrome=[process.env.CHROME_BIN,'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome','/usr/bin/chromium'].find(p=>p&&fs.existsSync(p));
 test('shipped standalone preview hydrates Compose native scenes and data without styling the editor or loading Node',{skip:!chrome,timeout:120_000},async()=>{
@@ -34,5 +34,5 @@ test('shipped standalone preview hydrates Compose native scenes and data without
    const m=await probeBrowser({chrome,url:'file://'+file,profileDir:path.join(dir,'profile-'+width),width,height:2000});
    assert.deepEqual(m.errors,[]);assert.equal(m.error,undefined);assert.equal(m.counter,true);assert.equal(m.reply,'Selected A');assert.equal(m.underline,'underline');assert.equal(m.body,'21px');assert.equal(m.outside,'19px');assert.equal(m.data,true);
   }
- }finally{fs.rmSync(dir,{recursive:true,force:true});}
+ }finally{await removeFixtureDir(dir);}
 });

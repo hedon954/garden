@@ -5,7 +5,7 @@ import path from "node:path";
 import { spawn } from "node:child_process";
 import test from "node:test";
 import { assertLayoutViewport } from "./browser-viewport.mjs";
-import { probeBrowser } from "./browser-fixture.mjs";
+import { probeBrowser, removeFixtureDir } from "./browser-fixture.mjs";
 import { writePunctuationFixture } from "./punctuation-fixture.mjs";
 
 const root = path.resolve(import.meta.dirname, "..");
@@ -97,6 +97,6 @@ test("inline math keeps punctuation, bounds long formulas locally and never expa
     assert.ok(nojs.scrollWidth<=nojs.clientWidth);assert.deepEqual(nojs.isolated,[]);
   } finally {
     if (server) await new Promise(resolve => server.close(resolve));
-    if (process.env.GARDEN_KEEP_BROWSER_FIXTURE !== "1") fs.rmSync(dir, { recursive: true, force: true });
+    await removeFixtureDir(dir);
   }
 });

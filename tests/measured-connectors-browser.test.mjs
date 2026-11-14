@@ -4,7 +4,7 @@ import path from 'node:path';
 import test from 'node:test';
 import { managedSkillBundle } from '../scripts/managed-skills.mjs';
 import { buildSrcdoc } from '../ui/host.mjs';
-import { probeBrowser } from './browser-fixture.mjs';
+import { probeBrowser, removeFixtureDir } from './browser-fixture.mjs';
 const root = path.resolve(import.meta.dirname, '..');
 const chrome = [process.env.CHROME_BIN, '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome', '/usr/bin/chromium'].find(p => p && fs.existsSync(p));
 test('measured connector recipe keeps text in DOM and endpoints on actual resized node boundaries', { skip: !chrome, timeout: 90000 }, async () => {
@@ -61,7 +61,7 @@ test('measured connector recipe keeps text in DOM and endpoints on actual resize
         }
       }
     }
-  } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+  } finally { await removeFixtureDir(dir); }
 });
 
 test('both managed skill languages include the exact executable connector foundation', () => {

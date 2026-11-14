@@ -4,7 +4,7 @@ import http from "node:http";
 import path from "node:path";
 import { spawn } from "node:child_process";
 import test from "node:test";
-import { probeBrowser, waitForBrowserCondition } from "./browser-fixture.mjs";
+import { probeBrowser, removeFixtureDir, waitForBrowserCondition } from "./browser-fixture.mjs";
 import { assertLayoutViewport } from "./browser-viewport.mjs";
 import { titleCases, writeFeatureTitleFixture } from "./feature-title-fixture.mjs";
 
@@ -123,5 +123,5 @@ test('featured title measures real text, keeps a readable summary-relative floor
         probeExpression:`(()=>{${measure};if(document.readyState!=='complete')return;return measure()})()`});
       fs.writeFileSync(path.join(evidence,`${fallback}.json`),JSON.stringify(result,null,2));assertReadable(result,300);assert.equal(result.size,result.maximum);assert.ok(!result.mounted);
     }
-  }finally{if(server)await new Promise(resolve=>server.close(resolve));if(owned&&process.env.GARDEN_KEEP_BROWSER_FIXTURE!=='1')fs.rmSync(dir,{recursive:true,force:true})}
+  }finally{if(server)await new Promise(resolve=>server.close(resolve));if(owned)await removeFixtureDir(dir)}
 });

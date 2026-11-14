@@ -5,7 +5,7 @@ import path from "node:path";
 import test from "node:test";
 import postcss from "postcss";
 import tailwind from "@tailwindcss/postcss";
-import { probeBrowser } from "./browser-fixture.mjs";
+import { probeBrowser, removeFixtureDir } from "./browser-fixture.mjs";
 import { assertLayoutViewport } from "./browser-viewport.mjs";
 
 const root = path.resolve(import.meta.dirname, "..");
@@ -108,6 +108,6 @@ test("split article titles shrink to keep the remaining title on the second line
     }
   } finally {
     if (server) await new Promise((resolve) => server.close(resolve));
-    if (process.env.GARDEN_KEEP_BROWSER_FIXTURE !== "1") fs.rmSync(dir, { recursive: true, force: true });
+    await removeFixtureDir(dir);
   }
 });

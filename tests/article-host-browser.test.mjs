@@ -5,7 +5,7 @@ import test from "node:test";
 import postcss from "postcss";
 import tailwind from "@tailwindcss/postcss";
 import { buildSrcdoc } from "../ui/host.mjs";
-import { probeBrowser, waitForBrowserCondition } from "./browser-fixture.mjs";
+import { probeBrowser, removeFixtureDir, waitForBrowserCondition } from "./browser-fixture.mjs";
 
 const root = path.resolve(import.meta.dirname, "..");
 const chrome = [process.env.CHROME_BIN, "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome", "/usr/bin/chromium"].find(file => file && fs.existsSync(file));
@@ -64,5 +64,5 @@ test("article host preserves the reading column, long brand, frame width and uno
         assert.equal(m.contentsInHeader, true, JSON.stringify(m));
       }
     }
-  } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+  } finally { await removeFixtureDir(dir); }
 });

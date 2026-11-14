@@ -4,7 +4,7 @@ import http from "node:http";
 import path from "node:path";
 import { spawn } from "node:child_process";
 import test from "node:test";
-import { probeBrowser, waitForBrowserCondition } from "./browser-fixture.mjs";
+import { probeBrowser, removeFixtureDir, waitForBrowserCondition } from "./browser-fixture.mjs";
 import { writeReadingNavigationFixture } from "./reading-navigation-fixture.mjs";
 
 const root = path.resolve(import.meta.dirname, "..");
@@ -85,6 +85,6 @@ test("long-article contents stays reachable through the sticky header at every r
     }
   } finally {
     if (server) await new Promise(resolve => server.close(resolve));
-    if (process.env.GARDEN_KEEP_BROWSER_FIXTURE !== "1") fs.rmSync(dir, { recursive: true, force: true });
+    await removeFixtureDir(dir);
   }
 });

@@ -10,7 +10,7 @@ import rehypeKatex from "rehype-katex";
 import rehypeRaw from "rehype-raw";
 import { markdownPlugins } from "../app/lib/markdown-plugins.ts";
 import { rehypeKeepPunctuation } from "../ui/garden/rehype-keep-punctuation.mjs";
-import { probeBrowser } from "./browser-fixture.mjs";
+import { probeBrowser, removeFixtureDir } from "./browser-fixture.mjs";
 
 const chrome = [process.env.CHROME_BIN, "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome", "/usr/bin/chromium"].find((file) => file && fs.existsSync(file));
 const root = path.resolve(import.meta.dirname, "..");
@@ -175,6 +175,6 @@ ${mathCss}
     }
   } finally {
     await new Promise((resolve) => server.close(resolve));
-    if (process.env.GARDEN_KEEP_BROWSER_FIXTURE !== "1") fs.rmSync(dir, { recursive: true, force: true });
+    await removeFixtureDir(dir);
   }
 });

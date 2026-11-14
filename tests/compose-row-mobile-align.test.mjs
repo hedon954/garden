@@ -4,6 +4,7 @@ import path from "node:path";
 import { spawnSync } from "node:child_process";
 import test from "node:test";
 import { parseCompose, renderCompose } from "../ui/compose/index.mjs";
+import { removeFixtureDir } from "./browser-fixture.mjs";
 
 const root = path.resolve(import.meta.dirname, "..");
 const chrome = [process.env.CHROME_BIN, "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome", "/usr/bin/chromium"].find((file) => file && fs.existsSync(file));
@@ -100,6 +101,6 @@ test("columnized centered rows center direct labels but honor explicit start and
       }
     }
   } finally {
-    if (process.env.GARDEN_KEEP_BROWSER_FIXTURE !== "1") fs.rmSync(dir, { recursive: true, force: true });
+    await removeFixtureDir(dir);
   }
 });

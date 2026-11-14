@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import fs from 'node:fs';
 import path from 'node:path';
-import {probeBrowser, waitForBrowserCondition} from './browser-fixture.mjs';
+import {probeBrowser, removeFixtureDir, waitForBrowserCondition} from './browser-fixture.mjs';
 import {build} from 'esbuild';
 import {parse as yaml} from 'yaml';
 import postcss from 'postcss';
@@ -70,5 +70,5 @@ ${waitForBrowserCondition}
    assert.ok(m.headerLayout,'native header exists');assert.equal(m.headerLayout.justify,'space-between');assert.equal(m.headerLayout.align,'center');assert.ok(Math.abs(m.headerLayout.leftGap)<2,JSON.stringify(m.headerLayout));assert.ok(Math.abs(m.headerLayout.rightGap)<2,JSON.stringify(m.headerLayout));assert.ok(m.headerLayout.titleWidth<m.headerLayout.rowWidth*.85,JSON.stringify(m.headerLayout));
    assert.ok(m.iconRail.paragraphs.every(x=>Math.abs(x-m.iconRail.heading)<1));
   }
- }finally{fs.rmSync(dir,{recursive:true,force:true});}
+ }finally{await removeFixtureDir(dir);}
 });

@@ -5,7 +5,7 @@ import path from "node:path";
 import {spawn} from "node:child_process";
 import test from "node:test";
 import {assertLayoutViewport} from "./browser-viewport.mjs";
-import {probeBrowser,waitForBrowserCondition} from "./browser-fixture.mjs";
+import {probeBrowser,removeFixtureDir,waitForBrowserCondition} from "./browser-fixture.mjs";
 import {writeTocFollowFixture} from "./toc-follow-fixture.mjs";
 const root=path.resolve(import.meta.dirname,'..');
 const chrome=[process.env.CHROME_BIN,'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome','/usr/bin/chromium'].find(p=>p&&fs.existsSync(p));
@@ -55,5 +55,5 @@ test('contents follows one ancestry path, respects all/manual browsing and stays
    assert.ok(states.compact.listHeight<states['old-spacing'].listHeight*.9,'spacing control must demonstrate a meaningful reduction');for(const row of states.compact.rows){assert.ok(row.height>=40-.1);assert.equal(row.font,'13px')}
   }
   const nojs=await probeBrowser({chrome,url,profileDir:path.join(dir,'profile-nojs'),width:300,height:900,mobile:true,scriptingEnabled:false,probeExpression:`(()=>{if(document.readyState!=='complete')return;const state=window.__nojsToc??={phase:0};const panel=document.querySelector('.toc');if(!state.phase){document.querySelector('.toc-header-nojs').click();state.phase=1;return}if(state.phase===1){if(getComputedStyle(panel).visibility!=='visible')return;const links=[...panel.querySelectorAll('.toc-list a')];if(links.some(a=>!a.getClientRects().length))return{probeError:'no-JS hides a nested heading'};const deep=panel.querySelector('a[href="#deeper-b1"]');deep.focus();if(document.activeElement!==deep)return{probeError:'no-JS nested link not keyboard focusable'};deep.click();state.phase=2;return}if(location.hash!=='#deeper-b1'||getComputedStyle(panel).visibility!=='hidden')return;return{allAccessible:true,modeControlsHidden:getComputedStyle(panel.querySelector('.toc-mode-controls')).display==='none',viewport:[innerWidth,document.documentElement.clientWidth,document.documentElement.scrollWidth]}})()`});assert.ok(nojs.allAccessible&&nojs.modeControlsHidden);assert.deepEqual(nojs.viewport,[300,300,300]);fs.writeFileSync(path.join(evidence,'nojs.json'),JSON.stringify(nojs,null,2));
- }finally{if(server)await new Promise(r=>server.close(r));if(owned&&process.env.GARDEN_KEEP_BROWSER_FIXTURE!=='1')fs.rmSync(dir,{recursive:true,force:true})}
+ }finally{if(server)await new Promise(r=>server.close(r));if(owned)await removeFixtureDir(dir)}
 });
