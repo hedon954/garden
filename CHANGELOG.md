@@ -1,11 +1,14 @@
 # Changelog
 
-## Unreleased
+## 0.14.13
 
 - Make `file:../garden` and npm `hd-garden` share one Vinext overlay: runtime now links `ui/` (and `scripts/`, `docs/`), Vite `server.fs.allow` includes the engine package, and `?raw` title runtimes load in both layouts.
 - Pin the Vite cache under `.garden/runtime/.vite` (next to the overlay `node_modules`), prebundle known markdown/react deps, ignore media/test/editor trees, recycle workerd children on `garden dev` replacement, and skip link-asset fetches when no Markdown changed.
 - Keep list routes on metadata-only `generated-content.ts`; post and handbook bodies live in separate modules so the homepage does not parse every article. A later `garden sync` / Vite start rewrites the body modules even when an older `generated-content.ts` is already on disk.
 - Default `garden dev` to Node RSC preview; pass `--worker` for the Cloudflare workerd path used by Admin.
+- Render single-line YouTube and Bilibili links as in-article players, and print a canonical URL from `make embed` for pasting.
+- Vertically align Compose row icons with the first line of text.
+- Ship matching Garden 0.14.13 Cursor / VS Code VSIX and Typora ZIP.
 
 ## 0.14.12
 
