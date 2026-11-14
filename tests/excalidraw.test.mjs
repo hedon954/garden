@@ -41,9 +41,8 @@ function runContentBuild(root) {
 }
 
 async function postBody(root, slug) {
-  const generated = await readFile(path.join(root, ".garden", "generated-content.ts"), "utf8");
-  const posts = JSON.parse(generated.match(/export const posts = ([\s\S]*?) as ContentEntry\[\];/u)[1]);
-  return posts.find((post) => post.slug === slug).content;
+  const { postBodyFromSite } = await import("./generated-bodies.mjs");
+  return postBodyFromSite(root, slug);
 }
 
 function tempDir(name) {

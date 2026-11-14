@@ -7,6 +7,7 @@ import {
   columnHref,
   columnEntryPath,
 } from "../../../lib/content";
+import { postWithBody } from "../../../lib/content-body";
 import { PostReadingView } from "../../../components/PostReadingView";
 import {
   absoluteUrl,
@@ -69,11 +70,12 @@ export default async function ColumnEntryPage({
   params: Promise<{ column: string; path: string[] }>;
 }) {
   const { column, path } = await params;
-  const entry = findColumnEntry(column, path.join("/"));
-  if (!entry) {
+  const found = findColumnEntry(column, path.join("/"));
+  if (!found) {
     if (isStaticPlaceholder(column)) return null;
     notFound();
   }
+  const entry = postWithBody(found);
   const series = columns.filter((item) => item.column === column);
   const listed = [...series].sort((left, right) => Date.parse(right.date) - Date.parse(left.date));
   const currentIndex = series.findIndex((item) => item.path === entry.path);

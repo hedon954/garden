@@ -25,7 +25,7 @@ test('actual init entrypoint selects both guide locales and preserves a preexist
   // Isolate unrelated editor/skill installers: tests must not write skill files.
   const harness=path.join(root,'engine');fs.mkdirSync(path.join(harness,'bin'),{recursive:true});fs.mkdirSync(path.join(harness,'scripts'));
   fs.copyFileSync(path.join(engineRoot,'bin/garden.mjs'),path.join(harness,'bin/garden.mjs'));
-  for(const name of ['dev-server.mjs','site-guide.mjs','garden-paths.mjs'])fs.symlinkSync(path.join(engineRoot,'scripts',name),path.join(harness,'scripts',name));
+  for(const name of ['dev-server.mjs','site-guide.mjs','garden-paths.mjs','vinext-runtime.mjs'])fs.symlinkSync(path.join(engineRoot,'scripts',name),path.join(harness,'scripts',name));
   fs.mkdirSync(path.join(harness,'ui'));fs.symlinkSync(path.join(engineRoot,'ui/core'),path.join(harness,'ui/core'));
   fs.writeFileSync(path.join(harness,'scripts/managed-skills.mjs'),'export function installManagedSkills(){return [];}');
   fs.writeFileSync(path.join(harness,'scripts/editors-kit.mjs'),'export async function editorsInstall(){};export async function offerEditorsOnce(){};');

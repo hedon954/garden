@@ -31,7 +31,7 @@ test("client components do not import the content module", () => {
   const clientFiles = files("app/", /\.tsx?$/u).filter((file) => /^["']use client["']/mu.test(fs.readFileSync(file, "utf8")));
   for (const file of clientFiles) {
     const source = fs.readFileSync(file, "utf8");
-    const offending = source.match(/^import (?!type\b)[^;]*from ["'](\.\.\/lib\/content|\.\.\/\.\.\/lib\/content|@garden\/generated-content|\.\/MarkdownArticle)["']/mu);
+    const offending = source.match(/^import (?!type\b)[^;]*from ["'](\.\.\/lib\/content|\.\.\/\.\.\/lib\/content|\.\.\/lib\/content-body|\.\.\/\.\.\/lib\/content-body|@garden\/generated-content|@garden\/generated-post-bodies|@garden\/generated-handbook-bodies|\.\/MarkdownArticle)["']/mu);
     assert.equal(offending, null, `${path.relative(root.pathname, file)} imports ${offending?.[1]}`);
   }
 });

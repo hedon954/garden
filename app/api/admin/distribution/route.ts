@@ -1,5 +1,6 @@
 import { requireAdminApi, requireAdminMutation } from "../../../lib/admin-auth";
 import { findColumnEntry, findPost } from "../../../lib/content";
+import { postWithBody } from "../../../lib/content-body";
 import { absoluteUrl, getSiteUrl } from "../../../lib/site";
 import { contentForDistribution } from "../../../../ui/core/transform.mjs";
 
@@ -42,8 +43,9 @@ export async function POST(request: Request) {
   const entry = kind === "post" ? findPost(path) : undefined;
   const column = typeof payload.column === "string" ? payload.column : "";
   const columnEntry = kind === "column" ? findColumnEntry(column, path) : undefined;
-  const source = entry ?? columnEntry;
-  if (!source) return Response.json({ error: "未找到对应内容。" }, { status: 404 });
+  const found = entry ?? columnEntry;
+  if (!found) return Response.json({ error: "未找到对应内容。" }, { status: 404 });
+  const source = postWithBody(found);
 
   const publicPath = kind === "post" ? `/blog/${source.path}` : `/columns/${source.column}/${source.path}`;
   const siteUrl = await getSiteUrl();

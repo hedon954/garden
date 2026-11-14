@@ -1,3 +1,4 @@
+import { postBodyFromSite } from "./generated-bodies.mjs";
 import {parse as parseYaml} from "yaml";
 import {inspectComposeBody} from "../ui/compose/inspect.mjs";
 import {findBlocks} from "../ui/core/fence.mjs";
@@ -367,7 +368,7 @@ test("the build copies repo files, writes the Markdown preview to its own file, 
     const generated = await readFile(path.join(site, ".garden", "generated-content.ts"), "utf8");
     // The sidecar Markdown is a file, not a post.
     assert.doesNotMatch(generated, /"slug": "guide"/u);
-    const content = JSON.parse(/"content": ("(?:[^"\\]|\\.)*")/u.exec(generated)[1]);
+    const content = postBodyFromSite(site, "kit");
     const blocks=findBlocks(content).flatMap(f=>inspectComposeBody(f.body)).filter(n=>n.type==="feature"&&n.name==="file").map(n=>n.props.resolved);
     assert.equal(blocks.length,2);
     assert.deepEqual(blocks[0].files,[{name:"data.csv",title:"<b>数据</b>",format:"CSV",icon:"file",url:"/media/posts/notes/kit/data.csv",size:8,remote:false,preview:""}]);
@@ -383,7 +384,7 @@ test("the build copies repo files, writes the Markdown preview to its own file, 
     // Front matter dropped, images next to the file copied and rewritten, a standalone page for readers without JavaScript.
     assert.match(published, /^<!doctype html>/u);
     assert.match(published, /<meta name="robots" content="noindex">/u);
-    assert.equal(previewBody(published), '<h1 id="gf-指南">指南</h1>\n<p><img src="/media/posts/notes/kit/pic.png" alt="图"></p>\n<p>正文。</p>');
+    assert.equal(previewBody(published), '<h1 id="gf-指南">指南</h1>\n<p><img src="/media/posts/notes/kit/pic.png" alt="图"></p>\n<p>正<span class="g-keep-punct">文。</span></p>');
     assert.doesNotMatch(generated, /正文。/u, "the Markdown file's text is not in the page data");
     assert.equal(demo.preview, "html");
     assert.deepEqual([big.remote, big.size, big.preview], [true, 52428800, ""]);
@@ -499,7 +500,7 @@ test("Compose native files retain real build asset copies and previews", async (
     await writeFile(path.join(site,"content/posts/notes/kit.md"), post('```garden compose\n<stack><file src="./kit/data.csv" title="Data"/><files title="Sources"><file src="./kit/guide.md" note="Read"/><file src="./kit/demo.html"/></files></stack>\n```'));
     await buildContent(site);
     const generated = await readFile(path.join(site,".garden/generated-content.ts"),"utf8");
-    const content = JSON.parse(/"content": ("(?:[^"\\]|\\.)*")/u.exec(generated)[1]);
+    const content = postBodyFromSite(site, "kit");
     const {parseCompose,renderCompose}=await import("../ui/compose/index.mjs");
     const body=content.split("```garden compose\n")[1].split("```")[0];
     const parsed=parseCompose(body); assert.equal(parsed.ok,true,JSON.stringify(parsed.error));

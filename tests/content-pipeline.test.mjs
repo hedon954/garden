@@ -127,6 +127,12 @@ date: 2026-07-25
     assert.match(generatedConfig, /export const siteConfig/);
     assert.match(generated, /"slug": "published"/);
     const entries = JSON.parse(generated.match(/export const posts = ([\s\S]*?) as ContentEntry\[\];/u)[1]);
+    for (const entry of entries) assert.equal(entry.content, undefined);
+    const { postBodyFromSite } = await import("./generated-bodies.mjs");
+    await access(path.join(fixture, ".garden", "generated-post-bodies.ts"));
+    await access(path.join(fixture, ".garden", "generated-handbook-bodies.ts"));
+    assert.equal(typeof postBodyFromSite(fixture, "published"), "string");
+    assert.notEqual(postBodyFromSite(fixture, "published"), "");
     for (const slug of ["empty", "whitespace", "omitted", "nullable"]) {
       assert.equal(entries.find((entry) => entry.slug === slug).description, "");
     }
@@ -138,7 +144,7 @@ date: 2026-07-25
     assert.doesNotMatch(generated, /topic|旧字段/);
     assert.match(generated, /"column": "writing"/);
     assert.match(generated, /\/media\/covers\/cover\.jpg/);
-    assert.match(generated, /\/media\/posts\/assets\/cover\.jpg/);
+    assert.match(postBodyFromSite(fixture, "published"), /\/media\/posts\/assets\/cover\.jpg/);
     const postsFeed = await readFile(path.join(fixture, "public", "posts.xml"), "utf8");
     assert.match(postsFeed, /<lastBuildDate>Fri, 24 Jul 2026 16:00:00 GMT<\/lastBuildDate>/);
     assert.doesNotMatch(postsFeed, /草稿文章/);
@@ -187,6 +193,39 @@ draft: false
       "utf8",
     );
     assert.match(generated, /"slug": "isolated"/);
+    await access(path.join(fixture, ".garden", "generated-post-bodies.ts"));
+    await access(path.join(fixture, ".garden", "generated-handbook-bodies.ts"));
+  } finally {
+    await rm(fixture, { recursive: true, force: true });
+  }
+});
+
+test("content sync writes body modules even when generated-content.ts already exists", async () => {
+  const fixture = await mkdtemp(path.join(tmpdir(), "garden-stale-content-"));
+  try {
+    await mkdir(path.join(fixture, "content", "posts"), { recursive: true });
+    await mkdir(path.join(fixture, ".garden"), { recursive: true });
+    await cp(path.join(projectRoot, "site.config.yaml"), path.join(fixture, "site.config.yaml"));
+    await writeFile(
+      path.join(fixture, "content", "posts", "hello.md"),
+      "---\ntitle: Hello\ndate: 2026-11-14\ndescription: Stale index.\n---\n\nBody.\n",
+    );
+    await writeFile(
+      path.join(fixture, ".garden", "generated-content.ts"),
+      "export const posts = [] as { slug: string }[];\n",
+    );
+    await writeFile(
+      path.join(fixture, ".garden", "site-config.ts"),
+      "export const siteConfig = {} as const;\n",
+    );
+    await execFileAsync(process.execPath, [path.join(projectRoot, "scripts", "build-content.mjs")], {
+      cwd: projectRoot,
+      env: { ...process.env, GARDEN_SITE: fixture, CONTENT_INCLUDE_DRAFTS: "0" },
+    });
+    await access(path.join(fixture, ".garden", "generated-post-bodies.ts"));
+    await access(path.join(fixture, ".garden", "generated-handbook-bodies.ts"));
+    const { postBodyFromSite } = await import("./generated-bodies.mjs");
+    assert.match(postBodyFromSite(fixture, "hello"), /Body/u);
   } finally {
     await rm(fixture, { recursive: true, force: true });
   }
@@ -222,9 +261,8 @@ date: 2026-10-19
 `,
     );
     await execFileAsync(process.execPath, [path.join(fixture, "scripts", "build-content.mjs")], { cwd: fixture, env: { ...process.env, CONTENT_INCLUDE_DRAFTS: "0" } });
-    const generated = await readFile(path.join(fixture, ".garden", "generated-content.ts"), "utf8");
-    const posts = JSON.parse(generated.match(/export const posts = ([\s\S]*?) as ContentEntry\[\];/u)[1]);
-    const body = posts.find((post) => post.slug === "angle").content;
+    const { postBodyFromSite } = await import("./generated-bodies.mjs");
+    const body = postBodyFromSite(fixture, "angle");
     // The brackets stay; the local file is published and its new address is bracketed too.
     assert.match(body, /!\[远程图片\]\(<https:\/\/oss\.example\.com\/img\/image%20\(1\)\.png>\)/u);
     assert.match(body, /!\[带标题\]\(<https:\/\/oss\.example\.com\/img\/output \(2\)\.png> "标题"\)/u);

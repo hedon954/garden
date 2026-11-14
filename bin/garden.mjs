@@ -9,6 +9,7 @@ import path from "node:path";
 import { createRequire } from "node:module";
 import { editorsInstall, offerEditorsOnce } from "../scripts/editors-kit.mjs";
 import { gardenPackageRoot, gardenSiteRoot } from "../scripts/garden-paths.mjs";
+import { ensureVinextRuntime, samePath } from "../scripts/vinext-runtime.mjs";
 import { langOf, siteCliLang } from "../ui/core/cli-locale.mjs";
 
 const siteRoot = gardenSiteRoot();
@@ -17,10 +18,17 @@ const command = args[0] ?? "help";
 const rest = args.slice(1);
 
 function siteEnv(extra = {}) {
+  const moduleRoots = [
+    path.join(siteRoot, "node_modules"),
+    path.join(gardenPackageRoot, "node_modules"),
+  ].filter((dir) => fs.existsSync(dir));
+  const inherited = (process.env.NODE_PATH ?? "").split(path.delimiter).filter(Boolean);
+  const nodePath = [...new Set([...moduleRoots, ...inherited])].join(path.delimiter);
   return {
     ...process.env,
     ...extra,
     GARDEN_SITE: siteRoot,
+    ...(nodePath ? { NODE_PATH: nodePath } : {}),
     WRANGLER_LOG_PATH:
       process.env.WRANGLER_LOG_PATH ?? path.join(siteRoot, ".wrangler", "wrangler.log"),
   };
@@ -57,27 +65,6 @@ function resolveVinext() {
     }
     fail("找不到 vinext。请在站点目录运行 npm install。");
   }
-}
-
-function samePath(left, right) {
-  return path.resolve(left) === path.resolve(right);
-}
-
-function isPackageSite() {
-  return samePath(siteRoot, gardenPackageRoot);
-}
-
-function ensureLink(from, to) {
-  fs.mkdirSync(path.dirname(to), { recursive: true });
-  try {
-    const stat = fs.lstatSync(to);
-    if (stat.isSymbolicLink() && fs.readlinkSync(to) === from) return;
-    if (stat.isSymbolicLink()) fs.unlinkSync(to);
-    else return;
-  } catch (error) {
-    if (error.code !== "ENOENT") throw error;
-  }
-  fs.symlinkSync(from, to);
 }
 
 function ensurePublic() {
@@ -128,61 +115,12 @@ function ensureEnv() {
   }
 }
 
-function resolveNodeModules() {
-  const siteModules = path.join(siteRoot, "node_modules");
-  const packageModules = path.join(gardenPackageRoot, "node_modules");
-  if (fs.existsSync(path.join(siteModules, "vinext"))) return siteModules;
-  if (fs.existsSync(path.join(packageModules, "vinext"))) return packageModules;
-  return siteModules;
-}
-
 function vinextRoot() {
-  if (isPackageSite()) return gardenPackageRoot;
-
-  const runtime = path.join(siteRoot, ".garden", "runtime");
-  fs.mkdirSync(runtime, { recursive: true });
-
-  const links = [
-    ["app", path.join(gardenPackageRoot, "app")],
-    ["build", path.join(gardenPackageRoot, "build")],
-    ["worker", path.join(gardenPackageRoot, "worker")],
-    [".openai", path.join(gardenPackageRoot, ".openai")],
-    ["vite.config.ts", path.join(gardenPackageRoot, "vite.config.ts")],
-    ["next.config.ts", path.join(gardenPackageRoot, "next.config.ts")],
-    ["postcss.config.mjs", path.join(gardenPackageRoot, "postcss.config.mjs")],
-    ["tsconfig.json", path.join(gardenPackageRoot, "tsconfig.json")],
-    ["package.json", path.join(gardenPackageRoot, "package.json")],
-    ["node_modules", resolveNodeModules()],
-    ["public", path.join(siteRoot, "public")],
-    ["content", path.join(siteRoot, "content")],
-    ["site.config.yaml", path.join(siteRoot, "site.config.yaml")],
-  ];
-
-  for (const name of [".env", ".env.local"]) {
-    const from = path.join(siteRoot, name);
-    if (fs.existsSync(from)) links.push([name, from]);
-  }
-
-  for (const [name, from] of links) {
-    if (fs.existsSync(from) || name === "public" || name === "content") {
-      if ((name === "public" || name === "content") && !fs.existsSync(from)) {
-        fs.mkdirSync(from, { recursive: true });
-      }
-      ensureLink(from, path.join(runtime, name));
-    }
-  }
-
-  // English sites: the runtime manifest is a copy with the English description, not a link.
-  // Remove the link first so the write never goes through it into the engine's own package.json.
-  if (siteCliLang(siteRoot) === "en") {
-    const target = path.join(runtime, "package.json");
-    const manifest = JSON.parse(fs.readFileSync(path.join(gardenPackageRoot, "package.json"), "utf8"));
-    manifest.description = "A personal blog engine: write in Markdown, publish with GitHub Pages.";
-    fs.rmSync(target, { force: true });
-    fs.writeFileSync(target, `${JSON.stringify(manifest, null, 2)}\n`);
-  }
-
-  return runtime;
+  return ensureVinextRuntime({
+    siteRoot,
+    gardenPackageRoot,
+    lang: siteCliLang(siteRoot),
+  });
 }
 
 function publishDist(fromRoot) {
@@ -483,7 +421,7 @@ function installSkill(destinationRoot = siteRoot, { lang = siteCliLang(destinati
 
 function help() {
   process.stdout.write(`Garden 命令：
-  garden dev              同步内容并本地预览
+  garden dev [--worker]   同步内容并本地预览（默认 Node RSC；--worker 使用 Cloudflare workerd）
   garden build            同步内容并构建静态站点
   garden start            启动已构建的服务
   garden sync             只从 Markdown 生成索引
@@ -521,8 +459,10 @@ async function main() {
       // Scoped to this CLI process: sync, Vinext and its watcher inherit it;
       // later build/check commands do not.
       process.env.CONTENT_INCLUDE_DRAFTS ??= "1";
+      if (rest.includes("--worker")) process.env.GARDEN_DEV_WORKER = "1";
+      else process.env.GARDEN_DEV_WORKER ??= "0";
       ensureDevGitHubLogin();
-      await runVinext(["dev", ...rest]);
+      await runVinext(["dev", ...rest.filter((arg) => arg !== "--worker")]);
       break;
     case "build":
       // Favicons are refetched on every build; failures fall back to link-assets.json.

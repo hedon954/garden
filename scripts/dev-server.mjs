@@ -13,6 +13,34 @@ const read = (file) => {
   catch (error) { if (error.code === "ENOENT") return null; throw error; }
 };
 const ps = (pid, field) => execFileSync("ps", ["-p", String(pid), "-o", `${field}=`], { encoding: "utf8", env: { ...process.env, LC_ALL: "C" } }).trim();
+function childPids(pid) {
+  try {
+    const out = execFileSync("pgrep", ["-P", String(pid)], {
+      encoding: "utf8",
+      env: { ...process.env, LC_ALL: "C" },
+    }).trim();
+    return out ? out.split("\n").map(Number).filter((child) => Number.isInteger(child) && child > 1) : [];
+  } catch {
+    return [];
+  }
+}
+
+function descendants(pid) {
+  return childPids(pid).flatMap((child) => [child, ...descendants(child)]);
+}
+
+function stopProven(pid) {
+  const tree = descendants(pid);
+  process.kill(pid, "SIGTERM");
+  for (const child of tree) {
+    try {
+      if (alive(child)) process.kill(child, "SIGTERM");
+    } catch (error) {
+      if (error.code !== "ESRCH") throw error;
+    }
+  }
+}
+
 function identity(pid, executable) {
   if (process.platform !== "linux" && process.platform !== "darwin") throw new Error("Automatic dev replacement requires Linux or macOS process inspection.");
   if (Number(ps(pid, "uid")) !== process.getuid()) throw new Error("Dev process belongs to another user; nothing was stopped.");
@@ -78,8 +106,8 @@ export async function startDev({ cwd, executable, args = [], env = process.env, 
       // Recheck identity immediately before signalling to reduce PID-reuse races.
       const current = identity(lock.pid, executable);
       if (current.start !== previous.start || current.cwd !== cwd || read(lockPath)?.startedAt !== lock.startedAt) throw new Error("Dev owner changed during replacement; nothing was stopped.");
-      process.kill(lock.pid, "SIGTERM");
-      while (alive(lock.pid) || !(await portFree(lock))) {
+      stopProven(lock.pid);
+      while (alive(lock.pid) || descendants(lock.pid).some(alive) || !(await portFree(lock))) {
         if (Date.now() >= deadline) throw new Error("Previous dev server did not release its process/port in time; no force-kill attempted.");
         await delay(100);
       }

@@ -300,6 +300,12 @@ export async function refreshDevLinkAssets({ siteRoot, files, ...options }) {
     } catch { selected = Object.keys(current); }
   }
   const changed = [...new Set(selected)].filter(file => Object.hasOwn(current, file)).map(file => path.join(siteRoot, file));
+  if (changed.length === 0 && previous) {
+    const cache = readLinkCache(siteRoot);
+    const cached = Object.keys(cache.favicons).length;
+    options.log?.(`链接图标：新取 0，沿用缓存 ${cached}，没有图标 0`);
+    return { cache, stats: { fetched: 0, cached, missing: 0 } };
+  }
   const result = await refreshLinkAssets({ siteRoot, ...options, files: changed });
   fs.mkdirSync(path.dirname(stateFile), { recursive: true });
   fs.writeFileSync(stateFile, JSON.stringify(current));

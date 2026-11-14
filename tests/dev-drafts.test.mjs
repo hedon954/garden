@@ -23,7 +23,24 @@ test("garden dev defaults to drafts before initial sync and server spawn, preser
     });
     await vm.runInContext(`(async () => { ${devBranch} })()`, context);
     assert.deepEqual(observed, [explicit ?? "1", explicit ?? "1"]);
+    assert.equal(env.GARDEN_DEV_WORKER, "0");
   }
+});
+
+test("garden dev --worker is stripped from Vinext and enables the Cloudflare preview", async () => {
+  const env = {};
+  let args;
+  const context = vm.createContext({
+    process: { env },
+    rest: ["--worker", "--port", "4321"],
+    ensureDevGitHubLogin() {},
+    async runVinext(value) {
+      args = Array.from(value);
+    },
+  });
+  await vm.runInContext(`(async () => { ${devBranch} })()`, context);
+  assert.equal(env.GARDEN_DEV_WORKER, "1");
+  assert.deepEqual(args, ["dev", "--port", "4321"]);
 });
 
 test("dev default is process-local and sync precedes Vinext with inherited env", () => {
@@ -36,6 +53,13 @@ test("dev default is process-local and sync precedes Vinext with inherited env",
   assert.match(watcher, /sync\("preview", \{ refreshLinks: true, files \}\)/u);
   assert.match(watcher, /"scripts", "link-assets\.mjs"/u);
   assert.match(watcher, /\}, 800\);/u);
+  assert.match(watcher, /cacheDir: path\.join\(siteRoot, "\.garden", "runtime", "\.vite"\)/u);
+  assert.match(cli, /NODE_PATH: nodePath/u);
+  assert.match(watcher, /generatedFiles\(\)\.some\(\(file\) => !fs\.existsSync\(file\)\)/u);
+  assert.match(watcher, /order: "pre"/u);
+  assert.match(watcher, /exclude: Object\.keys\(generatedAliases\)/u);
+  assert.match(watcher, /allow: \[gardenPackageRoot, siteRoot\]/u);
+  assert.match(watcher, /GARDEN_DEV_WORKER === "1"/u);
 });
 
 test("initial and watched link refresh failures warn without exiting before content sync", () => {

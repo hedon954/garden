@@ -1,5 +1,6 @@
 import { marked } from "marked";
 import { columnHref, columns, postHref, posts } from "../lib/content";
+import { postWithBody } from "../lib/content-body";
 import { configuredSiteUrl, siteDescription, siteName } from "../lib/site";
 import { contentForFeed } from "../../ui/core/transform.mjs";
 import { withTrailingSlash } from "../../ui/garden/site-href.mjs";
@@ -20,9 +21,9 @@ const cdata = (value: string) => value.replaceAll("]]>", "]]]]><![CDATA[>");
 export async function GET() {
   const origin = configuredSiteUrl();
   const entries = [
-    ...posts.map((post) => ({ ...post, path: postHref(post) })),
+    ...posts.map((post) => ({ ...postWithBody(post), path: postHref(post) })),
     ...columns.map((entry) => ({
-      ...entry,
+      ...postWithBody(entry),
       path: columnHref(entry),
     })),
   ].sort((a, b) => Date.parse(b.date) - Date.parse(a.date));

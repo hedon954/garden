@@ -9,6 +9,7 @@ import { HandbookLangRedirect } from "./HandbookLangRedirect";
 import { MarkdownArticle } from "./MarkdownArticle";
 import { TableOfContents } from "./TableOfContents";
 import { extractHeadings, handbookDocs, handbookIndexDoc, hasHandbookPage, type GardenDocEntry } from "../lib/content";
+import { docWithBody } from "../lib/content-body";
 import { pageAlternates } from "../lib/page-alternates";
 import { absoluteUrl, getSiteUrl } from "../lib/site";
 import { siteHref } from "../lib/site-href";
@@ -143,7 +144,7 @@ export async function handbookDocMetadata(lang: HandbookLang, doc: GardenDocEntr
 export function HandbookOverview({ lang }: { lang: HandbookLang }) {
   const t = HANDBOOK_UI[lang];
   const docs = handbookDocs(lang);
-  const indexDoc = handbookIndexDoc(lang);
+  const indexDoc = docWithBody(handbookIndexDoc(lang), lang);
   const navItems = toHandbookNavItems(docs);
   const firstDoc = orderedHandbookDocs(docs)[0] ?? null;
   const content = indexDoc?.content ?? "";
@@ -197,13 +198,14 @@ export function HandbookOverview({ lang }: { lang: HandbookLang }) {
 
 export function HandbookDoc({ lang, doc }: { lang: HandbookLang; doc: GardenDocEntry }) {
   const t = HANDBOOK_UI[lang];
+  const resolved = docWithBody(doc, lang);
   const docs = handbookDocs(lang);
   const ordered = orderedHandbookDocs(docs);
   const navItems = toHandbookNavItems(docs);
   const index = ordered.findIndex((item) => item.path === doc.path);
   const prev = index > 0 ? ordered[index - 1] : null;
   const next = index >= 0 && index < ordered.length - 1 ? ordered[index + 1] : null;
-  const headings = extractHeadings(doc.content);
+  const headings = extractHeadings(resolved.content);
   const sectionMeta = HANDBOOK_SECTIONS.find((sec) => sec.id === doc.section);
   const componentBadge = COMPONENT_BADGE[doc.path];
 
@@ -229,7 +231,7 @@ export function HandbookDoc({ lang, doc }: { lang: HandbookLang; doc: GardenDocE
         <ArticleMeasure />
 
         <div className="e-content">
-          <MarkdownArticle content={doc.content} lang={lang} fieldTables handbook refDemos={isReferencePath(doc.path)} />
+          <MarkdownArticle content={resolved.content} lang={lang} fieldTables handbook refDemos={isReferencePath(doc.path)} />
         </div>
 
         <ArticleReferences references={doc.references} lang={lang} />

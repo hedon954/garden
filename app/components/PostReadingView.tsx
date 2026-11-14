@@ -53,8 +53,8 @@ export function PostReadingView({
 }) {
   const displayTitle = title ?? post.title;
   const numbering = (post as ContentEntry & { numbering?: boolean }).numbering;
-  const headings = extractHeadings(post.content, { numbering });
-  const wordCount = estimateWordCount(post.content);
+  const headings = extractHeadings(post.content ?? "", { numbering });
+  const wordCount = estimateWordCount(post.content ?? "");
   const t = ui();
 
   return (
@@ -116,7 +116,7 @@ export function PostReadingView({
             <ArticleMeasure />
             <div className="e-content">
               {post.description ? <p className="lead quote-plain p-summary">{post.description}</p> : null}
-              <MarkdownArticle content={post.content} numbering={numbering} />
+              <MarkdownArticle content={post.content ?? ""} numbering={numbering} />
             </div>
             <ArticleReferences references={post.references} />
             <Webmentions target={canonicalUrl} endpoint={webmentionApiEndpoint()} />

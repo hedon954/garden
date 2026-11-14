@@ -6,6 +6,7 @@ import {
   postHref,
   posts,
 } from "../../lib/content";
+import { postWithBody } from "../../lib/content-body";
 import { PostReadingView } from "../../components/PostReadingView";
 import { adjacentByDate } from "../../../ui/garden/adjacent.mjs";
 import {
@@ -59,11 +60,12 @@ export default async function PostPage({
   params: Promise<{ path: string[] }>;
 }) {
   const { path } = await params;
-  const post = findPost(path.join("/"));
-  if (!post) {
+  const found = findPost(path.join("/"));
+  if (!found) {
     if (isStaticPlaceholder(path)) return null;
     notFound();
   }
+  const post = postWithBody(found);
   const baseUrl = await getSiteUrl();
   const pathname = postHref(post);
   const canonicalUrl = absoluteUrl(pathname, baseUrl);

@@ -26,7 +26,7 @@ flowchart LR
 | 配置 | 站点 `site.config.yaml` | 站点名称、作者、一级页文案、关于页正文 |
 | 内容 | 站点 `content/` | 博文、专栏和附件；构建索引写在站点 `.garden/` |
 
-独立站点通过 `hd-garden` 引用引擎。Vinext 在站点 `.garden/runtime` 下运行，产物写到站点 `dist/`，不会写入 `node_modules`。
+独立站点通过 `hd-garden` 引用引擎。Vinext 在站点 `.garden/runtime` 下运行，并把引擎的 `app/`、`ui/`、`worker/` 等目录叠进去，因此 `file:` 本地引擎和 npm 安装走同一套预览布局。产物写到站点 `dist/`，不会写入 `node_modules`。`garden dev` 默认用 Node RSC 预览；`garden dev --worker` 才挂 Cloudflare workerd。
 
 ## 代码模块
 

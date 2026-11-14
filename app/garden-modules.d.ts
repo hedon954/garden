@@ -14,7 +14,7 @@ declare module "@garden/generated-content" {
     readingTime?: string;
     kind: "post" | "column";
     sourcePath: string;
-    content: string;
+    content?: string;
     column?: string;
     columnTitle?: string;
     columnDescription?: string;
@@ -42,7 +42,7 @@ declare module "@garden/generated-content" {
     readingTime?: string;
     references?: { title: string; url?: string; domain?: string }[];
     sourcePath: string;
-    content: string;
+    content?: string;
     lang?: "zh" | "en";
   };
   export const gardenDocs: GardenDocEntry[];
@@ -62,6 +62,14 @@ declare module "@garden/generated-content" {
   export const linkAssets: LinkAssets;
   /** Intrinsic sizes of body images by src, read at build time. */
   export const imageSizes: Record<string, { width: number; height: number }>;
+}
+
+declare module "@garden/generated-post-bodies" {
+  export const postBodies: Record<string, string>;
+}
+
+declare module "@garden/generated-handbook-bodies" {
+  export const handbookBodies: Record<string, string>;
 }
 
 declare module "@garden/site-config" {
