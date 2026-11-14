@@ -865,16 +865,51 @@
 .g-compose-grid-item[data-span="4"] { grid-column: span 4; }
 
 .g-compose-icon {
+  --gc-icon-size: 15px;
   display: inline-block;
   flex: 0 0 auto;
-  width: 15px;
-  height: 15px;
+  width: var(--gc-icon-size);
+  height: var(--gc-icon-size);
   color: var(--ink);
   vertical-align: -2px;
 }
-.g-compose-icon[data-size="sm"] { width: 13px; height: 13px; }
-.g-compose-icon[data-size="lg"] { width: 18px; height: 18px; }
-.g-compose-icon[data-size="xl"] { width: 22px; height: 22px; }
+.g-compose-icon[data-size="sm"] { --gc-icon-size: 13px; }
+.g-compose-icon[data-size="lg"] { --gc-icon-size: 18px; }
+.g-compose-icon[data-size="xl"] { --gc-icon-size: 22px; }
+/* Align row-leading icons with the first line of adjacent text/headings rather than the top of half-leading. */
+.g-compose-row:not([data-align="center"]):not([data-align="end"]) > .g-compose-icon:has(+ .g-compose-text:not([data-size="sm"]):not([data-size="lg"]):not([data-size="xl"])),
+.g-compose-row:not([data-align="center"]):not([data-align="end"]) > .g-compose-icon:has(+ .g-compose-group > .g-compose-text:first-child:not([data-size="sm"]):not([data-size="lg"]):not([data-size="xl"])),
+.g-compose-row:not([data-align="center"]):not([data-align="end"]) > .g-compose-icon:has(+ .g-compose-group > .g-compose-content:first-child) {
+  margin-top: max(0px, calc((1lh - var(--gc-icon-size)) / 2));
+}
+.g-compose-row:not([data-align="center"]):not([data-align="end"]) > .g-compose-icon:has(+ .g-compose-text[data-size="sm"]),
+.g-compose-row:not([data-align="center"]):not([data-align="end"]) > .g-compose-icon:has(+ .g-compose-group > .g-compose-text[data-size="sm"]:first-child) {
+  margin-top: max(0px, calc((1.3125em - var(--gc-icon-size)) / 2));
+}
+.g-compose-row:not([data-align="center"]):not([data-align="end"]) > .g-compose-icon:has(+ .g-compose-text[data-size="lg"]),
+.g-compose-row:not([data-align="center"]):not([data-align="end"]) > .g-compose-icon:has(+ .g-compose-group > .g-compose-text[data-size="lg"]:first-child) {
+  margin-top: max(0px, calc((1.125 * 1lh - var(--gc-icon-size)) / 2));
+}
+.g-compose-row:not([data-align="center"]):not([data-align="end"]) > .g-compose-icon:has(+ .g-compose-text[data-size="xl"]),
+.g-compose-row:not([data-align="center"]):not([data-align="end"]) > .g-compose-icon:has(+ .g-compose-group > .g-compose-text[data-size="xl"]:first-child) {
+  margin-top: max(0px, calc((1.25 * 1lh - var(--gc-icon-size)) / 2));
+}
+.g-compose-row:not([data-align="center"]):not([data-align="end"]) > .g-compose-icon:not([data-size="xl"]):has(+ .g-compose-h:not([data-size="sm"]):not([data-size="lg"]):not([data-size="xl"])),
+.g-compose-row:not([data-align="center"]):not([data-align="end"]) > .g-compose-icon:not([data-size="xl"]):has(+ .g-compose-group > .g-compose-h:first-child:not([data-size="sm"]):not([data-size="lg"]):not([data-size="xl"])) {
+  margin-top: max(0px, calc((1.4em - var(--gc-icon-size)) / 2));
+}
+.g-compose-row:not([data-align="center"]):not([data-align="end"]) > .g-compose-icon:has(+ .g-compose-h[data-size="sm"]),
+.g-compose-row:not([data-align="center"]):not([data-align="end"]) > .g-compose-icon:has(+ .g-compose-group > .g-compose-h[data-size="sm"]:first-child) {
+  margin-top: max(0px, calc((1.1375em - var(--gc-icon-size)) / 2));
+}
+.g-compose-row:not([data-align="center"]):not([data-align="end"]) > .g-compose-icon:has(+ .g-compose-h[data-size="lg"]),
+.g-compose-row:not([data-align="center"]):not([data-align="end"]) > .g-compose-icon:has(+ .g-compose-group > .g-compose-h[data-size="lg"]:first-child) {
+  margin-top: max(0px, calc((1.575em - var(--gc-icon-size)) / 2));
+}
+.g-compose-row:not([data-align="center"]):not([data-align="end"]) > .g-compose-icon:has(+ .g-compose-h[data-size="xl"]),
+.g-compose-row:not([data-align="center"]):not([data-align="end"]) > .g-compose-icon:has(+ .g-compose-group > .g-compose-h[data-size="xl"]:first-child) {
+  margin-top: max(0px, calc((1.75em - var(--gc-icon-size)) / 2));
+}
 .g-compose-card[data-size="sm"] > .g-compose-icon {
   width: 14px;
   height: 14px;
@@ -1260,6 +1295,9 @@
     flex: none;
     width: 100%;
     min-width: 0;
+  }
+  .g-compose-row:not([data-wrap="nowrap"]) > .g-compose-icon {
+    margin-top: 0;
   }
 
   /* Columnized centered rows stretch labels to 100% width, so align-items
