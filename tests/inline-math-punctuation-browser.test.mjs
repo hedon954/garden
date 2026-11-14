@@ -41,11 +41,15 @@ test("inline math keeps punctuation, bounds long formulas locally and never expa
       const host=document.querySelector('.markdown-body');
       if(!host||document.readyState!=='complete'||document.fonts.status!=='loaded')return;
       const isolated=[],clusters=[...host.querySelectorAll('.g-keep-punct')];
+      const glued=[];
       for(const cluster of clusters){
+        const math=cluster.querySelector('.katex-html > .base:last-child');
+        if(!math) continue;
+        glued.push(cluster);
         const text=cluster.lastChild;
         const range=document.createRange();range.selectNodeContents(text);
         const a=range.getBoundingClientRect();
-        const b=cluster.querySelector('.katex-html > .base:last-child').getBoundingClientRect();
+        const b=math.getBoundingClientRect();
         if(a.top>b.bottom+2||a.bottom<b.top-2)isolated.push({text:text.textContent,top:a.top,mathBottom:b.bottom});
       }
       const scrolling=[];
@@ -63,7 +67,7 @@ test("inline math keeps punctuation, bounds long formulas locally and never expa
         box.scrollLeft=left;
       }
       return {width:innerWidth,clientWidth:document.documentElement.clientWidth,scrollWidth:document.documentElement.scrollWidth,
-        isolated,scrolling,glueCount:clusters.length,mathmlCount:host.querySelectorAll('.katex-mathml math').length};
+        isolated,scrolling,glueCount:glued.length,mathmlCount:host.querySelectorAll('.katex-mathml math').length};
     }`;
     const driver = `${measure};addEventListener('load',async()=>{await document.fonts.ready;window.__gardenProbeResult=measure()},{once:true});`;
     for (const width of [300,344,375,430,1200]) {

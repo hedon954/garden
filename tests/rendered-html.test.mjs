@@ -8,6 +8,7 @@ const templateRoot = new URL("../", import.meta.url);
 // Requests come from a browser, as on the site. (Without a User-Agent, vinext, like
 // Next.js, streams page metadata into <body> whatever htmlLimitedBots says.)
 const BROWSER_UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36";
+const unwrapKeepPunct = (html) => html.replace(/<span class="g-keep-punct">([\s\S]*?)<\/span>/gu, "$1");
 
 async function render(pathname = "/", method = "GET") {
   const workerUrl = new URL("../dist/server/index.js", import.meta.url);
@@ -168,9 +169,9 @@ test("renders complex Markdown, article covers", async () => {
   assert.match(article, /markdown-alert-tip/);
   assert.match(article, /markdown-alert-warning/);
   assert.match(article, /markdown-alert-caution/);
-  assert.match(article, /普通补充信息会显示为「提醒」/);
-  assert.match(article, /需要关注的风险会显示为「警告」/);
-  assert.match(article, /可能造成严重后果的操作会显示为「注意」/);
+  assert.match(unwrapKeepPunct(article), /普通补充信息会显示为「提醒」。/);
+  assert.match(unwrapKeepPunct(article), /需要关注的风险会显示为「警告」。/);
+  assert.match(unwrapKeepPunct(article), /可能造成严重后果的操作会显示为「注意」。/);
   assert.doesNotMatch(article, /\[!(?:NOTE|TIP|WARNING|CAUTION)\]/);
   assert.match(article, /<time class="dt-published" dateTime="2026-07-25T00:00:00\+08:00">2026 年 7 月 25 日<\/time>/);
   assert.doesNotMatch(article, /2026\/07\/25/);

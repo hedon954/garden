@@ -31,9 +31,10 @@ export const archive = post => renderToStaticMarkup(createElement(BlogArchiveFal
     logLevel: "silent",
   });
   const { render, archive } = await import(outfile);
+  const unwrapKeepPunct = (html) => html.replace(/<span class="g-keep-punct">([\s\S]*?)<\/span>/gu, "$1");
   const post = { title: "Description fixture", slug: "test", path: "test", date: "2026-07-25", kind: "post", tags: [], content: "## Body\n\nBody stays.", sourcePath: "posts/test.md" };
   const blank = render({ ...post, description: "" });
-  assert.match(blank, /Body stays/u);
+  assert.match(unwrapKeepPunct(blank), /Body stays/u);
   assert.doesNotMatch(blank, /<p[^>]*p-summary/u);
   assert.doesNotMatch(blank, /<p[^>]*lead/u);
   const summary = render({ ...post, description: "An explicit summary." });
