@@ -3,27 +3,60 @@ import fs from "node:fs";
 import { spawn } from "node:child_process";
 import { once } from "node:events";
 
+const DEVTOOLS = /DevTools listening on (ws:\/\/[^\s]+)/;
+
+async function killChrome(browser) {
+  if (browser.exitCode === null && browser.signalCode === null) {
+    const exited = once(browser, "exit");
+    browser.kill("SIGKILL");
+    await exited;
+  }
+}
+
+async function startChrome(chrome, profileDir) {
+  const env = { ...process.env };
+  delete env.DBUS_SESSION_BUS_ADDRESS;
+  let last;
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    const browser = spawn(chrome, ["--headless=new", "--no-sandbox", "--disable-gpu",
+      "--disable-dev-shm-usage", "--no-first-run", "--disable-background-networking",
+      "--remote-debugging-port=0", `--user-data-dir=${profileDir}`, "about:blank"],
+      { stdio: ["ignore", "ignore", "pipe"], env });
+    let stderr = "";
+    let endpoint = "";
+    const onData = chunk => {
+      const text = String(chunk);
+      stderr = (stderr + text).slice(-16_000);
+      endpoint ||= text.match(DEVTOOLS)?.[1] || stderr.match(DEVTOOLS)?.[1] || "";
+    };
+    browser.stderr.on("data", onData);
+    try {
+      await new Promise((resolve, reject) => {
+        const timer = setTimeout(() => reject(new Error(`Chrome startup timed out: ${stderr}`)), 45_000);
+        const check = () => { if (endpoint) { clearTimeout(timer); resolve(); } };
+        browser.stderr.on("data", check);
+        browser.once("error", error => { clearTimeout(timer); reject(error); });
+        browser.once("exit", code => { clearTimeout(timer); reject(new Error(`Chrome exited ${code}: ${stderr}`)); });
+        check();
+      });
+      return { browser, endpoint, stderr };
+    } catch (error) {
+      last = error;
+      browser.stderr.off("data", onData);
+      await killChrome(browser);
+      if (!String(error.message).startsWith("Chrome startup timed out") || attempt === 2) throw error;
+      await new Promise(resolve => setTimeout(resolve, 250 * (attempt + 1)));
+    }
+  }
+  throw last;
+}
+
 // Real elapsed time, not Chrome virtual time: an isolated iframe runs in a
 // separate lifecycle/process and need not finish before --dump-dom exits.
 export async function probeBrowser({ chrome, url, profileDir, width, height, screenshot, initScript, includeDiagnostics = false, scriptingEnabled = true, mobile = false, safeAreaInsets, reducedMotion = false, cpuThrottlingRate, probeExpression = "window.__gardenProbeResult", timeoutMs = 30_000 }) {
-  const browser = spawn(chrome, ["--headless=new", "--no-sandbox", "--disable-gpu",
-    "--disable-dev-shm-usage", "--no-first-run", "--disable-background-networking",
-    "--remote-debugging-port=0", `--user-data-dir=${profileDir}`, "about:blank"], { stdio: ["ignore", "ignore", "pipe"] });
-  let stderr = "";
+  const { browser, endpoint, stderr } = await startChrome(chrome, profileDir);
   let ws;
-  browser.stderr.on("data", chunk => { stderr = (stderr + chunk).slice(-16_000); });
   try {
-    const endpoint = await new Promise((resolve, reject) => {
-      const timer = setTimeout(() => reject(new Error(`Chrome startup timed out: ${stderr}`)), 15_000);
-      const onData = () => {
-        const found = stderr.match(/DevTools listening on (ws:\/\/[^\s]+)/);
-        if (found) { clearTimeout(timer); browser.stderr.off("data", onData); resolve(found[1]); }
-      };
-      browser.stderr.on("data", onData);
-      browser.once("error", error => { clearTimeout(timer); reject(error); });
-      browser.once("exit", code => { clearTimeout(timer); reject(new Error(`Chrome exited ${code}: ${stderr}`)); });
-      onData();
-    });
     ws = new WebSocket(endpoint);
     await once(ws, "open");
     let id = 0;
@@ -83,11 +116,7 @@ export async function probeBrowser({ chrome, url, profileDir, width, height, scr
     return value;
   } finally {
     ws?.close();
-    if (browser.exitCode === null && browser.signalCode === null) {
-      const exited = once(browser, "exit");
-      browser.kill("SIGKILL");
-      await exited;
-    }
+    await killChrome(browser);
   }
 }
 
