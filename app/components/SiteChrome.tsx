@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 import { gardenMode } from "@garden/site-config";
 import { inAppPath, isHandbookPath, routeLang, ui } from "../lib/i18n";
 import { DocsHeader } from "./DocsHeader";
+import { NavigationFeedback } from "./NavigationFeedback";
 import { SiteFooter } from "./SiteFooter";
 import { SiteHeader } from "./SiteHeader";
 
@@ -20,6 +21,7 @@ export function SiteChrome({ children, docsMode = false }: { children: React.Rea
 
   return (
     <>
+      <NavigationFeedback />
       {skip}
       {isDocs ? <DocsHeader /> : <SiteHeader />}
       <div id="main-content">{children}</div>

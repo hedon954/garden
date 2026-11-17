@@ -471,3 +471,118 @@ a.sh-lang:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
 @media (max-width: 900px) and (scripting: none) {
   .sh-reading-control .toc-header-nojs { display: inline-flex; }
 }
+
+/* ---------- navigation pending feedback & slow-network recovery ---------- */
+#main-content {
+  transition: opacity 0.18s ease;
+}
+#main-content[data-nav-pending="true"] {
+  opacity: 0.68;
+}
+
+.sh-nav-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  z-index: 120;
+  pointer-events: none;
+  overflow: hidden;
+  background: transparent;
+}
+.sh-nav-progress-bar {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: var(--ink);
+  transform-origin: left center;
+  transform: scaleX(0.08);
+  animation: sh-nav-crawl 8s cubic-bezier(0.1, 0.7, 0.2, 1) forwards;
+}
+.sh-nav-progress[data-state="done"] .sh-nav-progress-bar {
+  animation: none;
+  transform: scaleX(1);
+  opacity: 0;
+  transition: transform 0.14s ease-out, opacity 0.2s ease 0.06s;
+}
+@keyframes sh-nav-crawl {
+  0% { transform: scaleX(0.08); }
+  20% { transform: scaleX(0.42); }
+  55% { transform: scaleX(0.72); }
+  100% { transform: scaleX(0.9); }
+}
+
+.sh-nav a[data-nav-pending="true"],
+.sh-menu a[data-nav-pending="true"],
+.post-card[data-nav-pending="true"],
+.ar-item[data-nav-pending="true"],
+.col-card[data-nav-pending="true"] {
+  opacity: 0.72;
+}
+.sh-nav a[data-nav-pending="true"],
+.sh-menu a[data-nav-pending="true"] {
+  background: var(--tint);
+  color: var(--ink);
+}
+
+.sh-nav-toast {
+  position: fixed;
+  left: 50%;
+  bottom: max(20px, env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  z-index: 130;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 12px;
+  max-width: min(460px, calc(100vw - 24px));
+  padding: 10px 14px;
+  border: 1px solid var(--rule-strong);
+  border-radius: var(--r);
+  background: var(--card);
+  color: var(--ink);
+  box-shadow: var(--card-shadow);
+  font: 400 13px/1.45 var(--sans);
+}
+.sh-nav-toast-msg {
+  color: var(--soft);
+  flex: 1 1 auto;
+  min-width: 140px;
+}
+.sh-nav-toast-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex: none;
+}
+.sh-nav-toast-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 30px;
+  padding: 0 11px;
+  border: 1px solid var(--rule-strong);
+  border-radius: 7px;
+  background: var(--paper);
+  color: var(--soft);
+  font: 500 12px/1 var(--sans);
+  cursor: pointer;
+}
+.sh-nav-toast-btn:hover {
+  background: var(--tint);
+  color: var(--ink);
+}
+.sh-nav-toast-btn.is-primary {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: var(--paper);
+}
+.sh-nav-toast-btn.is-primary:hover {
+  opacity: 0.9;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #main-content { transition: none; }
+  .sh-nav-progress-bar { animation: none; transform: scaleX(0.65); }
+}

@@ -57,7 +57,7 @@ function NavBranch({
   nested: GardenDocNavItem[];
   currentPath: string;
   lang: HandbookLang;
-  onNavigate: () => void;
+  onNavigate: (targetPath: string) => void;
 }) {
   const t = HANDBOOK_UI[lang];
   const active = item.path === currentPath;
@@ -74,7 +74,7 @@ function NavBranch({
         <Link
           href={siteHref(handbookPath(lang, item.path))}
           aria-current={active ? "page" : undefined}
-          onClick={onNavigate}
+          onClick={() => onNavigate(item.path)}
         >
           {iconKind ? <NavAppIcon kind={iconKind} /> : null}
           {badge ? (
@@ -105,7 +105,7 @@ function NavBranch({
                 <Link
                   href={siteHref(handbookPath(lang, sub.path))}
                   aria-current={subActive ? "page" : undefined}
-                  onClick={onNavigate}
+                  onClick={() => onNavigate(sub.path)}
                 >
                   <span className="gdoc-comp-label">{handbookNavLabel(sub, lang)}</span>
                 </Link>
@@ -136,7 +136,8 @@ export function GardenDocsNav({
       group.overviewPath === currentPath ||
       group.allDocs.some((item) => item.path === currentPath),
   );
-  const [mobileOpen, setMobileOpen] = useState(false);
+  const [openPath, setOpenPath] = useState<string | null>(null);
+  const mobileOpen = openPath === currentPath;
   const drawerId = useId();
   const triggerRef = useRef<HTMLButtonElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
@@ -144,8 +145,15 @@ export function GardenDocsNav({
 
   const closeMobile = useCallback((restoreFocus = false) => {
     restoreFocusRef.current = restoreFocus;
-    setMobileOpen(false);
+    setOpenPath(null);
   }, []);
+
+  const handleNavLinkClick = useCallback(
+    (targetPath: string) => {
+      if (targetPath === currentPath) closeMobile(false);
+    },
+    [closeMobile, currentPath],
+  );
 
   useEffect(() => {
     if (mobileOpen || !restoreFocusRef.current) return;
@@ -165,7 +173,7 @@ export function GardenDocsNav({
       if (event.key === "Escape") closeMobile(true);
     };
     const onChange = () => {
-      if (!query.matches) setMobileOpen(false);
+      if (!query.matches) setOpenPath(null);
     };
     document.body.style.overflow = "hidden";
     window.addEventListener("keydown", onKeyDown);
@@ -189,7 +197,7 @@ export function GardenDocsNav({
           className="gdoc-mobile-trigger"
           aria-controls={drawerId}
           aria-expanded={mobileOpen}
-          onClick={() => setMobileOpen(true)}
+          onClick={() => setOpenPath(currentPath)}
         >
           <List size={16} weight="bold" aria-hidden="true" />
           <span>{t.sidebarShort}</span>
@@ -230,7 +238,7 @@ export function GardenDocsNav({
             href={siteHref(handbookPath(lang))}
             className="gdoc-overview-link"
             aria-current={isOverview ? "page" : undefined}
-            onClick={() => closeMobile(false)}
+            onClick={() => handleNavLinkClick("")}
           >
             <span className="gdoc-overview-mark">
               <BookOpenText size={16} weight="duotone" aria-hidden="true" />
@@ -269,7 +277,7 @@ export function GardenDocsNav({
                       href={siteHref(handbookPath(lang, group.overviewPath))}
                       className="gdoc-nav-group-link"
                       aria-current={headingActive ? "page" : undefined}
-                      onClick={() => closeMobile(false)}
+                      onClick={() => handleNavLinkClick(group.overviewPath)}
                     >
                       <span>{headingLabel}</span>
                     </Link>
@@ -288,7 +296,7 @@ export function GardenDocsNav({
                           nested={nested}
                           currentPath={currentPath}
                           lang={lang}
-                          onNavigate={() => closeMobile(false)}
+                          onNavigate={() => handleNavLinkClick(item.path)}
                         />
                       );
                     }
@@ -301,7 +309,7 @@ export function GardenDocsNav({
                         <Link
                           href={siteHref(handbookPath(lang, item.path))}
                           aria-current={active ? "page" : undefined}
-                          onClick={() => closeMobile(false)}
+                          onClick={() => handleNavLinkClick(item.path)}
                         >
                           {iconKind ? <NavAppIcon kind={iconKind} /> : null}
                           {badge ? (
