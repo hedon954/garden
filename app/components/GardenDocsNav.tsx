@@ -64,10 +64,6 @@ function NavBranch({
   const childActive = nested.some((sub) => sub.path === currentPath);
   const [open, setOpen] = useState(childActive);
 
-  useEffect(() => {
-    setOpen(childActive);
-  }, [childActive, currentPath]);
-
   const badge = COMPONENT_BADGE[item.path];
   const label = handbookNavLabel(item, lang);
   const iconKind = item.navIcon;
@@ -287,7 +283,7 @@ export function GardenDocsNav({
                     if (nested.length) {
                       return (
                         <NavBranch
-                          key={item.path}
+                          key={`${item.path}:${currentPath}`}
                           item={item}
                           nested={nested}
                           currentPath={currentPath}
