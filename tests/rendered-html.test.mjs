@@ -334,7 +334,8 @@ test("the example post keeps a wide local image, and tags create a release", asy
   assert.doesNotMatch(measure, /imageDisplayWidth/);
   assert.match(measure, /naturalWidth/);
   assert.match(publish, /if: github\.event_name == 'push' && startsWith\(github\.ref, 'refs\/tags\/v'\)/);
-  assert.match(publish, /gh release create "\$tag" --generate-notes/);
+  assert.match(publish, /node scripts\/release-notes\.mjs/);
+  assert.doesNotMatch(publish, /--generate-notes/);
 
   const response = await render("/blog/windowsill-herbs");
   assert.equal(response.status, 200);

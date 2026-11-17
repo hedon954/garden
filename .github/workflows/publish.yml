@@ -39,11 +39,16 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           tag="${GITHUB_REF_NAME}"
+          version="$(node -p "require('./package.json').version")"
+          if [ "$tag" != "v$version" ]; then
+            echo "tag $tag 与 package.json $version 不一致"
+            exit 1
+          fi
+          notes="$(node scripts/release-notes.mjs)"
           if gh release view "$tag" >/dev/null 2>&1; then
             echo "Release $tag already exists"
           else
-            version="$(node -p "require('./package.json').version")"
-            gh release create "$tag" --generate-notes \
+            gh release create "$tag" --title "$tag" --notes "$notes" \
               "editors/dist/vscode/garden-ui-${version}.vsix" \
               "editors/dist/garden-typora-${version}.zip"
           fi

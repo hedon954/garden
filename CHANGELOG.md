@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.15.1
+
+- 用户手册改成独立文档站，发布到 `https://hedon.top/garden/`。博客构建不再带上手册，两边的搜索也不再混在一起。
+- 中文手册按使用指南、框架设计、内置组件、常用脚本、扩展插件重写。21 种图示改成真实组件，放在侧栏「智能 UI」下面，可以收起。
+- 文档里的 Web 预览用正文阅读列，移动端用 375px 手机框。Compose 在窄容器里按组件自己的宽度重排，不再只看浏览器窗口。
+- 修了荧光笔划线被拆成横向滚动盒的问题。标题里的行内代码改为跟标题一样大。
+- 仓库根目录增加 `AGENTS.md`，告诉编码代理改哪类问题该打开哪个文件、跑哪条命令。
+- GitHub Release 改为使用这里的中文发布报告。报告为空或没有中文时，发布会失败。比较链接加在报告最后。
+
 ## 0.14.13
 
 - Make `file:../garden` and npm `hd-garden` share one Vinext overlay: runtime now links `ui/` (and `scripts/`, `docs/`), Vite `server.fs.allow` includes the engine package, and `?raw` title runtimes load in both layouts.
