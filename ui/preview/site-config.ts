@@ -2,3 +2,6 @@
 export const siteConfig={name:'Garden Compose',locale:'zh_CN'};
 export const siteLinks={basePath:''};
 export const githubUrl='';
+export const gardenMode='blog' as const;
+export const docsSearchEn=null;
+

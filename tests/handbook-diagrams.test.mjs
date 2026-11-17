@@ -78,26 +78,20 @@ test("check fails when a generated recipe page is missing", () => {
   fs.rmSync(tmp, { recursive: true, force: true });
 });
 
-test("every recipe has a Chinese page, an English page, a visible schematic, and a matching brief", () => {
+test("every recipe has a Chinese page, a real rendered example, a concise author brief, and a live playground", () => {
   const prefix = "data:image/svg+xml,";
   for (const item of DIAGRAM_RECIPES) {
     const zh = read(`docs/handbook/components/diagrams/${item.name}.md`);
-    const en = read(`docs/handbook/en/components/diagrams/${item.name}.md`);
     const svg = read(`docs/handbook/components/diagrams/previews/${item.name}.svg`);
-    const enCopy = handbookEnglish(item);
 
     assert.match(zh, new RegExp(`^title: "${item.label}"`, "m"));
-    assert.ok(zh.includes(`![${item.label}示意](./previews/${item.name}.svg)`));
+    assert.doesNotMatch(zh, /!\[.*示意\]\(\.\/previews\//u);
     assert.ok(zh.includes(item.hint));
     assert.ok(zh.includes(item.whenNot));
     assert.ok(zh.includes(item.prompt), item.name);
     assert.ok(zh.includes(item.body), item.name);
-
-    assert.match(en, new RegExp(`^title: "${enCopy.label}"`, "m"));
-    assert.ok(en.includes(`![Schematic for ${enCopy.label}](../../../components/diagrams/previews/${item.name}.svg)`));
-    assert.ok(en.includes(enCopy.hint));
-    assert.ok(en.includes(enCopy.prompt), item.name);
-    assert.doesNotMatch(en, /[\u3400-\u9FFF]/u);
+    assert.match(zh, /data-doc-showcase=/u, item.name);
+    assert.match(zh, /```doc-playground/u, item.name);
 
     const expectedSvg = previewSvgMarkup(item);
     assert.equal(svg.trim(), expectedSvg.trim());
@@ -110,32 +104,19 @@ test("every recipe has a Chinese page, an English page, a visible schematic, and
   }
 
   const zhIndex = read("docs/handbook/components/diagrams.md");
-  const enIndex = read("docs/handbook/en/components/diagrams.md");
-  assert.match(zhIndex, new RegExp(`目前共 ${DIAGRAM_RECIPES.length} 项`));
-  assert.match(enIndex, new RegExp(`There are currently ${DIAGRAM_RECIPES.length} items`));
+  assert.match(zhIndex, new RegExp(`共 \\*\\*${DIAGRAM_RECIPES.length} 项\\*\\*`));
   assert.doesNotMatch(zhIndex, /\[!\[/);
-  assert.doesNotMatch(enIndex, /\[!\[/);
 
   for (const item of DIAGRAM_RECIPES) {
     assert.ok(zhIndex.includes(`/garden/components/diagrams/${item.name}/`), item.name);
-    assert.ok(zhIndex.includes(`./diagrams/previews/${item.name}.svg`), item.name);
-    assert.ok(enIndex.includes(`/garden/en/components/diagrams/${item.name}/`), item.name);
   }
 });
 
-test("handbook entry pages link to the figure catalog without dropping existing wording", () => {
-  const zhCompose = read("docs/handbook/components/compose.md");
-  const enCompose = read("docs/handbook/en/components/compose.md");
-  const zhWorkflow = read("docs/handbook/workflow.md");
-  const enWorkflow = read("docs/handbook/en/workflow.md");
-  assert.ok(zhCompose.includes("[推荐图示](/garden/components/diagrams)"));
-  assert.ok(enCompose.includes("[Recommended figures](/garden/en/components/diagrams)"));
-  assert.ok(zhWorkflow.includes("[推荐图示](/garden/components/diagrams)"));
-  assert.ok(enWorkflow.includes("[Recommended figures](/garden/en/components/diagrams)"));
-  assert.ok(read("docs/handbook/components.md").includes("[推荐图示](/garden/components/diagrams)"));
-  assert.ok(read("docs/handbook/en/components.md").includes("[Recommended figures](/garden/en/components/diagrams)"));
-  assert.match(zhCompose, /\/garden/);
-  assert.match(zhWorkflow, /garden compose/);
+test("handbook entry pages link to the figure catalog", () => {
+  const zhIntelligentUi = read("docs/handbook/components/intelligent-ui.md");
+  assert.ok(zhIntelligentUi.includes("/garden/components/diagrams/"));
+  assert.match(zhIntelligentUi, /\/garden/);
+  assert.match(zhIntelligentUi, /garden compose/);
 });
 
 test("handbook pairs and the English CJK gate accept the new figure pages", () => {

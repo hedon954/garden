@@ -25,15 +25,17 @@ import { CodeCopy } from "./garden/chrome";
 import { CodeDiff } from "./garden/chrome";
 import { GardenBlock } from "./garden/GardenBlock";
 import { GardenFile } from "./garden/GardenFile";
+import { DocDeviceShowcase } from "./garden/DocDeviceShowcase";
 import { RefDemo } from "./garden/RefDemo";
 import { remarkRefDemos } from "../lib/remark-ref-demos.mjs";
+import { remarkDocPlayground } from "../lib/remark-doc-playground.mjs";
 import { readGardenPayload } from "../lib/remark-garden.mjs";
 import { imageSizes, linkAssets } from "@garden/generated-content";
 import { imageDimensions, lookupImageSize } from "../../ui/garden/image-dims.mjs";
 import { siteConfig, siteLinks } from "@garden/site-config";
 import { articleLink, sameSiteMatcher } from "../../ui/garden/same-site.mjs";
 import { columnRedirects, internalLinkResolver, readRedirects } from "../../ui/garden/internal-links.mjs";
-import { columnHref, columns, gardenDocHref, gardenDocs, gardenDocsEn, postHref, posts } from "../lib/content";
+import { columnHref, columns, gardenDocs, gardenDocsEn, postHref, posts } from "../lib/content";
 import { LinkCardRefresh } from "./LinkCardRefresh";
 import { linkHost } from "../../scripts/link-meta-core.mjs";
 import { FaviconProvider, SourceMark } from "./garden/patterns";
@@ -55,28 +57,36 @@ const siteRoute = internalLinkResolver({
     ...columnRedirects({ columns: [...new Set(columns.map((entry) => entry.column).filter(Boolean))].map((slug) => ({ slug })) }),
   ],
   routes: [
-    "/", "/blog", "/columns", "/tags", "/about", "/garden", "/garden/en",
+    "/", "/blog", "/columns", "/tags", "/about",
     ...posts.map(postHref),
     ...columns.map(columnHref),
-    ...gardenDocs.map(gardenDocHref),
-    ...gardenDocsEn.map((doc) => siteHref(`/garden/en/${doc.path}`)),
   ],
   basePath: siteLinks?.basePath ?? "",
   // Same shape as every other address in the site (the slash follows trailingSlash).
   format: siteHref,
 });
 
-// The handbook ships with the framework and its links are written without
-// any base path (/garden/…); Link adds the site's own prefix.
-const handbookRoute = internalLinkResolver({
+// Standalone handbook site (basePath = /garden): accept both `/guide/...` and `/garden/guide/...`
+// in authored handbook Markdown, returning in-app paths so Next `<Link>` adds `/garden` once.
+const handbookBaseResolver = internalLinkResolver({
   redirects: [],
   routes: [
-    "/garden", "/garden/en",
-    ...gardenDocs.map(gardenDocHref),
-    ...gardenDocsEn.map((doc) => siteHref(`/garden/en/${doc.path}`)),
+    "/",
+    ...(gardenDocsEn.length > 0 ? ["/en"] : []),
+    ...gardenDocs.map((doc) => siteHref(`/${doc.path}`)),
+    ...gardenDocsEn.map((doc) => siteHref(`/en/${doc.path}`)),
   ],
   format: siteHref,
 });
+const handbookRoute = (href?: string) => {
+  if (!href) return null;
+  const normalized = href === "/garden" || href === "/garden/"
+    ? "/"
+    : href.startsWith("/garden/")
+      ? href.slice("/garden".length)
+      : href;
+  return handbookBaseResolver(normalized);
+};
 
 /** The site's favicon, downloaded at build time; nothing when there is none. */
 function Favicon({ href }: { href: string }) {
@@ -205,7 +215,22 @@ const headingText = (children: ReactNode) => {
   return parts.join("");
 };
 
-export function MarkdownArticle({ content, lang, fieldTables, refDemos, handbook }: { content: string; numbering?: boolean; lang?: UiLang; fieldTables?: boolean; refDemos?: boolean; handbook?: boolean }) {
+export function MarkdownArticle({
+  content,
+  lang,
+  fieldTables,
+  refDemos,
+  handbook,
+  renderPlayground,
+}: {
+  content: string;
+  numbering?: boolean;
+  lang?: UiLang;
+  fieldTables?: boolean;
+  refDemos?: boolean;
+  handbook?: boolean;
+  renderPlayground?: (specJson: string, lang?: UiLang) => ReactNode;
+}) {
   const internalRoute = handbook ? handbookRoute : siteRoute;
   const t = ui(lang);
   // Optional layer 2: a Worker that refreshes card text. Without it, cards stay as built.
@@ -233,7 +258,7 @@ export function MarkdownArticle({ content, lang, fieldTables, refDemos, handbook
       return <GardenBlock dataPayload={payload} />;
     },
     "garden-refdemo": (props: { children?: ReactNode; "data-name"?: string }) => <RefDemo lang={lang === "en" ? "en" : "zh"} name={props["data-name"]}>{props.children}</RefDemo>,
-    "garden-codediff": (props: {
+      "garden-codediff": (props: {
       children?: ReactNode;
       dataDiff?: string;
       dataNew?: string;
@@ -246,13 +271,23 @@ export function MarkdownArticle({ content, lang, fieldTables, refDemos, handbook
         next={decodeURIComponent(props.dataNew ?? props["data-new"] ?? "")}
       />
     ),
+    "garden-playground": (props: { dataSpec?: string; "data-spec"?: string }) => {
+      const raw = decodeURIComponent(props.dataSpec ?? props["data-spec"] ?? "");
+      return renderPlayground ? renderPlayground(raw, lang) : null;
+    },
   };
   return (
     <UiLangProvider lang={lang}>
     <FaviconProvider favicons={linkAssets?.favicons}>
     <div className="markdown-body prose">
       <ReactMarkdown
-        remarkPlugins={[...(refDemos ? [remarkRefDemos] : []), ...markdownPlugins, remarkLinkCard, [remarkA2, { imageSize: (src: string) => lookupImageSize(imageSizes, src), lang: lang ?? siteLang }]]}
+        remarkPlugins={[
+          ...(handbook ? [remarkDocPlayground] : []),
+          ...(refDemos ? [remarkRefDemos] : []),
+          ...markdownPlugins,
+          remarkLinkCard,
+          [remarkA2, { imageSize: (src: string) => lookupImageSize(imageSizes, src), lang: lang ?? siteLang }],
+        ]}
         rehypePlugins={[
           rehypeRaw,
           rehypeGardenBlocks,
@@ -327,6 +362,22 @@ export function MarkdownArticle({ content, lang, fieldTables, refDemos, handbook
           h2: ({ children, ...props }) => heading(2, children, props),
           h3: ({ children, ...props }) => heading(3, children, props),
           h4: ({ children, ...props }) => heading(4, children, props),
+          div: ({ children, ...props }) => {
+            const domProps = { ...props } as Record<string, unknown>;
+            Reflect.deleteProperty(domProps, "node");
+            const showcaseTitle = domProps["data-doc-showcase"] ?? domProps.dataDocShowcase;
+            if (handbook && showcaseTitle !== undefined) {
+              return (
+                <DocDeviceShowcase
+                  title={typeof showcaseTitle === "string" ? showcaseTitle : ""}
+                  lang={lang === "en" ? "en" : "zh"}
+                >
+                  {children}
+                </DocDeviceShowcase>
+              );
+            }
+            return <div {...(domProps as HTMLAttributes<HTMLDivElement>)}>{children}</div>;
+          },
           code: CodeBlock,
           ...gardenComponents,
           pre: ({ children, ...props }) => {

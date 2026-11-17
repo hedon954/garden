@@ -26,7 +26,7 @@ import { cardUrls } from "../ui/garden/markdown-links.mjs";
 import { configuredSiteAddress } from "../ui/garden/same-site.mjs";
 import { resolveBrand } from "./brand.mjs";
 import { imageSources, readImageCache, sizeFromBytes } from "./image-sizes.mjs";
-import { buildFullIndex, buildSearchIndex } from "../ui/garden/search-index.mjs";
+import { buildFullIndex, buildHandbookFullIndex, buildHandbookSearchIndex, buildSearchIndex } from "../ui/garden/search-index.mjs";
 import { coverImageSet, loadSharp } from "./cover-images.mjs";
 import { readFileSizeCache } from "./file-sizes.mjs";
 import { previewDocument, previewFileName, renderFilePreview } from "./file-preview.mjs";
@@ -76,6 +76,7 @@ const handbookBodiesOutput = path.join(gardenDir, "generated-handbook-bodies.ts"
 const siteConfigOutput = path.join(gardenDir, "site-config.ts");
 const omitContent = ({ content, ...rest }) => rest;
 const includeDrafts = process.env.CONTENT_INCLUDE_DRAFTS === "1";
+const gardenMode = process.env.GARDEN_MODE === "docs" ? "docs" : "blog";
 // Local preview shows broken ui blocks as error cards; public builds fail on them.
 const uiMode = includeDrafts || process.env.GARDEN_CONTENT_MODE === "preview" ? "preview" : "publish";
 const now = Date.now();
@@ -562,13 +563,16 @@ function readHandbookDocs() {
       if (!parsed.data || typeof parsed.data.section !== "string") return [];
       const relativeMd = path.relative(handbookRoot, fullPath).split(path.sep).join("/");
       const sourcePath = `docs/handbook/${relativeMd}`;
-      const docPath = relativeMd.replace(/\.md$/u, "");
+      const docPath = relativeMd
+        .replace(/(?:^|\/)index\.md$/u, (match) => (match.startsWith("/") ? "" : "index"))
+        .replace(/\.md$/u, "");
       const slug = path.basename(fullPath, ".md");
       const frontMatterLines = raw.slice(0, raw.length - parsed.content.length).split("\n").length - 1;
       const title = requireString(parsed.data, "title", sourcePath);
       const description = requireString(parsed.data, "description", sourcePath);
       const section = requireString(parsed.data, "section", sourcePath);
       const navTitle = optionalString(parsed.data, "navTitle", sourcePath);
+      const navIcon = optionalString(parsed.data, "navIcon", sourcePath);
       const badge = optionalString(parsed.data, "badge", sourcePath);
       const order = typeof parsed.data.order === "number" ? parsed.data.order : 999;
       const references = normalizeReferences(parsed.data.references, sourcePath);
@@ -583,7 +587,7 @@ function readHandbookDocs() {
       }
 
       const docLang = docPath === "en" || docPath.startsWith("en/") ? "en" : "zh";
-      if (siteLang === "en" && docLang === "zh") return [];
+      if (gardenMode !== "docs" && siteLang === "en" && docLang === "zh") return [];
       const content = rewriteFileFences(
         rewriteMarkdownAssets(
           rewriteUiFences(parsed.content.trim(), fullPath, sourcePath, frontMatterLines + leadingLines(parsed.content), assetOptions),
@@ -600,6 +604,7 @@ function readHandbookDocs() {
         title,
         slug,
         ...(navTitle ? { navTitle } : {}),
+        ...(navIcon ? { navIcon } : {}),
         description,
         path: docPath,
         section,
@@ -620,22 +625,28 @@ function readHandbookDocs() {
 // output on an invalid save). Public builds still clean stale assets.
 if (uiMode !== "preview") fs.rmSync(generatedMediaRoot, { recursive: true, force: true });
 
-const posts = readMarkdownTree(path.join(contentRoot, "posts"), "post").sort(
-  (a, b) => Date.parse(b.date) - Date.parse(a.date),
-);
-const columns = readColumnReferences(posts).sort(
-  (a, b) => (a.column === b.column ? a.order - b.order : a.column.localeCompare(b.column)),
-);
-// docs/handbook/en/** mirrors the Chinese handbook page for page: the same
-// relative path is the counterpart. Each entry carries its lang; English paths
-// drop the en/ prefix and are served under /garden/en/.
-const allHandbookDocs = readHandbookDocs().map((doc) =>
-  doc.path === "en" || doc.path.startsWith("en/")
-    ? { ...doc, lang: "en", path: doc.path === "en" ? "index" : doc.path.slice(3) }
-    : { ...doc, lang: "zh" },
-);
+const posts = gardenMode === "docs"
+  ? []
+  : readMarkdownTree(path.join(contentRoot, "posts"), "post").sort(
+      (a, b) => Date.parse(b.date) - Date.parse(a.date),
+    );
+const columns = gardenMode === "docs"
+  ? []
+  : readColumnReferences(posts).sort(
+      (a, b) => (a.column === b.column ? a.order - b.order : a.column.localeCompare(b.column)),
+    );
+// User blogs never ship or index the Garden framework handbook; only GARDEN_MODE=docs builds it.
+const allHandbookDocs = gardenMode === "docs"
+  ? readHandbookDocs().map((doc) =>
+      doc.path === "en" || doc.path.startsWith("en/")
+        ? { ...doc, lang: "en", path: doc.path === "en" ? "index" : doc.path.slice(3) }
+        : { ...doc, lang: "zh" },
+    )
+  : [];
 const enHandbookDocs = allHandbookDocs.filter((doc) => doc.lang === "en");
-const zhHandbookDocs = siteLang === "en" ? enHandbookDocs : allHandbookDocs.filter((doc) => doc.lang === "zh");
+const zhHandbookDocs = gardenMode === "docs"
+  ? allHandbookDocs.filter((doc) => doc.lang === "zh")
+  : (siteLang === "en" ? enHandbookDocs : allHandbookDocs.filter((doc) => doc.lang === "zh"));
 const gardenIndexDoc = zhHandbookDocs.find((doc) => doc.path === "index") ?? null;
 const gardenDocs = zhHandbookDocs.filter((doc) => doc.path !== "index");
 const gardenIndexDocEn = enHandbookDocs.find((doc) => doc.path === "index") ?? null;
@@ -708,7 +719,7 @@ if (sharp) {
 
 const contentHash = crypto
   .createHash("sha256")
-  .update(JSON.stringify({ posts, columns, a2WordCounts }))
+  .update(JSON.stringify({ posts, columns, a2WordCounts, handbook: gardenMode === "docs" ? allHandbookDocs : [] }))
   .digest("hex")
   .slice(0, 12);
 
@@ -744,6 +755,7 @@ export type ContentEntry = {
 export type GardenDocEntry = {
   title: string;
   navTitle?: string;
+  navIcon?: string;
   description: string;
   path: string;
   section: string;
@@ -782,16 +794,53 @@ writeChanged(
 export const handbookBodies = ${JSON.stringify(Object.fromEntries(allHandbookDocs.map((doc) => [`${doc.lang}:${doc.path}`, doc.content])), null, 2)} as Record<string, string>;
 `,
 );
-const fullIndex = buildFullIndex({ posts, columns });
+const DOCS_SECTION_TITLES_ZH = {
+  overview: "总览",
+  guide: "使用指南",
+  design: "框架设计",
+  components: "内置组件",
+  diagrams: "内置组件 · 常用图示",
+  scripts: "常用脚本",
+  extensions: "扩展插件",
+  "getting-started": "使用指南",
+  "writing-and-reading": "框架设计",
+  workflow: "常用脚本",
+  reference: "组件参考",
+};
+const DOCS_SECTION_TITLES_EN = {
+  overview: "Overview",
+  guide: "User Guide",
+  design: "Framework Design",
+  components: "Built-in Components",
+  diagrams: "Built-in Components · Figures",
+  scripts: "Scripts & Tooling",
+  extensions: "Extensions",
+};
+
+const fullIndex = gardenMode === "docs"
+  ? buildHandbookFullIndex(zhHandbookDocs, { sectionTitles: DOCS_SECTION_TITLES_ZH, lang: "zh" })
+  : buildFullIndex({ posts, columns });
+const enFullIndex = gardenMode === "docs" && enHandbookDocs.length > 0
+  ? buildHandbookFullIndex(enHandbookDocs, { sectionTitles: DOCS_SECTION_TITLES_EN, lang: "en", filePrefix: "search-full.en" })
+  : null;
+const docsSearchEnConfig = enFullIndex
+  ? {
+      indexUrl: `${basePath}/search-index.en.json?v=${contentHash}`,
+      full: { url: `${basePath}/${enFullIndex.fileName}`, hash: enFullIndex.hash },
+    }
+  : null;
+
 writeChanged(
   siteConfigOutput,
   `// Generated by garden sync. Edit site.config.yaml instead.
 export const siteConfig = ${JSON.stringify(siteConfig, null, 2)} as const;
 export const githubUrl = ${JSON.stringify(`https://github.com/${siteConfig.author.github}`)};
+export const gardenMode = ${JSON.stringify(gardenMode)} as const;
 // Loaded by the header only when search opens; the hash busts stale caches.
 export const searchIndexUrl = ${JSON.stringify(`${basePath}/search-index.json?v=${contentHash}`)};
 // Every body as plain text, fetched in the background after load; the name changes with the text.
 export const searchFull = ${JSON.stringify({ url: `${basePath}/${fullIndex.fileName}`, hash: fullIndex.hash })};
+export const docsSearchEn = ${JSON.stringify(docsSearchEnConfig)};
 // Header logo (inlined SVG) and icon URLs, from brand in site.config.yaml.
 export const brand = ${JSON.stringify(resolveBrand(root, siteConfig, basePath, (line) => console.warn(line)))};
 // Full URLs to this address render as internal links.
@@ -799,11 +848,24 @@ export const siteLinks = ${JSON.stringify({ address: siteAddress, basePath, trai
 `,
 );
 fs.mkdirSync(path.join(root, "public"), { recursive: true });
-writeChanged(path.join(root, "public", "search-index.json"), JSON.stringify(buildSearchIndex({ posts, columns }, { lang: siteLang })));
+const primarySearchJson = gardenMode === "docs"
+  ? JSON.stringify(buildHandbookSearchIndex(zhHandbookDocs, { sectionTitles: DOCS_SECTION_TITLES_ZH, lang: "zh" }))
+  : JSON.stringify(buildSearchIndex({ posts, columns }, { lang: siteLang }));
+writeChanged(path.join(root, "public", "search-index.json"), primarySearchJson);
 for (const name of fs.readdirSync(path.join(root, "public"))) {
   if (/^search-full\.[0-9a-f]+\.json$/u.test(name) && name !== fullIndex.fileName) fs.rmSync(path.join(root, "public", name));
+  if (/^search-full\.en\.[0-9a-f]+\.json$/u.test(name) && name !== enFullIndex?.fileName) fs.rmSync(path.join(root, "public", name));
 }
 writeChanged(path.join(root, "public", fullIndex.fileName), fullIndex.json);
+if (enFullIndex) {
+  writeChanged(
+    path.join(root, "public", "search-index.en.json"),
+    JSON.stringify(buildHandbookSearchIndex(enHandbookDocs, { sectionTitles: DOCS_SECTION_TITLES_EN, lang: "en" })),
+  );
+  writeChanged(path.join(root, "public", enFullIndex.fileName), enFullIndex.json);
+} else if (fs.existsSync(path.join(root, "public", "search-index.en.json"))) {
+  fs.rmSync(path.join(root, "public", "search-index.en.json"), { force: true });
+}
 
 const escapeXml = (value) =>
   value
@@ -858,25 +920,34 @@ function writeRssFeed(fileName, entries) {
 `);
 }
 
-writeRssFeed("rss.xml", feedEntries);
-writeRssFeed(
-  "posts.xml",
-  posts.map((entry) => feedEntry(entry, `/blog/${entry.path}/`)),
-);
-const sitemapEntries = [
-  ...new Set([
-    "/", "/blog/", "/columns/", "/about/", "/garden/",
-    ...gardenDocs.map((entry) => `/garden/${entry.path}/`),
-    ...(gardenIndexDocEn ? ["/garden/en/"] : []),
-    ...gardenDocsEn.map((entry) => `/garden/en/${entry.path}/`),
-    ...posts.map((entry) => `/blog/${entry.path}/`),
-    ...columns.map((entry) => `/columns/${entry.column}/${columnEntryPath(entry)}/`),
-  ].map(pageAddress)),
-];
+if (gardenMode !== "docs") {
+  writeRssFeed("rss.xml", feedEntries);
+  writeRssFeed(
+    "posts.xml",
+    posts.map((entry) => feedEntry(entry, `/blog/${entry.path}/`)),
+  );
+}
+const sitemapEntries = gardenMode === "docs"
+  ? [
+      ...new Set([
+        "/",
+        ...gardenDocs.map((entry) => `/${entry.path}/`),
+        ...(gardenIndexDocEn ? ["/en/"] : []),
+        ...gardenDocsEn.map((entry) => `/en/${entry.path}/`),
+      ].map(pageAddress)),
+    ]
+  : [
+      ...new Set([
+        "/", "/blog/", "/columns/", "/about/",
+        ...posts.map((entry) => `/blog/${entry.path}/`),
+        ...columns.map((entry) => `/columns/${entry.column}/${columnEntryPath(entry)}/`),
+      ].map(pageAddress)),
+    ];
 // Card URLs in published entries: the only pages the link-card Worker may read.
+const cardAllowlistEntries = gardenMode === "docs" ? allHandbookDocs : [...posts, ...columns];
 writeChanged(
   path.join(publicRoot, "link-allowlist.json"),
-  `${JSON.stringify({ urls: [...new Set([...posts, ...columns].flatMap((entry) => cardUrls(entry.content)))].sort() }, null, 2)}\n`,
+  `${JSON.stringify({ urls: [...new Set(cardAllowlistEntries.flatMap((entry) => cardUrls(entry.content)))].sort() }, null, 2)}\n`,
 );
 writeChanged(path.join(publicRoot, "sitemap.xml"), `<?xml version="1.0" encoding="UTF-8" ?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${sitemapEntries.map((entry) => `
@@ -884,6 +955,10 @@ writeChanged(path.join(publicRoot, "sitemap.xml"), `<?xml version="1.0" encoding
 </urlset>
 `);
 writeChanged(path.join(publicRoot, "robots.txt"), `User-agent: *\nAllow: /\nSitemap: ${publicBaseUrl}/sitemap.xml\n`);
-console.log(
-  `Synced ${posts.length} posts, ${columns.length} column entries (${contentHash}).`,
-);
+if (gardenMode === "docs") {
+  console.log(`Synced ${allHandbookDocs.length} handbook docs (${contentHash}).`);
+} else {
+  console.log(
+    `Synced ${posts.length} posts, ${columns.length} column entries (${contentHash}).`,
+  );
+}

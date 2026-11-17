@@ -15,8 +15,8 @@ concurrency:
 
 jobs:
   build:
-    # 非 Pages 模板仓库仍由 verify.yml 检查 main，避免两个工作流重复构建。
-    if: github.event.repository.name == format('{0}.github.io', github.repository_owner) || vars.SITE_URL != '' || vars.PAGES_REPOSITORY != ''
+    # 非 Pages 模板仓库仍由 verify.yml 检查 main，避免两个工作流重复构建；引擎自身由 docs-pages.yml 发布用户手册。
+    if: github.repository != 'hedon954/garden' && (github.event.repository.name == format('{0}.github.io', github.repository_owner) || vars.SITE_URL != '' || vars.PAGES_REPOSITORY != '')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7

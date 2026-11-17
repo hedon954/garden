@@ -20,7 +20,9 @@ const source = `希望也能给你带来收获~
 
 ${longLead}那真的是恭喜你了 💐~
 
-每天拥有 2~5 个小时，见[文档](https://example.com/path)。这是**重点**。公式 $S$。`;
+每天拥有 2~5 个小时，见[文档](https://example.com/path)。这是**重点**。公式 $S$。
+
+大量的文章和教程都在说，解决这些问题的关键就是要<u>建立一个全面且准确的离线评测系统，以及搭建一个嗅觉灵敏的线上实时监控系统，这样你能第一时间发现 Agent 能力的回退并及时纠正</u>。`;
 
 const plainSource = `${longLead}那真的是恭喜你了 💐~`;
 
@@ -48,7 +50,7 @@ ${mathCss}
 <article id="glued" class="probe-col markdown-body">${glued}</article>
 <article id="plain" class="probe-col">${plain}</article>
 <p id="repro-plain" class="probe-col">那真的是恭喜你了 💐~</p>
-<p id="repro-glued" class="probe-col"><span class="g-keep-punct">那真的是恭喜你了 💐~</span></p>
+<p id="repro-glued" class="probe-col">${render("那真的是恭喜你了 💐~", true).replace(/^<p>|<\/p>\s*$/g, "")}</p>
 </body></html>`;
   const page = path.join(dir, "index.html");
   fs.writeFileSync(page, html);
@@ -136,13 +138,38 @@ ${mathCss}
       isolated: isolatedIn(glued),
       gluedTilde: tildeIsolation(glued),
       plainTilde: tildeIsolation(plain),
-      repro: (()=>{ const plainEl=document.getElementById('repro-plain'); const gluedEl=document.getElementById('repro-glued'); const tight=tightenBetweenEmojiAndTilde(plainEl); tightenBetweenEmojiAndTilde(gluedEl); return {tight,plain:tildeIsolation(plainEl),glued:tildeIsolation(gluedEl),gluedOverflow:gluedEl.scrollWidth>gluedEl.clientWidth+1}; })(),
+      repro: (()=>{ const plainEl=document.getElementById('repro-plain'); const gluedEl=document.getElementById('repro-glued'); const tight=tightenBetweenEmojiAndTilde(plainEl); if(tight.target) gluedEl.style.width=Math.max(1,tight.target)+'px'; return {tight,plain:tildeIsolation(plainEl),glued:tildeIsolation(gluedEl),gluedOverflow:gluedEl.scrollWidth>gluedEl.clientWidth+1}; })(),
       overflow: glued.scrollWidth>glued.clientWidth+1,
       scrollWidth: glued.scrollWidth,
       clientWidth: glued.clientWidth,
       hasRange: /2~5/.test(glued.textContent),
       rangeKeptProse: ![...glued.querySelectorAll('.g-keep-punct')].some(n=>n.textContent.includes('2~5')||n.textContent==='2~'),
-      hasUrl: !!glued.querySelector('a[href="https://example.com/path"]')
+      hasUrl: !!glued.querySelector('a[href="https://example.com/path"]'),
+      highlightWrap: (()=>{
+        const headU=glued.querySelector('u[data-hl-part="head"]');
+        const tailU=glued.querySelector('u[data-hl-part="tail"]');
+        if(!headU||!tailU) return {ok:false,reason:'missing split u'};
+        const prevText=headU.previousSibling;
+        const leadRange=document.createRange();
+        leadRange.setStart(prevText,prevText.textContent.length-1);
+        leadRange.setEnd(prevText,prevText.textContent.length);
+        const firstRange=document.createRange();
+        firstRange.setStart(headU.firstChild,0);
+        firstRange.setEnd(headU.firstChild,1);
+        const leadRect=leadRange.getBoundingClientRect();
+        const firstRect=firstRange.getBoundingClientRect();
+        const rects=headU.getClientRects();
+        const keepParent=tailU.closest('.g-keep-punct');
+        const keepStyle=getComputedStyle(keepParent);
+        return {
+          ok:true,
+          sameStartLine: Math.abs(leadRect.top - firstRect.top) <= 4,
+          lineCount: rects.length,
+          keepDisplay: keepStyle.display,
+          keepOverflowX: keepStyle.overflowX,
+          keepScrolling: keepParent.scrollWidth > keepParent.clientWidth + 1
+        };
+      })()
     };
   }`;
   const driver = `${measure};addEventListener('load',async()=>{await document.fonts.ready;window.__gardenProbeResult=measure(new URLSearchParams(location.search).get('w')||'300')},{once:true});`;
@@ -166,6 +193,14 @@ ${mathCss}
       assert.deepEqual(result.isolated, [], `isolated punctuation inside a keep cluster at ${width}`);
       assert.equal(result.gluedTilde.isolated, false, `glued ASCII tilde wrapped alone at ${width}: ${JSON.stringify(result.gluedTilde)}`);
       assert.equal(result.overflow, false, `column overflow at ${width}: ${result.scrollWidth}/${result.clientWidth}`);
+      assert.equal(result.highlightWrap.ok, true, `highlight split missing at ${width}: ${JSON.stringify(result.highlightWrap)}`);
+      assert.equal(result.highlightWrap.keepDisplay, "inline", `keep-punct should stay inline for prose at ${width}`);
+      assert.equal(result.highlightWrap.keepOverflowX, "visible", `keep-punct should not create scroll box for prose at ${width}`);
+      assert.equal(result.highlightWrap.keepScrolling, false, `highlight should wrap instead of scrolling at ${width}`);
+      if (width === 740) {
+        assert.equal(result.highlightWrap.sameStartLine, true, `highlight broke onto a new line at 740px: ${JSON.stringify(result.highlightWrap)}`);
+        assert.ok(result.highlightWrap.lineCount >= 2, `long highlight should wrap across multiple lines at 740px: ${JSON.stringify(result.highlightWrap)}`);
+      }
       if (width === 280) {
         assert.ok(result.repro.tight?.target > 0, `could not size the tilde repro: ${JSON.stringify(result.repro)}`);
         assert.equal(result.repro.plain.isolated, true, `control did not wrap a lone tilde: ${JSON.stringify(result.repro)}`);

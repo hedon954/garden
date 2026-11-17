@@ -1,166 +1,71 @@
 ---
-title: 用 Markdown 写丨推送之后网站自己更新
-description: 用 Markdown 写文章和专栏，保存在自己的 Git 仓库里。
+title: Garden 用户手册
+description: 一个面向深度长文与 AI 协作的开源个人博客框架：用纯 Markdown 沉浸式写作，用自然语言驱动智能 UI，通过 GitHub Pages 零运维发布。
 section: overview
 order: 0
 ---
 
-Garden 是一个 Claude 风格的博客框架，文章用 Markdown 写，组件用自然语言描述就行。
-
-## 一个完整的例子
-
-下面四步是同一篇稿子的真实过程，命令输出均来自实际运行结果。
-
-### 1. 作者写一句想法
-
-在需要组件的地方写一个 `garden compose` 围栏，里面写清想让读者做什么、看到什么：
-
-````markdown
-## 写作节奏
+Garden 是一个开源的个人博客引擎（npm 包名 `hd-garden`）。它把站点拆成干净的两层：**你的仓库只保存 Markdown 稿件、配图与一份 `site.config.yaml` 站点身份配置**；排版、智能 UI 编译、全文搜索、RSS 与静态导出全部由引擎完成。
 
 ```garden compose
-让读者拖动每天写的字数和每周写几天，看写完一篇 8000 字的长文要几周。
+<stack>
+  <metric label="阅读正文列" value="740" unit="px" caption="17px 字号与 1.75 行高，宽图外扩至 1040px，宽表外扩至 1340px" />
+  <metric label="唯一组件入口" value="1" unit="个围栏" caption="所有说明图、对比卡、文件预览与可调参数统一使用 garden compose" />
+  <metric label="运行服务器" value="0" unit="台必需" caption="公开阅读端纯静态导出至 GitHub Pages，草稿与源码可留在私有仓库" />
+</stack>
+```
+
+## 一分钟看懂 Garden 的工作方式
+
+在普通 Markdown 编辑器（如 Typora 或 VS Code / Cursor）里写长文时，遇到纯文字讲不清楚的结构、对比或参数关系，只需写一个 `garden compose` 围栏，用自然语言描述你想让读者看到什么：
+
+````markdown
+```garden compose
+让读者调节每天写作字数和每周动笔天数，还要能切换目标篇幅（4000 字短文 / 8000 字长文 / 15000 字专题），实时算出预计完成周数。
 ```
 ````
 
-### 2. Agent 扫描并写回组件
+对 AI Agent 说一句「编译这篇稿件」，Agent 会按照站点内置的 `.agents/skills/garden-compose` 技能扫描原话、编译并只替换这一个围栏，正文其余字节原封不动。编译后的组件在文章中直接渲染为真实可交互的界面：
 
-对 Agent 说「编译这篇：content/posts/writing-pace.md」。Agent 按站点里的 `garden-compose` skill 先运行 `npx garden ui scan`，拿到这一块的行号、原话和哈希：
-
-```console
-$ npx garden ui scan content/posts/writing-pace.md
-{
-  "file": "content/posts/writing-pace.md",
-  "draft": false,
-  "blocks": [
-    {
-      "lang": "garden-compose",
-      "status": "uncompiled",
-      "startLine": 9,
-      "intentHash": "cb3a3569",
-      "intent": "让读者拖动每天写的字数和每周写几天，看写完一篇 8000 字的长文要几周。",
-      "section": "写作节奏"
-    }
-  ]
-}
-```
-
-接着 Agent 读取 `npx garden ui prompt` 里的组件目录，写出 `garden compose`，再用 `npx garden ui apply` 按 `--intent-hash` 只替换这一块，围栏外的正文逐字节不变：
-
-```console
-$ npx garden ui apply content/posts/writing-pace.md --intent-hash cb3a3569 --file new.md
-{"ok":true,"file":"content/posts/writing-pace.md","kind":"garden","line":9}
-```
-
-### 3. 提交前钩子检查并调用修复技能
-
-首次运行 `garden sync` 或 `garden dev` 时，Garden 会在 `.git/hooks/pre-commit` 写入 `exec npx --no-install garden ui check --staged --quiet`。如果作者在第 2 步之前直接提交，钩子会拦下提交，并显示诊断和调用项目技能的短指令：
-
-```console
-$ git commit -m "写作节奏"
-content/posts/writing-pace.md:9  -  compose-uncompiled  还有没编译的 compose 想法
-请调用 garden-compose skill（.agents/skills/garden-compose/SKILL.md），修复以上错误块后重新校验。
-```
-
-终端只显示诊断和一条指向项目 `garden-compose` skill 的短指令；默认不写文件、不复制剪贴板、不输出原文或组件目录。修复后钩子静默返回 `0`。
-
-### 4. 页面渲染结果
-
-第 2 步写回的 `garden compose` 块在文章页面直接渲染为可拖动的交互控件：
-
-```garden compose #writing-pace
-caption: 每天多写几百字，比每周多写一天更快。
+```garden compose #home-writing-pace
+caption: 拖动每日字数或切换目标篇幅，实时估算完稿周期。
 intent: |
-  让读者拖动每天写的字数和每周写几天，看写完一篇 8000 字的长文要几周。
+  让读者调节每天写作字数和每周动笔天数，还要能切换目标篇幅（4000 字短文 / 8000 字长文 / 15000 字专题），实时算出预计完成周数。
 ---
-{@body const [daily, setDaily] = DIL.useState(500)}
-{@body const [days, setDays] = DIL.useState(3)}
+{@body const [target, setTarget] = DIL.useState(8000)}
+{@body const [daily, setDaily] = DIL.useState(600)}
+{@body const [days, setDays] = DIL.useState(4)}
 {@body const weekly = daily * days}
-{@body const weeks = ceil(8000 / weekly)}
+{@body const weeks = ceil(target / weekly)}
 
+<choice bind="target" label="目标篇幅" options={[{ value: 4000, label: "4000 字短文" }, { value: 8000, label: "8000 字长文" }, { value: 15000, label: "15000 字专题" }]} />
+<slider bind="daily" label="每次动笔字数" min={200} max={2000} step={100} unit="字" />
+<slider bind="days" label="每周动笔天数" min={1} max={7} step={1} unit="天" />
 
-
-
-<slider bind="daily" label="每天写" min={200} max={2000} step={100} unit="字" />
-<slider bind="days" label="每周写" min={1} max={7} step={1} unit="天" />
-
-<stat label="写完 8000 字需要" value={weeks} unit="周" hint="不足一周按一周算" />
-
+<columns>
+  <stat label="每周产出" value={weekly} unit="字" />
+  <stat label="预计完稿需要" value={weeks} unit="周" hint="不足一周按一周计" />
+</columns>
 ```
 
-> [!IMPORTANT] 人和 Agent 用同一套工具
-> Agent 找块用的 `npx garden ui scan`、写回用的 `npx garden ui apply`、自查用的 `npx garden ui check`，和作者提交时 pre-commit 钩子运行的检查是同一组命令。钩子拦截时给出的技能调用短指令，就是发给 Agent 的下一步。详见 [用 AI 写作](/garden/ai-writing)。
-
-下面几节介绍不用 Agent 也会自动生效的版面与组件规则。
-
-## 标题分行与 `740px` 正文列
-
-标题里写一个「丨」，就在那里分成两行，字号按较长一行自动计算。正文保持在 `740px` 阅读列内，宽图会在两侧留白里对称外扩，不会盖住导航和目录。
-
-下面这张透明底的线稿在深色模式下会自动垫上暖白底，不用另做一套配图：
-
-![740px 正文阅读列、1040px 宽图区与 1340px 宽表区示意（透明背景黑线 SVG，深色模式下自动衬上 #faf9f5 暖白纸底）。](./assets/reading-layout.svg)
-
-## 多列宽表格自动向外延伸
-
-表格不折行时比正文列宽，就会向两侧对称拓宽，文章页最宽 `1340px`。下面这张宽表在桌面端会伸出正文列：
-
-| 内容形态 | 源文件位置 | 页面如何处理长文与媒体细节 | 适用场景 |
-| :--- | :--- | :--- | :--- |
-| 长篇技术文章 | `content/posts/<slug>.md` 及同名资源目录 | 自动测量本地配图宽高写入 HTML 防抖动，支持 `丨` 标题分行、宽图宽表外扩、LaTeX 公式与 Mermaid 图表 | 系统设计拆解、源码走读、排障复盘与长篇读书笔记 |
-| 主题系列专栏 | `content/columns.yaml` | 按顺序串联 `content/posts/` 下的多篇长文，在阅读页自动生成专栏进度与上下篇导航 | 连载教程、专题研究或按章节组织的系统笔记 |
-
-## 代码块与「对比上一版」切换
-
-在改好的完整代码下面写一句想法说明和上一版比改了什么，Agent 会生成一段紧挨着的 `diff` 代码块；你也可以直接手写 `diff`。完整代码和 `diff` 紧挨着时，页面会把它们合成一个可切换「代码」和「对比上一版」的代码框，复制按钮始终复制新版完整代码。
-
-```yaml
-pages:
-  garden:
-    title: "用 Markdown 写丨推送之后网站自己更新"
-    subtitle: "用 Markdown 写文章和专栏，保存在自己的 Git 仓库里。"
-```
-
-```diff
- pages:
-   garden:
--    title: "用 Markdown 写。\n推送之后，网站自己更新。"
--    subtitle: ""
-+    title: "用 Markdown 写丨推送之后网站自己更新"
-+    subtitle: "用 Markdown 写文章和专栏，保存在自己的 Git 仓库里。"
-```
-
-> [!NOTE]
-> `diff` 代码块前面必须紧挨着一段完整代码块；如果单独放一段 `diff` 而前面没有完整代码，`npx garden check` 会报 `diff-orphan` 错误。
-
-> [!TIP] 提示框支持自定标题
-> 在 `> [!TIP]` 同一行后面直接写文字（或者下一行单独放一行粗体），会替换默认的「建议」标题。支持 `NOTE`、`TIP`、`IMPORTANT`、`WARNING`、`CAUTION` 等常见类型。
-
-## 在文章里嵌入结构化组件
-
-需要数字、对比、时间线或图表时，在 `garden compose` 内组合对应组件。下面是一组数值：
+## 章节导览
 
 ```garden compose
-<stack><metric label="正文阅读列" value="740" unit="px" caption="段落、代码块与列表的默认列宽"></metric><metric label="宽幅配图区" value="1040" unit="px" caption="截图按像素宽度的一半显示，像素宽度约 2000px 以上时展开到这个宽度"></metric><metric label="多列宽表区" value="1340" unit="px" caption="宽表格在桌面端向两侧对称外扩上限"></metric></stack>
+<icon-list>
+  <entry icon="book-open" title="使用指南">
+    <text>从零初始化站点、最小配置、双仓公开部署、AI 协作三步闭环、全功能教程，到独立管理后台的界面说明与部署方案。入口见 [使用指南](/garden/guide/)。</text>
+  </entry>
+  <entry icon="compass" title="框架设计">
+    <text>从读者沉浸式阅读与作者低心智负担两个维度拆解设计原则，说明 Claude 纸墨风格与 ChatGPT Intelligent UI 的实现参考，以及编译、外链抓取、搜索的底层原理。入口见 [框架设计](/garden/design/)。</text>
+  </entry>
+  <entry icon="layout-grid" title="内置组件">
+    <text>逐一演示链接卡片、图片与 Bilibili / YouTube 视频、来源胶囊、HTML / PDF / Excalidraw 文件内嵌、智能 UI 与 21 种常用图示，均配双端真实渲染与在线演练场。入口见 [内置组件](/garden/components/)。</text>
+  </entry>
+  <entry icon="terminal" title="常用脚本">
+    <text>日常写作与校验高频使用的 Makefile 目标、garden CLI 与底层脚本、以及支撑 AI Native 协作的 skills 与 AGENTS.md。入口见 [常用脚本](/garden/scripts/)。</text>
+  </entry>
+  <entry icon="puzzle" title="扩展插件">
+    <text>在 Typora 与 VS Code / Cursor 中通过 /garden 图形列表快捷插入说明草稿、原位实时预览交互组件与折叠长围栏。入口见 [扩展插件](/garden/extensions/)。</text>
+  </entry>
+</icon-list>
 ```
-
-组件页以 `garden compose` 为唯一 Garden 作者入口，另含链接卡片、来源胶囊和本地图片。内容、布局和交互在 [compose](/garden/components/compose) 内组合。效果见左侧导航的 [组件总览](/garden/components)。
-
-<h2 id="garden-admin-title">从初始化到日常写作</h2>
-
-站点仓库只放配置、文章和静态资源，渲染和构建由 `hd-garden` 包完成。本地建站并预览：
-
-```bash
-npx hd-garden init my-blog
-cd my-blog
-npm install
-make dev
-```
-
-写完运行 `make update`，检查通过后会提交并推送。细节见各章：
-
-- **[快速开始](/garden/start)**：目录结构、`make new` 新建长文、草稿预览与日常命令。
-- **[用 AI 写作](/garden/ai-writing)** 与 **[语法检查与快捷输入](/garden/workflow)**：在 VS Code、Cursor、Typora 里插入想法、预览组件、打开清单，并用 `npx garden editors install` 安装插件。
-- **[站点与专栏配置](/garden/config)**：`site.config.yaml` 各字段含义、自定义 SVG 图标与 `content/columns.yaml` 专栏编排。
-- **[发布到 GitHub Pages](/garden/deploy)**：单个公开仓库或「私有源码仓库 + 公开页面仓库」的完整 Actions 工作流。
-- **[写文章](/garden/writing)** 与 **[阅读排版是怎么工作的](/garden/design)**：Front Matter 字段、三级自适应宽度与色彩变量。链接卡片、来源胶囊和本地图片见 [组件总览](/garden/components)。

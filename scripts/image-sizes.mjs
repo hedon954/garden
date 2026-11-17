@@ -12,7 +12,7 @@
 import fs from "node:fs";
 import { readGeneratedCache, writeGeneratedCache } from "./generated-cache.mjs";
 import path from "node:path";
-import { pathToFileURL } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import matter from "gray-matter";
 import { imageSize } from "image-size";
 import { isPublicUrl } from "./link-meta-core.mjs";
@@ -158,10 +158,15 @@ function markdownFiles(directory) {
   });
 }
 
-/** Remote image URLs across every Markdown file under content/. */
+const gardenPackageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+
+/** Remote image URLs across every Markdown file under content/ (or docs/handbook in docs mode). */
 export function collectRemoteImages(siteRoot) {
   const urls = new Set();
-  for (const file of markdownFiles(path.join(siteRoot, "content"))) {
+  const sourceDir = process.env.GARDEN_MODE === "docs"
+    ? path.join(gardenPackageRoot, "docs", "handbook")
+    : path.join(siteRoot, "content");
+  for (const file of markdownFiles(sourceDir)) {
     const { content } = matter(fs.readFileSync(file, "utf8"));
     for (const src of imageSources(content)) if (/^https?:\/\//iu.test(src)) urls.add(src);
   }

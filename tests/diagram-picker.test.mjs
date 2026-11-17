@@ -75,10 +75,6 @@ test("every picker item is traceable to handbook, skills, or built-in recipes", 
       assert.ok(text.includes(source.phrase), `${item.name} missing “${source.phrase}” in ${source.file}`);
     }
   }
-  const handbook = fs.readFileSync(path.join(root, "docs/handbook/components/compose.md"), "utf8");
-  for (const phrase of ["三列并排，中间接起来", "先到一处，再散开", "自上而下分层", "一件事的多个切面", "上下两行对比", "可调参数（play）", "图表示例（play）"]) {
-    assert.ok(handbook.includes(phrase), phrase);
-  }
   const selection = fs.readFileSync(path.join(root, ".agents/skills/garden-compose/references/visual-selection.md"), "utf8");
   assert.match(selection, /不是组件白名单/);
   assert.match(selection, /centered-chip/);
@@ -122,25 +118,21 @@ test("name and purpose queries keep 其他 searchable and selectable", () => {
   assert.ok(filterPickerItems(parsed.query).some((item) => item.name === "other"));
 });
 
-test("recommended 其他 prompt is open composition, not a built-in template", () => {
+test("recommended 其他 prompt is concise author guidance for open composition, without verbose AI boilerplate", () => {
   const prompt = pickerItems().find((item) => item.name === "other").prompt;
-  assert.match(prompt, /我的材料：/);
-  assert.match(prompt, /我的表达目标：/);
   assert.match(prompt, /自由组合图文/);
-  assert.match(prompt, /不是合法白名单/);
-  assert.match(prompt, /不要把结果限制为某一个现成模板/);
-  assert.match(prompt, /不要让我学习新语法/);
+  assert.match(prompt, /任意 Markdown \/ HTML/);
+  assert.match(prompt, /要呈现的原文内容或数据：/);
+  assert.match(prompt, /最核心的视觉重点：/);
+  assert.doesNotMatch(prompt, /请你：\n- 只根据材料组织内容/);
   assert.doesNotMatch(prompt, /只能使用现成配方/);
 });
 
-test("named prompts ask for materials and goals, and stay inside garden compose", () => {
+test("named prompts give component-specific slots without repeating skill rules", () => {
   for (const item of pickerItems().filter((entry) => !entry.open)) {
-    assert.match(item.prompt, new RegExp(`「${item.label}」`));
-    assert.match(item.prompt, /我的材料：/);
-    assert.match(item.prompt, /我的表达目标：/);
-    assert.match(item.prompt, /推荐起点/);
-    assert.match(item.prompt, /不是唯一合法写法/);
-    assert.match(item.prompt, /只使用 garden compose/);
+    assert.match(item.prompt, new RegExp(`^「${item.label}」要点：`));
+    assert.ok(item.prompt.split("\n").length <= 8, `${item.name} prompt should stay concise`);
+    assert.doesNotMatch(item.prompt, /不要让我学习标签或写 CSS/);
   }
 });
 
@@ -166,13 +158,13 @@ test("selecting a recipe inserts a compose fence that already holds the recommen
   }
 
   const layers = pickerItems().find((item) => item.name === "layers");
-  assert.match(layers.prompt, /「分层图」/);
-  assert.match(layers.prompt, /我的材料：/);
+  assert.match(layers.prompt, /「分层图」要点：/);
+  assert.match(layers.prompt, /从上到下依次是哪几层/);
   assert.match(layers.body, /「分层图」/);
 
   const other = pickerItems().find((item) => item.name === "other");
   assert.match(other.prompt, /自由组合图文/);
-  assert.match(other.prompt, /不要把结果限制为某一个现成模板/);
+  assert.match(other.prompt, /任意 Markdown \/ HTML/);
   assert.ok(other.body.includes(other.prompt));
 });
 

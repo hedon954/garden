@@ -1908,6 +1908,14 @@ button {
   box-decoration-break: clone;
 }
 
+.markdown-body [data-hl-part="head"] {
+  padding-right: 0;
+}
+
+.markdown-body [data-hl-part="tail"] {
+  padding-left: 0;
+}
+
 .markdown-body u strong,
 .markdown-body u u,
 .markdown-body mark strong,
@@ -2430,6 +2438,12 @@ button {
   background: var(--accent-soft);
   color: var(--accent);
   font-size: 0.9em;
+}
+
+.markdown-body :is(h1, h2, h3, h4, h5, h6) > code,
+.markdown-body :is(h1, h2, h3, h4, h5, h6) :not(pre) > code {
+  font-size: inherit;
+  font-weight: inherit;
 }
 
 /* Keep inline-code backgrounds above the continuous underline. */

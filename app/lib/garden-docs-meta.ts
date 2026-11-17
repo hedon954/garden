@@ -5,55 +5,67 @@ export type GardenDocNavItem = {
   section?: string;
   order?: number;
   navTitle?: string;
+  navIcon?: string;
 };
 
 export type HandbookLang = "zh" | "en";
 
 export type HandbookSectionMeta = {
   id: string;
+  overviewPath: string;
   title: string;
   /** English sidebar group heading; falls back to the Chinese one until translated. */
   titleEn?: string;
 };
 
-/** Where each language of the handbook lives. English mirrors the Chinese paths. */
-export const handbookBase = (lang: HandbookLang) => (lang === "en" ? "/garden/en" : "/garden");
-export const handbookPath = (lang: HandbookLang, docPath = "") =>
-  docPath && docPath !== "index" ? `${handbookBase(lang)}/${docPath}` : handbookBase(lang);
+/**
+ * In-app paths inside the standalone documentation site (`basePath = "/garden"`).
+ * Next.js `<Link>` prepends `/garden` automatically, so `"/"` renders `/garden/`,
+ * `"/guide/quick-start"` renders `/garden/guide/quick-start/`, and `"/en"` renders `/garden/en/`.
+ */
+export const handbookBase = (lang: HandbookLang) => (lang === "en" ? "/en" : "/");
+export const handbookPath = (lang: HandbookLang, docPath = "") => {
+  const clean = docPath.replace(/^\/+|\/+$/gu, "");
+  if (!clean || clean === "index") return handbookBase(lang);
+  return lang === "en" ? `/en/${clean}` : `/${clean}`;
+};
 export const sectionTitle = (section: HandbookSectionMeta | undefined, lang: HandbookLang) =>
   section ? (lang === "en" ? section.titleEn ?? section.title : section.title) : undefined;
+
 /** The handbook remembers the reader's choice under this localStorage key. */
 export const HANDBOOK_LANG_KEY = "garden-handbook-lang";
 
 /** Handbook chrome labels. Page text lives in docs/handbook and docs/handbook/en. */
 export const HANDBOOK_UI = {
   zh: {
-    name: "Garden 使用说明",
+    name: "Garden 用户手册",
     overview: "总览",
-    overviewHint: "总览与快速入口",
+    overviewHint: "框架全景与快速导览",
     guide: "指南",
-    pager: "说明书上下篇导航",
+    pager: "手册上下篇导航",
     prev: "上一篇",
     next: "下一篇",
-    backToOverview: "返回总览",
-    overviewDocTitle: "Garden 使用说明首页",
+    backToOverview: "返回首页",
+    overviewDocTitle: "Garden 用户手册首页",
     toc: "本页目录",
-    sidebar: "Garden 使用说明目录",
+    sidebar: "Garden 用户手册目录",
     chapters: "章节导航",
-    closeSidebar: "关闭说明目录",
-    openSidebar: "打开说明目录",
-    sidebarShort: "说明目录",
-    mobileBar: "说明书目录栏",
+    closeSidebar: "关闭手册目录",
+    openSidebar: "打开手册目录",
+    sidebarShort: "手册目录",
+    mobileBar: "手册目录栏",
+    expandSubnav: "展开子目录",
+    collapseSubnav: "收起子目录",
   },
   en: {
     name: "Garden Handbook",
     overview: "Overview",
-    overviewHint: "Overview and quick links",
+    overviewHint: "Framework overview & quick links",
     guide: "Guide",
     pager: "Handbook pages",
     prev: "Previous",
     next: "Next",
-    backToOverview: "Back to overview",
+    backToOverview: "Back to home",
     overviewDocTitle: "Garden Handbook home",
     toc: "On this page",
     sidebar: "Garden Handbook contents",
@@ -62,91 +74,54 @@ export const HANDBOOK_UI = {
     openSidebar: "Open contents",
     sidebarShort: "Contents",
     mobileBar: "Handbook contents bar",
+    expandSubnav: "Expand section",
+    collapseSubnav: "Collapse section",
   },
 } as const;
 
+/**
+ * Five stable top-level sections. Their order NEVER mutates across routes.
+ * Every section heading is itself a clickable overview page (`overviewPath`).
+ */
 export const HANDBOOK_SECTIONS: HandbookSectionMeta[] = [
-  { id: "getting-started", title: "快速上手", titleEn: "Getting Started" },
-  { id: "writing-and-reading", title: "写作与排版", titleEn: "Writing & Layout" },
-  { id: "components", title: "内置组件", titleEn: "Built-in Components" },
-  { id: "diagrams", title: "推荐图示", titleEn: "Recommended figures" },
-  { id: "workflow", title: "检查与补全", titleEn: "Checks & Shortcuts" },
-  { id: "reference", title: "组件参考", titleEn: "Component reference" },
+  { id: "guide", overviewPath: "guide", title: "使用指南", titleEn: "User Guide" },
+  { id: "design", overviewPath: "design", title: "框架设计", titleEn: "Framework Design" },
+  { id: "components", overviewPath: "components", title: "内置组件", titleEn: "Built-in Components" },
+  { id: "scripts", overviewPath: "scripts", title: "常用脚本", titleEn: "Scripts & Tooling" },
+  { id: "extensions", overviewPath: "extensions", title: "扩展插件", titleEn: "Extensions" },
 ];
 
-/** Component reference pages: one per component, all fields and error codes. */
 export const REFERENCE_SECTION = "reference";
-export const isReferencePath = (docPath: string) => docPath === REFERENCE_SECTION || docPath.startsWith(`${REFERENCE_SECTION}/`);
+export const isReferencePath = (docPath: string) =>
+  docPath === REFERENCE_SECTION || docPath.startsWith(`${REFERENCE_SECTION}/`);
 
-export const COMPONENT_BADGE: Record<string, string> = {
-  "components/card": "card",
-  "components/stat": "stat",
-  "components/compare": "compare",
-  "components/timeline": "timeline",
-  "components/chart": "chart",
-  "components/compose": "compose",
-  "components/html": "html",
-  "components/interactive": "interactive",
-  "components/file": "file",
-  "components/relations": "relations",
-  "components/list": "list",
-  "components/choice": "choice",
-  "reference/card": "card",
-  "reference/stat": "stat",
-  "reference/compare": "compare",
-  "reference/timeline": "timeline",
-  "reference/chart": "chart",
-  "reference/compose": "compose",
-  "reference/compose-icons": "compose",
-  "reference/html": "html",
-  "reference/interactive": "interactive",
-  "reference/file": "file",
-  "reference/relations": "relations",
-  "reference/list": "list",
-  "reference/choice": "choice",
-};
+export const COMPONENT_BADGE: Record<string, string> = {};
 
 export const NAV_SHORT_TITLE: Record<string, string> = {
-  start: "快速开始",
-  "ai-writing": "用 AI 写作",
-  config: "站点与专栏配置",
-  deploy: "发布到 GitHub Pages",
-  writing: "写文章",
-  design: "阅读排版是怎么工作的",
-  components: "组件总览",
-  "components/card": "知识卡片",
-  "components/stat": "数字指标",
-  "components/compare": "并排对比",
-  "components/timeline": "时间线",
-  "components/chart": "条形图表",
-  "components/compose": "说明图",
-  "reference/compose-icons": "compose 图标",
-  "components/html": "嵌入网页片段",
-  "components/interactive": "可调公式与参数",
-  "components/file": "文件下载与预览",
-  "components/relations": "关系图",
-  "components/list": "图标列表",
-  "components/choice": "选择卡",
+  "guide/quick-start": "快速上手",
+  "guide/ai-collaboration": "AI 协作",
+  "guide/tutorial": "详细教程",
+  "guide/admin": "管理后台",
+  "design/principles": "设计原则",
+  "design/references": "实现参考",
+  "design/internals": "底层原理",
   "components/link-card": "链接卡片",
+  "components/media": "图片视频",
   "components/source": "来源胶囊",
-  "components/image": "本地图片",
-  "components/diagrams": "推荐图示",
-  workflow: "语法检查与快捷输入",
-  reference: "总览",
+  "components/file-embed": "文件内嵌",
+  "components/intelligent-ui": "智能 UI",
+  "scripts/makefile": "Makefile",
+  "scripts/cli": "scripts",
+  "scripts/ai-kit": "skills/AGENTS.md",
+  "extensions/typora": "typora",
+  "extensions/vscode": "vscode",
 };
 
-
-/**
- * Reference sidebar shows COMPONENT_BADGE inside <code>. When two pages share a
- * badge (compose + compose-icons), keep the code pill and append the remainder
- * of navTitle / short label after a separator (space / · / dash).
- * Returns the suffix including its leading separator, or null.
- */
 export function referenceBadgeSuffix(badge: string, label: string): string | null {
   if (!badge || !label || label === badge) return null;
   if (!label.startsWith(badge)) return null;
   const rest = label.slice(badge.length);
-  if (!rest || !/^[\s·\-—]/.test(rest)) return null;
+  if (!rest || !/^[\s·\-—]/u.test(rest)) return null;
   return rest;
 }
 
@@ -160,26 +135,60 @@ export function handbookNavLabel(item: GardenDocNavItem, lang: HandbookLang): st
   return item.title;
 }
 
+function normalizeSectionId(section?: string): string {
+  if (!section) return "guide";
+  if (section === "diagrams") return "components";
+  if (HANDBOOK_SECTIONS.some((item) => item.id === section)) return section;
+  return "guide";
+}
+
+/**
+ * Groups docs into the 5 fixed sections without ever reordering sections.
+ * Each section holds:
+ * - `overviewDoc`: the clickable section overview page (`path === section.overviewPath`), if authored.
+ * - `items`: direct sidebar child pages. Diagram recipes are not siblings here.
+ * - `diagramSubpages`: the figure catalog and all 21 recipes, shown nested under 智能 UI.
+ * - `allDocs`: all pages in reading order (overview first, then child pages, then diagram detail subpages).
+ */
 export function groupHandbookDocs<T extends GardenDocNavItem>(docs: T[]) {
   const bySection = new Map<string, T[]>();
   for (const section of HANDBOOK_SECTIONS) {
     bySection.set(section.id, []);
   }
   for (const doc of docs) {
-    const key = doc.section && bySection.has(doc.section) ? doc.section : "getting-started";
+    const key = normalizeSectionId(doc.section);
     bySection.get(key)!.push(doc);
   }
   for (const list of bySection.values()) {
     list.sort((a, b) => (a.order ?? 999) - (b.order ?? 999) || a.path.localeCompare(b.path));
   }
-  return HANDBOOK_SECTIONS.map((section) => ({
-    ...section,
-    items: bySection.get(section.id) ?? [],
-  })).filter((section) => section.items.length > 0);
+  return HANDBOOK_SECTIONS.map((section) => {
+    const all = bySection.get(section.id) ?? [];
+    const overviewDoc = all.find((doc) => doc.path === section.overviewPath) ?? null;
+    const rest = all.filter((doc) => doc.path !== section.overviewPath);
+    const items = rest.filter(
+      (doc) => doc.section !== "diagrams" && !doc.path.startsWith("components/diagrams/"),
+    );
+    const diagramSubpages = rest.filter(
+      (doc) => doc.section === "diagrams" || doc.path.startsWith("components/diagrams/"),
+    );
+    const allDocs = [
+      ...(overviewDoc ? [overviewDoc] : []),
+      ...items,
+      ...diagramSubpages,
+    ];
+    return {
+      ...section,
+      overviewDoc,
+      items,
+      diagramSubpages,
+      allDocs,
+    };
+  }).filter((section) => section.overviewDoc !== null || section.items.length > 0);
 }
 
 export function orderedHandbookDocs<T extends GardenDocNavItem>(docs: T[]): T[] {
-  return groupHandbookDocs(docs).flatMap((section) => section.items);
+  return groupHandbookDocs(docs).flatMap((section) => section.allDocs);
 }
 
 export function toHandbookNavItems(docs: GardenDocNavItem[]): GardenDocNavItem[] {
@@ -190,5 +199,6 @@ export function toHandbookNavItems(docs: GardenDocNavItem[]): GardenDocNavItem[]
     section: doc.section,
     order: doc.order,
     ...(doc.navTitle ? { navTitle: doc.navTitle } : {}),
+    ...(doc.navIcon ? { navIcon: doc.navIcon } : {}),
   }));
 }

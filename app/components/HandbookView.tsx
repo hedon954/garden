@@ -1,6 +1,8 @@
+import type { ReactNode } from "react";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { ArrowLeft, ArrowRight } from "@phosphor-icons/react/ssr";
+import { siteLinks } from "@garden/site-config";
 import { ArticleMeasure } from "./ArticleMeasure";
 import { ArticleReferences } from "./ArticleReferences";
 import { ArticleTitle } from "./ArticleTitle";
@@ -10,8 +12,7 @@ import { MarkdownArticle } from "./MarkdownArticle";
 import { TableOfContents } from "./TableOfContents";
 import { extractHeadings, handbookDocs, handbookIndexDoc, hasHandbookPage, type GardenDocEntry } from "../lib/content";
 import { docWithBody } from "../lib/content-body";
-import { pageAlternates } from "../lib/page-alternates";
-import { absoluteUrl, getSiteUrl } from "../lib/site";
+import { getSiteUrl } from "../lib/site";
 import { siteHref } from "../lib/site-href";
 import {
   COMPONENT_BADGE,
@@ -24,50 +25,57 @@ import {
   toHandbookNavItems,
   type HandbookLang,
 } from "../lib/garden-docs-meta";
-import { UI_STRINGS, siteLang } from "../lib/i18n";
-import { siteConfig } from "../site.config";
+import { UI_STRINGS, type UiLang } from "../lib/i18n";
 
 const other = (lang: HandbookLang): HandbookLang => (lang === "en" ? "zh" : "en");
 const hreflang = (lang: HandbookLang) => (lang === "en" ? "en" : "zh-CN");
 
+function publicDocsUrl(origin: string, inAppPath: string): string {
+  const base = (siteLinks?.basePath ?? "/garden").replace(/\/+$/u, "");
+  const formatted = siteHref(inAppPath);
+  const fullPath = formatted === "/" ? `${base}/` : `${base}${formatted}`;
+  return `${origin.replace(/\/+$/u, "")}${fullPath}`;
+}
+
 /** canonical + hreflang links; the counterpart is listed only when it exists. */
-export function handbookLanguages(lang: HandbookLang, docPath: string) {
-  if (siteLang === "en") return undefined;
+export function handbookLanguages(lang: HandbookLang, docPath: string, origin = "") {
   if (!hasHandbookPage(other(lang), docPath)) return undefined;
-  const zh = siteHref(handbookPath("zh", docPath));
-  const en = siteHref(handbookPath("en", docPath));
+  const zh = origin
+    ? publicDocsUrl(origin, handbookPath("zh", docPath))
+    : siteHref(handbookPath("zh", docPath));
+  const en = origin
+    ? publicDocsUrl(origin, handbookPath("en", docPath))
+    : siteHref(handbookPath("en", docPath));
   return { "zh-CN": zh, en, "x-default": zh };
 }
 
-export const handbookAlternates = (lang: HandbookLang, docPath: string) =>
-  pageAlternates(handbookPath(lang, docPath), handbookLanguages(lang, docPath));
-
 export async function handbookOverviewMetadata(lang: HandbookLang, indexDoc: GardenDocEntry | null | undefined) {
   const t = HANDBOOK_UI[lang];
-  const baseUrl = await getSiteUrl();
-  const pathname = siteHref(handbookPath(lang, "index"));
+  const origin = await getSiteUrl();
+  const base = (siteLinks?.basePath ?? "/garden").replace(/\/+$/u, "");
+  const canonicalUrl = publicDocsUrl(origin, handbookPath(lang, "index"));
   const description = indexDoc?.description ?? "";
-  const fullTitle = `${t.name} · ${siteConfig.name}`;
-  const imageAlt =
-    lang === "en"
-      ? `${siteConfig.name} · ${indexDoc?.title || t.name}`
-      : `${siteConfig.name} · ${siteConfig.pages.home.title.replace("\n", "")}`;
+  const fullTitle = indexDoc?.title ? `${indexDoc.title} · ${t.name}` : t.name;
+  const languages = handbookLanguages(lang, "index", origin);
   return {
-    title: t.name,
+    title: { absolute: t.name },
     description,
-    alternates: pageAlternates(handbookPath(lang), handbookLanguages(lang, "index")),
+    alternates: {
+      canonical: canonicalUrl,
+      ...(languages ? { languages } : {}),
+    },
     openGraph: {
       type: "website",
-      url: absoluteUrl(pathname, baseUrl),
+      url: canonicalUrl,
       title: fullTitle,
       description,
       locale: lang === "en" ? "en_US" : "zh_CN",
       images: [
         {
-          url: "/og.png",
+          url: `${base}/og.png`,
           width: 1200,
           height: 630,
-          alt: imageAlt,
+          alt: fullTitle,
         },
       ],
     },
@@ -75,15 +83,16 @@ export async function handbookOverviewMetadata(lang: HandbookLang, indexDoc: Gar
       card: "summary_large_image",
       title: fullTitle,
       description,
-      images: ["/og.png"],
+      images: [`${base}/og.png`],
     },
   } satisfies Metadata;
 }
 
 export async function handbookDocMetadata(lang: HandbookLang, doc: GardenDocEntry | undefined) {
+  const base = (siteLinks?.basePath ?? "/garden").replace(/\/+$/u, "");
   if (!doc) {
     const copy = UI_STRINGS[lang];
-    const fullTitle = `${copy.notFoundTitle} · ${siteConfig.name}`;
+    const fullTitle = `${copy.notFoundTitle} · ${HANDBOOK_UI[lang].name}`;
     return {
       title: copy.notFoundTitle,
       description: copy.notFoundDeck,
@@ -94,7 +103,7 @@ export async function handbookDocMetadata(lang: HandbookLang, doc: GardenDocEntr
         locale: lang === "en" ? "en_US" : "zh_CN",
         images: [
           {
-            url: "/og.png",
+            url: `${base}/og.png`,
             width: 1200,
             height: 630,
             alt: fullTitle,
@@ -105,30 +114,34 @@ export async function handbookDocMetadata(lang: HandbookLang, doc: GardenDocEntr
         card: "summary_large_image",
         title: fullTitle,
         description: copy.notFoundDeck,
-        images: ["/og.png"],
+        images: [`${base}/og.png`],
       },
     } satisfies Metadata;
   }
   const t = HANDBOOK_UI[lang];
-  const baseUrl = await getSiteUrl();
-  const pathname = siteHref(handbookPath(lang, doc.path));
+  const origin = await getSiteUrl();
+  const canonicalUrl = publicDocsUrl(origin, handbookPath(lang, doc.path));
   const docTitle = `${doc.title} · ${t.name}`;
+  const languages = handbookLanguages(lang, doc.path, origin);
   return {
-    title: docTitle,
+    title: doc.title,
     description: doc.description,
-    alternates: handbookAlternates(lang, doc.path),
+    alternates: {
+      canonical: canonicalUrl,
+      ...(languages ? { languages } : {}),
+    },
     openGraph: {
       type: "article",
-      url: absoluteUrl(pathname, baseUrl),
+      url: canonicalUrl,
       title: docTitle,
       description: doc.description,
       locale: lang === "en" ? "en_US" : "zh_CN",
       images: [
         {
-          url: "/og.png",
+          url: `${base}/og.png`,
           width: 1200,
           height: 630,
-          alt: `${siteConfig.name} · ${docTitle}`,
+          alt: docTitle,
         },
       ],
     },
@@ -136,12 +149,18 @@ export async function handbookDocMetadata(lang: HandbookLang, doc: GardenDocEntr
       card: "summary_large_image",
       title: docTitle,
       description: doc.description,
-      images: ["/og.png"],
+      images: [`${base}/og.png`],
     },
   } satisfies Metadata;
 }
 
-export function HandbookOverview({ lang }: { lang: HandbookLang }) {
+export function HandbookOverview({
+  lang,
+  renderPlayground,
+}: {
+  lang: HandbookLang;
+  renderPlayground?: (specJson: string, lang?: UiLang) => ReactNode;
+}) {
   const t = HANDBOOK_UI[lang];
   const docs = handbookDocs(lang);
   const indexDoc = docWithBody(handbookIndexDoc(lang), lang);
@@ -149,10 +168,8 @@ export function HandbookOverview({ lang }: { lang: HandbookLang }) {
   const firstDoc = orderedHandbookDocs(docs)[0] ?? null;
   const content = indexDoc?.content ?? "";
   const headings = extractHeadings(content);
-  // The site config title/subtitle is written in the site's own language.
-  const configured = lang === siteLang ? siteConfig.pages.garden : { title: "", subtitle: "" };
-  const title = configured.title?.trim() || indexDoc?.title || t.name;
-  const subtitle = configured.subtitle?.trim() || indexDoc?.description || "";
+  const title = indexDoc?.title || t.name;
+  const subtitle = indexDoc?.description || "";
 
   return (
     <main className="column-reading-page garden-doc-page" lang={hreflang(lang)}>
@@ -173,7 +190,7 @@ export function HandbookOverview({ lang }: { lang: HandbookLang }) {
         <ArticleMeasure />
 
         <div className="e-content">
-          <MarkdownArticle content={content} lang={lang} fieldTables handbook />
+          <MarkdownArticle content={content} lang={lang} fieldTables handbook renderPlayground={renderPlayground} />
         </div>
 
         <ArticleReferences references={indexDoc?.references} lang={lang} />
@@ -196,7 +213,15 @@ export function HandbookOverview({ lang }: { lang: HandbookLang }) {
   );
 }
 
-export function HandbookDoc({ lang, doc }: { lang: HandbookLang; doc: GardenDocEntry }) {
+export function HandbookDoc({
+  lang,
+  doc,
+  renderPlayground,
+}: {
+  lang: HandbookLang;
+  doc: GardenDocEntry;
+  renderPlayground?: (specJson: string, lang?: UiLang) => ReactNode;
+}) {
   const t = HANDBOOK_UI[lang];
   const resolved = docWithBody(doc, lang);
   const docs = handbookDocs(lang);
@@ -206,7 +231,10 @@ export function HandbookDoc({ lang, doc }: { lang: HandbookLang; doc: GardenDocE
   const prev = index > 0 ? ordered[index - 1] : null;
   const next = index >= 0 && index < ordered.length - 1 ? ordered[index + 1] : null;
   const headings = extractHeadings(resolved.content);
-  const sectionMeta = HANDBOOK_SECTIONS.find((sec) => sec.id === doc.section);
+  const sectionId = doc.section === "diagrams" ? "components" : doc.section;
+  const sectionMeta = HANDBOOK_SECTIONS.find((sec) => sec.id === sectionId);
+  const isSectionOverview = sectionMeta?.overviewPath === doc.path;
+  const isDiagramSubpage = doc.section === "diagrams" || doc.path.startsWith("components/diagrams/");
   const componentBadge = COMPONENT_BADGE[doc.path];
 
   return (
@@ -221,7 +249,21 @@ export function HandbookDoc({ lang, doc }: { lang: HandbookLang; doc: GardenDocE
               {t.name}
             </Link>
             <span aria-hidden="true">/</span>
-            <span>{sectionTitle(sectionMeta, lang) ?? doc.sectionTitle ?? t.guide}</span>
+            {sectionMeta && !isSectionOverview ? (
+              <Link href={siteHref(handbookPath(lang, sectionMeta.overviewPath))} className="gdoc-eyebrow-root">
+                {sectionTitle(sectionMeta, lang)}
+              </Link>
+            ) : (
+              <span>{sectionTitle(sectionMeta, lang) ?? doc.sectionTitle ?? t.guide}</span>
+            )}
+            {isDiagramSubpage ? (
+              <>
+                <span aria-hidden="true">/</span>
+                <Link href={siteHref(handbookPath(lang, "components/intelligent-ui"))} className="gdoc-eyebrow-root">
+                  {lang === "en" ? "Intelligent UI" : "智能 UI"}
+                </Link>
+              </>
+            ) : null}
             {componentBadge ? <code className="gdoc-eyebrow-fence">{`garden ${componentBadge}`}</code> : null}
           </div>
           <ArticleTitle title={doc.title} />
@@ -231,7 +273,14 @@ export function HandbookDoc({ lang, doc }: { lang: HandbookLang; doc: GardenDocE
         <ArticleMeasure />
 
         <div className="e-content">
-          <MarkdownArticle content={resolved.content} lang={lang} fieldTables handbook refDemos={isReferencePath(doc.path)} />
+          <MarkdownArticle
+            content={resolved.content}
+            lang={lang}
+            fieldTables
+            handbook
+            refDemos={isReferencePath(doc.path)}
+            renderPlayground={renderPlayground}
+          />
         </div>
 
         <ArticleReferences references={doc.references} lang={lang} />

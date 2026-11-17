@@ -33,6 +33,9 @@ declare module "@garden/generated-content" {
   export const columns: ContentEntry[];
   export type GardenDocEntry = {
     title: string;
+    navTitle?: string;
+    navIcon?: string;
+    badge?: string;
     slug: string;
     path: string;
     description?: string;
@@ -73,9 +76,11 @@ declare module "@garden/generated-handbook-bodies" {
 }
 
 declare module "@garden/site-config" {
+  export const gardenMode: "blog" | "docs";
   export const searchIndexUrl: string;
   /** The full-text index file and the hash its contents are cached under. */
   export const searchFull: { url: string; hash: string };
+  export const docsSearchEn: { indexUrl: string; full: { url: string; hash: string } } | null;
   /** The site address (site.config.yaml `url`, else SITE_URL) and base path, for spotting links back to the site. */
   export const siteLinks: { address: string; basePath: string; trailingSlash?: boolean };
   /** Header logo as inline SVG ("" when hidden) and icon URLs, from brand in site.config.yaml. */

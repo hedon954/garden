@@ -560,7 +560,7 @@ export function isHandbookPath(pathname: string | null | undefined): boolean {
  */
 export function routeLang(pathname: string | null | undefined): UiLang {
   const path = inAppPath(pathname);
-  if (/^\/garden\/en(\/|$)/u.test(path)) return "en";
+  if (/^\/(?:garden\/)?en(\/|$)/u.test(path)) return "en";
   if (/^\/garden(\/|$)/u.test(path)) return siteLang === "en" ? "en" : "zh";
   return siteLang;
 }

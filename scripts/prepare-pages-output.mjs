@@ -58,7 +58,13 @@ async function inspectTree(root, directory = root) {
 
     if (stat.isSymbolicLink()) fail(msg(`不允许软链接：${relativePath}`, `Symlinks are not allowed: ${relativePath}`));
     if (forbiddenDirectoryNames.has(entry.name)) {
-      fail(msg(`不允许源码目录：${relativePath}`, `Source directories are not allowed: ${relativePath}`));
+      const isExportedRouteDir =
+        entry.isDirectory() &&
+        entry.name === "scripts" &&
+        await fs.access(path.join(absolutePath, "index.html")).then(() => true, () => false);
+      if (!isExportedRouteDir) {
+        fail(msg(`不允许源码目录：${relativePath}`, `Source directories are not allowed: ${relativePath}`));
+      }
     }
     if (entry.name.startsWith(".env")) fail(msg(`不允许环境文件：${relativePath}`, `Environment files are not allowed: ${relativePath}`));
     if (entry.name.startsWith(STATIC_PLACEHOLDER)) fail(msg(`空动态路由的占位页没有删掉：${relativePath}`, `Placeholder page for an empty dynamic route was not removed: ${relativePath}`));

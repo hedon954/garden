@@ -10,7 +10,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { path: "/blog", priority: 0.9, changeFrequency: "weekly" as const },
     { path: "/columns", priority: 0.8, changeFrequency: "weekly" as const },
     { path: "/about", priority: 0.5, changeFrequency: "monthly" as const },
-    { path: "/garden", priority: 0.4, changeFrequency: "monthly" as const },
   ].map((route) => ({
     url: absoluteUrl(siteHref(route.path), baseUrl),
     changeFrequency: route.changeFrequency,

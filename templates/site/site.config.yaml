@@ -43,8 +43,5 @@ pages:
     cta:
       href: /blog
       label: 浏览博文
-  garden:
-    title: "用 Markdown 写。\n推送之后，网站自己更新。"
-    subtitle: ""
 
 footer: 持续记录。

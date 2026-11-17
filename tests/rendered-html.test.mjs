@@ -65,7 +65,7 @@ test("server-renders the finished blog home", async () => {
   assert.match(footer, /class="sh-foot-links"/);
   assert.match(footer, /GitHub/);
   assert.match(footer, /RSS\s*<\/a>/);
-  assert.match(footer, /基于 <a [^>]*href="https:\/\/github\.com\/hedon954\/garden"[^>]*>Garden<\/a> 构建/);
+  assert.match(footer, /基于 <a [^>]*href="https:\/\/hedon\.top\/garden\/"[^>]*>Garden<\/a> 构建/);
   assert.doesNotMatch(footer, /aria-label/);
   assert.match(shell, /\.sh-feature \.cover\{[^}]*aspect-ratio:auto;display:block/);
   assert.match(shell, /\.sh-feature \.cover\{[^}]*background:none/);
@@ -438,12 +438,9 @@ test("publishes discovery routes, and real integration adapters", async () => {
   const sitemap = await sitemapResponse.text();
   assert.match(sitemap, /\/blog\/markdown-lab/);
   assert.match(sitemap, /\/columns\/building-in-public\/smallest-closed-loop/);
-  assert.match(sitemap, /\/garden/);
+  assert.doesNotMatch(sitemap, /\/garden/);
 
-  assert.equal(gardenResponse.status, 200);
-  const garden = await gardenResponse.text();
-  assert.match(garden, /id="garden-admin-title"/);
-  assert.match(garden, /make dev/);
+  assert.equal(gardenResponse.status, 404);
 
   assert.equal(robotsResponse.status, 200);
   const robots = await robotsResponse.text();

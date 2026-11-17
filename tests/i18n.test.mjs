@@ -22,8 +22,8 @@ test("the handbook meta has the same chrome keys in both languages", () => {
   assert.deepEqual(block("en"), block("zh"));
 });
 
-test("English handbook pages are served under /garden/en/ and listed in the sitemap", () => {
+test("English handbook pages are served under /en/ in standalone docs mode and listed in the docs sitemap", () => {
   const build = fs.readFileSync(new URL("../scripts/build-content.mjs", import.meta.url), "utf8");
   assert.match(build, /doc\.path\.startsWith\("en\/"\)/u);
-  assert.match(build, /`\/garden\/en\/\$\{entry\.path\}\/`/u);
+  assert.match(build, /`\/en\/\$\{entry\.path\}\/`/u);
 });

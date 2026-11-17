@@ -44,8 +44,9 @@ test("handbook-facts derives commands, flags, Makefile targets, env vars, config
   assert.ok(!facts.envVars.has("NEXT_PUBLIC_TRAILING_SLASH"));
 
   // site.config.yaml keys
-  assert.ok(facts.siteConfig.keyPaths.has("pages.garden.title"));
+  assert.ok(facts.siteConfig.keyPaths.has("pages.blog.title"));
   assert.ok(facts.siteConfig.keyPaths.has("brand.logo"));
+  assert.ok(facts.siteConfig.keyPaths.has("linkPreview.worker"));
   assert.ok(facts.siteConfig.leafKeys.has("redirects"));
 
   // Check codes & severities

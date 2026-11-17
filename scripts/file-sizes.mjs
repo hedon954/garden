@@ -11,7 +11,7 @@ import {inspectComposeBody} from "../ui/compose/inspect.mjs";
  */
 import fs from "node:fs";
 import path from "node:path";
-import { pathToFileURL } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import matter from "gray-matter";
 import { isPublicUrl } from "./link-meta-core.mjs";
 import { assertPublicDns, pool } from "./link-assets.mjs";
@@ -97,9 +97,14 @@ function markdownFiles(directory) {
   });
 }
 
+const gardenPackageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+
 export function collectRemoteFiles(siteRoot) {
   const urls = new Set();
-  for (const file of markdownFiles(path.join(siteRoot, "content"))) {
+  const sourceDir = process.env.GARDEN_MODE === "docs"
+    ? path.join(gardenPackageRoot, "docs", "handbook")
+    : path.join(siteRoot, "content");
+  for (const file of markdownFiles(sourceDir)) {
     const { content } = matter(fs.readFileSync(file, "utf8"));
     for (const src of remoteFileSources(content)) urls.add(src);
   }

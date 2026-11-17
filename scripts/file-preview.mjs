@@ -190,6 +190,7 @@ export function previewStyleSheet() {
     `pre{margin:28px 0;padding:18px 22px;border-radius:8px;overflow-x:auto;font-size:${pre.fontSize};line-height:${pre.lineHeight};color:${pre.color}}`,
     "pre code{display:block;background:none;padding:0;font-size:14px;line-height:1.6}",
     `:not(pre)>code{font:400 14px/1 ${mono};padding:3px 6px;border-radius:5px}`,
+    ":is(h1,h2,h3,h4,h5,h6) code{font-size:inherit;font-weight:inherit;padding:.08em .28em;border-radius:.24em}",
     ".table-wrap{overflow-x:auto}table{border-collapse:collapse}th,td{border:1px solid;padding:6px 10px}",
     "a{color:inherit}.katex-html{display:none}",
     fs.readFileSync(new URL("../ui/garden/inline-math.css", import.meta.url), "utf8"),

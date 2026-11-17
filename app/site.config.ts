@@ -24,7 +24,7 @@ export type SiteConfig = {
     blog: PageCopy;
     columns: PageCopy;
     about: AboutPage;
-    garden: PageCopy;
+    garden?: PageCopy;
   };
   footer: string;
 };

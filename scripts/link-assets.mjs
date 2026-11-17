@@ -16,7 +16,7 @@ import fs from "node:fs";
 import { readGeneratedCache, writeGeneratedCache } from "./generated-cache.mjs";
 import { isIP } from "node:net";
 import path from "node:path";
-import { pathToFileURL } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import matter from "gray-matter";
 import { fetchFavicon, fetchImage, fetchPageMeta, isPublicUrl, isSiteBrandOgImage, linkHost } from "./link-meta-core.mjs";
 import { parse as parseYaml } from "yaml";
@@ -63,8 +63,16 @@ function readSiteConfig(siteRoot) {
   }
 }
 
+const gardenPackageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+
+function defaultMarkdownSourceDir(siteRoot, env = process.env) {
+  return env.GARDEN_MODE === "docs"
+    ? path.join(gardenPackageRoot, "docs", "handbook")
+    : path.join(siteRoot, "content");
+}
+
 /** Jump links across every post: the sites (for favicons) and the URLs. */
-export function collectSiteLinks(siteRoot, env = process.env, files = markdownFiles(path.join(siteRoot, "content"))) {
+export function collectSiteLinks(siteRoot, env = process.env, files = markdownFiles(defaultMarkdownSourceDir(siteRoot, env))) {
   const config = readSiteConfig(siteRoot);
   // Ordinary same-site prose links need no favicon fetch. Card URLs — same-site
   // or external — share one OG/link-assets path.
@@ -287,19 +295,22 @@ export function linkAssetsForRender(siteRoot, basePath = "") {
 
 /** Dev first run: Git working-tree diff + untracked; later: persisted content hashes. */
 export async function refreshDevLinkAssets({ siteRoot, files, ...options }) {
-  const stateFile = path.join(siteRoot, ".garden", "dev-link-hashes.json");
+  const sourceDir = defaultMarkdownSourceDir(siteRoot, process.env);
+  const hashRoot = process.env.GARDEN_MODE === "docs" ? gardenPackageRoot : siteRoot;
+  const stateFile = path.join(siteRoot, ".garden", process.env.GARDEN_MODE === "docs" ? "dev-docs-link-hashes.json" : "dev-link-hashes.json");
   const previous = readJson(stateFile, null);
-  const current = Object.fromEntries(markdownFiles(path.join(siteRoot, "content")).map(file => [path.relative(siteRoot, file), digest(fs.readFileSync(file))]));
+  const current = Object.fromEntries(markdownFiles(sourceDir).map(file => [path.relative(hashRoot, file), digest(fs.readFileSync(file))]));
   let selected;
-  if (files) selected = files.map(file => path.relative(siteRoot, file));
+  if (files) selected = files.map(file => path.relative(hashRoot, file));
   else if (previous) selected = Object.keys(current).filter(file => previous[file] !== current[file]);
   else {
     try {
-      const git = args => execFileSync("git", args, { cwd: siteRoot, encoding: "utf8" }).split("\0").filter(Boolean);
-      selected = [...git(["diff", "HEAD", "--name-only", "-z", "--", "content"]), ...git(["ls-files", "--others", "--exclude-standard", "-z", "--", "content"])];
+      const relTarget = path.relative(hashRoot, sourceDir);
+      const git = args => execFileSync("git", args, { cwd: hashRoot, encoding: "utf8" }).split("\0").filter(Boolean);
+      selected = [...git(["diff", "HEAD", "--name-only", "-z", "--", relTarget]), ...git(["ls-files", "--others", "--exclude-standard", "-z", "--", relTarget])];
     } catch { selected = Object.keys(current); }
   }
-  const changed = [...new Set(selected)].filter(file => Object.hasOwn(current, file)).map(file => path.join(siteRoot, file));
+  const changed = [...new Set(selected)].filter(file => Object.hasOwn(current, file)).map(file => path.join(hashRoot, file));
   if (changed.length === 0 && previous) {
     const cache = readLinkCache(siteRoot);
     const cached = Object.keys(cache.favicons).length;

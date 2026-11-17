@@ -9,7 +9,6 @@ const SECTION_PAGES = {
   "app/columns/page.tsx": "/columns",
   "app/about/page.tsx": "/about",
   "app/tags/page.tsx": "/tags",
-  "app/garden/page.tsx": "/garden",
 };
 
 test("section pages declare their canonical address and keep the feed link", () => {

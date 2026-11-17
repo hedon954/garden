@@ -21,10 +21,20 @@ const PHRASING = new Set([
   "a", "abbr", "b", "cite", "code", "em", "i", "kbd", "mark", "q", "s", "samp",
   "small", "span", "strong", "sub", "sup", "time", "u", "var", "ruby", "rt",
 ]);
+const SPLITTABLE_PHRASING = new Set([
+  "b", "cite", "em", "i", "mark", "q", "s", "small", "span", "strong", "u",
+]);
+const HIGHLIGHT_TAGS = new Set(["u", "mark"]);
+const MAX_WHOLE_INLINE_GRAPHEMES = 6;
+const SHORT_ASCII_WORD = /^[A-Za-z0-9'-]{1,16}$/u;
 
 function classNames(node) {
   const value = node.properties?.className;
   return new Set(Array.isArray(value) ? value.map(String) : String(value ?? "").split(/\s+/).filter(Boolean));
+}
+
+function isHighlightElement(node) {
+  return node?.type === "element" && (HIGHLIGHT_TAGS.has(node.tagName) || classNames(node).has("hl"));
 }
 
 function isInlineKatex(node) {
@@ -35,9 +45,77 @@ function keepSpan(children) {
   return { type: "element", tagName: "span", properties: { className: ["g-keep-punct"] }, children };
 }
 
+function graphemesOf(value) {
+  return [...new Intl.Segmenter("und", { granularity: "grapheme" }).segment(String(value ?? ""))].map((item) => item.segment);
+}
+
 function lastGrapheme(value) {
-  const segments = [...new Intl.Segmenter("und", { granularity: "grapheme" }).segment(value)];
-  return segments.at(-1)?.segment ?? "";
+  return graphemesOf(value).at(-1) ?? "";
+}
+
+function plainTextOf(node) {
+  if (!node) return "";
+  if (node.type === "text") return String(node.value ?? "");
+  if (Array.isArray(node.children)) return node.children.map(plainTextOf).join("");
+  return "";
+}
+
+function cloneProps(properties, extra = {}) {
+  const base = properties ? { ...properties } : {};
+  if (Array.isArray(base.className)) base.className = [...base.className];
+  return { ...base, ...extra };
+}
+
+function splitTailGraphemeFromElement(node) {
+  if (!node || node.type !== "element" || !SPLITTABLE_PHRASING.has(node.tagName)) return null;
+  if (node.properties?.id) return null;
+  const children = node.children ?? [];
+  if (!children.length) return null;
+  const last = children.at(-1);
+  const hl = isHighlightElement(node);
+
+  if (last.type === "text") {
+    const raw = String(last.value ?? "");
+    const trimmed = raw.replace(/[ \t\u00a0]+$/u, "");
+    if (!trimmed) return null;
+    const tail = lastGrapheme(trimmed);
+    if (!tail) return null;
+    const headText = trimmed.slice(0, -tail.length);
+    const trailingSpace = raw.slice(trimmed.length);
+    const headChildren = [...children.slice(0, -1), ...(headText ? [{ type: "text", value: headText }] : [])];
+    if (!headChildren.length) return null;
+    return {
+      headNode: {
+        ...node,
+        properties: cloneProps(node.properties, hl ? { dataHlPart: "head" } : {}),
+        children: headChildren,
+      },
+      tailNode: {
+        ...node,
+        properties: cloneProps(node.properties, hl ? { dataHlPart: "tail" } : {}),
+        children: [{ type: "text", value: tail + trailingSpace }],
+      },
+    };
+  }
+
+  if (last.type === "element") {
+    const nested = splitTailGraphemeFromElement(last);
+    if (!nested) return null;
+    return {
+      headNode: {
+        ...node,
+        properties: cloneProps(node.properties, hl ? { dataHlPart: "head" } : {}),
+        children: [...children.slice(0, -1), nested.headNode],
+      },
+      tailNode: {
+        ...node,
+        properties: cloneProps(node.properties, hl ? { dataHlPart: "tail" } : {}),
+        children: [nested.tailNode],
+      },
+    };
+  }
+
+  return null;
 }
 
 /** Split a trailing [grapheme][spaces][closing punct run] off a text value. */
@@ -86,6 +164,27 @@ export function keepClosingPunctuation(tree) {
       }
 
       if (canTakeFollowingPunct(child) && leading) {
+        if (!isInlineKatex(child)) {
+          const text = plainTextOf(child).trim();
+          // Keep a single short ASCII word (such as *italic*.) intact in one tag.
+          if (!SHORT_ASCII_WORD.test(text)) {
+            const split = splitTailGraphemeFromElement(child);
+            if (split) {
+              next.push(split.headNode);
+              next.push(keepSpan([split.tailNode, { type: "text", value: leading[0] }]));
+              const rest = following.value.slice(leading[0].length);
+              if (rest) next.push({ type: "text", value: rest });
+              index += 1;
+              continue;
+            }
+            // Non-splittable inline elements (such as long <a>, <code>) must not force
+            // multi-word runs onto a single nowrap line if they are already long.
+            if (graphemesOf(text).length > MAX_WHOLE_INLINE_GRAPHEMES) {
+              next.push(child);
+              continue;
+            }
+          }
+        }
         next.push(keepSpan([child, { type: "text", value: leading[0] }]));
         const rest = following.value.slice(leading[0].length);
         if (rest) next.push({ type: "text", value: rest });

@@ -43,8 +43,5 @@ pages:
     cta:
       href: /blog
       label: Browse posts
-  garden:
-    title: "Write in Markdown.\nPush to update the site."
-    subtitle: ""
 
 footer: Keep writing.

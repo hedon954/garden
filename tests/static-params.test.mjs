@@ -36,6 +36,7 @@ test("every generateStaticParams in app/ goes through staticParams", () => {
     }
   };
   walk(new URL("../app", import.meta.url).pathname);
+  walk(new URL("../docs-app", import.meta.url).pathname);
   assert.ok(pages.length >= 5, `found ${pages.length}`);
   for (const file of pages) {
     const body = fs.readFileSync(file, "utf8").match(/export (?:async )?function generateStaticParams\(\)[^{]*\{([\s\S]*?)\n\}/u)[1];

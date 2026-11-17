@@ -20,6 +20,7 @@ const eslintConfig = defineConfig([
     "ui/preview/dist/**",
     "editors/*/dist/**",
     "editors/dist/**",
+    "docs-app/**",
     "next-env.d.ts",
   ]),
 ]);

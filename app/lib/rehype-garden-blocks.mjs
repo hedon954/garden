@@ -1,4 +1,4 @@
-const FLOW_TAGS = new Set(['garden-block', 'garden-refdemo', 'garden-codediff']);
+const FLOW_TAGS = new Set(['garden-block', 'garden-refdemo', 'garden-codediff', 'garden-playground']);
 
 /** Custom elements are phrasing content to the HTML parser, but render as flow.
  * Lift them before React renders them into figures/divs inside a paragraph. */

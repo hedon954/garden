@@ -8,16 +8,119 @@ import {
   groupHandbookDocs,
   HANDBOOK_SECTIONS,
   HANDBOOK_UI,
-  REFERENCE_SECTION,
   handbookNavLabel,
-  isReferencePath,
   handbookPath,
-  referenceBadgeSuffix,
   sectionTitle,
   type GardenDocNavItem,
   type HandbookLang,
 } from "../lib/garden-docs-meta";
 import { siteHref } from "../lib/site-href";
+
+function NavAppIcon({ kind }: { kind?: string }) {
+  if (kind === "typora") {
+    return (
+      <span className="gdoc-app-icon gdoc-app-icon--typora" aria-hidden="true">
+        <svg viewBox="0 0 20 20" width="16" height="16">
+          <rect x="1.5" y="1.5" width="17" height="17" rx="4.2" fill="currentColor" fillOpacity="0.1" stroke="currentColor" strokeWidth="1.25" />
+          <path d="M6.2 6.2h7.6M10 6.2v8.1M7.9 14.3h4.2" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+        </svg>
+      </span>
+    );
+  }
+  if (kind === "vscode") {
+    return (
+      <span className="gdoc-app-icon gdoc-app-icon--vscode" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="16" height="16">
+          <path
+            d="M17.4 2.6 8.3 11l-4.2-3.2L2.2 8.8v6.4l1.9 1 4.2-3.2 9.1 8.4 4.4-2.1V4.7L17.4 2.6Zm-.2 5.4v8l-5.6-4 5.6-4Z"
+            fill="#2489ca"
+          />
+        </svg>
+      </span>
+    );
+  }
+  return null;
+}
+
+function isNavItemActive(itemPath: string, currentPath: string): boolean {
+  return itemPath === currentPath;
+}
+
+function NavBranch({
+  item,
+  nested,
+  currentPath,
+  lang,
+  onNavigate,
+}: {
+  item: GardenDocNavItem;
+  nested: GardenDocNavItem[];
+  currentPath: string;
+  lang: HandbookLang;
+  onNavigate: () => void;
+}) {
+  const t = HANDBOOK_UI[lang];
+  const active = item.path === currentPath;
+  const childActive = nested.some((sub) => sub.path === currentPath);
+  const [open, setOpen] = useState(childActive);
+
+  useEffect(() => {
+    setOpen(childActive);
+  }, [childActive, currentPath]);
+
+  const badge = COMPONENT_BADGE[item.path];
+  const label = handbookNavLabel(item, lang);
+  const iconKind = item.navIcon;
+
+  return (
+    <li className={active ? "is-active" : undefined}>
+      <div className="gdoc-nav-branch">
+        <Link
+          href={siteHref(handbookPath(lang, item.path))}
+          aria-current={active ? "page" : undefined}
+          onClick={onNavigate}
+        >
+          {iconKind ? <NavAppIcon kind={iconKind} /> : null}
+          {badge ? (
+            <>
+              <code className="gdoc-comp-pill">{badge}</code>
+              <span className="gdoc-comp-label">{label}</span>
+            </>
+          ) : (
+            <span className="gdoc-comp-label">{label}</span>
+          )}
+        </Link>
+        <button
+          type="button"
+          className="gdoc-nav-disclosure"
+          aria-expanded={open}
+          aria-label={open ? t.collapseSubnav : t.expandSubnav}
+          onClick={() => setOpen((value) => !value)}
+        >
+          <CaretRight size={14} aria-hidden="true" />
+        </button>
+      </div>
+      {open ? (
+        <ol className="gdoc-nav-sub">
+          {nested.map((sub) => {
+            const subActive = sub.path === currentPath;
+            return (
+              <li key={sub.path} className={subActive ? "is-active" : undefined}>
+                <Link
+                  href={siteHref(handbookPath(lang, sub.path))}
+                  aria-current={subActive ? "page" : undefined}
+                  onClick={onNavigate}
+                >
+                  <span className="gdoc-comp-label">{handbookNavLabel(sub, lang)}</span>
+                </Link>
+              </li>
+            );
+          })}
+        </ol>
+      ) : null}
+    </li>
+  );
+}
 
 export function GardenDocsNav({
   docs,
@@ -29,10 +132,13 @@ export function GardenDocsNav({
   lang?: HandbookLang;
 }) {
   const t = HANDBOOK_UI[lang];
+  // Fixed, deterministic section order — never reordered across routes.
   const groups = groupHandbookDocs(docs);
   const currentDoc = docs.find((doc) => doc.path === currentPath);
-  const currentSection = groups.find((group) =>
-    group.items.some((item) => item.path === currentPath),
+  const currentSection = groups.find(
+    (group) =>
+      group.overviewPath === currentPath ||
+      group.allDocs.some((item) => item.path === currentPath),
   );
   const [mobileOpen, setMobileOpen] = useState(false);
   const drawerId = useId();
@@ -155,43 +261,69 @@ export function GardenDocsNav({
         </div>
 
         <nav className="gdoc-nav" aria-label={t.chapters}>
-          {(isReferencePath(currentPath) ? [...groups].sort((a, b) => Number(b.id === REFERENCE_SECTION) - Number(a.id === REFERENCE_SECTION)) : groups).map((group) => (
-            <div key={group.id} className="gdoc-nav-group">
-              <h2 className="gdoc-nav-group-head">{sectionTitle(HANDBOOK_SECTIONS.find((sec) => sec.id === group.id), lang) ?? group.title}</h2>
-              <ol className="gdoc-nav-list">
-                {group.items.map((item) => {
-                  const active = item.path === currentPath;
-                  const badge = COMPONENT_BADGE[item.path];
-                  const label = handbookNavLabel(item, lang);
-                  const referenceSuffix = group.id === REFERENCE_SECTION && badge
-                    ? referenceBadgeSuffix(badge, label)
-                    : null;
-                  return (
-                    <li key={item.path} className={active ? "is-active" : undefined}>
-                      <Link
-                        href={siteHref(handbookPath(lang, item.path))}
-                        aria-current={active ? "page" : undefined}
-                        onClick={() => closeMobile(false)}
-                      >
-                        {badge ? (
-                          <>
-                            <code className="gdoc-comp-pill">{badge}</code>
-                            {group.id === REFERENCE_SECTION ? (
-                              referenceSuffix ? <span className="gdoc-comp-label">{referenceSuffix}</span> : null
-                            ) : (
+          {groups.map((group) => {
+            const headingLabel =
+              sectionTitle(HANDBOOK_SECTIONS.find((sec) => sec.id === group.id), lang) ?? group.title;
+            const headingActive = currentPath === group.overviewPath;
+            return (
+              <div key={group.id} className="gdoc-nav-group">
+                <h2 className={`gdoc-nav-group-head${headingActive ? " is-active" : ""}`}>
+                  {group.overviewDoc ? (
+                    <Link
+                      href={siteHref(handbookPath(lang, group.overviewPath))}
+                      className="gdoc-nav-group-link"
+                      aria-current={headingActive ? "page" : undefined}
+                      onClick={() => closeMobile(false)}
+                    >
+                      <span>{headingLabel}</span>
+                    </Link>
+                  ) : (
+                    <span>{headingLabel}</span>
+                  )}
+                </h2>
+                <ol className="gdoc-nav-list">
+                  {group.items.map((item) => {
+                    const nested = item.path === "components/intelligent-ui" ? group.diagramSubpages : [];
+                    if (nested.length) {
+                      return (
+                        <NavBranch
+                          key={item.path}
+                          item={item}
+                          nested={nested}
+                          currentPath={currentPath}
+                          lang={lang}
+                          onNavigate={() => closeMobile(false)}
+                        />
+                      );
+                    }
+                    const active = isNavItemActive(item.path, currentPath);
+                    const badge = COMPONENT_BADGE[item.path];
+                    const label = handbookNavLabel(item, lang);
+                    const iconKind = item.navIcon ?? (item.path === "extensions/typora" ? "typora" : item.path === "extensions/vscode" ? "vscode" : undefined);
+                    return (
+                      <li key={item.path} className={active ? "is-active" : undefined}>
+                        <Link
+                          href={siteHref(handbookPath(lang, item.path))}
+                          aria-current={active ? "page" : undefined}
+                          onClick={() => closeMobile(false)}
+                        >
+                          {iconKind ? <NavAppIcon kind={iconKind} /> : null}
+                          {badge ? (
+                            <>
+                              <code className="gdoc-comp-pill">{badge}</code>
                               <span className="gdoc-comp-label">{label}</span>
-                            )}
-                          </>
-                        ) : (
-                          <span>{label}</span>
-                        )}
-                      </Link>
-                    </li>
-                  );
-                })}
-              </ol>
-            </div>
-          ))}
+                            </>
+                          ) : (
+                            <span className="gdoc-comp-label">{label}</span>
+                          )}
+                        </Link>
+                      </li>
+                    );
+                  })}
+                </ol>
+              </div>
+            );
+          })}
         </nav>
       </aside>
     </>

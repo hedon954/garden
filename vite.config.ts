@@ -95,7 +95,9 @@ function gardenContent() {
       if (generatedFiles().some((file) => !fs.existsSync(file))) sync();
     },
     configureServer(server) {
-      const contentDir = path.join(siteRoot, "content");
+      const contentDir = process.env.GARDEN_MODE === "docs"
+        ? path.join(gardenPackageRoot, "docs", "handbook")
+        : path.join(siteRoot, "content");
       const configFile = path.join(siteRoot, "site.config.yaml");
       server.watcher.add([contentDir, configFile]);
       let pending: ReturnType<typeof setTimeout> | undefined;

@@ -5,7 +5,6 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import postcss from 'postcss';
 import tailwind from '@tailwindcss/postcss';
-import {scanFences} from '../ui/garden/parse.mjs';
 import { parseCompose, renderCompose } from '../ui/compose/index.mjs';
 
 const root = new URL('../', import.meta.url).pathname;
@@ -21,8 +20,8 @@ test('complete article theme preserves icon rail, paragraph alignment and option
     const source = `<stack>${row}<divider/>${row}</stack>`;
     const plain = renderCompose(parseCompose(source).doc);
     const none = renderCompose(parseCompose(`<figure frame="none">${source}</figure>`).doc);
-    const sample=scanFences(fs.readFileSync(path.join(root,'docs/handbook/reference/compose.md'),'utf8')).find(f=>f.info==='garden compose');
-    assert.ok(sample);const parsedSample=parseCompose(sample.body);assert.equal(parsedSample.ok,true,parsedSample.error?.message);const documentation=renderCompose(parsedSample.doc);
+    const sampleDoc = '<figure frame="none"><row wrap="nowrap" align="start" gap="4"><icon name="book-open" size="xl"/><group gap="2"><title align="start">Test heading — not article content</title><text align="start">Explicit test paragraph: the heading and this body share the same right column. Keep the author\'s complete text; do not shrink or summarize it to fit.</text><text align="start">A second independent test paragraph stays in that column.</text></group></row><divider/><row wrap="nowrap" align="start" gap="4"><icon name="users" size="xl"/><group gap="2"><title align="start">Second test heading</title><text align="start">Another test body, aligned with its heading rather than spanning the icon column.</text></group></row></figure>';
+    const parsedSample=parseCompose(sampleDoc);assert.equal(parsedSample.ok,true,parsedSample.error?.message);const documentation=renderCompose(parsedSample.doc);
     const evidence=path.join(scratch,'editorial-browser-evidence');fs.mkdirSync(evidence,{recursive:true});
     const measure = `const r=e=>e.getBoundingClientRect();const line=e=>{const rg=document.createRange();rg.selectNodeContents(e);return rg.getClientRects()[0]||r(e)};const mid=b=>(b.top+b.bottom)/2;const result=[...document.querySelectorAll('article')].map(a=>{const f=a.querySelector('figure');return {frame:getComputedStyle(f).borderTopWidth,padding:getComputedStyle(f).paddingTop,background:getComputedStyle(f).backgroundColor,dividers:a.querySelectorAll('hr').length,rows:[...a.querySelectorAll('.g-compose-row')].map(row=>{const p=[...row.querySelectorAll('p')],icon=row.querySelector('svg');return {icon:r(icon).x,iconWidth:r(icon).width,iconY:r(icon).y,iconMid:mid(r(icon)),headingY:r(p[0]).y,headingMid:mid(line(p[0])),heading:r(p[0]).x,paragraphs:p.slice(1).map(e=>r(e).x),align:getComputedStyle(p[0]).textAlign,overflow:row.scrollWidth>row.clientWidth}})}});document.getElementById('metrics').textContent=JSON.stringify(result);`;
     const html = `<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width"><style>${css.css}</style><article class="markdown-body prose" style="max-width:700px;margin:20px">${plain}</article><article class="markdown-body prose" style="max-width:700px;margin:20px">${none}</article><article class="markdown-body prose" style="max-width:700px;margin:20px">${documentation}</article><pre id="metrics"></pre><script>${measure}</script>`;

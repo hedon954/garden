@@ -4,7 +4,7 @@
  * rendered once with the site language; the English handbook (/garden/en/)
  * gets lang="en" here: in the worker response and in the static export.
  */
-const EN_HANDBOOK = /(^|\/)garden\/en(\/|$)/u;
+const EN_HANDBOOK = /^(?:(?:.*\/)?garden\/)?en(\/|$)/u;
 
 /**
  * Strip a configured basePath (e.g. "/garden-docs-v6") from the front of a
@@ -45,7 +45,7 @@ export function isHandbookPath(pathname, basePath = "") {
  */
 export function pickNotFoundLang(pathname, basePath = "") {
   const stripped = stripConfiguredBasePath(pathname, basePath);
-  return /^\/garden\/en(\/|$)/u.test(stripped) ? "en" : "zh";
+  return /^\/(?:garden\/)?en(\/|$)/u.test(stripped) ? "en" : "zh";
 }
 
 /** "en" for an English handbook path (with or without a basePath in front), else null. */

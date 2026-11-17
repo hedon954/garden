@@ -1,4 +1,4 @@
-/** Author-facing /garden picker. Each row is a graphic type plus when an author would use it, not an internal layout or recipe id. */
+/** Author-facing /garden picker. Each row is a graphic type plus concise, component-specific guidance for the author. */
 export const COMPOSE_FENCE_NAME = "compose";
 
 const STROKE = "#3a3428";
@@ -15,39 +15,22 @@ function intentFence(intent) {
   return "```garden compose\n" + intent + "\n```";
 }
 
-function authorPrompt({label, routeHint, open=false}) {
+/**
+ * Author-first prompt scaffold: AI constraints (no invented facts, mobile reflow,
+ * syntax & open composition) live in `.agents/skills/garden-compose/SKILL.md`,
+ * never dumped into the author's editor. Here we only show the 2-4 slots the
+ * author needs to jot down for this specific figure.
+ */
+function authorPrompt({ label, guide, open = false }) {
   if (open) {
     return [
-      "请根据我提供的材料和表达目标，在统一的 garden compose 里自由组合图文。现成图形无法表达、或需要把几种内容组合在一起时，用任意 Markdown / HTML 以及已有的基础块做成合适的说明。",
-      "",
-      "我的材料：",
-      "- （粘贴要呈现的内容、关系和原文）",
-      "",
-      "我的表达目标：",
-      "- （读者应该理解什么、重点是什么）",
-      "",
-      "请你：",
-      "- 只根据材料组织内容，不要发明事实或结论",
-      "- 自行处理图形语法、布局和手机阅读适配，不要让我学习新语法或写 CSS",
-      "- 列表里的常用图示只是起点，不是合法白名单；没有现成配方也可以，先抽取真实关系再组合基础块",
-      "- 不要把结果限制为某一个现成模板；需要时可以混合普通 Markdown、安全 HTML，以及卡片、行列、步骤等基础块",
+      "自由组合图文说明（可混排任意 Markdown / HTML 与卡片、行列、步骤等基础块）：",
+      ...guide,
     ].join("\n");
   }
   return [
-    `请根据我提供的材料和表达目标，用 garden compose 做一个「${label}」说明图。`,
-    "",
-    "我的材料：",
-    "- （粘贴原文条目和需要保留的措辞）",
-    "",
-    "我的表达目标：",
-    "- （读者要一眼看出什么）",
-    "",
-    "请你：",
-    "- 只根据材料组织内容，不要发明事实或结论",
-    "- 自行处理图形语法、布局和手机阅读适配，不要让我学习标签或写 CSS",
-    `- 「${label}」是推荐起点：${routeHint}`,
-    "- 推荐图示不是唯一合法写法；需要时仍可在同一 compose 里搭配必要的 Markdown / HTML 基础块",
-    "- 不要另起一种作者围栏或新语法，只使用 garden compose",
+    `「${label}」要点：`,
+    ...guide,
   ].join("\n");
 }
 
@@ -187,9 +170,14 @@ const SPECS = [
     when: "两边通过中间一项关联起来",
     whenNot: "没有中间连接关系时，不必强行加连接",
     searchText: "关联图 三列并排 中间接起来 列 连接 关系图 用户 角色 权限 columns-join",
-    routeHint: "先写清两边各是什么、中间一项如何把两边接上，哪一块是重点",
+    guide: [
+      "- 左边是什么：（名称与包含的条目）",
+      "- 中间靠什么关联（重点）：（枢纽名称与连接职责）",
+      "- 右边是什么：（名称与包含的条目）",
+      "- 底部一句话结论（可选）：",
+    ],
     sources: [
-      {file: "docs/handbook/components/compose.md", phrase: "三列并排，中间接起来"},
+      { file: ".agents/skills/garden-compose/references/visual-selection.md", phrase: "多项汇总" },
     ],
   },
   {
@@ -199,10 +187,13 @@ const SPECS = [
     when: "先到一处，再同时连到好几处",
     whenNot: "没有真正的先到再分支时，不要画成发散",
     searchText: "发散图 先到再散开 先到一处 再散开 扇出 fan 一分多 汇合 分发",
-    routeHint: "先写清谁先到谁，再同时连到哪几处，哪一处是重点",
+    guide: [
+      "- 起点是谁：",
+      "- 先集中经过哪一层（重点）：（名称与职责）",
+      "- 同时分发到哪几处：（列出 2–4 个下游名称与说明）",
+    ],
     sources: [
-      {file: "docs/handbook/components/compose.md", phrase: "先到一处，再散开"},
-      {file: ".agents/skills/garden-compose/references/visual-selection.md", phrase: "一分多"},
+      { file: ".agents/skills/garden-compose/references/visual-selection.md", phrase: "一分多" },
     ],
   },
   {
@@ -212,10 +203,13 @@ const SPECS = [
     when: "自上而下的层次",
     whenNot: "层次不是自动变成必须按顺序走完的流程",
     searchText: "分层图 分层结构 自上而下分层 分层 层次 架构 layers",
-    routeHint: "写出各层名称和哪些是重点，并说明是不是每次都按这个顺序走完",
+    guide: [
+      "- 从上到下依次是哪几层：（每层名称 + 一句职责）",
+      "- 重点突出哪一两层：",
+      "- 补充说明（可选）：（例如是否每次请求都走完所有层）",
+    ],
     sources: [
-      {file: "docs/handbook/components/compose.md", phrase: "自上而下分层"},
-      {file: ".agents/skills/garden-compose/references/visual-selection.md", phrase: "包含或分层"},
+      { file: ".agents/skills/garden-compose/references/visual-selection.md", phrase: "包含或分层" },
     ],
   },
   {
@@ -225,10 +219,13 @@ const SPECS = [
     when: "一件事的几个方面，没有先后",
     whenNot: "没有先后就不要画成流程；没有同一条件的比较时，也不要画成对比图",
     searchText: "并列图 多个切面 并列 方面 等宽 卡片 facets 并列类别",
-    routeHint: "列出各方面的短名和说明，并写明这几块有没有严格先后",
+    guide: [
+      "- 围绕的核心主题：",
+      "- 并列的几个方面（无先后）：（列出 3–6 项「短标题：一句说明」）",
+      "- 最关键的一项（可选）：",
+    ],
     sources: [
-      {file: "docs/handbook/components/compose.md", phrase: "一件事的多个切面"},
-      {file: ".agents/skills/garden-compose/references/visual-selection.md", phrase: "并列类别"},
+      { file: ".agents/skills/garden-compose/references/visual-selection.md", phrase: "并列类别" },
     ],
   },
   {
@@ -238,9 +235,13 @@ const SPECS = [
     when: "上面是背景过程，下面才是要讲的过程",
     whenNot: "不是在比两套过程、或其实是同一条件下的方案对比时，不要用这种分行对照",
     searchText: "上下对照图 上下两行对比 两行 上下 对比 背景 过程 two-row",
-    routeHint: "写清上面的背景过程和下面的重点过程各自有哪些阶段，哪一行是重点",
+    guide: [
+      "- 上排（常规或背景过程）：阶段 1 → 阶段 2 → 阶段 3",
+      "- 下排（要强调的重点过程）：阶段 1 → 阶段 2 → 阶段 3",
+      "- 两排对照想说明的结论：",
+    ],
     sources: [
-      {file: "docs/handbook/components/compose.md", phrase: "上下两行对比"},
+      { file: "docs/handbook/components/intelligent-ui.md", phrase: "上下对照图" },
     ],
   },
   {
@@ -250,10 +251,14 @@ const SPECS = [
     when: "一条条独立说明，用图标带出标题和正文",
     whenNot: "这些条目没有先后依赖，不要画成流程，也不要写成要照着做的清单",
     searchText: "图文列表 图标窄栏 独立条目 标题正文 图标 icon-rail",
-    routeHint: "用图标带出一条条独立说明，标题和正文写在一起；这不是流程，不要加顺序箭头",
+    guide: [
+      "- 要点 1：（小标题 + 正文说明）",
+      "- 要点 2：（小标题 + 正文说明）",
+      "- 要点 3：（小标题 + 正文说明）",
+    ],
     sources: [
-      {file: ".agents/skills/garden-compose/references/visual-selection.md", phrase: "图标窄栏、标题正文共左缘"},
-      {file: ".agents/skills/garden-compose/references/layout-recipes.md", phrase: "图标窄栏 + 共用右栏的纵向条目"},
+      { file: ".agents/skills/garden-compose/references/visual-selection.md", phrase: "图标窄栏、标题正文共左缘" },
+      { file: ".agents/skills/garden-compose/references/layout-recipes.md", phrase: "图标窄栏 + 共用右栏的纵向条目" },
     ],
   },
   {
@@ -263,10 +268,13 @@ const SPECS = [
     when: "有明确先后的阶段",
     whenNot: "没有顺序的条目不要加箭头，也不要靠缩字硬撑手机横排",
     searchText: "流程图 顺序流程 短阶段 长阶段 从左到右 纵向 顺序链 sequence",
-    routeHint: "只有原文明确顺序才用箭头。阶段短可以从左到右，阶段长或窄屏改为从上到下，不要靠缩字硬撑横排",
+    guide: [
+      "- 先后阶段：第 1 步 → 第 2 步 → 第 3 步（写明每步短标题与动作）",
+      "- 重点环节（可选）：",
+    ],
     sources: [
-      {file: ".agents/skills/garden-compose/references/visual-selection.md", phrase: "短阶段从左到右"},
-      {file: ".agents/skills/garden-compose/references/visual-selection.md", phrase: "长阶段或纵向顺序"},
+      { file: ".agents/skills/garden-compose/references/visual-selection.md", phrase: "短阶段从左到右" },
+      { file: ".agents/skills/garden-compose/references/visual-selection.md", phrase: "长阶段或纵向顺序" },
     ],
   },
   {
@@ -276,10 +284,14 @@ const SPECS = [
     when: "一步步解释，并可展开细节",
     whenNot: "不是按比例表示时间，也不是让读者照着做的清单，更不是让读者逐步查看状态变化",
     searchText: "分步图 分步说明 分步解释 步骤 steps step",
-    routeHint: "用分步图把顺序讲清楚，需要时在步骤里展开细节；不要把它写成待办清单或逐步演示，除非材料确实如此",
+    guide: [
+      "- 第 1 步：（步骤标题 + 一句概括｜点击展开的补充细节）",
+      "- 第 2 步：（步骤标题 + 一句概括｜点击展开的补充细节）",
+      "- 第 3 步：（步骤标题 + 一句概括｜点击展开的补充细节）",
+    ],
     sources: [
-      {file: ".agents/skills/garden-compose/references/visual-selection.md", phrase: "分步解释"},
-      {file: "docs/compose-catalog.md", phrase: "分步"},
+      { file: ".agents/skills/garden-compose/references/visual-selection.md", phrase: "分步解释" },
+      { file: "docs/compose-catalog.md", phrase: "分步" },
     ],
   },
   {
@@ -289,10 +301,14 @@ const SPECS = [
     when: "两三种方案在同一条件下比较",
     whenNot: "只是罗列各自特点、没有共同条件时，用普通表格或并列图即可",
     searchText: "对比图 对照 比较 compare 方案 左右 同一条件",
-    routeHint: "只在有真实共同条件时做对比，保留各方事实，不要发明输赢或排序",
+    guide: [
+      "- 比较的共同前提或场景：",
+      "- 方案 A：（名称 + 做法与特点）",
+      "- 方案 B：（名称 + 做法与特点）",
+    ],
     sources: [
-      {file: "ui/prompt/recipes/compare.md", phrase: "配方：对照"},
-      {file: ".agents/skills/garden-compose/references/visual-selection.md", phrase: "对照"},
+      { file: "ui/prompt/recipes/compare.md", phrase: "配方：对照" },
+      { file: ".agents/skills/garden-compose/references/visual-selection.md", phrase: "对照" },
     ],
   },
   {
@@ -302,9 +318,13 @@ const SPECS = [
     when: "按日期或时间点排列事件",
     whenNot: "没有按时间比例展开的进度，不要画成带时长的甘特图",
     searchText: "时间线图 时间节点 日期 事件 时间线 timeline",
-    routeHint: "按原文日期或时间点排列事件，保留顺序和日期；不要做成按时长比例的进度",
+    guide: [
+      "- 时间点 1：（日期或时刻 + 事件标题 + 一句说明）",
+      "- 时间点 2：（日期或时刻 + 事件标题 + 一句说明）",
+      "- 时间点 3：（日期或时刻 + 事件标题 + 一句说明）",
+    ],
     sources: [
-      {file: ".agents/skills/garden-compose/references/visual-selection.md", phrase: "时间节点"},
+      { file: ".agents/skills/garden-compose/references/visual-selection.md", phrase: "时间节点" },
     ],
   },
   {
@@ -314,9 +334,14 @@ const SPECS = [
     when: "谁在什么时候向谁发了什么",
     whenNot: "不是通用建模语言，也不支持任意分支、循环或自动布线",
     searchText: "时序图 交互时序 时序 泳道 lanes actor message 谁发给谁",
-    routeHint: "按原文写出参与者和他们之间的消息方向与顺序，不要补出原文没有的分支或循环",
+    guide: [
+      "- 参与方：（2–4 个角色名称）",
+      "- 消息往返顺序：",
+      "  1. 谁 → 谁：发了什么",
+      "  2. 谁 → 谁：回了什么",
+    ],
     sources: [
-      {file: ".agents/skills/garden-compose/references/visual-selection.md", phrase: "交互时序"},
+      { file: ".agents/skills/garden-compose/references/visual-selection.md", phrase: "交互时序" },
     ],
   },
   {
@@ -326,9 +351,13 @@ const SPECS = [
     when: "几组说明互相独立，一次看一组",
     whenNot: "必须同时比较的事实不要藏进其他组，这不是应用导航",
     searchText: "选项卡 分组切换 tabs 面板 分组说明",
-    routeHint: "只有各组说明可以分开看时才用选项卡；必须同时比较的内容不要藏起来",
+    guide: [
+      "- 选项卡 1：（标签名 + 该组内容）",
+      "- 选项卡 2：（标签名 + 该组内容）",
+      "- 选项卡 3（可选）：（标签名 + 该组内容）",
+    ],
     sources: [
-      {file: ".agents/skills/garden-compose/references/visual-selection.md", phrase: "分组切换"},
+      { file: ".agents/skills/garden-compose/references/visual-selection.md", phrase: "分组切换" },
     ],
   },
   {
@@ -338,11 +367,14 @@ const SPECS = [
     when: "已有一组测过或给定的数字，要让读者看清具体值",
     whenNot: "不要编造数据；结果可由公式随输入变化时，优先用参数调节图",
     searchText: "数据图 图表 chart 柱状 折线 饼图 实测 占比",
-    routeHint: "只用材料里的真实数据做图，标明轴和单位；不要编造数值",
+    guide: [
+      "- 图表形式：（柱状图 / 折线图 / 占比饼图）",
+      "- 真实数据与单位：（直接贴出各项名称与数值）",
+      "- 想让读者一眼看出的峰值或结论：",
+    ],
     sources: [
-      {file: "docs/handbook/components/compose.md", phrase: "图表示例（play）"},
-      {file: "ui/prompt/recipes/data-chart.md", phrase: "配方：数据图"},
-      {file: ".agents/skills/garden-compose/references/visual-selection.md", phrase: "数据图"},
+      { file: "ui/prompt/recipes/data-chart.md", phrase: "配方：数据图" },
+      { file: ".agents/skills/garden-compose/references/visual-selection.md", phrase: "数据图" },
     ],
   },
   {
@@ -352,11 +384,14 @@ const SPECS = [
     when: "结果由一两个输入决定，读者会想换成别的值会怎样",
     whenNot: "只有一个固定例子要讲，或输入过多时先拆开；一个输入带动多项输出时用换算图",
     searchText: "参数调节图 可调参数 参数台 参数实验 拧参数 调节 slider param-bench tunable",
-    routeHint: "写出可调的输入和随之变化的结论，默认状态就要能看懂；不要让作者去写程序",
+    guide: [
+      "- 可调输入参数：（名称、范围、默认值与单位）",
+      "- 结果与计算关系：（结果名称、公式或变化规律）",
+      "- 默认状态下要体现的结论：",
+    ],
     sources: [
-      {file: "docs/handbook/components/compose.md", phrase: "可调参数（play）"},
-      {file: "ui/prompt/recipes/param-bench.md", phrase: "配方：参数台"},
-      {file: ".agents/skills/garden-compose/references/visual-selection.md", phrase: "参数实验"},
+      { file: "ui/prompt/recipes/param-bench.md", phrase: "配方：参数台" },
+      { file: ".agents/skills/garden-compose/references/visual-selection.md", phrase: "参数实验" },
     ],
   },
   {
@@ -366,9 +401,12 @@ const SPECS = [
     when: "一个输入同时算出好几项结果",
     whenNot: "只有一个结果时用参数调节图；各项要分别调时先拆开",
     searchText: "换算图 换算器 换算 converter 用料 成本 单位 人数",
-    routeHint: "一个输入同时换算出多项结果，保留公式和单位，不要发明材料里没有的换算关系",
+    guide: [
+      "- 单一输入项：（名称、范围、默认值与单位）",
+      "- 同步换算出的多项结果：（列出每项名称、换算倍率或公式、单位）",
+    ],
     sources: [
-      {file: "ui/prompt/recipes/converter.md", phrase: "配方：换算器"},
+      { file: "ui/prompt/recipes/converter.md", phrase: "配方：换算器" },
     ],
   },
   {
@@ -378,9 +416,12 @@ const SPECS = [
     when: "一段不长的代码值得一行行讲",
     whenNot: "只需要展示代码时用普通代码块；代码太长时先截关键段",
     searchText: "代码走查 代码 逐行 walkthrough 变量",
-    routeHint: "对着不长的关键代码，讲清每一步执行到哪一行、变量此刻是多少，不要改写原文代码的事实",
+    guide: [
+      "- 要讲解的关键代码：（直接贴在下方，聚焦核心片段）",
+      "- 分步走查：（每一步停在哪几行、为什么走这里、此时关键变量值是多少）",
+    ],
     sources: [
-      {file: "ui/prompt/recipes/code-walkthrough.md", phrase: "配方：代码走查"},
+      { file: "ui/prompt/recipes/code-walkthrough.md", phrase: "配方：代码走查" },
     ],
   },
   {
@@ -390,9 +431,14 @@ const SPECS = [
     when: "过程中的状态会变，读者想停在某一步看哪里变了",
     whenNot: "只有两三个静态阶段时，用分步图或流程图即可",
     searchText: "逐步演示 步进器 步进 stepper 状态变化 再走一步 停在某一步",
-    routeHint: "让读者按步查看状态如何变化；若只是静态阶段，改用分步图，不要做成逐步演示",
+    guide: [
+      "- 初始状态：",
+      "- 第 1 步发生了什么变化：",
+      "- 第 2 步发生了什么变化：",
+      "- 每一步需要高亮标出的变化点：",
+    ],
     sources: [
-      {file: "ui/prompt/recipes/stepper.md", phrase: "配方：步进器"},
+      { file: "ui/prompt/recipes/stepper.md", phrase: "配方：步进器" },
     ],
   },
   {
@@ -402,9 +448,15 @@ const SPECS = [
     when: "已有一张状态图或流程图，并且过程沿着它一步步走",
     whenNot: "只需要展示结构，或节点、连线过多时先拆开",
     searchText: "路径标注图 轨迹 状态图 走到哪 当前状态 trace",
-    routeHint: "在已有状态图或流程上标出当前走到哪一步，不要发明原文没有的节点或转移",
+    guide: [
+      "- 参与方与状态节点：",
+      "- 每步状态迁移：",
+      "  - 初始：各方所处状态",
+      "  - 第 1 步：触发动作 → 哪一方变为新状态",
+      "  - 第 2 步：触发动作 → 哪一方变为新状态",
+    ],
     sources: [
-      {file: "ui/prompt/recipes/trace.md", phrase: "配方：轨迹"},
+      { file: "ui/prompt/recipes/trace.md", phrase: "配方：轨迹" },
     ],
   },
   {
@@ -414,9 +466,14 @@ const SPECS = [
     when: "步骤多、要跟着做，读者一边操作一边回来查看做到哪了",
     whenNot: "只是概念上的几个阶段时写列表或分步图；步骤之间要观察状态变化时用逐步演示",
     searchText: "步骤清单 计划与清单 清单 部署 排查 步骤 plan checklist",
-    routeHint: "按读者会照着做的顺序列出清单，保留原文步骤，不要把概念阶段硬写成待办",
+    guide: [
+      "- 清单标题：",
+      "- 第 1 步：（动作开头 + 注意事项）",
+      "- 第 2 步：（动作开头 + 注意事项）",
+      "- 第 3 步：（动作开头 + 注意事项）",
+    ],
     sources: [
-      {file: "ui/prompt/recipes/plan.md", phrase: "配方：计划与清单"},
+      { file: "ui/prompt/recipes/plan.md", phrase: "配方：计划与清单" },
     ],
   },
   {
@@ -426,9 +483,13 @@ const SPECS = [
     when: "二维结构里要盯住某几格，并说明为什么特别",
     whenNot: "只是普通数据表、没有哪一格要特别解释时，用普通表格即可",
     searchText: "格子图 检视格 格子 矩阵 bitmap inspect-grid Attention 高亮",
-    routeHint: "用格子呈现二维结构，并指出需要特别解释的格子及其原因；不要把普通表格硬做成格子图",
+    guide: [
+      "- 二维结构的行和列分别代表什么：",
+      "- 各格填入的内容：",
+      "- 需要高亮标出哪几格，以及原因：",
+    ],
     sources: [
-      {file: "ui/prompt/recipes/inspect-grid.md", phrase: "配方：检视格"},
+      { file: "ui/prompt/recipes/inspect-grid.md", phrase: "配方：检视格" },
     ],
   },
 ];
@@ -441,15 +502,20 @@ const OTHER = {
   whenNot: "不要把列表里的常用图示当成合法白名单，也不要为此学习新语法",
   searchText: "其他 other 任意 灵活 开放 组合 自由组合 图文 无现成 无法表达 markdown html 基础块",
   open: true,
+  guide: [
+    "- 要呈现的原文内容或数据：",
+    "- 希望读者怎么看（结构关系或交互方式）：",
+    "- 最核心的视觉重点：",
+  ],
   sources: [
-    {file: ".agents/skills/garden-compose/references/composition-patterns.md", phrase: "无现成表示方式时"},
-    {file: ".agents/skills/garden-compose/references/composition-patterns.md", phrase: "没有配方不是失败条件"},
+    { file: ".agents/skills/garden-compose/references/composition-patterns.md", phrase: "无现成表示方式时" },
+    { file: ".agents/skills/garden-compose/references/composition-patterns.md", phrase: "没有配方不是失败条件" },
   ],
 };
 
 function decorate(spec) {
   const open = Boolean(spec.open);
-  const prompt = authorPrompt({label: spec.label, routeHint: spec.routeHint, open});
+  const prompt = authorPrompt({ label: spec.label, guide: spec.guide, open });
   return {
     name: spec.name,
     label: spec.label,
@@ -469,7 +535,7 @@ export const DIAGRAM_RECIPES = [...SPECS.map(decorate), decorate(OTHER)];
 export const OTHER_RECIPE_NAME = "other";
 export const INTERNAL_LAYOUT_TERMS_NOT_FOR_AUTHORS = ["centered-chip", "frameless-scene", "equal-cards", "flow-row", "flow-stack"];
 
-export function filterPickerItems(query, items=DIAGRAM_RECIPES) {
+export function filterPickerItems(query, items = DIAGRAM_RECIPES) {
   const needle = String(query ?? "").trim().toLowerCase();
   if (!needle) return [...items];
   return items.filter((item) => {
@@ -478,7 +544,7 @@ export function filterPickerItems(query, items=DIAGRAM_RECIPES) {
   });
 }
 
-export function pickerSelectionResult(item, _typedText="") {
+export function pickerSelectionResult(item, _typedText = "") {
   return {
     insertText: item.body,
     prompt: item.prompt,

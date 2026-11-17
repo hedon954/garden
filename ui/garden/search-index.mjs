@@ -106,6 +106,58 @@ export function buildSearchIndex(content, options) {
 }
 
 /**
+ * Handbook search entries: one record per documentation page (`index` or `<slug>`),
+ * using in-app paths (`/` or `/<path>` for zh, `/en` or `/en/<path>` for en).
+ */
+function handbookSearchEntries(docs = [], { sectionTitles = {}, length = EXCERPT_LENGTH, lang = "zh" } = {}) {
+  const ordered = [...docs].sort((a, b) => {
+    if (a.path === "index") return -1;
+    if (b.path === "index") return 1;
+    return (a.order ?? 999) - (b.order ?? 999) || String(a.path).localeCompare(String(b.path));
+  });
+  return ordered.map((item) => {
+    const text = searchableText(item.content ?? "");
+    const pagePath = item.path === "index"
+      ? (lang === "en" ? "/en" : "/")
+      : (lang === "en" ? `/en/${item.path}` : `/${item.path}`);
+    const section = item.path === "index"
+      ? (lang === "en" ? "Overview" : "总览")
+      : (sectionTitles[item.section] ?? item.section ?? "");
+    return {
+      item,
+      record: {
+        title: item.title,
+        description: item.description ?? "",
+        section,
+        path: pagePath,
+        tags: item.navTitle && item.navTitle !== item.title ? [item.navTitle] : [],
+        content: excerpt(text, length),
+      },
+    };
+  });
+}
+
+export function buildHandbookSearchIndex(docs, options) {
+  return handbookSearchEntries(docs, options).map(({ record }) => record);
+}
+
+export function buildHandbookFullIndex(docs = [], options = {}) {
+  const texts = [];
+  const seen = new Map();
+  const entries = handbookSearchEntries(docs, options).map(({ item, record }) => {
+    const text = fullText(item.content ?? "");
+    if (!seen.has(text)) {
+      seen.set(text, texts.length);
+      texts.push(text);
+    }
+    return [record.path, seen.get(text)];
+  });
+  const hash = crypto.createHash("sha256").update(JSON.stringify([texts, entries])).digest("hex").slice(0, 10);
+  const prefix = options.filePrefix ?? "search-full";
+  return { hash, texts, docs: entries, fileName: `${prefix}.${hash}.json`, json: JSON.stringify({ hash, texts, docs: entries }) };
+}
+
+/**
  * The full-text file: `{ hash, texts, docs }`, where docs is
  * `[[path, textIndex], ...]` in the small index's order. Identical bodies
  * are stored once.

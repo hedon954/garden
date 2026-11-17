@@ -236,7 +236,7 @@ test("relations narrow screens keep the graph: same layout scaled, no card-list 
     for (const spot of outer) assert.ok((spot.w / 100) * width >= 80, "a node keeps room for a two-line title");
   }
   assert.equal(RELATION_COMPACT_WIDTH, 560);
-  const docs = ["docs/handbook/reference/compose.md", "docs/handbook/en/reference/compose.md", "ui/prompt/rules.md"].map((f) => readFileSync(new URL(`../${f}`, import.meta.url), "utf8"));
+  const docs = ["docs/handbook/components/intelligent-ui.md", "ui/prompt/rules.md"].map((f) => readFileSync(new URL(`../${f}`, import.meta.url), "utf8"));
   for (const doc of docs) assert.doesNotMatch(doc, /单列卡片|卡片下方的关系行|cards stack|card's relation line/u);
 });
 

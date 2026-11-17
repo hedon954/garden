@@ -35,7 +35,7 @@ test("ordinary article tables are left alone, and only the handbook turns the pl
   const article = readFileSync(new URL("../app/components/MarkdownArticle.tsx", import.meta.url), "utf8");
   assert.match(article, /\.\.\.\(fieldTables \? \[rehypeFieldTables\] : \[\]\)/u);
   const handbook = readFileSync(new URL("../app/components/HandbookView.tsx", import.meta.url), "utf8");
-  assert.equal(handbook.match(/<MarkdownArticle [^>]*fieldTables/gu)?.length, 2);
+  assert.equal(handbook.match(/<MarkdownArticle[\s\S]*?fieldTables/gu)?.length, 2);
   const css = readFileSync(new URL("../app/styles/a2.css", import.meta.url), "utf8");
   assert.match(css, /td\.ft-req \{ white-space: normal; min-width: 4em; max-width: 9em; width: 9em; \}/u);
   assert.match(css, /@media \(max-width: 640px\) \{\n  \.table-wrap\.field-wrap/u);

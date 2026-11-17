@@ -113,8 +113,8 @@ async function preview(site, extraArgs, bin = gardenBin) {
   try {
     const home = await waitFor(`http://127.0.0.1:${port}/`, 90000);
     const post = await waitFor(`http://127.0.0.1:${port}/blog/hello`, 30000);
-    const handbook = await waitFor(`http://127.0.0.1:${port}/garden`, 30000);
-    return { home, post, handbook, logs: logs.join("") };
+    const handbook = await fetch(`http://127.0.0.1:${port}/garden`);
+    return { home, post, handbookStatus: handbook.status, logs: logs.join("") };
   } finally {
     child.kill("SIGTERM");
     await Promise.race([finished, new Promise((resolve) => setTimeout(resolve, 3000))]);
@@ -127,41 +127,41 @@ test("home page source does not import article bodies", () => {
   assert.doesNotMatch(page, /content-body|generated-post-bodies|generated-handbook-bodies/u);
 });
 
-test("file: overlay garden dev --worker serves home and a post without Denied ID", { timeout: 120000 }, async () => {
+test("file: overlay garden dev --worker serves home and a post without Denied ID (and excludes /garden)", { timeout: 120000 }, async () => {
   const site = writePreviewSite();
   try {
-    const { home, post, handbook, logs } = await preview(site, ["--worker"]);
+    const { home, post, handbookStatus, logs } = await preview(site, ["--worker"]);
     assert.equal(home.status, 200, logs);
     assert.match(home.text, /data-feature-title|Overlay home|Overlay Hello/u);
     assert.equal(post.status, 200, logs);
     assert.match(post.text, /Overlay Hello/u);
-    assert.equal(handbook.status, 200, logs);
+    assert.equal(handbookStatus, 404, logs);
     assert.doesNotMatch(logs, /ERR_DENIED_ID|Denied ID/u);
   } finally {
     rmSync(site, { recursive: true, force: true });
   }
 });
 
-test("file: overlay garden dev Node preview serves home and a post", { timeout: 120000 }, async () => {
+test("file: overlay garden dev Node preview serves home and a post (and excludes /garden)", { timeout: 120000 }, async () => {
   const site = writePreviewSite();
   try {
-    const { home, post, handbook, logs } = await preview(site, []);
+    const { home, post, handbookStatus, logs } = await preview(site, []);
     assert.equal(home.status, 200, logs);
     assert.match(home.text, /data-feature-title|Overlay home|Overlay Hello/u);
     assert.equal(post.status, 200, logs);
     assert.match(post.text, /Overlay Hello/u);
-    assert.equal(handbook.status, 200, logs);
+    assert.equal(handbookStatus, 404, logs);
     assert.doesNotMatch(logs, /ERR_DENIED_ID|Denied ID/u);
   } finally {
     rmSync(site, { recursive: true, force: true });
   }
 });
 
-test("npm pack overlay garden dev Node preview serves home, a post, and the handbook", { timeout: 180000 }, async () => {
+test("npm pack overlay garden dev Node preview serves home and a post without shipping /garden", { timeout: 180000 }, async () => {
   const site = writePreviewSite();
   try {
     const packedBin = installPackedEngine(site);
-    const { home, post, handbook, logs } = await preview(site, [], packedBin);
+    const { home, post, handbookStatus, logs } = await preview(site, [], packedBin);
     assert.ok(fs.existsSync(path.join(site, ".garden", "generated-post-bodies.ts")), logs);
     assert.ok(fs.existsSync(path.join(site, ".garden", "generated-handbook-bodies.ts")), logs);
     assert.equal(
@@ -172,7 +172,7 @@ test("npm pack overlay garden dev Node preview serves home, a post, and the hand
     assert.match(home.text, /data-feature-title|Overlay home|Overlay Hello/u);
     assert.equal(post.status, 200, logs);
     assert.match(post.text, /Overlay Hello/u);
-    assert.equal(handbook.status, 200, logs);
+    assert.equal(handbookStatus, 404, logs);
     assert.doesNotMatch(logs, /ERR_DENIED_ID|Denied ID|Cannot find module '@garden\/generated-/u);
   } finally {
     rmSync(site, { recursive: true, force: true });

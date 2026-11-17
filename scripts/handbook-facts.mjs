@@ -317,6 +317,13 @@ function deriveSiteConfigKeys(root = ROOT) {
     leafKeys.add("redirects");
     keyPaths.add("redirects");
   }
+  const markdownArticleSource = fs.readFileSync(path.join(root, "app/components/MarkdownArticle.tsx"), "utf8");
+  if (markdownArticleSource.includes("siteConfig.linkPreview?.worker")) {
+    leafKeys.add("linkPreview");
+    leafKeys.add("worker");
+    keyPaths.add("linkPreview");
+    keyPaths.add("linkPreview.worker");
+  }
 
   return { keyPaths, leafKeys };
 }

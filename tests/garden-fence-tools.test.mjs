@@ -148,54 +148,31 @@ test("drafts expose Compose requests just like published posts", () => {
   assert.equal(cli(dir, "check", "content/posts/a.md", "--no-copy").status, 1);
 });
 
-// The handbook's end-to-end example (overview and 用 AI 写作) quotes real output.
-test("the handbook's AI-writing example matches what the commands print", () => {
+test("the handbook's AI-collaboration example matches what the commands print", () => {
   const read = (name) => fs.readFileSync(path.join(root, "docs/handbook", name), "utf8");
-  const overview = read("index.md");
-  const aiPage = read("ai-writing.md");
-  const idea = overview.match(/```garden compose\n(让读者[^\n]+)\n```/u)[1];
-  const markdown = `---\ntitle: 慢慢写\ndate: 2026-10-01\ndescription: 一篇长文要写多久。\n---\n\n## 写作节奏\n\n${fence}garden compose\n${idea}\n${fence}\n`;
+  const aiPage = read("guide/ai-collaboration.md");
+  const aiKitPage = read("scripts/ai-kit.md");
+  const ideaMatch = aiPage.match(/````markdown\n```garden compose\n([\s\S]*?)\n```\n````/u);
+  assert.ok(ideaMatch, "guide/ai-collaboration.md shows an uncompiled compose example");
+  const idea = ideaMatch[1];
+  const markdown = `---\ntitle: 权限模型\ndate: 2026-10-01\ndescription: RBAC 解耦。\n---\n\n## 模型\n\n\n\n\n\n\n${fence}garden compose\n${idea}\n${fence}\n`;
   const dir = site(markdown);
-  fs.renameSync(path.join(dir, "content/posts/a.md"), path.join(dir, "content/posts/writing-pace.md"));
-  const scan = JSON.parse(cli(dir, "scan", "content/posts/writing-pace.md").stdout);
+  fs.renameSync(path.join(dir, "content/posts/a.md"), path.join(dir, "content/posts/rbac-model.md"));
+  const scan = JSON.parse(cli(dir, "scan", "content/posts/rbac-model.md").stdout);
   const [block] = scan.blocks;
-  for (const [key, value] of Object.entries({ lang: block.lang, status: block.status, startLine: block.startLine, intentHash: block.intentHash, section: block.section })) {
-    assert.ok(overview.includes(`"${key}": ${JSON.stringify(value)}`), `overview shows ${key} ${value}`);
-  }
-  const check = cli(dir, "check", "content/posts/writing-pace.md", "--no-copy");
+  assert.equal(block.status, "uncompiled");
+  const check = cli(dir, "check", "content/posts/rbac-model.md", "--no-copy");
   const diagnostic = check.stderr.split("\n")[0];
-  assert.ok(overview.includes(diagnostic) && aiPage.includes(diagnostic), diagnostic);
-  for (const line of check.stderr.split("\n").slice(2, 9)) {
-    if (line.trim()) assert.ok(overview.includes(line), `overview prompt line: ${line}`);
-  }
-  const interactive = overview.match(/```garden compose #writing-pace\n[\s\S]*?\n```/u)[0];
-  fs.writeFileSync(path.join(dir, "new.md"), interactive);
-  const apply = cli(dir, "apply", "content/posts/writing-pace.md", "--intent-hash", block.intentHash, "--file", path.join(dir, "new.md"));
-  assert.ok(overview.includes(apply.stdout.trim()), apply.stdout);
-  assert.equal(cli(dir, "check", "content/posts/writing-pace.md", "--quiet", "--no-copy").stdout, "");
-  // The hook command the pages quote is the one bin/garden.mjs installs.
+  assert.ok(aiPage.includes(diagnostic), `ai-collaboration.md quotes real diagnostic: ${diagnostic}`);
+  const compiled = aiPage.match(/```garden compose #ai-demo-rbac\n[\s\S]*?\n```/u)[0];
+  fs.writeFileSync(path.join(dir, "new.md"), compiled);
+  const apply = cli(dir, "apply", "content/posts/rbac-model.md", "--intent-hash", block.intentHash, "--file", path.join(dir, "new.md"));
+  assert.equal(apply.status, 0, apply.stderr);
+  assert.equal(cli(dir, "check", "content/posts/rbac-model.md", "--quiet", "--no-copy").stdout, "");
+  // The hook command quoted in scripts/ai-kit.md matches bin/garden.mjs.
   const hook = /exec npx --no-install garden ui check --staged --quiet/u;
+  assert.match(aiKitPage, hook);
   assert.match(fs.readFileSync(path.join(root, "bin/garden.mjs"), "utf8"), hook);
-
-  // English handbook quotes the same flow with locale en_US output.
-  const enOverview = read("en/index.md");
-  const enAi = read("en/ai-writing.md");
-  const enIdea = enOverview.match(/```garden compose\n(Let the reader[^\n]+)\n```/u)[1];
-  const enMarkdown = `---\ntitle: Writing pace\ndate: 2026-10-01\ndescription: How long.\n---\n\n## Writing Pace\n\n${fence}garden compose\n${enIdea}\n${fence}\n`;
-  const enDir = site(enMarkdown);
-  fs.writeFileSync(path.join(enDir, "site.config.yaml"), "name: T\nlocale: en_US\n");
-  fs.renameSync(path.join(enDir, "content/posts/a.md"), path.join(enDir, "content/posts/writing-pace.md"));
-  const enScan = JSON.parse(cli(enDir, "scan", "content/posts/writing-pace.md").stdout);
-  const [enBlock] = enScan.blocks;
-  assert.ok(enOverview.includes(`"intentHash": ${JSON.stringify(enBlock.intentHash)}`), enBlock.intentHash);
-  const enCheck = cli(enDir, "check", "content/posts/writing-pace.md", "--no-copy");
-  assert.match(enCheck.stderr, /uncompiled compose idea remaining/u);
-  assert.match(enCheck.stderr, /garden-compose skill/u);
-  const enDiagnostic = enCheck.stderr.split("\n")[0];
-  assert.ok(enOverview.includes(enDiagnostic) && enAi.includes(enDiagnostic), enDiagnostic);
-  for (const line of enCheck.stderr.split("\n").slice(2, 9)) {
-    if (line.trim()) assert.ok(enOverview.includes(line), `en overview prompt line: ${line}`);
-  }
 });
 
 
