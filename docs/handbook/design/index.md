@@ -26,13 +26,13 @@ Garden 的全部设计决策只围绕一个目标展开：**把版面的克制�
 ```garden compose
 <figure frame="none">
   <timeline title="框架设计阅读顺序">
-    <event date="01" title="[设计原则](/garden/design/principles/)">
+    <event title="[设计原则](/garden/design/principles/)">
       <text>读者侧：色彩、字体、行宽、目录避让与图片尺寸。作者侧：低负担写作与 AI Native 闭环。</text>
     </event>
-    <event date="02" title="[实现参考](/garden/design/references/)">
+    <event title="[实现参考](/garden/design/references/)">
       <text>阅读气质借鉴 Claude，交互表达还原 ChatGPT Intelligent UI，并改成安全沙箱。</text>
     </event>
-    <event date="03" title="[底层原理](/garden/design/internals/)">
+    <event title="[底层原理](/garden/design/internals/)">
       <text>Git 真源、编译管线、Compose 边界、外链元数据、矢量内联与双层检索。</text>
     </event>
   </timeline>

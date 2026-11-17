@@ -39,10 +39,10 @@ npx garden editors install --vscode
 ```garden compose
 <figure frame="none">
   <timeline title="扩展插件阅读顺序">
-    <event date="01" title="[Typora](/garden/extensions/typora/)">
+    <event title="[Typora](/garden/extensions/typora/)">
       <text>输入 / 呼出带缩略图的 /garden 菜单，离开围栏后原位变成可交互卡片。</text>
     </event>
-    <event date="02" title="[VS Code / Cursor](/garden/extensions/vscode/)">
+    <event title="[VS Code / Cursor](/garden/extensions/vscode/)">
       <text>双栏源码与 Agent 同屏。另有 CodeLens、波浪线诊断和长围栏折叠。</text>
     </event>
   </timeline>

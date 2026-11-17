@@ -39,16 +39,16 @@ Garden 把个人博客的日常维护浓缩为一条极简闭环：**本地写 M
 ```garden compose
 <figure frame="none">
   <timeline title="使用指南阅读顺序">
-    <event date="01" title="[快速上手](/garden/guide/quick-start/)">
+    <event title="[快速上手](/garden/guide/quick-start/)">
       <text>从 init、配置、公开仓库、依赖、新文章、本地校验走到 make update 上线。</text>
     </event>
-    <event date="02" title="[AI 协作](/garden/guide/ai-collaboration/)">
+    <event title="[AI 协作](/garden/guide/ai-collaboration/)">
       <text>用真实样例走完一句自然语言、检查拦截、AI 重写到部署。</text>
     </event>
-    <event date="03" title="[详细教程](/garden/guide/tutorial/)">
+    <event title="[详细教程](/garden/guide/tutorial/)">
       <text>查阅配置字段、Front Matter、专栏组织，以及各项排版语法。</text>
     </event>
-    <event date="04" title="[管理后台](/garden/guide/admin/)">
+    <event title="[管理后台](/garden/guide/admin/)">
       <text>看 /admin 各模块与界面，并掌握本地、Docker 与 Workers 部署。</text>
     </event>
   </timeline>

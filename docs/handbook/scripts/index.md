@@ -33,13 +33,13 @@ Garden 的自动化工具链分为职责清晰的三层：作者日常只需敲�
 ```garden compose
 <figure frame="none">
   <timeline title="常用脚本阅读顺序">
-    <event date="01" title="[Makefile](/garden/scripts/makefile/)">
+    <event title="[Makefile](/garden/scripts/makefile/)">
       <text>拆解全部目标、TITLE / SLUG / DIR / URL / FILE / MESSAGE，以及 make update 的安全门禁。</text>
     </event>
-    <event date="02" title="[scripts](/garden/scripts/cli/)">
+    <event title="[scripts](/garden/scripts/cli/)">
       <text>npx garden 子命令、garden ui 工具链，以及引擎底层资源与构建校验脚本。</text>
     </event>
-    <event date="03" title="[skills/AGENTS.md](/garden/scripts/ai-kit/)">
+    <event title="[skills/AGENTS.md](/garden/scripts/ai-kit/)">
       <text>AGENTS.md、garden-compose、garden-post-review 与 pre-commit 钩子如何协同。</text>
     </event>
   </timeline>
