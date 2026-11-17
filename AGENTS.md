@@ -14,7 +14,7 @@ Node `>= 22.13.0`。首次 `npm ci`。
 | 手册站导航、顶栏、预览框 | `app/components/GardenDocsNav.tsx`、`app/styles/a2.css`、`docs-app/components/DocLivePlayground.tsx` | `npm run docs:dev`，打开 `http://localhost:5173/garden/` |
 | 样例博客页面 | `app/` 里对应组件，`scripts/build-content.mjs` | `npm run dev`，打开 `http://localhost:3000` |
 | 编辑器插件 | `editors/vscode/` 或 `editors/typora/` | `node scripts/sync-editor-version.mjs --check` |
-| 发 npm / GitHub Release | `CHANGELOG.md` 顶部 `## x.y.z`、`scripts/release-notes.mjs`、`.github/workflows/publish.yml` | `node scripts/release-notes.mjs` |
+| 发 npm / GitHub Release | `CHANGELOG.md` 顶部 `## x.y.z`、`scripts/release-notes.mjs`、`.github/workflows/publish.yml` | 先做下面的「打 tag 之前」，通过后再打 tag |
 
 `npm test` 会先整站构建，只在要交 `main` 时跑。日常改一块就跑上表那一条。
 
@@ -27,6 +27,18 @@ Node `>= 22.13.0`。首次 `npm ci`。
 - 手册构建是 `npm run docs:dev` / `docs:build`（`scripts/docs-site.mjs`）。`npm run dev` 是样例博客，不会更新 `/garden` 手册。
 - 编辑器版本必须等于根目录 `package.json` 的 `version`。改版本用 `node scripts/sync-editor-version.mjs`，不要只改一个清单。
 - 发布说明写在 `CHANGELOG.md` 该版本标题下，用中文写这次改了什么。`scripts/release-notes.mjs` 读这一节；空的或没有中文就失败。比较链接由脚本加在最后。
+
+## 打 tag 之前
+
+`publish.yml` 不跑 `npm run lint`。`v0.15.1` 就是 lint 没过、npm 仍然发出去了。打 tag 前在将要标记的那次提交上跑完这些，任何一条失败都不要打 tag：
+
+1. 工作区干净，提交已经在 `main` 上。
+2. `node scripts/sync-editor-version.mjs --check`：根版本、VS Code、Typora 一致，且 tag 名就是 `v` 加 `package.json` 的 `version`。
+3. `node scripts/release-notes.mjs`：`CHANGELOG.md` 里该版本是中文发布报告，不能空。
+4. `npm run lint`
+5. `npm test`
+
+已经发出的 tag 不能删了再复用同一个版本号。npm 上的版本也不能覆盖。
 
 ## 收尾
 
